@@ -121,6 +121,8 @@ bool test_main(void) {
         manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
     CHECK_STATUS_OK(
         manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(
+        manuf_individualize_device_immutable_rom_ext_en_cfg(&otp_ctrl));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
     CHECK_STATUS_OK(check_otp_ast_cfg());
     LOG_INFO("Provisioned and locked CREATOR_SW_CFG OTP partition.");

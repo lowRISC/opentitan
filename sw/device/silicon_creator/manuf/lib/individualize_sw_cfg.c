@@ -58,6 +58,13 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     // state, so once the manufacturing state is provisioned, the
     // personalization firmware can't be re-entrant.
     //
+    // We skip the provisioning of the immutable ROM_EXT enablement
+    // configuration as it must be provisioned only at the end of the
+    // personalization flow. The personalization firmware doesn't include an
+    // immutable ROM_EXT section. Enabling this feature with personalization
+    // firmware would result in ROM self-shutdown due to an invalid immutable
+    // ROM extension hash.
+    //
     // We also skip the provisioning of the ROM bootstrap disablement
     // configuration. This should only be disabled after all bootstrap
     // operations in the personalization flow have been completed.
@@ -68,6 +75,8 @@ static status_t otp_img_write(const dif_otp_ctrl_t *otp,
     if (kv[i].offset ==
             OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET ||
+        kv[i].offset ==
+            OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET ||
         kv[i].offset == OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET ||
         (kv[i].offset >= kValidAstCfgOtpAddrLow &&
          kv[i].offset < kInvalidAstCfgOtpAddrHigh)) {
@@ -115,6 +124,10 @@ static status_t otp_img_expected_value_read(dif_otp_ctrl_partition_t partition,
       break;
     case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
       memcpy(buffer + relative_addr, &kCreatorSwCfgManufStateValue,
+             sizeof(uint32_t));
+      break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET:
+      memcpy(buffer + relative_addr, &kCreatorSwCfgImmutableRomExtEnValue,
              sizeof(uint32_t));
       break;
     default:
@@ -243,6 +256,19 @@ status_t manuf_individualize_device_creator_manuf_state_cfg(
   return OK_STATUS();
 }
 
+status_t manuf_individualize_device_immutable_rom_ext_en_cfg(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  uint32_t offset;
+  TRY(dif_otp_ctrl_relative_address(
+      kDifOtpCtrlPartitionCreatorSwCfg,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET, &offset));
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
+                                     offset,
+                                     &kCreatorSwCfgImmutableRomExtEnValue,
+                                     /*len=*/1));
+  return OK_STATUS();
+}
+
 status_t manuf_individualize_device_creator_sw_cfg_lock(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(lock_otp_partition(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg));
@@ -287,6 +313,9 @@ status_t manuf_individualize_device_partition_expected_read(
     case kDifOtpCtrlPartitionCreatorSwCfg:
       TRY(otp_img_expected_value_read(
           partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, buffer));
+      TRY(otp_img_expected_value_read(
+          partition, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET,
+          buffer));
       break;
     default:
       return INTERNAL();

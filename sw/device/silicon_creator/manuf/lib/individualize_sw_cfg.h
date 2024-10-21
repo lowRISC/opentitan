@@ -17,6 +17,7 @@ extern const size_t kOtpKvCreatorSwCfgSize;
 extern const otp_kv_t kOtpKvCreatorSwCfg[];
 extern const uint32_t kCreatorSwCfgFlashDataDefaultCfgValue;
 extern const uint32_t kCreatorSwCfgManufStateValue;
+extern const uint32_t kCreatorSwCfgImmutableRomExtEnValue;
 
 /**
  * OTP Owner Software Configuration Partition.
@@ -83,6 +84,21 @@ status_t manuf_individualize_device_flash_data_default_cfg(
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_creator_manuf_state_cfg(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures the IMMUTABLE_ROM_EXT_EN field in the CREATOR_SW_CFG OTP
+ * partition.
+ *
+ * This must be called before `manuf_individualize_device_creator_sw_cfg_lock()`
+ * is called. The operation will fail if there are any pre-programmed words not
+ * equal to the expected test values.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the IMMUTABLE_ROM_EXT_EN field was provisioned.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_immutable_rom_ext_en_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
