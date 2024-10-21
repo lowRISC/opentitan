@@ -43,8 +43,8 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * Software configuration partition.
    *
-   * This is for device-specific calibration data. For example, clock,
-   * LDO, RNG.
+   * This is for device-specific calibration data, e.g, clock, LDO, RNG,
+   * and configuration settings set by the ROM.
    */
   kDifOtpCtrlPartitionCreatorSwCfg,
   /**
@@ -84,20 +84,13 @@ typedef enum dif_otp_ctrl_partition {
   /**
    * Hardware configuration 0 partition.
    *
-   * This contains
-   * - DEVICE_ID: Unique device identifier.
-   * - MANUF_STATE: Vector for capturing the manufacturing status.
+   * This contains a device identifier and manufacturing state.
    */
   kDifOtpCtrlPartitionHwCfg0,
   /**
    * Hardware configuration 1 partition.
    *
-   * This contains
-   * - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
-   * - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access to the
-   * NIST internal state per instance.
-   * - DIS_RV_DM_LATE_DEBUG: Setting this to true bypasses the late debug
-   * enablement of RV_DM in the DEV life cycle state.
+   * This contains several hardware feature switches.
    */
   kDifOtpCtrlPartitionHwCfg1,
   /**
