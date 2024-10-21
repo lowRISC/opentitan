@@ -22,3 +22,16 @@ void util_reverse_bytes(void *buf, size_t num_bytes) {
     byte_buf[num_bytes - i - 1] = temp;
   }
 }
+
+// Returns hexdump character for the half-byte.
+static inline uint8_t hexdump_halfbyte(uint8_t half_byte) {
+  if (half_byte < 10)
+    return '0' + half_byte;
+  else
+    return 'a' + half_byte - 10;
+}
+
+void util_hexdump_byte(uint8_t byte, uint8_t *str) {
+  str[0] = hexdump_halfbyte((byte & 0xF0) >> 4);
+  str[1] = hexdump_halfbyte(byte & 0x0F);
+}
