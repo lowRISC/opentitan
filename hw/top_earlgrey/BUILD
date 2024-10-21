@@ -419,7 +419,7 @@ silicon(
     base = ":silicon_owner_sival_rom_ext",
     # TODO(#24641): Simplify key selection after eliminating RSA keys.
     ecdsa_key = select({
-        "//signing:owner_key_ecdsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "appkey_test_0"},
+        "//signing:owner_key_ecdsa": {"//sw/device/silicon_creator/rom_ext/prodc/keys:keyset": "appkey_prod_0"},
         "//signing:owner_key_rsa": CLEAR_KEY_SET,
         "//signing:test_keys_ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
         "//signing:test_keys_rsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},

@@ -71,9 +71,8 @@
             "erase": true,
             // Region properties: scrambling, ecc and high_endurance.
             // Must match how ROM_EXT was original written
-            // On the ES chip, the default flash config has ECC and Scrambling turned off.
-            "scramble": false,
-            "ecc": false,
+            "scramble": true,
+            "ecc": true,
             "high_endurance": false,
             "protect_when_primary": true,
             "lock": true
@@ -88,9 +87,8 @@
             "erase": true,
             // Region properties: scrambling, ecc and high_endurance.
             // Must match how ROM_EXT was original written
-            // On the ES chip, the default flash config has ECC and Scrambling turned off.
-            "scramble": false,
-            "ecc": false,
+            "scramble": true,
+            "ecc": true,
             "high_endurance": false,
             "protect_when_primary": true,
             "lock": true
@@ -104,9 +102,8 @@
             "program": true,
             "erase": true,
             // Region properties.
-            // On the ES chip, the default flash config has ECC and Scrambling turned off.
-            "scramble": false,
-            "ecc": false,
+            "scramble": true,
+            "ecc": true,
             "high_endurance": false,
             "protect_when_primary": true,
             "lock": true
@@ -120,9 +117,8 @@
             "program": true,
             "erase": true,
             // Region properties.
-            // On the ES chip, the default flash config has ECC and Scrambling turned off.
-            "scramble": false,
-            "ecc": false,
+            "scramble": true,
+            "ecc": true,
             "high_endurance": false,
             "protect_when_primary": true,
             "lock": true
@@ -161,16 +157,15 @@
           },
           {
             // Slot B Identity page. RW can read but not write.
-            "start": 255,
+            "start": 511,
             "size": 1,
             // Permissions: read, erase and program.
             "read": true,
             "program": false,
             "erase": false,
             // Scramble setting must match was was used when writting page
-            // On the ES chip, the default flash config has ECC and Scrambling turned off.
-            "scramble": false,
-            "ecc": false,
+            "scramble": true,
+            "ecc": true,
             "high_endurance": false,
             "protect_when_primary": false,
             "lock": true
