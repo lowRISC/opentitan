@@ -125,6 +125,7 @@ cc_library(
     hdrs = ["owner_block.h"],
     deps = [
         ":datatypes",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
