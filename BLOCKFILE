@@ -51,7 +51,6 @@ hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
 hw/ip/otp_ctrl/rtl/*
 hw/ip/pattgen/rtl/*
-hw/ip/pinmux/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
 hw/ip/prim_xilinx/rtl/*
@@ -73,7 +72,6 @@ hw/ip/usbdev/rtl/*
 # too broad and will also block DV-only files)
 hw/ip/lc_ctrl/data/lc_ctrl.hjson
 hw/ip/rv_timer/data/rv_timer.hjson
-hw/ip/pinmux/data/pinmux.hjson.tpl
 hw/ip/spi_host/data/spi_host.hjson
 hw/ip/spi_device/data/spi_device.hjson
 hw/ip/adc_ctrl/data/adc_ctrl.hjson
@@ -115,6 +113,7 @@ hw/top_earlgrey/ip/ast/data/ast.hjson
 hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
 hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson
 hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson
+hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
