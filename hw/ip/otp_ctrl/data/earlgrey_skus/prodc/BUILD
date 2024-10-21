@@ -22,6 +22,7 @@ load(
     "otp_image",
     "otp_image_consts",
     "otp_json",
+    "otp_json_immutable_rom_ext",
     "otp_partition",
     "otp_per_class_bytes",
     "otp_per_class_ints",
@@ -202,6 +203,20 @@ otp_json(
     ],
 )
 
+otp_json_immutable_rom_ext(
+    name = "otp_json_immutable_rom_ext",
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
+            },
+        ),
+    ],
+    rom_ext = "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
+    visibility = ["//visibility:private"],
+)
+
 # Create an overlay for the alert_handler digest.
 otp_alert_digest(
     name = "alert_digest_cfg",
@@ -294,6 +309,7 @@ MANUF_SW_INITIALIZED = [
     ":alert_digest_cfg",
     ":otp_json_creator_sw_cfg",
     ":otp_json_owner_sw_cfg",
+    ":otp_json_immutable_rom_ext",
 ]
 
 # The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
