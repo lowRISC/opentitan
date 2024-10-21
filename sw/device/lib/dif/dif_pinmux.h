@@ -7,8 +7,8 @@
 
 /**
  * @file
- * @brief <a href="/hw/ip/pinmux/doc/">Pin Multiplexer</a> Device Interface
- * Functions
+ * @brief <a href="/hw/top_earlgrey/ip_autogen/pinmux/doc/">Pin Multiplexer</a>
+ * Device Interface Functions
  */
 
 /**
