@@ -76,7 +76,8 @@ static bool is_debug_exposed(void) {
  * Helper function to convert a buffer of bytes from little to big endian in
  * place.
  */
-static void le_be_buf_format(unsigned char *buf, size_t num_bytes) {
+static void le_be_buf_format(void *ptr, size_t num_bytes) {
+  unsigned char *buf = (unsigned char *)ptr;
   unsigned char temp;
   for (size_t i = 0; i < (num_bytes / 2); ++i) {
     temp = buf[i];
@@ -90,8 +91,8 @@ static void le_be_buf_format(unsigned char *buf, size_t num_bytes) {
  * endian in place.
  */
 static void curr_pubkey_le_to_be_convert(attestation_public_key_t *pubkey) {
-  le_be_buf_format((unsigned char *)pubkey->x, kAttestationPublicKeyCoordBytes);
-  le_be_buf_format((unsigned char *)pubkey->y, kAttestationPublicKeyCoordBytes);
+  le_be_buf_format(pubkey->x, kAttestationPublicKeyCoordBytes);
+  le_be_buf_format(pubkey->y, kAttestationPublicKeyCoordBytes);
 }
 
 rom_error_t dice_attestation_keygen(dice_key_t desired_key,
@@ -160,7 +161,7 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
   // endian form, but the HMAC driver returns the digest in little endian, so we
   // re-format it.
   hmac_sha256(pubkey, kAttestationPublicKeyCoordBytes * 2, pubkey_id);
-  le_be_buf_format((unsigned char *)pubkey_id, kHmacDigestNumBytes);
+  le_be_buf_format(pubkey_id, kHmacDigestNumBytes);
 
   return kErrorOk;
 }
@@ -170,10 +171,8 @@ rom_error_t dice_attestation_keygen(dice_key_t desired_key,
  * to big endian.
  */
 static void curr_tbs_signature_le_to_be_convert(attestation_signature_t *sig) {
-  le_be_buf_format((unsigned char *)sig->r,
-                   kAttestationSignatureComponentBytes);
-  le_be_buf_format((unsigned char *)sig->s,
-                   kAttestationSignatureComponentBytes);
+  le_be_buf_format(sig->r, kAttestationSignatureComponentBytes);
+  le_be_buf_format(sig->s, kAttestationSignatureComponentBytes);
 }
 
 /**
@@ -185,6 +184,7 @@ static void measure_otp_partition(otp_partition_t partition,
   otp_dai_read(partition, /*address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
   hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
+  le_be_buf_format(measurement, sizeof(*measurement));
 }
 
 rom_error_t dice_uds_tbs_cert_build(dice_cert_key_id_pair_t *key_ids,
@@ -226,9 +226,12 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
+  hmac_digest_t rom_ext_hash = *rom_ext_measurement;
+  le_be_buf_format(&rom_ext_hash, sizeof(rom_ext_hash));
+
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
-      .rom_ext_hash = (unsigned char *)rom_ext_measurement->digest,
+      .rom_ext_hash = (unsigned char *)rom_ext_hash.digest,
       .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
       .rom_ext_security_version = rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
@@ -271,12 +274,16 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   dice_cert_key_id_pair_t *key_ids,
                                   attestation_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
+  hmac_digest_t owner_hash = *owner_measurement;
+  hmac_digest_t owner_manifest_hash = *owner_manifest_measurement;
+  le_be_buf_format(&owner_hash, sizeof(owner_hash));
+  le_be_buf_format(&owner_manifest_hash, sizeof(owner_manifest_hash));
+
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
-      .owner_hash = (unsigned char *)owner_measurement->digest,
+      .owner_hash = (unsigned char *)owner_hash.digest,
       .owner_hash_size = kDiceMeasurementSizeInBytes,
-      .owner_manifest_hash =
-          (unsigned char *)owner_manifest_measurement->digest,
+      .owner_manifest_hash = (unsigned char *)owner_manifest_hash.digest,
       .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
       .owner_security_version = owner_security_version,
       .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,

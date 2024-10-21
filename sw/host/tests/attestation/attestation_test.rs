@@ -18,7 +18,7 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::file::FromReader;
 
-use ot_certs::template::{CertificateExtension, Value};
+use ot_certs::template::{AttributeType, CertificateExtension, Name, SubjectPublicKeyInfo, Value};
 use ot_certs::x509;
 
 #[derive(Debug, Parser)]
@@ -68,6 +68,23 @@ fn get_base64_blob(haystack: &str, rx: &str) -> Result<Vec<u8>> {
     Ok(bin)
 }
 
+fn check_public_key(key: &SubjectPublicKeyInfo, id: &[u8], subject: &Name) -> Result<bool> {
+    let SubjectPublicKeyInfo::EcPublicKey(info) = key;
+
+    let mut material = Vec::new();
+    material.extend(&info.public_key.x.get_value().to_bytes_be());
+    material.extend(&info.public_key.y.get_value().to_bytes_be());
+    let hash = sha256::sha256(&material).to_be_bytes();
+    let keyid = &hash[..20];
+    log::info!("computed id = {:?}", hex::encode(keyid));
+    log::info!("         id = {:?}", hex::encode(id));
+
+    let name = subject[0][&AttributeType::SerialNumber].get_value();
+    log::info!("    subject = {:?}", name);
+
+    Ok(keyid == id && &hex::encode(keyid) == name)
+}
+
 fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     let uart = transport.uart("console")?;
     let capture = UartConsole::wait_for(
@@ -90,20 +107,26 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
 
     let image = Image::read_from_file(opts.init.bootstrap.bootstrap.as_deref().unwrap())?;
 
-    // TODO: determine the correct endianness for expressing these measurements.
     let measurements = image
         .subimages()?
         .iter()
-        .map(|s| s.compute_digest().unwrap().to_le_bytes())
+        .map(|s| s.compute_digest().unwrap().to_be_bytes())
         .collect::<Vec<_>>();
     let owner_measurements = [
         // The owner page digests should not include the signature or seal fields.
-        sha256::sha256(&owner_page_0[0..OwnerBlock::SIGNATURE_OFFSET]).to_le_bytes(),
-        sha256::sha256(&owner_page_1[0..OwnerBlock::SIGNATURE_OFFSET]).to_le_bytes(),
+        sha256::sha256(&owner_page_0[0..OwnerBlock::SIGNATURE_OFFSET]).to_be_bytes(),
+        sha256::sha256(&owner_page_1[0..OwnerBlock::SIGNATURE_OFFSET]).to_be_bytes(),
     ];
 
     let CertificateExtension::DiceTcbInfo(dice) = &cdi0.private_extensions[0];
-    log::info!("Checking CDI_0 (ROM_EXT) DICE Extension: {dice:#?}");
+    log::info!("Checking CDI_0 (ROM_EXT) DICE certificate: {cdi0:#?}");
+    // Check that the subject key and subject key identifiers match.
+    log::info!("Subject key:");
+    assert!(check_public_key(
+        &cdi0.subject_public_key_info,
+        cdi0.subject_key_identifier.get_value(),
+        &cdi0.subject,
+    )?);
     assert_eq!(dice.model.get_value(), "ROM_EXT");
     assert_eq!(dice.vendor.get_value(), "OpenTitan");
     assert_eq!(dice.layer.get_value(), &BigUint::from(1u8));
@@ -112,7 +135,21 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     assert_eq!(fw_ids[0].digest.get_value(), &measurements[0]);
 
     let CertificateExtension::DiceTcbInfo(dice) = &cdi1.private_extensions[0];
-    log::info!("Checking CDI_1 (Owner) DICE Extension: {dice:#?}");
+    log::info!("Checking CDI_1 (Owner) DICE certificate: {cdi1:#?}");
+    // Check that the subject key and subject key identifiers match.
+    log::info!("Subject key:");
+    assert!(check_public_key(
+        &cdi1.subject_public_key_info,
+        cdi1.subject_key_identifier.get_value(),
+        &cdi1.subject,
+    )?);
+    // Check that the authority key identifier of CDI_1 is the subject key of CDI_0.
+    log::info!("Issuer key:");
+    assert!(check_public_key(
+        &cdi0.subject_public_key_info,
+        cdi1.authority_key_identifier.get_value(),
+        &cdi1.issuer,
+    )?);
     assert_eq!(dice.model.get_value(), "Owner");
     assert_eq!(dice.vendor.get_value(), "OpenTitan");
     assert_eq!(dice.layer.get_value(), &BigUint::from(2u8));
