@@ -16,11 +16,16 @@ from elftools.elf import elffile
 _OTP_PARTITION_NAME = "CREATOR_SW_CFG"
 
 _OTTF_START_OFFSET_SYMBOL_NAME = "_ottf_start_address"
+_ROM_EXT_SATRT_OFFSET_SYMBOL_NAME = "_rom_ext_start_address"
 _ROM_EXT_IMMUTABLE_SECTION_NAME = ".rom_ext_immutable"
 
+_ENABLE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN"
 _START_OFFSET_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET"
 _SIZE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH"
 _HASH_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH"
+
+# This must match the definitions in hardened.h.
+_HARDENED_TRUE = 0x739
 
 
 class RomExtImmutableSectionOtpFields:
@@ -33,11 +38,21 @@ class RomExtImmutableSectionOtpFields:
         self.start_offset = None
         self.size_in_bytes = None
         self.hash = None
+
         with open(self.rom_ext_elf, 'rb') as f:
             elf = elffile.ELFFile(f)
             # Find the offset of the current slot we are in.
             for symbol in elf.get_section_by_name(".symtab").iter_symbols():
-                if symbol.name == _OTTF_START_OFFSET_SYMBOL_NAME:
+                if symbol.name in [
+                    _OTTF_START_OFFSET_SYMBOL_NAME,
+                    _ROM_EXT_SATRT_OFFSET_SYMBOL_NAME,
+                ]:
+                    if self.manifest_offset is not None:
+                        raise ValueError(
+                            f"More than one manifest start address exists. "
+                            f"Current offset: {self.manifest_offset}, "
+                            f"new offset: {symbol.entry['st_value']}"
+                        )
                     self.manifest_offset = symbol.entry["st_value"]
             assert self.manifest_offset, "Manifest start address not found."
 
@@ -74,6 +89,20 @@ class RomExtImmutableSectionOtpFields:
                         return
                 partition["items"].append({"name": item_name, "value": value})
 
+    def get_key_value(self, item_name: str):
+        """Get the value of the item if it exists.
+        Args:
+            item_name: The name of the item to insert.
+        Returns:
+            The value of the item if found, otherwise "0x0".
+        """
+        for partition in self.json_data["partitions"]:
+            if partition["name"] == _OTP_PARTITION_NAME:
+                for item in partition["items"]:
+                    if item["name"] == item_name:
+                        return item["value"]
+        return "0x0"
+
     def update_json_with_immutable_rom_ext_section_data(self):
         """Update the JSON with the ROM_EXT immutable section data.
         Args:
@@ -85,6 +114,18 @@ class RomExtImmutableSectionOtpFields:
                               f"{hex(self.start_offset)}")
         self.insert_key_value(_SIZE_FIELD_NAME, f"{hex(self.size_in_bytes)}")
         self.insert_key_value(_HASH_FIELD_NAME, f"0x{self.hash.hex()}")
+
+    def immutable_rom_ext_enable(self):
+        """Checks if immutable ROM extension is enabled.
+
+        This method retrieves the value of the enable field from the OTP
+        partition and compares it with the hardened true value.
+
+        Returns:
+            True if immutable ROM extension is enabled, False otherwise.
+        """
+        immutable_rom_ext_en_value = int(self.get_key_value(_ENABLE_FIELD_NAME), 0)
+        return immutable_rom_ext_en_value == _HARDENED_TRUE
 
 
 def main():
@@ -121,7 +162,9 @@ def main():
         logging.error("Cannot find {} section in ROM_EXT ELF {}.".format(
             _ROM_EXT_IMMUTABLE_SECTION_NAME, args.elf))
         sys.exit(1)
-    imm_section_otp.update_json_with_immutable_rom_ext_section_data()
+
+    if imm_section_otp.immutable_rom_ext_enable():
+        imm_section_otp.update_json_with_immutable_rom_ext_section_data()
 
     # Write out the OTP fields to a JSON file.
     with open(args.output, 'w') as f:
