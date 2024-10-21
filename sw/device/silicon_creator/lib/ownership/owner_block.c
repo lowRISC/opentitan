@@ -14,6 +14,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 // RAM copy of the owner INFO pages from flash.
 owner_block_t owner_page[2];
@@ -226,10 +227,12 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
           .base_addr = config->bank * FLASH_CTRL_PARAM_BYTES_PER_BANK +
                        config->page * FLASH_CTRL_PARAM_BYTES_PER_PAGE,
           .cfg_wen_addr =
+              TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR +
               config->page * sizeof(uint32_t) +
               (config->bank == 0 ? FLASH_CTRL_BANK0_INFO0_REGWEN_0_REG_OFFSET
                                  : FLASH_CTRL_BANK1_INFO0_REGWEN_0_REG_OFFSET),
-          .cfg_addr = config->page * sizeof(uint32_t) +
+          .cfg_addr = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR +
+                      config->page * sizeof(uint32_t) +
                       (config->bank == 0
                            ? FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_OFFSET
                            : FLASH_CTRL_BANK1_INFO0_PAGE_CFG_0_REG_OFFSET),
