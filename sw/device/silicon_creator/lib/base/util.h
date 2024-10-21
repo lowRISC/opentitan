@@ -37,6 +37,15 @@ uint32_t util_size_to_words(uint32_t bytes);
  */
 void util_reverse_bytes(void *buf, size_t num_bytes);
 
+/**
+ * Fills hexdump of the byte (lowercase).
+ *
+ * @param byte Byte to convert to a hex string.
+ * @param[out] str String buffer (always 2 bytes) to place hex string encoded
+ * byte in.
+ */
+void util_hexdump_byte(uint8_t byte, uint8_t *str);
+
 #ifdef __cplusplus
 }
 #endif
