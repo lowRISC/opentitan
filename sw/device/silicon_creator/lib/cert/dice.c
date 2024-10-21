@@ -90,9 +90,12 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_0_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
+  hmac_digest_t rom_ext_hash = *rom_ext_measurement;
+  util_reverse_bytes(&rom_ext_hash, sizeof(rom_ext_hash));
+
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
-      .rom_ext_hash = (unsigned char *)rom_ext_measurement->digest,
+      .rom_ext_hash = (unsigned char *)rom_ext_hash.digest,
       .rom_ext_hash_size = kDiceMeasurementSizeInBytes,
       .rom_ext_security_version = rom_ext_security_version,
       .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
@@ -137,12 +140,16 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
                                   cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *cdi_1_pubkey,
                                   uint8_t *cert, size_t *cert_size) {
+  hmac_digest_t owner_hash = *owner_measurement;
+  hmac_digest_t owner_manifest_hash = *owner_manifest_measurement;
+  util_reverse_bytes(&owner_hash, sizeof(owner_hash));
+  util_reverse_bytes(&owner_manifest_hash, sizeof(owner_manifest_hash));
+
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
-      .owner_hash = (unsigned char *)owner_measurement->digest,
+      .owner_hash = (unsigned char *)owner_hash.digest,
       .owner_hash_size = kDiceMeasurementSizeInBytes,
-      .owner_manifest_hash =
-          (unsigned char *)owner_manifest_measurement->digest,
+      .owner_manifest_hash = (unsigned char *)owner_manifest_hash.digest,
       .owner_manifest_hash_size = kDiceMeasurementSizeInBytes,
       .owner_security_version = owner_security_version,
       .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,
