@@ -123,8 +123,8 @@ hw/ip/pattgen/dv/env/seq_lib/pattgen_error_vseq.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_smoke_vseq.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_vseq_list.sv
 hw/ip/pattgen/dv/tests/pattgen_test_pkg.sv
-hw/ip/pinmux/rtl/pinmux_jtag_breakout.sv
-hw/ip/pinmux/rtl/pinmux_jtag_buf.sv
+hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_breakout.sv
+hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_buf.sv
 hw/ip/prim/fpv/tb/prim_fifo_sync_bind_fpv.sv
 hw/ip/prim/rtl/prim_assert_dummy_macros.svh
 hw/ip/prim/rtl/prim_assert_standard_macros.svh
