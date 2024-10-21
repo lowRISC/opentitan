@@ -108,7 +108,7 @@ A typical programming sequence for the wakeup detectors looks as follows:
 
 ## Pinout and Pinmux Mapping
 
-Please see the specific documentation for detailed pinout and pinmux mapping tables for [this top](../doc/targets.html).
+Please see the specific documentation for detailed pinout and pinmux mapping tables for [this top](../doc/targets.md).
 
 ## Device Interface Functions (DIFs)
 
