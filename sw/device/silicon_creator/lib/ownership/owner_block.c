@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -22,6 +23,7 @@ owner_page_status_t owner_page_valid[2];
 
 enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
+  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
 };
 
 hardened_bool_t owner_block_newversion_mode(void) {
@@ -121,6 +123,8 @@ rom_error_t owner_block_parse(const owner_block_t *block,
           return kErrorOwnershipFLSHVersion;
         if ((hardened_bool_t)config->flash != kHardenedBoolFalse)
           return kErrorOwnershipDuplicateItem;
+        HARDENED_RETURN_IF_ERROR(
+            owner_block_flash_check((const owner_flash_config_t *)item));
         config->flash = (const owner_flash_config_t *)item;
         break;
       case kTlvTagInfoConfig:
@@ -141,6 +145,50 @@ rom_error_t owner_block_parse(const owner_block_t *block,
         break;
       default:
         return kErrorOwnershipInvalidTag;
+    }
+  }
+  return kErrorOk;
+}
+
+rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
+  size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
+               sizeof(owner_flash_region_t);
+  if (len >= 8) {
+    return kErrorOwnershipFlashConfigLenth;
+  }
+
+  const uint32_t kRomExtAStart = 0 / kFlashPageSize;
+  const uint32_t kRomExtAEnd = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize;
+  const uint32_t kRomExtBStart = kFlashBankSize + kRomExtAStart;
+  const uint32_t kRomExtBEnd = kFlashBankSize + kRomExtAEnd;
+
+  const owner_flash_region_t *config = flash->config;
+  uint32_t crypt = 0;
+  for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
+    uint32_t start = config->start;
+    uint32_t end = start + config->size;
+    if ((kRomExtAStart >= start && kRomExtAStart < end) ||
+        (kRomExtAEnd > start && kRomExtAEnd <= end) ||
+        (kRomExtBStart >= start && kRomExtBStart < end) ||
+        (kRomExtBEnd > start && kRomExtBEnd <= end)) {
+      uint32_t val = config->properties ^ crypt;
+      flash_ctrl_cfg_t cfg = {
+          .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
+          .ecc = bitfield_field32_read(val, FLASH_CONFIG_ECC),
+          .he = bitfield_field32_read(val, FLASH_CONFIG_HIGH_ENDURANCE),
+      };
+      flash_ctrl_cfg_t dfl = flash_ctrl_data_default_cfg_get();
+      // Any non-true value should be forced to false.
+      if (dfl.ecc != kMultiBitBool4True)
+        dfl.ecc = kMultiBitBool4False;
+      if (dfl.scrambling != kMultiBitBool4True)
+        dfl.scrambling = kMultiBitBool4False;
+
+      if (cfg.ecc != dfl.ecc || cfg.scrambling != dfl.scrambling) {
+        // The config region convering the ROM_EXT needs to match the
+        // default config's ECC and scrambling settings.
+        return kErrorOwnershipFlashConfigRomExt;
+      }
     }
   }
   return kErrorOk;
