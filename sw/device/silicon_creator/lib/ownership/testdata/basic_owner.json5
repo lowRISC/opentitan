@@ -67,7 +67,7 @@
           },
           {
             start: 32,
-            size: 384,
+            size: 192,
             read: true,
             program: true,
             erase: true,
@@ -100,7 +100,7 @@
           },
           {
             start: 288,
-            size: 384,
+            size: 192,
             read: true,
             program: true,
             erase: true,
@@ -181,7 +181,7 @@
       RescueConfig: {
         rescue_type: "Xmodem",
         start: 32,
-        size: 224,
+        size: 192,
         command_allow: [
           "Empty",
           "MinBl0SecVerRequest",

@@ -97,6 +97,17 @@ rom_error_t owner_block_parse(const owner_block_t *block,
                               owner_application_keyring_t *keyring);
 
 /**
+ * Check the flash config for errors.
+ *
+ * Currently, this checks that a flash config region covering the ROM_EXT
+ * is compatible with the default flash config region.
+ *
+ * @param flash A pointer to a flash configuration struct.
+ * @return error code.
+ */
+rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
+
+/**
  * Apply the flash configuration parameters from the owner block.
  *
  * @param flash A pointer to a flash configuration struct.
