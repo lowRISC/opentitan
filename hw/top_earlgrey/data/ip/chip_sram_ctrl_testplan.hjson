@@ -127,7 +127,7 @@
       lc_states: ["RMA"]
       tests: ["chip_sw_all_escalation_resets",
               "chip_sw_data_integrity_escalation"]
-      bazel: ["//sw/device/tests:sram_ctrl_lc_escalation"]
+      bazel: ["//sw/device/tests:sram_ctrl_lc_escalation_test"]
     }
 
     {
