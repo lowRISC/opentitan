@@ -122,6 +122,8 @@ const CFG_RESCUE1: u32 = 0x0000_0008;
 const CFG_RESCUE_RESTRICT: u32 = 0x0000_0010;
 // Request a configuration where the application key has a usage constraint.
 const CFG_APP_CONSTRAINT: u32 = 0x0000_0020;
+// Request a bad ROM_EXT flash config region.
+const CFG_FLASH_ERROR: u32 = 0x0000_0040;
 
 #[repr(u32)]
 #[derive(Debug, Default, Copy, Clone, PartialEq, Eq, ValueEnum)]
@@ -131,53 +133,55 @@ pub enum OwnerConfigKind {
     Corrupt = CFG_CORRUPT,
     WithFlash = CFG_FLASH1 | CFG_RESCUE1,
     WithFlashLocked = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK,
+    WithFlashError = CFG_FLASH1 | CFG_RESCUE1 | CFG_FLASH_LOCK | CFG_FLASH_ERROR,
     WithRescue = CFG_RESCUE1,
     WithRescueRestricted = CFG_FLASH1 | CFG_RESCUE1 | CFG_RESCUE_RESTRICT,
     WithAppConstraint = CFG_APP_CONSTRAINT,
 }
 
 impl OwnerConfigKind {
-    pub fn is_flash_locked(&self) -> bool {
-        *self as u32 & CFG_FLASH_LOCK != 0
+    pub fn is_flash_locked(self) -> bool {
+        self as u32 & CFG_FLASH_LOCK != 0
     }
-}
 
-fn rom_ext(lock: bool) -> FlashFlags {
-    FlashFlags {
-        read: true,
-        program: true,
-        erase: true,
-        scramble: false,
-        ecc: false,
-        high_endurance: false,
-        protect_when_primary: true,
-        lock,
+    fn rom_ext(self) -> FlashFlags {
+        FlashFlags {
+            read: true,
+            program: true,
+            erase: true,
+            // Maybe turn on scrambling & ECC for the ROM_EXT region.
+            scramble: self as u32 & CFG_FLASH_ERROR != 0,
+            ecc: self as u32 & CFG_FLASH_ERROR != 0,
+            high_endurance: false,
+            protect_when_primary: true,
+            lock: self.is_flash_locked(),
+        }
     }
-}
 
-fn firmware(lock: bool) -> FlashFlags {
-    FlashFlags {
-        read: true,
-        program: true,
-        erase: true,
-        scramble: true,
-        ecc: true,
-        high_endurance: false,
-        protect_when_primary: true,
-        lock,
+    fn firmware(self) -> FlashFlags {
+        FlashFlags {
+            read: true,
+            program: true,
+            erase: true,
+            scramble: true,
+            ecc: true,
+            high_endurance: false,
+            protect_when_primary: true,
+            lock: self.is_flash_locked(),
+        }
     }
-}
 
-fn filesystem(lock: bool) -> FlashFlags {
-    FlashFlags {
-        read: true,
-        program: true,
-        erase: true,
-        scramble: false,
-        ecc: false,
-        high_endurance: true,
-        protect_when_primary: false,
-        lock,
+    fn filesystem(self) -> FlashFlags {
+        FlashFlags {
+            read: true,
+            program: true,
+            erase: true,
+            scramble: false,
+            ecc: false,
+            high_endurance: true,
+            protect_when_primary: false,
+            lock: self.is_flash_locked(),
+        }
     }
 }
 
@@ -196,12 +200,12 @@ pub fn create_owner<F>(
 where
     F: Fn(&mut OwnerBlock),
 {
-    let config = config as u32;
+    let cfg = config as u32;
     let owner_key = EcdsaPrivateKey::load(owner_key)?;
     let activate_key = EcdsaPrivateKey::load(activate_key)?;
     let unlock_key = EcdsaPrivateKey::load(unlock_key)?;
     let app_key = EcdsaPublicKey::load(app_key)?;
-    let constraint = if config & CFG_APP_CONSTRAINT == 0 {
+    let constraint = if cfg & CFG_APP_CONSTRAINT == 0 {
         0
     } else {
         // Constrain to the DIN field of device_id.
@@ -221,29 +225,28 @@ where
         })],
         ..Default::default()
     };
-    if config & CFG_FLASH1 != 0 {
-        let lock = config & CFG_FLASH_LOCK != 0;
+    if cfg & CFG_FLASH1 != 0 {
         owner
             .data
             .push(OwnerConfigItem::FlashConfig(OwnerFlashConfig {
                 config: vec![
                     // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(0, 32, rom_ext(lock)),
-                    OwnerFlashRegion::new(32, 192, firmware(lock)),
-                    OwnerFlashRegion::new(224, 32, filesystem(lock)),
+                    OwnerFlashRegion::new(0, 32, config.rom_ext()),
+                    OwnerFlashRegion::new(32, 192, config.firmware()),
+                    OwnerFlashRegion::new(224, 32, config.filesystem()),
                     // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(256, 32, rom_ext(lock)),
-                    OwnerFlashRegion::new(256 + 32, 192, firmware(lock)),
-                    OwnerFlashRegion::new(256 + 224, 32, filesystem(lock)),
+                    OwnerFlashRegion::new(256, 32, config.rom_ext()),
+                    OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
+                    OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
                 ],
                 ..Default::default()
             }));
     }
-    if config & CFG_RESCUE1 != 0 {
+    if cfg & CFG_RESCUE1 != 0 {
         let mut rescue = OwnerRescueConfig::all();
         rescue.start = 32;
         rescue.size = 192;
-        if config & CFG_RESCUE_RESTRICT != 0 {
+        if cfg & CFG_RESCUE_RESTRICT != 0 {
             // Restrict one of the boot_svc commands in "restrict" mode.
             rescue
                 .command_allow
@@ -253,7 +256,7 @@ where
     }
     customize(&mut owner);
     owner.sign(&owner_key)?;
-    if config & CFG_CORRUPT != 0 {
+    if cfg & CFG_CORRUPT != 0 {
         owner.signature.r[0] += 1;
     }
     let mut owner_config = Vec::new();
