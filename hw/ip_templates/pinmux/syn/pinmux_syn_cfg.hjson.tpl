@@ -6,21 +6,14 @@
   name: pinmux
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip:pinmux:0.1
+  fusesoc_core: lowrisc:ip_interfaces:pinmux:0.1
 
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"],
 
-  overrides: [
-    {
-      name: design_level
-      value: "top"
-    }
-  ]
-
   // Timing constraints for this module
-  sdc_file: "{proj_root}/hw/ip/pinmux/syn/constraints.sdc"
+  sdc_file: "{proj_root}/hw/top_${topname}/ip_autogen/pinmux/syn/constraints.sdc"
 
   // Technology specific timing constraints for this module
-  foundry_sdc_file: "{foundry_root}/top_earlgrey/syn/foundry.constraints.sdc"
+  foundry_sdc_file: "{foundry_root}/top_${topname}/syn/foundry.constraints.sdc"
 }
