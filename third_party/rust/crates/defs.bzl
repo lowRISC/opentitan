@@ -326,6 +326,7 @@ _NORMAL_DEPENDENCIES = {
             "humantime-serde": Label("@crate_index__humantime-serde-1.1.1//:humantime_serde"),
             "indexmap": Label("@crate_index__indexmap-2.0.0//:indexmap"),
             "indicatif": Label("@crate_index__indicatif-0.17.6//:indicatif"),
+            "itertools": Label("@crate_index__itertools-0.13.0//:itertools"),
             "libloading": Label("@crate_index__libloading-0.8.3//:libloading"),
             "log": Label("@crate_index__log-0.4.20//:log"),
             "mdbook": Label("@crate_index__mdbook-0.4.34//:mdbook"),
@@ -1180,6 +1181,16 @@ def crate_repositories():
 
     maybe(
         http_archive,
+        name = "crate_index__either-1.13.0",
+        sha256 = "60b1af1c220855b6ceac025d3f6ecdd2b7c4894bfe9cd9bda4fbb4bc7c0d4cf0",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/either/1.13.0/download"],
+        strip_prefix = "either-1.13.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.either-1.13.0.bazel"),
+    )
+
+    maybe(
+        http_archive,
         name = "crate_index__elasticlunr-rs-3.0.2",
         sha256 = "41e83863a500656dfa214fee6682de9c5b9f03de6860fec531235ed2ae9f6571",
         type = "tar.gz",
@@ -1666,6 +1677,16 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/is-terminal/0.4.9/download"],
         strip_prefix = "is-terminal-0.4.9",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.is-terminal-0.4.9.bazel"),
+    )
+
+    maybe(
+        http_archive,
+        name = "crate_index__itertools-0.13.0",
+        sha256 = "413ee7dfc52ee1a4949ceeb7dbc8a33f2d6c088194d9f922fb8318faf1f01186",
+        type = "tar.gz",
+        urls = ["https://static.crates.io/crates/itertools/0.13.0/download"],
+        strip_prefix = "itertools-0.13.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.itertools-0.13.0.bazel"),
     )
 
     maybe(
@@ -3722,6 +3743,7 @@ def crate_repositories():
         struct(repo = "crate_index__humantime-serde-1.1.1", is_dev_dep = False),
         struct(repo = "crate_index__indexmap-2.0.0", is_dev_dep = False),
         struct(repo = "crate_index__indicatif-0.17.6", is_dev_dep = False),
+        struct(repo = "crate_index__itertools-0.13.0", is_dev_dep = False),
         struct(repo = "crate_index__libloading-0.8.3", is_dev_dep = False),
         struct(repo = "crate_index__log-0.4.20", is_dev_dep = False),
         struct(repo = "crate_index__mdbook-0.4.34", is_dev_dep = False),

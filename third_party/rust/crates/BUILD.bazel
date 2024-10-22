@@ -236,6 +236,12 @@ alias(
 )
 
 alias(
+    name = "itertools",
+    actual = "@crate_index__itertools-0.13.0//:itertools",
+    tags = ["manual"],
+)
+
+alias(
     name = "libloading",
     actual = "@crate_index__libloading-0.8.3//:libloading",
     tags = ["manual"],
