@@ -895,14 +895,7 @@ module chip_earlgrey_cw340 #(
 
   prim_mubi_pkg::mubi4_t ast_init_done;
 
-  ast #(
-    .EntropyStreams(ast_pkg::EntropyStreams),
-    .AdcChannels(ast_pkg::AdcChannels),
-    .AdcDataWidth(ast_pkg::AdcDataWidth),
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
-    .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
-    .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
-  ) u_ast (
+  ast u_ast (
     // external POR
     .por_ni                ( rst_n ),
 
