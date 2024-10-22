@@ -426,6 +426,28 @@ ownership_transfer_test(
     ],
 )
 
+# Tests that a owner config with an improper flash configuration cannot be activated.
+ownership_transfer_test(
+    name = "flash_error_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+            --config-kind=with-flash-error
+            --dual-owner-boot-check=false
+            --expected-error=OwnershipFlashConfigRomExt
+        """,
+        test_harness = "//sw/host/tests/ownership:transfer_test",
+    ),
+)
+
 # Test that the `sku_creator_owner_init` function responsible for installing the test owner on
 # FPGA builds will automatically update from an older owner block.
 ownership_transfer_test(
