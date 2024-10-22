@@ -16,7 +16,7 @@ filesets:
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:opentitan:top_earlgrey_rv_plic
-      - lowrisc:ip:pinmux
+      - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
