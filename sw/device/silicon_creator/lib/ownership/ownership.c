@@ -157,10 +157,17 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
   }
 
   if (owner_block_page1_valid_for_transfer(bootdata) == kHardenedBoolTrue) {
-    // If we passed the validity test for Owner Page 1, parse the configuration
-    // and add its keys to the keyring.
-    HARDENED_RETURN_IF_ERROR(
-        owner_block_parse(&owner_page[1], config, keyring));
+    // If we passed the validity test for Owner Page 1, test parse the config.
+    owner_config_t testcfg;
+    owner_application_keyring_t testring;
+    rom_error_t result = owner_block_parse(&owner_page[1], &testcfg, &testring);
+    if (result == kErrorOk) {
+      // Parse the configuration and add its keys to the keyring.
+      HARDENED_RETURN_IF_ERROR(
+          owner_block_parse(&owner_page[1], config, keyring));
+    } else {
+      dbg_printf("error: owner page 1 invalid.\r\n");
+    }
   }
   HARDENED_RETURN_IF_ERROR(
       owner_block_flash_apply(config->flash, secondary,

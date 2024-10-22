@@ -23,11 +23,22 @@ using rom_test::FlashCfg;
 using rom_test::FlashPerms;
 using rom_test::MockFlashCtrl;
 using ::testing::_;
+using ::testing::Return;
 using ::testutil::BinaryBlob;
 
 class OwnerBlockTest : public rom_test::RomTest {
  protected:
   MockFlashCtrl flash_ctrl_;
+  flash_ctrl_cfg_t default_config = {
+      .scrambling = kMultiBitBool4False,
+      .ecc = kMultiBitBool4False,
+      .he = kMultiBitBool4False,
+  };
+
+  void SetUp() override {
+    ON_CALL(flash_ctrl_, DataDefaultCfgGet)
+        .WillByDefault(Return(default_config));
+  }
 };
 
 // clang-format off
@@ -347,6 +358,8 @@ TEST_F(OwnerBlockTest, ParseBlock) {
   owner_config_t config;
   owner_application_keyring_t keyring{};
 
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOk);
   EXPECT_EQ(config.sram_exec, kOwnerSramExecModeDisabledLocked);
@@ -378,6 +391,8 @@ TEST_F(OwnerBlockTest, ParseBlockBadHeaderTag) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Write an unknown header of {tag="AAAA", len=0x40} after the RESQ config.
   tlv_header_t rescue = block.Find(kTlvTagRescueConfig).Read<tlv_header_t>();
@@ -386,6 +401,7 @@ TEST_F(OwnerBlockTest, ParseBlockUnknownTag) {
       .Write(0x40);
   owner_config_t config;
   owner_application_keyring_t keyring{};
+
   rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
   EXPECT_EQ(error, kErrorOwnershipInvalidTag);
 }
@@ -394,6 +410,8 @@ TEST_F(OwnerBlockTest, ParseBlockBadLength) {
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   owner_config_t config;
   owner_application_keyring_t keyring{};
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
 
   // Rewrite the RESQ block length to overflow the TLV region.
   block.Find(kTlvTagRescueConfig)
@@ -420,6 +438,8 @@ TEST_F(OwnerBlockTest, ParseBlockBadLength) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockDupFlash) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as a FLSH tag to test duplicate detection.
   block.Find(kTlvTagRescueConfig).Write(kTlvTagFlashConfig);
@@ -430,6 +450,8 @@ TEST_F(OwnerBlockTest, ParseBlockDupFlash) {
 }
 
 TEST_F(OwnerBlockTest, ParseBlockDupInfo) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   // Rewrite the RESQ tag as an INFO tag to test duplicate detection.
   block.Find(kTlvTagRescueConfig).Write(kTlvTagInfoConfig);
@@ -458,6 +480,8 @@ class OwnerBlockPerTagTest : public OwnerBlockTest,
                              public testing::WithParamInterface<TagError> {};
 
 TEST_P(OwnerBlockPerTagTest, ParseBadVersion) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
   BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
   TagError param = GetParam();
 
@@ -478,5 +502,225 @@ INSTANTIATE_TEST_SUITE_P(
                     TagError{kTlvTagFlashConfig, kErrorOwnershipFLSHVersion},
                     TagError{kTlvTagInfoConfig, kErrorOwnershipINFOVersion},
                     TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion}));
+
+// Flash region is the exact size of the ROM_EXT and has a bad ECC setting.
+const owner_flash_config_t invalid_flash_0 = {
+    .header =
+        {
+            .tag = kTlvTagFlashConfig,
+            .length =
+                sizeof(owner_flash_config_t) + 1 * sizeof(owner_flash_region_t),
+        },
+    .config =
+        {
+            {
+                // SideA ROM_EXT.
+                .start = 0,
+                .size = 32,
+                .access = FLASH_ACCESS(
+                    /*index=*/0,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/0,
+                    /*scramble=*/false,
+                    /*ecc=*/true,
+                    /*he=*/false),
+            },
+        },
+};
+
+// Flash regions is ROM_EXT and APP and has a bad ECC setting.
+const owner_flash_config_t invalid_flash_1 = {
+    .header =
+        {
+            .tag = kTlvTagFlashConfig,
+            .length =
+                sizeof(owner_flash_config_t) + 1 * sizeof(owner_flash_region_t),
+        },
+    .config =
+        {
+            {
+                // SideA ROM_EXT & APP.
+                .start = 0,
+                .size = 224,
+                .access = FLASH_ACCESS(
+                    /*index=*/0,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/0,
+                    /*scramble=*/false,
+                    /*ecc=*/true,
+                    /*he=*/false),
+            },
+        },
+};
+
+// Flash region straddles ROM_EXT and first has a bad ECC setting.
+const owner_flash_config_t invalid_flash_2 = {
+    .header =
+        {
+            .tag = kTlvTagFlashConfig,
+            .length =
+                sizeof(owner_flash_config_t) + 2 * sizeof(owner_flash_region_t),
+        },
+    .config =
+        {
+            {
+                // SideA ROM_EXT.
+                .start = 0,
+                .size = 16,
+                .access = FLASH_ACCESS(
+                    /*index=*/0,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/0,
+                    /*scramble=*/false,
+                    /*ecc=*/true,
+                    /*he=*/false),
+            },
+            {
+                // SideA APP
+                .start = 16,
+                .size = 240,
+                .access = FLASH_ACCESS(
+                    /*index=*/1,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/1,
+                    /*scramble=*/false,
+                    /*ecc=*/false,
+                    /*he=*/false),
+            },
+        },
+};
+
+// Flash region straddles ROM_EXT and second has a bad ECC setting.
+const owner_flash_config_t invalid_flash_3 = {
+    .header =
+        {
+            .tag = kTlvTagFlashConfig,
+            .length =
+                sizeof(owner_flash_config_t) + 2 * sizeof(owner_flash_region_t),
+        },
+    .config =
+        {
+            {
+                // SideA ROM_EXT.
+                .start = 0,
+                .size = 16,
+                .access = FLASH_ACCESS(
+                    /*index=*/0,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/0,
+                    /*scramble=*/false,
+                    /*ecc=*/true,
+                    /*he=*/false),
+            },
+            {
+                // SideA APP
+                .start = 16,
+                .size = 240,
+                .access = FLASH_ACCESS(
+                    /*index=*/1,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/1,
+                    /*scramble=*/false,
+                    /*ecc=*/false,
+                    /*he=*/false),
+            },
+        },
+};
+
+// Flash region is the exact size of the ROM_EXT.  SideA is good, SideB is bad.
+const owner_flash_config_t invalid_flash_4 = {
+    .header =
+        {
+            .tag = kTlvTagFlashConfig,
+            .length =
+                sizeof(owner_flash_config_t) + 2 * sizeof(owner_flash_region_t),
+        },
+    .config =
+        {
+            {
+                // SideA ROM_EXT.
+                .start = 0,
+                .size = 32,
+                .access = FLASH_ACCESS(
+                    /*index=*/0,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/0,
+                    /*scramble=*/false,
+                    /*ecc=*/false,
+                    /*he=*/false),
+            },
+            {
+                // SideB ROM_EXT.
+                .start = 256,
+                .size = 32,
+                .access = FLASH_ACCESS(
+                    /*index=*/1,
+                    /*read=*/true,
+                    /*program=*/true,
+                    /*erase=*/true,
+                    /*pwp=*/true,
+                    /*lock=*/false),
+                .properties = FLASH_PROP(
+                    /*index=*/1,
+                    /*scramble=*/false,
+                    /*ecc=*/true,
+                    /*he=*/false),
+            },
+        },
+
+};
+
+class RomExtFlashConfigTest
+    : public OwnerBlockTest,
+      public testing::WithParamInterface<const owner_flash_config_t *> {};
+
+// Test bad ROM_EXT region configs with respect to the default config.
+TEST_P(RomExtFlashConfigTest, BadFlashConfig) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
+  const owner_flash_config_t *param = GetParam();
+  rom_error_t error = owner_block_flash_check(param);
+  EXPECT_EQ(error, kErrorOwnershipFlashConfigRomExt);
+}
+
+INSTANTIATE_TEST_SUITE_P(AllCases, RomExtFlashConfigTest,
+                         testing::Values(&invalid_flash_0, &invalid_flash_1,
+                                         &invalid_flash_2, &invalid_flash_3,
+                                         &invalid_flash_4));
 
 }  // namespace
