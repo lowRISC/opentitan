@@ -300,7 +300,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:kmac_error_conditions_test"]
     }
   ]
 }
