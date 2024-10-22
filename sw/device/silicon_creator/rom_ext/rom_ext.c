@@ -396,7 +396,7 @@ static rom_error_t rom_ext_attestation_creator(
         &kFlashCtrlInfoPageCdi0Certificate, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
         &kFlashCtrlInfoPageCdi0Certificate,
-        /*offset=*/0, cdi_0_cert_size / sizeof(uint32_t), cdi_0_cert));
+        /*offset=*/0, (cdi_0_cert_size + 3) / sizeof(uint32_t), cdi_0_cert));
   }
   return kErrorOk;
 }
@@ -459,7 +459,7 @@ static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
         &kFlashCtrlInfoPageCdi1Certificate, kFlashCtrlEraseTypePage));
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
         &kFlashCtrlInfoPageCdi1Certificate,
-        /*offset=*/0, cdi_1_cert_size / sizeof(uint32_t), cdi_1_cert));
+        /*offset=*/0, (cdi_1_cert_size + 3) / sizeof(uint32_t), cdi_1_cert));
   }
 
   // Remove write and erase access to the certificate pages before handing over
