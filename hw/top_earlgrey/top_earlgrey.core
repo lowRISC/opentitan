@@ -11,12 +11,9 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_reg
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:uart:0.1
-      - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
-      - lowrisc:opentitan:top_earlgrey_rv_plic
-      - lowrisc:ip:pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
@@ -42,9 +39,12 @@ filesets:
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
       - lowrisc:top_earlgrey:xbar_peri
+      - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:opentitan:top_earlgrey_flash_ctrl
       - lowrisc:opentitan:top_earlgrey_rstmgr
+      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl

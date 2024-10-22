@@ -15,8 +15,7 @@ filesets:
       - lowrisc:prim:clock_inv
       - lowrisc:prim:lc_dec
       - lowrisc:prim:lfsr
-      - lowrisc:ip:pinmux_reg
-      - lowrisc:ip:pinmux_component
+      - lowrisc:ip_interfaces:pinmux_pkg
       - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
