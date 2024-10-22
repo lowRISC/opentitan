@@ -8,7 +8,8 @@ description: "Chip-level padring instance"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:pinmux_component
+      - lowrisc:prim:mubi
+      - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:systems:top_earlgrey_pkg
       - "!fileset_partner ? (lowrisc:systems:physical_pads)"
       - "fileset_partner ? (partner:systems:physical_pads)"
