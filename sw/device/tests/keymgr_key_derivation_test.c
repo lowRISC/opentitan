@@ -37,8 +37,10 @@ bool test_main(void) {
       &keymgr, kDifKeymgrStateOwnerIntermediateKey));
   LOG_INFO("Keymgr entered OwnerIntKey State");
 
-  CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
-  LOG_INFO("Keymgr generated identity at OwnerIntKey State");
+  CHECK_STATUS_OK(keymgr_testutils_generate_identity(
+      &keymgr,
+      (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
+  LOG_INFO("Keymgr generated identity at %s State", state_name);
 
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, kKeyVersionedParams));
