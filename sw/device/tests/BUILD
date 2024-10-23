@@ -2017,6 +2017,55 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "keymgr_derive_sealing_test",
+    srcs = ["keymgr_derive_cdi_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    verilator = verilator_params(timeout = "eternal"),
+    deps = [
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/otbn/crypto:x25519_sideload",
+    ],
+)
+
+opentitan_test(
+    name = "keymgr_derive_attestation_test",
+    srcs = ["keymgr_derive_cdi_test.c"],
+    copts = ["-DDERIVE_ATTESTATION"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    verilator = verilator_params(timeout = "eternal"),
+    deps = [
+        "//sw/device/lib/testing:keymgr_testutils",
+        "//sw/device/lib/testing:otbn_testutils",
+        "//sw/device/lib/testing:ret_sram_testutils",
+        "//sw/device/lib/testing:rstmgr_testutils",
+        "//sw/device/lib/testing:sram_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/otbn/crypto:x25519_sideload",
+    ],
+)
+
 otp_json(
     name = "otp_ctrl_descrambling_otp_json",
     partitions = [
