@@ -144,7 +144,9 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
 
     // Generate identity at CreatorRootKey (to follow same sequence and reuse
     // chip_sw_keymgr_key_derivation_vseq.sv).
-    TRY(keymgr_testutils_generate_identity(&keymgr));
+    TRY(keymgr_testutils_generate_identity(
+        &keymgr,
+        (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
 
     // Advance to OwnerIntermediateKey state.
     TRY(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));

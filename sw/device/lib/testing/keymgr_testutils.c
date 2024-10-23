@@ -126,7 +126,9 @@ status_t keymgr_initialize_sim_dv(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   LOG_INFO("Keymgr entered CreatorRootKey State");
   // Generate identity at CreatorRootKey (to follow same sequence and reuse
   // chip_sw_keymgr_key_derivation_vseq.sv).
-  TRY(keymgr_testutils_generate_identity(keymgr));
+  TRY(keymgr_testutils_generate_identity(
+      keymgr,
+      (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
 
   // Advance to OwnerIntermediateKey state and check that the state is correct.
@@ -271,7 +273,9 @@ status_t keymgr_testutils_startup(dif_keymgr_t *keymgr, dif_kmac_t *kmac) {
   // Identity generation is not really necessary for all tests, but it is
   // added to make sure each test using this function is also compatible with
   // the DV_WAIT sequences from keymgr_key_derivation vseq
-  TRY(keymgr_testutils_generate_identity(keymgr));
+  TRY(keymgr_testutils_generate_identity(
+      keymgr,
+      (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
   LOG_INFO("Keymgr generated identity at CreatorRootKey State");
 
   return OK_STATUS();
@@ -293,8 +297,10 @@ status_t keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
   return OK_STATUS();
 }
 
-status_t keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr) {
-  TRY(dif_keymgr_generate_identity_seed(keymgr));
+status_t keymgr_testutils_generate_identity(
+    const dif_keymgr_t *keymgr,
+    const dif_keymgr_identity_seed_params_t params) {
+  TRY(dif_keymgr_generate_identity_seed(keymgr, params));
   return keymgr_testutils_wait_for_operation_done(keymgr);
 }
 
