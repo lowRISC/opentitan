@@ -12,10 +12,11 @@ from pathlib import Path
 from typing import Dict
 
 import hjson
-from lib.common import wrapped_docstring
-from lib.OtpMemMap import OtpMemMap
 from mako import exceptions
 from mako.template import Template
+
+from lib.common import wrapped_docstring
+from lib.OtpMemMap import OtpMemMap
 
 # This makes topgen libraries available to template files.
 sys.path.append(Path(__file__).parent)
@@ -37,6 +38,7 @@ MMAP_DEFINITION_FILE = "hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson"
 PARTITIONS_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_partitions.md"
 DIGESTS_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_digests.md"
 MMAP_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_mmap.md"
+DESC_TABLE_FILE = "hw/ip/otp_ctrl/doc/otp_ctrl_field_descriptions.md"
 
 # code templates to render
 COV_TEMPLATES = ["hw/ip/otp_ctrl/data/otp_ctrl_cov_bind.sv.tpl"]
@@ -131,6 +133,11 @@ def main():
         with open(MMAP_TABLE_FILE, 'wb', buffering=2097152) as outfile:
             outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
             outfile.write(otp_mmap.create_mmap_table().encode('utf-8'))
+            outfile.write('\n'.encode('utf-8'))
+
+        with open(DESC_TABLE_FILE, 'wb', buffering=2097152) as outfile:
+            outfile.write(TABLE_HEADER_COMMENT.encode('utf-8'))
+            outfile.write(otp_mmap.create_description_table().encode('utf-8'))
             outfile.write('\n'.encode('utf-8'))
 
         # render all templates
