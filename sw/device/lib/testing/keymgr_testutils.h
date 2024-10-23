@@ -214,7 +214,8 @@ status_t keymgr_testutils_check_state(const dif_keymgr_t *keymgr,
  * @param keymgr A key manager handle.
  */
 OT_WARN_UNUSED_RESULT
-status_t keymgr_testutils_generate_identity(const dif_keymgr_t *keymgr);
+status_t keymgr_testutils_generate_identity(
+    const dif_keymgr_t *keymgr, const dif_keymgr_identity_seed_params_t params);
 
 /**
  * Issues a keymgr HW/SW versioned key generation and wait for it to complete
