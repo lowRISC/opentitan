@@ -48,7 +48,7 @@ otp_json(
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 "CREATOR_SW_CFG_ROM_EXT_SKU": otp_hex(0x0),
                 # Disable SPX+ signature verification. See the definitions of
-                # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
+                # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable flash data page scrambling and ECC.

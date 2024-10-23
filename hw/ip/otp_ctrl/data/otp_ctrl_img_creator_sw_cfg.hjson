@@ -18,9 +18,8 @@
                 },
                 {
                     name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
-                    // Disable SPX+ signature verification. See the definitions
-                    // of `kSigverifySpxDisabledOtp` and
-                    // `kSigverifySpxEnabledOtp` in
+                    // Disable SPX+ signature verification. See the definition
+                    // of `kSigverifySpxDisabledOtp` in
                     // sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                     value: "0x8d6c8c17",
                 },
