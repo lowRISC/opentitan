@@ -96,6 +96,14 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_pull_mode(*pull)?;
                         Ok(Response::Gpio(GpioResponse::SetPullMode))
                     }
+                    GpioRequest::AnalogRead => {
+                        let value = instance.analog_read()?;
+                        Ok(Response::Gpio(GpioResponse::AnalogRead { value }))
+                    }
+                    GpioRequest::AnalogWrite { value } => {
+                        instance.analog_write(*value)?;
+                        Ok(Response::Gpio(GpioResponse::AnalogWrite))
+                    }
                     GpioRequest::MultiSet {
                         mode,
                         value,

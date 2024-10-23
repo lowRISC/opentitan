@@ -75,6 +75,10 @@ pub enum GpioRequest {
     SetPullMode {
         pull: PullMode,
     },
+    AnalogWrite {
+        value: f32,
+    },
+    AnalogRead,
     MultiSet {
         mode: Option<PinMode>,
         value: Option<bool>,
@@ -89,6 +93,8 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+    AnalogWrite,
+    AnalogRead { value: f32 },
     MultiSet,
 }
 
