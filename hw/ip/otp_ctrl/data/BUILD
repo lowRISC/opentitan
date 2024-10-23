@@ -2,18 +2,20 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
+load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load(
     "//rules:autogen.bzl",
     "autogen_hjson_c_header",
     "autogen_hjson_rust_header",
 )
+load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 load(
     "//rules:otp.bzl",
     "OTP_SIGVERIFY_FAKE_KEYS",
     "STD_OTP_OVERLAYS",
     "otp_alert_classification",
     "otp_alert_digest",
-    "otp_bytestring",
     "otp_hex",
     "otp_image",
     "otp_json",
@@ -22,9 +24,6 @@ load(
     "otp_per_class_ints",
     "otp_per_class_lists",
 )
-load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
-load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -90,8 +89,8 @@ otp_json(
         otp_partition(
             name = "CREATOR_SW_CFG",
             items = {
-                # Disable SPX+ signature verification. See the definitions of
-                # `kSigverifySpxDisabledOtp` and `kSigverifySpxEnabledOtp` in
+                # Disable SPX+ signature verification. See the definition of
+                # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h.
                 "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable use of entropy for countermeasures. See the definition
