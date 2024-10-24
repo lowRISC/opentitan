@@ -263,6 +263,7 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
+  dbg_print_epmp();
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
   ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
   RETURN_IF_ERROR(owner_keyring_find_key(
@@ -474,7 +475,7 @@ static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
 
 OT_WARN_UNUSED_RESULT
 
-static rom_error_t rom_ext_boot(boot_data_t *boot_data,
+static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest) {
   // Generate CDI_1 attestation keys and certificate.
   HARDENED_RETURN_IF_ERROR(rom_ext_attestation_owner(boot_data, manifest));
@@ -613,7 +614,8 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data,
   ibex_addr_remap_lockdown(1);
 
   // Lock the flash according to the ownership configuration.
-  HARDENED_RETURN_IF_ERROR(ownership_flash_lockdown(boot_data, &owner_config));
+  HARDENED_RETURN_IF_ERROR(
+      ownership_flash_lockdown(boot_data, boot_log->bl0_slot, &owner_config));
 
   dbg_print_epmp();
 
@@ -797,7 +799,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
     boot_log_digest_update(boot_log);
 
     // Boot fails if a verified ROM_EXT cannot be booted.
-    RETURN_IF_ERROR(rom_ext_boot(boot_data, manifests.ordered[i]));
+    RETURN_IF_ERROR(rom_ext_boot(boot_data, boot_log, manifests.ordered[i]));
     // `rom_ext_boot()` should never return `kErrorOk`, but if it does
     // we must shut down the chip instead of trying the next ROM_EXT.
     return kErrorRomExtBootFailed;

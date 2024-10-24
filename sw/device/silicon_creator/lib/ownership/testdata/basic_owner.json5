@@ -63,7 +63,7 @@
             scramble: false,
             ecc: false,
             high_endurance: false,
-            protect_when_primary: true
+            protect_when_active: true
           },
           {
             start: 32,
@@ -74,7 +74,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: true
+            protect_when_active: true
           },
           {
             start: 224,
@@ -85,7 +85,7 @@
             scramble: false,
             ecc: false,
             high_endurance: true,
-            protect_when_primary: false
+            protect_when_active: false
           },
           {
             start: 256,
@@ -96,7 +96,7 @@
             scramble: false,
             ecc: false,
             high_endurance: false,
-            protect_when_primary: true
+            protect_when_active: true
           },
           {
             start: 288,
@@ -107,7 +107,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: true
+            protect_when_active: true
           },
           {
             start: 480,
@@ -118,7 +118,7 @@
             scramble: false,
             ecc: false,
             high_endurance: true,
-            protect_when_primary: false
+            protect_when_active: false
           }
         ]
       }
@@ -136,7 +136,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: false
+            protect_when_active: false
           },
           {
             bank: 0,
@@ -148,7 +148,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: false
+            protect_when_active: false
           },
           {
             bank: 0,
@@ -160,7 +160,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: false
+            protect_when_active: false
           },
           {
             bank: 0,
@@ -172,7 +172,7 @@
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: false
+            protect_when_active: false
           }
         ]
       }
