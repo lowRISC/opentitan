@@ -155,3 +155,11 @@ jobs:
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
+
+  chip_earlgrey_cw310_hyperdebug:
+    name: CW310's Earl Grey Bitstream for Hyperdebug
+    needs: quick_lint
+    uses: ./.github/workflows/bitstream.yml
+    with:
+      top_name: earlgrey
+      design_suffix: cw310_hyperdebug
