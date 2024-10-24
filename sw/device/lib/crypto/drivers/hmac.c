@@ -67,39 +67,16 @@ OT_ASSERT_ENUM_VALUE(HMAC_DIGEST_15_REG_OFFSET, HMAC_DIGEST_14_REG_OFFSET + 4);
 enum {
   /* The beginning of the address space of HMAC. */
   kHmacBaseAddr = TOP_EARLGREY_HMAC_BASE_ADDR,
+  // TODO: should be removed when issue #24767 will be solved in the HW.
+  // Max number of iterations before the software decides that the hardware
+  // needs to be recovered after a stop command.
+  // At max 4 clock cycles are required to perform a read access to the
+  // register. As it should take less than 64 clock cycles in SHA2-256 and
+  // 80 clock cycles in SHA2-384/512, let's take some margin and consider
+  // that 100 loops are a way enough to see IDLE status. Otherwise we can
+  // start to attempt to recover the HW.
+  kNumIterTimeout = 100,
 };
-
-/**
- * Wait until HMAC becomes idle.
- *
- * It returns error if HMAC HWIP becomes idle without firing `hmac_done`
- * interrupt.
- *
- * TODO(#23191): It might be beneficial to have a timeout value for the polling.
- *
- * @return Result of the operation.
- */
-OT_WARN_UNUSED_RESULT
-static status_t hmac_idle_wait(void) {
-  // Verify that HMAC HWIP is idle.
-  // Initialize `status_reg = 0` so that the loop starts with the assumption
-  // that HMAC HWIP is not idle.
-  uint32_t status_reg = 0;
-  while (bitfield_bit32_read(status_reg, HMAC_STATUS_HMAC_IDLE_BIT) == 0) {
-    status_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_STATUS_REG_OFFSET);
-  }
-
-  // Verify that HMAC HWIP raises `hmac_done` bit.
-  uint32_t intr_reg =
-      abs_mmio_read32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET);
-  if (bitfield_bit32_read(intr_reg, HMAC_INTR_STATE_HMAC_DONE_BIT) == 0) {
-    return OTCRYPTO_FATAL_ERR;
-  }
-
-  // Clear the interrupt by writing 1, because `INTR_STATE` is rw1c type.
-  abs_mmio_write32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET, intr_reg);
-  return OTCRYPTO_OK;
-}
 
 /**
  * Clear the state of HMAC HWIP so that further driver calls can use it.
@@ -257,6 +234,112 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
 }
 
 /**
+ * Recover HW after a stop has been triggered too long after the block boundary
+ *
+ * Temporary workaround linked to issue #24767
+ * This function make the HW going into different states to move back on a
+ * working state. This is required when the stop has been issued later than the
+ * HW requires to compute the HASH. This duration is equivalent to 64 clock
+ * cycles in SHA2-256 and 80 clock cycles in SHA2-384/512.
+ *
+ * @param[out] ctx Context to which values are written.
+ */
+static void recover_hw_after_stop(hmac_ctx_t *ctx) {
+  // Save current context as it it updated after each block even if stop is not
+  // triggered
+  context_save(ctx);
+
+  // Store if HMAC is enabled of not
+  uint32_t cfg_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET);
+  uint32_t hmac_en = bitfield_bit32_read(cfg_reg, HMAC_CFG_HMAC_EN_BIT);
+
+  // Disable the HMAC to trigger sha_hash_continue_o based on the register
+  // reg_hash_continue from hmac_core.sv
+  cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_HMAC_EN_BIT, false);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
+
+  // Trigger HASH continue to move from StIdle state to StFifoReceive from
+  // prim_sha2_pad.sv this will enable us to trigger shaf_rvalid_o later, this
+  // will unlock us from the state fifo_st_q==FifoLoadFromFifo in the block
+  // prim_sha2.sv.
+  uint32_t cmd_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET);
+  cmd_reg = bitfield_bit32_write(cmd_reg, HMAC_CMD_HASH_CONTINUE_BIT, true);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Get the current message length to know how much words we need to write to
+  // fall on the block boundary and trigger digest_on_blk to be able to move
+  // into done_state_d==DoneAwaitCmd in hmac.sv this will then lead to trigger
+  // hash_done_event and be back in a stable state on all the FSMs.
+  uint64_t msg_len = ((uint64_t)ctx->upper << 32) | ctx->lower;
+  uint32_t digest_size =
+      bitfield_field32_read(cfg_reg, HMAC_CFG_DIGEST_SIZE_FIELD);
+
+  // Compute next block boundary
+  uint32_t msg_length_to_wr;
+  // SHA2-256 mode
+  if (digest_size == 1) {
+    msg_length_to_wr = kHmacSha256BlockBits - msg_len % kHmacSha256BlockBits;
+  } else {
+    msg_length_to_wr = kHmacSha512BlockBits - msg_len % kHmacSha512BlockBits;
+  }
+
+  // Write a dummy message into the message FIFO to trigger shaf_rvalid_o
+  // from prim_sha2_pad.sv
+  for (int i = 0; i < msg_length_to_wr / 32; i++) {
+    abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, 0xFFDEADFF);
+  }
+
+  // Finally trigger hash_process
+  cmd_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET);
+  cmd_reg = bitfield_bit32_write(cmd_reg, HMAC_CMD_HASH_PROCESS_BIT, true);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Restore CFG.hmac_en as it was before
+  cfg_reg = bitfield_bit32_write(cfg_reg, HMAC_CFG_HMAC_EN_BIT, hmac_en);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg_reg);
+}
+
+/**
+ * Wait until HMAC becomes idle.
+ *
+ * It returns error if HMAC HWIP becomes idle without firing `hmac_done`
+ * interrupt.
+ *
+ * @param[out] ctx Context to which values are written.
+ */
+static status_t hmac_idle_wait(hmac_ctx_t *ctx) {
+  status_t status;
+  // Verify that HMAC HWIP is idle.
+  // Initialize `status_reg = 0` so that the loop starts with the assumption
+  // that HMAC HWIP is not idle.
+  uint32_t status_reg = 0;
+  uint32_t attempt_cnt = 0;
+  while (bitfield_bit32_read(status_reg, HMAC_STATUS_HMAC_IDLE_BIT) == 0) {
+    status_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_STATUS_REG_OFFSET);
+    attempt_cnt++;
+    if (attempt_cnt == kNumIterTimeout) {
+      recover_hw_after_stop(ctx);
+      status = OTCRYPTO_RECOV_ERR;
+    }
+  }
+
+  // Verify that HMAC HWIP raises `hmac_done` bit.
+  uint32_t intr_reg =
+      abs_mmio_read32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET);
+  if (bitfield_bit32_read(intr_reg, HMAC_INTR_STATE_HMAC_DONE_BIT) == 0) {
+    status = OTCRYPTO_FATAL_ERR;
+  }
+
+  // Clear the interrupt by writing 1, because `INTR_STATE` is rw1c type.
+  abs_mmio_write32(kHmacBaseAddr + HMAC_INTR_STATE_REG_OFFSET, intr_reg);
+  if (status.value != OTCRYPTO_RECOV_ERR.value) {
+    status = OTCRYPTO_OK;
+  }
+
+  return status;
+}
+
+/**
  * For given `hmac_mode`, derive the matching CFG value and block/digest
  * lengths.
  *
@@ -403,11 +486,11 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_STOP_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Wait for HMAC HWIP operation to be completed.
-  HARDENED_TRY(hmac_idle_wait());
-
-  // Store context into `ctx`.
-  context_save(ctx);
+  // Wait for HMAC HWIP operation to be completed and store context into `ctx`
+  // only if not already done in case of hanged HW.
+  if (hmac_idle_wait(ctx).value != OTCRYPTO_RECOV_ERR.value) {
+    context_save(ctx);
+  }
 
   // Write leftover bytes to `partial_block`, so that future update/final call
   // can feed them to HMAC HWIP.
@@ -444,7 +527,7 @@ status_t hmac_final(hmac_ctx_t *ctx, uint32_t *digest, size_t digest_wordlen) {
   uint32_t cmd_reg =
       bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
-  HARDENED_TRY(hmac_idle_wait());
+  HARDENED_TRY(hmac_idle_wait(ctx));
 
   digest_read(digest, ctx->digest_wordlen);
 
@@ -512,7 +595,8 @@ status_t hmac(const hmac_mode_t hmac_mode, const uint32_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
 
   // Wait for HMAC HWIP operation to be completed.
-  HARDENED_TRY(hmac_idle_wait());
+  hmac_ctx_t *ctx = NULL;
+  HARDENED_TRY(hmac_idle_wait(ctx));
 
   digest_read(digest, digest_wordlen);
 
