@@ -666,7 +666,7 @@ interface chip_if;
 `ifdef GATE_LEVEL
   wire lc_ready = !`LC_CTRL_HIER.u_lc_ctrl_fsm.idle_o_BAR;
 `else
-  wire lc_ready = `LC_CTRL_HIER.u_reg.u_status_ready.qs;
+  wire lc_ready = `LC_CTRL_HIER.u_reg_regs.u_status_ready.qs;
 `endif
 
   wire pwrmgr_low_power = `PWRMGR_HIER.low_power_o;

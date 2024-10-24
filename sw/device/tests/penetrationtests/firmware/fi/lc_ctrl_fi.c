@@ -40,7 +40,8 @@ status_t handle_lc_ctrl_fi_init(ujson_t *uj) {
       &rv_core_ibex));
 
   // Configure LC Controller.
-  mmio_region_t lc_reg = mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR);
+  mmio_region_t lc_reg =
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
   TRY(dif_lc_ctrl_init(lc_reg, &lc));
 
   // Configure the alert handler. Alerts triggered by IP blocks are captured

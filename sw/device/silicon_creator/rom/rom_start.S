@@ -334,7 +334,7 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
   csrr t1, mcycle
   bltu t1, t0, .L_rma_spin_cycles_loop
 .L_rma_spin_lc_ctrl_loop:
-  li   a0, TOP_EARLGREY_LC_CTRL_BASE_ADDR
+  li   a0, TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR
   lw   t0, LC_CTRL_STATUS_REG_OFFSET(a0)
   andi t0, t0, (1 << LC_CTRL_STATUS_READY_BIT)
   beqz t0, .L_rma_spin_lc_ctrl_loop

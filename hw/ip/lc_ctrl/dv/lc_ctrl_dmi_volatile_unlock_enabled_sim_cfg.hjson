@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the variant of LC_CTRL with volatile unlock
+{
+  // Name of the sim cfg variant
+  variant: volatile_unlock_enabled
+
+  // Import additional common sim cfg files.
+  import_cfgs: ["{proj_root}/hw/ip/lc_ctrl/dv/lc_ctrl_base_sim_cfg.hjson"]
+
+  // Enable volatile unlock in this configuration.
+  build_opts: ["+define+SEC_VOLATILE_RAW_UNLOCK_EN=1",
+               "+define+USE_DMI_INTERFACE=1"]
+
+  // exclusion files
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_terminal_st_excl.el",
+                       "{proj_root}/hw/ip/lc_ctrl/dv/cov/lc_ctrl_volatile_unlock_enabled_unr_exclude.el"]
+}

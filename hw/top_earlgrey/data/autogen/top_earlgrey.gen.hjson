@@ -547,7 +547,7 @@
             pattgen
             rv_timer
             otp_ctrl
-            lc_ctrl
+            lc_ctrl.regs
             alert_handler
             spi_host0
             spi_host1
@@ -1884,6 +1884,17 @@
           domain: "0"
         }
       }
+      base_addrs:
+      {
+        regs:
+        {
+          hart: 0x40140000
+        }
+        dmi:
+        {
+          hart: 0x0
+        }
+      }
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
@@ -1921,6 +1932,14 @@
           default: top_pkg::SecVolatileRawUnlockEn
           expose: "true"
           name_top: SecLcCtrlVolatileRawUnlockEn
+        }
+        {
+          name: UseDmiInterface
+          desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
+          type: bit
+          default: "0"
+          expose: "true"
+          name_top: LcCtrlUseDmiInterface
         }
         {
           name: RndCnstLcKeymgrDivInvalid
@@ -2446,7 +2465,7 @@
           index: -1
         }
         {
-          name: tl
+          name: regs_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -2455,17 +2474,20 @@
           inst_name: lc_ctrl
           default: ""
           end_idx: -1
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
+          index: -1
+        }
+        {
+          name: dmi_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x40140000
-        }
-      }
       generate_dif: true
     }
     {
@@ -9269,9 +9291,9 @@
       [
         peri.tl_otp_ctrl__prim
       ]
-      lc_ctrl.tl:
+      lc_ctrl.regs_tl:
       [
-        peri.tl_lc_ctrl
+        peri.tl_lc_ctrl__regs
       ]
       sensor_ctrl_aon.tl:
       [
@@ -10450,7 +10472,7 @@
           pinmux_aon
           otp_ctrl.core
           otp_ctrl.prim
-          lc_ctrl
+          lc_ctrl.regs
           sensor_ctrl_aon
           alert_handler
           ast
@@ -10856,7 +10878,7 @@
           req_fifo_pass: true
         }
         {
-          name: lc_ctrl
+          name: lc_ctrl.regs
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -11282,7 +11304,7 @@
           index: -1
         }
         {
-          name: tl_lc_ctrl
+          name: tl_lc_ctrl__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -11290,7 +11312,7 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
           index: -1
         }
         {
@@ -17677,7 +17699,7 @@
         index: -1
       }
       {
-        name: tl
+        name: regs_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -17686,7 +17708,17 @@
         inst_name: lc_ctrl
         default: ""
         end_idx: -1
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
+        index: -1
+      }
+      {
+        name: dmi_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl
         index: -1
       }
       {
@@ -21648,7 +21680,7 @@
         index: -1
       }
       {
-        name: tl_lc_ctrl
+        name: tl_lc_ctrl__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -21656,7 +21688,7 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
         index: -1
       }
       {
@@ -24580,7 +24612,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: lc_ctrl_tl_req
+        signame: lc_ctrl_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -24591,7 +24623,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: lc_ctrl_tl_rsp
+        signame: lc_ctrl_regs_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

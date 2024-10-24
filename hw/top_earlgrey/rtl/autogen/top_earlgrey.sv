@@ -35,6 +35,7 @@ module top_earlgrey #(
   parameter OtpCtrlMemInitFile = "",
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
+  parameter bit LcCtrlUseDmiInterface = 0,
   parameter logic [15:0] LcCtrlSiliconCreatorId = 16'h 4001,
   parameter logic [15:0] LcCtrlProductId = 16'h 0002,
   parameter logic [7:0] LcCtrlRevisionId = 8'h 01,
@@ -724,8 +725,8 @@ module top_earlgrey #(
   tlul_pkg::tl_d2h_t       otp_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       otp_ctrl_prim_tl_req;
   tlul_pkg::tl_d2h_t       otp_ctrl_prim_tl_rsp;
-  tlul_pkg::tl_h2d_t       lc_ctrl_tl_req;
-  tlul_pkg::tl_d2h_t       lc_ctrl_tl_rsp;
+  tlul_pkg::tl_h2d_t       lc_ctrl_regs_tl_req;
+  tlul_pkg::tl_d2h_t       lc_ctrl_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_aon_tl_req;
   tlul_pkg::tl_d2h_t       sensor_ctrl_aon_tl_rsp;
   tlul_pkg::tl_h2d_t       alert_handler_tl_req;
@@ -1487,6 +1488,7 @@ module top_earlgrey #(
   lc_ctrl #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[18:16]),
     .SecVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
+    .UseDmiInterface(LcCtrlUseDmiInterface),
     .RndCnstLcKeymgrDivInvalid(RndCnstLcCtrlLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcCtrlLcKeymgrDivTestUnlocked),
     .RndCnstLcKeymgrDivDev(RndCnstLcCtrlLcKeymgrDivDev),
@@ -1542,8 +1544,10 @@ module top_earlgrey #(
       .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
       .hw_rev_o(),
       .strap_en_override_o(lc_ctrl_strap_en_override),
-      .tl_i(lc_ctrl_tl_req),
-      .tl_o(lc_ctrl_tl_rsp),
+      .regs_tl_i(lc_ctrl_regs_tl_req),
+      .regs_tl_o(lc_ctrl_regs_tl_rsp),
+      .dmi_tl_i(tlul_pkg::TL_H2D_DEFAULT),
+      .dmi_tl_o(),
       .scanmode_i,
       .scan_rst_ni,
 
@@ -3040,9 +3044,9 @@ module top_earlgrey #(
     .tl_otp_ctrl__prim_o(otp_ctrl_prim_tl_req),
     .tl_otp_ctrl__prim_i(otp_ctrl_prim_tl_rsp),
 
-    // port: tl_lc_ctrl
-    .tl_lc_ctrl_o(lc_ctrl_tl_req),
-    .tl_lc_ctrl_i(lc_ctrl_tl_rsp),
+    // port: tl_lc_ctrl__regs
+    .tl_lc_ctrl__regs_o(lc_ctrl_regs_tl_req),
+    .tl_lc_ctrl__regs_i(lc_ctrl_regs_tl_rsp),
 
     // port: tl_sensor_ctrl_aon
     .tl_sensor_ctrl_aon_o(sensor_ctrl_aon_tl_req),
