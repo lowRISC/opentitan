@@ -53,6 +53,8 @@ struct Opts {
         help = "Load a firmware payload via rescue after activating ownership"
     )]
     rescue_after_activate: Option<PathBuf>,
+    #[arg(long, default_value = "SlotA", help = "Which slot to rescue into")]
+    rescue_slot: BootSlot,
 
     #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
     dual_owner_boot_check: bool,
@@ -226,7 +228,12 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     if let Some(fw) = &opts.rescue_after_activate {
         let data = std::fs::read(fw)?;
         rescue.enter(transport, /*reset_target=*/ true)?;
-        rescue.update_firmware(BootSlot::SlotA, &data)?;
+        rescue.wait()?;
+        rescue.update_firmware(opts.rescue_slot, &data)?;
+        // Clear the opposite slot because we changed the scrambling/ecc settings
+        // for the application area of flash.
+        rescue.update_firmware(opts.rescue_slot.opposite()?, &[0xFFu8])?;
+        rescue.reboot()?;
     }
 
     log::info!("###### Boot After Transfer Complete ######");
@@ -241,7 +248,18 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         return RomError(u32::from_str_radix(&capture[3], 16)?).into();
     }
     let region = FlashRegion::find_all(&capture[1])?;
-    // Flash SideA is the primary side and has protect_when_active = true.
+    // The rescue_slot shoudl be the active side and has protect_when_active = true.
+    let (romext_region, app_region) = match opts.rescue_slot {
+        BootSlot::SlotA => (
+            ["RD-xx-xx-xx-xx-xx", "RD-WR-ER-xx-xx-xx"],
+            ["RD-xx-xx-SC-EC-xx", "RD-WR-ER-SC-EC-xx"],
+        ),
+        BootSlot::SlotB => (
+            ["RD-WR-ER-xx-xx-xx", "RD-xx-xx-xx-xx-xx"],
+            ["RD-WR-ER-SC-EC-xx", "RD-xx-xx-SC-EC-xx"],
+        ),
+        _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
+    };
     //
     // Since we are in a locked ownership state, we expect the region configuration
     // to reflect both the `protect_when_active` and `lock` properties of the
@@ -251,26 +269,27 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     } else {
         "UN"
     };
+    // Flash Slot A:
     assert_eq!(
         region[0],
-        FlashRegion("data", 0, 0, 32, "RD-xx-xx-xx-xx-xx", locked)
+        FlashRegion("data", 0, 0, 32, romext_region[0], locked)
     );
     assert_eq!(
         region[1],
-        FlashRegion("data", 1, 32, 192, "RD-xx-xx-SC-EC-xx", locked)
+        FlashRegion("data", 1, 32, 192, app_region[0], locked)
     );
     assert_eq!(
         region[2],
         FlashRegion("data", 2, 224, 32, "RD-WR-ER-xx-xx-HE", locked)
     );
-    // Flash SideB is the secondary side, so protect_when_active doesn't apply.
+    // Flash Slot B:
     assert_eq!(
         region[3],
-        FlashRegion("data", 3, 256, 32, "RD-WR-ER-xx-xx-xx", locked)
+        FlashRegion("data", 3, 256, 32, romext_region[1], locked)
     );
     assert_eq!(
         region[4],
-        FlashRegion("data", 4, 288, 192, "RD-WR-ER-SC-EC-xx", locked)
+        FlashRegion("data", 4, 288, 192, app_region[1], locked)
     );
     assert_eq!(
         region[5],

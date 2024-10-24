@@ -53,6 +53,7 @@ opentitan_binary(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
     },
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
@@ -397,34 +398,40 @@ ownership_transfer_test(
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_flash_permission_test
 # Note: rescue-after-activate tests that rescue correctly accesses regions with
 # different scrambling/ECC properties than the default flash configuration.
-ownership_transfer_test(
-    name = "flash_permission_test",
-    srcs = ["flash_regions.c"],
-    fpga = fpga_params(
-        binaries = {
-            ":flash_regions": "flash_regions",
-        },
-        test_cmd = """
-            --clear-bitstream
-            --bootstrap={firmware}
-            --unlock-mode=Any
-            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
-            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
-            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
-            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
-            --config-kind=with-flash-locked
-            --rescue-after-activate={flash_regions}
-        """,
-        test_harness = "//sw/host/tests/ownership:flash_permission_test",
-    ),
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
+[
+    ownership_transfer_test(
+        name = "flash_permission_test_slot_{}".format(slot),
+        srcs = ["flash_regions.c"],
+        fpga = fpga_params(
+            binaries = {
+                ":flash_regions": "flash_regions",
+            },
+            slot = "Slot{}".format(slot.upper()),
+            test_cmd = """
+                --clear-bitstream
+                --bootstrap={firmware}
+                --unlock-mode=Any
+                --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+                --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+                --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+                --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+                --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
+                --config-kind=with-flash-locked
+                --rescue-after-activate={flash_regions}
+                --rescue-slot={slot}
+            """,
+            test_harness = "//sw/host/tests/ownership:flash_permission_test",
+        ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+        ],
+    )
+    for slot in ("a", "b")
+]
 
 # Tests that a owner config with an improper flash configuration cannot be activated.
 ownership_transfer_test(

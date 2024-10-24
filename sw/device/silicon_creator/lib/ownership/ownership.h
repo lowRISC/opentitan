@@ -21,10 +21,12 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
  * Lockdown the flash configuration.
  *
  * @param bootdata The current bootdata.
+ * @param active_slot The active slot.
  * @param config The current owner configuration.
  * @return error state.
  */
 rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
+                                     uint32_t active_slot,
                                      const owner_config_t *config);
 
 /**
