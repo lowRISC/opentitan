@@ -25,6 +25,7 @@ with_unknown! {
         FlashInfoConfig = u32::from_le_bytes(*b"INFO"),
         Rescue = u32::from_le_bytes(*b"RESQ"),
         DetachedSignature = u32::from_le_bytes(*b"SIGN"),
+        IntegratorSpecificFirmwareBinding = u32::from_le_bytes(*b"ISFB"),
         NotPresent = u32::from_le_bytes(*b"ZZZZ"),
     }
 
