@@ -493,10 +493,10 @@
           The new flash configuration should have a different scrambling or ECC configuration than the current configuration.
         - Boot owner firmware and examine the flash controller's region configuration registers.
         - Confirm that in the intermediate "dual-owner" state, the primary half of the flash is configured for the previous owner and the secondary half is configured for the next owner.
-          Confirm that the `protect_when_primary` condition does not apply during the dual-owner state.
+          Confirm that the `protect_when_active` condition does not apply during the dual-owner state.
         - Activate ownership with the `dummy` activate key.
         - Use the rescue protocol to upload owner firmware into the newly-configured flash regions.
-        - Confirm that in the owned state, the entire flash is configured for the new owner and that the `protect_when_primary` condition removes erase/program permissions appropriately.
+        - Confirm that in the owned state, the entire flash is configured for the new owner and that the `protect_when_active` condition removes erase/program permissions appropriately.
         '''
       tags:
       [
