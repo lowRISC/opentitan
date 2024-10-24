@@ -128,6 +128,7 @@ rust_library(
         "src/ownership/application_key.rs",
         "src/ownership/flash.rs",
         "src/ownership/flash_info.rs",
+        "src/ownership/isfb.rs",
         "src/ownership/misc.rs",
         "src/ownership/mod.rs",
         "src/ownership/owner.rs",
