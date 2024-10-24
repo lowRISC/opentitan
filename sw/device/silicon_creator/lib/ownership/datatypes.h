@@ -96,6 +96,8 @@ typedef enum tlv_tag {
   kTlvTagInfoConfig = 0x4f464e49,
   /** Rescue Configuration: `RESQ`. */
   kTlvTagRescueConfig = 0x51534552,
+  /** Integration Specific Firmware Binding: `ISFB`. */
+  kTlvTagIntegrationSpecificFirmwareBinding = 0x42465349,
   /** Not Present: `ZZZZ`. */
   kTlvTagNotPresent = 0x5a5a5a5a,
 } tlv_tag_t;
@@ -363,6 +365,68 @@ OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, start, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, size, 14);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, command_allow, 16);
 OT_ASSERT_SIZE(owner_rescue_config_t, 16);
+
+/**
+ * The owner Integration Specific Firmware Binding (ISFB) configuration
+ * describes the configuration parameters for the ISFB region.
+ *
+ * Integrators have their own constraints that require owner firmware to be
+ * locked to certain integrator-device phases. The `ROM_EXT` needs to perform
+ * these constraint checks instead of the owner firmware because the rescue
+ * protocol bypasses any owner firmware level enforcement.
+ *
+ * Integrators can also perform their own rollback and upgrade automated testing
+ * using the strike words in the ISFB region. The erase policy implemented by
+ * this configuration entry allows the integrator to authorize erase operations
+ * of the ISFB region to configure devices for testing purposes.
+ */
+typedef struct owner_isfb_config {
+  /**
+   * Header identifiying this struct.
+   * tag: `ISFB`.
+   * length: 44 words.
+   */
+  tlv_header_t header;
+  /** The flash bank where the ISFB region is located. */
+  uint8_t bank;
+  /** The info flash page where the ISFB region is located. */
+  uint8_t page;
+  /** Padding for alignment */
+  uint16_t _pad;
+
+  /**
+   * The erase conditions for the ISFB region.
+   *
+   * This is a packed array of MUBI4 bools indicating which conditions authorize
+   * an erase. The conditions are aligned in little endian order: [B7, B6, B5,
+   * B4, B3, B2, B1, B0]
+   *
+   * The conditions are:
+   * - B0: Firmware must be signed with key specified by `key_domain` field.
+   * - B1: Firmware must be node locked (e.g. manifest usage constraints must be
+   * enabled).
+   * - B2: `manifest_ext_isfb_erase_t` must be present and set to harden true in
+   * the firmware manifest.
+   * - B3-B7: Reserved.
+   */
+  uint32_t erase_conditions;
+  /** If `B0`, part of erase authorization criteria. */
+  uint32_t key_domain;
+  /** Reserved space for future use. */
+  uint32_t reserved[5];
+  /** Number of `uint32_t` reserved for product expressions. It has to be a
+   * value less than or equal to 256. */
+  uint32_t product_words;
+} owner_isfb_config_t;
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, header, 0);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, bank, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, page, 9);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, _pad, 10);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, erase_conditions, 12);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, key_domain, 16);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, reserved, 20);
+OT_ASSERT_MEMBER_OFFSET(owner_isfb_config_t, product_words, 40);
+OT_ASSERT_SIZE(owner_isfb_config_t, 44);
 
 #ifdef __cplusplus
 }  // extern "C"

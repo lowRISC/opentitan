@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_MANIFEST_H_
 
+#include <limits.h>
 #include <stddef.h>
 
 #include "sw/device/lib/base/macros.h"
@@ -400,6 +401,19 @@ enum {
   kManifestExtIdSpxKey = 0x94ac01ec,
   kManifestExtIdSpxSignature = 0xad77f84a,
   kManifestExtIdSecVerWrite = 0x3f086a41,
+
+  /**
+   * ASCII "ISFB".
+   *
+   * Integration Specific Firmware Binding (ISFB) extension.
+   */
+  kManifestExtIdIsfb = 0x42465349,
+  /**
+   * ASCII "ISFE".
+   *
+   * Integration Specific Firmware Binding (ISFB) erase policy extension.
+   */
+  kManifestExtIdIsfbErase = 0x45465349,
   /**
    * ASCII "EXT0.
    */
@@ -459,6 +473,77 @@ typedef struct manifest_ext_secver_write {
 } manifest_ext_secver_write_t;
 
 /**
+ * Manifest extension: Integration Specific Firmware Binding (ISFB).
+ *
+ * The Integration Specific Firmware Binding (ISFB) extension is used to bind
+ * firmware to certain integrator-device phases (e.g. restrict firmware to
+ * unreleased integrator devices only). The `ROM_EXT` needs to perform these
+ * constraint checks instead of the firmware because the rescure protocol
+ * bypasses any owner firmware level enforcement.
+ *
+ * This extension also provides a mechanism to enable firmware owners to perform
+ * their own rollback and upgrade automated testing. The rollback policy is
+ * implemented on top of the `strike_bits` provided in the ISFB info flash
+ * region.
+ */
+typedef struct manifest_ext_isfb {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * Strikeout mask.
+   *
+   * The size of this array is equal to 128 strike bits packed into uint32_t
+   * words. Each strike bit corresponds to a flash word in the ISFB info flash
+   * page.
+   *
+   * For each 1-bit in the strike mask, the corresponding flash word in the ISFB
+   * info flash page must have a non-zero value.
+   */
+  uint32_t strike_mask[128 / (CHAR_BIT * sizeof(uint32_t))];
+  /**
+   * Number of product expressions that follow. Must be less than or equal to
+   * the number of `product_words` in the `owner_isfb_config_t` configuration.
+   */
+  uint32_t product_expr_count;
+  /**
+   * Product expressions. The size of this array is equal to
+   * `product_expr_count`.
+   */
+  struct {
+    uint32_t mask;
+    uint32_t value;
+  } product_expr[];
+} manifest_ext_isfb_t;
+OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, header, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, strike_mask, 8);
+OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, product_expr_count, 24);
+OT_ASSERT_MEMBER_OFFSET(manifest_ext_isfb_t, product_expr, 28);
+
+/**
+ * Manifest extension: ISFB erase policy.
+ *
+ * The ISFB erase policy extension is used to allow or disallow erasing the ISFB
+ * info flash region.
+ *
+ * This extension should be attached to the firmware's signed manifest to
+ * indicate that a firmware image may erase the ISFB info page.  This extension
+ * is required when the configuration indicates that the isfb_erase extension
+ * must be present to authorize erase operations.
+ */
+typedef struct manifest_ext_isfb_erase {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * Hardened bool indicating whether or not to allow erasing the ISFB region.
+   */
+  uint32_t erase_allowed;
+} manifest_ext_isfb_erase_t;
+
+/**
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
@@ -467,7 +552,9 @@ typedef struct manifest_ext_secver_write {
 #define MANIFEST_EXTENSIONS(X) \
   X(0, manifest_ext_spx_key_t,       spx_key,       kManifestExtIdSpxKey,       true ) \
   X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
-  X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)
+  X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)  \
+  X(3, manifest_ext_isfb_t,          isfb,          kManifestExtIdIsfb,         true)  \
+  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
