@@ -434,7 +434,7 @@ module dma
       OpcSha256: sha2_mode = SHA2_256;
       OpcSha384: sha2_mode = SHA2_384;
       OpcSha512: sha2_mode = SHA2_512;
-      default:   sha2_mode = None;
+      default:   sha2_mode = SHA2_None;
     endcase
   end
 
