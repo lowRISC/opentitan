@@ -145,7 +145,7 @@ r#"00000000: 49 4e 46 4f 2c 00 00 00 00 00 00 00 96 09 00 99  INFO,...........
       scramble: false,
       ecc: true,
       high_endurance: false,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     },
     {
@@ -158,7 +158,7 @@ r#"00000000: 49 4e 46 4f 2c 00 00 00 00 00 00 00 96 09 00 99  INFO,...........
       scramble: false,
       ecc: false,
       high_endurance: false,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     },
     {
@@ -171,7 +171,7 @@ r#"00000000: 49 4e 46 4f 2c 00 00 00 00 00 00 00 96 09 00 99  INFO,...........
       scramble: true,
       ecc: true,
       high_endurance: true,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     }
   ]
