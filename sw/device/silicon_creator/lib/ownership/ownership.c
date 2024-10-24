@@ -272,14 +272,13 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
 }
 
 rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
+                                     uint32_t active_slot,
                                      const owner_config_t *config) {
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
-    HARDENED_RETURN_IF_ERROR(
-        owner_block_flash_apply(config->flash, kBootSlotA,
-                                /*lockdown=*/bootdata->primary_bl0_slot));
-    HARDENED_RETURN_IF_ERROR(
-        owner_block_flash_apply(config->flash, kBootSlotB,
-                                /*lockdown=*/bootdata->primary_bl0_slot));
+    HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotA,
+                                                     /*lockdown=*/active_slot));
+    HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotB,
+                                                     /*lockdown=*/active_slot));
   } else {
     HARDENED_CHECK_NE(bootdata->ownership_state, kOwnershipStateLockedOwner);
   }

@@ -21,6 +21,8 @@ pub enum ChipDataError {
     Anyhow(#[from] anyhow::Error),
     #[error("bad size: expected {0} bytes, but found {1}")]
     BadSize(usize, usize),
+    #[error("bad slot: {0:x}")]
+    BadSlot(boot_svc::BootSlot),
     #[error("invalid digest")]
     InvalidDigest,
 }
