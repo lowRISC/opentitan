@@ -27,7 +27,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"  // Generated.
 
-OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
+OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
+                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.test_may_clobber = false, );
 
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;

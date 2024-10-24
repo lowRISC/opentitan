@@ -8,6 +8,7 @@ use anyhow::{Context, Result};
 use clap::Args;
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, DifLcCtrlToken, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
@@ -101,6 +102,7 @@ pub fn run_sram_cp_provision(
     reset_delay: Duration,
     sram_program: &SramProgramParams,
     provisioning_data: &ManufCpProvisioningData,
+    spi_console: &SpiConsoleDevice,
     timeout: Duration,
 ) -> Result<()> {
     // Set CPU TAP straps, reset, and connect to the JTAG interface.
@@ -111,8 +113,6 @@ pub fn run_sram_cp_provision(
     // Reset and halt the CPU to ensure we are in a known state, and clear out any ROM messages
     // printed over the console.
     jtag.reset(/*run=*/ false)?;
-    let uart = transport.uart("console")?;
-    uart.clear_rx_buffer()?;
 
     // Load and execute the SRAM program that contains the provisioning code.
     let result = sram_program.load_and_execute(&mut *jtag, ExecutionMode::Jump)?;
@@ -121,15 +121,18 @@ pub fn run_sram_cp_provision(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
-    // Get UART, set flow control, and wait for test to start running.
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Waiting for CP provisioning data ...", timeout)?;
+    // Wait for test to start running.
+    let _ = UartConsole::wait_for(
+        spi_console,
+        r"Waiting for CP provisioning data ...",
+        timeout,
+    )?;
 
     // Inject provisioning data into the device.
-    provisioning_data.send(&*uart)?;
+    provisioning_data.send(spi_console)?;
 
     // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(&*uart, r"CP provisioning done.", timeout)?;
+    let _ = UartConsole::wait_for(spi_console, r"CP provisioning done.", timeout)?;
 
     jtag.disconnect()?;
     transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
