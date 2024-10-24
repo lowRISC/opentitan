@@ -6,6 +6,15 @@ module rv_dm_bind;
 
   bind rv_dm tlul_assert #(
     .EndpointType("Device")
+  ) tlul_assert_device_dmi (
+    .clk_i,
+    .rst_ni,
+    .h2d  (dmi_tl_h2d_i),
+    .d2h  (dmi_tl_d2h_o)
+  );
+
+  bind rv_dm tlul_assert #(
+    .EndpointType("Device")
   ) tlul_assert_device_regs (
     .clk_i,
     .rst_ni,

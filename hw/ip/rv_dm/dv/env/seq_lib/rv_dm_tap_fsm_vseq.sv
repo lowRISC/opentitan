@@ -17,6 +17,15 @@ class rv_dm_tap_fsm_vseq extends rv_dm_base_vseq;
   `uvm_object_utils(rv_dm_tap_fsm_vseq)
   `uvm_object_new
 
+`ifdef USE_DMI_INTERFACE
+  constraint lc_hw_debug_en_c {
+    lc_hw_debug_en == lc_ctrl_pkg::On;
+  }
+  constraint scanmode_c {
+    scanmode == prim_mubi_pkg::MuBi4False;
+  }
+`endif
+
   task send_req(bit dummy_ir = 1'b0,
                 bit dummy_dr = 1'b0,
                 bit skip_reselected_ir = 1'b0,

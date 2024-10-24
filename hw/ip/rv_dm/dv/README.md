@@ -171,7 +171,7 @@ We are using our in-house developed [regression tool](../../../../util/dvsim/REA
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_sim_cfg.hjson -i rv_dm_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rv_dm/dv/rv_dm_use_jtag_interface_sim_cfg.hjson -i rv_dm_smoke
 ```
 
 ## Testplan
