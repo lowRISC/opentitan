@@ -222,38 +222,7 @@ otp_alert_digest(
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
-otp_json(
-    name = "otp_json_hw_cfg0",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG0",
-            items = {
-                "DEVICE_ID": "<random>",
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_hw_cfg1",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG1",
-            items = {
-                # Enable code execution from SRAM in PROD state.
-                "EN_SRAM_IFETCH": True,
-                # Cryptolib and chip-level tests require access to the CSRNG
-                # software interfaces.
-                "EN_CSRNG_SW_APP_READ": True,
-                # Use legacy behavior and disable late debug enable.
-                "DIS_RV_DM_LATE_DEBUG": True,
-            },
-            lock = True,
-        ),
-    ],
-)
-
+# Create an overlay that enalbes the rv_dm late debug feature.
 otp_json(
     name = "otp_json_hw_cfg1_enable_rv_dm_late_debug",
     partitions = [
@@ -262,38 +231,6 @@ otp_json(
             items = {
                 # Use legacy behavior and disable late debug enable.
                 "DIS_RV_DM_LATE_DEBUG": False,
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_secret1",
-    partitions = [
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_fixed_secret2",
-    partitions = [
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                # We aren't testing keymgr for ROM_EXT tests and we want
-                # reproducible bitstreams for all tests.
-                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
-                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
-                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
             },
             lock = True,
         ),
@@ -328,15 +265,15 @@ MANUF_SW_INITIALIZED = [
 # The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
 # OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
 MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
-    ":otp_json_hw_cfg0",
-    ":otp_json_hw_cfg1",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
 # partitions. It also includes the `MANUF_INDIVIDUALIZED` profile.
 MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
-    ":otp_json_secret1",
-    ":otp_json_fixed_secret2",
+    "//hw/ip/otp_ctrl/data:otp_json_secret1",
+    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
 
 # OTP SW Configuration. Used to generate a configuration program used during
