@@ -211,6 +211,7 @@
             - Configure the keymgr to sideload a key to KMAC.
             - Generate a KMAC output and store it in retention RAM.
             - Clear sideload key from keymgr.
+            - Create a new sideload key with a different salt using keymgr.
             - Verify that KMAC can no longer reproduce the same KMAC output.
             - Perform software initiated reset.
             - Configure the keymgr again to sideload a key to KMAC.
@@ -226,7 +227,9 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: [
+        "//sw/device/tests:kmac_kmac_key_sideload_test",
+      ]
     }
     {
       name: chip_sw_kmac_endianess
