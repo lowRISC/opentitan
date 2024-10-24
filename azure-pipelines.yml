@@ -643,25 +643,3 @@ jobs:
       addChangeLog: false
       assets: |
           $(Build.ArtifactStagingDirectory)/dist-final/*
-
-- job: build_docker_containers
-  displayName: "Build Docker Containers"
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - lint
-  steps:
-  - template: ci/checkout-template.yml
-  - task: Docker@2
-    displayName: Build Developer Utility Container
-    continueOnError: True
-    inputs:
-      command: build
-      Dockerfile: ./util/container/Dockerfile
-      buildContext: .
-  - task: Docker@2
-    displayName: Build Documentation Redirector Container
-    inputs:
-      command: build
-      Dockerfile: ./site/redirector/landing/Dockerfile
-      buildContext: ./site/redirector/landing
