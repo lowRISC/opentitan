@@ -222,6 +222,13 @@ typedef struct start_operation_params {
    * Operation to start.
    */
   uint32_t op;
+  /**
+   * Compound Device Identifier type (sealing or attestation).
+   *
+   * Only relevant for the creation of identities, software and sideload keys,
+   * otherwise the key manager operations are identical for both types.
+   */
+  dif_keymgr_cdi_type_t cdi_type;
 } start_operation_params_t;
 
 /**
@@ -233,6 +240,11 @@ static void start_operation(const dif_keymgr_t *keymgr,
       0, KEYMGR_CONTROL_SHADOWED_DEST_SEL_FIELD, params.dest);
   reg_control = bitfield_field32_write(
       reg_control, KEYMGR_CONTROL_SHADOWED_OPERATION_FIELD, params.op);
+  reg_control = bitfield_field32_write(
+      reg_control,
+      (bitfield_field32_t){.mask = 0x1u,
+                           .index = KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT},
+      params.cdi_type);
   mmio_region_write32_shadowed(keymgr->base_addr,
                                KEYMGR_CONTROL_SHADOWED_REG_OFFSET, reg_control);
   mmio_region_write32(keymgr->base_addr, KEYMGR_START_REG_OFFSET,
@@ -461,7 +473,8 @@ dif_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
   }
 }
 
-dif_result_t dif_keymgr_generate_identity_seed(const dif_keymgr_t *keymgr) {
+dif_result_t dif_keymgr_generate_identity_seed(
+    const dif_keymgr_t *keymgr, dif_keymgr_identity_seed_params_t params) {
   if (keymgr == NULL) {
     return kDifBadArg;
   }
@@ -474,7 +487,7 @@ dif_result_t dif_keymgr_generate_identity_seed(const dif_keymgr_t *keymgr) {
                   (start_operation_params_t){
                       .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
                       .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
-                  });
+                      .cdi_type = params.cdi_type});
 
   return kDifOk;
 }
@@ -491,25 +504,25 @@ dif_result_t dif_keymgr_generate_versioned_key(
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT,
-      };
+          .cdi_type = params.cdi_type};
       break;
     case kDifKeymgrVersionedKeyDestAes:
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_AES,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
-      };
+          .cdi_type = params.cdi_type};
       break;
     case kDifKeymgrVersionedKeyDestKmac:
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
-      };
+          .cdi_type = params.cdi_type};
       break;
     case kDifKeymgrVersionedKeyDestOtbn:
       hw_op_params = (start_operation_params_t){
           .dest = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_OTBN,
           .op = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
-      };
+          .cdi_type = params.cdi_type};
       break;
     default:
       return kDifBadArg;

@@ -17,6 +17,7 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
 
+#include "keymgr_regs.h"
 #include "sw/device/lib/dif/autogen/dif_keymgr_autogen.h"
 
 #ifdef __cplusplus
@@ -150,6 +151,33 @@ typedef enum dif_keymgr_state {
    */
   kDifKeymgrStateInvalid,
 } dif_keymgr_state_t;
+
+/**
+ * Compound Device Identifier type.
+ *
+ * The key manager supports the DICE open profile consisting of two Compound
+ * Device Identifiers (CDI):
+ *
+ *   - Sealing
+ *   - Attestation
+ *
+ * In every operational state of the key manager, it is possible to derive
+ * either sealing or attestation identifiers, software or hardware keys by
+ * setting the `CDI_SEL` bit in the `CONTROL_SHADOWED` register.
+ */
+typedef enum dif_keymgr_cdi_type {
+  /**
+   * Sealing CDI.
+   *
+   * This is the default configuration, corresponding to an unset bit.
+   */
+  kDifKeymgrSealingCdi = KEYMGR_CONTROL_SHADOWED_CDI_SEL_VALUE_SEALING_CDI,
+  /**
+   * Attestation CDI.
+   */
+  kDifKeymgrAttestationCdi =
+      KEYMGR_CONTROL_SHADOWED_CDI_SEL_VALUE_ATTESTATION_CDI
+} dif_keymgr_cdi_type_t;
 
 /**
  * Configures key manager with runtime information.
@@ -335,6 +363,16 @@ dif_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
                                   dif_keymgr_state_t *state);
 
 /**
+ * Parameters for generating an identity seed.
+ */
+typedef struct dif_keymgr_identity_seed_params {
+  /**
+   * Compound Device Identifier type (sealing or attestation).
+   */
+  dif_keymgr_cdi_type_t cdi_type;
+} dif_keymgr_identity_seed_params_t;
+
+/**
  * Generates an identity seed.
  *
  * This function requests key manager to generate an identity seed using its
@@ -346,10 +384,12 @@ dif_result_t dif_keymgr_get_state(const dif_keymgr_t *keymgr,
  * KDF.
  *
  * @param keymgr A key manager handle.
+ * @param params Identity seed generation params.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_keymgr_generate_identity_seed(const dif_keymgr_t *keymgr);
+dif_result_t dif_keymgr_generate_identity_seed(
+    const dif_keymgr_t *keymgr, dif_keymgr_identity_seed_params_t params);
 
 /**
  * Destination of a versioned key generation operation.
@@ -405,6 +445,10 @@ typedef struct dif_keymgr_versioned_key_params {
    * Version value to use for key generation.
    */
   uint32_t version;
+  /**
+   * Coumpund Device Identifier type (sealing or attestation).
+   */
+  dif_keymgr_cdi_type_t cdi_type;
 } dif_keymgr_versioned_key_params_t;
 
 /**

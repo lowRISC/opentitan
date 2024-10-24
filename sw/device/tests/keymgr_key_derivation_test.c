@@ -21,7 +21,9 @@ bool test_main(void) {
 
   LOG_INFO("Keymgr entered %s State", state_name);
 
-  CHECK_STATUS_OK(keymgr_testutils_generate_identity(&keymgr));
+  CHECK_STATUS_OK(keymgr_testutils_generate_identity(
+      &keymgr,
+      (dif_keymgr_identity_seed_params_t){.cdi_type = kDifKeymgrSealingCdi}));
   LOG_INFO("Keymgr generated identity at %s State", state_name);
 
   dif_keymgr_versioned_key_params_t sideload_params = kKeyVersionedParams;
