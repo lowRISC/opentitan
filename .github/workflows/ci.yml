@@ -155,3 +155,20 @@ jobs:
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
+
+  build_docker_containers:
+    name: Build Docker Containers
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Developer Utility Container
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: util/container/Dockerfile
+        continue-on-error: true
+      - name: Build Documentation Redirector Container
+        uses: docker/build-push-action@v6
+        with:
+          context: site/redirector/landing
