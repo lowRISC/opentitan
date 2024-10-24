@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS = [
+EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS = [
     "sival",
     "prodc",
 ]
