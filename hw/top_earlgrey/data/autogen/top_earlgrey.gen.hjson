@@ -4192,7 +4192,7 @@
       [
         Aon
       ]
-      attr: templated
+      attr: ipgen
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn

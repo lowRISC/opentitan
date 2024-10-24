@@ -215,9 +215,9 @@
              {
                name: pinmux_sec_cm
                dut: pinmux
-               fusesoc_core: lowrisc:ip:pinmux
+               fusesoc_core: lowrisc:ip_interfaces:pinmux
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}/sec_cm"
+               rel_path: "hw/top_earlgrey/ip_autogen/pinmux/{sub_flow}/{tool}/sec_cm"
                task: "FpvSecCm"
                overrides: [
                  {

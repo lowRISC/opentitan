@@ -204,7 +204,7 @@ Items on the inout list of the form `name` incur all three.
 
 #### Multiplexing Feature and Pad Control
 
-In the top level chip framework there is a [pin multiplexing unit (`pinmux`)](../../../../hw/ip/pinmux/README.md) which provides flexible assignment to/from peripheral IO and chip pin IO.
+In the top level chip framework there is a [pin multiplexing unit (`pinmux`)](../../../../hw/ip_templates/pinmux/README.md) which provides flexible assignment to/from peripheral IO and chip pin IO.
 Comportable peripherals do not designate whether their available IO are hardwired to chip IO, or available for multiplexing.
 That is done at the top level with an Hjson configuration file.
 See the top level specification for information about that configuration file.

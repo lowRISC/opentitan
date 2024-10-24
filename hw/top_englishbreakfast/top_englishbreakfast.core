@@ -23,7 +23,7 @@ filesets:
       # Instantiated by topgen
       - lowrisc:ip:uart:0.1
       - lowrisc:ip:gpio
-      - lowrisc:ip:pinmux_component
+      - lowrisc:ip_interfaces:pinmux
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device
       - lowrisc:ip:spi_host
