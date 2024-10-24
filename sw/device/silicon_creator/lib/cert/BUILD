@@ -130,6 +130,8 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
