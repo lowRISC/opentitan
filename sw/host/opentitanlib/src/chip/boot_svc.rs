@@ -52,6 +52,16 @@ with_unknown! {
     }
 }
 
+impl BootSlot {
+    pub fn opposite(self) -> Result<Self> {
+        match self {
+            BootSlot::SlotA => Ok(BootSlot::SlotB),
+            BootSlot::SlotB => Ok(BootSlot::SlotA),
+            _ => Err(ChipDataError::BadSlot(self).into()),
+        }
+    }
+}
+
 /// The Boot Services header common to all boot services commands and responses.
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct Header {
