@@ -213,6 +213,7 @@ void isr_testutils_csrng_isr(
 }
 
 void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
+                           bool mute_status_irq,
                            top_earlgrey_plic_peripheral_t *peripheral_serviced,
                            dif_dma_irq_t *irq_serviced) {
   // Claim the IRQ at the PLIC.
@@ -243,6 +244,8 @@ void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
   CHECK_DIF_OK(dif_dma_irq_get_type(dma_ctx.dma, irq, &type));
   if (type == kDifIrqTypeEvent) {
     CHECK_DIF_OK(dif_dma_irq_acknowledge(dma_ctx.dma, irq));
+  } else if (mute_status_irq) {
+    CHECK_DIF_OK(dif_dma_irq_set_enabled(dma_ctx.dma, irq, kDifToggleDisabled));
   }
 
   // Complete the IRQ at the PLIC.

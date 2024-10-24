@@ -324,6 +324,7 @@ INSTANTIATE_TEST_SUITE_P(
         {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted},
         {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
         {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid},
+        {1 << DMA_STATUS_CHUNK_DONE_BIT, kDifDmaStatusChunkDone},
     }}));
 
 TEST_F(StatusGetTest, GetBadArg) {
@@ -350,6 +351,7 @@ INSTANTIATE_TEST_SUITE_P(
         {1 << DMA_STATUS_ABORTED_BIT, kDifDmaStatusAborted},
         {1 << DMA_STATUS_ERROR_BIT, kDifDmaStatusError},
         {1 << DMA_STATUS_SHA2_DIGEST_VALID_BIT, kDifDmaStatusSha2DigestValid},
+        {1 << DMA_STATUS_CHUNK_DONE_BIT, kDifDmaStatusChunkDone},
     }}));
 
 TEST_F(StatusWriteTest, GetBadArg) {
