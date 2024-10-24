@@ -232,6 +232,12 @@ task tl_write_ro_mem_err(string            ral_name,
   end
 endtask
 
+// Return the address of the csr at a random index
+virtual function bit[BUS_AW-1:0] pick_rand_csr_addr (string ral_name, dv_base_reg_block block);
+  int index = $urandom_range(0, block.csr_addrs.size() - 1);
+  return block.csr_addrs[index];
+endfunction
+
 // Generate a stream of transactions that trigger errors connected with instr_type. This is either
 // because the multi-bit encoded instr_type is not a valid mubi value or because it is MuBi4True and
 // the transaction is a write ("writing through the fetch port").
@@ -239,6 +245,8 @@ endtask
 // If cfg.stop_transaction_generators() becomes true (because we are in reset or wish to start a
 // reset), stop generating transactions and return.
 virtual task tl_instr_type_err(string ral_name);
+  dv_base_reg_block ral_model = cfg.ral_models[ral_name];
+  bit has_csrs = (ral_model.csr_addrs.size() > 0);
   repeat ($urandom_range(10, 100)) begin
     bit [BUS_AW-1:0] addr;
     bit              write;
@@ -262,6 +270,11 @@ virtual task tl_instr_type_err(string ral_name);
         // write with instr_type = MuBi4True
         write = 1'b1;
         instr_type = MuBi4True;
+      end
+      has_csrs: begin
+        write = 1'b0;
+        instr_type = MuBi4True;
+        addr = pick_rand_csr_addr(ral_name, ral_model);
       end
     endcase
 

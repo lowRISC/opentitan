@@ -386,6 +386,16 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     return 0;
   endfunction
 
+  // Check if the tl_mapped address is a csr
+  virtual function bit is_csr_fetch(tl_seq_item item, string ral_name);
+    cip_tl_seq_item cip_item;
+    `downcast(cip_item, item)
+    return (item.a_opcode == tlul_pkg::Get &&
+            cip_item.get_instr_type() == MuBi4True &&
+            is_tl_access_mapped_addr(item, ral_name) &&
+            !is_mem_addr(item, ral_name));
+  endfunction
+
   // Checks if the TL access is valid.
   //
   // On the Addr channel, returns 1 if the item should cause a TL error.
@@ -417,7 +427,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     cip_tl_seq_item cip_item;
     tl_intg_err_e tl_intg_err_type;
     uint num_cmd_err_bits, num_data_err_bits;
-    bit write_w_instr_type_err, instr_type_err;
+    bit write_w_instr_type_err, instr_type_err, csr_read_err;
 
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
     if (unmapped_err) begin
@@ -444,6 +454,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     byte_wr_err = is_tl_access_unsupported_byte_wr(item, ral_name);
     csr_size_err = !is_tl_csr_write_size_gte_csr_width(item, ral_name);
     tl_item_err = item.get_exp_d_error();
+    csr_read_err = is_csr_fetch(item, ral_name);
 
     // For flash, address has to be 8byte aligned.
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
@@ -453,10 +464,11 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
                                  write_w_instr_type_err, instr_type_err);
     exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                    write_w_instr_type_err | instr_type_err |
-                   ecc_err;
+                   ecc_err | csr_read_err;
 
     invalid_access = unmapped_err | mem_access_err | bus_intg_err | csr_size_err | tl_item_err |
-                     write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated;
+                     write_w_instr_type_err | instr_type_err | cfg.tl_mem_access_gated |
+                     csr_read_err;
 
     if (channel == DataChannel) begin
       // integrity at d_user is from DUT, which should be always correct, except data integrity for
