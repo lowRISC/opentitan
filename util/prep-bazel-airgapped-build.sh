@@ -140,17 +140,12 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @remote_java_tools//... \
-    @remote_java_tools_linux//... \
     @bindgen_clang_linux//... \
     @rules_rust_bindgen__bindgen-0.69.1//... \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
-    @local_config_cc_toolchains//... \
     @local_config_platform//... \
-    @local_config_sh//... \
     @python3_toolchains//... \
-    @remotejdk11_linux//... \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \

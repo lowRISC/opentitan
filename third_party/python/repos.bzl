@@ -10,4 +10,6 @@ def python_repos():
         sha256 = "ca77768989a7f311186a29747e3e95c936a41dffac779aff6b443db22290d913",
         strip_prefix = "rules_python-0.36.0",
         url = "https://github.com/bazelbuild/rules_python/releases/download/0.36.0/rules_python-0.36.0.tar.gz",
+        # This patch can be removed once 0.37.0 is released (or we move `rules_python` to bzlmod).
+        patches = ["//third_party/python/patches:rules_python.hybrid_workspace_register_toolchain.patch"],
     )

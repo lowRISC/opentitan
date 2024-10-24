@@ -1,0 +1,94 @@
+commit 43583d1fe84bc2b4daa1531e3dcf404dbcb98dda
+Author: Richard Levasseur <rlevasseur@google.com>
+Date:   Thu Oct 10 20:12:55 2024 -0700
+
+    fix(bzlmod): let workspace-invoked python_register_toolchains to register toolchains (#2289)
+    
+    While migrating to bzlmod, users may have a hybrid build where WORKSPACE
+    contains
+    python_register_toolchain() calls. Because these calls originate from
+    WORKSPACE files,
+    the `native.register_toolchain` APIs are still available. At the same
+    time, we still
+    detect that bzlmod is enabled, and thus disable calling those functions.
+    The net
+    effect is, users aren't able to register toolchains in such a hybrid
+    setup. At the
+    same time, because the code path is shared, we can't have the bzlmod
+    toolchain code
+    try to call them, as it'll fail.
+    
+    To accomodate both cases, have the bzlmod toolchain code pass a special
+    arg so that
+    `python_register_toolchains` knows to skip parts that don't apply to the
+    bzlmod toolchain
+    invocation.
+    
+    This was all unwound by some users and pointed out in a Slack thread. A
+    few people are
+    manually carrying an equivalent patch for a working hybrid mode.
+    
+    Fixes https://github.com/bazelbuild/rules_python/issues/1675
+
+diff --git python/private/BUILD.bazel python/private/BUILD.bazel
+index b4084fb7..6fb4a1cc 100644
+--- python/private/BUILD.bazel
++++ python/private/BUILD.bazel
+@@ -177,7 +177,6 @@ bzl_library(
+     deps = [
+         ":auth_bzl",
+         ":bazel_tools_bzl",
+-        ":bzlmod_enabled_bzl",
+         ":coverage_deps_bzl",
+         ":full_version_bzl",
+         ":internal_config_repo_bzl",
+diff --git python/private/python.bzl python/private/python.bzl
+index 83bc43f9..12ab4bb4 100644
+--- python/private/python.bzl
++++ python/private/python.bzl
+@@ -228,7 +228,11 @@ def _python_impl(module_ctx):
+         kwargs.update(py.config.kwargs.get(toolchain_info.python_version, {}))
+         kwargs.update(py.config.kwargs.get(full_python_version, {}))
+         kwargs.update(py.config.default)
+-        python_register_toolchains(name = toolchain_info.name, **kwargs)
++        python_register_toolchains(
++            name = toolchain_info.name,
++            _internal_bzlmod_toolchain_call = True,
++            **kwargs
++        )
+ 
+     # Create the pythons_hub repo for the interpreter meta data and the
+     # the various toolchains.
+diff --git python/private/python_register_toolchains.bzl python/private/python_register_toolchains.bzl
+index d20e0496..64b66d5a 100644
+--- python/private/python_register_toolchains.bzl
++++ python/private/python_register_toolchains.bzl
+@@ -23,7 +23,6 @@ load(
+     "TOOL_VERSIONS",
+     "get_release_info",
+ )
+-load(":bzlmod_enabled.bzl", "BZLMOD_ENABLED")
+ load(":coverage_deps.bzl", "coverage_dep")
+ load(":full_version.bzl", "full_version")
+ load(":python_repository.bzl", "python_repository")
+@@ -75,9 +74,8 @@ def python_register_toolchains(
+             version.
+         **kwargs: passed to each {obj}`python_repository` call.
+     """
+-
+-    if BZLMOD_ENABLED:
+-        # you cannot used native.register_toolchains when using bzlmod.
++    bzlmod_toolchain_call = kwargs.pop("_internal_bzlmod_toolchain_call", False)
++    if bzlmod_toolchain_call:
+         register_toolchains = False
+ 
+     base_url = kwargs.pop("base_url", DEFAULT_RELEASE_BASE_URL)
+@@ -169,7 +167,7 @@ def python_register_toolchains(
+     )
+ 
+     # in bzlmod we write out our own toolchain repos
+-    if BZLMOD_ENABLED:
++    if bzlmod_toolchain_call:
+         return
+ 
+     toolchains_repo(
