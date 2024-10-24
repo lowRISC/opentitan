@@ -29,7 +29,13 @@ def _manifest_impl(ctx):
     if ctx.attr.security_version:
         mf["security_version"] = ctx.attr.security_version
     if ctx.attr.timestamp:
-        mf["timestamp"] = ctx.attr.timestamp
+        timestamp_val = int(ctx.attr.timestamp, 16)
+        # manifest json definition expecteds two uint32_t's,
+        # least significant word first
+        mf["timestamp"] = [
+            hex(timestamp_val & 0xFFFFFFFF),
+            hex((timestamp_val >> 32) & 0xFFFFFFFF)
+        ]
     if ctx.attr.max_key_version:
         mf["max_key_version"] = ctx.attr.max_key_version
     if ctx.attr.code_start:
