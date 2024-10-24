@@ -17,8 +17,15 @@ if {[info exists ::env(WAVES)]} {
 }
 
 set gui 0
-if {[info exists ::env(GUI)]} {
-  set gui "$::env(GUI)"
+# Detect when GUI mode has been invoked to prevent any auto-run
+if {$::env(GUI)==1} {
+  set gui 1
+}
+
+set gui_debug 0
+# Detect when GUI debug mode has been invoked to build UVM objects by default
+if {$::env(GUI_DEBUG)==1} {
+  set gui_debug 1
 }
 
 set tb_top "tb"
