@@ -65,7 +65,7 @@
             // Slot A ROM_EXT region: 0 to 64 KiB.
             "start": 0,
             "size": 32,
-            // Permissions: read, erase and program. But override by protect_when_primary
+            // Permissions: read, erase and program. But override by protect_when_active
             "read": true,
             "program": true,
             "erase": true,
@@ -74,14 +74,14 @@
             "scramble": true,
             "ecc": true,
             "high_endurance": false,
-            "protect_when_primary": true,
+            "protect_when_active": true,
             "lock": true
           },
           {
             // Slot B ROM_EXT region
             "start": 256,
             "size": 32,
-            // Permissions: read, erase and program. But override by protect_when_primary
+            // Permissions: read, erase and program. But override by protect_when_active
             "read": true,
             "program": true,
             "erase": true,
@@ -90,7 +90,7 @@
             "scramble": true,
             "ecc": true,
             "high_endurance": false,
-            "protect_when_primary": true,
+            "protect_when_active": true,
             "lock": true
           },
           {
@@ -105,7 +105,7 @@
             "scramble": true,
             "ecc": true,
             "high_endurance": false,
-            "protect_when_primary": true,
+            "protect_when_active": true,
             "lock": true
           },
           {
@@ -120,7 +120,7 @@
             "scramble": true,
             "ecc": true,
             "high_endurance": false,
-            "protect_when_primary": true,
+            "protect_when_active": true,
             "lock": true
           },
           {
@@ -136,7 +136,7 @@
             "scramble": false,
             "ecc": true,
             "high_endurance": true,
-            "protect_when_primary": false,
+            "protect_when_active": false,
             "lock": false
           },
           {
@@ -152,7 +152,7 @@
             "scramble": false,
             "ecc": true,
             "high_endurance": true,
-            "protect_when_primary": false,
+            "protect_when_active": false,
             "lock": false
           },
           {
@@ -167,7 +167,7 @@
             "scramble": true,
             "ecc": true,
             "high_endurance": false,
-            "protect_when_primary": false,
+            "protect_when_active": false,
             "lock": true
           }
         ]
@@ -177,7 +177,7 @@
       // The Flash INFO Config defines how the INFO pages reserved for the
       // owner will be configured.  The configuration properties are the
       // same as the flash region config properties, however the
-      // `protect_when_primary` flag is meaningless.
+      // `protect_when_active` flag is meaningless.
       //
       // On the Earlgrey_ES chip, INFO pages 6 to 9 (inclusive) in bank 0
       // are reserved for owner use.

@@ -153,7 +153,7 @@ impl OwnerConfigKind {
             scramble: self as u32 & CFG_FLASH_ERROR != 0,
             ecc: self as u32 & CFG_FLASH_ERROR != 0,
             high_endurance: false,
-            protect_when_primary: true,
+            protect_when_active: true,
             lock: self.is_flash_locked(),
         }
     }
@@ -166,7 +166,7 @@ impl OwnerConfigKind {
             scramble: true,
             ecc: true,
             high_endurance: false,
-            protect_when_primary: true,
+            protect_when_active: true,
             lock: self.is_flash_locked(),
         }
     }
@@ -179,7 +179,7 @@ impl OwnerConfigKind {
             scramble: false,
             ecc: false,
             high_endurance: true,
-            protect_when_primary: false,
+            protect_when_active: false,
             lock: self.is_flash_locked(),
         }
     }

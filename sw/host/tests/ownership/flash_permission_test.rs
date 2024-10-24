@@ -160,7 +160,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         // Earlgrey-specific.
         //
         // Note: when in an unlocked state, flash lockdown doesn't apply, so neither
-        // the `protect_when_primary` nor `lock` bits for individual regions will
+        // the `protect_when_active` nor `lock` bits for individual regions will
         // affect the region config.
         assert_eq!(
             region[0],
@@ -241,10 +241,10 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         return RomError(u32::from_str_radix(&capture[3], 16)?).into();
     }
     let region = FlashRegion::find_all(&capture[1])?;
-    // Flash SideA is the primary side and has protect_when_primary = true.
+    // Flash SideA is the primary side and has protect_when_active = true.
     //
     // Since we are in a locked ownership state, we expect the region configuration
-    // to reflect both the `protect_when_primary` and `lock` properties of the
+    // to reflect both the `protect_when_active` and `lock` properties of the
     // owner's flash configuration.
     let locked = if opts.config_kind.is_flash_locked() {
         "LK"
@@ -263,7 +263,7 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         region[2],
         FlashRegion("data", 2, 224, 32, "RD-WR-ER-xx-xx-HE", locked)
     );
-    // Flash SideB is the secondary side, so protect_when_primary doesn't apply.
+    // Flash SideB is the secondary side, so protect_when_active doesn't apply.
     assert_eq!(
         region[3],
         FlashRegion("data", 3, 256, 32, "RD-WR-ER-xx-xx-xx", locked)

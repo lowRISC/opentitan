@@ -33,9 +33,9 @@ pub struct FlashFlags {
     /// The high endurance feature is enabled in this region.
     #[serde(default)]
     pub high_endurance: bool,
-    /// Forbid program and erase operations when in the primary flash side.
+    /// Forbid program and erase operations when in the active flash side.
     #[serde(default)]
-    pub protect_when_primary: bool,
+    pub protect_when_active: bool,
     /// Lock the configuration of this region.
     #[serde(default)]
     pub lock: bool,
@@ -64,7 +64,7 @@ impl FlashFlags {
             read: true,
             program: true,
             erase: true,
-            protect_when_primary: true,
+            protect_when_active: true,
             ..Default::default()
         }
     }
@@ -77,7 +77,7 @@ impl FlashFlags {
             erase: true,
             scramble: true,
             ecc: true,
-            protect_when_primary: true,
+            protect_when_active: true,
             ..Default::default()
         }
     }
@@ -114,7 +114,7 @@ impl From<u64> for FlashFlags {
             read:                 flags & 0xF == Self::TRUE,
             program:              (flags >> 4) & 0xF == Self::TRUE,
             erase:                (flags >> 8) & 0xF == Self::TRUE,
-            protect_when_primary: (flags >> 24) & 0xF == Self::TRUE,
+            protect_when_active:  (flags >> 24) & 0xF == Self::TRUE,
             lock:                 (flags >> 28) & 0xF == Self::TRUE,
 
             // Second 32-bit word: flash properties.
@@ -134,7 +134,7 @@ impl From<FlashFlags> for u64 {
             if flags.read                 { FlashFlags::TRUE } else { FlashFlags::FALSE } |
             if flags.program              { FlashFlags::TRUE } else { FlashFlags::FALSE } << 4 |
             if flags.erase                { FlashFlags::TRUE } else { FlashFlags::FALSE } << 8 |
-            if flags.protect_when_primary { FlashFlags::TRUE } else { FlashFlags::FALSE } << 24 |
+            if flags.protect_when_active  { FlashFlags::TRUE } else { FlashFlags::FALSE } << 24 |
             if flags.lock                 { FlashFlags::TRUE } else { FlashFlags::FALSE } << 28 |
 
             // Second 32-bit word: flash properties.
@@ -263,7 +263,7 @@ r#"00000000: 46 4c 53 48 2c 00 00 00 00 00 00 00 96 09 00 99  FLSH,...........
       scramble: false,
       ecc: true,
       high_endurance: false,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     },
     {
@@ -275,7 +275,7 @@ r#"00000000: 46 4c 53 48 2c 00 00 00 00 00 00 00 96 09 00 99  FLSH,...........
       scramble: false,
       ecc: false,
       high_endurance: false,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     },
     {
@@ -287,7 +287,7 @@ r#"00000000: 46 4c 53 48 2c 00 00 00 00 00 00 00 96 09 00 99  FLSH,...........
       scramble: true,
       ecc: true,
       high_endurance: true,
-      protect_when_primary: false,
+      protect_when_active: false,
       lock: false
     }
   ]
