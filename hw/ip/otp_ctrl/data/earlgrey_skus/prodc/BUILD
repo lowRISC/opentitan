@@ -12,14 +12,12 @@ load(
     "CONST",
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
-    "get_lc_items",
 )
 load(
     "//rules:otp.bzl",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
-    "otp_image",
     "otp_image_consts",
     "otp_json",
     "otp_json_immutable_rom_ext",
@@ -223,43 +221,11 @@ otp_alert_digest(
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
-# The `LC_MISSION_STATES` object contains the set of mission mode life cycle
-# states. A device is considered to be mission mode configured if it has a
-# matching `MANUF_PERSONALIZED` OTP configuration.
-LC_MISSION_STATES = get_lc_items(
-    CONST.LCV.DEV,
-    CONST.LCV.PROD,
-    CONST.LCV.PROD_END,
-)
-
-# The `MANUF_INITIALIZED` OTP profile configures the SECRET0 partition to
-# enable the device to transition between test_unlock and test_locked states,
-# as well as to transition out of test_unlock into any of the
-# `LC_MISSION_STATES`.
-MANUF_INITIALIZED = [
-    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
-    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
-]
-
 MANUF_SW_INITIALIZED = [
     ":alert_digest_cfg",
     ":otp_json_creator_sw_cfg",
     ":otp_json_owner_sw_cfg",
     ":otp_json_immutable_rom_ext",
-]
-
-# The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
-# OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
-MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
-]
-
-# The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
-# partitions. It also includes the `MANUF_INDIVIDUALIZED` profile.
-MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
-    "//hw/ip/otp_ctrl/data:otp_json_secret1",
-    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
 
 # OTP SW Configuration. Used to generate a configuration program used during
@@ -280,89 +246,5 @@ cc_library(
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
-    ],
-)
-
-# Initial test_unlocked state. Only applicable for test_unlocked0. All other
-# test states require the SECRET0 partition to be configured.
-# In this configuration, ROM execution is disabled by default. JTAG should be
-# used to bootstrap code into SRAM or FLASH.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-otp_image(
-    name = "otp_img_test_unlocked0_manuf_empty",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
-)
-
-# `MANUF_INITIALIZED` configuration. This configuration will be generally used
-# to lock the chips before shipping to the Final-Test test house.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-otp_image(
-    name = "otp_img_test_locked0_manuf_initialized",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_locked0",
-    overlays = MANUF_INITIALIZED,
-)
-
-# `MANUF_INITIALIZED` OTP configuration. Available on TEST_UNLOCK states 1-7.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_test_unlocked{}_manuf_initialized".format(i),
-        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
-        overlays = MANUF_INITIALIZED,
-    )
-    for i in range(1, 8)
-]
-
-# `MANUF_INDIVIDUALIZED` configuration. Available on TEST_UNLOCK states 1-7, as
-# well as dev, prod, prod_end and rma. This configuration has flash scrambling
-# disabled. See the personalized OTP configuration for targets requiring flash
-# scrambling enabled.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_{}_manuf_individualized".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-        overlays = MANUF_INDIVIDUALIZED,
-    )
-    for lc_state, _ in get_lc_items(
-        CONST.LCV.TEST_UNLOCKED1,
-        CONST.LCV.TEST_UNLOCKED2,
-        CONST.LCV.TEST_UNLOCKED3,
-        CONST.LCV.TEST_UNLOCKED4,
-        CONST.LCV.TEST_UNLOCKED5,
-        CONST.LCV.TEST_UNLOCKED6,
-        CONST.LCV.TEST_UNLOCKED7,
-        CONST.LCV.DEV,
-        CONST.LCV.PROD,
-        CONST.LCV.PROD_END,
-    )
-]
-
-# `MANUF_PERSONALIZED` configuration. Available on `LC_MISSION_STATES` life
-# cycle states.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_{}_manuf_personalized".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
-        overlays = MANUF_PERSONALIZED,
-    )
-    for lc_state, _ in LC_MISSION_STATES
-]
-
-# `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
-otp_image(
-    name = "otp_img_rma_manuf_personalized",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
-    overlays = MANUF_PERSONALIZED,
-)
-
-# `MANUF_PERSONALIZED` configuration for RMA with SPHINCS+ signature verification
-# enabled for secure boot. Only available in secure environments.
-otp_image(
-    name = "otp_img_rma_manuf_personalized_spx_enabled",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
-    overlays = MANUF_PERSONALIZED + [
-        "//sw/device/silicon_creator/rom/e2e/sigverify_spx:otp_json_sigverify_spx_enabled_true",
     ],
 )
