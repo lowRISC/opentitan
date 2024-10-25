@@ -15,6 +15,7 @@ load(
 )
 load(
     "//rules:otp.bzl",
+    "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
@@ -27,12 +28,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-# Partition used to set a fixed seed value in `otp_image_consts` targets.
-otp_json(
-    name = "otp_json_baseline",
-    seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
-)
 
 otp_json(
     name = "otp_json_creator_sw_cfg",
@@ -209,20 +204,23 @@ otp_alert_digest(
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
-# OTP *_SW_CFG constants used to generate an FT individualization binary.
+# OTP *_SW_CFG and ROT_CREATOR_AUTH_* constants used to generate an FT
+# individualization binary.
 otp_image_consts(
-    name = "otp_sw_cfg_c_file",
-    src = ":otp_json_baseline",
+    name = "otp_consts_c_file",
+    src = "//hw/ip/otp_ctrl/data:otp_json_baseline",
     overlays = [
         ":alert_digest_cfg",
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
-    ],
+    ] + OTP_SIGVERIFY_FAKE_KEYS,
 )
 
+# Library containing {CREATOR,OWNER}_SW_CFG and
+# ROT_CREATOR_AUTH_{CODESIGN,STATE} partition constants.
 cc_library(
-    name = "otp_sw_cfg",
-    srcs = [":otp_sw_cfg_c_file"],
+    name = "otp_consts",
+    srcs = [":otp_consts_c_file"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",

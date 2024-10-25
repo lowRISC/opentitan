@@ -16,8 +16,8 @@ load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
-    "EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS",
-    "FT_PERSONALIZE_KEYS",
+    "EARLGREY_SKUS",
+    "FT_PERSONALIZE_ENDORSEMENT_KEYS",
     "FT_PROVISIONING_INPUTS",
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
@@ -170,7 +170,7 @@ opentitan_test(
 
 [
     opentitan_binary(
-        name = "sram_ft_individualize_{}".format(otp_sw_cfgs),
+        name = "sram_ft_individualize_{}".format(sku),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
@@ -202,18 +202,18 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_{}".format(otp_sw_cfgs),
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(sku),
         ],
     )
-    for otp_sw_cfgs in EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS
+    for sku in EARLGREY_SKUS
 ]
 
 filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
-        ":sram_ft_individualize_prodc",
-        ":sram_ft_individualize_sival",
+        ":sram_ft_individualize_{}".format(sku)
+        for sku in EARLGREY_SKUS
     ],
 )
 
@@ -235,7 +235,10 @@ _DICE_EXTS = [
 
 [
     cc_library(
-        name = "ft_personalize_base{}".format(dice["suffix"]),
+        name = "ft_personalize_{}_base{}".format(
+            sku,
+            dice["suffix"],
+        ),
         srcs = ["ft_personalize.c"],
         deps = [
             ":perso_tlv_data",
@@ -266,10 +269,11 @@ _DICE_EXTS = [
             "//sw/device/silicon_creator/lib/drivers:keymgr",
             "//sw/device/silicon_creator/lib/drivers:kmac",
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(sku),
             "//sw/device/silicon_creator/manuf/lib:personalize",
         ] + dice["ext_libs"],
     )
+    for sku in EARLGREY_SKUS
     for dice in _DICE_EXTS
 ]
 
@@ -341,7 +345,10 @@ manifest(d = {
 
 [
     opentitan_binary(
-        name = "ft_personalize{}".format(ext["suffix"] + dice["suffix"]),
+        name = "ft_personalize_{}{}".format(
+            sku,
+            ext["suffix"] + dice["suffix"],
+        ),
         testonly = True,
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -353,11 +360,29 @@ manifest(d = {
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         manifest = ":manifest_perso",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-        deps = [":ft_personalize_base{}".format(dice["suffix"])] + ext["ext_libs"],
+        deps = [":ft_personalize_{}_base{}".format(
+            sku,
+            dice["suffix"],
+        )] + ext["ext_libs"],
     )
+    for sku in EARLGREY_SKUS
     for ext in _FT_PERSO_EXTS
     for dice in _DICE_EXTS
 ]
+
+filegroup(
+    name = "ft_personalize_all",
+    testonly = True,
+    srcs = [
+        ":ft_personalize_{}{}".format(
+            sku,
+            ext["suffix"] + dice["suffix"],
+        )
+        for sku in EARLGREY_SKUS
+        for ext in _FT_PERSO_EXTS
+        for dice in _DICE_EXTS
+    ],
+)
 
 config_setting(
     name = "ckms_cert_endorsement_params",
@@ -381,7 +406,10 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
 [
     opentitan_test(
-        name = "ft_provision{}".format(ext["suffix"] + dice["suffix"]),
+        name = "ft_provision_{}{}".format(
+            sku,
+            ext["suffix"] + dice["suffix"],
+        ),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
@@ -389,12 +417,16 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
         },
         fpga = fpga_params(
             timeout = "long",
-            binaries = {
-                ":sram_ft_individualize_sival": "sram_ft_individualize",
-                ":ft_personalize{}".format(ext["suffix"] + dice["suffix"]): "ft_personalize",
-            },
+            binaries =
+                {
+                    ":sram_ft_individualize_{}".format(sku): "sram_ft_individualize",
+                    ":ft_personalize_{}{}".format(
+                        sku,
+                        ext["suffix"] + dice["suffix"],
+                    ): "ft_personalize",
+                },
             changes_otp = True,
-            data = FT_PERSONALIZE_KEYS,
+            data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             needs_jtag = True,
             otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
             tags = [
@@ -405,18 +437,23 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             test_harness = _FT_PROVISIONING_HARNESS,
         ),
         silicon = silicon_params(
-            binaries = {
-                ":sram_ft_individualize_sival": "sram_ft_individualize",
-                ":ft_personalize{}".format(ext["suffix"] + dice["suffix"]): "ft_personalize",
-            },
+            binaries =
+                {
+                    ":sram_ft_individualize_{}".format(sku): "sram_ft_individualize",
+                    ":ft_personalize_{}{}".format(
+                        sku,
+                        ext["suffix"] + dice["suffix"],
+                    ): "ft_personalize",
+                },
             changes_otp = True,
-            data = FT_PERSONALIZE_KEYS,
+            data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             interface = "teacup",
             needs_jtag = True,
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
             test_harness = _FT_PROVISIONING_HARNESS,
         ),
     )
+    for sku in EARLGREY_SKUS
     for ext in _FT_PERSO_EXTS
     for dice in _DICE_EXTS
 ]

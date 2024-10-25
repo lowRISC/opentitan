@@ -11,21 +11,21 @@ import logging as log
 from pathlib import Path
 from typing import List, Tuple
 
+from mako.template import Template
+from mubi.prim_mubi import mubi_value_as_int
+from topgen import secure_prng as sp
+
 from lib import common
 from lib.LcStEnc import LcStEnc
 from lib.OtpMemMap import OtpMemMap
 from lib.Present import Present
-from mako.template import Template
-from mubi.prim_mubi import mubi_value_as_int
-from topgen import secure_prng as sp
 
 # Seed diversification constant for OtpMemImg (this enables to use
 # the same seed for different classes)
 OTP_IMG_SEED_DIVERSIFIER = 1941661965323525198146
 
-_OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'LIFE_CYCLE')
-_OTP_SW_SKIP_DIGEST_FIELDS = ('HW_CFG_DIGEST', 'SECRET0_DIGEST',
-                              'SECRET1_DIGEST', 'SECRET2_DIGEST')
+_OTP_SW_SKIP_FROM_HEADER = ('VENDOR_TEST', 'HW_CFG0', 'HW_CFG1', 'SECRET0',
+                            'SECRET1', 'SECRET2', 'LIFE_CYCLE')
 _OTP_SW_WRITE_BYTE_ALIGNMENT = {
     'CREATOR_SW_CFG': 4,
     'OWNER_SW_CFG': 4,
@@ -542,8 +542,7 @@ class OtpMemImg(OtpMemMap):
                 continue
             items = []
             for item in part["items"]:
-                if 'value' not in item.keys(
-                ) or item['name'] in _OTP_SW_SKIP_DIGEST_FIELDS:
+                if 'value' not in item.keys():
                     continue
 
                 alignment = _OTP_SW_WRITE_BYTE_ALIGNMENT[part['name']]
@@ -554,9 +553,16 @@ class OtpMemImg(OtpMemMap):
                 assert (item['size'] %
                         alignment) == 0, "invalid field alignment"
 
+                # TODO: this is a bug in how reggen generates parameter defines
+                item_offset_name = item["name"] + "_OFFSET"
+                if item_offset_name == "ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH_OFFSET":
+                    item_offset_name = "ROTCREATORAUTHCODESIGNBLOCKSHA2_256HASHOFFSET"
+
                 items.append({
                     'name':
                     item['name'],
+                    'offset_name':
+                    item_offset_name,
                     'values':
                     _int_to_hex_array(item['value'], item['size'], alignment),
                     'ismubi':
@@ -564,10 +570,11 @@ class OtpMemImg(OtpMemMap):
                     'num_items':
                     item['size'] / alignment,
                 })
-            data[part['name']] = {
-                'alignment': alignment,
-                'items': items,
-            }
+            if len(items):
+                data[part['name']] = {
+                    'alignment': alignment,
+                    'items': items,
+                }
 
         with open(templatefile, 'r') as tplfile:
             tpl = Template(tplfile.read())
