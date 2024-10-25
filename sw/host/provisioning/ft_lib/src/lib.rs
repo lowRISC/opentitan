@@ -439,12 +439,14 @@ pub fn run_ft_personalize(
     ca_certificate: PathBuf,
     rma_unlock_token_hash: &ArrayVec<u32, 4>,
     spi_console: &SpiConsoleDevice,
+    second_bootstrap: PathBuf,
 ) -> Result<()> {
     // Bootstrap personalization binary into flash.
     init.bootstrap.init(transport)?;
     // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
-    init.bootstrap.init(transport)?;
+    // This time loading personalization binary in flash slot A and ROM_EXT + Owner FW in flash slot B.
+    init.bootstrap.load(transport, &second_bootstrap)?;
     send_rma_unlock_token_hash(rma_unlock_token_hash, timeout, spi_console)?;
     provision_certificates(
         cert_endorsement_key_wrapper,
@@ -455,6 +457,18 @@ pub fn run_ft_personalize(
     )?;
 
     let _ = UartConsole::wait_for(spi_console, r"Personalization done.", timeout)?;
+
+    Ok(())
+}
+
+pub fn check_rom_ext_boot_up(
+    transport: &TransportWrapper,
+    init: &InitializeTest,
+    timeout: Duration,
+) -> Result<()> {
+    transport.reset_target(init.bootstrap.options.reset_delay, true)?;
+    let uart_console = transport.uart("console")?;
+    let _ = UartConsole::wait_for(&*uart_console, r"Starting ROM_EXT.*\r\n", timeout)?;
 
     Ok(())
 }
