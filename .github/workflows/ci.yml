@@ -15,6 +15,9 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+env:
+  VIVADO_VERSION: "2021.1"
+
 jobs:
   quick_lint:
     name: Lint (quick)
@@ -174,6 +177,38 @@ jobs:
           overwrite: true
       - name: Test
         run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
+
+  # Build CW305 variant of the English Breakfast toplevel design using Vivado
+  chip_englishbreakfast_cw305:
+    name: CW305's Bitstream
+    runs-on: ubuntu-22.04-bitstream
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+      - name: Build bitstream
+        run: |
+          # Build CW305 test rom required by `build-bitstream-vivado.sh`
+          rom_path="sw/device/lib/testing/test_rom"
+          ci/bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
+            --features=-rv32_bitmanip \
+            --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+          vmem="$(ci/bazelisk.sh cquery --output=files "//${rom_path}:test_rom_fpga_cw305" \
+            --features=-rv32_bitmanip \
+            --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
+          )"
+          mkdir -p "build-bin/${rom_path}"
+          cp "$vmem" "build-bin/${rom_path}"
+
+          module load "xilinx/vivado/${VIVADO_VERSION}"
+          ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
+      - name: Upload bitstream
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip_englishbreakfast_cw305
+          path: build-bin/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit
+          overwrite: true
 
   build_docker_containers:
     name: Build Docker Containers
