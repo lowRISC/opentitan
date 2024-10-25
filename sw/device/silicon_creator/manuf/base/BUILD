@@ -26,6 +26,10 @@ load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
 )
+load(
+    "//sw/device/silicon_creator/rom/e2e:defs.bzl",
+    "SLOTS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -349,6 +353,7 @@ bool_flag(
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize}
+  --second-bootstrap={firmware}
 """ + FT_PROVISIONING_INPUTS + select({
     ":ckms_cert_endorsement_params": CLOUD_KMS_CERT_ENDORSEMENT_PARAMS,
     "//conditions:default": LOCAL_CERT_ENDORSEMENT_PARAMS,
@@ -366,15 +371,19 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
         },
         fpga = fpga_params(
             timeout = "long",
+            assemble = "{ft_personalize}@{slot_a} {rom_ext}@{slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
+                    "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b": "rom_ext",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             needs_jtag = True,
             otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
+            slot_a = SLOTS["a"],
+            slot_b = SLOTS["b"],
             tags = [
                 "lc_test_locked0",
                 "manuf",
@@ -383,15 +392,19 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             test_harness = _FT_PROVISIONING_HARNESS,
         ),
         silicon = silicon_params(
+            assemble = "{ft_personalize}@{slot_a} {rom_ext}@{slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
+                    "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b": "rom_ext",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             interface = "teacup",
             needs_jtag = True,
+            slot_a = SLOTS["a"],
+            slot_b = SLOTS["b"],
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
             test_harness = _FT_PROVISIONING_HARNESS,
         ),
