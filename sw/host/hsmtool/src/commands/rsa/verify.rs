@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::ops::Range;
 use std::path::PathBuf;
 
 use crate::commands::{BasicResult, Dispatch};
@@ -23,13 +24,17 @@ pub struct Verify {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(short, long, value_enum, default_value = "sha256-hash")]
+    #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
     /// Reverse the input data and result (for little-endian targets).
     #[arg(short = 'r', long)]
     little_endian: bool,
+    /// The signature is at the given byte range of the input file.
+    #[arg(short, long, value_parser=helper::parse_range, conflicts_with="signature")]
+    signature_at: Option<Range<usize>>,
     input: PathBuf,
-    signature: PathBuf,
+    #[arg(conflicts_with = "signature_at")]
+    signature: Option<PathBuf>,
 }
 
 #[typetag::serde(name = "rsa-verify")]
@@ -52,7 +57,17 @@ impl Dispatch for Verify {
         }
         let data = self.format.prepare(KeyType::Rsa, &data)?;
         let mechanism = self.format.mechanism(KeyType::Rsa)?;
-        let mut signature = helper::read_file(&self.signature)?;
+        let mut signature = if let Some(filename) = &self.signature {
+            helper::read_file(filename)?
+        } else if let Some(range) = &self.signature_at {
+            let input = helper::read_file(&self.input)?;
+            input
+                .get(range.clone())
+                .ok_or_else(|| anyhow!("Invalid range on input file: {range:?}"))?
+                .to_vec()
+        } else {
+            unreachable!();
+        };
         if self.little_endian {
             signature.reverse();
         }

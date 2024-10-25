@@ -2,15 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::ops::Range;
 use std::path::PathBuf;
 
-use crate::commands::{BasicResult, Dispatch};
+use crate::commands::{Dispatch, SignResult};
 use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::KeyType;
@@ -23,13 +24,16 @@ pub struct Sign {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(short, long, value_enum, default_value = "sha256-hash")]
+    #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
     /// Reverse the input data and result (for little-endian targets).
     #[arg(short = 'r', long)]
     little_endian: bool,
     #[arg(short, long)]
     output: Option<PathBuf>,
+    /// Update the given byte range in the input file.
+    #[arg(short, long, value_parser=helper::parse_range)]
+    update_in_place: Option<Range<usize>>,
     input: PathBuf,
 }
 
@@ -60,6 +64,18 @@ impl Dispatch for Sign {
         if let Some(output) = &self.output {
             helper::write_file(output, &result)?;
         }
-        Ok(Box::<BasicResult>::default())
+        if let Some(range) = &self.update_in_place {
+            let mut data = helper::read_file(&self.input)?;
+            if let Some(slice) = data.get_mut(range.clone()) {
+                slice.copy_from_slice(&result);
+            } else {
+                return Err(anyhow!("Invalid range on input file: {range:?}"));
+            }
+            helper::write_file(&self.input, &data)?;
+        }
+        Ok(Box::new(SignResult {
+            digest: data,
+            signature: result,
+        }))
     }
 }
