@@ -183,6 +183,12 @@ Digest calculation can be triggered via the DAI.
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.
 Please consult the [life cycle controller documentation](../../lc_ctrl/README.md) documentation for more information.
 
+## OTP Field Descriptions
+
+The table below describes what each field in the OTP partitions is used for.
+
+{{#include otp_ctrl_field_descriptions.md}}
+
 ## Examples
 
 ### Provisioning Items

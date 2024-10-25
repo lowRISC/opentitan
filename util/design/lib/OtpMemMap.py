@@ -7,12 +7,13 @@ documentation, and to create OTP memory images for preloading.
 """
 import logging as log
 from math import ceil, log2
+from typing import Dict, List
 
-from lib.common import check_bool, check_int, random_or_hexvalue
 from mubi.prim_mubi import is_width_valid, mubi_value_as_int
 from tabulate import tabulate
 from topgen import secure_prng as sp
-from typing import List, Dict
+
+from lib.common import check_bool, check_int, random_or_hexvalue
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -490,6 +491,40 @@ class OtpMemMap():
                     name, "0x{:03X}".format(check_int(item["offset"])),
                     str(item["size"])
                 ])
+
+                table.append(row)
+
+        return tabulate(table,
+                        headers="firstrow",
+                        tablefmt="pipe",
+                        colalign=colalign)
+
+    def create_description_table(self) -> str:
+        header = ["Partition", "Item", "Size [B]", "Description"]
+        table = [header]
+        # Everything column center aligned, except the descriptions.
+        colalign = ["center"] * len(header)
+        colalign[-1] = "left"
+
+        for k, part in enumerate(self.config["partitions"]):
+            for j, item in enumerate(part["items"]):
+                if part["secret"] or part["name"] in {
+                        "VENDOR_TEST", "LIFE_CYCLE"
+                }:
+                    continue
+
+                name = None
+                if check_bool(item["isdigest"]):
+                    continue
+                else:
+                    name = item["name"]
+
+                if j == 0:
+                    row = [part["name"]]
+                else:
+                    row = [""]
+                desc = " ".join(item.get("desc", "").split("\n"))
+                row.extend([name, str(item["size"]), desc])
 
                 table.append(row)
 
