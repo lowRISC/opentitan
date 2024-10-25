@@ -12,6 +12,11 @@
 #![deny(unsafe_code)]
 
 use crate::with_unknown;
+use anyhow::Result;
+use byteorder::{LittleEndian, WriteBytesExt};
+use serde::{Deserialize, Serialize};
+use serde_annotate::Annotate;
+use std::io::Write;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
 // Currently, these definitions must be updated manually but they can be
@@ -38,9 +43,13 @@ pub const MANIFEST_USAGE_CONSTRAINT_UNSELECTED_WORD_VAL: u32 = 0xa5a5a5a5;
 pub const MANIFEST_EXT_ID_SPX_KEY: u32 = 0x94ac01ec;
 pub const MANIFEST_EXT_ID_SPX_SIGNATURE: u32 = 0xad77f84a;
 pub const MANIFEST_EXT_ID_SECVER_WRITE: u32 = 0x3f086a41;
+pub const MANIFEST_EXT_ID_ISFB: u32 = 0x42465349;
+pub const MANIFEST_EXT_ID_ISFB_ERASE: u32 = 0x45465349;
 pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
 pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
 pub const MANIFEST_EXT_NAME_SECVER_WRITE: u32 = 0x56434553;
+pub const MANIFEST_EXT_NAME_ISFB: u32 = 0x42465349;
+pub const MANIFEST_EXT_NAME_ISFB_ERASE: u32 = 0x45465349;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -104,10 +113,17 @@ impl Default for SigverifySpxSignature {
 
 /// Extension header.
 #[repr(C)]
-#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default, Serialize, Deserialize)]
 pub struct ManifestExtHeader {
     pub identifier: u32,
     pub name: u32,
+}
+
+impl ManifestExtHeader {
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        dest.write_all(self.as_bytes())?;
+        Ok(())
+    }
 }
 
 /// SPHINCS+ signature manifest extension.
@@ -152,6 +168,48 @@ impl Default for SigverifyBuffer {
 pub struct ManifestExtSecVerWrite {
     pub header: ManifestExtHeader,
     pub write: u32,
+}
+
+/// Integrator Specific Firmware Binding product expression.
+#[derive(Debug, Serialize, Deserialize, Annotate)]
+pub struct ManifestExtIsfbProductExpr {
+    pub mask: u32,
+    pub value: u32,
+}
+
+/// Integrator Specific Firmware Binding manifest extension.
+#[derive(Debug, Serialize, Deserialize)]
+pub struct ManifestExtIsfb {
+    pub header: ManifestExtHeader,
+    pub strike_mask: u128,
+    pub product_expr_count: u32,
+    pub product_expr: Vec<ManifestExtIsfbProductExpr>,
+}
+
+impl ManifestExtIsfb {
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        self.header.write(dest)?;
+        dest.write_u128::<LittleEndian>(self.strike_mask)?;
+        dest.write_u32::<LittleEndian>(self.product_expr_count)?;
+        for x in &self.product_expr {
+            dest.write_u32::<LittleEndian>(x.mask)?;
+            dest.write_u32::<LittleEndian>(x.value)?;
+        }
+        Ok(())
+    }
+
+    pub fn to_vec(&self) -> Result<Vec<u8>> {
+        let mut buf = Vec::new();
+        self.write(&mut buf)?;
+        Ok(buf)
+    }
+}
+
+#[repr(C)]
+#[derive(AsBytes, FromBytes, FromZeroes, Debug, Default)]
+pub struct ManifestExtIsfbErasePolicy {
+    pub header: ManifestExtHeader,
+    pub erase_allowed: u32,
 }
 
 /// A type that holds the 256-bit device identifier.

@@ -11,6 +11,22 @@
       secver_write: true,
     },
     {
+      strike_mask: "0x0fedcba987654321fedcba9876543210"
+      product_expr: [
+        {
+          mask: "0xffffffff",
+          value: "0xa5a5a5a5",
+        },
+        {
+          mask: "0xf0f0f0f0",
+          value: "0xa0a0a0a0",
+        },
+      ]
+    },
+    {
+      erase_allowed: false,
+    },
+    {
       name: "0xbeef",
       identifier: "0xabcd",
       value: ["0x01", "0x23", "0x45", "0x67"],
