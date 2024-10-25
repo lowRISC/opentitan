@@ -615,3 +615,9 @@ pkg_files(
     srcs = [":otp_imgs"],
     prefix = "earlgrey/otp",
 )
+
+# Partition used to set a fixed seed value in `otp_image_consts` targets.
+otp_json(
+    name = "otp_json_baseline",
+    seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+)

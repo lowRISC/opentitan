@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS = [
+EARLGREY_SKUS = [
     "sival",
     "prodc",
 ]
@@ -18,7 +18,7 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --wafer-auth-secret="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
 """
 
-FT_PERSONALIZE_KEYS = [
+FT_PERSONALIZE_ENDORSEMENT_KEYS = [
     "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
     "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
     "//sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem",

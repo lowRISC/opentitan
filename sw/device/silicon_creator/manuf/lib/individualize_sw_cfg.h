@@ -27,6 +27,18 @@ extern const otp_kv_t kOtpKvOwnerSwCfg[];
 extern const uint32_t kOwnerSwCfgRomBootstrapDisValue;
 
 /**
+ * OTP RoT Creator Auth Codesign Partition.
+ */
+extern const size_t kOtpKvRotCreatorAuthCodesignSize;
+extern const otp_kv_t kOtpKvRotCreatorAuthCodesign[];
+
+/**
+ * OTP RoT Creator Auth State Partition.
+ */
+extern const size_t kOtpKvRotCreatorAuthStateSize;
+extern const otp_kv_t kOtpKvRotCreatorAuthState[];
+
+/**
  * Configures the CREATOR_SW_CFG OTP partition.
  *
  * The CREATOR_SW_CFG partition contains various settings for the ROM, e.g.,:
@@ -152,7 +164,7 @@ status_t manuf_individualize_device_creator_sw_cfg_check(
  *   partition is locked, and the final transport image is loaded.
  *
  * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the HW_CFG0 partition is locked.
+ * @return OK_STATUS if the OWNER_SW_CFG partition is locked.
  */
 OT_WARN_UNUSED_RESULT
 status_t manuf_individualize_device_owner_sw_cfg(
@@ -206,5 +218,49 @@ status_t manuf_individualize_device_owner_sw_cfg_check(
  */
 status_t manuf_individualize_device_partition_expected_read(
     dif_otp_ctrl_partition_t partition, uint8_t *buffer);
+
+/**
+ * Configures and locks the ROT_CREATOR_AUTH_CODESIGN OTP partition.
+ *
+ * The ROT_CREATOR_AUTH_CODESIGN partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public keys.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_CREATOR_AUTH_CODESIGN partition has been locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_creator_auth_codesign(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_CREATOR_AUTH_CODESIGN OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_CREATOR_AUTH_CODESIGN partition is locked.
+ */
+status_t manuf_individualize_device_rot_creator_auth_codesign_check(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Configures and locks the ROT_CREATOR_AUTH_STATE OTP partition.
+ *
+ * The ROT_CREATOR_AUTH_STATE partition contains the first stage
+ * (ROM->ROM_EXT) secure boot public key validity states.
+ *
+ * @param otp_ctrl OTP controller instance.
+ * @return OK_STATUS if the ROT_CREATOR_AUTH_STATE partition has been locked.
+ */
+OT_WARN_UNUSED_RESULT
+status_t manuf_individualize_device_rot_creator_auth_state(
+    const dif_otp_ctrl_t *otp_ctrl);
+
+/**
+ * Checks the ROT_CREATOR_AUTH_STATE OTP partition end state.
+ *
+ * @param otp_ctrl OTP controller interface.
+ * @return OK_STATUS if the ROT_CREATOR_AUTH_STATE partition is locked.
+ */
+status_t manuf_individualize_device_rot_creator_auth_state_check(
+    const dif_otp_ctrl_t *otp_ctrl);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_INDIVIDUALIZE_SW_CFG_H_
