@@ -393,30 +393,6 @@ jobs:
       top_name: earlgrey
       design_suffix: cw340
 
-- job: chip_englishbreakfast_cw305
-  displayName: CW305's Bitstream
-  # Build CW305 variant of the English Breakfast toplevel design using Vivado
-  dependsOn: build_and_execute_verilated_tests_englishbreakfast
-  condition: and(succeeded(), eq(dependencies.lint.outputs['DetermineBuildType.onlyDocChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyDvChanges'], '0'), eq(dependencies.lint.outputs['DetermineBuildType.onlyCdcChanges'], '0'))
-  pool: ci-public-eda
-  timeoutInMinutes: 120 # 2 hours
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/download-artifacts-template.yml
-    parameters:
-      downloadPartialBuildBinFrom:
-        - build_and_execute_verilated_tests_englishbreakfast
-  - bash: |
-      set -e
-      module load "xilinx/vivado/$(VIVADO_VERSION)"
-      ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
-    displayName: Build bitstream
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"
-
 - job: cache_bitstreams
   displayName: Cache bitstreams to GCP
   pool:
