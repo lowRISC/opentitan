@@ -8,7 +8,10 @@ use std::time::Duration;
 use anyhow::{bail, Result};
 use clap::{Args, Parser};
 
-use ft_lib::{run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock, KeyWrapper};
+use ft_lib::{
+    check_rom_ext_boot_up, run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
+    KeyWrapper,
+};
 use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
@@ -90,6 +93,10 @@ struct Opts {
 
     #[command(flatten)]
     provisioning_data: ManufFtProvisioningDataInput,
+
+    /// Second image (perso FW + ROM_EXT/Owner FW bundle) to bootstrap.
+    #[arg(long)]
+    second_bootstrap: PathBuf,
 
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
@@ -232,9 +239,14 @@ fn main() -> Result<()> {
         opts.provisioning_data.ca_certificate,
         &rma_unlock_token_hash,
         &spi_console_device,
+        opts.second_bootstrap,
     )?;
 
     log::info!("Provisioning Done");
+
+    check_rom_ext_boot_up(&transport, &opts.init, opts.timeout)?;
+
+    log::info!("Successfully boot into ROM_EXT");
 
     Ok(())
 }
