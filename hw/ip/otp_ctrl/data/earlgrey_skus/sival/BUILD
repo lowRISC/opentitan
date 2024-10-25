@@ -16,6 +16,7 @@ load(
 )
 load(
     "//rules:otp.bzl",
+    "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
@@ -29,12 +30,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-# Partition used to set a fixed seed value in `otp_image_consts` targets.
-otp_json(
-    name = "otp_json_baseline",
-    seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
-)
 
 otp_json(
     name = "otp_json_creator_sw_cfg",
@@ -236,48 +231,59 @@ LC_MISSION_STATES = get_lc_items(
 
 # The `MANUF_INITIALIZED` OTP profile configures the SECRET0 partition to
 # enable the device to transition between test_unlock and test_locked states,
-# as well as to transition out of test_unlock into any of the
-# `LC_MISSION_STATES`.
+# as well as to transition out of test_unlock into any mission mode state.
+# This profile represents the OTP state of a device that has completed CP
+# provisioning.
 MANUF_INITIALIZED = [
     "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
-    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
+# The `MANUF_SW_INITIALIZED` OTP profile configures the following partitions:
+# - CREATOR_SW_CFG, and
+# - OWNER_SW_CFG.
+# This profile is used to construct the `MANUF_INDIVIDUALIZED` profile below.
 MANUF_SW_INITIALIZED = [
     ":alert_digest_cfg",
     ":otp_json_creator_sw_cfg",
     ":otp_json_owner_sw_cfg",
 ]
 
-# The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
-# OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
-MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
+# The `MANUF_INDIVIDUALIZED` OTP profile configures the following partitions:
+# - CREATOR_SW_CFG,
+# - OWNER_SW_CFG,
+# - ROT_CREATOR_AUTH_CODESIGN,
+# - ROT_CREATOR_AUTH_STATE, and
+# - HW_CFG0/1.
+# It also includes the `MANUF_INITIALIZED` profile defined above. It represents
+# the OTP state of a device that has completed FT individualize provisioning.
+MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS + [
     "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
     "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
-# partitions. It also includes the `MANUF_INDIVIDUALIZED` profile.
+# partitions. It also includes the `MANUF_INDIVIDUALIZED` profile. It represents
+# the OTP state of a device that has completed all provisioning steps.
 MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
     "//hw/ip/otp_ctrl/data:otp_json_secret1",
     "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
 
-# OTP *_SW_CFG constants used to generate an FT individualization binary.
-# The `MANUF_SW_INITIALIZED` OTP profile is also used to derive OTP profiles
-# representing the state of the device after running the FT individualization
-# binary that consumes this dependency.
+# OTP *_SW_CFG and ROT_CREATOR_AUTH_* constants used to generate an FT
+# individualization binary.
 otp_image_consts(
-    name = "otp_sw_cfg_c_file",
-    src = ":otp_json_baseline",
+    name = "otp_consts_c_file",
+    src = "//hw/ip/otp_ctrl/data:otp_json_baseline",
     # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
     # OTP profile instead.
-    overlays = MANUF_SW_INITIALIZED,
+    overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
 )
 
+# Library containing {CREATOR,OWNER}_SW_CFG and
+# ROT_CREATOR_AUTH_{CODESIGN,STATE} partition constants.
 cc_library(
-    name = "otp_sw_cfg",
-    srcs = [":otp_sw_cfg_c_file"],
+    name = "otp_consts",
+    srcs = [":otp_consts_c_file"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
@@ -315,7 +321,7 @@ otp_image(
 ]
 
 # `MANUF_INDIVIDUALIZED` configuration. Available on TEST_UNLOCK states 1-7, as
-# well as dev, prod, prod_end and rma. This configuration has flash scrambling
+# well as DEV, PROD, PROD_END and RMA. This configuration has flash scrambling
 # disabled. See the personalized OTP configuration for targets requiring flash
 # scrambling enabled.
 # See sw/device/tests/doc/sival/devguide.md for more details.

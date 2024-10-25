@@ -105,8 +105,7 @@ ${fileheader}
 // OTP values
 % for partition_name in data:
 <%
-  if len(data[partition_name]["items"]) == 0:
-    continue
+  assert(len(data[partition_name]["items"]))
   alignment = data[partition_name]["alignment"]
 %>
 // Partition ${partition_name} values
@@ -119,8 +118,7 @@ ${ConstTypeDefinition(item, data[partition_name]["alignment"])}
 
 % for partition_name in data:
 <%
-  if len(data[partition_name]["items"]) == 0:
-    continue
+  assert(len(data[partition_name]["items"]))
   alignment = data[partition_name]["alignment"]
 %>
 // Partition ${partition_name}
@@ -129,7 +127,7 @@ const otp_kv_t ${"kOtpKv" + ToPascalCase(partition_name)}[] = {
   % for item in data[partition_name]["items"]:
   {
     .type = ${ToOtpValType(alignment)},
-    .offset = ${"OTP_CTRL_PARAM_" + item["name"] + "_OFFSET"},
+    .offset = ${"OTP_CTRL_PARAM_" + item["offset_name"]},
     .num_values = ${int(item["num_items"])},
     ${RefValue(item, alignment)},
   },

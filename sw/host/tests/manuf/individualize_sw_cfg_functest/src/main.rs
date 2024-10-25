@@ -37,9 +37,20 @@ fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()>
     uart.clear_rx_buffer()?;
     opts.init.bootstrap.init(transport)?;
 
+    // Wait for each partition to be provisioned.
     let _ = UartConsole::wait_for(
         &*uart,
         r"Provisioned and locked OWNER_SW_CFG OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_CREATOR_AUTH_CODESIGN OTP partition.",
+        opts.timeout,
+    )?;
+    let _ = UartConsole::wait_for(
+        &*uart,
+        r"Provisioned and locked ROT_CREATOR_AUTH_STATE OTP partition.",
         opts.timeout,
     )?;
 
