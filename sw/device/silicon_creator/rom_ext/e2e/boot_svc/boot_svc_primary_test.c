@@ -32,6 +32,7 @@ static status_t check_side_b(retention_sram_t *retram,
   TRY(boot_svc_header_check(&msg.header));
   TRY_CHECK(msg.header.type == kBootSvcNextBl0SlotResType);
   TRY_CHECK(msg.next_boot_bl0_slot_res.status == kErrorOk);
+  TRY_CHECK(msg.next_boot_bl0_slot_res.primary_bl0_slot == kBootSlotB);
   TRY_CHECK(state->current_side == 'B');
   TRY_CHECK(state->primary_side == 'B');
   if (state->boots == 4) {
@@ -48,8 +49,12 @@ static status_t check_side_b(retention_sram_t *retram,
 
 static status_t check_return_side_a(retention_sram_t *retram,
                                     boot_svc_retram_t *state) {
+  boot_svc_msg_t msg = retram->creator.boot_svc_msg;
+  TRY(boot_svc_header_check(&msg.header));
+  TRY_CHECK(msg.header.type == kBootSvcNextBl0SlotResType);
   TRY_CHECK(state->current_side == 'A');
   TRY_CHECK(state->primary_side == 'A');
+  TRY_CHECK(msg.next_boot_bl0_slot_res.primary_bl0_slot == kBootSlotA);
   state->state = kBootSvcTestStateFinal;
   return OK_STATUS();
 }
