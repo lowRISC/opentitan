@@ -16,7 +16,7 @@ load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
-    "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+    "EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS",
     "FT_PERSONALIZE_KEYS",
     "FT_PROVISIONING_INPUTS",
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
@@ -205,7 +205,7 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_{}".format(otp_sw_cfgs),
         ],
     )
-    for otp_sw_cfgs in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
+    for otp_sw_cfgs in EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS
 ]
 
 filegroup(

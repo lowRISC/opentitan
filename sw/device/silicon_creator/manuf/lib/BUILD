@@ -11,7 +11,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+    "EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -197,7 +197,7 @@ cc_library(
             "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_sw_cfg".format(otp_sw_cfg),
         ],
     )
-    for otp_sw_cfg in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
+    for otp_sw_cfg in EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS
 ]
 
 opentitan_test(

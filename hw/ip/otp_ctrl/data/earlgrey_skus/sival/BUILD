@@ -22,7 +22,6 @@ load(
     "otp_image",
     "otp_image_consts",
     "otp_json",
-    "otp_json_immutable_rom_ext",
     "otp_partition",
     "otp_per_class_bytes",
     "otp_per_class_ints",
@@ -104,6 +103,9 @@ otp_json(
                 # Any value different than `CONST.HARDENED_FALSE` will force
                 # main SRAM scramble key rotation.
                 "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN": otp_hex(0x0),
+
+                # Disable the use of the ROM_EXT immutable section.
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
             },
         ),
     ],
@@ -202,58 +204,13 @@ otp_json(
     ],
 )
 
-otp_json_immutable_rom_ext(
-    name = "otp_json_immutable_rom_ext",
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
-            },
-        ),
-    ],
-    rom_ext = "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
-    visibility = ["//visibility:private"],
-)
-
 # Create an overlay for the alert_handler digest.
 otp_alert_digest(
     name = "alert_digest_cfg",
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
-otp_json(
-    name = "otp_json_hw_cfg0",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG0",
-            items = {
-                "DEVICE_ID": "<random>",
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_hw_cfg1",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG1",
-            items = {
-                # Enable code execution from SRAM in PROD state.
-                "EN_SRAM_IFETCH": True,
-                # Cryptolib and chip-level tests require access to the CSRNG
-                # software interfaces.
-                "EN_CSRNG_SW_APP_READ": True,
-                # Use legacy behavior and disable late debug enable.
-                "DIS_RV_DM_LATE_DEBUG": True,
-            },
-            lock = True,
-        ),
-    ],
-)
-
+# Create an overlay that enalbes the rv_dm late debug feature.
 otp_json(
     name = "otp_json_hw_cfg1_enable_rv_dm_late_debug",
     partitions = [
@@ -262,38 +219,6 @@ otp_json(
             items = {
                 # Use legacy behavior and disable late debug enable.
                 "DIS_RV_DM_LATE_DEBUG": False,
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_secret1",
-    partitions = [
-        otp_partition(
-            name = "SECRET1",
-            items = {
-                "FLASH_ADDR_KEY_SEED": "<random>",
-                "FLASH_DATA_KEY_SEED": "<random>",
-                "SRAM_DATA_KEY_SEED": "<random>",
-            },
-            lock = True,
-        ),
-    ],
-)
-
-otp_json(
-    name = "otp_json_fixed_secret2",
-    partitions = [
-        otp_partition(
-            name = "SECRET2",
-            items = {
-                # We aren't testing keymgr for ROM_EXT tests and we want
-                # reproducible bitstreams for all tests.
-                "RMA_TOKEN": "0x1faf9056acde66561685549803a28bec",
-                "CREATOR_ROOT_KEY_SHARE0": "1111111111111111111111111111111111111111111111111111111111111111",
-                "CREATOR_ROOT_KEY_SHARE1": "2222222222222222222222222222222222222222222222222222222222222222",
             },
             lock = True,
         ),
@@ -322,27 +247,26 @@ MANUF_SW_INITIALIZED = [
     ":alert_digest_cfg",
     ":otp_json_creator_sw_cfg",
     ":otp_json_owner_sw_cfg",
-    ":otp_json_immutable_rom_ext",
 ]
 
 # The `MANUF_INDIVIDUALIZED` OTP profile configures the HW_CFG0/1, CREATOR_SW and
 # OWNER_SW OTP partitions. It also includes the `MANUF_INITIALIZED`.
 MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + [
-    ":otp_json_hw_cfg0",
-    ":otp_json_hw_cfg1",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
 # partitions. It also includes the `MANUF_INDIVIDUALIZED` profile.
 MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
-    ":otp_json_secret1",
-    ":otp_json_fixed_secret2",
+    "//hw/ip/otp_ctrl/data:otp_json_secret1",
+    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
 ]
 
-# OTP SW Configuration. Used to generate a configuration program used during
-# manufacturing. The `MANUF_SW_INITIALIZED` OTP profile is also used to derive
-# OTP profiles representing the state of the device after running manufacturing
-# steps consuming this dependency.
+# OTP *_SW_CFG constants used to generate an FT individualization binary.
+# The `MANUF_SW_INITIALIZED` OTP profile is also used to derive OTP profiles
+# representing the state of the device after running the FT individualization
+# binary that consumes this dependency.
 otp_image_consts(
     name = "otp_sw_cfg_c_file",
     src = ":otp_json_baseline",
