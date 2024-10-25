@@ -11,7 +11,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS",
+    "EARLGREY_SKUS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -186,17 +186,17 @@ cc_library(
     ],
 )
 
-# As more SKUs are created with different OTP software configuration partitions,
-# libraries can be added to INDIVIDUALIZE_OTP_SW_CFGS accordingly.
+# As more SKUs are created with different OTP configurations, libraries can be
+# added by updating EARLGREY_SKUS accordingly.
 [
     cc_library(
-        name = "individualize_sw_cfg_earlgrey_sku_{}".format(otp_sw_cfg),
+        name = "individualize_sw_cfg_{}".format(sku),
         deps = [
             ":individualize_sw_cfg",
-            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_sw_cfg".format(otp_sw_cfg),
+            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_consts".format(sku),
         ],
     )
-    for otp_sw_cfg in EARLGREY_INDIVIDUALIZE_OTP_SW_CFGS
+    for sku in EARLGREY_SKUS
 ]
 
 opentitan_test(
@@ -217,7 +217,8 @@ opentitan_test(
     ),
     deps = [
         ":flash_info_fields",
-        ":individualize_sw_cfg_earlgrey_sku_sival",
+        # Testing sival SKU only should be sufficient.
+        ":individualize_sw_cfg_sival",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",

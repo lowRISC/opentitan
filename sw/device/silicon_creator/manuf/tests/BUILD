@@ -296,7 +296,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_earlgrey_sku_sival",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sival",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
 )
