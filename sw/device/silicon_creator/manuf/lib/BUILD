@@ -11,7 +11,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_SKUS",
+    "EARLGREY_OTP_CFGS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -188,16 +188,16 @@ cc_library(
 )
 
 # As more SKUs are created with different OTP configurations, libraries can be
-# added by updating EARLGREY_SKUS accordingly.
+# added by updating EARLGREY_OTP_CFGS accordingly.
 [
     cc_library(
-        name = "individualize_sw_cfg_{}".format(sku),
+        name = "individualize_sw_cfg_{}".format(cfg),
         deps = [
             ":individualize_sw_cfg",
-            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_consts".format(sku),
+            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_consts".format(cfg),
         ],
     )
-    for sku in EARLGREY_SKUS
+    for cfg in EARLGREY_OTP_CFGS
 ]
 
 opentitan_test(

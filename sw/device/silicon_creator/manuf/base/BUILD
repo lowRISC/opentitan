@@ -16,6 +16,7 @@ load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
+    "EARLGREY_OTP_CFGS",
     "EARLGREY_SKUS",
     "FT_PERSONALIZE_ENDORSEMENT_KEYS",
     "FT_PROVISIONING_INPUTS",
@@ -170,7 +171,7 @@ opentitan_test(
 
 [
     opentitan_binary(
-        name = "sram_ft_individualize_{}".format(sku),
+        name = "sram_ft_individualize_{}".format(cfg),
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
@@ -202,18 +203,18 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize",
             "//sw/device/silicon_creator/manuf/lib:otp_fields",
             "//sw/device/silicon_creator/manuf/lib:sram_start",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(sku),
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(cfg),
         ],
     )
-    for sku in EARLGREY_SKUS
+    for cfg in EARLGREY_OTP_CFGS
 ]
 
 filegroup(
     name = "sram_ft_individualize_all",
     testonly = True,
     srcs = [
-        ":sram_ft_individualize_{}".format(sku)
-        for sku in EARLGREY_SKUS
+        ":sram_ft_individualize_{}".format(cfg)
+        for cfg in EARLGREY_OTP_CFGS
     ],
 )
 
@@ -221,61 +222,6 @@ cc_library(
     name = "personalize_ext",
     hdrs = ["personalize_ext.h"],
 )
-
-_DICE_EXTS = [
-    {
-        "suffix": "",
-        "ext_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
-    },
-    {
-        "suffix": "_dice_cwt",
-        "ext_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
-    },
-]
-
-[
-    cc_library(
-        name = "ft_personalize_{}_base{}".format(
-            sku,
-            dice["suffix"],
-        ),
-        srcs = ["ft_personalize.c"],
-        deps = [
-            ":perso_tlv_data",
-            ":personalize_ext",
-            "//sw/device/lib/crypto/drivers:entropy",
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/dif:lc_ctrl",
-            "//sw/device/lib/dif:otp_ctrl",
-            "//sw/device/lib/dif:rstmgr",
-            "//sw/device/lib/runtime:log",
-            "//sw/device/lib/testing:lc_ctrl_testutils",
-            "//sw/device/lib/testing:rstmgr_testutils",
-            "//sw/device/lib/testing/json:provisioning_data",
-            "//sw/device/lib/testing/test_framework:check",
-            "//sw/device/lib/testing/test_framework:ottf_main",
-            "//sw/device/lib/testing/test_framework:status",
-            "//sw/device/lib/testing/test_framework:ujson_ottf",
-            "//sw/device/silicon_creator/lib:attestation",
-            "//sw/device/silicon_creator/lib:otbn_boot_services",
-            "//sw/device/silicon_creator/lib/base:util",
-            "//sw/device/silicon_creator/lib/cert",
-            "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-            "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-            "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
-            "//sw/device/silicon_creator/lib/cert:uds_template_library",
-            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-            "//sw/device/silicon_creator/lib/drivers:hmac",
-            "//sw/device/silicon_creator/lib/drivers:keymgr",
-            "//sw/device/silicon_creator/lib/drivers:kmac",
-            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(sku),
-            "//sw/device/silicon_creator/manuf/lib:personalize",
-        ] + dice["ext_libs"],
-    )
-    for sku in EARLGREY_SKUS
-    for dice in _DICE_EXTS
-]
 
 cc_library(
     name = "tpm_perso_fw_ext",
@@ -322,17 +268,6 @@ cc_library(
     ],
 )
 
-_FT_PERSO_EXTS = [
-    {
-        "suffix": "",
-        "ext_libs": ["@provisioning_exts//:perso_fw_ext"],
-    },
-    {
-        "suffix": "_tpm_ext",
-        "ext_libs": [":tpm_perso_fw_ext"],
-    },
-]
-
 manifest(d = {
     "name": "manifest_perso",
     "identifier": hex(CONST.ROM_EXT),
@@ -345,10 +280,7 @@ manifest(d = {
 
 [
     opentitan_binary(
-        name = "ft_personalize_{}{}".format(
-            sku,
-            ext["suffix"] + dice["suffix"],
-        ),
+        name = "ft_personalize_{}".format(sku),
         testonly = True,
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
@@ -360,27 +292,47 @@ manifest(d = {
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
         manifest = ":manifest_perso",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-        deps = [":ft_personalize_{}_base{}".format(
-            sku,
-            dice["suffix"],
-        )] + ext["ext_libs"],
+        deps = [
+            ":perso_tlv_data",
+            ":personalize_ext",
+            "//sw/device/lib/crypto/drivers:entropy",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:otp_ctrl",
+            "//sw/device/lib/dif:rstmgr",
+            "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
+            "//sw/device/lib/testing:rstmgr_testutils",
+            "//sw/device/lib/testing/json:provisioning_data",
+            "//sw/device/lib/testing/test_framework:check",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/lib/testing/test_framework:status",
+            "//sw/device/lib/testing/test_framework:ujson_ottf",
+            "//sw/device/silicon_creator/lib:attestation",
+            "//sw/device/silicon_creator/lib:otbn_boot_services",
+            "//sw/device/silicon_creator/lib/base:util",
+            "//sw/device/silicon_creator/lib/cert",
+            "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
+            "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+            "//sw/device/silicon_creator/lib/cert:uds_template_library",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:kmac",
+            "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+            "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
+            "//sw/device/silicon_creator/manuf/lib:personalize",
+        ] + config["dice_libs"] + config["ext_libs"],
     )
-    for sku in EARLGREY_SKUS
-    for ext in _FT_PERSO_EXTS
-    for dice in _DICE_EXTS
+    for sku, config in EARLGREY_SKUS.items()
 ]
 
 filegroup(
     name = "ft_personalize_all",
     testonly = True,
     srcs = [
-        ":ft_personalize_{}{}".format(
-            sku,
-            ext["suffix"] + dice["suffix"],
-        )
-        for sku in EARLGREY_SKUS
-        for ext in _FT_PERSO_EXTS
-        for dice in _DICE_EXTS
+        ":ft_personalize_{}".format(sku)
+        for sku in EARLGREY_SKUS.keys()
     ],
 )
 
@@ -406,10 +358,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
 
 [
     opentitan_test(
-        name = "ft_provision_{}{}".format(
-            sku,
-            ext["suffix"] + dice["suffix"],
-        ),
+        name = "ft_provision_{}".format(sku),
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
@@ -419,11 +368,8 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             timeout = "long",
             binaries =
                 {
-                    ":sram_ft_individualize_{}".format(sku): "sram_ft_individualize",
-                    ":ft_personalize_{}{}".format(
-                        sku,
-                        ext["suffix"] + dice["suffix"],
-                    ): "ft_personalize",
+                    ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
+                    ":ft_personalize_{}".format(sku): "ft_personalize",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
@@ -439,11 +385,8 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
         silicon = silicon_params(
             binaries =
                 {
-                    ":sram_ft_individualize_{}".format(sku): "sram_ft_individualize",
-                    ":ft_personalize_{}{}".format(
-                        sku,
-                        ext["suffix"] + dice["suffix"],
-                    ): "ft_personalize",
+                    ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
+                    ":ft_personalize_{}".format(sku): "ft_personalize",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
@@ -453,7 +396,23 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             test_harness = _FT_PROVISIONING_HARNESS,
         ),
     )
-    for sku in EARLGREY_SKUS
-    for ext in _FT_PERSO_EXTS
-    for dice in _DICE_EXTS
+    for sku, config in EARLGREY_SKUS.items()
 ]
+
+test_suite(
+    name = "ft_provision_cw310",
+    tags = ["manual"],
+    tests = [
+        ":ft_provision_{}_fpga_hyper310_rom_with_fake_keys".format(sku)
+        for sku in EARLGREY_SKUS.keys()
+    ],
+)
+
+test_suite(
+    name = "ft_provision_cw340",
+    tags = ["manual"],
+    tests = [
+        ":ft_provision_{}_fpga_cw340_rom_with_fake_keys".format(sku)
+        for sku in EARLGREY_SKUS.keys()
+    ],
+)
