@@ -41,7 +41,7 @@ if {$env(TASK) == "FpvSecCm"} {
     -bbox_m prim_ram_1p \
     -bbox_m prim_ram_1p_scr \
     -f [glob *.scr]
-} elseif {$env(DUT_TOP) == "pinmux_tb"} {
+} elseif {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   analyze -sv09 \
     +define+FPV_ON+$env(FPV_DEFINES) \
     -bbox_m usbdev_aon_wake \
@@ -83,7 +83,7 @@ if {[info exists ::env(AFTER_LOAD)]} {
 # tlul_assert.sv operates on the negedge clock
 # even clock this sampled at both_edges, input should only change at posedge clock cycle
 # TODO: create each DUT_TOP's individual config file
-if {$env(DUT_TOP) == "pinmux_tb"} {
+if {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   clock clk_i -both_edges
   clock clk_aon_i -factor 5
   clock -rate -default clk_i
