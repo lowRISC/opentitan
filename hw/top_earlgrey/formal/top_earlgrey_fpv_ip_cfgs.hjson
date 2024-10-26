@@ -33,7 +33,7 @@
              // Use chip_eargrey_asic parameters to verify pinmux.
              {
                name: pinmux_chip_fpv
-               dut: pinmux_tb
+               dut: pinmux_chip_tb
                fusesoc_core: lowrisc:systems:pinmux_chip_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip/pinmux/{sub_flow}/{tool}"
