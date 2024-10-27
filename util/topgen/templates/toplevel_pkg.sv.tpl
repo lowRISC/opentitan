@@ -59,6 +59,30 @@ package top_${top["name"]}_pkg;
 % endif
 
 % endfor
+% for alert_group, alert_modules in top["outgoing_alert_module"].items():
+  
+  // Number of ${alert_group} outgoing alerts
+  parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(alert_modules)};
+
+  // Number of LPGs for outgoing alert group ${alert_group}
+  parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};
+  
+  // Enumeration of ${alert_group} outgoing alerts
+  typedef enum int unsigned {
+% for mod in alert_modules:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
+% endfor
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_peripheral_count").as_camel_case()}
+  } ${"outgoing_alert_" + alert_group + "_peripheral_e"};
+
+  // Enumeration of ${alert_group} outgoing alerts
+  typedef enum int unsigned {
+% for alert in top["outgoing_alert"][alert_group]:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_" + alert["name"]).as_camel_case()} = ${loop.index},
+% endfor
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_id_count").as_camel_case()}
+  } ${"outgoing_alert_" + alert_group + "_id_e"};
+% endfor
 
   // Enumeration of alert modules
   typedef enum int unsigned {

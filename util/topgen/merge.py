@@ -4,8 +4,9 @@
 
 import logging as log
 import re
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from copy import deepcopy
+from itertools import chain
 from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
@@ -840,9 +841,10 @@ def amend_resets(top, name_to_block):
 
 def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
     '''Loop over modules and determine number of unique LPGs'''
-    num_lpg = 0
     lpg_dict = {}
+    outgoing_lpg_dict = defaultdict(dict)
     top['alert_lpgs'] = []
+    top['outgoing_alert_lpgs'] = defaultdict(list)
 
     # ensure the object is already generated before we attempt to use it
     assert isinstance(top['clocks'], Clocks)
@@ -892,13 +894,13 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
 
         # if clock group is "unique", add some uniquification to the tag
         lpg_name = f"{module['name']}_{lpg_name}" if unique_cg else lpg_name
-        if lpg_name not in lpg_dict:
-            lpg_dict.update({lpg_name: num_lpg})
+
+        def append_to_lpg_dict(lpg_dict):
             # since the alert handler can tolerate timing delays on LPG
             # indication signals, we can just use the clock / reset signals
             # of the first block that belongs to a new unique LPG.
             clock = module['clock_connections'][block_clock.clock]
-            top['alert_lpgs'].append({
+            lpg_dict.append({
                 'name': lpg_name,
                 'clock_group': None if unmanaged_clock else clock_group,
                 'clock_connection': clock,
@@ -906,15 +908,27 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
                 'unmanaged_reset': is_unmanaged_reset(top, reset_name),
                 'reset_connection': primary_reset
             })
-            num_lpg += 1
+
+        alert_group = module.get('outgoing_alert')
+        if alert_group is not None:
+            if lpg_name not in outgoing_lpg_dict[alert_group]:
+                outgoing_lpg_dict[alert_group][lpg_name] = len(outgoing_lpg_dict[alert_group])
+                append_to_lpg_dict(top['outgoing_alert_lpgs'][alert_group])
+        else:
+            if lpg_name not in lpg_dict:
+                lpg_dict[lpg_name] = len(lpg_dict)
+                append_to_lpg_dict(top['alert_lpgs'])
 
         # annotate all alerts of this module to use this LPG
         for alert in top['alert']:
             if alert['module_name'] == module['name']:
-                alert.update({
-                    'lpg_name': lpg_name,
-                    'lpg_idx': lpg_dict[lpg_name]
-                })
+                alert['lpg_name'] = lpg_name
+                alert['lpg_idx'] = lpg_dict[lpg_name]
+        for alert_group, alerts in top['outgoing_alert'].items():
+            for alert in alerts:
+                if alert['module_name'] == module['name']:
+                    alert['lpg_name'] = lpg_name
+                    alert['lpg_idx'] = outgoing_lpg_dict[module['outgoing_alert']][lpg_name]
 
 
 def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
@@ -978,20 +992,44 @@ def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     for module in top['module']:
         block = name_to_block[module['type']]
         if block.alerts:
-            modules.append(module['name'])
+            if 'outgoing_alert' not in module:
+                modules.append(module['name'])
 
     top['alert_module'] = modules
+
+
+def ensure_outgoing_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
+    '''Populate top['outgoing_alert_module'] if necessary
+
+    Do this by adding each module in top['modules'] that defines at least one
+    outgoing alert.
+
+    '''
+    if 'outgoing_alert_module' in top:
+        return
+
+    modules = defaultdict(list)
+    for module in top['module']:
+        block = name_to_block[module['type']]
+        if block.alerts:
+            if 'outgoing_alert' in module:
+                modules[module['outgoing_alert']].append(module['name'])
+
+    top['outgoing_alert_module'] = modules
 
 
 def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
     ensure_alert_modules(top, name_to_block)
+    ensure_outgoing_alert_modules(top, name_to_block)
 
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
-    for m in top["alert_module"]:
+    top['outgoing_alert'] = defaultdict(list)
+
+    for m in top["alert_module"] + list(chain(*top['outgoing_alert_module'].values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
             log.warning("Cannot find IP %s which is used in the alert_module" %
@@ -1010,7 +1048,10 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             alert_dict['async'] = '1'
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
-            top["alert"].append(qual_sig)
+            if 'outgoing_alert' in ip:
+                top['outgoing_alert'][ip['outgoing_alert']].append(qual_sig)
+            else:
+                top["alert"].append(qual_sig)
 
 
 def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):

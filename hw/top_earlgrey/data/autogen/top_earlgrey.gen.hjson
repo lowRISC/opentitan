@@ -15665,6 +15665,7 @@
     rom_ctrl
     rv_core_ibex
   ]
+  outgoing_alert_module: {}
   alert:
   [
     {
@@ -16253,6 +16254,7 @@
       lpg_idx: 17
     }
   ]
+  outgoing_alert: {}
   unmanaged_resets: {}
   exported_rsts: {}
   alert_lpgs:
@@ -16868,6 +16870,7 @@
       }
     }
   ]
+  outgoing_alert_lpgs: {}
   inter_signal:
   {
     signals:

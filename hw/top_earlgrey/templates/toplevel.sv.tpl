@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 ${gencmd}
 <%
+from collections import defaultdict
 import re
 import topgen.lib as lib
 from reggen.params import Parameter
@@ -119,6 +120,14 @@ module top_${top["name"]} #(
   // All externally supplied clocks
   % for clk in top['clocks'].typed_clocks().ast_clks:
   input ${clk},
+  % endfor
+  % for alert_group in top['outgoing_alert'].keys():
+
+  // Outgoing alerts for group ${alert_group}
+  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
+  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+  output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_cg_en_${alert_group}_o,
+  output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
   % endfor
 
   // All clocks forwarded to ast
@@ -423,6 +432,21 @@ for rst in output_rsts:
   assign lpg_rst_en[${k}] = ${rst_en};
 % endfor
 
+% for alert_group, lpgs in top['outgoing_alert_lpgs'].items():
+  // Outgoing LPGs for alert group ${alert_group}
+  % for k, lpg in enumerate(lpgs):
+  // ${lpg['name']}
+<%
+    cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
+    rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
+    known_clocks[cg_en] = 0
+    known_resets[rst_en] = 0
+%>\
+  assign outgoing_lpg_cg_en_${alert_group}_o[${k}] = ${cg_en};
+  assign outgoing_lpg_rst_en_${alert_group}_o[${k}] = ${rst_en};
+  % endfor
+% endfor
+
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off
@@ -445,7 +469,8 @@ for rst in output_rsts:
 
   // Peripheral Instantiation
 
-<% alert_idx = 0 %>
+<% alert_idx = 0 %>\
+<% outgoing_alert_idx = defaultdict(int) %>
 % for m in top["module"]:
 <%
 if not lib.is_inst(m):
@@ -464,7 +489,12 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
   % if block.alerts:
 <%
 w = len(block.alerts)
-slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+if 'outgoing_alert' in m:
+  outgoing_alert = m['outgoing_alert']
+  lo = outgoing_alert_idx[outgoing_alert]
+else:
+  lo = alert_idx
+slice = f"{lo+w-1}:{lo}"
 %>\
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
   % endif
@@ -499,10 +529,19 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endfor
     % if block.alerts:
       % for alert in block.alerts:
+        % if 'outgoing_alert' in m:
+      // External alert group "${m['outgoing_alert']}" [${outgoing_alert_idx[m['outgoing_alert']]}]: ${alert.name}<% outgoing_alert_idx[m['outgoing_alert']] += 1 %>
+        % else:
       // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
+        % endif
       % endfor
+      % if 'outgoing_alert' in m:
+      .alert_tx_o  ( outgoing_alert_${m['outgoing_alert']}_tx_o[${slice}] ),
+      .alert_rx_i  ( outgoing_alert_${m['outgoing_alert']}_rx_i[${slice}] ),
+      % else:
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),
+      % endif
     % endif
     ## TODO: Inter-module Connection
     % if m.get('inter_signal_list'):
