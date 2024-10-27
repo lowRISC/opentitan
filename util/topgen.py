@@ -215,6 +215,25 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
     ipgen_render("alert_handler", topname, params, out_path)
 
 
+def generate_outgoing_alerts(top: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating outgoing alert definitions")
+
+    def render_template(template_path: str, rendered_path: Path, **other_info):
+        template_contents = generate_top(top, None, str(template_path), **other_info)
+
+        rendered_path.parent.mkdir(exist_ok=True, parents=True)
+        with rendered_path.open(mode="w", encoding="UTF-8") as fout:
+            fout.write(template_contents)
+
+    for alert_group, alerts in top['outgoing_alert'].items():
+        # Outgoing alert definition
+        # 'outgoing_alerts.hjson.tpl' -> 'data/autogen/{top_name}.sv'
+        render_template(TOPGEN_TEMPLATE_PATH / 'outgoing_alerts.hjson.tpl',
+                        out_path / 'data' / 'autogen' / f'outgoing_alerts_{alert_group}.hjson',
+                        alert_group=alert_group,
+                        alerts=alerts)
+
+
 def generate_plic(top: Dict[str, object], out_path: Path) -> None:
     log.info("Generating rv_plic with ipgen")
     topname = top["name"]
@@ -802,6 +821,9 @@ def _process_top(
         generate_alert_handler(completecfg, out_path)
         if args.alert_handler_only:
             sys.exit()
+
+    # Generate outgoing alerts
+    generate_outgoing_alerts(completecfg, out_path)
 
     # Generate Pinmux
     generate_pinmux(completecfg, out_path)

@@ -936,6 +936,7 @@ module top_earlgrey #(
   assign lpg_cg_en[23] = clkmgr_aon_cg_en.main_otbn;
   assign lpg_rst_en[23] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
 
+
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off

@@ -161,6 +161,10 @@ class TopGenCTest(TopGenC):
                     base_addr_name = region.base_addr_name().as_c_define()
                     break
 
+            # If alerts are routed to the external interface, there is no need for DIFs, etc ...
+            if 'outgoing_alert' in entry:
+                continue
+
             dif_alert_name = self.device_alerts[inst_name][0]
             num_alerts = len(self.device_alerts[inst_name])
 

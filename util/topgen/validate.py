@@ -208,7 +208,10 @@ module_optional = {
                         ' (if the IP has multiple TL-UL interfaces)'],
     'memory': ['g', 'optional dict with memory region attributes'],
     'param_decl': ['g', 'optional dict that allows to override instantiation parameters'],
-    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that module']
+    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that '
+                           'module'],
+    'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
+                            'group']
 }
 
 module_added = {
