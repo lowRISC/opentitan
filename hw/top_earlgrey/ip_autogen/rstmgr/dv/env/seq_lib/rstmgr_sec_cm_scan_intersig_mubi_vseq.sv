@@ -35,10 +35,11 @@ class rstmgr_sec_cm_scan_intersig_mubi_vseq extends rstmgr_smoke_vseq;
       delay = $urandom_range(5, 30);
       fork
         // This waits for a certain number of cycles or for a change in scan_rst_ni,
-        //  whichever is sooner, or it could end up skipping a full scan reset.
+        // whichever is sooner, or it could end up skipping a full scan reset.
         begin : isolation_fork
           fork
-            @(edge cfg.rstmgr_vif.scan_rst_ni);
+            // @(edge) is not supported by xcelium, workaround with posedge+negedge
+            @(posedge cfg.rstmgr_vif.scan_rst_ni or negedge cfg.rstmgr_vif.scan_rst_ni);
             cfg.clk_rst_vif.wait_clks(delay);
           join_any
           disable fork;
