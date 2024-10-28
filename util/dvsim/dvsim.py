@@ -34,6 +34,7 @@ import Launcher
 import LauncherFactory
 import LocalLauncher
 import SgeLauncher
+import SlurmLauncher
 import LsfLauncher
 import NcLauncher
 from CfgFactory import make_cfg
@@ -724,6 +725,7 @@ def main():
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
     LocalLauncher.LocalLauncher.max_parallel = args.max_parallel
+    SlurmLauncher.SlurmLauncher.max_parallel = args.max_parallel
     SgeLauncher.SgeLauncher.max_parallel = args.max_parallel
     LsfLauncher.LsfLauncher.max_parallel = args.max_parallel
     NcLauncher.NcLauncher.max_parallel = args.max_parallel
