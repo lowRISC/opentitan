@@ -25,31 +25,32 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-opentitan_test(
-    name = "rom_e2e_self_hash_test",
-    srcs = ["rom_e2e_self_hash_test.c"],
-    dv = dv_params(
-        rom = "//sw/device/silicon_creator/rom:mask_rom",
-    ),
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:sim_dv": None,
-        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
-    },
-    fpga = fpga_params(
-        otp = ":otp_img_sigverify_spx_prod",
-    ),
-    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/device/silicon_creator/lib:chip_info",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-    ],
-)
+# The self hash test is disabled except when we're releasing a new ROM.
+#opentitan_test(
+#    name = "rom_e2e_self_hash_test",
+#    srcs = ["rom_e2e_self_hash_test.c"],
+#    dv = dv_params(
+#        rom = "//sw/device/silicon_creator/rom:mask_rom",
+#    ),
+#    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+#    exec_env = {
+#        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#        "//hw/top_earlgrey:sim_dv": None,
+#        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
+#    },
+#    fpga = fpga_params(
+#        otp = ":otp_img_sigverify_spx_prod",
+#    ),
+#    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+#    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+#    deps = [
+#        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+#        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+#        "//sw/device/lib/base:status",
+#        "//sw/device/lib/runtime:print",
+#        "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+#        "//sw/device/lib/testing/test_framework:ottf_main",
+#        "//sw/device/silicon_creator/lib:chip_info",
+#        "//sw/device/silicon_creator/lib/drivers:hmac",
+#    ],
+#)
