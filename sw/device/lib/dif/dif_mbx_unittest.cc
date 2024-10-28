@@ -4,6 +4,8 @@
 
 #include "sw/device/lib/dif/dif_mbx.h"
 
+#include <array>
+
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
