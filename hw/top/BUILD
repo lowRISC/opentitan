@@ -20,6 +20,7 @@ IPS = [
     "flash_ctrl",
     "clkmgr",
     "rstmgr",
+    "pwrmgr",
 ]
 
 [
