@@ -15,8 +15,6 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   virtual clk_rst_if    clk_rst_core_vif;
   int                   core_clk_freq_mhz;
 
-  // variables
-  param_reg_t           pwm_param[PWM_NUM_CHANNELS];
   // ratio between bus_clk and core_clk (must be >= 1)
   rand int clk_ratio;
   constraint clk_ratio_c { clk_ratio inside {[1: 4]}; }

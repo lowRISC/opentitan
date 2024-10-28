@@ -16,6 +16,9 @@ class pwm_smoke_vseq extends pwm_base_vseq;
 
 
   virtual task body();
+    param_reg_t pwm_param;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pwm_param, pwm_param.BlinkEn == 1;)
+
     //make sure write to regs are enabled
     set_reg_en(Enable);
 
@@ -24,11 +27,9 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     //setup general config
     set_cfg_reg(10, 1, 1);
 
-    cfg.pwm_param[0].BlinkEn = 1;
-
     set_duty_cycle(.channel(0), .A(13000), .B(6500));
     set_blink(.channel(0), .A(0), .B(0));
-    set_param(0, cfg.pwm_param[0]);
+    set_param(0, pwm_param);
 
     // enable channel 0
     set_ch_enables(32'h1);
