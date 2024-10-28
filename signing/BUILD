@@ -33,7 +33,7 @@ config_setting(
 # and eliminate RSA keys for application signing.
 string_flag(
     name = "owner_key_type",
-    build_setting_default = "rsa",
+    build_setting_default = "ecdsa",
     values = [
         "rsa",
         "ecdsa",
