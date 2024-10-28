@@ -99,8 +99,9 @@ opentitan_test(
         ":alert",
         ":rstmgr",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey:alert_handler_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -163,7 +164,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//hw/top:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
@@ -826,7 +827,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//hw/top:flash_ctrl_c_regs",
             "//hw/ip/spi_device/data:spi_device_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
