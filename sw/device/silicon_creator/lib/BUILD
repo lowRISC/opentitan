@@ -200,8 +200,8 @@ cc_library(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:multibits",
     ],
