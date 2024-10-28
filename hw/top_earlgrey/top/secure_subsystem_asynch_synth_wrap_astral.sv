@@ -43,6 +43,14 @@ module security_island
 
    parameter int unsigned AxiClsIdWidth         = SynthClsAxiIdWidth,
 
+   parameter type         axi_remap_out_aw_chan_t     = synth_axi_remap_out_aw_chan_t,
+   parameter type         axi_remap_out_w_chan_t      = synth_axi_remap_out_w_chan_t,
+   parameter type         axi_remap_out_b_chan_t      = synth_axi_remap_out_b_chan_t,
+   parameter type         axi_remap_out_ar_chan_t     = synth_axi_remap_out_ar_chan_t,
+   parameter type         axi_remap_out_r_chan_t      = synth_axi_remap_out_r_chan_t,
+   parameter type         axi_remap_out_req_t         = synth_axi_remap_out_req_t,
+   parameter type         axi_remap_out_resp_t        = synth_axi_remap_out_resp_t,
+
    parameter type         axi_out_aw_chan_t     = synth_axi_out_aw_chan_t,
    parameter type         axi_out_w_chan_t      = synth_axi_out_w_chan_t,
    parameter type         axi_out_b_chan_t      = synth_axi_out_b_chan_t,
@@ -154,6 +162,8 @@ module security_island
    entropy_src_pkg::entropy_src_rng_req_t es_rng_req;
    entropy_src_pkg::entropy_src_rng_rsp_t es_rng_rsp;
 
+   synth_axi_remap_out_req_t  axi_out_mst_remap_req;
+   synth_axi_remap_out_resp_t axi_out_mst_remap_rsp;
 
    logic [15:0] dio_in_i;
    logic [15:0] dio_out_o;
@@ -265,18 +275,18 @@ module security_island
    axi_cdc_src #(
       .LogDepth   ( LogDepth          ),
       .SyncStages ( CdcSyncStages     ),
-      .aw_chan_t  ( axi_out_aw_chan_t ),
-      .w_chan_t   ( axi_out_w_chan_t  ),
-      .b_chan_t   ( axi_out_b_chan_t  ),
-      .ar_chan_t  ( axi_out_ar_chan_t ),
-      .r_chan_t   ( axi_out_r_chan_t  ),
-      .axi_req_t  ( axi_out_req_t     ),
-      .axi_resp_t ( axi_out_resp_t    )
+      .aw_chan_t  ( axi_remap_out_aw_chan_t ),
+      .w_chan_t   ( axi_remap_out_w_chan_t  ),
+      .b_chan_t   ( axi_remap_out_b_chan_t  ),
+      .ar_chan_t  ( axi_remap_out_ar_chan_t ),
+      .r_chan_t   ( axi_remap_out_r_chan_t  ),
+      .axi_req_t  ( axi_remap_out_req_t     ),
+      .axi_resp_t ( axi_remap_out_resp_t    )
    ) i_cdc_out_tlul2axi (
       .src_clk_i                  ( clk_i                   ),
       .src_rst_ni                 ( pwr_on_rst_ni           ),
-      .src_req_i                  ( axi_out_mst_req         ),
-      .src_resp_o                 ( axi_out_mst_rsp         ),
+      .src_req_i                  ( axi_out_mst_remap_req   ),
+      .src_resp_o                 ( axi_out_mst_remap_rsp   ),
       .async_data_master_aw_data_o( async_axi_out_aw_data_o ),
       .async_data_master_aw_wptr_o( async_axi_out_aw_wptr_o ),
       .async_data_master_aw_rptr_i( async_axi_out_aw_rptr_i ),
@@ -292,6 +302,27 @@ module security_island
       .async_data_master_r_data_i ( async_axi_out_r_data_i  ),
       .async_data_master_r_wptr_i ( async_axi_out_r_wptr_i  ),
       .async_data_master_r_rptr_o ( async_axi_out_r_rptr_o  )
+   );
+
+   axi_id_serialize #(
+    .AxiSlvPortIdWidth      ( 8                          ),
+    .AxiMstPortMaxUniqIds   ( 16                         ),
+    .AxiMstPortMaxTxnsPerId ( 16                         ),
+    .AxiMstPortIdWidth      ( 4                          ),
+    .AxiAddrWidth           ( 64                         ),
+    .AxiUserWidth           ( 1                          ),
+    .AxiDataWidth           ( 64                         ),
+    .slv_req_t              ( synth_axi_out_req_t        ),
+    .slv_resp_t             ( synth_axi_out_resp_t       ),
+    .mst_req_t              ( synth_axi_remap_out_req_t  ),
+    .mst_resp_t             ( synth_axi_remap_out_resp_t )
+   ) ot_id_remap (
+    .clk_i      ( clk_i                 ),
+    .rst_ni     ( rst_ni                ),
+    .slv_req_i  ( axi_out_mst_req       ),
+    .slv_resp_o ( axi_out_mst_rsp       ),
+    .mst_req_o  ( axi_out_mst_remap_req ),
+    .mst_resp_i ( axi_out_mst_remap_rsp )
    );
 
    rng #(
@@ -356,8 +387,10 @@ module security_island
     NoAddrRules:                      NumRules
   };
 
+  //assign axi_out_mst_req = axi_mst_req[0];
   assign axi_out_mst_req = axi_mst_req[0];
   assign axi_cls_mst_req = axi_mst_req[1];
+  //assign axi_mst_rsp     = { axi_cls_mst_rsp, axi_out_mst_rsp};
   assign axi_mst_rsp     = { axi_cls_mst_rsp, axi_out_mst_rsp};
 
   assign axi_slv_req     = { axi_cls_slv_req, axi_cls_cfg_req, axi_idma_req, axi_tlul_req };

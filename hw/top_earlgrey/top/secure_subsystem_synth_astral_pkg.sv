@@ -17,10 +17,16 @@ package secure_subsystem_synth_astral_pkg;
   localparam SynthAxiUserWidth    = 1;
   localparam SynthAxiDataWidth    = 64;
 
+  localparam SynthAxiAddrWidthRemap    = 64;
+  localparam SynthAxiOutIdWidthRemap   = 4;
+  localparam SynthAxiUserWidthRemap    = 1;
+  localparam SynthAxiDataWidthRemap    = 64;
+
   localparam SynthOtAxiAddrWidth  = 64;
   localparam SynthOtAxiOutIdWidth = 6;
   localparam SynthOtAxiUserWidth  = 1;
   localparam SynthOtAxiDataWidth  = 64;
+
 
   localparam SynthClsAxiIdWidth = 4;
 
@@ -30,6 +36,12 @@ package secure_subsystem_synth_astral_pkg;
   typedef logic [SynthAxiUserWidth-1:0]     synth_axi_user_t;
   typedef logic [SynthAxiOutIdWidth-1:0]    synth_axi_out_id_t;
 
+  typedef logic [SynthAxiAddrWidthRemap-1:0]     synth_axi_addr_remap_t;
+  typedef logic [SynthAxiDataWidthRemap-1:0]     synth_axi_data_remap_t;
+  typedef logic [SynthAxiDataWidthRemap/8-1:0]   synth_axi_strb_remap_t;
+  typedef logic [SynthAxiUserWidthRemap-1:0]     synth_axi_user_remap_t;
+  typedef logic [SynthAxiOutIdWidthRemap-1:0]    synth_axi_out_id_remap_t;
+
   typedef logic [SynthOtAxiAddrWidth-1:0]   synth_ot_axi_addr_t;
   typedef logic [SynthOtAxiDataWidth-1:0]   synth_ot_axi_data_t;
   typedef logic [SynthOtAxiDataWidth/8-1:0] synth_ot_axi_strb_t;
@@ -37,16 +49,17 @@ package secure_subsystem_synth_astral_pkg;
   typedef logic [SynthOtAxiOutIdWidth-1:0]  synth_ot_axi_out_id_t;
 
   `AXI_TYPEDEF_ALL(synth_axi_out, synth_axi_addr_t, synth_axi_out_id_t, synth_axi_data_t, synth_axi_strb_t, synth_axi_user_t)
+  `AXI_TYPEDEF_ALL(synth_axi_remap_out, synth_axi_addr_remap_t, synth_axi_out_id_remap_t, synth_axi_data_remap_t, synth_axi_strb_remap_t, synth_axi_user_remap_t)
   `AXI_TYPEDEF_ALL(synth_ot_axi_out, synth_ot_axi_addr_t, synth_ot_axi_out_id_t, synth_ot_axi_data_t, synth_ot_axi_strb_t, synth_ot_axi_user_t)
 
   localparam SynthLogDepth = 3;
   localparam SynthCdcSyncStages = 2;
 
-  localparam SynthAsyncAxiOutAwWidth = (2**SynthLogDepth)*$bits(synth_axi_out_aw_chan_t);
-  localparam SynthAsyncAxiOutWWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_w_chan_t);
-  localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_b_chan_t);
-  localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*$bits(synth_axi_out_ar_chan_t);
-  localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*$bits(synth_axi_out_r_chan_t);
+  localparam SynthAsyncAxiOutAwWidth = (2**SynthLogDepth)*$bits(synth_axi_remap_out_aw_chan_t);
+  localparam SynthAsyncAxiOutWWidth  = (2**SynthLogDepth)*$bits(synth_axi_remap_out_w_chan_t);
+  localparam SynthAsyncAxiOutBWidth  = (2**SynthLogDepth)*$bits(synth_axi_remap_out_b_chan_t);
+  localparam SynthAsyncAxiOutArWidth = (2**SynthLogDepth)*$bits(synth_axi_remap_out_ar_chan_t);
+  localparam SynthAsyncAxiOutRWidth  = (2**SynthLogDepth)*$bits(synth_axi_remap_out_r_chan_t);
 
   localparam AxiMaxOutTrans = 2;
 
