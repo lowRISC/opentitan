@@ -8,8 +8,9 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   `uvm_object_new
 
   // variables
-  rand bit [15:0] rand_dc;
-  rand bit [15:0] rand_blink;
+  rand bit [15:0]  rand_dc;
+  rand bit [15:0]  rand_blink;
+  rand param_reg_t pwm_param[PWM_NUM_CHANNELS];
 
   // constraints
   constraint rand_chan_c {
@@ -52,9 +53,9 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
       set_duty_cycle(i, .A(rand_dc[i]), .B(rand_dc[i]));
       set_blink(i, .A(rand_blink[i]), .B(rand_blink[i]));
 
-      cfg.pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
-      cfg.pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
-      set_param(i, cfg.pwm_param[i]);
+      pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
+      pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
+      set_param(i, pwm_param[i]);
     end
 
     set_ch_invert(rand_invert);
