@@ -19,6 +19,7 @@ alias(
 IPS = [
     "flash_ctrl",
     "clkmgr",
+    "rstmgr",
 ]
 
 [

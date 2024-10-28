@@ -200,8 +200,8 @@ cc_library(
     deps = [
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:rstmgr_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
-        "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:multibits",
     ],
@@ -373,7 +373,7 @@ dual_cc_library(
             "//hw/ip/uart/data:uart_c_regs",
             "//hw/top_earlgrey:alert_handler_c_regs",
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
+            "//hw/top:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
             "//sw/device/lib/arch:device",
