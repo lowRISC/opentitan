@@ -206,7 +206,7 @@ opentitan_test(
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(cfg),
         ],
     )
-    for cfg in EARLGREY_OTP_CFGS
+    for cfg in EARLGREY_OTP_CFGS.keys()
 ]
 
 filegroup(
@@ -214,7 +214,7 @@ filegroup(
     testonly = True,
     srcs = [
         ":sram_ft_individualize_{}".format(cfg)
-        for cfg in EARLGREY_OTP_CFGS
+        for cfg in EARLGREY_OTP_CFGS.keys()
     ],
 )
 
@@ -322,19 +322,10 @@ manifest(d = {
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
             "//sw/device/silicon_creator/manuf/lib:personalize",
-        ] + config["dice_libs"] + config["ext_libs"],
+        ] + config["dice_libs"] + config["device_ext_libs"],
     )
     for sku, config in EARLGREY_SKUS.items()
 ]
-
-filegroup(
-    name = "ft_personalize_all",
-    testonly = True,
-    srcs = [
-        ":ft_personalize_{}".format(sku)
-        for sku in EARLGREY_SKUS.keys()
-    ],
-)
 
 config_setting(
     name = "ckms_cert_endorsement_params",
@@ -354,7 +345,7 @@ _FT_PROVISIONING_CMD_ARGS = """
     "//conditions:default": LOCAL_CERT_ENDORSEMENT_PARAMS,
 })
 
-_FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
+_FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
 
 [
     opentitan_test(
@@ -380,7 +371,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
                 "manuf",
             ],
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
-            test_harness = _FT_PROVISIONING_HARNESS,
+            test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
         silicon = silicon_params(
             binaries =
@@ -393,7 +384,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft"
             interface = "teacup",
             needs_jtag = True,
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
-            test_harness = _FT_PROVISIONING_HARNESS,
+            test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
     )
     for sku, config in EARLGREY_SKUS.items()
