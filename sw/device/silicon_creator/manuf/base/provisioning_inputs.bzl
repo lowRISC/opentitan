@@ -2,30 +2,45 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-EARLGREY_OTP_CFGS = [
-    "sival",
-    "prodc",
-]
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EARLGREY_OTP_CFGS",
+    "EXT_EARLGREY_SKUS",
+)
 
+# A list of OTP configurations that will be used to autogenerate FT
+# individualization binaries that configure OTP with the constants defined in
+# these bazel targets.
+EARLGREY_OTP_CFGS = {
+    "sival": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_consts",
+    "prodc": "//hw/ip/otp_ctrl/data/earlgrey_skus/prodc:otp_consts",
+} | EXT_EARLGREY_OTP_CFGS
+
+# A dictionary of SKU configurations that will be used to generate FT
+# personalization binaries that configure OTP and flash info pages as defined
+# in these bazel targets.
 EARLGREY_SKUS = {
     # OTP Config: SIVAL; DICE Certs: X.509; Additional Certs: None
     "sival": {
         "otp": "sival",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
-        "ext_libs": ["@provisioning_exts//:perso_fw_ext"],
+        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
     },
     # OTP Config: SIVAL; DICE Certs: CWT; Additional Certs: None
     # TODO(#24281): uncomment when DICE CWT cert flows are fully supported
     # "sival_dice_cwt": {
     #     "otp": "sival",
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
-    #     "ext_libs": ["@provisioning_exts//:perso_fw_ext"],
+    #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+    #     "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
     # },
     # OTP Config: SIVAL; DICE Certs: X.509; Additional Certs: TPM EK
     "sival_tpm": {
         "otp": "sival",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
-        "ext_libs": [
+        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+        "device_ext_libs": [
             "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
             "//sw/device/silicon_creator/manuf/base:tpm_perso_fw_ext",
         ],
@@ -34,9 +49,10 @@ EARLGREY_SKUS = {
     "prodc": {
         "otp": "prodc",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
-        "ext_libs": ["@provisioning_exts//:perso_fw_ext"],
+        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
     },
-}
+} | EXT_EARLGREY_SKUS
 
 _DEVICE_ID_AND_TEST_TOKENS = """
   --device-id="0x11111111_22222222_33333333_44444444_55555555_66666666_77777777_88888888"

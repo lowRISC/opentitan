@@ -194,10 +194,10 @@ cc_library(
         name = "individualize_sw_cfg_{}".format(cfg),
         deps = [
             ":individualize_sw_cfg",
-            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_consts".format(cfg),
+            "{}".format(target),
         ],
     )
-    for cfg in EARLGREY_OTP_CFGS
+    for cfg, target in EARLGREY_OTP_CFGS.items()
 ]
 
 opentitan_test(
