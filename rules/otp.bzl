@@ -379,7 +379,7 @@ otp_image_consts = rule(
 # keys. This is useful for testing in dv_sim, fpga and verilator
 # environments.
 OTP_SIGVERIFY_FAKE_KEYS = [
-    "//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
+    "@//sw/device/silicon_creator/rom/keys/fake/otp:json_rot_keys",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.
