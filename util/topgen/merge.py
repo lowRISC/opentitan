@@ -9,7 +9,7 @@ from copy import deepcopy
 from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
-from topgen import c, lib, secure_prng
+from topgen import lib, secure_prng
 from .clocks import Clocks
 from .resets import Resets
 from reggen.ip_block import IpBlock
@@ -73,7 +73,7 @@ def elaborate_instance(instance, block: IpBlock):
         instance["param_decl"] = {}
 
     mod_name = instance["name"]
-    cc_mod_name = c.Name.from_snake_case(mod_name).as_camel_case()
+    cc_mod_name = lib.Name.from_snake_case(mod_name).as_camel_case()
 
     # Check to see if all declared parameters exist
     param_decl_accounting = [decl for decl in instance["param_decl"].keys()]
