@@ -73,8 +73,8 @@ cc_library(
     hdrs = ["flash_info_fields.h"],
     deps = [
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
@@ -289,7 +289,7 @@ opentitan_test(
         ":personalize",
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
