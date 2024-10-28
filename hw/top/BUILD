@@ -18,6 +18,7 @@ alias(
 # List of IPs for which to generate headers.
 IPS = [
     "flash_ctrl",
+    "clkmgr",
 ]
 
 [

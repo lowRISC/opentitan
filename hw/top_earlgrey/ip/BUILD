@@ -12,7 +12,7 @@ filegroup(
         "//hw/top_earlgrey/ip/xbar:all_files",
         "//hw/top_earlgrey/ip/xbar_main:all_files",
         "//hw/top_earlgrey/ip/xbar_peri:all_files",
-        "//hw/top_earlgrey/ip_autogen/clkmgr:all_files",
+        "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
         "//hw/top_earlgrey/ip_autogen/pinmux:all_files",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:all_files",
