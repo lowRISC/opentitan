@@ -7,10 +7,9 @@ class pwm_stress_all_vseq extends pwm_base_vseq;
   `uvm_object_utils(pwm_stress_all_vseq)
   `uvm_object_new
 
-  // constraints
-  constraint num_trans_c {
-    num_trans inside {[5:8]};
-  }
+  // Constrain things so we run five sequences each time. This should be enough to "run some
+  // back-to-back", but avoids needing to run lots sequentially (so avoids a large runtime)
+  constraint num_trans_c { num_trans == 5; }
 
   constraint duration_cycles_c {
     duration_cycles dist {
