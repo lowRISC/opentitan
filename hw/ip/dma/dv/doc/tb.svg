@@ -8,7 +8,7 @@
    style="background-color: rgb(255, 255, 255);"
    id="svg809"
    sodipodi:docname="tb.svg"
-   inkscape:version="1.1.2 (0a00cf5339, 2022-02-04)"
+   inkscape:version="1.3.2 (091e20e, 2023-11-25)"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -24,14 +24,16 @@
      inkscape:pagecheckerboard="0"
      showgrid="false"
      inkscape:zoom="1.4753476"
-     inkscape:cx="447.0133"
-     inkscape:cy="381.26608"
-     inkscape:window-width="3366"
-     inkscape:window-height="1376"
+     inkscape:cx="446.6744"
+     inkscape:cy="381.60499"
+     inkscape:window-width="3424"
+     inkscape:window-height="1385"
      inkscape:window-x="0"
-     inkscape:window-y="0"
-     inkscape:window-maximized="1"
-     inkscape:current-layer="g799" />
+     inkscape:window-y="25"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="g49242"
+     inkscape:showpageshadow="2"
+     inkscape:deskcolor="#d1d1d1" />
   <defs
      id="defs427">
     <linearGradient
@@ -861,93 +863,93 @@
        id="text112243"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect112245);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="595.58789"
-         y="662.67188"
-         id="tspan15384">Methodology:
+         y="663.00265"
+         id="tspan1">Methodology:
 </tspan><tspan
          x="595.58789"
-         y="677.67188"
-         id="tspan15386"> - Most components extended from cip_base with the right type parameter
+         y="678.00265"
+         id="tspan2"> - Most components extended from cip_base with the right type parameter
 </tspan><tspan
          x="595.58789"
-         y="692.67188"
-         id="tspan15388"> - Ideally, all tests use the same base test class; only the test sequence is changed
+         y="693.00265"
+         id="tspan3"> - Ideally, all tests use the same base test class; only the test sequence is changed
 </tspan><tspan
          x="595.58789"
-         y="707.67188"
-         id="tspan15390">   using the UVM_TEST_SEQ plusarg</tspan></text>
+         y="708.00265"
+         id="tspan4">   using the UVM_TEST_SEQ plusarg</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(1.0205193,0,0,1.0441609,-0.53514023,-20.066451)"
        id="text122091"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect122093);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="17.748047"
-         y="680.47852"
-         id="tspan15392">Legend:
+         y="680.80929"
+         id="tspan5">Legend:
 </tspan><tspan
          x="17.748047"
-         y="695.47852"
-         id="tspan15394">Square boxes: SV modules / interfaces (static)
+         y="695.80929"
+         id="tspan6">Square boxes: SV modules / interfaces (static)
 </tspan><tspan
          x="17.748047"
-         y="710.47852"
-         id="tspan15396">Round boxes: SV classes (dynamic)
+         y="710.80929"
+         id="tspan7">Round boxes: SV classes (dynamic)
 </tspan><tspan
          x="17.748047"
-         y="725.47852"
-         id="tspan15398">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
+         y="725.80929"
+         id="tspan8">Blue Rectange with folder corner: code blocks (initial, tasks, etc)
 </tspan><tspan
          x="17.748047"
-         y="740.47852"
-         id="tspan15400">Dotted blocks: Indicate handles inside parent entity
+         y="740.80929"
+         id="tspan9">Dotted blocks: Indicate handles inside parent entity
 </tspan><tspan
          x="17.748047"
-         y="755.47852"
-         id="tspan15402">Light dotted lines: Indicdate handle to instance passed on to components
+         y="755.80929"
+         id="tspan10">Light dotted lines: Indicdate handle to instance passed on to components
 </tspan><tspan
          x="17.748047"
-         y="770.47852"
-         id="tspan15404">
+         y="770.80929"
+         id="tspan11">
 </tspan><tspan
          x="17.748047"
-         y="793.65625"
-         id="tspan15408"><tspan
-           dx="0 6.6855469 3.3339844 7.6171875 7.6054688 4.7050781 7.6171875 3.3339844 4.7050781 4.7050781 7.3828125 7.6171875 3.8144531 3.3339844 3.3339844 7.6054688 7.3828125 6.2519531 4.0429688 3.8144531 3.5390625 7.6054688 7.6171875 3.3339844 6.5976562 7.3535156 4.7050781 7.3828125 3.8144531 7.6054688 7.3535156 7.6054688 7.6171875 3.3339844 7.3828125 3.8144531 4.7050781 7.3417969 3.8144531 3.3339844 7.6054688 6.2519531 4.7050781 7.3535156 7.6054688 6.5976562 7.3828125 3.8144531 7.6171875 7.3535156 6.2519531 6.2519531 7.3828125 7.6171875 7.3417969 3.3339844 7.6054688 3.8144531 4.7050781 7.3417969 7.6171875 3.8144531 6.5976562 7.3417969 11.689453 7.6171875 7.3417969 7.6054688 7.3828125 7.6054688 4.7050781"
-           id="tspan15406">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
+         y="793.98703"
+         id="tspan13"><tspan
+           dx="0 6.6796875 3.2929688 7.4765625 7.59375 4.7285156 7.4765625 3.2929688 4.7285156 4.7285156 7.1484375 7.4765625 4.21875 3.2929688 3.2929688 7.59375 7.1484375 6.2519531 5.4492188 4.21875 5.0507812 7.59375 7.4765625 3.2929688 6.2519531 7.2070312 4.7285156 7.1484375 4.21875 7.59375 7.2070312 7.59375 7.4765625 3.2929688 7.1484375 4.21875 4.7285156 7.2832031 4.21875 3.2929688 7.59375 6.2519531 4.7285156 7.2070312 7.59375 6.2519531 7.1484375 4.21875 7.4765625 7.2070312 6.2519531 6.2519531 7.1484375 7.4765625 7.2832031 3.2929688 7.59375 4.21875 4.7285156 7.2832031 7.4765625 4.21875 6.2519531 7.2832031 11.671875 7.4765625 7.2832031 7.59375 7.1484375 7.59375 4.7285156"
+           id="tspan12">Lightditted lines: Indicate handle to instance passedoin top components</tspan></tspan></text>
     <text
        xml:space="preserve"
        transform="translate(-16.426748,-92.581951)"
        id="text178519"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect178521);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="95.875"
-         y="578.83008"
-         id="tspan15410">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
+         y="579.16085"
+         id="tspan14">run_phase(): calls run_seq() which creates and runs sequence      </tspan><tspan
          x="95.875"
-         y="593.83008"
-         id="tspan15412">passed externally using UVM_TEST_VSEQ plusarg. 
+         y="594.16085"
+         id="tspan15">passed externally using UVM_TEST_VSEQ plusarg. 
 </tspan><tspan
          x="95.875"
-         y="608.83008"
-         id="tspan15414"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
+         y="609.16085"
+         id="tspan16"> All vseqs are eventually derived from cip_base_vseq</tspan></text>
     <text
        xml:space="preserve"
        transform="matrix(1.0647108,0,0,1.1000082,-27.745455,-44.932542)"
        id="text200162"
        style="font-style:normal;font-weight:normal;font-size:10.6667px;line-height:1.25;font-family:sans-serif;white-space:pre;shape-inside:url(#rect200164);fill:#000000;fill-opacity:1;stroke:none"><tspan
          x="84.339844"
-         y="569.75394"
-         id="tspan15416">     - Extended from cip_base_vseq
+         y="570.04796"
+         id="tspan17">     - Extended from cip_base_vseq
 </tspan><tspan
          x="84.339844"
-         y="583.08731"
-         id="tspan15418">     - Proivides most commonly used tasks among all vseqs.
+         y="583.38133"
+         id="tspan18">     - Proivides most commonly used tasks among all vseqs.
 </tspan><tspan
          x="84.339844"
-         y="596.42068"
-         id="tspan15420">     - All DMA vseqs are derived from dma_base_vseq
+         y="596.71471"
+         id="tspan19">     - All DMA vseqs are derived from dma_base_vseq
 </tspan><tspan
          x="84.339844"
-         y="609.75406"
-         id="tspan15422">     - For each interface a dma_mem_model and mem_model is instantiated</tspan></text>
+         y="610.04808"
+         id="tspan20">     - For each interface a dma_mem_model and mem_model is instantiated</tspan></text>
     <text
        xml:space="preserve"
        style="font-style:normal;font-weight:normal;font-size:12px;line-height:1.25;font-family:sans-serif;fill:#000000;fill-opacity:1;stroke:none"
@@ -1234,52 +1236,6 @@
       </g>
     </g>
     <g
-       id="g1435"
-       transform="matrix(1,0,0,0.97701103,-35.580201,9.1791083)">
-      <rect
-         x="308.27133"
-         y="162.39575"
-         width="120"
-         height="20"
-         rx="3"
-         ry="3"
-         fill="#f8cecc"
-         stroke="#b85450"
-         pointer-events="none"
-         id="rect691" />
-      <g
-         transform="translate(-23.613163,-48.203484)"
-         id="g697">
-        <switch
-           id="switch695">
-          <foreignObject
-             pointer-events="none"
-             width="100%"
-             height="100%"
-             requiredFeatures="http://www.w3.org/TR/SVG11/feature#Extensibility"
-             style="overflow: visible; text-align: left;">
-            <xhtml:div
-               style="display: flex; align-items: unsafe center; justify-content: unsafe center; width: 118px; height: 1px; padding-top: 220px; margin-left: 331px;">
-              <xhtml:div
-                 data-drawio-colors="color: rgb(0, 0, 0); "
-                 style="box-sizing: border-box; font-size: 0px; text-align: center;">
-                <xhtml:div
-                   style="display: inline-block; font-size: 12px; font-family: Helvetica; color: rgb(0, 0, 0); line-height: 1.2; pointer-events: none; white-space: normal; overflow-wrap: normal;">devmode_if</xhtml:div>
-              </xhtml:div>
-            </xhtml:div>
-          </foreignObject>
-          <text
-             x="390"
-             y="224"
-             fill="#000000"
-             font-family="Helvetica"
-             font-size="12px"
-             text-anchor="middle"
-             id="text693">devmode_if</text>
-        </switch>
-      </g>
-    </g>
-    <g
        transform="matrix(1,0,0,0.97701103,-3.724042,-8.2291784)"
        id="g763">
       <switch
@@ -1402,7 +1358,7 @@
            id="tspan48503"
            x="487.34647"
            y="161.28455"
-           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">tl_agent_dma_ctn_cfg</tspan><tspan
+           style="font-size:10.6667px;text-align:center;text-anchor:middle;stroke-width:0.5">tl_agent_dma_sys_cfg</tspan><tspan
            sodipodi:role="line"
            x="487.34647"
            y="174.61792"
