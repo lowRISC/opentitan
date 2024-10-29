@@ -11,7 +11,6 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   rand param_reg_t rand_reg_param;
   rand bit [PWM_NUM_CHANNELS-1:0] rand_chan;
   rand bit [PWM_NUM_CHANNELS-1:0] rand_invert;
-  rand uint duration_cycles;
   rand bit low_power;
 
   // constraints
@@ -19,10 +18,6 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
    rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
    rand_reg_param.RsvParam == 0;
    rand_reg_param.PhaseDelay inside {[0:MAX_16]};
-  }
-
-  constraint duration_cycles_c {
-    duration_cycles == {NUM_CYCLES};
   }
 
   constraint low_power_c {
@@ -56,9 +51,8 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
     set_ch_invert(rand_invert);
     set_ch_enables(rand_chan);
 
-    low_power_mode(low_power, duration_cycles);
+    low_power_mode(low_power, NUM_CYCLES);
 
-    `uvm_info(`gfn, $sformatf("Runtime: %d", duration_cycles), UVM_HIGH)
     shutdown_dut();
     set_reg_en(Disable);
 

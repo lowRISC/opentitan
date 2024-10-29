@@ -27,10 +27,6 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
     rand_reg_param.PhaseDelay dist {MAX_16:/1, 0:/1};
   }
 
-  constraint duration_cycles_c {
-    duration_cycles == {NUM_CYCLES};
-  }
-
   constraint low_power_c {
     low_power dist {1'b1:/1, 1'b0:/1};
   }
@@ -61,9 +57,8 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
     set_ch_invert(rand_invert);
     set_ch_enables(rand_chan);
 
-    low_power_mode(low_power, duration_cycles);
+    low_power_mode(low_power, NUM_CYCLES);
 
-    `uvm_info(`gfn, $sformatf("Runtime: %d", duration_cycles), UVM_HIGH)
     shutdown_dut();
 
   endtask : body

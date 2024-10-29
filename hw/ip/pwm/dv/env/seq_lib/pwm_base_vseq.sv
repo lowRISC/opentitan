@@ -11,12 +11,6 @@ class pwm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(pwm_base_vseq)
   `uvm_object_new
 
-  rand uint duration_cycles;
-
-  constraint duration_cycles_c {
-    duration_cycles == {NUM_CYCLES};
-  }
-
   virtual task set_reg_en(pwm_status_e state);
     if (ral.regwen.regwen.get_mirrored_value() != state) begin
       ral.regwen.regwen.set(1'b1);
