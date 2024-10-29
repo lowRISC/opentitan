@@ -22,14 +22,22 @@ OPTIONAL_FIELDS = {
         's', "number of bits to randomize in the parameter. 0 by default."
     ],
     'randtype': ['s', "type of randomization to perform. none by default"],
+    'unpacked_dimensions': [
+        's', "unpacked dimensions of parameter e.g. [16] for a single unpacked "
+             "dimension of size 16. none by default"],
 }
 
 
 class BaseParam:
-    def __init__(self, name: str, desc: Optional[str], param_type: str):
+    def __init__(self,
+                 name: str,
+                 desc: Optional[str],
+                 param_type: str,
+                 unpacked_dimensions: Optional[str]):
         self.name = name
         self.desc = desc
         self.param_type = param_type
+        self.unpacked_dimensions = unpacked_dimensions
 
     def apply_default(self, value: str) -> None:
         if self.param_type[:3] == 'int':
@@ -45,6 +53,8 @@ class BaseParam:
         if self.desc is not None:
             rd['desc'] = self.desc
         rd['type'] = self.param_type
+        if self.unpacked_dimensions is not None:
+            rd['unpacked_dimensions'] = self.unpacked_dimensions
         return rd
 
 
@@ -53,8 +63,9 @@ class LocalParam(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str,
+                 unpacked_dimensions: Optional[str],
                  value: str):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, unpacked_dimensions)
         self.value = value
 
     def expand_value(self, when: str) -> int:
@@ -77,9 +88,10 @@ class Parameter(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str,
+                 unpacked_dimensions: Optional[str],
                  default: str,
                  expose: bool):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, unpacked_dimensions)
         self.default = default
         self.expose = expose
 
@@ -99,7 +111,7 @@ class RandParameter(BaseParam):
                  randtype: str):
         assert randcount > 0
         assert randtype in ['perm', 'data']
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, None)
         self.randcount = randcount
         self.randtype = randtype
 
@@ -120,7 +132,7 @@ class MemSizeParameter(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, None)
 
 
 def _parse_parameter(where: str, raw: object) -> BaseParam:
@@ -136,6 +148,14 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         desc = None
     else:
         desc = check_str(r_desc, 'desc field of ' + where)
+
+    r_unpacked_dimensions = rd.get('unpacked_dimensions')
+    if r_unpacked_dimensions is None:
+        unpacked_dimensions = None
+    else:
+        unpacked_dimensions = \
+            check_str(r_unpacked_dimensions,
+                      'unpacked_dimensions field of ' + where)
 
     # TODO: We should probably check that any register called RndCnstFoo has
     #       randtype and randcount.
@@ -261,9 +281,11 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
             raise ValueError('At {}, the localparam {} cannot be exposed to '
                              'the top-level.'
                              .format(where, name))
-        return LocalParam(name, desc, param_type, value=default)
+        return LocalParam(name, desc, param_type, unpacked_dimensions,
+                          value=default)
     else:
-        return Parameter(name, desc, param_type, default, expose)
+        return Parameter(name, desc, param_type, unpacked_dimensions,
+                         default, expose)
 
 
 # Note: With a modern enough Python, we'd like this to derive from
