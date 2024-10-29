@@ -33,13 +33,6 @@ package pwm_env_pkg;
   parameter bit [26:0] MAX_CLK_DIV = 15;
 
   // datatype
-  typedef enum bit [1:0] {
-    Standard  = 2'b00,
-    Blinking  = 2'b01,
-    Heartbeat = 2'b11,
-    Allmodes  = 2'b10
-  } pwm_mode_e;
-
   typedef enum bit {
     Enable  = 1'b1,
     Disable = 1'b0
@@ -62,14 +55,6 @@ package pwm_env_pkg;
     bit [15:0]   B;
     bit [15:0]   A;
   } dc_blink_t;
-
-  // function
-  function automatic pwm_mode_e get_pwm_mode(bit [1:0] mode);
-    return (mode == 2'b10) ? Blinking  :
-           (mode == 2'b11) ? Heartbeat :
-           (mode == 2'b00) ? Standard  :
-                             Allmodes;
-  endfunction : get_pwm_mode
 
   // the index of multi-reg is at the last char of the name
   function automatic int get_multireg_idx(string name);
