@@ -58,6 +58,10 @@ module top_${top["name"]} #(
     p_type_word = p_type + ' ' if p_type else ''
 
     p_lhs = f'{p_type_word}{p_exp["name_top"]}'
+
+    if 'unpacked_dimensions' in p_exp:
+      p_lhs += p_exp['unpacked_dimensions']
+
     p_rhs = p_exp['default']
 
     params_follow = not loop.last or loop.parent.index < last_modidx_with_params
