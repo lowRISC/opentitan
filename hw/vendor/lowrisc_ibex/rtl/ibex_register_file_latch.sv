@@ -118,7 +118,7 @@ module ibex_register_file_latch #(
       .clk_i,
       .rst_ni,
       .oh_i   (raddr_onehot_a_buf),
-      .addr_i (raddr_b_int),
+      .addr_i (raddr_a_int),
       // Set enable=1 as address is always valid.
       .en_i   (1'b1),
       .err_o  (oh_raddr_a_err)

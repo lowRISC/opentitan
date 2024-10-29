@@ -342,7 +342,7 @@ For more detail about each security countermeasure in Ibex see :ref:`security`
 
 * ``cp_pc_mismatch_err`` - PC mismatch error seen.
 
-The :ref:`security features Ibex implements <security>` are given specific security countermeasure names in OpenTitan (see 'Security Countermeasures' in the `Hardware Interfaces <https://docs.opentitan.org/hw/ip/rv_core_ibex/doc/#hardware-interfaces>`_ documentation section).
+The :ref:`security features Ibex implements <security>` are given specific security countermeasure names in OpenTitan (see 'Security Countermeasures' in the `Comportability Definition and Specification <https://opentitan.org/book/doc/contributing/hw/comportability/index.html#security-countermeasures>`_ documentation section).
 The mapping between security countermeasures and coverpoints that demonstrate it being used is given below.
 
 +--------------------------------+-------------------------------------------------------+

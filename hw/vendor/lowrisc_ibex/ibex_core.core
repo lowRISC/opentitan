@@ -36,7 +36,6 @@ filesets:
       - rtl/ibex_wb_stage.sv
       - rtl/ibex_dummy_instr.sv
       - rtl/ibex_core.sv
-      - rtl/ibex_pmp_reset_default.svh: {is_include_file: true}
     file_type: systemVerilogSource
 
   files_lint_verilator:
