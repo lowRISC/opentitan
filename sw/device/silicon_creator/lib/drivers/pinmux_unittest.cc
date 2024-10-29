@@ -100,10 +100,13 @@ TEST_F(InitTest, WithBootstrap) {
                      kTopEarlgreyPinmuxInselIoc1)
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
                      kTopEarlgreyPinmuxInselIoc2)
+
+  // UART configuration: RX line pulled up, RX is IOC3, TX is IOC4.
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc3),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
+                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
-
-  // The outputs that will be configured.
   EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
                      kTopEarlgreyPinmuxOutselUart0Tx);
 
@@ -115,10 +118,13 @@ TEST_F(InitTest, WithoutBootstrap) {
   EXPECT_CALL(otp_,
               read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET))
       .WillOnce(Return(kHardenedBoolTrue));
+
+  // UART configuration: RX line pulled up, RX is IOC3, TX is IOC4.
+  EXPECT_ABS_WRITE32(RegPadAttr(kTopEarlgreyMuxedPadsIoc3),
+                     {{PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, 1},
+                      {PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, 1}});
   EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInUart0Rx),
                      kTopEarlgreyPinmuxInselIoc3);
-
-  // The outputs that will be configured.
   EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
                      kTopEarlgreyPinmuxOutselUart0Tx);
 
