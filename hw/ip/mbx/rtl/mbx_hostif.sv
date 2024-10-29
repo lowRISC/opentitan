@@ -104,8 +104,7 @@ module mbx_hostif
     .tl_o       ( tl_host_o     ),
     .reg2hw     ( reg2hw        ),
     .hw2reg     ( hw2reg        ),
-    .intg_err_o ( tlul_intg_err ),
-    .devmode_i  ( 1'b1          )
+    .intg_err_o ( tlul_intg_err )
   );
 
   logic intr_ready_de, intr_abort_de, intr_error_de;

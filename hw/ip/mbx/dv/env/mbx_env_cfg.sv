@@ -14,7 +14,6 @@ class mbx_env_cfg extends cip_base_env_cfg #(
 
   function new(string name = "");
     super.new(name);
-    has_devmode = 0;
   endfunction: new
 
   virtual function void initialize(bit [31:0] csr_base_addr = '1);
