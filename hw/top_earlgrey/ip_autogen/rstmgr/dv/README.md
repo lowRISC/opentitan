@@ -23,7 +23,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * RSTMGR interface [`hw/top_earlgrey/ip_autogen/rstmgr/dv/env/rstmgr_if.sv`](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/ip_autogen/rstmgr/dv/env/rstmgr_if.sv)
 * Alerts ([`alert_esc_if`](../../../../dv/sv/alert_esc_agent/README.md))
-* Devmode ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
 * [dv_utils_pkg](../../../../dv/sv/dv_utils/README.md)
