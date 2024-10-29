@@ -11,6 +11,7 @@ pub enum ObjType {
     UnendorsedX509Cert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeX509Tbs as isize,
     EndorsedX509Cert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeX509Cert as isize,
     DevSeed = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeDevSeed as isize,
+    EndorsedCwtCert = perso_tlv_objects::perso_tlv_object_type_kPersoObjectTypeCwtCert as isize,
 }
 
 impl ObjType {
@@ -19,6 +20,7 @@ impl ObjType {
             0 => Ok(ObjType::UnendorsedX509Cert),
             1 => Ok(ObjType::EndorsedX509Cert),
             2 => Ok(ObjType::DevSeed),
+            3 => Ok(ObjType::EndorsedCwtCert),
             _ => bail!("incorrect input value of {value} for ObjType"),
         }
     }

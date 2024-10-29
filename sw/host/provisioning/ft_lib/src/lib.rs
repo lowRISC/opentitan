@@ -15,8 +15,7 @@ use p256::NistP256;
 use zerocopy::AsBytes;
 
 use cert_lib::{
-    get_cert_size, parse_and_endorse_x509_cert, validate_cert_chain, CertEndorsementKey,
-    EndorsedCert,
+    parse_and_endorse_x509_cert, validate_cert_chain, CertEndorsementKey, EndorsedCert,
 };
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
@@ -244,15 +243,6 @@ fn get_cert(data: &[u8]) -> Result<CertHeader> {
     let header_size = header_len + name_len;
     let cert_body: Vec<u8> = data[header_size..wrapped_size].to_vec();
 
-    // Sanity check, total size and cert size must  match
-    let cert_size = get_cert_size(&cert_body)?;
-    if cert_size != cert_body.len() {
-        bail!(
-            "cert size {} does not match length {}",
-            cert_size,
-            cert_body.len()
-        );
-    }
     Ok(CertHeader {
         wrapped_size,
         cert_name,
@@ -350,7 +340,7 @@ fn provision_certificates(
         }
         start += obj_header_size;
         match header.obj_type {
-            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => (),
+            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {}
             ObjType::DevSeed => {
                 let dev_seed_size = header.obj_size - obj_header_size;
                 let seeds = &perso_blob.body[start..start + dev_seed_size];
@@ -390,7 +380,10 @@ fn provision_certificates(
         };
 
         // Collect all DICE certs to validate the chain.
-        if dice_cert_names.contains(cert.cert_name) {
+        // TODO(lowRISC/opentitan:#24281): Add CWT verifier
+        if dice_cert_names.contains(cert.cert_name)
+            && header.obj_type == ObjType::UnendorsedX509Cert
+        {
             dice_cert_chain.push(EndorsedCert {
                 format: CertFormat::X509,
                 name: cert.cert_name.to_string(),
@@ -401,7 +394,10 @@ fn provision_certificates(
 
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
-        let _ = parse_certificate(&cert_bytes)?;
+        // TODO(lowRISC/opentitan:#24281): Add CWT parser
+        if header.obj_type != ObjType::DevSeed && header.obj_type != ObjType::EndorsedCwtCert {
+            let _ = parse_certificate(&cert_bytes)?;
+        }
         // Push the cert into the hasher so we can ensure the certs written to the device's flash
         // info pages match those verified on the host.
         cert_hasher.update(cert_bytes);
@@ -443,6 +439,7 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
+    // TODO(lowRISC/opentitan:#24281): Add CWT verifier
     log::info!("Validating DICE certificate chain with OpenSSL ...");
     validate_cert_chain(ca_certificate.to_str().unwrap(), &dice_cert_chain)?;
     log::info!("Success.");

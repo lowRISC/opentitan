@@ -28,7 +28,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   // Extract LTV object type.
   PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
   obj->obj_type = obj_type;
-  if (obj_type != kPersoObjectTypeX509Cert) {
+  if (obj_type != kPersoObjectTypeX509Cert &&
+      obj_type != kPersoObjectTypeCwtCert) {
     LOG_INFO("Skipping object of type %d", obj_type);
     return kErrorPersoTlvCertObjNotFound;
   }
@@ -67,12 +68,15 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   obj->cert_body_p = buf;
 
   // Sanity check on the certificate body size.
-  size_t decoded_cert_size =
-      cert_x509_asn1_decode_size_header(obj->cert_body_p);
-  if (decoded_cert_size != obj->cert_body_size) {
-    LOG_ERROR("Unexpected cert size %d instead of %d for cert %s",
-              decoded_cert_size, obj->cert_body_size, obj->name);
-    return kErrorPersoTlvInternal;
+  // TODO(24281): add sanity check on CWT certificate body size.
+  if (obj_type == kPersoObjectTypeX509Cert) {
+    size_t decoded_cert_size =
+        cert_x509_asn1_decode_size_header(obj->cert_body_p);
+    if (decoded_cert_size != obj->cert_body_size) {
+      LOG_ERROR("Unexpected cert size %d instead of %d for cert %s",
+                decoded_cert_size, obj->cert_body_size, obj->name);
+      return kErrorPersoTlvInternal;
+    }
   }
 
   return kErrorOk;
@@ -106,7 +110,10 @@ rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
   if (needs_endorsement) {
     PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeX509Tbs);
   } else {
-    PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeX509Cert);
+    // TODO(lowRISC/opentitan:#24281): should decide the obj_type by other
+    // factor
+    // PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeX509Cert);
+    PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeCwtCert);
   }
   PERSO_TLV_SET_FIELD(Objh, Size, obj_header, obj_size);
 
