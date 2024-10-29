@@ -331,7 +331,8 @@ class IpBlock:
                     LocalParam(name='NumAlerts',
                                desc='Number of alerts',
                                param_type='int',
-                               value=str(len(alerts))))
+                               value=str(len(alerts)),
+                               unpacked_dimensions=None))
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 

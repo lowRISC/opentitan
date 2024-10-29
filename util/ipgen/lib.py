@@ -42,7 +42,7 @@ class TemplateParameter(BaseParam):
                  default: str):
         assert param_type in self.VALID_PARAM_TYPES
 
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, None)
         self.default = default
         self.value = None
 
