@@ -14,7 +14,7 @@ The configuration space is too large to fully verify the design for all possible
 To manage this complexity regressions runs and verification closure target a number of :ref:`supported configurations<ibex-config>`.
 
 Current verification closure effort is focussed on the ``opentitan`` configuration and is the only configuration with nightly regression runs.
-Verification maturity is tracked via :ref:`verification_stages` that are `defined by the OpenTitan project <https://docs.opentitan.org/doc/project/development_stages/#hardware-verification-stages-v>`_.
+Verification maturity is tracked via :ref:`verification_stages` that are `defined by the OpenTitan project <https://opentitan.org/book/doc/project_governance/development_stages.html#hardware-verification-stages-v>`_.
 Ibex has achieved **V2S** for the `opentitan` configuration, broadly this means verification is almost complete (over 90% code and functional coverage hit with over 90% regression pass rate with test plan and coverage plan fully implemented) but not yet closed.
 
 Nightly regression results, including a coverage summary and details of test failures, for the ``opentitan`` Ibex configuration are published at https://ibex.reports.lowrisc.org/opentitan/latest/report.html. Below is a summary of these results:

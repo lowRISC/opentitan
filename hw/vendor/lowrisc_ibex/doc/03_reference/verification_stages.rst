@@ -3,9 +3,9 @@
 Verification Stages
 ===================
 
-Ibex is being verified as part of the `OpenTitan <https://www.opentitan.org>`_ project and follows the `verification stages used in OpenTitan <https://docs.opentitan.org/doc/project/development_stages/#hardware-verification-stages-v>`_.
+Ibex is being verified as part of the `OpenTitan <https://www.opentitan.org>`_ project and follows the `verification stages used in OpenTitan <https://opentitan.org/book/doc/project_governance/development_stages.html#hardware-verification-stages-v>`_.
 The current verification stage of the 'opentitan' configuration of Ibex is **V2S**.
-The full definition of V2S can be found at the `OpenTitan V2 <https://docs.opentitan.org/doc/project/checklist/#v2>`_ and `OpenTitan V2S <https://docs.opentitan.org/doc/project/checklist/#v2s>`_ checklists.
+The full definition of V2S can be found at the `OpenTitan V2 <https://opentitan.org/book/doc/project_governance/checklist/index.html#v2>`_ and `OpenTitan V2S <https://opentitan.org/book/doc/project_governance/checklist/index.html#v2s>`_ checklists.
 Other Ibex configurations do not have a formal verification stage at present.
 
 V1 Checklist
@@ -136,7 +136,7 @@ V2S Checklist
 Ibex SEC_CM Test Mapping
 ------------------------
 
-The :ref:`security features Ibex implements <security>` are given specific security countermeasure names in OpenTitan (see 'Security Countermeasures' in the `Hardware Interfaces <https://docs.opentitan.org/hw/ip/rv_core_ibex/doc/#hardware-interfaces>`_ documentation section).
+The :ref:`security features Ibex implements <security>` are given specific security countermeasure names in OpenTitan (see 'Security Countermeasures' in the `Comportability Definition and Specification <https://opentitan.org/book/doc/contributing/hw/comportability/index.html#security-countermeasures>`_ documentation section).
 Each countermeasure has a test that exercises it.
 The mapping between countermeasures and tests is given below
 

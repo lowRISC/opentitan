@@ -9,7 +9,7 @@
 // 'rtl' directory), see verilator_waiver_rtl.vlt in the same
 // directory.
 //
-// See https://www.veripool.org/projects/verilator/wiki/Manual-verilator#CONFIGURATION-FILES
+// See https://verilator.org/guide/latest/exe_verilator.html#configuration-files
 // for documentation.
 //
 // Important: This file must included *before* any other Verilog file is read.

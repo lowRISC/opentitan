@@ -11,12 +11,12 @@ title: "Ibex ICache DV Plan"
 
 ## Current status
 
-* Design & verification stage (TODO: Create HW dashboard & add link) (see [HW development stages](https://docs.opentitan.org/doc/project/hw_stages) for what this means)
+* Design & verification stage (TODO: Create HW dashboard & add link) (see [HW development stages](https://opentitan.org/book/doc/project_governance/development_stages.html) for what this means)
 * Simulation results (TODO: Generate nightly simulation results & add link)
 
 ## Design features
 
-The ICache design is documented in the [Instruction Cache](https://ibex-core.readthedocs.io/en/latest/icache.html) section of the Ibex User Manual.
+The ICache design is documented in the [Instruction Cache](https://ibex-core.readthedocs.io/en/latest/03_reference/icache.html) section of the Ibex User Manual.
 
 ## Testbench architecture
 
@@ -155,7 +155,7 @@ Coverpoints will be created at two levels, ICache top level and individual fill 
   * `FBAwaitingOutput` - Waiting for fill buffer data to be consumed by output before releasing
 * `cp_fb_done_reason` - Why the fill buffer has finished
   * `FBNotDone` - Fill buffer not yet done
-  * `FBDoneHitNoExtReqs` - Fill buffer hit against cache and sent no external requests 
+  * `FBDoneHitNoExtReqs` - Fill buffer hit against cache and sent no external requests
   * `FBDoneHitExtReqs` - Fill buffer hit against cache and sent external requests (which must be completed before fill buffer can release)
   * `FBDoneMiss` - Fill buffer missed in cache and has fetched data to satisfy request
   * `FBDoneBranchNoExtReqs` - Fill buffer became stale due to branch and sent no external requests and so released

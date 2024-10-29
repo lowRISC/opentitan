@@ -50,5 +50,5 @@ Custom Reset Values
 
 By default all PMP CSRs (include ``mseccfg``) are reset to 0.
 Some applications may want other reset values.
-Default reset values are defined in :file:`ibex_pmp_reset_default.svh`.
-An implementation can either modify this file or define ``IBEX_CUSTOM_PMP_RESET_VALUES`` and place a copy of :file:`ibex_pmp_result_default.svh` in a new file, :file:`ibex_pmp_reset.svh`, changing the values as required and adding the new file to the include path of whatever build flow is being used.
+Default reset values are defined in :file:`ibex_pkg.sv`.
+An implementation can either modify this file or pass custom reset values as a module parameter.

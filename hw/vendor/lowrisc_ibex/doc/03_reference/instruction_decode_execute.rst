@@ -56,7 +56,7 @@ Arithmetic Logic Unit (ALU)
 ---------------------------
 Source File: :file:`rtl/ibex_alu.sv`
 
-The Arithmetic Logic Logic (ALU) is a purely combinational block that implements operations required for the Integer Computational Instructions and the comparison operations required for the Control Transfer Instructions in the RV32I RISC-V Specification.
+The Arithmetic Logic Unit (ALU) is a purely combinational block that implements operations required for the Integer Computational Instructions and the comparison operations required for the Control Transfer Instructions in the RV32I RISC-V Specification.
 Other blocks use the ALU for the following tasks:
 
 * Mult/Div uses it to perform addition as part of the multiplication and division algorithms

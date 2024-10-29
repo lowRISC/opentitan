@@ -10,20 +10,23 @@
 `include "prim_assert.sv"
 
 module ibex_cs_registers #(
-  parameter bit               DbgTriggerEn      = 0,
-  parameter int unsigned      DbgHwBreakNum     = 1,
-  parameter bit               DataIndTiming     = 1'b0,
-  parameter bit               DummyInstructions = 1'b0,
-  parameter bit               ShadowCSR         = 1'b0,
-  parameter bit               ICache            = 1'b0,
-  parameter int unsigned      MHPMCounterNum    = 10,
-  parameter int unsigned      MHPMCounterWidth  = 40,
-  parameter bit               PMPEnable         = 0,
-  parameter int unsigned      PMPGranularity    = 0,
-  parameter int unsigned      PMPNumRegions     = 4,
-  parameter bit               RV32E             = 0,
-  parameter ibex_pkg::rv32m_e RV32M             = ibex_pkg::RV32MFast,
-  parameter ibex_pkg::rv32b_e RV32B             = ibex_pkg::RV32BNone
+  parameter bit                     DbgTriggerEn      = 0,
+  parameter int unsigned            DbgHwBreakNum     = 1,
+  parameter bit                     DataIndTiming     = 1'b0,
+  parameter bit                     DummyInstructions = 1'b0,
+  parameter bit                     ShadowCSR         = 1'b0,
+  parameter bit                     ICache            = 1'b0,
+  parameter int unsigned            MHPMCounterNum    = 10,
+  parameter int unsigned            MHPMCounterWidth  = 40,
+  parameter bit                     PMPEnable         = 0,
+  parameter int unsigned            PMPGranularity    = 0,
+  parameter int unsigned            PMPNumRegions     = 4,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]     = ibex_pkg::PmpCfgRst,
+  parameter logic [33:0]            PMPRstAddr[16]    = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg     = ibex_pkg::PmpMseccfgRst,
+  parameter bit                     RV32E             = 0,
+  parameter ibex_pkg::rv32m_e RV32M                   = ibex_pkg::RV32MFast,
+  parameter ibex_pkg::rv32b_e RV32B                   = ibex_pkg::RV32BNone
 ) (
   // Clock and Reset
   input  logic                 clk_i,
@@ -1073,13 +1076,6 @@ module ibex_cs_registers #(
   // -----------------
 
   if (PMPEnable) begin : g_pmp_registers
-    // PMP reset values
-    `ifdef IBEX_CUSTOM_PMP_RESET_VALUES
-      `include "ibex_pmp_reset.svh"
-    `else
-      `include "ibex_pmp_reset_default.svh"
-    `endif
-
     pmp_mseccfg_t                pmp_mseccfg_q, pmp_mseccfg_d;
     logic                        pmp_mseccfg_we;
     logic                        pmp_mseccfg_err;
@@ -1168,7 +1164,7 @@ module ibex_cs_registers #(
       ibex_csr #(
         .Width     ($bits(pmp_cfg_t)),
         .ShadowCopy(ShadowCSR),
-        .ResetValue(pmp_cfg_rst[i])
+        .ResetValue(PMPRstCfg[i])
       ) u_pmp_cfg_csr (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -1203,7 +1199,7 @@ module ibex_cs_registers #(
       ibex_csr #(
         .Width     (PMPAddrWidth),
         .ShadowCopy(ShadowCSR),
-        .ResetValue(pmp_addr_rst[i][33-:PMPAddrWidth])
+        .ResetValue(PMPRstAddr[i][33-:PMPAddrWidth])
       ) u_pmp_addr_csr (
         .clk_i     (clk_i),
         .rst_ni    (rst_ni),
@@ -1213,7 +1209,7 @@ module ibex_cs_registers #(
         .rd_error_o(pmp_addr_err[i])
       );
 
-      `ASSERT_INIT(PMPAddrRstLowBitsZero_A, pmp_addr_rst[i][33-PMPAddrWidth:0] == '0)
+      `ASSERT_INIT(PMPAddrRstLowBitsZero_A, PMPRstAddr[i][33-PMPAddrWidth:0] == '0)
 
       assign csr_pmp_cfg_o[i]  = pmp_cfg[i];
       assign csr_pmp_addr_o[i] = {pmp_addr_rdata[i], 2'b00};
@@ -1236,7 +1232,7 @@ module ibex_cs_registers #(
     ibex_csr #(
       .Width     ($bits(pmp_mseccfg_t)),
       .ShadowCopy(ShadowCSR),
-      .ResetValue(pmp_mseccfg_rst)
+      .ResetValue(PMPRstMsecCfg)
     ) u_pmp_mseccfg (
       .clk_i     (clk_i),
       .rst_ni    (rst_ni),

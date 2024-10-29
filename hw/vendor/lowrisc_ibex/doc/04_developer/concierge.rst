@@ -25,10 +25,8 @@ The concierge duties rotate between several core developers on a weekly basis.
 You can find today's concierge on duty in a `public calendar <https://calendar.google.com/calendar/embed?src=lowrisc.org_s0pdodkddnggdp40jusjij27h4%40group.calendar.google.com>`_.
 
 * Greg Chadwick (`@GregAC <https://github.com/gregac>`_)
-* Tom Roberts (`@tomroberts-lowrisc <https://github.com/tomroberts-lowrisc>`_)
 * Rupert Swarbrick (`@rswarbrick <https://github.com/rswarbrick>`_)
 * Pirmin Vogel (`@vogelpi <https://github.com/vogelpi>`_)
-* Philipp Wagner (`@imphil <https://github.com/imphil>`_)
 
 You can be Ibex Concierge, too.
 Please talk to any of the current concierges to discuss!
