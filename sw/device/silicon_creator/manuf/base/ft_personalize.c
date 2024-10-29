@@ -107,6 +107,7 @@ static cert_key_id_pair_t cdi_1_key_ids = {
     .cert = &cdi_1_pubkey_id,
 };
 static ecdsa_p256_public_key_t curr_pubkey = {.x = {0}, .y = {0}};
+static ecdsa_p256_public_key_t uds_pubkey = {.x = {0}, .y = {0}};
 static perso_blob_t perso_blob_to_host;    // Perso data device => host.
 static perso_blob_t perso_blob_from_host;  // Perso data host => device.
 
@@ -114,6 +115,7 @@ static perso_blob_t perso_blob_from_host;  // Perso data host => device.
  * Certificates flash info page layout.
  */
 static uint8_t all_certs[8192];
+static size_t uds_offset;
 static size_t cdi_0_offset;
 static size_t cdi_1_offset;
 static cert_flash_info_layout_t cert_flash_layout[] = {
@@ -367,6 +369,7 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
   if (size) {
     *size = obj_size;
   }
+
   return OK_STATUS();
 }
 
@@ -456,6 +459,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, &uds_pubkey_id,
                                      &curr_pubkey));
+  memcpy(&uds_pubkey, &curr_pubkey, sizeof(ecdsa_p256_public_key_t));
   TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
                                      kDiceKeyUds.type,
                                      *kDiceKeyUds.keymgr_diversifier));
@@ -468,9 +472,11 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       all_certs, &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
-  TRY(perso_tlv_push_cert_to_perso_blob("UDS", /*needs_endorsement=*/true,
-                                        all_certs, curr_cert_size,
-                                        &perso_blob_to_host));
+  uds_offset = perso_blob_to_host.next_free;
+  TRY(perso_tlv_push_cert_to_perso_blob(
+      "UDS",
+      /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
+      all_certs, curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
@@ -628,14 +634,24 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   // LTV object.
   perso_tlv_cert_obj_t block;
 
-  // Exract the UDS cert perso LTV object.
-  TRY(extract_next_cert(&next_cert, &free_room));
-
-  // Extract the two CDI cert perso LTV objects which were endorsed on-device
-  // and sent to the host.
-  size_t cdi_offsets[] = {cdi_0_offset, cdi_1_offset};
-  for (size_t i = 0; i < ARRAYSIZE(cdi_offsets); i++) {
-    size_t offset = cdi_offsets[i];
+  // CWT DICE doesn't need host to endorse any certificate for it, so all
+  // payload are in the "perso_blob_to_host".
+  // Default to this setting, and move to X509 setting if the flag is set.
+  size_t cert_offsets[3] = {uds_offset, cdi_0_offset, cdi_1_offset};
+  size_t cert_offsets_count = 3;
+  if (kDiceCertFormat == kDiceCertFormatX509TcbInfo) {
+    // Exract the UDS cert perso LTV object.
+    TRY(extract_next_cert(&next_cert, &free_room));
+    // Extract the two CDI cert perso LTV objects which were endorsed on-device
+    // and sent to the host.
+    cert_offsets[0] = cert_offsets[1];
+    cert_offsets[1] = cert_offsets[2];
+    cert_offsets_count = 2;
+  }
+  // Extract the cert perso LTV objects which were endorsed on-device and send
+  // to the host.
+  for (size_t i = 0; i < cert_offsets_count; i++) {
+    size_t offset = cert_offsets[i];
     TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
                                sizeof(perso_blob_to_host.body) - offset,
                                &block));
@@ -782,7 +798,15 @@ bool test_main(void) {
       .certgen_inputs = &certgen_inputs,
       .perso_blob_to_host = &perso_blob_to_host,
       .cert_flash_layout = cert_flash_layout,
-      .flash_ctrl_handle = &flash_ctrl_state};
+      .flash_ctrl_handle = &flash_ctrl_state,
+      .uds_pubkey = &uds_pubkey,
+      .uds_pubkey_id = &uds_pubkey_id,
+      .otp_creator_sw_cfg_measurement = &otp_creator_sw_cfg_measurement,
+      .otp_owner_sw_cfg_measurement = &otp_owner_sw_cfg_measurement,
+      .otp_rot_creator_auth_codesign_measurement =
+          &otp_rot_creator_auth_codesign_measurement,
+      .otp_rot_creator_auth_state_measurement =
+          &otp_rot_creator_auth_state_measurement};
   CHECK_STATUS_OK(personalize_extension_pre_cert_endorse(&pre_endorse));
 
   CHECK_STATUS_OK(personalize_endorse_certificates(&uj));
