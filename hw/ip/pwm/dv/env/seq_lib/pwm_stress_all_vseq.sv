@@ -11,16 +11,6 @@ class pwm_stress_all_vseq extends pwm_base_vseq;
   // back-to-back", but avoids needing to run lots sequentially (so avoids a large runtime)
   constraint num_trans_c { num_trans == 5; }
 
-  constraint duration_cycles_c {
-    duration_cycles dist {
-      (NUM_CYCLES):/8,
-      (2 * NUM_CYCLES):/4,
-      (4 * NUM_CYCLES):/2,
-      (8 * NUM_CYCLES):/1
-      };
-  }
-
-
   virtual task body();
     string seq_names[] = {"pwm_smoke_vseq",
                           "pwm_common_vseq",
