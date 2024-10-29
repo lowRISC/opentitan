@@ -48,11 +48,26 @@ typedef struct personalize_extension_pre_endorse {
    * knows where to place endorsed objects received from the host.
    */
   cert_flash_info_layout_t *cert_flash_layout;
-
   /**
    * Pointer to the flash controller handle necessary for proper flash access.
    */
   dif_flash_ctrl_state_t *flash_ctrl_handle;
+  /**
+   * Pointer to the UDS public key. Personalization extensions may require
+   * accessing it to generate different certificate chains that fit a specific
+   * SKU's requirements.
+   */
+  ecdsa_p256_public_key_t *uds_pubkey;
+  hmac_digest_t *uds_pubkey_id;
+  /**
+   * Pointer to the OTP measurements used to generate the UDS public key.
+   * Personalization extensions may require accessing these to generate
+   * different certificate chains that fit a specific SKU's requirements.
+   */
+  hmac_digest_t *otp_creator_sw_cfg_measurement;
+  hmac_digest_t *otp_owner_sw_cfg_measurement;
+  hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
+  hmac_digest_t *otp_rot_creator_auth_state_measurement;
 } personalize_extension_pre_endorse_t;
 
 /**

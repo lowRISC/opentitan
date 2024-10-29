@@ -23,6 +23,7 @@ enum {
   kDiceMeasurementSizeInBytes = kDiceMeasurementSizeInBits / 8,
 };
 
+extern const dice_cert_format_t kDiceCertFormat;
 /**
  * DICE ECC key descriptors.
  */

@@ -29,6 +29,7 @@ typedef enum perso_tlv_object_type {
   kPersoObjectTypeX509Tbs = 0,
   kPersoObjectTypeX509Cert = 1,
   kPersoObjectTypeDevSeed = 2,
+  kPersoObjectTypeCwtCert = 3,
 } perso_tlv_object_type_t;
 
 typedef uint16_t perso_tlv_object_header_t;
