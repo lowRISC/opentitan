@@ -253,7 +253,7 @@ opentitan_test(
     fpga = fpga_params(timeout = "moderate"),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -293,7 +293,7 @@ opentitan_test(
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -335,7 +335,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -388,7 +388,7 @@ opentitan_test(
         "//hw/ip/spi_device/data:spi_device_c_regs",
         "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/usbdev/data:usbdev_c_regs",
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -436,7 +436,7 @@ opentitan_test(
         timeout = "moderate",
     ),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -4601,7 +4601,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/arch:device",

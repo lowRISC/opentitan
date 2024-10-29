@@ -49,7 +49,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-            "//hw/top_earlgrey:alert_handler_c_regs",
+            "//hw/top:alert_handler_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -74,7 +74,7 @@ cc_test(
     srcs = ["alert_unittest.cc"],
     deps = [
         dual_cc_device_library_of(":alert"),
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:crc32",
         "@googletest//:gtest_main",
@@ -102,8 +102,6 @@ opentitan_test(
         "//hw/top:alert_handler_c_regs",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:rstmgr_c_regs",
-        "//hw/top_earlgrey:alert_handler_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
