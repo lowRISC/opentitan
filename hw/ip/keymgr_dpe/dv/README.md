@@ -29,7 +29,6 @@ In addition, it instantiates the following interfaces, connects them to the DUT 
 * KEYMGR_DPE IOs (`keymgr_dpe_if`)
 * Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 * Alerts ([`alert_esc_if`](../../../dv/sv/alert_esc_agent/README.md))
-* Devmode ([`pins_if`](../../../dv/sv/common_ifs/README.md))
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
