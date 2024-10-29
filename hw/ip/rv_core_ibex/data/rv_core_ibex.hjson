@@ -256,7 +256,29 @@
       local:   "false"
       expose:  "true"
     },
-
+    { name:                "PMPRstCfg"
+      type:                "ibex_pkg::pmp_cfg_t"
+      default:             "ibex_pkg::PmpCfgRst"
+      desc:                "Reset value of PMP config CSRs"
+      local:               "false"
+      expose:              "true"
+      unpacked_dimensions: "[16]"
+    },
+    { name:                "PMPRstAddr"
+      type:                "logic [33:0]"
+      default:             "ibex_pkg::PmpAddrRst"
+      desc:                "Reset value of PMP address CSRs"
+      local:               "false"
+      expose:              "true"
+      unpacked_dimensions: "[16]"
+    },
+    { name:          "PMPRstMsecCfg"
+      type:          "ibex_pkg::pmp_mseccfg_t"
+      default:       "ibex_pkg::PmpMseccfgRst"
+      desc:          "Reset value of MSECCFG CSR"
+      local:         "false"
+      expose:        "true"
+    },
     { name:    "RV32E"
       type:    "bit"
       default: "0"
