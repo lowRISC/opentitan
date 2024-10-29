@@ -32,20 +32,7 @@ opentitan_top(
         "//hw/top_earlgrey/ip_autogen/rstmgr",
         "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "rv_plic_c_regs",
-    srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_plic_rust_regs",
-    srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
+        "//hw/top_earlgrey/ip_autogen/rv_plic",
     ],
 )
 
