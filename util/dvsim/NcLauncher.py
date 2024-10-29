@@ -75,8 +75,7 @@ class NcLauncher(Launcher):
         # Compute the environment for the subprocess by overriding environment
         # variables of this process with matching ones from self.deploy.exports
         exports = os.environ.copy()
-        if self.deploy.exports:
-            exports.update(self.deploy.exports)
+        exports.update(self.deploy.exports)
 
         # Clear the magic MAKEFLAGS variable from exports if necessary. This
         # variable is used by recursive Make calls to pass variables from one
