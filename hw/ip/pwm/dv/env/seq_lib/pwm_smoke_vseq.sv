@@ -19,9 +19,6 @@ class pwm_smoke_vseq extends pwm_base_vseq;
     param_reg_t pwm_param;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(pwm_param, pwm_param.BlinkEn == 1;)
 
-    //make sure write to regs are enabled
-    set_reg_en(Enable);
-
     // disable channel 0
     set_ch_enables(32'h0);
     //setup general config

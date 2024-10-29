@@ -41,7 +41,6 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
 
   virtual task body();
 
-    set_reg_en(Enable);
     set_ch_enables(32'h0);
     rand_pwm_cfg_reg();
 

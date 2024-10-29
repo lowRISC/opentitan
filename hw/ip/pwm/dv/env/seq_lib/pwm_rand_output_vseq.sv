@@ -27,7 +27,6 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
 
   virtual task body();
 
-    set_reg_en(Enable);
     set_ch_enables(32'h0);
 
     rand_pwm_cfg_reg();
@@ -54,7 +53,6 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
     low_power_mode(low_power, NUM_CYCLES);
 
     shutdown_dut();
-    set_reg_en(Disable);
 
   endtask : body
 

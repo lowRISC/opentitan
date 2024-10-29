@@ -11,13 +11,6 @@ class pwm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(pwm_base_vseq)
   `uvm_object_new
 
-  virtual task set_reg_en(pwm_status_e state);
-    if (ral.regwen.regwen.get_mirrored_value() != state) begin
-      ral.regwen.regwen.set(1'b1);
-      csr_update(.csr(ral.regwen), .en_shadow_wr(1'b1));
-    end
-  endtask
-
   virtual task set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
     ral.cfg.clk_div.set(ClkDiv);
     ral.cfg.dc_resn.set(DcResn);
