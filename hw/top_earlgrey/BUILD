@@ -28,25 +28,12 @@ opentitan_top(
     files = glob(["**"]),
     hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     ips = [
+        "//hw/top_earlgrey/ip_autogen/alert_handler",
         "//hw/top_earlgrey/ip_autogen/pwrmgr",
         "//hw/top_earlgrey/ip_autogen/rstmgr",
         "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
         "//hw/top_earlgrey/ip_autogen/rv_plic",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "alert_handler_c_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "alert_handler_rust_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
     ],
 )
 

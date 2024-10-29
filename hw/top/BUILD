@@ -17,6 +17,7 @@ alias(
 
 # List of IPs for which to generate headers.
 IPS = [
+    "alert_handler",
     "flash_ctrl",
     "clkmgr",
     "rstmgr",
