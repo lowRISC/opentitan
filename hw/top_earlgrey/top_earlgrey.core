@@ -37,6 +37,7 @@ filesets:
       - lowrisc:ip:keymgr
       - lowrisc:constants:top_pkg
       - lowrisc:constants:jtag_id_pkg
+      - lowrisc:constants:ibex_pmp_reset_pkg
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
