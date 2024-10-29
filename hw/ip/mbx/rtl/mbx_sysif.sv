@@ -73,8 +73,7 @@ module mbx_sysif
     .tl_win_i   ( tl_win_d2h ),
     .reg2hw     ( reg2hw     ),
     .hw2reg     ( hw2reg     ),
-    .intg_err_o ( intg_err_o ),
-    .devmode_i  ( 1'b1       )
+    .intg_err_o ( intg_err_o )
   );
 
   // Straps for the external capability header registers
