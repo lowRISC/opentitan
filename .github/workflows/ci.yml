@@ -11,6 +11,11 @@ on:
     tags:
       - "*"
 
+permissions:
+  contents: read
+  # Needed for workload identity federation
+  id-token: write
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -26,9 +31,9 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required so we can lint commit messages.
-      - name: Install dependencies
-        uses: ./.github/actions/install-deps
-      - name: Environment
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Show environment
         run: ./ci/scripts/show-env.sh
       - name: Commit metadata
         run: ./ci/scripts/lint-commits.sh "$GITHUB_BASE_REF"
@@ -46,11 +51,11 @@ jobs:
       - name: Python (mypy)
         run: ./ci/scripts/mypy.sh
       - name: C/C++ formatting
-        run: ./ci/bazelisk.sh test //quality:clang_format_check
+        run: ./bazelisk.sh test //quality:clang_format_check
       - name: Rust formatting
-        run: ./ci/bazelisk.sh test //quality:rustfmt_check
+        run: ./bazelisk.sh test //quality:rustfmt_check
       - name: Shellcheck
-        run: ./ci/bazelisk.sh test //quality:shellcheck_check
+        run: ./bazelisk.sh test //quality:shellcheck_check
       - name: Header guards
         run: ./ci/scripts/include-guard.sh "$GITHUB_BASE_REF"
         if: ${{ github.event_name == 'pull_request' }}
@@ -70,8 +75,8 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
-      - name: Install dependencies
-        uses: ./.github/actions/install-deps
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
       - name: Countermeasures implemented (earlgrey)
         run: ./ci/scripts/check-countermeasures.sh earlgrey
         continue-on-error: true
@@ -98,7 +103,7 @@ jobs:
         env:
           OT_DESTRUCTIVE: 1 # Required by the script to clean up.
       - name: Buildifier
-        run: ./ci/bazelisk.sh test //quality:buildifier_check
+        run: ./bazelisk.sh test //quality:buildifier_check
       - name: Vendored files
         run: ./ci/scripts/check-vendoring.sh
       - name: Verible RTL
@@ -116,8 +121,10 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Bitstream cache requires all commits.
-      - name: Install dependencies
-        uses: ./.github/actions/install-deps
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          configure-bazel: false
       - name: Prepare airgapped environment
         run: ./util/prep-bazel-airgapped-build.sh
       - name: Build in the airgapped environment
@@ -161,8 +168,8 @@ jobs:
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        uses: ./.github/actions/install-deps
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
       - name: Build simulator with Verilator
         run: ./ci/scripts/build-chip-verilator.sh englishbreakfast
       - name: Upload binary
@@ -181,16 +188,16 @@ jobs:
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
-      - name: Install dependencies
-        uses: ./.github/actions/install-deps
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
       - name: Build bitstream
         run: |
           # Build CW305 test rom required by `build-bitstream-vivado.sh`
           rom_path="sw/device/lib/testing/test_rom"
-          ci/bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
+          ./bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
             --features=-rv32_bitmanip \
             --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
-          vmem="$(ci/bazelisk.sh cquery --output=files "//${rom_path}:test_rom_fpga_cw305" \
+          vmem="$(./bazelisk.sh cquery --output=files "//${rom_path}:test_rom_fpga_cw305" \
             --features=-rv32_bitmanip \
             --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_
           )"

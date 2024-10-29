@@ -2,8 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: Install dependencies
-description: Install system dependencies needed for OpenTitan
+name: Prepare environment
+description: Install dependencies and prepare environment needed for OpenTitan
 
 inputs:
   verilator-version:
@@ -22,6 +22,10 @@ inputs:
     description: Path at which to install Verible
     required: true
     default: /tools/verible
+  configure-bazel:
+    description: Configure Bazel to use remote cache
+    required: true
+    default: true
 
 runs:
   using: composite
@@ -80,4 +84,30 @@ runs:
         sudo chmod 777 "${{ inputs.verible-path }}"
         tar -C "${{ inputs.verible-path }}" -xvzf "/tmp/${VERIBLE_TAR}" --strip-components=1
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
+      shell: bash
+
+    # Log into Google Cloud using Workload Identity Federation
+    # This needs `id-token: write` permission and doesn't work for pull request.
+    - uses: google-github-actions/auth@v2
+      if: github.event_name != 'pull_request'
+      with:
+        project_id: active-premise-257318
+        workload_identity_provider: projects/281751345158/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+
+    - name: Configure ~/.bazelrc
+      if: inputs.configure-bazel == 'true'
+      run: |
+        cp ci/.bazelrc ~/.bazelrc
+        # Inject the OS version into a parameter used in the action key computation to
+        # avoid collisions between different operating systems in the caches.
+        # See #14695 for more information.
+        echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
+
+        if ${{ github.event_name != 'pull_request' }}; then
+          echo "Will upload to the cache." >&2
+          echo "build --google_default_credentials" >> ~/.bazelrc
+        else
+          echo "Download from cache only." >&2
+          echo "build --remote_upload_local_results=false" >> ~/.bazelrc
+        fi
       shell: bash
