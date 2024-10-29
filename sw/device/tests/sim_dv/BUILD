@@ -676,7 +676,7 @@ opentitan_test(
     srcs = ["alert_handler_escalation.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -701,7 +701,7 @@ opentitan_test(
     srcs = ["alert_handler_entropy_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -720,7 +720,7 @@ opentitan_test(
     # The test requires to drive fatal alerts which is possible only in DV sim.
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",

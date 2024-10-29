@@ -41,12 +41,12 @@ filegroup(
 filegroup(
     name = "earlgrey_defs",
     srcs = [
+        "//hw/top:alert_handler_rust_regs",
         "//hw/top:clkmgr_rust_regs",
         "//hw/top:flash_ctrl_rust_regs",
         "//hw/top:pwrmgr_rust_regs",
         "//hw/top:rstmgr_rust_regs",
         "//hw/top:rv_plic_rust_regs",
-        "//hw/top_earlgrey:alert_handler_rust_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_rust_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_rust_regs",
         "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_rust_regs",
