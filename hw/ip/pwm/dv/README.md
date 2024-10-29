@@ -44,14 +44,6 @@ All common types and methods defined at the package level can be found in
 ```systemverilog
 parameter uint NUM_PWM_CHANNELS = 6;
 
- // datatype
-  typedef enum bit [1:0] {
-    Standard  = 2'b00,
-    Blinking  = 2'b01,
-    Heartbeat = 2'b11,
-    Allmodes  = 2'b10
-  } pwm_mode_e;
-
   typedef enum bit {
     Enable  = 1'b1,
     Disable = 1'b0
@@ -74,14 +66,6 @@ parameter uint NUM_PWM_CHANNELS = 6;
     bit [15:0]   B;
     bit [15:0]   A;
   } dc_blink_t;
-
-  // function
-  function automatic pwm_mode_e get_pwm_mode(bit [1:0] mode);
-    return (mode == 2'b10) ? Blinking  :
-           (mode == 2'b11) ? Heartbeat :
-           (mode == 2'b00) ? Standard  :
-                             Allmodes;
-  endfunction : get_pwm_mode
 ```
 ### TL_agent
 PWM instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
