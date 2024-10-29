@@ -34,6 +34,8 @@ static cdi_1_sig_values_t cdi_1_cert_params = {
     .tbs_size = kCdi1MaxTbsSizeBytes,
 };
 
+const dice_cert_format_t kDiceCertFormat = kDiceCertFormatX509TcbInfo;
+
 static_assert(kDiceMeasurementSizeInBytes == 32,
               "The DICE attestation measurement size should equal the size of "
               "the keymgr binding registers.");
