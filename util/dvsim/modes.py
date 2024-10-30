@@ -4,7 +4,7 @@
 
 import logging as log
 import sys
-from typing import List, Optional
+from typing import Dict, List, Optional
 
 
 class Mode:
@@ -37,8 +37,86 @@ class Mode:
         # Default behaviour is not to have sub-modes
         return None
 
+    @staticmethod
+    def merge_mode_attr(key: str,
+                        from_tgt: object,
+                        from_src: object,
+                        is_sub_mode: bool) -> object:
+        # If sub-mode, don't override the name: it could differ.
+        if is_sub_mode and key == 'name':
+            return from_tgt
+
+        # If src value is None, then nothing to do here.
+        if from_src is None:
+            return from_tgt
+
+        # If the target dict's value is None, replace with value from src
+        if from_tgt is None:
+            return from_src
+
+        # If the two dicts have equal attributes, no merge is needed.
+        if from_tgt == from_src:
+            return from_tgt
+
+        # If the target value is a list, the source value should be as well.
+        # Append it to the target value.
+        if isinstance(from_tgt, list):
+            assert isinstance(from_src, list)
+            return from_tgt + from_src
+
+        # The only types that we can merge other than lists are the "scalar
+        # types" that we define here.
+        #
+        # These scalar types have "default" values which behave like None, so
+        # get happily overridden.
+        scalar_types = {str: "", int: -1}
+
+        for st, st_default in scalar_types.items():
+            if not isinstance(from_tgt, st):
+                continue
+
+            # The target value is of a known scalar type. Check that the value
+            # being merged in matches.
+            if not isinstance(from_src, st):
+                raise ValueError(f"Merge failure: The key {key} in the "
+                                 f"destination dictionary is {from_tgt}, of "
+                                 f"type {st}, and cannot be merged with "
+                                 f"{from_src}.")
+
+            # If the target value is the "default" value then we should take
+            # from_src to override it.
+            if from_tgt == st_default:
+                return from_src
+
+            # We know that the two values are distinct and that from_src is not
+            # st_default (otherwise we would have returned from_src or from_tgt
+            # earlier, respectively). If from_src is not st_default either then
+            # we are trying to merge two incompatible values and should fail.
+            if from_src != st_default:
+                raise ValueError(f"Merge failure: The key {key} has "
+                                 f"incompatible values in the two source "
+                                 f"dictionaries {from_tgt}, {from_src}.")
+
+            # If we get here then from_src is st_default and from_tgt is not,
+            # so use the latter.
+            return from_tgt
+
+        # We have a non-None value from the src dict and the target value is
+        # neither a list nor a known scalar type. Raise an error.
+        raise ValueError(f"Cannot merge values for key {key}. The target "
+                         f"value starts as {from_tgt}, of an unknown type.")
+
+    @staticmethod
+    def merge_mode_dicts(tgt: Dict[str, object],
+                         src: Dict[str, object],
+                         is_sub_mode: bool) -> Dict[str, object]:
+        '''Merge values from src into tgt'''
+        return {key: Mode.merge_mode_attr(key,
+                                          tgt_val, src.get(key), is_sub_mode)
+                for key, tgt_val in tgt.items()}
+
     def merge_mode(self, mode: 'Mode') -> None:
-        '''Update this object by merging it with mode.'''
+        '''Update this object by merging in mode.'''
 
         sub_modes = self.get_sub_modes()
         is_sub_mode = mode.name in sub_modes
@@ -52,70 +130,18 @@ class Mode:
 
         # Merge attributes in self with attributes in mode arg, since they are
         # the same mode but set in separate files, or a sub-mode.
-        for attr, self_attr_val in self.__dict__.items():
-            mode_attr_val = getattr(mode, attr, None)
-
-            # If sub-mode, skip the name: it could differ.
-            if is_sub_mode and attr == 'name':
-                continue
-
-            # If mode's value is None, then nothing to do here.
-            if mode_attr_val is None:
-                continue
-
-            # If self value is None, then replace with mode's value.
-            if self_attr_val is None:
-                setattr(self, attr, mode_attr_val)
-                continue
-
-            # If they are equal, then nothing to do here.
-            if self_attr_val == mode_attr_val:
-                continue
-
-            # Extend if they are both lists.
-            if isinstance(self_attr_val, list):
-                assert isinstance(mode_attr_val, list)
-                self_attr_val.extend(mode_attr_val)
-                continue
-
-            # If the current val is default, replace with new.
-            scalar_types = {str: "", int: -1}
-            default_val = scalar_types.get(type(self_attr_val))
-
-            if type(self_attr_val) in scalar_types.keys(
-            ) and self_attr_val == default_val:
-                setattr(self, attr, mode_attr_val)
-                continue
-
-            # Check if their types are compatible.
-            if type(self_attr_val) != type(mode_attr_val):
-                log.error(
-                    "Mode %s cannot be merged into %s due to a conflict "
-                    "(type mismatch): %s: {%s(%s), %s(%s)}", mode.name,
-                    self.name, attr, str(self_attr_val),
-                    str(type(self_attr_val)), str(mode_attr_val),
-                    str(type(mode_attr_val)))
-                sys.exit(1)
-
-            # Check if they are different non-default values.
-            if self_attr_val != default_val and mode_attr_val != default_val:
-                log.error(
-                    "Mode %s cannot be merged into %s due to a conflict "
-                    "(unable to pick one from different values): "
-                    "%s: {%s, %s}", mode.name, self.name, attr,
-                    str(self_attr_val), str(mode_attr_val))
-                sys.exit(1)
+        Mode.merge_mode_dicts(self.__dict__,
+                              mode.__dict__,
+                              is_sub_mode)
 
         # Check newly appended sub_modes, remove 'self' and duplicates
         sub_modes = self.get_sub_modes()
-
         if sub_modes != []:
             new_sub_modes = []
             for sub_mode in sub_modes:
                 if self.name != sub_mode and sub_mode not in new_sub_modes:
                     new_sub_modes.append(sub_mode)
             self.set_sub_modes(new_sub_modes)
-        return True
 
     @staticmethod
     def create_modes(ModeType, mdicts):
