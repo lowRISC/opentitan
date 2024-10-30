@@ -26,7 +26,7 @@ use crate::image::manifest::{
     MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestKind, SigverifySpxSignature,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
-use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtSpec};
+use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
 use crate::util::file::{FromReader, ToWriter};
 use crate::util::parse_int::ParseInt;
 
@@ -292,31 +292,30 @@ impl Image {
 
     /// Adds an extension to the signed region of this `Image`.
     ///
-    /// This will take all the extensions in `spec.signed_region` and append them to the image.
+    /// This will take all the signed extensions in `spec` and append them to the image.
     /// This should be called before adding any unsigned extensions to ensure all extensions that
     /// are a part of the signature exist within the contiguous signed region of the image.
-    pub fn add_signed_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
-        for entry_spec in &spec.signed_region {
-            self.add_manifest_extension(ManifestExtEntry::from_spec(
-                entry_spec,
-                spec.source_path(),
-            )?)?;
-        }
-        Ok(())
+    pub fn add_signed_manifest_extensions(&mut self, spec: &[ManifestExtEntrySpec]) -> Result<()> {
+        spec.iter()
+            .filter(|entry_spec| entry_spec.is_signed())
+            .try_for_each(|entry_spec| {
+                self.add_manifest_extension(ManifestExtEntry::from_spec(entry_spec)?)
+            })
     }
 
     /// Adds an extension to the unsigned region of this `Image`.
     ///
-    /// This will take all the extensions in `spec.unsigned_region` and append them to the image.
+    /// This will take all the unsigned extensions in `spec` and append them to the image.
     /// This should only be called once all signed extensions have been added.
-    pub fn add_unsigned_manifest_extensions(&mut self, spec: &ManifestExtSpec) -> Result<()> {
-        for entry_spec in &spec.unsigned_region {
-            self.add_manifest_extension(ManifestExtEntry::from_spec(
-                entry_spec,
-                spec.source_path(),
-            )?)?;
-        }
-        Ok(())
+    pub fn add_unsigned_manifest_extensions(
+        &mut self,
+        spec: &[ManifestExtEntrySpec],
+    ) -> Result<()> {
+        spec.iter()
+            .filter(|entry_spec| !entry_spec.is_signed())
+            .try_for_each(|entry_spec| {
+                self.add_manifest_extension(ManifestExtEntry::from_spec(entry_spec)?)
+            })
     }
 
     /// Adds an extension to the end of this `Image`.
