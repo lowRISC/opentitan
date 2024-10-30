@@ -65,6 +65,7 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
 
 % endfor
+% if helper.addr_space == helper.default_addr_space:
 /// PLIC Interrupt Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
@@ -155,6 +156,7 @@ ${helper.clkmgr_gateable_clocks.render()}
 /// but the clock manager is in control of whether the clock actually is stopped.
 ${helper.clkmgr_hintable_clocks.render()}
 
+% endif
 % for (subspace_name, description, subspace_range) in helper.subranges:
 /// ${subspace_name.upper()} Region
 ///
