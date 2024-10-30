@@ -15,7 +15,7 @@ use zerocopy::AsBytes;
 
 use cert_lib::{
     get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
-    CertFormat, HostEndorsedCert,
+    HostEndorsedCert,
 };
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
@@ -30,6 +30,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
+use ot_certs::CertFormat;
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::provisioning_data::{
