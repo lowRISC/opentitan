@@ -36,6 +36,7 @@ _POSITIONS = {
         ],
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_rom_ext",
+            "//hw/top_earlgrey:fpga_cw340_rom_ext",
         ],
         linker_script = position["linker_script"],
         deps = [
@@ -53,6 +54,7 @@ _POSITIONS = {
         name = "rescue_firmware_{}".format(name),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "",
@@ -82,6 +84,7 @@ opentitan_test(
     name = "next_slot",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
@@ -111,6 +114,7 @@ opentitan_test(
     name = "primary_slot",
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{rom_ext}@0 {slot_a:signed_bin}@0x10000 {slot_b:signed_bin}@0x90000",
