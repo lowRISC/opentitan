@@ -242,7 +242,7 @@ class Deploy():
         the final resolved 'cmd' & the exports. The 'name' field will be unique
         to 'item' and 'self', so we take that out of the comparison.
         """
-        if type(self) != type(item):
+        if not isinstance(self, type(item)):
             return False
 
         # Check if the cmd field is identical.
@@ -320,6 +320,8 @@ class Deploy():
         """
         # Retain the handle to self for lookup & callbacks.
         self.launcher = get_launcher(self)
+        # Pass the used tool to the launcher for some tool dependent configuration
+        self.launcher.tool = self.sim_cfg.tool
 
 
 class CompileSim(Deploy):

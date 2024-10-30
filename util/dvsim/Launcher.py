@@ -175,6 +175,15 @@ class Launcher:
             clean_odirs(odir=self.deploy.odir, max_odirs=self.max_odirs)
         os.makedirs(self.deploy.odir, exist_ok=True)
 
+        if self.tool == 'xcelium':
+            # Create symlink for src folder within the scratch directory path errors for DPI builds
+            try:
+                os.symlink(os.path.join(self.deploy.odir, "sim-vcs", "src"),
+                           os.path.join(self.deploy.odir, "src"),
+                           target_is_directory=True)
+            except FileExistsError:
+                pass
+
     def _link_odir(self, status):
         """Soft-links the job's directory based on job's status.
 
