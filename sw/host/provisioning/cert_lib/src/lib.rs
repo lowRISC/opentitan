@@ -7,6 +7,7 @@ use std::io::{Read, Write};
 use std::process::Command;
 
 use anyhow::{bail, Context, Result};
+use clap::ValueEnum;
 use elliptic_curve::SecretKey;
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
@@ -150,6 +151,18 @@ fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<V
     generate_certificate_from_tbs(tbs, &signature)
 }
 
+#[derive(Clone, Debug, ValueEnum)]
+pub enum CertFormat {
+    X509,
+    // TODO(#24281): Cbor,
+}
+
+pub struct HostEndorsedCert {
+    pub format: CertFormat,
+    pub bytes: Vec<u8>,
+    pub ignore_critical: bool,
+}
+
 /// Validate a collection of X.509 certificates using 'openssl verify ...' command.
 ///
 /// Each certificate in the collection is validated against the provided CA.
@@ -157,7 +170,7 @@ fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<V
 /// Arguments:
 /// * ca_pem - The file name of the CA certificate saved in PEM format.
 /// * certs  - A vector of certificate binary blobs.
-pub fn validate_certs_chain(ca_pem: &str, certs: &[Vec<u8>]) -> Result<()> {
+pub fn validate_certs_chain(ca_pem: &str, certs: &[HostEndorsedCert]) -> Result<()> {
     let base_name = tmpfilename("cert_validation");
     let binding_der = base_name.to_owned() + ".der";
     let binding_pem = base_name.to_owned() + ".pem";
@@ -166,14 +179,14 @@ pub fn validate_certs_chain(ca_pem: &str, certs: &[Vec<u8>]) -> Result<()> {
     let pem_filename = binding_pem.as_str();
 
     for cert in certs.iter() {
-        let size = get_cert_size(cert)?;
+        let size = get_cert_size(&cert.bytes)?;
         let mut file = OpenOptions::new()
             .write(true)
             .truncate(true)
             .create(true)
             .open(der_filename)
             .context("failed to open temporary der file")?;
-        file.write_all(&cert[0..size])?;
+        file.write_all(&cert.bytes[0..size])?;
         drop(file);
 
         openssl_command(&[
@@ -188,8 +201,16 @@ pub fn validate_certs_chain(ca_pem: &str, certs: &[Vec<u8>]) -> Result<()> {
         .context("failed to covert DER to PEM")?;
 
         // Validate with the fake CA certificate.
-        openssl_command(&["verify", "-CAfile", ca_pem, pem_filename])
-            .context("failed to verify a certificate chain")?;
+        let mut validate_args = vec!["verify", "-CAfile", ca_pem];
+        if cert.ignore_critical {
+            // The `-ignore_critical` critical flag is required to verify
+            // DICE certificates that use the DiceTcbInfo custom extension that
+            // is a TCG standard (critical) extension that is not recognized by
+            // OpenSSL.
+            validate_args.push("-ignore_critical");
+        }
+        validate_args.push(pem_filename);
+        openssl_command(&validate_args).context("failed to verify a certificate chain")?;
     }
 
     fs::remove_file(der_filename).context("failed to remove der file")?;
