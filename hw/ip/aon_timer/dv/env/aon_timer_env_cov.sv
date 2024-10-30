@@ -100,14 +100,15 @@ class aon_timer_env_cov extends cip_base_env_cov #(.CFG_T(aon_timer_env_cfg));
     wdog_thold_cpXwdog_bark_rst:  cross wdog_thold_cp, wdog_bark_int;
   endgroup : watchdog_timer_bark_thold_hit_cg
 
+  extern function new(string name, uvm_component parent);
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-    // [instantiate covergroups here]
-    timer_cfg_cg = new(name);
-    wake_up_timer_thold_hit_cg = new();
-    watchdog_timer_bite_thold_hit_cg = new();
-    watchdog_timer_bark_thold_hit_cg = new();
-  endfunction : new
+endclass : aon_timer_env_cov
 
-endclass
+function aon_timer_env_cov::new(string name, uvm_component parent);
+  super.new(name, parent);
+  // [instantiate covergroups here]
+  timer_cfg_cg = new(name);
+  wake_up_timer_thold_hit_cg = new();
+  watchdog_timer_bite_thold_hit_cg = new();
+  watchdog_timer_bark_thold_hit_cg = new();
+endfunction : new

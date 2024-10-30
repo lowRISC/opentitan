@@ -14,18 +14,21 @@ class aon_timer_env_cfg extends cip_base_env_cfg #(.RAL_T(aon_timer_reg_block));
   `uvm_object_utils_begin(aon_timer_env_cfg)
   `uvm_object_utils_end
 
-  function new (string name="");
-    super.new(name);
-  endfunction : new
+  extern function new (string name="");
+  extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
+endclass : aon_timer_env_cfg
 
-    m_tl_agent_cfg.max_outstanding_req = 1;
+function aon_timer_env_cfg::new (string name="");
+  super.new(name);
+endfunction : new
 
-    // set num_interrupts & num_alerts
-    num_interrupts = ral.intr_state.get_n_used_bits();
-  endfunction
+function void aon_timer_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+  list_of_alerts = aon_timer_env_pkg::LIST_OF_ALERTS;
+  super.initialize(csr_base_addr);
 
-endclass
+  m_tl_agent_cfg.max_outstanding_req = 1;
+
+  // set num_interrupts & num_alerts
+  num_interrupts = ral.intr_state.get_n_used_bits();
+endfunction : initialize
