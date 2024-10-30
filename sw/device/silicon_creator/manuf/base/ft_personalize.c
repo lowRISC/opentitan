@@ -307,13 +307,28 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
 static status_t hash_certificate(const flash_ctrl_info_page_t *page,
                                  size_t offset, size_t *size) {
   uint8_t buffer[1024];  // 1K should be enough for the largest certificate.
+  perso_tlv_object_header_t objh;
+  uint16_t obj_size;
+  perso_tlv_object_type_t obj_type;
+  perso_tlv_cert_header_t crth;
   uint32_t cert_size;
-  uint32_t bytes_read;
+  uint16_t wrapped_cert_size;
+  uint16_t name_len;
+  uint16_t cert_header_and_name_len;
 
+  static_assert(sizeof(objh) <= 4, "Cert Header size too large");
+  static_assert(sizeof(crth) <= 4, "Object Header size too large");
   // Read the first word of the certificate which contains it's size.
   TRY(flash_ctrl_info_read(page, offset, 1, buffer));
-  bytes_read = sizeof(uint32_t);
-  cert_size = cert_x509_asn1_decode_size_header(buffer);
+  memcpy(&objh, buffer, sizeof(perso_tlv_object_header_t));
+  PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
+  // Try to parse Cert Header, and calculate the real cert size
+  memcpy(&crth, &buffer[sizeof(objh)], sizeof(perso_tlv_cert_header_t));
+  PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
+  PERSO_TLV_GET_FIELD(Crth, Size, crth, &wrapped_cert_size);
+  cert_header_and_name_len = sizeof(crth) + name_len;
+  cert_size = wrapped_cert_size - cert_header_and_name_len;
+
   if (cert_size == 0) {
     LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
               buffer[1], page->base_addr, offset);
@@ -330,14 +345,24 @@ static status_t hash_certificate(const flash_ctrl_info_page_t *page,
     return DATA_LOSS();
   }
 
-  offset += bytes_read;
-  TRY(flash_ctrl_info_read(page, offset,
-                           util_size_to_words(cert_size - bytes_read),
-                           buffer + bytes_read));
-  hmac_sha256_update(buffer, cert_size);
+  TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size), buffer));
+  size_t cert_offset = sizeof(objh) + cert_header_and_name_len;
+  PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
+  if (obj_type == kPersoObjectTypeX509Tbs ||
+      obj_type == kPersoObjectTypeX509Cert) {
+    uint32_t decoded_cert_size =
+        cert_x509_asn1_decode_size_header(&buffer[cert_offset]);
+    if (cert_size != decoded_cert_size) {
+      LOG_ERROR("Unexpected cert size %d instead of %d", decoded_cert_size,
+                cert_size);
+      return INTERNAL();
+    }
+  }
+
+  hmac_sha256_update(&buffer[cert_offset], cert_size);
 
   if (size) {
-    *size = cert_size;
+    *size = obj_size;
   }
   return OK_STATUS();
 }
@@ -511,18 +536,17 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
       default:
         return status;
     }
-    if (*free_room < block.wrapped_cert_size)
+    if (*free_room < block.obj_size)
       return RESOURCE_EXHAUSTED();  // Another case of really screwed up.
 
     uint8_t *dest_p = *dest;
-    memcpy(dest_p, block.wrapped_cert_p, block.wrapped_cert_size);
+    memcpy(dest_p, block.wrapped_cert_p, block.obj_size);
     LOG_INFO("Copied %s certificate", block.name);
 
-    *dest = dest_p + block.wrapped_cert_size;
-    *free_room = *free_room - block.wrapped_cert_size;
+    *dest = dest_p + block.obj_size;
+    *free_room = *free_room - block.obj_size;
 
-    perso_blob_from_host.next_free +=
-        block.wrapped_cert_size + sizeof(perso_tlv_object_header_t);
+    perso_blob_from_host.next_free += block.obj_size;
     perso_blob_from_host.num_objs--;
     return OK_STATUS();
   }
@@ -577,13 +601,13 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
     TRY(perso_tlv_set_cert_block(perso_blob_to_host.body + offset,
                                  sizeof(perso_blob_to_host.body) - offset,
                                  &block));
-    if (block.wrapped_cert_size > free_room)
+    if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
 
-    memcpy(next_cert, block.wrapped_cert_p, block.wrapped_cert_size);
+    memcpy(next_cert, block.wrapped_cert_p, block.obj_size);
     LOG_INFO("Copied %s certificate", block.name);
-    next_cert += block.wrapped_cert_size;
-    free_room -= block.wrapped_cert_size;
+    next_cert += block.obj_size;
+    free_room -= block.obj_size;
   }
 
   // Now the rest of endorsed certificates received from the host, if any.
@@ -612,22 +636,24 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
       uint16_t name_len;
       char name[kCrthNameSizeFieldMask + 1];
       perso_tlv_cert_header_t crth;
+      perso_tlv_object_header_t objh;
+      uint16_t obj_size;
+      perso_tlv_object_type_t obj_type;
 
+      memcpy(&objh, certs, sizeof(perso_tlv_object_header_t));
+      PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
+      PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
+
+      uint8_t *cert_header_start = certs + sizeof(objh);
       // We just prepared the set of wrapped certificates, let's trust that the
       // data is correct and does not need more validation.
-      memcpy(&crth, certs, sizeof(crth));
-      certs += sizeof(crth);
+      memcpy(&crth, cert_header_start, sizeof(perso_tlv_cert_header_t));
       PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
-      memcpy(name, certs, name_len);
+      memcpy(name, cert_header_start + sizeof(crth), name_len);
       name[name_len] = '\0';
-      certs += name_len;
 
-      // Compute the number of words necessary for certificate storage
-      // (rounded up to word alignment).
-      uint32_t cert_size_bytes = cert_x509_asn1_decode_size_header(certs);
-      uint32_t cert_size_words = util_size_to_words(cert_size_bytes);
+      uint32_t cert_size_words = util_size_to_words(obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
-
       if ((page_offset + cert_size_bytes_ru) >
           FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
         LOG_ERROR("%s %s certificate did not fit into the info page.",
@@ -638,7 +664,7 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
                                 cert_size_words, certs));
       LOG_INFO("Imported %s %s certificate.", curr_layout.group_name, name);
       page_offset += cert_size_bytes_ru;
-      certs += cert_size_bytes;
+      certs += obj_size;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);

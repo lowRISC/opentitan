@@ -27,33 +27,27 @@ status_t perso_tlv_set_cert_block(const uint8_t *buf, size_t max_room,
                                   perso_tlv_cert_block_t *block) {
   perso_tlv_object_header_t objh;
   uint16_t obj_size;
-  perso_tlv_object_header_t obj_type;
+  perso_tlv_object_type_t obj_type;
+  perso_tlv_cert_header_t crth;
+  uint16_t wrapped_cert_size;
+  uint16_t name_len;
 
-  memcpy(&objh, buf, sizeof(objh));
+  memcpy(&objh, buf, sizeof(perso_tlv_object_header_t));
   PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
 
   if (obj_size > max_room)
     return INTERNAL();  // Something is really screwed up.
-
-  buf += sizeof(objh);
-  max_room -= sizeof(objh);
   block->obj_size = obj_size;
-  PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
 
+  PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
   if (obj_type != kPersoObjectTypeX509Cert) {
     LOG_INFO("Skipping object of type %d", obj_type);
     return NOT_FOUND();
   }
 
-  perso_tlv_cert_header_t crth;
-  uint16_t wrapped_cert_size;
-  uint16_t name_len;
-
   // Let's retrieve cert wrapper header.
-  block->wrapped_cert_p = buf;
-  memcpy(&crth, buf, sizeof(crth));
-  max_room -= sizeof(crth);
-  buf += sizeof(crth);
+  const uint8_t *cert_header_start = buf + sizeof(objh);
+  memcpy(&crth, cert_header_start, sizeof(perso_tlv_cert_header_t));
   PERSO_TLV_GET_FIELD(Crth, Size, crth, &wrapped_cert_size);
   PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
 
@@ -63,28 +57,12 @@ status_t perso_tlv_set_cert_block(const uint8_t *buf, size_t max_room,
   if ((wrapped_cert_size < (name_len + min_header_size + 8)) ||
       (wrapped_cert_size > max_room))
     return INTERNAL();  // Something is really screwed up.
-
-  memcpy(block->name, buf, name_len);
-  buf += name_len;
-  max_room -= name_len;
-  block->name[name_len] = '\0';
-
-  size_t cert_size;
-
-  cert_size = cert_x509_asn1_decode_size_header(buf);
-  if (cert_size > max_room)
-    return INTERNAL();
-
-  uint16_t wire_cert_size =
-      wrapped_cert_size - sizeof(perso_tlv_cert_header_t) - name_len;
-
-  if (cert_size != wire_cert_size) {
-    LOG_ERROR("Unexpected cert size %d instead of %d for cert %s", cert_size,
-              wire_cert_size, block->name);
-    return INTERNAL();
-  }
-
   block->wrapped_cert_size = wrapped_cert_size;
+  block->wrapped_cert_p = buf;
+
+  const uint8_t *name_start = cert_header_start + sizeof(crth);
+  memcpy(block->name, name_start, name_len);
+  block->name[name_len] = '\0';
 
   return OK_STATUS();
 }

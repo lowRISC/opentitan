@@ -40,7 +40,7 @@ typedef enum perso_tlv_obj_header_fields {
   kObjhSizeFieldWidth = 12,
   kObjhSizeFieldMask = (1 << kObjhSizeFieldWidth) - 1,
 
-  // Object type, one of perso_tlv_object_types_t.
+  // Object type, one of perso_tlv_object_type_t.
   kObjhTypeFieldShift = kObjhSizeFieldWidth,
   kObjhTypeFieldWidth =
       sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
@@ -113,6 +113,7 @@ typedef enum perso_tlv_cert_header_fields {
  **/
 typedef struct perso_tlv_cert_block {
   size_t obj_size;
+  /* obj_size - obj_hdr_size - cert_hdr_size - cert_name_len */
   size_t wrapped_cert_size;
   const void *wrapped_cert_p;
   char name[kCrthNameSizeFieldMask + 1];
