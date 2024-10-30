@@ -15,6 +15,7 @@ rust_library(
         "//sw/host/ot_certs",
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
+        "@crate_index//:clap",
         "@crate_index//:elliptic-curve",
         "@crate_index//:hex",
         "@crate_index//:log",
