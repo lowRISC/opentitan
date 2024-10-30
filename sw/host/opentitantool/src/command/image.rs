@@ -23,7 +23,7 @@ use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
 use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
 use opentitanlib::image::manifest_def::ManifestSpec;
-use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId, ManifestExtSpec};
+use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId};
 use opentitanlib::util::file::{FromReader, ToWriter};
 use opentitanlib::util::parse_int::ParseInt;
 use sphincsplus::{DecodeKey, SpxDomain, SpxError, SpxPublicKey, SpxSecretKey};
@@ -114,9 +114,6 @@ pub struct ManifestUpdateCommand {
     /// Filename for an HJSON configuration specifying manifest fields.
     #[arg(short, long)]
     manifest: Option<PathBuf>,
-    /// Filename for an HJSON configuration specifying manifest extension fields.
-    #[arg(long)]
-    manifest_ext: Option<PathBuf>,
     /// Update the length field of the manifest automatically.
     #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
     update_length: bool,
@@ -189,18 +186,17 @@ impl CommandDispatch for ManifestUpdateCommand {
             .manifest_sanity_check()
             .context("Image doesn't appear to contain a manifest, or the manifest is corrupted")?;
         // Load the manifest HJSON definition and update the image.
-        if let Some(manifest) = &self.manifest {
-            let def = ManifestSpec::read_from_file(manifest)?;
-            update_length = !def.has_length();
-            image.overwrite_manifest(def)?;
-        }
-
-        // Load the manifest extension HJSON definition and update the image.
-        let ext = self
-            .manifest_ext
+        let manifest = self
+            .manifest
             .as_deref()
-            .map(ManifestExtSpec::read_from_file)
+            .map(ManifestSpec::read_from_file)
             .unwrap_or(Ok(Default::default()))?;
+        let ext = manifest.extension_params.clone();
+
+        update_length = !manifest.has_length() || update_length;
+        image.overwrite_manifest(manifest)?;
+
+        // Update image with signed manifest extensions.
         image.add_signed_manifest_extensions(&ext)?;
 
         // Update the manifest fields that are in the signed region.
@@ -282,8 +278,8 @@ impl CommandDispatch for ManifestUpdateCommand {
 
         // List out all signed extensions and set the bounds of the signed region.
         let signed_ids = ext
-            .signed_region
             .iter()
+            .filter(|entry_spec| entry_spec.is_signed())
             .map(|e| e.id())
             .chain(vec![
                 ManifestExtId::spx_key.into(),

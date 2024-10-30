@@ -37,8 +37,7 @@ with_unknown! {
 /// Top level spec for manifest extension HJSON files.
 #[derive(Default, Debug, Deserialize, Serialize)]
 pub struct ManifestExtSpec {
-    pub signed_region: Vec<ManifestExtEntrySpec>,
-    pub unsigned_region: Vec<ManifestExtEntrySpec>,
+    pub extension_params: Vec<ManifestExtEntrySpec>,
     #[serde(skip)]
     relative_path: Option<PathBuf>,
 }
@@ -52,47 +51,42 @@ pub struct ProductExpr {
 /// Specs for the known extension variants.
 ///
 /// This includes a raw variant that can take any id, name, and value.
-#[derive(Debug, Deserialize, Serialize, PartialEq)]
-#[serde(untagged)]
+#[derive(Clone, Debug, Deserialize, PartialEq, Serialize)]
 pub enum ManifestExtEntrySpec {
+    #[serde(alias = "spx_key")]
     SpxKey {
         /// The path to the SPHINCS+ public or private key.
-        ///
-        /// If a relative path is used, this path will typically be resolved relative to the path
-        /// given by `ManifestExtSpc::source_path()` of the `ManifestExtSpec` that contains this
-        /// spec.
         spx_key: PathBuf,
     },
+    #[serde(alias = "spx_signature")]
     SpxSignature {
         /// The path to the SPHINCS+ signature.
-        ///
-        /// If a relative path is used, this path will typically be resolved relative to the path
-        /// given by `ManifestExtSpc::source_path()` of the `ManifestExtSpec` that contains this
-        /// spec.
         spx_signature: PathBuf,
     },
 
     #[serde(alias = "image_type")]
-    ImageType {
-        image_type: u32,
-    },
+    ImageType { image_type: u32 },
 
+    #[serde(alias = "secver_write")]
     SecVerWrite {
         /// Whether or not to write the security version into boot data.
         secver_write: bool,
     },
+
+    #[serde(alias = "integrator_specific_firmware_binding")]
     Isfb {
         strike_mask: HexEncoded<u128>,
         product_expr: Vec<ProductExpr>,
     },
-    IsfbErasePolicy {
-        erase_allowed: bool,
-    },
+
+    #[serde(alias = "isfb_erase_policy")]
+    IsfbErasePolicy { erase_allowed: bool },
 
     #[serde(alias = "raw")]
     Raw {
         name: HexEncoded<u32>,
         identifier: HexEncoded<u32>,
+        signed: bool,
         value: Vec<HexEncoded<u8>>,
     },
 }
@@ -138,12 +132,20 @@ impl ManifestExtEntrySpec {
             ManifestExtEntrySpec::SecVerWrite { .. } => MANIFEST_EXT_ID_SECVER_WRITE,
             ManifestExtEntrySpec::Isfb { .. } => MANIFEST_EXT_ID_ISFB,
             ManifestExtEntrySpec::IsfbErasePolicy { .. } => MANIFEST_EXT_ID_ISFB_ERASE,
-            ManifestExtEntrySpec::Raw {
-                name: _,
-                identifier,
-                value: _,
-            } => **identifier,
             ManifestExtEntrySpec::ImageType { image_type: _ } => MANIFEST_EXT_ID_IMAGE_TYPE,
+            ManifestExtEntrySpec::Raw { identifier, .. } => **identifier,
+        }
+    }
+
+    pub fn is_signed(&self) -> bool {
+        match self {
+            ManifestExtEntrySpec::SpxKey { .. }
+            | ManifestExtEntrySpec::SecVerWrite { .. }
+            | ManifestExtEntrySpec::Isfb { .. }
+            | ManifestExtEntrySpec::IsfbErasePolicy { .. }
+            | ManifestExtEntrySpec::ImageType { .. } => true,
+            ManifestExtEntrySpec::SpxSignature { .. } => false,
+            ManifestExtEntrySpec::Raw { signed, .. } => *signed,
         }
     }
 }
@@ -230,19 +232,13 @@ impl ManifestExtEntry {
     }
 
     /// Creates a new manifest extension from a given `spec`.
-    ///
-    /// For extensions that reference other resources, such as SPHINCS+ keys or signatures, this
-    /// function will attempt to load those resources to create the extension.
-    pub fn from_spec(spec: &ManifestExtEntrySpec, relative_path: Option<&Path>) -> Result<Self> {
-        let relative_path = relative_path.unwrap_or(Path::new(""));
+    pub fn from_spec(spec: &ManifestExtEntrySpec) -> Result<Self> {
         Ok(match spec {
-            ManifestExtEntrySpec::SpxKey { spx_key } => ManifestExtEntry::new_spx_key_entry(
-                &SpxPublicKey::read_pem_file(relative_path.join(spx_key))?,
-            )?,
+            ManifestExtEntrySpec::SpxKey { spx_key } => {
+                ManifestExtEntry::new_spx_key_entry(&SpxPublicKey::read_pem_file(spx_key)?)?
+            }
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
-                ManifestExtEntry::new_spx_signature_entry(&std::fs::read(
-                    relative_path.join(spx_signature),
-                )?)?
+                ManifestExtEntry::new_spx_signature_entry(&std::fs::read(spx_signature)?)?
             }
             ManifestExtEntrySpec::ImageType { image_type } => {
                 ManifestExtEntry::new_image_type_entry(*image_type)?
@@ -275,6 +271,7 @@ impl ManifestExtEntry {
                 name,
                 identifier,
                 value,
+                ..
             } => ManifestExtEntry::Raw {
                 header: ManifestExtHeader {
                     identifier: **identifier,
@@ -325,19 +322,21 @@ mod tests {
     fn test_manifest_ext_from_hjson() {
         let spec = ManifestExtSpec::read_from_file(&testdata("image/manifest_ext.hjson")).unwrap();
         assert_eq!(spec.source_path(), Some(testdata("image").as_path()));
-        assert_eq!(spec.signed_region.len(), 5);
+        assert_eq!(spec.extension_params.len(), 6);
         assert_eq!(
-            spec.signed_region[0],
+            spec.extension_params[0],
             ManifestExtEntrySpec::SpxKey {
                 spx_key: "test_spx.pem".into()
             }
         );
+        assert!(spec.extension_params[0].is_signed());
         assert_eq!(
-            spec.signed_region[1],
+            spec.extension_params[1],
             ManifestExtEntrySpec::SecVerWrite { secver_write: true }
         );
+        assert!(spec.extension_params[1].is_signed());
         assert_eq!(
-            spec.signed_region[2],
+            spec.extension_params[2],
             ManifestExtEntrySpec::Isfb {
                 strike_mask: HexEncoded(0x0fedcba987654321fedcba9876543210),
                 product_expr: vec![
@@ -352,27 +351,31 @@ mod tests {
                 ]
             }
         );
+        assert!(spec.extension_params[2].is_signed());
         assert_eq!(
-            spec.signed_region[3],
+            spec.extension_params[3],
             ManifestExtEntrySpec::IsfbErasePolicy {
                 erase_allowed: false
             }
         );
+        assert!(spec.extension_params[3].is_signed());
         assert_eq!(
-            spec.signed_region[4],
+            spec.extension_params[4],
             ManifestExtEntrySpec::Raw {
                 name: HexEncoded(0xbeef),
                 identifier: HexEncoded(0xabcd),
+                signed: true,
                 value: [0x01, 0x23, 0x45, 0x67].map(HexEncoded).to_vec()
             }
         );
-        assert_eq!(spec.unsigned_region.len(), 1);
+        assert!(spec.extension_params[4].is_signed());
         assert_eq!(
-            spec.unsigned_region[0],
+            spec.extension_params[5],
             ManifestExtEntrySpec::SpxSignature {
                 spx_signature: "test_signature.bin".into()
             }
         );
+        assert!(!spec.extension_params[5].is_signed());
     }
 
     const MAN_EXT_ISFB_CONF: &str = "\
