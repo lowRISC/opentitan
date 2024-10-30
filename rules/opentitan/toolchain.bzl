@@ -11,6 +11,7 @@ LocalToolInfo = provider(fields = [
     "gen_mem_image",
     "gen_otp_rot_auth_json",
     "gen_otp_immutable_rom_ext_json",
+    "gen_otp_creator_manuf_state_json",
 ])
 
 def _localtools_toolchain(ctx):
