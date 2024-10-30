@@ -45,7 +45,7 @@ class flash_ctrl_phy_arb_redun_vseq extends flash_ctrl_err_base_vseq;
 
 `define HIER_PATH(prefix, copy, suffix) `"prefix.copy.suffix`"
 
-  arb_t arbs[NumArbiters] = {
+  arb_t arbs[NumArbiters] = '{
     '{
       name: "host_arb[0]",
       copy_0_req: `HIER_PATH(`HOST_ARB_0_PREFIX, `COPY_0, `REQ_SUFFIX),
