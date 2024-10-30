@@ -7,7 +7,6 @@ use std::io::{Read, Write};
 use std::process::Command;
 
 use anyhow::{bail, Context, Result};
-use clap::ValueEnum;
 use elliptic_curve::SecretKey;
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
@@ -18,6 +17,7 @@ use opentitanlib::crypto::sha256::sha256;
 use opentitanlib::util::tmpfilename;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::generate_certificate_from_tbs;
+use ot_certs::CertFormat;
 
 /// Execute an openssl invocation, passing the args[] as command line parameters.
 ///
@@ -149,12 +149,6 @@ fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<V
 
     // Generate the (endorsed) certificate.
     generate_certificate_from_tbs(tbs, &signature)
-}
-
-#[derive(Clone, Debug, ValueEnum)]
-pub enum CertFormat {
-    X509,
-    // TODO(#24281): Cbor,
 }
 
 pub struct HostEndorsedCert {
