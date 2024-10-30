@@ -12,6 +12,7 @@ import sys
 import hjson
 from Crypto.Hash import SHA256
 from elftools.elf import elffile
+from typing import Optional
 
 _OTP_PARTITION_NAME = "CREATOR_SW_CFG"
 
@@ -23,9 +24,12 @@ _ENABLE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN"
 _START_OFFSET_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET"
 _SIZE_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH"
 _HASH_FIELD_NAME = "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH"
+_CREATOR_MANUF_STATE_FIELD_NAME = "CREATOR_SW_CFG_MANUF_STATE"
 
 # This must match the definitions in hardened.h.
 _HARDENED_TRUE = 0x739
+
+_PREFIX_FOR_HEX = "0x"
 
 
 class RomExtImmutableSectionOtpFields:
@@ -74,7 +78,7 @@ class RomExtImmutableSectionOtpFields:
                     data_to_hash += section.data()
                     self.hash = bytearray(SHA256.new(data_to_hash).digest())
 
-    def insert_key_value(self, item_name: str, value: str):
+    def insert_key_value(self, item_name: str, value: str) -> None:
         """Insert the value of the item if it does not exist.
         Args:
             item_name: The name of the item to insert.
@@ -89,21 +93,37 @@ class RomExtImmutableSectionOtpFields:
                         return
                 partition["items"].append({"name": item_name, "value": value})
 
-    def get_key_value(self, item_name: str):
-        """Get the value of the item if it exists.
+    def update_key_value(self, item_name: str, value: str) -> None:
+        """Update the value of the item if it exists.
         Args:
-            item_name: The name of the item to insert.
+            item_name: The name of the item to update.
+            value: The value to update the item with.
         Returns:
-            The value of the item if found, otherwise "0x0".
+            None
         """
         for partition in self.json_data["partitions"]:
             if partition["name"] == _OTP_PARTITION_NAME:
                 for item in partition["items"]:
                     if item["name"] == item_name:
-                        return item["value"]
-        return "0x0"
+                        item["value"] = value
+                        return
+        raise ValueError(f"{item_name} item doesn't exist")
 
-    def update_json_with_immutable_rom_ext_section_data(self):
+    def get_key_value(self, item_name: str) -> Optional[str]:
+        """Get the value of the item if it exists.
+        Args:
+            item_name: The name of the item to insert.
+        Returns:
+            The value of the item if found, otherwise None.
+        """
+        for partition in self.json_data["partitions"]:
+            if partition["name"] == _OTP_PARTITION_NAME:
+                for item in partition["items"]:
+                    if item["name"] == item_name:
+                        return str(item["value"])
+        return None
+
+    def update_json_with_immutable_rom_ext_section_data(self) -> None:
         """Update the JSON with the ROM_EXT immutable section data.
         Args:
             None
@@ -115,7 +135,52 @@ class RomExtImmutableSectionOtpFields:
         self.insert_key_value(_SIZE_FIELD_NAME, f"{hex(self.size_in_bytes)}")
         self.insert_key_value(_HASH_FIELD_NAME, f"0x{self.hash.hex()}")
 
-    def immutable_rom_ext_enable(self):
+    def update_json_with_creator_manuf_state_data(self) -> None:
+        """Update the JSON with the CREATOR_SW_CFG_MANUF_STATE data.
+        Args:
+            None
+        Returns:
+            None
+        """
+        creator_manuf_state = self.get_key_value(_CREATOR_MANUF_STATE_FIELD_NAME)
+
+        if creator_manuf_state is None:
+            return
+
+        # Check if the state value starts with the hexadecimal prefix.
+        if creator_manuf_state[:2] == _PREFIX_FOR_HEX:
+            # Remove the hexadecimal prefix.
+            creator_manuf_state = creator_manuf_state[2:]
+        # Pad with leading zeros to ensure 4 bytes long.
+        creator_manuf_state = creator_manuf_state.zfill(8)
+
+        if creator_manuf_state[:6] != "0" * 6:
+            raise ValueError(
+                f"The first three bytes of CREATOR_MANUF_STATE must be zeros. "
+                f"Current value: 0x{creator_manuf_state}"
+            )
+
+        if not self.immutable_rom_ext_enable():
+            return
+
+        im_ext_hash = self.get_key_value(_HASH_FIELD_NAME)
+        assert isinstance(im_ext_hash, str)
+
+        # Check if the state value starts with the hexadecimal prefix.
+        if im_ext_hash[:2] == _PREFIX_FOR_HEX:
+            # Remove the hexadecimal prefix.
+            im_ext_hash = im_ext_hash[2:]
+        # Pad with leading zeros to ensure 4 bytes long.
+        im_ext_hash = im_ext_hash.zfill(8)
+
+        # Embed the first three bytes of `IMMUTABLE_ROM_EXT_SHA256_HASH` into
+        # `CREATOR_MANUF_STATE`
+        creator_manuf_state = (
+            _PREFIX_FOR_HEX + im_ext_hash[:6] + creator_manuf_state[6:]
+        )
+        self.update_key_value(_CREATOR_MANUF_STATE_FIELD_NAME, creator_manuf_state)
+
+    def immutable_rom_ext_enable(self) -> bool:
         """Checks if immutable ROM extension is enabled.
 
         This method retrieves the value of the enable field from the OTP
@@ -124,11 +189,14 @@ class RomExtImmutableSectionOtpFields:
         Returns:
             True if immutable ROM extension is enabled, False otherwise.
         """
-        immutable_rom_ext_en_value = int(self.get_key_value(_ENABLE_FIELD_NAME), 0)
+        immutable_rom_ext_en = self.get_key_value(_ENABLE_FIELD_NAME)
+        if immutable_rom_ext_en is None:
+            return False
+        immutable_rom_ext_en_value = int(immutable_rom_ext_en, 0)
         return immutable_rom_ext_en_value == _HARDENED_TRUE
 
 
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser(
         prog="gen-otp-immutable-rom-ext-json",
         description=__doc__,
@@ -165,6 +233,8 @@ def main():
 
     if imm_section_otp.immutable_rom_ext_enable():
         imm_section_otp.update_json_with_immutable_rom_ext_section_data()
+
+    imm_section_otp.update_json_with_creator_manuf_state_data()
 
     # Write out the OTP fields to a JSON file.
     with open(args.output, 'w') as f:

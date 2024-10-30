@@ -140,9 +140,12 @@ CONST = struct(
         ESC_PHASE_2 = 0x25,
         ESC_PHASE_3 = 0x76,
     ),
+    # The first three bytes of `MANUF_STATE` must be zeros, as
+    # they are reserved for storing the first three bytes of the
+    # `IMMUTABLE_ROM_EXT_SHA256_HASH`.
     MANUF_STATE = struct(
         PERSO_INITIAL = 0x00000000,
-        SIVAL = 0x30305653,  # ASCII `SV00`.
+        SIVAL = 0x00000053,  # ASCII `S`.
     ),
 )
 
