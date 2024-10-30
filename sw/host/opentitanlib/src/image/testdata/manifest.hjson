@@ -193,5 +193,27 @@
     null,
     null,
     null,
+  ],
+  extension_params: [
+    {
+      integrator_specific_firmware_binding: {
+        strike_mask: "0x0fedcba987654321fedcba9876543210",
+        product_expr: [
+          {
+            mask: "0xffffffff",
+            value: "0xa5a5a5a5"
+          },
+          {
+            mask: "0xf0f0f0f0",
+            value: "0xa0a0a0a0"
+          }
+        ]
+      }
+    },
+    {
+      isfb_erase_policy: {
+        erase_allowed: false
+      }
+    },
   ]
 }
