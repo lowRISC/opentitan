@@ -19,3 +19,12 @@ pub mod asn1;
 pub mod codegen;
 pub mod template;
 pub mod x509;
+
+use clap::ValueEnum;
+
+/// Supported OpenTitan certificate formats.
+#[derive(Clone, Debug, ValueEnum)]
+pub enum CertFormat {
+    X509,
+    // TODO(#24281): Cbor,
+}

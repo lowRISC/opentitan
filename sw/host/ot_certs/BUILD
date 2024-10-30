@@ -44,6 +44,7 @@ rust_library(
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:asn1",
+        "@crate_index//:clap",
         "@crate_index//:deser-hjson",
         "@crate_index//:heck",
         "@crate_index//:hex",

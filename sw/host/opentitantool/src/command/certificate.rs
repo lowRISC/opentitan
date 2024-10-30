@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{bail, Context, Result};
-use clap::{Args, Subcommand, ValueEnum};
+use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::{self, File};
@@ -14,6 +14,7 @@ use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
 use ot_certs::template::subst::{Subst, SubstData};
 use ot_certs::template::Template;
+use ot_certs::CertFormat;
 use ot_certs::{codegen, x509};
 
 fn load_template(path: &PathBuf) -> Result<Template> {
@@ -42,12 +43,6 @@ pub enum CertificateCommand {
     Parse(ParseCertificate),
     /// Substitute values in a template.
     Subst(SubstCommand),
-}
-
-/// Generate a certificate template.
-#[derive(Clone, Debug, ValueEnum)]
-pub enum CertFormat {
-    X509,
 }
 
 /// Generate a certificate template.
