@@ -18,6 +18,9 @@
     // Manufacturing test cases are part of the Silicon Validation (SiVal) test plan.
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
+    // Cryptolib tests are also part of silicon validation.
+    "sw/device/lib/crypto/data/crypto_testplan.hjson"
+
     // IP block specific top level test plans.
     "hw/top_earlgrey/data/ip/chip_aes_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
