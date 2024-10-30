@@ -11,16 +11,16 @@ load("@bazel_skylib//lib:sets.bzl", "sets")
 # that every one of the execution environments be run in some CI job, otherwise
 # some tests will not run at all in CI.
 _ONLY_RUN_ONE_IN_CI_SORTED = [
-    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
-    "//hw/top_earlgrey:fpga_cw310_rom_ext",
-    "//hw/top_earlgrey:fpga_cw310_sival",
-    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
-    "//hw/top_earlgrey:fpga_cw310_test_rom",
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
     "//hw/top_earlgrey:fpga_cw340_sival",
     "//hw/top_earlgrey:fpga_cw340_rom_ext",
     "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     "//hw/top_earlgrey:fpga_cw340_test_rom",
+    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+    "//hw/top_earlgrey:fpga_cw310_rom_ext",
+    "//hw/top_earlgrey:fpga_cw310_sival",
+    "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
+    "//hw/top_earlgrey:fpga_cw310_test_rom",
 ]
 
 def ci_orchestrator(test_name, exec_envs):
