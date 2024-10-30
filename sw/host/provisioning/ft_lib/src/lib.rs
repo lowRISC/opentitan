@@ -15,6 +15,7 @@ use zerocopy::AsBytes;
 
 use cert_lib::{
     get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
+    CertFormat, HostEndorsedCert,
 };
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
@@ -329,7 +330,7 @@ fn provision_certificates(
     //   3. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
-    let mut host_endorsed_certs: Vec<Vec<u8>> = Vec::new();
+    let mut host_endorsed_certs: Vec<HostEndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
 
@@ -364,12 +365,11 @@ fn provision_certificates(
             let cert_bytes = parse_and_endorse_x509_cert(cert.cert_body.clone(), &key)?;
 
             // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
-            // TODO: verify the endorsement of the UDS certificate with OpenSSL. It is currently
-            // failing signature verification due to the custom DiceTcbInfo extension being a
-            // non-recognizable extension that is marked "critical".
-            if cert.cert_name != "UDS" {
-                host_endorsed_certs.push(cert_bytes.clone());
-            }
+            host_endorsed_certs.push(HostEndorsedCert {
+                format: CertFormat::X509,
+                bytes: cert_bytes.clone(),
+                ignore_critical: if cert.cert_name == "UDS" { true } else { false },
+            });
 
             // Prepare the UJSON data payloads that will be sent back to the device.
             push_endorsed_cert(&cert_bytes, &cert, &mut endorsed_cert_concat)?;
