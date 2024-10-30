@@ -1243,10 +1243,10 @@ e0000170:              4685                     li      a3,1
 e0000172:              8522                     mv      a0,s0
 e0000174:              4601                     li      a2,0
 e0000176:              2945                     jal     e0000626 <dif_rv_plic_irq_set_enabled>
-e0000178:              10405537                 lui     a0,0x10405
+e0000178:              10605537                 lui     a0,0x10605
 abs_mmio_write32():
 /proc/self/cwd/./sw/device/lib/base/abs_mmio.h:83
-e000017c:              00052623                 sw      zero,12(a0) # 1040500c <tohost+0x103e5004>
+e000017c:              00052623                 sw      zero,12(a0) # 1060500c <tohost+0x105e5004>
 e0000180:              800005b7                 lui     a1,0x80000
 e0000184:              c90c                     sw      a1,16(a0)
 e0000186:              00052a23                 sw      zero,20(a0)
@@ -1254,7 +1254,7 @@ e000018a:              900005b7                 lui     a1,0x90000
 e000018e:              cd0c                     sw      a1,24(a0)
 e0000190:              04052623                 sw      zero,76(a0)
 e0000194:              800015b7                 lui     a1,0x80001
-e0000198:              f8058593                 addi    a1,a1,-128 # 80000f80 <fromhost+0x9fff0f70>
+e0000198:              04858593                 addi    a1,a1,72 # 80001048 <fromhost+0x9fff1038>
 e000019c:              c92c                     sw      a1,80(a0)
 abs_mmio_read32():
 /proc/self/cwd/./sw/device/lib/base/abs_mmio.h:73
