@@ -1,0 +1,62 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Nightly
+on:
+  schedule:
+    - cron: "00 04 * * *"
+
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to run the nightly'
+        required: true
+        type: string
+
+jobs:
+  FPGA-CW310-SiVal-Nightly:
+    name: Fpga cw310 sival tests
+    runs-on: [ubuntu-20.04-fpga, cw310]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for the bitstream cache to work.
+          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
+
+      - name: Install dependencies
+        uses: ./.github/actions/install-deps
+
+      - name: Update hyperdebug
+        # We run the update command twice to workaround an issue with udev on the container.
+        # Where rusb cannot dynamically update its device list in CI (udev is not completely
+        # functional). If the device is in normal mode, the first thing that opentitantool
+        # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
+        # never detected. But if we run the tool another time, the device list is queried again
+        # and opentitantool can finish the update. The device will now reboot in normal mode
+        # and work for the hyperdebug job.
+        run: |
+          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware \
+          || ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
+
+      - name: Run tests after ROM boot stage
+        run: |
+          module load xilinx/vivado
+          bazel_tests="$(mktemp)"
+          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival[,\]]", tests(//...))' \
+                                                    | grep -v examples \
+                                                    | grep -v third_party \
+                                                    | grep -v penetrationtests \
+                                                    > "$bazel_tests"
+          ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
+
+      - name: Run tests after ROM_EXT boot stage
+        run: |
+          module load xilinx/vivado
+          bazel_tests="$(mktemp)"
+          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival_rom_ext[,\]]", tests(//...))' \
+                                                    | grep -v examples \
+                                                    | grep -v third_party \
+                                                    | grep -v penetrationtests \
+                                                    > "$bazel_tests"
+          ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
