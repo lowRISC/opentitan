@@ -132,6 +132,7 @@ module aes_core
 
   logic  [NumSlicesCtr-1:0][SliceSizeCtr-1:0] ctr;
   sp2v_e [NumSlicesCtr-1:0]                   ctr_we;
+  sp2v_e                                      ctr_inc32;
   sp2v_e                                      ctr_incr;
   sp2v_e                                      ctr_ready;
   logic                                       ctr_alert;
@@ -405,6 +406,7 @@ module aes_core
     .clk_i    ( clk_i     ),
     .rst_ni   ( rst_ni    ),
 
+    .inc32_i  ( ctr_inc32 ),
     .incr_i   ( ctr_incr  ),
     .ready_o  ( ctr_ready ),
     .alert_o  ( ctr_alert ),
@@ -742,6 +744,7 @@ module aes_core
     .add_state_in_sel_o        ( add_state_in_sel_ctrl                  ),
     .add_state_out_sel_o       ( add_state_out_sel_ctrl                 ),
 
+    .ctr_inc32_o               ( ctr_inc32                              ),
     .ctr_incr_o                ( ctr_incr                               ),
     .ctr_ready_i               ( ctr_ready                              ),
     .ctr_we_i                  ( ctr_we                                 ),

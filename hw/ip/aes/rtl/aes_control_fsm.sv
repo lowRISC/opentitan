@@ -64,6 +64,7 @@ module aes_control_fsm
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
+  output logic                                    ctr_inc32_o,              // Sparsify
   output logic                                    ctr_incr_o,               // Sparsify
   input  logic                                    ctr_ready_i,              // Sparsify
   input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                 // Sparsify
@@ -260,6 +261,9 @@ module aes_control_fsm
   // The GHASH block is idle whenever it's ready to receive inputs and where not about to start
   // a GCM related operation.
   assign ghash_idle = ghash_in_ready_i & ~(start_gcm_init | start_gcm | start_gcm_tag);
+
+  // In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
+  assign ctr_inc32_o = (mode_i == AES_GCM);
 
   // If set to start manually, we just wait for the trigger. Otherwise, check common as well as
   // mode-specific start conditions.

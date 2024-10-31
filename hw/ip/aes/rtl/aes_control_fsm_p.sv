@@ -65,6 +65,7 @@ module aes_control_fsm_p
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
+  output logic                                    ctr_inc32_o,              // Sparsify
   output logic                                    ctr_incr_o,               // Sparsify
   input  logic                                    ctr_ready_i,              // Sparsify
   input  logic                 [NumSlicesCtr-1:0] ctr_we_i,                 // Sparsify
@@ -318,6 +319,7 @@ module aes_control_fsm_p
   si_sel_e                                 state_in_sel;
   add_si_sel_e                             add_state_in_sel;
   add_so_sel_e                             add_state_out_sel;
+  logic                                    ctr_inc32;
   logic                                    ctr_incr;
   logic                                    cipher_in_valid;
   logic                                    cipher_out_ready;
@@ -402,6 +404,7 @@ module aes_control_fsm_p
     .add_state_in_sel_o        ( add_state_in_sel              ),
     .add_state_out_sel_o       ( add_state_out_sel             ),
 
+    .ctr_inc32_o               ( ctr_inc32                     ),
     .ctr_incr_o                ( ctr_incr                      ),
     .ctr_ready_i               ( ctr_ready                     ),
     .ctr_we_i                  ( ctr_we                        ),
@@ -472,6 +475,7 @@ module aes_control_fsm_p
     state_in_sel_o,
     add_state_in_sel_o,
     add_state_out_sel_o,
+    ctr_inc32_o,
     ctr_incr_o,
     cipher_in_valid_o,
     cipher_out_ready_o,
@@ -520,6 +524,7 @@ module aes_control_fsm_p
     state_in_sel,
     add_state_in_sel,
     add_state_out_sel,
+    ctr_inc32,
     ctr_incr,
     cipher_in_valid,
     cipher_out_ready,
@@ -574,6 +579,7 @@ module aes_control_fsm_p
           state_in_sel_o,
           add_state_in_sel_o,
           add_state_out_sel_o,
+          ctr_inc32_o,
           ctr_incr_o,
           cipher_in_valid_o,
           cipher_out_ready_o,
