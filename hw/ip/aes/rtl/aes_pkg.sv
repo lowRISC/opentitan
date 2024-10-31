@@ -19,6 +19,9 @@ parameter int unsigned SliceSizeCtr = 16;
 parameter int unsigned NumSlicesCtr = aes_reg_pkg::NumRegsIv * 32 / SliceSizeCtr;
 parameter int unsigned SliceIdxWidth = prim_util_pkg::vbits(NumSlicesCtr);
 
+// In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
+parameter int unsigned SliceIdxMaxInc32 = 32 / SliceSizeCtr - 1;
+
 // Widths of signals carrying pseudo-random data for clearing
 parameter int unsigned WidthPRDClearing = 64;
 parameter int unsigned NumChunksPRDClearing128 = 128/WidthPRDClearing;

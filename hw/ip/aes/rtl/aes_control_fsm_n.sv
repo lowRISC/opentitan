@@ -69,6 +69,7 @@ module aes_control_fsm_n
   output add_so_sel_e                             add_state_out_sel_o,
 
   // Counter
+  output logic                                    ctr_inc32_no,              // Sparsify
   output logic                                    ctr_incr_no,               // Sparsify
   input  logic                                    ctr_ready_ni,              // Sparsify
   input  logic                 [NumSlicesCtr-1:0] ctr_we_ni,                 // Sparsify
@@ -322,6 +323,7 @@ module aes_control_fsm_n
   si_sel_e                                 state_in_sel;
   add_si_sel_e                             add_state_in_sel;
   add_so_sel_e                             add_state_out_sel;
+  logic                                    ctr_inc32;
   logic                                    ctr_incr;
   logic                                    cipher_in_valid;
   logic                                    cipher_out_ready;
@@ -410,6 +412,7 @@ module aes_control_fsm_n
     .add_state_in_sel_o        ( add_state_in_sel              ),
     .add_state_out_sel_o       ( add_state_out_sel             ),
 
+    .ctr_inc32_o               ( ctr_inc32                     ), // Invert below for _n output.
     .ctr_incr_o                ( ctr_incr                      ), // Invert below for _n output.
     .ctr_ready_i               ( ~ctr_ready_n                  ), // Invert for regular FSM.
     .ctr_we_i                  ( ~ctr_we_n                     ), // Invert for regular FSM.
@@ -480,6 +483,7 @@ module aes_control_fsm_n
     state_in_sel_o,
     add_state_in_sel_o,
     add_state_out_sel_o,
+    ctr_inc32_no,
     ctr_incr_no,
     cipher_in_valid_no,
     cipher_out_ready_no,
@@ -530,6 +534,7 @@ module aes_control_fsm_n
     state_in_sel,
     add_state_in_sel,
     add_state_out_sel,
+    ~ctr_inc32,
     ~ctr_incr,
     ~cipher_in_valid,
     ~cipher_out_ready,
@@ -584,6 +589,7 @@ module aes_control_fsm_n
           state_in_sel_o,
           add_state_in_sel_o,
           add_state_out_sel_o,
+          ctr_inc32_no,
           ctr_incr_no,
           cipher_in_valid_no,
           cipher_out_ready_no,

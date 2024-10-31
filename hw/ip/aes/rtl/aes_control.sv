@@ -64,6 +64,7 @@ module aes_control
   output add_so_sel_e               add_state_out_sel_o,
 
   // Counter
+  output sp2v_e                     ctr_inc32_o,
   output sp2v_e                     ctr_incr_o,
   input  sp2v_e                     ctr_ready_i,
   input  sp2v_e  [NumSlicesCtr-1:0] ctr_we_i,
@@ -174,6 +175,7 @@ module aes_control
   // signals to the single-rail FSMs.
   logic          [Sp2VWidth-1:0] sp_data_out_we;
   logic          [Sp2VWidth-1:0] sp_data_in_prev_we;
+  logic          [Sp2VWidth-1:0] sp_ctr_inc32;
   logic          [Sp2VWidth-1:0] sp_ctr_incr;
   logic          [Sp2VWidth-1:0] sp_ctr_ready;
   logic          [Sp2VWidth-1:0] sp_cipher_in_valid;
@@ -315,6 +317,7 @@ module aes_control
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
+        .ctr_inc32_o               ( sp_ctr_inc32[i]               ), // Sparsified
         .ctr_incr_o                ( sp_ctr_incr[i]                ), // Sparsified
         .ctr_ready_i               ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_i                  ( int_ctr_we[i]                 ), // Sparsified
@@ -416,6 +419,7 @@ module aes_control
         .add_state_in_sel_o        ( mr_add_state_in_sel[i]        ), // OR-combine
         .add_state_out_sel_o       ( mr_add_state_out_sel[i]       ), // OR-combine
 
+        .ctr_inc32_no              ( sp_ctr_inc32[i]               ), // Sparsified
         .ctr_incr_no               ( sp_ctr_incr[i]                ), // Sparsified
         .ctr_ready_ni              ( sp_ctr_ready[i]               ), // Sparsified
         .ctr_we_ni                 ( int_ctr_we[i]                 ), // Sparsified
@@ -475,6 +479,7 @@ module aes_control
   // Convert sparsified outputs to sp2v_e type.
   assign data_out_we_o            = sp2v_e'(sp_data_out_we);
   assign data_in_prev_we_o        = sp2v_e'(sp_data_in_prev_we);
+  assign ctr_inc32_o              = sp2v_e'(sp_ctr_inc32);
   assign ctr_incr_o               = sp2v_e'(sp_ctr_incr);
   assign cipher_in_valid_o        = sp2v_e'(sp_cipher_in_valid);
   assign cipher_out_ready_o       = sp2v_e'(sp_cipher_out_ready);
