@@ -430,6 +430,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       &otp_rot_creator_auth_codesign_measurement,
       &otp_rot_creator_auth_state_measurement, &uds_key_ids, &curr_pubkey,
       all_certs, &curr_cert_size));
+  // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
+  // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_prepare_cert_for_shipping("UDS", true, all_certs,
                                           curr_cert_size, &perso_blob_to_host));
 
@@ -446,7 +448,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
                             &cdi_0_key_ids, &curr_pubkey, all_certs,
                             &curr_cert_size));
   cdi_0_offset = perso_blob_to_host.next_free;
-  TRY(perso_tlv_prepare_cert_for_shipping("CDI_O", false, all_certs,
+  // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
+  // collection in sw/host/provisioning/ft_lib/src/lib.rs.
+  TRY(perso_tlv_prepare_cert_for_shipping("CDI_0", false, all_certs,
                                           curr_cert_size, &perso_blob_to_host));
 
   // Generate CDI_1 keys and cert.
@@ -463,6 +467,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       certgen_inputs.owner_security_version, &cdi_1_key_ids, &curr_pubkey,
       all_certs, &curr_cert_size));
   cdi_1_offset = perso_blob_to_host.next_free;
+  // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
+  // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   return perso_tlv_prepare_cert_for_shipping(
       "CDI_1", false, all_certs, curr_cert_size, &perso_blob_to_host);
 }
