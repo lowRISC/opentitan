@@ -323,6 +323,14 @@ set STORAGE_OUT_DEL_MAX 9
 ###################################################
 # SPI input outpt delay based Ziv Spec
 ###################################################
+# Note: below values apply if the spec_constr variable is set to "false".
+# If the spec_constr variable is set to true:
+# - below values are not used, and
+# - the values defined in other sections of this SDC are used instead (see e.g. "SPI_HOST_1 timing (full-cycle sampling)").
+#
+# For Earlgrey-PROD, both sets of constraints (spec_constr "true" and "false") have been verified.
+# In the future, those can ideally be merged together.
+
 if { $synopsys_program_name eq "pt_shell" } {
 set out_val 0
 } else {
@@ -689,8 +697,9 @@ set_output_delay -max $spi_tpm_out_val_max [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
 }
 # SPI TPM CSB, the chip-select for TPM mode.
-# Any muxed port could be a SPI TPM CSB, but we only guarantee IOA7 meets
-# timing.
+# Any muxed port could be a SPI TPM CSB, but:
+# - IOA7 has been selected as the primary target and we guarantee it meets timing.
+# - IOA2 was selected as a secondary opportunistic target.
 set TPM_CSB_PORT [get_ports {IOA7 IOA2}]
 
 # TPM CSB input delays.
@@ -905,6 +914,8 @@ set_propagated_clock [get_clock SPI_HOST_SLOW_PASS_CLK]
 
 # bidir ports facing host, with full-cycle sampling at the upstream host
 if {$spec_constr} {
+# This is the fast passthrough mode: Check the direct timing paths from an upstream host to a downstream Flash device.
+# SPI Device is defined as input and SPI Host is defined as output.
 set_input_delay -min ${SPI_DEV_IN_DEL_MIN} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_DEV_IN_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
@@ -914,6 +925,9 @@ set_output_delay -min ${SPI_DEV_OUT_DEL_MIN_FC} ${SPI_DEV_DATA_PORTS} \
 set_output_delay -max ${SPI_DEV_OUT_DEL_MAX} ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 } else {
+# This is the slow passthrough mode: Check the direct timing paths from a downstream Flash device to an upstream host.
+# SPI Device is defined as output only and SPI Host is defined as input.
+# No set_input_delay constraints for SPI Device (these are applied for the fast passthrough mode and for other SPI modes).
 set_output_delay -min $spi_slow_pass_soc_out_min ${SPI_DEV_DATA_PORTS} \
     -clock_fall -clock SPI_DEV_SLOW_PASS_CLK -add_delay
 set_output_delay -max $spi_slow_pass_soc_out_max ${SPI_DEV_DATA_PORTS} \
@@ -927,6 +941,8 @@ set_multicycle_path -hold -end 1 -from [get_clocks SPI_DEV_SLOW_PASS_IN_CLK] \
 
 # bidir ports facing storage device
 if {$spec_constr} {
+# This is the fast passthrough mode: Check the direct timing paths from an upstream host to a downstream Flash device.
+# SPI Device is defined as input and SPI Host is defined as output.
 set_input_delay -min ${SPI_HOST_IN_DEL_MIN} ${SPI_HOST_DATA_PORTS} \
     -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_input_delay -max ${SPI_HOST_IN_DEL_MAX} ${SPI_HOST_DATA_PORTS} \
@@ -938,6 +954,9 @@ set_output_delay -max ${SPI_HOST_OUT_DEL_MAX} \
     [get_ports "SPI_HOST_CS_L ${SPI_HOST_DATA_PORTS}"] \
     -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 } else {
+# This is the slow passthrough mode: Check the direct timing paths from a downstream Flash device to an upstream host.
+# SPI Device is defined as output only and SPI Host is defined as input.
+# No set_output_delay constraints for SPI Host (these are applied for the fast passthrough mode and for other SPI modes).
 set_input_delay -min $spi_slow_pass_flsh_in_min ${SPI_HOST_DATA_PORTS} \
     -clock_fall -clock SPI_HOST_SLOW_PASS_CLK -add_delay
 set_input_delay -max $spi_slow_pass_flsh_in_max ${SPI_HOST_DATA_PORTS} \
@@ -1365,6 +1384,13 @@ set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "ful
 set_false_path  -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_DIV2_CLK
 
+## begin: SPI Host 1 constraints for PrimeTime
+
+########################################
+# SPI Host 1 constraints for PrimeTime #
+########################################
+# Note that these set_case_analysis and set_false_path constraints have not been used for synthesis but as PrimeTime waivers only.
+if { $synopsys_program_name eq "pt_shell"  } {
 # SPI_HOST1 CSB (MioOut 51 -> mux sel 54) drives IOB0 (MIO pad 9):
 set_case_analysis 0 top_earlgrey/u_pinmux_aon/u_reg/u_mio_outsel_9/q[0]
 set_case_analysis 1 top_earlgrey/u_pinmux_aon/u_reg/u_mio_outsel_9/q[1]
@@ -1403,7 +1429,6 @@ set_case_analysis 1 top_earlgrey/u_pinmux_aon/u_reg/u_mio_outsel_12/q[4]
 set_case_analysis 1 top_earlgrey/u_pinmux_aon/u_reg/u_mio_outsel_12/q[5]
 set_case_analysis 0 top_earlgrey/u_pinmux_aon/u_reg/u_mio_outsel_12/q[6]
 
-if { $synopsys_program_name eq "pt_shell"  } {
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_DIV2_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_DIV2_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_DIV2_CLK
@@ -1452,6 +1477,7 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR6
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR7
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR1
 }
+## end: SPI Host 1 constraints for PrimeTime
 
 set_false_path  -through   [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/IE"] -through [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/Y"]
 
