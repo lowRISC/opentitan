@@ -449,11 +449,17 @@ module dma
     .fifo_rready_o      ( sha2_ready            ),
     .sha_en_i           ( 1'b1                  ),
     .hash_start_i       ( sha2_hash_start       ),
+    .hash_stop_i        ( 1'b0                  ),
+    .hash_continue_i    ( 1'b0                  ),
     .digest_mode_i      ( sha2_mode             ),
     .hash_process_i     ( sha2_hash_process     ),
     .hash_done_o        ( sha2_hash_done        ),
     .message_length_i   ( sha2_message_len_bits ),
+    .digest_i           ( '0                    ),
+    .digest_we_i        ( '0                    ),
     .digest_o           ( sha2_digest           ),
+    .digest_on_blk_o    (                       ),
+    .hash_running_o     (                       ),
     .idle_o             (                       )
   );
 
