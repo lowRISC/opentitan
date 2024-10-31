@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use sha2::{Digest, Sha256};
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
@@ -14,8 +15,8 @@ use p256::NistP256;
 use zerocopy::AsBytes;
 
 use cert_lib::{
-    get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
-    HostEndorsedCert,
+    get_cert_size, parse_and_endorse_x509_cert, validate_cert_chain, CertEndorsementKey,
+    EndorsedCert,
 };
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
@@ -331,9 +332,13 @@ fn provision_certificates(
     //   3. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
-    let mut host_endorsed_certs: Vec<HostEndorsedCert> = Vec::new();
+    let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
+    let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
+
+    // DICE certificate names.
+    let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
 
     for _ in 0..perso_blob.num_objs {
         log::info!("Processing next object");
@@ -361,16 +366,20 @@ fn provision_certificates(
         let cert = get_cert(&perso_blob.body[start..])?;
         start += cert.wrapped_size;
 
+        // Extract the certificate bytes and endorse the cert if needed.
         let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
             // Endorse the cert and updates its size.
             let cert_bytes = parse_and_endorse_x509_cert(cert.cert_body.clone(), &key)?;
 
-            // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
-            host_endorsed_certs.push(HostEndorsedCert {
-                format: CertFormat::X509,
-                bytes: cert_bytes.clone(),
-                ignore_critical: if cert.cert_name == "UDS" { true } else { false },
-            });
+            // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
+            if !dice_cert_names.contains(cert.cert_name) {
+                sku_specific_certs.push(EndorsedCert {
+                    format: CertFormat::X509,
+                    name: cert.cert_name.to_string(),
+                    bytes: cert_bytes.clone(),
+                    ignore_critical: false,
+                });
+            }
 
             // Prepare the UJSON data payloads that will be sent back to the device.
             push_endorsed_cert(&cert_bytes, &cert, &mut endorsed_cert_concat)?;
@@ -379,6 +388,17 @@ fn provision_certificates(
         } else {
             cert.cert_body
         };
+
+        // Collect all DICE certs to validate the chain.
+        if dice_cert_names.contains(cert.cert_name) {
+            dice_cert_chain.push(EndorsedCert {
+                format: CertFormat::X509,
+                name: cert.cert_name.to_string(),
+                bytes: cert_bytes.clone(),
+                ignore_critical: true,
+            });
+        }
+
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
         let _ = parse_certificate(&cert_bytes)?;
@@ -423,9 +443,19 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
-    if !host_endorsed_certs.is_empty() {
-        validate_certs_chain(ca_certificate.to_str().unwrap(), &host_endorsed_certs)?;
+    log::info!("Validating DICE certificate chain with OpenSSL ...");
+    validate_cert_chain(ca_certificate.to_str().unwrap(), &dice_cert_chain)?;
+    log::info!("Success.");
+    log::info!("Validating SKU-specific certificates with OpenSSL ...");
+    if !sku_specific_certs.is_empty() {
+        for sku_specific_cert in sku_specific_certs.iter() {
+            validate_cert_chain(
+                ca_certificate.to_str().unwrap(),
+                &[sku_specific_cert.clone()],
+            )?;
+        }
     }
+    log::info!("Success.");
 
     Ok(())
 }
