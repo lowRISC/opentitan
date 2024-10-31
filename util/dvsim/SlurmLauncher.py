@@ -5,6 +5,7 @@
 import logging as log
 import os
 import shlex
+import shutil
 import subprocess
 
 from Launcher import ErrorMessage, Launcher, LauncherError
@@ -46,20 +47,20 @@ class SlurmLauncher(Launcher):
 
         self._dump_env_vars(exports)
 
+        # Add a command delimiter if necessary
+        slurm_setup_cmd = SLURM_SETUP_CMD
+        if slurm_setup_cmd and not slurm_setup_cmd.endswith(';'):
+            slurm_setup_cmd += ';'
+
+        # Encapsulate the run command with the slurm invocation
+        slurm_cmd = f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} ' \
+                    f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} ' \
+                    f'bash -c "{slurm_setup_cmd} {self.deploy.cmd}"'
+
         try:
             with open(self.slurm_log_file, 'w') as out_file:
                 out_file.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
                 out_file.flush()
-
-                # Add a command delimiter if necessary
-                slurm_setup_cmd = SLURM_SETUP_CMD
-                if slurm_setup_cmd != '' and not slurm_setup_cmd.endswith(';'):
-                    slurm_setup_cmd += ';'
-
-                # Encapsulate the run command with the slurm invocation
-                slurm_cmd = f'srun -p {SLURM_QUEUE} --mem={SLURM_MEM} --mincpus={SLURM_MINCPUS} ' \
-                            f'--time={SLURM_TIMEOUT} --cpus-per-task={SLURM_CPUS_PER_TASK} ' \
-                            f'bash -c "{slurm_setup_cmd} {self.deploy.cmd}"'
 
                 log.info(f'Executing slurm command: {slurm_cmd}')
                 self.process = subprocess.Popen(shlex.split(slurm_cmd),
@@ -68,6 +69,8 @@ class SlurmLauncher(Launcher):
                                                 stdout=out_file,
                                                 stderr=out_file,
                                                 env=exports)
+        except IOError as e:
+            raise LauncherError(f'File Error: {e}\nError while handling {self.slurm_log_file}')
         except subprocess.SubprocessError as e:
             raise LauncherError(f'IO Error: {e}\nSee {self.deploy.get_log_path()}')
         finally:
@@ -91,13 +94,18 @@ class SlurmLauncher(Launcher):
 
         # Copy slurm job results to log file
         if os.path.exists(self.slurm_log_file):
-            with open(self.slurm_log_file, 'r') as slurm_file:
-                lines = slurm_file.readlines()
-                with open(self.deploy.get_log_path(), 'a') as out_file:
-                    for line in lines:
-                        out_file.write(line)
-                    out_file.flush()
-            os.remove(self.slurm_log_file)
+            try:
+                with open(self.slurm_log_file, 'r') as slurm_file:
+                    try:
+                        with open(self.deploy.get_log_path(), 'a') as out_file:
+                            shutil.copyfileobj(slurm_file, out_file)
+                    except IOError as e:
+                        raise LauncherError(f'File Error: {e} when handling '
+                                            f'{self.deploy.get_log_path()}')
+                # Remove the temporary file from the slurm process
+                os.remove(self.slurm_log_file)
+            except IOError as e:
+                raise LauncherError(f'File Error: {e} when handling {self.slurm_log_file}')
 
         self.exit_code = self.process.returncode
         status, err_msg = self._check_status()
@@ -109,7 +117,6 @@ class SlurmLauncher(Launcher):
 
         This must be called between dispatching and reaping the process (the
         same window as poll()).
-
         '''
         assert self.process is not None
 
