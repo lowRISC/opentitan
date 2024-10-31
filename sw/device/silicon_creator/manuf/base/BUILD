@@ -362,12 +362,12 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
         },
         fpga = fpga_params(
             timeout = "long",
-            assemble = "{ft_personalize}@{slot_a} {rom_ext}@{slot_b}",
+            assemble = "{ft_personalize}@{slot_a} {transport_image}@{slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
-                    "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b": "rom_ext",
+                    config["transport_image"]: "transport_image",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
@@ -383,12 +383,12 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
         silicon = silicon_params(
-            assemble = "{ft_personalize}@{slot_a} {rom_ext}@{slot_b}",
+            assemble = "{ft_personalize}@{slot_a} {transport_image}@{slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
-                    "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b": "rom_ext",
+                    config["transport_image"]: "transport_image",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,

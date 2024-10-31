@@ -42,12 +42,14 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_prodc",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -62,12 +64,14 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_prodc",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",

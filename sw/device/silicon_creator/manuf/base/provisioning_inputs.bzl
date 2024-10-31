@@ -26,6 +26,7 @@ EARLGREY_SKUS = {
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+        "transport_image": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
     },
     # OTP Config: SIVAL; DICE Certs: CWT; Additional Certs: None
     # TODO(#24281): uncomment when DICE CWT cert flows are fully supported
@@ -34,6 +35,7 @@ EARLGREY_SKUS = {
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
     #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
     #     "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+    #     "transport_image": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
     # },
     # OTP Config: SIVAL; DICE Certs: X.509; Additional Certs: TPM EK
     "sival_tpm": {
@@ -44,6 +46,7 @@ EARLGREY_SKUS = {
             "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
             "//sw/device/silicon_creator/manuf/base:tpm_perso_fw_ext",
         ],
+        "transport_image": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
     },
     # OTP Config: PRODC; DICE Certs: X.509; Additional Certs: None
     "prodc": {
@@ -51,6 +54,7 @@ EARLGREY_SKUS = {
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+        "transport_image": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_b",
     },
 } | EXT_EARLGREY_SKUS
 
