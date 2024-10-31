@@ -21,7 +21,7 @@ filesets:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
+    files: []
       # - lint/tlul_adapter_dmi.vlt
     file_type: vlt
 
