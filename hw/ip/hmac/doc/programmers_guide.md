@@ -88,17 +88,24 @@ When SW doesn't know each instant at which a full message block is available, it
 
 The context that needs to be saved and restored is in the following registers: [`CFG`](registers.md#cfg), [`DIGEST_*`](registers.md#digest), and [`MSG_LENGTH_*`](registers.md#msg_length_lower).
 
+**Due to an RTL bug, the hardware may not be able to easily recover from a `CMD.hash_stop` command (for more details, refer to [Issue #24767](https://github.com/lowRISC/opentitan/issues/24767)).
+To avoid the hardware from entering this state, a stop-gap software workaround solution should be used (see [PR #24944](https://github.com/lowRISC/opentitan/pull/24944) for details).
+The example usage below includes this stop-gap workaround solution marked in italics whereas the original guidance is crossed out.**
+
 Each new message stream needs to be started *once* by setting the `CMD.hash_start` bit and finalized *once* by setting the `CMD.hash_process` bit.
-To switch from one message stream to another, set the `CMD.hash_stop` bit, wait for the `hmac_done` interrupt (or status bit), save one context and restore the other, and then set the `CMD.hash_continue` bit.
+To switch from one message stream to another, ~~set the `CMD.hash_stop` bit, wait for the `hmac_done` interrupt (or status bit)~~ _at a block boundary, insert delay which should be equivalent to at least 80 clock cycles_, save one context, _trigger `CMD.hash_process` to move the FSMs into a stable state_ and restore the other context, and then set the `CMD.hash_continue` bit.
 
 Here is an example usage pattern of this feature:
 1. Start processing message stream A by configuring HMAC and then setting the `CMD.hash_start` bit.
 1. Write an arbitrary number of message blocks to HMAC's `MSG_FIFO`.
-1. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).
+1. _Insert a delay of least 80 clock cycles._
+~~1. Stop HMAC by setting the `CMD.hash_stop` bit and wait for the `hmac_done` interrupt (or poll the interrupt status register).~~
 1. Save the context by reading the `DIGEST_0`..`15` and `MSG_LENGTH_`{`LOWER`,`UPPER`} registers.
 If the operation is keyed HMAC, the values of `KEY_0`..`X` registers also need to be maintained as part of the context, where `X` is the last register used for the given key length (e.g. for HMAC-256, `X=7`).
 However, key registers cannot be read from SW, therefore SW must maintain key values as part of its own context during initialization.
 Similarly, the value of the `CFG` register must also be preserved, and SW should keep its value separately, instead of reading it from `CFG` register.
+1. _Trigger `CMD.hash_process`._
+1. _Wait for the `hmac_done` interrupt (or poll the interrupt status register)._
 1. Disable `sha_en` by updating `CFG` register, in order to clear the digest from stream A.
 This is necessary to also prevent leakage of intermediate context of one SW thread to another.
 1. Repeat steps 1-5 for message stream B.
