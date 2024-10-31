@@ -242,11 +242,8 @@ fn main() -> Result<()> {
         opts.second_bootstrap,
     )?;
 
-    log::info!("Provisioning Done");
-
     check_rom_ext_boot_up(&transport, &opts.init, opts.timeout)?;
-
-    log::info!("Successfully boot into ROM_EXT");
+    log::info!("Provisioning Done");
 
     Ok(())
 }
