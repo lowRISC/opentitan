@@ -61,13 +61,13 @@
       sw_images: ["//sw/device/tests:otp_ctrl_smoketest:6"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
-    // {
-    //   name: chip_sw_pwrmgr_smoketest
-    //   uvm_test_seq: chip_sw_base_vseq
-    //   sw_images: ["//sw/device/tests:pwrmgr_smoketest:6"]
-    //   en_run_modes: ["sw_test_mode_test_rom"]
-    //   run_opts: ["+sw_test_timeout_ns=10000000"]
-    // }
+    {
+      name: chip_sw_pwrmgr_smoketest
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:pwrmgr_smoketest:6"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=15000000"]
+    }
     {
       name: chip_sw_rv_plic_smoketest
       uvm_test_seq: chip_sw_base_vseq
