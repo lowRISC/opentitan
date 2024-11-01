@@ -20,6 +20,9 @@ OTTF_DEFINE_TEST_CONFIG();
 // Keymgr handle for this test.
 static dif_keymgr_t keymgr;
 
+// Global variable holding the number of times we advanced keymgr after startup.
+size_t num_keymgr_advances = 0;
+
 // Message value for signature generation/verification tests.
 const char kTestMessage[] = "Test message.";
 const size_t kTestMessageLen = sizeof(kTestMessage) - 1;
@@ -131,9 +134,19 @@ rom_error_t attestation_advance_and_endorse_test(void) {
                                                  kDiversification));
 
   // Advance keymgr to the next stage.
-  CHECK_STATUS_OK(
-      keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+  if (num_keymgr_advances == 0) {
+    CHECK_STATUS_OK(
+        keymgr_testutils_check_state(&keymgr, kDifKeymgrStateCreatorRootKey));
+    CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
+    num_keymgr_advances++;
+  } else {
+    CHECK(num_keymgr_advances == 1);
+    CHECK_STATUS_OK(keymgr_testutils_check_state(
+        &keymgr, kDifKeymgrStateOwnerIntermediateKey));
+    CHECK_STATUS_OK(
+        keymgr_testutils_advance_state(&keymgr, &kOwnerRootKeyParams));
+    num_keymgr_advances++;
+  }
 
   // Run endorsement (should overwrite the key with randomness when done).
   hmac_digest_t digest;
@@ -153,6 +166,14 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   // Check that the signature is invalid (recovered r != r).
   RETURN_IF_ERROR(otbn_boot_sigverify(&pk, &sig, &digest, recovered_r));
   CHECK_ARRAYS_NE(recovered_r, sig.r, ARRAYSIZE(sig.r));
+
+  // Check that generating a new key with the same diversification as before
+  // now gets a different public key because keymgr has advanced.
+  ecdsa_p256_public_key_t pk_adv;
+  RETURN_IF_ERROR(otbn_boot_attestation_keygen(kFlashInfoFieldUdsKeySeedIdx,
+                                               kScKeymgrKeyTypeAttestation,
+                                               kDiversification, &pk_adv));
+  CHECK_ARRAYS_NE((unsigned char *)&pk, (unsigned char *)&pk_adv, sizeof(pk));
 
   return kErrorOk;
 }
@@ -229,6 +250,8 @@ bool test_main(void) {
   CHECK(otbn_boot_app_load() == kErrorOk);
 
   EXECUTE_TEST(result, sigverify_test);
+  EXECUTE_TEST(result, attestation_keygen_test);
+  EXECUTE_TEST(result, attestation_advance_and_endorse_test);
   EXECUTE_TEST(result, attestation_keygen_test);
   EXECUTE_TEST(result, attestation_advance_and_endorse_test);
   EXECUTE_TEST(result, attestation_save_clear_key_test);

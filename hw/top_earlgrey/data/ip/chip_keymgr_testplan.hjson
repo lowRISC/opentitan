@@ -98,7 +98,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_kmac"]
-      bazel: ["//sw/device/tests:keymgr_sideload_kmac_test"]
+      bazel: [
+        "//sw/device/tests:keymgr_sideload_kmac_test",
+        "//sw/device/tests/crypto:kmac_sideload_functest",
+      ]
     }
     {
       name: chip_sw_keymgr_sideload_aes
@@ -134,6 +137,8 @@
       bazel: [
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
+        "//sw/device/tests/crypto:ecdh_p384_sideload_functest",
+        "//sw/device/tests/crypto:ecdsa_p384_sideload_functest",
       ]
     }
     {
@@ -142,7 +147,6 @@
 
             - For each keymgr operational state: `CreatorRootKey`, `OwnerIntKey` and `OwnerKey`:
               - Generate identity SW output for the Attestation CDI.
-              - Generate SW output for the Attestation CDI.
               - Generate OTBN sideload output for the Attestation CDI.
             - Ensure that the key output changes after calculating the previous steps after a
               keymgr advance operation.
@@ -170,7 +174,10 @@
             si_stage: SV2
             lc_states: ["PROD"]
             tests: []
-            bazel: []
+            bazel: [
+              // Covers all points in the test except for the software binding registers.
+              "//sw/device/silicon_creator/lib:otbn_boot_services_functest",
+            ]
     }
     {
       name: chip_sw_keymgr_derive_sealing

@@ -275,7 +275,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: ["//sw/device/tests/crypto:kmac_functest_hardcoded"]
+      bazel: []
     }
     {
       name: chip_sw_kmac_error_conditions
