@@ -248,15 +248,36 @@ status_t manuf_individualize_device_creator_sw_cfg(
   return OK_STATUS();
 }
 
-status_t manuf_individualize_device_flash_data_default_cfg(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  uint32_t offset;
-  TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET, &offset));
-  TRY(otp_ctrl_testutils_dai_write32(
-      otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, offset,
-      &kCreatorSwCfgFlashDataDefaultCfgValue, /*len=*/1));
+status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                              uint32_t field_offset) {
+  uint32_t relative_addr;
+  const uint32_t *field_value_addr;
+  dif_otp_ctrl_partition_t partition;
+  switch (field_offset) {
+    case OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET:
+      field_value_addr = &kOwnerSwCfgRomBootstrapDisValue;
+      partition = kDifOtpCtrlPartitionOwnerSwCfg;
+      break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET:
+      field_value_addr = &kCreatorSwCfgFlashDataDefaultCfgValue;
+      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET:
+      field_value_addr = &kCreatorSwCfgImmutableRomExtEnValue;
+      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      break;
+    case OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET:
+      field_value_addr = &kCreatorSwCfgManufStateValue;
+      partition = kDifOtpCtrlPartitionCreatorSwCfg;
+      break;
+    default:
+      return INTERNAL();
+  }
+
+  TRY(dif_otp_ctrl_relative_address(partition, field_offset, &relative_addr));
+  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, partition, relative_addr,
+                                     field_value_addr, /*len=*/1));
+
   return OK_STATUS();
 }
 
@@ -271,31 +292,6 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
                                     offset, &val));
   bool is_provisioned = (val == kCreatorSwCfgFlashDataDefaultCfgValue);
   return is_provisioned ? OK_STATUS() : INTERNAL();
-}
-
-status_t manuf_individualize_device_creator_manuf_state_cfg(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  uint32_t offset;
-  TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET, &offset));
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                     offset, &kCreatorSwCfgManufStateValue,
-                                     /*len=*/1));
-  return OK_STATUS();
-}
-
-status_t manuf_individualize_device_immutable_rom_ext_en_cfg(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  uint32_t offset;
-  TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionCreatorSwCfg,
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET, &offset));
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg,
-                                     offset,
-                                     &kCreatorSwCfgImmutableRomExtEnValue,
-                                     /*len=*/1));
-  return OK_STATUS();
 }
 
 status_t manuf_individualize_device_creator_sw_cfg_lock(
@@ -316,18 +312,6 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl) {
   TRY(otp_img_write(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg, kOtpKvOwnerSwCfg,
                     kOtpKvOwnerSwCfgSize));
-  return OK_STATUS();
-}
-
-status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
-    const dif_otp_ctrl_t *otp_ctrl) {
-  uint32_t offset;
-  TRY(dif_otp_ctrl_relative_address(
-      kDifOtpCtrlPartitionOwnerSwCfg,
-      OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET, &offset));
-  TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionOwnerSwCfg,
-                                     offset, &kOwnerSwCfgRomBootstrapDisValue,
-                                     /*len=*/1));
   return OK_STATUS();
 }
 
