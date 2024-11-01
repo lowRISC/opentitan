@@ -128,12 +128,13 @@ bool test_main(void) {
     CHECK_STATUS_OK(init_flash_info_page0());
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
         &otp_ctrl, &flash_ctrl_state));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_immutable_rom_ext_en_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
     CHECK_STATUS_OK(check_otp_ast_cfg());
     LOG_INFO("Provisioned and locked CREATOR_SW_CFG OTP partition.");
@@ -148,8 +149,8 @@ bool test_main(void) {
   // Provision OWNER_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
     LOG_INFO("Provisioned and locked OWNER_SW_CFG OTP partition.");
     perform_reset |= true;
