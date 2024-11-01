@@ -133,7 +133,9 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hash_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_256_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_384_kat",
+        "//sw/device/tests/crypto/cryptotest:sha3_512_kat",
       ]
     }
     {
@@ -155,7 +157,8 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hash_kat",
+        "//sw/device/tests/crypto/cryptotest:shake128_kat",
+        "//sw/device/tests/crypto/cryptotest:shake256_kat",
       ]
     }
     {
@@ -177,7 +180,6 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hash_kat",
         "//sw/device/tests:kmac_mode_cshake_test",
       ]
     }
