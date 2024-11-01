@@ -194,19 +194,22 @@ static status_t config_and_erase_certificate_flash_pages(void) {
  * be included in attestation certificates.
  */
 static status_t measure_otp_partition(otp_partition_t partition,
-                                      hmac_digest_t *measurement) {
+                                      hmac_digest_t *measurement,
+                                      bool use_expected_values) {
   // Compute the digest.
   otp_dai_read(partition, /*address=*/0, otp_state,
                kOtpPartitions[partition].size / sizeof(uint32_t));
 
-  // Sets the expected values for fields in the OTP that are not provisioned
-  // until the final stages of personalization.
-  if (partition == kOtpPartitionOwnerSwCfg) {
-    manuf_individualize_device_partition_expected_read(
-        kDifOtpCtrlPartitionOwnerSwCfg, (uint8_t *)otp_state);
-  } else if (partition == kOtpPartitionCreatorSwCfg) {
-    manuf_individualize_device_partition_expected_read(
-        kDifOtpCtrlPartitionCreatorSwCfg, (uint8_t *)otp_state);
+  if (use_expected_values) {
+    // Sets the expected values for fields in the OTP that are not provisioned
+    // until the final stages of personalization.
+    if (partition == kOtpPartitionOwnerSwCfg) {
+      manuf_individualize_device_partition_expected_read(
+          kDifOtpCtrlPartitionOwnerSwCfg, (uint8_t *)otp_state);
+    } else if (partition == kOtpPartitionCreatorSwCfg) {
+      manuf_individualize_device_partition_expected_read(
+          kDifOtpCtrlPartitionCreatorSwCfg, (uint8_t *)otp_state);
+    }
   }
 
   hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
@@ -400,16 +403,24 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
 
   // Measure OTP partitions.
   //
-  // Note: we do not measure HwCfg0 as this is the Device ID, which is already
-  // mixed into the keyladder directly via hardware channels.
+  // Note:
+  // - We do not measure HwCfg0 as this is the Device ID, which is already
+  //   mixed into the keyladder directly via hardware channels.
+  // - We pre-calculate the OTP measurement of CreatorSwCfg and OwnerSwCfg
+  //   partitions using expected values for fields not yet provisioned. This
+  //   ensures consistent measurements throughout personalization.
   TRY(measure_otp_partition(kOtpPartitionCreatorSwCfg,
-                            &otp_creator_sw_cfg_measurement));
+                            &otp_creator_sw_cfg_measurement,
+                            /*use_expected_values=*/true));
   TRY(measure_otp_partition(kOtpPartitionOwnerSwCfg,
-                            &otp_owner_sw_cfg_measurement));
+                            &otp_owner_sw_cfg_measurement,
+                            /*use_expected_values=*/true));
   TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
-                            &otp_rot_creator_auth_codesign_measurement));
+                            &otp_rot_creator_auth_codesign_measurement,
+                            /*use_expected_values=*/false));
   TRY(measure_otp_partition(kOtpPartitionRotCreatorAuthState,
-                            &otp_rot_creator_auth_state_measurement));
+                            &otp_rot_creator_auth_state_measurement,
+                            /*use_expected_values=*/false));
 
   /*****************************************************************************
    * DICE certificates.
@@ -663,12 +674,28 @@ static status_t send_final_hash(ujson_t *uj, serdes_sha256_hash_t *hash) {
 }
 
 /**
- * Compare the OTP measurement used during certificate generation with the value
- * stored in the OTP. Ensure that the UDS certificate was generated using the
- * correct OTP values.
+ * Compare the OTP measurement used during certificate generation with the OTP
+ * measurment calculated from the final OTP values. Ensure that the UDS
+ * certificate was generated using the correct OTP values.
  */
-static status_t check_otp_measurement(hmac_digest_t *measurement,
-                                      uint32_t offset) {
+static status_t check_otp_measurement_pre_lock(hmac_digest_t *measurement,
+                                               otp_partition_t partition) {
+  hmac_digest_t final_measurement;
+  TRY(measure_otp_partition(partition, &final_measurement,
+                            /*use_expected_values=*/false));
+
+  HARDENED_CHECK_EQ(final_measurement.digest[1], measurement->digest[1]);
+  HARDENED_CHECK_EQ(final_measurement.digest[0], measurement->digest[0]);
+  return OK_STATUS();
+}
+
+/**
+ * Compare the OTP measurement used during certificate generation with the
+ * digest stored in the OTP. Ensure that the UDS certificate was generated using
+ * the correct OTP values.
+ */
+static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
+                                                uint32_t offset) {
   uint64_t expected_digest = otp_read64(offset);
   uint32_t digest_hi = expected_digest >> 32;
   uint32_t digest_lo = expected_digest & UINT32_MAX;
@@ -683,19 +710,25 @@ static status_t finalize_otp_partitions(void) {
   // Complete the provisioning of OTP OwnerSwCfg partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    TRY(check_otp_measurement_pre_lock(&otp_owner_sw_cfg_measurement,
+                                       kOtpPartitionOwnerSwCfg));
     TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
   }
-  TRY(check_otp_measurement(&otp_owner_sw_cfg_measurement,
-                            OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET));
+  TRY(check_otp_measurement_post_lock(
+      &otp_owner_sw_cfg_measurement,
+      OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET));
 
   // Complete the provisioning of OTP CreatorSwCfg partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
     TRY(manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
     TRY(manuf_individualize_device_immutable_rom_ext_en_cfg(&otp_ctrl));
+    TRY(check_otp_measurement_pre_lock(&otp_creator_sw_cfg_measurement,
+                                       kOtpPartitionCreatorSwCfg));
     TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
   }
-  TRY(check_otp_measurement(&otp_creator_sw_cfg_measurement,
-                            OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET));
+  TRY(check_otp_measurement_post_lock(
+      &otp_creator_sw_cfg_measurement,
+      OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET));
 
   return OK_STATUS();
 }
