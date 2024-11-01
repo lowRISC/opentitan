@@ -14,10 +14,19 @@ on:
         required: true
         type: string
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   FPGA-CW310-SiVal-Nightly:
     name: Fpga cw310 sival tests
     runs-on: [ubuntu-20.04-fpga, cw310]
+
+    env:
+      GS_PATH: gs://opentitan-test-results
+      BAZEL_TEST_RESULTS: test_results.xml
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -26,6 +35,8 @@ jobs:
 
       - name: Install dependencies
         uses: ./.github/actions/prepare-env
+
+      - uses: google-github-actions/setup-gcloud@v2
 
       - name: Update hyperdebug
         # We run the update command twice to workaround an issue with udev on the container.
@@ -60,3 +71,12 @@ jobs:
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
+
+      - name: Publish bazel test results
+        if: success() || failure()
+        run: |
+          # Bazel produce one xml for each test. So we merge them together.
+          find -L bazel-out -name "test.xml" | xargs merge-junit -o "$BAZEL_TEST_RESULTS"
+
+          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ github.ref_name }}/$(date +%Y-%m-%d-%H%M%S)_${BAZEL_TEST_RESULTS}
+          gcloud storage cp $BAZEL_TEST_RESULTS "$BUCKET_PATH"
