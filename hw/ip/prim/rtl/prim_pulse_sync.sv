@@ -11,6 +11,8 @@
 // Also note that a reset of either the source domain or the destination domain
 // in isolation may create a pulse at the destination.
 
+`include "prim_assert.sv"
+
 module prim_pulse_sync (
   // source clock domain
   input  logic clk_src_i,
