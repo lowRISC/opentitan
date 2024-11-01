@@ -22,7 +22,10 @@
   ]
 
   // Timing constraints for this module
-  sdc_file: "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc"
+  sdc_file: [
+    "{proj_root}/hw/top_earlgrey/syn/ot.sdc_setup.tcl",
+    "{proj_root}/hw/top_earlgrey/syn/chip_earlgrey_asic.sdc",
+  ]
 
   // Main CDC waiver file
   cdc_waiver_file: ""
