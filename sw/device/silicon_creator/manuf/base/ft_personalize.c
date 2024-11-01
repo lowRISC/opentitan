@@ -229,7 +229,9 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
   }
   if (!status_ok(
           manuf_individualize_device_flash_data_default_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_field_cfg(
+        &otp_ctrl,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
     LOG_INFO("Bootstrap requested.");
     wait_for_interrupt();
   }
@@ -709,7 +711,8 @@ static status_t finalize_otp_partitions(void) {
 
   // Complete the provisioning of OTP OwnerSwCfg partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET));
     TRY(check_otp_measurement_pre_lock(&otp_owner_sw_cfg_measurement,
                                        kOtpPartitionOwnerSwCfg));
     TRY(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
@@ -720,8 +723,10 @@ static status_t finalize_otp_partitions(void) {
 
   // Complete the provisioning of OTP CreatorSwCfg partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
-    TRY(manuf_individualize_device_creator_manuf_state_cfg(&otp_ctrl));
-    TRY(manuf_individualize_device_immutable_rom_ext_en_cfg(&otp_ctrl));
+    TRY(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET));
+    TRY(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET));
     TRY(check_otp_measurement_pre_lock(&otp_creator_sw_cfg_measurement,
                                        kOtpPartitionCreatorSwCfg));
     TRY(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));

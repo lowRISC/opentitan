@@ -69,49 +69,16 @@ status_t manuf_individualize_device_creator_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl, dif_flash_ctrl_state_t *flash_state);
 
 /**
- * Configures the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
- * partition.
+ * This must be called before both
+ * `manuf_individualize_device_creator_sw_cfg_lock()` and
+ * `manuf_individualize_device_owner_sw_cfg_lock()` are called. The operation
+ * will fail if there are any pre-programmed words not equal to the expected
+ * test values.
  *
- * This must be called before `manuf_individualize_device_creator_sw_cfg_lock()`
- * is called. The operation will fail if there are any pre-programmed words not
- * equal to the expected test values.
- *
- * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the FLASH_DATA_DEFAULT_CFG field was provisioned.
  */
 OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_flash_data_default_cfg(
-    const dif_otp_ctrl_t *otp_ctrl);
-
-/**
- * Configures the MANUF_STATE field in the CREATOR_SW_CFG OTP
- * partition.
- *
- * This must be called before `manuf_individualize_device_creator_sw_cfg_lock()`
- * is called. The operation will fail if there are any pre-programmed words not
- * equal to the expected test values.
- *
- * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the MANUF_STATE field was provisioned.
- */
-OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_creator_manuf_state_cfg(
-    const dif_otp_ctrl_t *otp_ctrl);
-
-/**
- * Configures the IMMUTABLE_ROM_EXT_EN field in the CREATOR_SW_CFG OTP
- * partition.
- *
- * This must be called before `manuf_individualize_device_creator_sw_cfg_lock()`
- * is called. The operation will fail if there are any pre-programmed words not
- * equal to the expected test values.
- *
- * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the IMMUTABLE_ROM_EXT_EN field was provisioned.
- */
-OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_immutable_rom_ext_en_cfg(
-    const dif_otp_ctrl_t *otp_ctrl);
+status_t manuf_individualize_device_field_cfg(const dif_otp_ctrl_t *otp_ctrl,
+                                              uint32_t field_offset);
 
 /**
  * Checks the FLASH_DATA_DEFAULT_CFG field in the CREATOR_SW_CFG OTP
@@ -127,9 +94,8 @@ status_t manuf_individualize_device_flash_data_default_cfg_check(
 /**
  * Locks the CREATOR_SW_CFG OTP partition.
  *
- * This must be called after both `manuf_individualize_device_creator_sw_cfg()`
- * , `manuf_individualize_device_flash_data_default_cfg()` and
- * `manuf_individualize_device_creator_manuf_state_cfg()` have been called.
+ * This must be called after `manuf_individualize_device_field_cfg()`
+ * has been called.
  *
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the CREATOR_SW_CFG partition was locked.
@@ -171,25 +137,10 @@ status_t manuf_individualize_device_owner_sw_cfg(
     const dif_otp_ctrl_t *otp_ctrl);
 
 /**
- * Configures the ROM_BOOTSTRAP_DIS field in the OWNER_SW_CFG OTP
- * partition.
- *
- * This must be called before `manuf_individualize_device_owner_sw_cfg_lock()`
- * is called. The operation will fail if there are any pre-programmed words not
- * equal to the expected test values.
- *
- * @param otp_ctrl OTP controller instance.
- * @return OK_STATUS if the ROM_BOOTSTRAP_DIS field was provisioned.
- */
-OT_WARN_UNUSED_RESULT
-status_t manuf_individualize_device_rom_bootstrap_dis_cfg(
-    const dif_otp_ctrl_t *otp_ctrl);
-
-/**
  * Locks the OWNER_SW_CFG OTP partition.
  *
- * This must be called after both `manuf_individualize_device_owner_sw_cfg()`
- * and `manuf_individualize_device_rom_bootstrap_dis_cfg()` have been called.
+ * This must be called after `manuf_individualize_device_field_cfg()`
+ * has been called.
  *
  * @param otp_ctrl OTP controller instance.
  * @return OK_STATUS if the OWNER_SW_CFG partition was locked.
