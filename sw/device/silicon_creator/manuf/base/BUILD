@@ -361,7 +361,7 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
             "//hw/top_earlgrey:silicon_creator": None,
         },
         fpga = fpga_params(
-            timeout = "long",
+            timeout = "moderate",
             assemble = "{ft_personalize}@{slot_a} {transport_image}@{slot_b}",
             binaries =
                 {
