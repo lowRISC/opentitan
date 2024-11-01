@@ -2,7 +2,15 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 #
-# Generic constraints file for simple testsynthesis flow
+# Design constrains for Earlgrey ASIC
+
+# Set default value for variables that are not predefined.
+if {! [info exists synopsys_program_name]} {
+    set synopsys_program_name ""
+}
+if {! [info exists spec_constr]} {
+    set spec_constr 1
+}
 
 # Note that we do not fix hold timing in this flow
 if { $synopsys_program_name eq "pt_shell" } {
