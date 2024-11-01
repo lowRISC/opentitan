@@ -105,3 +105,25 @@ runs:
           echo "build --remote_upload_local_results=false" >> ~/.bazelrc
         fi
       shell: bash
+
+    - name: Install merge-junit
+      run: |
+        MERGE_JUNIT_PATH="/tools/merge-junit"
+        MERGE_JUNIT_TAR="merge-junit-v0.2.1-x86_64-unknown-linux-musl.tar.gz"
+        MERGE_JUNIT_URL="https://github.com/tobni/merge-junit/releases/download/v0.2.1/${MERGE_JUNIT_TAR}"
+        MERGE_JUNIT_SHA256="5c6a63063f3a155ea4da912d5cae2ec4a89022df31d7942f2aba463ee4790152"
+
+        curl -fLSs -o "/tmp/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
+        HASH=$(sha256sum "/tmp/$MERGE_JUNIT_TAR" | awk '{print $1}')
+        if [[ "$HASH" != "$MERGE_JUNIT_SHA256" ]]; then
+          echo "The hash of merge-junit does not match" >&2
+          echo "$HASH != $MERGE_JUNIT_SHA256" >&2
+          exit 1
+        fi
+
+        sudo mkdir -p $MERGE_JUNIT_PATH
+        sudo chmod 777 $MERGE_JUNIT_PATH
+        tar -C $MERGE_JUNIT_PATH -xvzf "/tmp/${MERGE_JUNIT_TAR}" --strip-components=1
+        echo $MERGE_JUNIT_PATH >> "$GITHUB_PATH"
+        rm "/tmp/${MERGE_JUNIT_TAR}"
+      shell: bash
