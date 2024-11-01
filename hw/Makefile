@@ -141,5 +141,10 @@ $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
 
+# This runs cmdgen on all md files of the repo.
+cmdgen:
+	${PRJ_DIR}/util/cmdgen.py -u '**/*.md'
+
+top_and_cmdgen: top cmdgen
 
 .PHONY: all
