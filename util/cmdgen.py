@@ -74,6 +74,23 @@ def cmdgen_rewrite_md(filepath: Path, dry_run: bool, update: bool) -> bool:
         match_start_linum = 1 + content[0:match_start.start(0)].count("\n")
         cmd = match_start.group('cmd').strip()
 
+        # The command may contain paths, which are relative to the root of the
+        # repository. In order to make command invocation independent of the
+        # current working directory, we need to make these paths absolute.
+        cmd_parts = cmd.split(' ')
+        for idx, part in enumerate(cmd_parts):
+            # If the command starts with a `#`, don't do anything because that
+            # command is to be treated as commented out.
+            if idx == 0 and part.startswith('#'):
+                break
+            # The first part (index 0) of a command is a path to an executable;
+            # all other parts are treated as paths if they contain a slash.
+            if idx == 0 or '/' in part:
+                # Prepend absolute path to repository to part in order to make
+                # the full path absolute.
+                cmd_parts[idx] = str(REPO_ROOT / Path(part))
+        cmd = ' '.join(cmd_parts)
+
         # search end marker after the start marker
         match_end = END_MARKER_PATTERN.search(content, pos)
         if match_end is None:
