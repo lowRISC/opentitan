@@ -40,7 +40,7 @@ typedef enum perso_tlv_obj_header_fields {
   kObjhSizeFieldWidth = 12,
   kObjhSizeFieldMask = (1 << kObjhSizeFieldWidth) - 1,
 
-  // Object type, one of perso_tlv_object_types_t.
+  // Object type, one of perso_tlv_object_type_t.
   kObjhTypeFieldShift = kObjhSizeFieldWidth,
   kObjhTypeFieldWidth =
       sizeof(perso_tlv_object_header_t) * 8 - kObjhSizeFieldWidth,
@@ -93,7 +93,7 @@ typedef enum perso_tlv_cert_header_fields {
   {                                                                         \
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
+    uint16_t fieldv = (uint16_t)(field_value) & mask;                       \
     uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
     mask = (uint16_t)(mask << shift);                                       \
     (full_value) = __builtin_bswap16(                                       \
@@ -110,36 +110,76 @@ typedef enum perso_tlv_cert_header_fields {
 /**
  * A helper structure for quick access to a certificate stored as a perso LTV
  * object.
- **/
-typedef struct perso_tlv_cert_block {
+ */
+typedef struct perso_tlv_cert_obj {
+  /**
+   * Pointer to the start of the perso LTV object.
+   */
+  const void *obj_p;
+  /**
+   * LTV object size (in bytes).
+   */
   size_t obj_size;
-  size_t wrapped_cert_size;
-  const void *wrapped_cert_p;
+  /**
+   * Pointer to the start of the certificate body (i.e., ASN.1 object for X.509
+   * certificates, or CBOR object for CWT certificates).
+   */
+  const void *cert_body_p;
+  /**
+   * Certificate (ASN.1 or CBOR) body size (in bytes).
+   *
+   * Equal to: obj_size - obj_hdr_size - cert_hdr_size - cert_name_len
+   */
+  size_t cert_body_size;
+  /**
+   * Certificate name string.
+   */
   char name[kCrthNameSizeFieldMask + 1];
-} perso_tlv_cert_block_t;
+} perso_tlv_cert_obj_t;
 
 /**
- *  Given the pointer to an LTV object, in case this is an endorsed certificate
- *  set up the perso_tlv_cert_block_t structure for it.
+ * Given the pointer to an LTV object, in case this is an endorsed certificate
+ * set up the perso_tlv_cert_obj_t structure for it.
  *
- * @param buf pointer to the LTV object storing the certificate
- * @param max_room total number of bytes til the end of the buffer (the LTV
- *               object is likely to be smaller, but can't be any bigger)
- * @param[out] block pointer to the block to set up.
+ * @param buf Pointer to the LTV object buffer storing the certificate object.
+ * @param ltv_buf_size Total number of bytes until the end of the LTV buffer
+ *                     (cert LTV object must be <= the buffer size).
+ * @param[out] obj Pointer to the certificate perso LTV object to populate.
  *
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
- *              certificate, or the error condition encountered.
+ *                   certificate, or the error condition encountered.
  */
-status_t perso_tlv_set_cert_block(const uint8_t *buf, size_t max_room,
-                                  perso_tlv_cert_block_t *block);
+status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
+                                perso_tlv_cert_obj_t *obj);
 
 /**
  * Wrap the passed in certificate in a perso LTV object and copy it into the
  * body of the perso_blob.
  *
+ * The certificate perso LTV object is laid out as follows:
+ * - 16 bit LTV object header
+ * - 16 bits cert wrapper header
+ * - Certificate name string
+ * - Cerificate data itself
+ *
+ * Note that both certificate and object headers' are 16 bit integers in big
+ * endian format.
+ *
+ *  d15                                         d0
+ * +-------------+--------------------------------+
+ * | 4 bit type  |   12 bits total object size    | <-- Object Header
+ * +-------------+--------------------------------+
+ * | name length |12 bits total cert payload size | <-- Cert Header
+ * +-------------+--------------------------------+
+ * |             cert name string                 |
+ * +----------------------------------------------+
+ * |                   cert                       |
+ * +----------------------------------------------+
+ *
+ *
  * @param name the name of the certificate
  * @param needs_endorsement defines the type of the LTV object the certificate
- *              is wrapped into
+ *                          is wrapped into
  * @param cert_body the actual certificate
  * @param cert_size size of the certificate in bytes
  * @param[out] perso_blob container for sending data to host.
