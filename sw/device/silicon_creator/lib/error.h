@@ -227,6 +227,8 @@ enum module_ {
   \
   X(kErrorPersoTlvInternal,           ERROR_(0, kModulePersoTlv, kInternal)), \
   X(kErrorPersoTlvCertObjNotFound,    ERROR_(1, kModulePersoTlv, kNotFound)), \
+  X(kErrorPersoTlvCertNameTooLong,    ERROR_(2, kModulePersoTlv, kOutOfRange)), \
+  X(kErrorPersoTlvOutputBufTooSmall,  ERROR_(3, kModulePersoTlv, kOutOfRange)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

@@ -94,7 +94,7 @@ typedef enum perso_tlv_cert_header_fields {
   {                                                                         \
     uint16_t mask = k##type_name##field_name##FieldMask;                    \
     uint16_t shift = k##type_name##field_name##FieldShift;                  \
-    uint16_t fieldv = (uint16_t)(field_value) & mask;                       \
+    uint16_t fieldv = (uint16_t)(field_value)&mask;                         \
     uint16_t fullv = __builtin_bswap16((uint16_t)(full_value));             \
     mask = (uint16_t)(mask << shift);                                       \
     (full_value) = __builtin_bswap16(                                       \
@@ -116,7 +116,7 @@ typedef struct perso_tlv_cert_obj {
   /**
    * Pointer to the start of the perso LTV object.
    */
-  const void *obj_p;
+  uint8_t *obj_p;
   /**
    * LTV object size (in bytes).
    */
@@ -125,7 +125,7 @@ typedef struct perso_tlv_cert_obj {
    * Pointer to the start of the certificate body (i.e., ASN.1 object for X.509
    * certificates, or CBOR object for CWT certificates).
    */
-  const void *cert_body_p;
+  uint8_t *cert_body_p;
   /**
    * Certificate (ASN.1 or CBOR) body size (in bytes).
    *
@@ -151,18 +151,18 @@ typedef struct perso_tlv_cert_obj {
  *                   certificate, or the error condition encountered.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
+rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
                                    perso_tlv_cert_obj_t *obj);
 
 /**
- * Wrap the passed in certificate in a perso LTV object and copy it into the
- * body of the perso_blob.
+ * Wraps the passed certificate in a perso LTV object and copies it to an output
+ * buffer.
  *
  * The certificate perso LTV object is laid out as follows:
  * - 16 bit LTV object header
- * - 16 bits cert wrapper header
+ * - 16 bit cert header
  * - Certificate name string
- * - Cerificate data itself
+ * - Cerificate data
  *
  * Note that both certificate and object headers' are 16 bit integers in big
  * endian format.
@@ -178,35 +178,50 @@ rom_error_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
  * |                   cert                       |
  * +----------------------------------------------+
  *
- *
- * @param name the name of the certificate
- * @param needs_endorsement defines the type of the LTV object the certificate
- *                          is wrapped into
- * @param cert_body the actual certificate
- * @param cert_size size of the certificate in bytes
- * @param[out] perso_blob container for sending data to host.
- *
+ * @param name The name of the certificate.
+ * @param needs_endorsement Defines the type of the LTV object the certificate
+ *                          is wrapped into (TBS or fully formed).
+ * @param cert The binary certificate blob.
+ * @param cert_size Size of the certificate blob in bytes.
+ * @param[out] buf Output buffer to copy the data into.
+ * @param[inout] buf_size Input is size of the output buffer in bytes; output is
+ *                        space of buffer that was consumed by the LTV object.
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t perso_tlv_prepare_cert_for_shipping(const char *name,
-                                             bool needs_endorsement,
-                                             const void *cert_body,
-                                             size_t cert_size,
-                                             perso_blob_t *perso_blob);
+rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
+                                     const uint8_t *cert, size_t cert_size,
+                                     uint8_t *buf, size_t *buf_size);
 
 /**
- * A helper function adding arbitrary amount of data to the body of a perso
- * blob.
+ * Constructs an certificate perso LTV object (shown above) by invoking
+ * `perso_tlv_cert_obj_build()` and pushes it to a `perso_blob_t` object used
+ * for shuffling data between the host and device during personalization.
  *
- * @param data ponter to the data to add to the blob
- * @param size number of bytes of data
- * @param perso_blob pointer to the blob to add data to
- *
+ * @param name The name of the certificate.
+ * @param needs_endorsement Defines the type of the LTV object the certificate
+ *                          is wrapped into (TBS or fully formed).
+ * @param cert The binary certificate blob.
+ * @param cert_size Size of the certificate blob in bytes.
+ * @param perso_blob Pointer to the `perso_blob_t` to copy the object to.
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t perso_tlv_push_to_blob(const void *data, size_t size,
-                                perso_blob_t *perso_blob);
+status_t perso_tlv_push_cert_to_perso_blob(const char *name,
+                                           bool needs_endorsement,
+                                           const uint8_t *cert,
+                                           size_t cert_size, perso_blob_t *pb);
+
+/**
+ * Pushes arbitrary data to the perso blob that is sent between host and device.
+ *
+ * @param data Pointer to the data to add to the blob.
+ * @param size Size of the data to add in bytes.
+ * @param perso_blob Pointer to the perso blob to add the data to.
+ * @return status of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
+                                      perso_blob_t *perso_blob);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_PERSO_TLV_DATA_H_

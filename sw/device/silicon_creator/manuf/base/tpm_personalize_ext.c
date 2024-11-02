@@ -88,8 +88,9 @@ static status_t personalize_gen_tpm_ek_certificate(
   curr_cert_size = sizeof(cert_buffer);
   TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey, cert_buffer,
                             &curr_cert_size));
-  return perso_tlv_prepare_cert_for_shipping("TPM EK", true, cert_buffer,
-                                             curr_cert_size, perso_blob);
+  return perso_tlv_push_cert_to_perso_blob("TPM EK", /*needs_endorsement=*/true,
+                                           cert_buffer, curr_cert_size,
+                                           perso_blob);
 }
 
 status_t personalize_extension_pre_cert_endorse(
