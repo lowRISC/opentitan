@@ -306,44 +306,51 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
  */
 static status_t hash_certificate(const flash_ctrl_info_page_t *page,
                                  size_t offset, size_t *size) {
-  uint8_t buffer[1024];  // 1K should be enough for the largest certificate.
-  uint32_t cert_size;
-  uint32_t bytes_read;
+  // 1K should be enough for the largest certificate perso LTV object.
+  const size_t kBufferSize = 1024;
+  uint8_t buffer[kBufferSize];
 
-  // Read the first word of the certificate which contains it's size.
+  // Read first word of the certificate perso LTV object (contains the size).
+  perso_tlv_object_header_t objh;
+  uint16_t obj_size;
   TRY(flash_ctrl_info_read(page, offset, 1, buffer));
-  bytes_read = sizeof(uint32_t);
-  cert_size = cert_x509_asn1_decode_size_header(buffer);
-  if (cert_size == 0) {
-    LOG_ERROR("Inconsistent certificate header %02x %02x page %x:%x", buffer[0],
-              buffer[1], page->base_addr, offset);
+  memcpy(&objh, buffer, sizeof(perso_tlv_object_header_t));
+  PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
+
+  // Validate the perso LTV object size.
+  if (obj_size == 0) {
+    LOG_ERROR(
+        "Inconsistent certificate perso LTV object header %02x %02x at "
+        "page:offset %x:%x",
+        buffer[0], buffer[1], page->base_addr, offset);
     return DATA_LOSS();
   }
-  if (cert_size > sizeof(buffer)) {
-    LOG_ERROR("Bad certificate size %d page %x:%x", cert_size, page->base_addr,
-              offset);
+  if (obj_size > sizeof(buffer)) {
+    LOG_ERROR("Bad certificate perso LTV object size %d at page:offset %x:%x",
+              obj_size, page->base_addr, offset);
     return DATA_LOSS();
   }
-  if ((cert_size + offset) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
-    LOG_ERROR("Cert size overflow (%d + %d) page %x:%x", cert_size, offset,
+  if ((obj_size + offset) > FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
+    LOG_ERROR("Cert size overflow (%d + %d) page %x:%x", obj_size, offset,
               page->base_addr, offset);
     return DATA_LOSS();
   }
 
-  offset += bytes_read;
-  TRY(flash_ctrl_info_read(page, offset,
-                           util_size_to_words(cert_size - bytes_read),
-                           buffer + bytes_read));
-  hmac_sha256_update(buffer, cert_size);
+  // Read the entire perso LTV object from flash and parse it.
+  perso_tlv_cert_obj_t cert_obj;
+  TRY(flash_ctrl_info_read(page, offset, util_size_to_words(obj_size), buffer));
+  TRY(perso_tlv_get_cert_obj(buffer, kBufferSize, &cert_obj));
+
+  hmac_sha256_update(cert_obj.cert_body_p, cert_obj.cert_body_size);
 
   if (size) {
-    *size = cert_size;
+    *size = obj_size;
   }
   return OK_STATUS();
 }
 
 static status_t hash_all_certs(void) {
-  uint32_t cert_size;
+  uint32_t cert_obj_size;
   hmac_sha256_init();
 
   // Push all certificates into the hash.
@@ -355,8 +362,8 @@ static status_t hash_all_certs(void) {
       continue;
     }
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_size));
-      page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
+      TRY(hash_certificate(curr_layout.info_page, page_offset, &cert_obj_size));
+      page_offset += util_size_to_words(cert_obj_size) * sizeof(uint32_t);
       page_offset = util_round_up_to(page_offset, 3);
     }
   }
@@ -473,7 +480,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       "CDI_1", false, all_certs, curr_cert_size, &perso_blob_to_host);
 }
 
-// How much data could there be in the receive buffer.
+// Returns how much data is left in the perso blob receive buffer (i.e., `body`
+// field). Useful when scanning the receive buffer containing perso LTV objects.
 static size_t max_available(void) {
   if (perso_blob_from_host.next_free > sizeof(perso_blob_from_host.body))
     return 0;  // This could never happen, but just in case.
@@ -482,34 +490,37 @@ static size_t max_available(void) {
 }
 
 /**
- * Find the next certificate object in the receive perso buffer and copy it out
- * to the passed in location.
+ * Find the next certificate perso LTV object in the receive perso buffer and
+ * copy it to the passed in location.
  *
- * @param dest pointer to pointer in the destination buffer, this function
- *             advances the pointer by the size of the copied certificate
- * @param free_room pointer to the size of the destination buffer, this function
- *             reduces the size of the buffer by the size of the copied
- *             certificate
+ * @param dest Pointer to pointer in the destination buffer; this function
+ *             advances the pointer by the size of the copied certificate perso
+ *             LTV object.
+ * @param free_room Pointer to the size of the destination buffer; this function
+ *                  reduces the size of the buffer by the size of the copied
+ *                  certificate perso LTV object.
  */
 static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
-  // A just in case sanity check.
+  // A just in case sanity check that the next free location in the perso blob
+  // data buffer is at the end of the buffer.
   if (perso_blob_from_host.next_free > sizeof(perso_blob_from_host.body)) {
     return INTERNAL();  // Something is really screwed up.
   }
 
   // Scan the received buffer until the next endorsed cert is found.
   while (perso_blob_from_host.num_objs != 0) {
-    perso_tlv_cert_block_t block;
+    perso_tlv_cert_obj_t block;
     status_t status;
 
-    status = perso_tlv_set_cert_block(
+    // Extract the next perso LTV object, aborting if it is not a certificate.
+    status = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
         max_available(), &block);
     switch (status_err(status)) {
       case kOk:
         break;
       case kNotFound: {
-        // The object must be not an endorsed certificate.
+        // The object found is not a certificate. Skip to next perso LTV object.
         perso_blob_from_host.next_free += block.obj_size;
         perso_blob_from_host.num_objs--;
         continue;
@@ -517,21 +528,27 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
       default:
         return status;
     }
-    if (*free_room < block.wrapped_cert_size)
-      return RESOURCE_EXHAUSTED();  // Another case of really screwed up.
 
+    // Check there is enough room in the destination buffer to copy the
+    // certificate perso LTV object.
+    if (*free_room < block.obj_size)
+      return RESOURCE_EXHAUSTED();
+
+    // Copy the certificate object to the destination buffer.
     uint8_t *dest_p = *dest;
-    memcpy(dest_p, block.wrapped_cert_p, block.wrapped_cert_size);
+    memcpy(dest_p, block.obj_p, block.obj_size);
     LOG_INFO("Copied %s certificate", block.name);
 
-    *dest = dest_p + block.wrapped_cert_size;
-    *free_room = *free_room - block.wrapped_cert_size;
+    // Advance destination buffer pointer and reduce free space counter.
+    *dest = dest_p + block.obj_size;
+    *free_room = *free_room - block.obj_size;
 
-    perso_blob_from_host.next_free +=
-        block.wrapped_cert_size + sizeof(perso_tlv_object_header_t);
+    // Advance pointer to next perso LTV object in the receive buffer.
+    perso_blob_from_host.next_free += block.obj_size;
     perso_blob_from_host.num_objs--;
     return OK_STATUS();
   }
+
   return OK_STATUS();
 }
 
@@ -555,53 +572,57 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
   /*****************************************************************************
    * Rearrange certificates to prepare for writing to flash.
    *
-   * All certificates are ordered in a buffer according to the order in which
-   * they will be written to flash. That order is:
+   * All certificates are ordered in a buffer (all_certs) according to the order
+   * in which they will be written to flash. That order is:
    * 1. UDS cert
    * 2. CDI_0 cert
    * 3. CDI_1 cert
    * 4. Provision Extension certs
    ****************************************************************************/
-  // We start scanning the received buffer from zero, the assumption is that the
-  // endorsed UDS cert is the first certificate in the buffer (even if preceeded
-  // by other types of objects).
+  // We start scanning the perso LTV buffer we received from the host from the
+  // beginnging. We assume that the endorsed UDS cert is the first certificate
+  // in the buffer (even if preceeded by other types of perso LTV objects).
   perso_blob_from_host.next_free = 0;
-  // Location where the next cert will be copied.
+  // Location where the next cert perso LTV object will be copied to in the
+  // `all_certs` buffer.
   uint8_t *next_cert = all_certs;
-  // How much room left in the destination buffer.
+  // How much room left in the destination (`all_certs`) buffer.
   size_t free_room = sizeof(all_certs);
-  // Helper structure caching certificate information.
-  perso_tlv_cert_block_t block;
-  // UDS cert.
+  // Helper structure caching certificate information from a certificate perso
+  // LTV object.
+  perso_tlv_cert_obj_t block;
+
+  // Exract the UDS cert perso LTV object.
   TRY(extract_next_cert(&next_cert, &free_room));
 
-  // Now the two CDI certs which were endorsed locally and sent to the host
-  // earlier.
-  size_t cdis[] = {cdi_0_offset, cdi_1_offset};
-  for (size_t i = 0; i < ARRAYSIZE(cdis); i++) {
-    size_t offset = cdis[i];
-    TRY(perso_tlv_set_cert_block(perso_blob_to_host.body + offset,
-                                 sizeof(perso_blob_to_host.body) - offset,
-                                 &block));
-    if (block.wrapped_cert_size > free_room)
+  // Extract the two CDI cert perso LTV objects which were endorsed on-device
+  // and sent to the host.
+  size_t cdi_offsets[] = {cdi_0_offset, cdi_1_offset};
+  for (size_t i = 0; i < ARRAYSIZE(cdi_offsets); i++) {
+    size_t offset = cdi_offsets[i];
+    TRY(perso_tlv_get_cert_obj(perso_blob_to_host.body + offset,
+                               sizeof(perso_blob_to_host.body) - offset,
+                               &block));
+    if (block.obj_size > free_room)
       return RESOURCE_EXHAUSTED();
 
-    memcpy(next_cert, block.wrapped_cert_p, block.wrapped_cert_size);
+    memcpy(next_cert, block.obj_p, block.obj_size);
     LOG_INFO("Copied %s certificate", block.name);
-    next_cert += block.wrapped_cert_size;
-    free_room -= block.wrapped_cert_size;
+    next_cert += block.obj_size;
+    free_room -= block.obj_size;
   }
 
-  // Now the rest of endorsed certificates received from the host, if any.
+  // Extract the remaining cert perso LTV objects received from the host.
   while (perso_blob_from_host.num_objs)
     TRY(extract_next_cert(&next_cert, &free_room));
 
   /*****************************************************************************
    * Save Certificates to Flash.
    ****************************************************************************/
-  // This is where the certificates to be copied are stored, each one wrapped in
-  // with its name prepended to it.
-  uint8_t *certs = all_certs;
+  // This is where the certificates to be copied are stored, each one encoded as
+  // a perso LTV object. Reset the `next_cert` pointer and `free_room` size.
+  next_cert = all_certs;
+  free_room = sizeof(all_certs);
   for (size_t i = 0; i < ARRAYSIZE(cert_flash_layout); i++) {
     const cert_flash_info_layout_t curr_layout = cert_flash_layout[i];
     uint32_t page_offset = 0;
@@ -613,38 +634,26 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
 
     // This is a bit brittle, but we expect the sum of {layout}.num_certs values
     // in the following flash layout sections to be equal to the number of
-    // endorsed  extension certificates received from the host.
+    // endorsed extension certificates received from the host.
     for (size_t j = 0; j < curr_layout.num_certs; j++) {
-      uint16_t name_len;
-      char name[kCrthNameSizeFieldMask + 1];
-      perso_tlv_cert_header_t crth;
-
-      // We just prepared the set of wrapped certificates, let's trust that the
-      // data is correct and does not need more validation.
-      memcpy(&crth, certs, sizeof(crth));
-      certs += sizeof(crth);
-      PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
-      memcpy(name, certs, name_len);
-      name[name_len] = '\0';
-      certs += name_len;
-
-      // Compute the number of words necessary for certificate storage
-      // (rounded up to word alignment).
-      uint32_t cert_size_bytes = cert_x509_asn1_decode_size_header(certs);
-      uint32_t cert_size_words = util_size_to_words(cert_size_bytes);
+      // Extract the cert block from the `all_certs` buffer.
+      TRY(perso_tlv_get_cert_obj(next_cert, free_room, &block));
+      // Round up the size to the nearest word boundary.
+      uint32_t cert_size_words = util_size_to_words(block.obj_size);
       uint32_t cert_size_bytes_ru = cert_size_words * sizeof(uint32_t);
-
       if ((page_offset + cert_size_bytes_ru) >
           FLASH_CTRL_PARAM_BYTES_PER_PAGE) {
         LOG_ERROR("%s %s certificate did not fit into the info page.",
-                  curr_layout.group_name, name);
+                  curr_layout.group_name, block.name);
         return OUT_OF_RANGE();
       }
+      // Write the entire certificate perso LTV object to flash.
       TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
-                                cert_size_words, certs));
-      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name, name);
+                                cert_size_words, next_cert));
+      LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
+               block.name);
       page_offset += cert_size_bytes_ru;
-      certs += cert_size_bytes;
+      next_cert += block.obj_size;
 
       // Each certificate must be 8 bytes aligned (flash word size).
       page_offset = util_round_up_to(page_offset, 3);
