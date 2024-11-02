@@ -254,7 +254,9 @@ cc_library(
     srcs = ["perso_tlv_data.c"],
     deps = [
         ":perso_tlv_headers",
+        "//sw/device/lib/base:status",
         "//sw/device/lib/runtime:log",
+        "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/cert",
     ],
 )

@@ -439,8 +439,10 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
       all_certs, &curr_cert_size));
   // DO NOT CHANGE THE "UDS" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
-  TRY(perso_tlv_prepare_cert_for_shipping("UDS", true, all_certs,
-                                          curr_cert_size, &perso_blob_to_host));
+  TRY(perso_tlv_push_cert_to_perso_blob("UDS", /*needs_endorsement=*/true,
+                                        all_certs, curr_cert_size,
+                                        &perso_blob_to_host));
+  LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
   curr_cert_size = kCdi0MaxCertSizeBytes;
@@ -457,8 +459,10 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   cdi_0_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
-  TRY(perso_tlv_prepare_cert_for_shipping("CDI_0", false, all_certs,
-                                          curr_cert_size, &perso_blob_to_host));
+  TRY(perso_tlv_push_cert_to_perso_blob("CDI_0", /*needs_endorsement=*/false,
+                                        all_certs, curr_cert_size,
+                                        &perso_blob_to_host));
+  LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
   curr_cert_size = kCdi1MaxCertSizeBytes;
@@ -476,8 +480,12 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   cdi_1_offset = perso_blob_to_host.next_free;
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
-  return perso_tlv_prepare_cert_for_shipping(
-      "CDI_1", false, all_certs, curr_cert_size, &perso_blob_to_host);
+  TRY(perso_tlv_push_cert_to_perso_blob("CDI_1", /*needs_endorsement=*/false,
+                                        all_certs, curr_cert_size,
+                                        &perso_blob_to_host));
+  LOG_INFO("Generated CDI_1 certificate.");
+
+  return OK_STATUS();
 }
 
 // Returns how much data is left in the perso blob receive buffer (i.e., `body`
