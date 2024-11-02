@@ -11,6 +11,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/silicon_creator/lib/error.h"
 
 /**
  * Personalization data is sent between the device and the host during the
@@ -149,8 +150,9 @@ typedef struct perso_tlv_cert_obj {
  * @return OK_STATUS on success, NOT_FOUND if the object is not an endorsed
  *                   certificate, or the error condition encountered.
  */
-status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
-                                perso_tlv_cert_obj_t *obj);
+OT_WARN_UNUSED_RESULT
+rom_error_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
+                                   perso_tlv_cert_obj_t *obj);
 
 /**
  * Wrap the passed in certificate in a perso LTV object and copy it into the
@@ -186,6 +188,7 @@ status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
  *
  * @return status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t perso_tlv_prepare_cert_for_shipping(const char *name,
                                              bool needs_endorsement,
                                              const void *cert_body,
@@ -202,6 +205,7 @@ status_t perso_tlv_prepare_cert_for_shipping(const char *name,
  *
  * @return status of the operation.
  */
+OT_WARN_UNUSED_RESULT
 status_t perso_tlv_push_to_blob(const void *data, size_t size,
                                 perso_blob_t *perso_blob);
 

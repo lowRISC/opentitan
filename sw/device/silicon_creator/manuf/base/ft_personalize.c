@@ -523,23 +523,22 @@ static status_t extract_next_cert(uint8_t **dest, size_t *free_room) {
   // Scan the received buffer until the next endorsed cert is found.
   while (perso_blob_from_host.num_objs != 0) {
     perso_tlv_cert_obj_t block;
-    status_t status;
 
     // Extract the next perso LTV object, aborting if it is not a certificate.
-    status = perso_tlv_get_cert_obj(
+    rom_error_t err = perso_tlv_get_cert_obj(
         perso_blob_from_host.body + perso_blob_from_host.next_free,
         max_available(), &block);
-    switch (status_err(status)) {
-      case kOk:
+    switch (err) {
+      case kErrorOk:
         break;
-      case kNotFound: {
+      case kErrorPersoTlvCertObjNotFound: {
         // The object found is not a certificate. Skip to next perso LTV object.
         perso_blob_from_host.next_free += block.obj_size;
         perso_blob_from_host.num_objs--;
         continue;
       }
       default:
-        return status;
+        return INTERNAL();
     }
 
     // Check there is enough room in the destination buffer to copy the

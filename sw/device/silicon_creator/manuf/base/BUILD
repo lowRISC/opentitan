@@ -23,12 +23,12 @@ load(
     "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
 load(
-    "//sw/device/silicon_creator/rom_ext:defs.bzl",
-    "ROM_EXT_VERSION",
-)
-load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "SLOTS",
+)
+load(
+    "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VERSION",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -269,6 +269,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/json:provisioning_data",
+        "//sw/device/silicon_creator/lib:error",
     ],
 )
 
