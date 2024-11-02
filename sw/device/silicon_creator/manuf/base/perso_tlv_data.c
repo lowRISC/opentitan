@@ -19,8 +19,8 @@ status_t perso_tlv_push_to_blob(const void *data, size_t size,
   return OK_STATUS();
 }
 
-status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
-                                perso_tlv_cert_obj_t *obj) {
+rom_error_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
+                                   perso_tlv_cert_obj_t *obj) {
   perso_tlv_object_header_t objh;
   perso_tlv_object_type_t obj_type;
   uint16_t obj_size;
@@ -31,13 +31,13 @@ status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
   // Extract LTV object size.
   PERSO_TLV_GET_FIELD(Objh, Size, objh, &obj_size);
   if (obj_size > ltv_buf_size)
-    return INTERNAL();  // Something is really screwed up.
+    return kErrorPersoTlvInternal;  // Something is really screwed up.
   obj->obj_size = obj_size;
   // Extract LTV object type.
   PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
   if (obj_type != kPersoObjectTypeX509Cert) {
     LOG_INFO("Skipping object of type %d", obj_type);
-    return NOT_FOUND();
+    return kErrorPersoTlvCertObjNotFound;
   }
   buf += sizeof(perso_tlv_object_header_t);
   ltv_buf_size -= sizeof(perso_tlv_object_header_t);
@@ -60,7 +60,7 @@ status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
   // header and two bytes of size data.
   if ((wrapped_cert_size < (sizeof(perso_tlv_cert_header_t) + name_len + 4)) ||
       (wrapped_cert_size > ltv_buf_size))
-    return INTERNAL();  // Something is really screwed up.
+    return kErrorPersoTlvInternal;  // Something is really screwed up.
   buf += sizeof(perso_tlv_cert_header_t);
   ltv_buf_size -= sizeof(perso_tlv_cert_header_t);
   // Extract certificate name string.
@@ -79,10 +79,10 @@ status_t perso_tlv_get_cert_obj(const uint8_t *buf, size_t ltv_buf_size,
   if (decoded_cert_size != obj->cert_body_size) {
     LOG_ERROR("Unexpected cert size %d instead of %d for cert %s",
               decoded_cert_size, obj->cert_body_size, obj->name);
-    return INTERNAL();
+    return kErrorPersoTlvInternal;
   }
 
-  return OK_STATUS();
+  return kErrorOk;
 }
 
 status_t perso_tlv_prepare_cert_for_shipping(const char *name,
