@@ -262,6 +262,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/otbn/crypto:boot",
     ],
 )
