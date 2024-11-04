@@ -121,38 +121,6 @@ jobs:
     condition: eq(variables['Build.Reason'], 'PullRequest')
     displayName: Confirm no .bazelrc-site files
 
-- job: execute_verilated_tests
-  displayName: Fast Verilated Earl Grey tests
-  # Build and run fast tests on sim_verilator
-  pool: ci-public
-  timeoutInMinutes: 240
-  dependsOn: lint
-  steps:
-  - template: ci/checkout-template.yml
-  - template: ci/install-package-dependencies.yml
-  - template: ci/load-bazel-cache-write-creds.yml
-  - bash: |
-      set -x -e
-      ci/scripts/run-verilator-tests.sh
-    displayName: Build & execute tests
-  - template: ci/publish-bazel-test-results.yml
-  # TODO: build and cache the verilator model to avoid building twice (#12574)
-  # NOTE: The new build/test rules reference verilator as a dependency, but under the
-  #       platforms transition of that rule.  Therefore, verilator is built under a
-  #       configuration like 'k8-opt-exec-$host-FOR-$target'.  In order to get the
-  #       verilator binary, we query the output of one of the verilated tests and ask
-  #       for the verilator binary, which is in a subdir named 'build.verilator_<stuff>'.
-  - bash: |
-      . util/build_consts.sh
-      mkdir -p "$BIN_DIR/hw/top_earlgrey/"
-      cp $(ci/bazelisk.sh outquery-build.verilator //sw/device/tests:uart_smoketest_sim_verilator) \
-        "$BIN_DIR/hw/top_earlgrey/Vchip_earlgrey_verilator"
-    displayName: Copy verilated binary to $BIN_DIR
-  - template: ci/upload-artifacts-template.yml
-    parameters:
-      includePatterns:
-        - "/hw/top_earlgrey/Vchip_earlgrey_verilator"
-
 - job: otbn_standalone_tests
   displayName: Run OTBN Smoke Test
   dependsOn: lint

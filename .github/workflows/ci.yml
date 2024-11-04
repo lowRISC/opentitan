@@ -196,6 +196,23 @@ jobs:
       - name: Test
         run: ./ci/scripts/run-english-breakfast-verilator-tests.sh
 
+  verilator_earlgrey:
+    name: Verilated Earl Grey
+    runs-on: ubuntu-20.04
+    needs: quick_lint
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Run fast Verilator tests
+        run: ./ci/scripts/run-verilator-tests.sh
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: verilator_earlgrey-test-results
+
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   chip_englishbreakfast_cw305:
     name: CW305's Bitstream
