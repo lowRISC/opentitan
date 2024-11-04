@@ -33,6 +33,9 @@
   // CDC customized env file
   cdc_env_file: "{proj_root}/hw/top_earlgrey/cdc/user_intent.env"
 
+  // CDC customized configuration file (to be sourced after customized env)
+  cdc_config_file: "{proj_root}/hw/top_earlgrey/cdc/user_configuration.tcl"
+
   // Technology path for this module (empty for open-source runs)
   foundry_root: ""
 
