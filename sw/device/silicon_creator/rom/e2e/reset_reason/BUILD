@@ -48,6 +48,7 @@ opentitan_test(
     srcs = ["reset_reasons_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_reset_reason",
@@ -145,6 +146,7 @@ RESET_CORRUPTION_SCENARIOS = [
         srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
             exit_failure = t["exit_failure"],

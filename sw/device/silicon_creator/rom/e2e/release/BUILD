@@ -35,6 +35,7 @@ otp_image(
 #    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
 #    exec_env = {
 #        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+#        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
 #        "//hw/top_earlgrey:sim_dv": None,
 #        "//hw/top_earlgrey:silicon_creator": None,  # This is added to support GLS and bringup environments.
 #    },

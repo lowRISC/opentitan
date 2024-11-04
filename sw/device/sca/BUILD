@@ -22,6 +22,7 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -46,6 +47,7 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -67,6 +69,7 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -88,6 +91,7 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -112,6 +116,7 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:fpga_cw305",
         "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
     ],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",

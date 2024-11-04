@@ -35,6 +35,8 @@ package(default_visibility = ["//visibility:public"])
             {
                 "//hw/top_earlgrey:fpga_cw310_test_rom": None,
                 "//hw/top_earlgrey:fpga_cw310_sival": None,
+                "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+                "//hw/top_earlgrey:fpga_cw340_sival": None,
                 "//hw/top_earlgrey:silicon_creator": None,
             },
         ),
@@ -87,6 +89,9 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
+            "//hw/top_earlgrey:fpga_cw340_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),

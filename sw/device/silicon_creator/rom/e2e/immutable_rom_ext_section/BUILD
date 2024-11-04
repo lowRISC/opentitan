@@ -194,6 +194,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         srcs = ["immutable_rom_ext_section_test.c"],
         exec_env = [
             "//hw/top_earlgrey:fpga_cw310_sival",
+            "//hw/top_earlgrey:fpga_cw340_sival",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(s["slot"]),
         deps = [
@@ -218,6 +219,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
             assemble = "{firmware}@{offset}",
