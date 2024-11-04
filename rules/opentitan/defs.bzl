@@ -4,6 +4,7 @@
 
 """Rules to build OpenTitan for the RISC-V target"""
 
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
@@ -16,26 +17,15 @@ load(
     _opentitan_test = "opentitan_test",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
+    "ci_orchestrator",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
-    _silicon = "silicon",
-    _silicon_params = "silicon_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
-    _sim_verilator = "sim_verilator",
-    _verilator_params = "verilator_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
-    _dv_params = "dv_params",
-    _sim_dv = "sim_dv",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
@@ -47,10 +37,20 @@ load(
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
-    "ci_orchestrator",
+    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    _silicon = "silicon",
+    _silicon_params = "silicon_params",
 )
-load("@bazel_skylib//lib:sets.bzl", "sets")
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
+    _dv_params = "dv_params",
+    _sim_dv = "sim_dv",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
+    _sim_verilator = "sim_verilator",
+    _verilator_params = "verilator_params",
+)
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
@@ -100,7 +100,6 @@ EARLGREY_TEST_ENVS = {
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
 }
 
 # All CW340 test environments for Earlgrey.
