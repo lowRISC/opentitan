@@ -449,10 +449,11 @@ class SimCfg(FlowCfg):
             # existing one.
             is_unique = True
             for build in self.builds:
-                if build.is_equivalent_job(new_build):
-                    # Discard `new_build` since it is equivalent to build. If
-                    # `new_build` is the same as `primary_build_mode`, update
-                    # `primary_build_mode` to match `build`.
+                if new_build.is_equivalent_job(build):
+                    # Discard `new_build` since build implements the same
+                    # thing. If `new_build` is the same as
+                    # `primary_build_mode`, update `primary_build_mode` to
+                    # match `build`.
                     if new_build.name == self.primary_build_mode:
                         self.primary_build_mode = build.name
                     new_build = build

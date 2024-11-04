@@ -242,7 +242,7 @@ class Deploy():
         the final resolved 'cmd' & the exports. The 'name' field will be unique
         to 'item' and 'self', so we take that out of the comparison.
         """
-        if type(self) != type(item):
+        if not isinstance(item, Deploy):
             return False
 
         # Check if the cmd field is identical.
