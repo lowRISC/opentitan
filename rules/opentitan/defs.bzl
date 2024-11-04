@@ -23,21 +23,6 @@ load(
     _fpga_params = "fpga_params",
 )
 load(
-    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
-    _silicon = "silicon",
-    _silicon_params = "silicon_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
-    _sim_verilator = "sim_verilator",
-    _verilator_params = "verilator_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
-    _dv_params = "dv_params",
-    _sim_dv = "sim_dv",
-)
-load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
     _ecdsa_key_by_name = "ecdsa_key_by_name",
     _ecdsa_key_for_lc_state = "ecdsa_key_for_lc_state",
@@ -45,6 +30,21 @@ load(
     _rsa_key_for_lc_state = "rsa_key_for_lc_state",
     _spx_key_by_name = "spx_key_by_name",
     _spx_key_for_lc_state = "spx_key_for_lc_state",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    _silicon = "silicon",
+    _silicon_params = "silicon_params",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
+    _dv_params = "dv_params",
+    _sim_dv = "sim_dv",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
+    _sim_verilator = "sim_verilator",
+    _verilator_params = "verilator_params",
 )
 
 # The following definition is used to clear the key set in the signing
@@ -96,7 +96,6 @@ EARLGREY_TEST_ENVS = {
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
 }
 
 # All CW340 test environments for Earlgrey.

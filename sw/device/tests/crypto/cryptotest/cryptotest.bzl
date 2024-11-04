@@ -6,7 +6,6 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
     "silicon_params",
@@ -17,11 +16,9 @@ load(
 # each execution environment:
 # - cw310
 # - silicon
-# - silicon_prodc
 CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
-    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_prodc",
 }
 
 def cryptotest(name, test_vectors, test_args, test_harness):
@@ -48,15 +45,6 @@ def cryptotest(name, test_vectors, test_args, test_harness):
         silicon = silicon_params(
             timeout = "eternal",
             binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
-            data = test_vectors,
-            test_cmd = """
-                --bootstrap={firmware}
-            """ + test_args,
-            test_harness = test_harness,
-        ),
-        silicon_prodc = silicon_params(
-            timeout = "eternal",
-            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_prodc_rom_ext": "firmware"},
             data = test_vectors,
             test_cmd = """
                 --bootstrap={firmware}
