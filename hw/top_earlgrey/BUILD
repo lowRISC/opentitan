@@ -465,22 +465,6 @@ silicon(
     """,
 )
 
-silicon(
-    name = "silicon_owner_prodc_rom_ext",
-    testonly = True,
-    base = ":silicon_owner_sival_rom_ext",
-    # TODO(moidx): Switch to real keys once these have been generated.
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
-    exec_env = "silicon_owner_prodc_rom_ext",
-    # The //conditions:default ROM_EXT needs to be updated to use the following
-    # target once available:
-    # //sw/device/silicon_creator/rom_ext/prodc/binaries:rom_ext_real_prod_signed_slot_a.
-    rom_ext = select({
-        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_a",
-    }),
-)
-
 ###########################################################################
 # Sim Verilator Environments
 #

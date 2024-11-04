@@ -89,7 +89,7 @@ opentitan_test(
     srcs = [":firmware_fi.c"],
     exec_env = {
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
     },
     silicon_owner = silicon_params(
         tags = [
@@ -105,7 +105,7 @@ opentitan_test(
     srcs = [":firmware_sca.c"],
     exec_env = {
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
     },
     silicon_owner = silicon_params(
         tags = [
