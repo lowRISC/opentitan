@@ -61,6 +61,21 @@ static const otbn_addr_t kOtbnAppKeySideloadkl =
 static const otbn_addr_t kOtbnAppKeySideloadkh =
     OTBN_ADDR_T_INIT(otbn_key_sideload_sca, k_h);
 
+// RSA OTBN App.
+OTBN_DECLARE_APP_SYMBOLS(rsa);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, mode);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, n_limbs);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, inout);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, modulus);
+OTBN_DECLARE_SYMBOL_ADDR(rsa, exp);
+
+static const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(rsa);
+static const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(rsa, mode);
+static const otbn_addr_t kOtbnVarRsaNLimbs = OTBN_ADDR_T_INIT(rsa, n_limbs);
+static const otbn_addr_t kOtbnVarRsaInOut = OTBN_ADDR_T_INIT(rsa, inout);
+static const otbn_addr_t kOtbnVarRsaModulus = OTBN_ADDR_T_INIT(rsa, modulus);
+static const otbn_addr_t kOtbnVarRsaExp = OTBN_ADDR_T_INIT(rsa, exp);
+
 /**
  * Clears the OTBN DMEM and IMEM.
  *
@@ -190,6 +205,43 @@ status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
+  // Get RSA256 parameters.
+  penetrationtest_otbn_sca_rsa512_dec_t uj_data;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_rsa512_dec_t(uj, &uj_data));
+
+  otbn_load_app(kOtbnAppRsa);
+
+  uint32_t mode = 2;  // Decrypt.
+  // RSA512 configuration.
+  uint32_t n_limbs = 2;
+
+  // Write data into OTBN DMEM.
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaMode, &mode, sizeof(mode)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaNLimbs, &n_limbs, sizeof(n_limbs)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaModulus, uj_data.mod,
+                          sizeof(uj_data.mod)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaExp, uj_data.exp,
+                          sizeof(uj_data.exp)));
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarRsaInOut, uj_data.msg,
+                          sizeof(uj_data.msg)));
+
+  pentest_set_trigger_high();
+  // Give the trigger time to rise.
+  asm volatile(NOP30);
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+
+  // Send back decryption result to host.
+  penetrationtest_otbn_sca_rsa512_dec_out_t uj_output;
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarRsaInOut, uj_output.out,
+                         sizeof(uj_output.out)));
+  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_rsa512_dec_out_t, uj,
+          &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_sca(ujson_t *uj) {
   otbn_sca_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_sca_subcommand_t(uj, &cmd));
@@ -210,6 +262,8 @@ status_t handle_otbn_sca(ujson_t *uj) {
       return handle_otbn_pentest_init_keymgr(uj);
     case kOtbnScaSubcommandKeySideloadFvsr:
       return handle_otbn_sca_key_sideload_fvsr(uj);
+    case kOtbnScaSubcommandRsa512Decrypt:
+      return handle_otbn_sca_rsa512_decrypt(uj);
     default:
       LOG_ERROR("Unrecognized OTBN SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
