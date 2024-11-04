@@ -24,7 +24,8 @@ extern "C" {
     value(_, Ecc256SetSeed) \
     value(_, Init) \
     value(_, InitKeyMgr) \
-    value(_, KeySideloadFvsr)
+    value(_, KeySideloadFvsr) \
+    value(_, Rsa512Decrypt)
 UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND);
 
 #define OTBN_SCA_EN_MASKS(field, string) \
@@ -55,6 +56,16 @@ UJSON_SERDE_STRUCT(PenetrationtestOtbnScaKey, penetrationtest_otbn_sca_key_t, OT
 #define OTBN_SCA_FIXED_SEED(field, string) \
     field(fixed_seed, uint32_t)
 UJSON_SERDE_STRUCT(PenetrationtestOtbnScaFixedKey, penetrationtest_otbn_sca_fixed_seed_t, OTBN_SCA_FIXED_SEED);
+
+#define OTBN_SCA_RSA512_DEC(field, string) \
+    field(mod, uint8_t, 64) \
+    field(exp, uint8_t, 64) \
+    field(msg, uint8_t, 64)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaRsa512Dec, penetrationtest_otbn_sca_rsa512_dec_t, OTBN_SCA_RSA512_DEC);
+
+#define OTBN_SCA_RSA512_DEC_OUT(field, string) \
+    field(out, uint8_t, 64)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaRsa512DecOut, penetrationtest_otbn_sca_rsa512_dec_out_t, OTBN_SCA_RSA512_DEC_OUT);
 
 // clang-format on
 
