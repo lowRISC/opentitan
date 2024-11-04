@@ -23,6 +23,7 @@
     default: "0"
     wait_for_external_reset: false
   }
+  unmanaged_clocks: {}
   clocks:
   {
     hier_paths:
@@ -16273,6 +16274,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16297,6 +16299,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: spi_device
@@ -16321,6 +16324,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: i2c0
@@ -16345,6 +16349,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: i2c1
@@ -16369,6 +16374,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: i2c2
@@ -16390,6 +16396,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16412,6 +16419,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16436,6 +16444,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: spi_host0
@@ -16460,6 +16469,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: spi_host1
@@ -16484,6 +16494,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_usb_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: usb
@@ -16509,6 +16520,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+      unmanaged_clock: false
       reset_connection:
       {
         name: por_io_div4
@@ -16534,6 +16546,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16556,6 +16569,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16580,6 +16594,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16601,6 +16616,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16625,6 +16641,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16649,6 +16666,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc_io_div4
@@ -16673,6 +16691,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc
@@ -16697,6 +16716,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
+      unmanaged_clock: false
       reset_connection:
       {
         name: sys
@@ -16719,6 +16739,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_secure
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc
@@ -16742,6 +16763,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_aes
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc
@@ -16765,6 +16787,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_hmac
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc
@@ -16788,6 +16811,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_kmac
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc
@@ -16811,6 +16835,7 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_otbn
+      unmanaged_clock: false
       reset_connection:
       {
         name: lc

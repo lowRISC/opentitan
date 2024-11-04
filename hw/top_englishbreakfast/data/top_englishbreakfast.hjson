@@ -29,6 +29,11 @@
     wait_for_external_reset: false
   },
 
+  // List of unmanaged external clocks
+  unmanaged_clocks: [
+    // { name: "my_ext" }
+  ]
+
   // This is the clock data structure of the design.
   // The hier path refers to the clock reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module

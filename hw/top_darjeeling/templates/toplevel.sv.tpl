@@ -121,6 +121,14 @@ module top_${top["name"]} #(
   % for clk in top['clocks'].typed_clocks().ast_clks:
   input ${clk},
   % endfor
+  % if len(top['unmanaged_clocks']._asdict().values()) > 0:
+
+  // Unmanaged external clocks
+    % for clk in top['unmanaged_clocks']._asdict().values():
+  input                        clk_${clk.name}_i,
+  input prim_mubi_pkg::mubi4_t cg_${clk.name}_i,
+    % endfor
+  % endif
 
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
@@ -376,7 +384,10 @@ for rst in output_rsts:
 % for k, lpg in enumerate(top['alert_lpgs']):
   // ${lpg['name']}
 <%
-  cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
+  if lpg['unmanaged_clock']:
+    cg_en = 'cg_' + lpg['clock_connection'].split('clk_')[-1]
+  else:
+    cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
   rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'])
   known_clocks[cg_en] = 0
   known_resets[rst_en] = 0
