@@ -15,16 +15,16 @@ class Timer:
 
     print_interval = 5
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.start = time.monotonic()
         self.next_print = self.start + Timer.print_interval
         self.first_print = True
 
-    def period(self):
+    def period(self) -> float:
         '''Return the float time in seconds since start'''
         return time.monotonic() - self.start
 
-    def hms(self):
+    def hms(self) -> str:
         '''Get the time since start in hh:mm:ss'''
         period = self.period()
         secs = int(period + 0.5)
@@ -32,7 +32,7 @@ class Timer:
         hours = mins // 60
         return '{:02}:{:02}:{:02}'.format(hours, mins % 60, secs % 60)
 
-    def check_time(self):
+    def check_time(self) -> bool:
         '''Return true if we have passed next_print.
 
         If so, increment next_print by print_interval unless the result would

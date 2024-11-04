@@ -7,8 +7,11 @@ This script provides common DV simulation specific utilities.
 """
 
 import re
-from collections import OrderedDict
-from typing import List, Tuple
+from io import TextIOWrapper
+from typing import Collection, Dict, List, Optional, Tuple
+
+MetricsAndValues = List[Collection[str]]
+Coverage = Tuple[MetricsAndValues, str]
 
 
 # Capture the summary results as a list of lists.
@@ -19,7 +22,7 @@ from typing import List, Tuple
 #   Final coverage total
 #
 # Raises the appropriate exception if the coverage summary extraction fails.
-def get_cov_summary_table(cov_report_txt, tool):
+def get_cov_summary_table(cov_report_txt: str, tool: str) -> Coverage:
     with open(cov_report_txt, 'r') as f:
         if tool == 'xcelium':
             return xcelium_cov_summary_table(f)
@@ -29,7 +32,7 @@ def get_cov_summary_table(cov_report_txt, tool):
 
 
 # Same desc as above, but specific to Xcelium and takes an opened input stream.
-def xcelium_cov_summary_table(buf):
+def xcelium_cov_summary_table(buf: TextIOWrapper) -> Coverage:
     for line in buf:
         if "name" in line:
             # Strip the line and remove the unwanted "* Covered" string.
@@ -38,7 +41,7 @@ def xcelium_cov_summary_table(buf):
             metrics[0] = 'Score'
 
             # Gather the list of metrics.
-            items = OrderedDict()
+            items: Dict[str, Dict[str, int]] = {}
             for metric in metrics:
                 items[metric] = {}
                 items[metric]['covered'] = 0
@@ -61,17 +64,22 @@ def xcelium_cov_summary_table(buf):
                         items['Score']['total'] += int(m.group(2))
             # Capture the percentages and the aggregate.
             values = []
-            cov_total = None
+            cov_total: Optional[str] = None
             for metric in items.keys():
                 if items[metric]['total'] == 0:
                     values.append("-- %")
                 else:
-                    value = items[metric]['covered'] / items[metric][
+                    flt_value = items[metric]['covered'] / items[metric][
                         'total'] * 100
-                    value = "{0:.2f} %".format(round(value, 2))
+                    value = "{0:.2f} %".format(round(flt_value, 2))
                     values.append(value)
                     if metric == 'Score':
                         cov_total = value
+
+            # A Score metric should be one key of items, and it will have
+            # caused us to put a percentage into cov_total.
+            assert cov_total is not None
+
             return [items.keys(), values], cov_total
 
     # If we reached here, then we were unable to extract the coverage.
@@ -79,7 +87,7 @@ def xcelium_cov_summary_table(buf):
 
 
 # Same desc as above, but specific to VCS and takes an opened input stream.
-def vcs_cov_summary_table(buf):
+def vcs_cov_summary_table(buf: TextIOWrapper) -> Coverage:
     for line in buf:
         match = re.match("total coverage summary", line, re.IGNORECASE)
         if match:
@@ -102,7 +110,7 @@ def vcs_cov_summary_table(buf):
     raise SyntaxError(f"Coverage data not found in {buf.name}!")
 
 
-def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
+def get_job_runtime(log_text: List[str], tool: str) -> Tuple[float, str]:
     """Returns the job runtime (wall clock time) along with its units.
 
     EDA tools indicate how long the job ran in terms of CPU time in the log
@@ -124,7 +132,7 @@ def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
                                   "extraction.")
 
 
-def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
+def vcs_job_runtime(log_text: List[str]) -> Tuple[float, str]:
     """Returns the VCS job runtime (wall clock time) along with its units.
 
     Search pattern example:
@@ -143,7 +151,7 @@ def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
     raise RuntimeError("Job runtime not found in the log.")
 
 
-def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
+def xcelium_job_runtime(log_text: List[str]) -> Tuple[float, str]:
     """Returns the Xcelium job runtime (wall clock time) along with its units.
 
     Search pattern example:
@@ -163,7 +171,7 @@ def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
     raise RuntimeError("Job runtime not found in the log.")
 
 
-def get_simulated_time(log_text: List, tool: str) -> Tuple[float, str]:
+def get_simulated_time(log_text: List[str], tool: str) -> Tuple[float, str]:
     """Returns the simulated time along with its units.
 
     EDA tools indicate how long the design was simulated for in the log file.
@@ -185,7 +193,7 @@ def get_simulated_time(log_text: List, tool: str) -> Tuple[float, str]:
                                   "extraction.")
 
 
-def xcelium_simulated_time(log_text: List) -> Tuple[float, str]:
+def xcelium_simulated_time(log_text: List[str]) -> Tuple[float, str]:
     """Returns the Xcelium simulated time along with its units.
 
     Search pattern example:
@@ -202,7 +210,7 @@ def xcelium_simulated_time(log_text: List) -> Tuple[float, str]:
     raise RuntimeError("Simulated time not found in the log.")
 
 
-def vcs_simulated_time(log_text: List) -> Tuple[float, str]:
+def vcs_simulated_time(log_text: List[str]) -> Tuple[float, str]:
     """Returns the VCS simulated time along with its units.
 
     Search pattern example:
