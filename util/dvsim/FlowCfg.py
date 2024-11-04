@@ -301,17 +301,17 @@ class FlowCfg():
                               "Found this instead:\n%s", str(item))
                     sys.exit(1)
 
-    def _do_override(self, ov_name, ov_value):
+    def _do_override(self, ov_name: str, ov_value: object) -> None:
         # Go through self attributes and replace with overrides
         if hasattr(self, ov_name):
             orig_value = getattr(self, ov_name)
-            if type(orig_value) == type(ov_value):
+            if isinstance(ov_value, type(orig_value)):
                 log.debug("Overriding \"%s\" value \"%s\" with \"%s\"",
                           ov_name, orig_value, ov_value)
                 setattr(self, ov_name, ov_value)
             else:
                 log.error("The type of override value \"%s\" for \"%s\" "
-                          "mismatches the type of original value \"%s\"",
+                          "doesn't match the type of original value \"%s\"",
                           ov_value, ov_name, orig_value)
                 sys.exit(1)
         else:
