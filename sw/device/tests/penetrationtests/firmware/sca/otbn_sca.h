@@ -91,6 +91,17 @@ status_t handle_otbn_pentest_init_keymgr(ujson_t *uj);
 status_t handle_otbn_sca_key_sideload_fvsr(ujson_t *uj);
 
 /**
+ * Command handler for the otbn.sca.rsa512_decrypt test.
+ *
+ * RSA512 decryption side-channel test. Get mod, exp, and msg from uJSON.
+ * Perform RSA512 decryption and send back the message.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj);
+
+/**
  * OTBN SCA command handler.
  *
  * Command handler for the OTBN SCA command.
