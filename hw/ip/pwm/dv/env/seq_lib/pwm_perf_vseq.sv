@@ -23,9 +23,8 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   // pwm_rand_output_vseq that uses low power mode less often)
   extern constraint low_power_c;
 
-  // Pick minimum or maximum phase delay and ensure heartbeat implies blink (overriding the
-  // constraint with the same name in pwm_rand_output_vseq that is more general about phase delay).
-  extern constraint rand_reg_param_c;
+  // Constrain phase delay to be minimal or maximal
+  extern constraint phase_delay_c;
 
   // The duty cycle and the threshold for the heartbeat blink counter should be minimal or maximal,
   // correspoding to both counters being minimal or both counters being maximal.
@@ -48,9 +47,7 @@ constraint pwm_perf_vseq::low_power_c {
   low_power dist {1'b1 :/ 1, 1'b0 :/ 1};
 }
 
-constraint pwm_perf_vseq::rand_reg_param_c {
-  rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
-  rand_reg_param.RsvParam == 0;
+constraint pwm_perf_vseq::phase_delay_c {
   rand_reg_param.PhaseDelay dist {MAX_16 :/ 1, 0 :/ 1};
 }
 
