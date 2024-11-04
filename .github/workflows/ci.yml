@@ -303,3 +303,55 @@ jobs:
           DOCKER_BUILD_RECORD_UPLOAD: false
         with:
           context: site/redirector/landing
+
+  sw_build:
+    name: Build all software
+    runs-on: ubuntu-22.04-vivado
+    timeout-minutes: 120
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for bitstream cache to work.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Check Bazel build graph
+        run: |
+          # Test the graph with both an empty and filled bitstream cache.
+          ./ci/scripts/test-empty-bitstream-cache.sh
+          ./bazelisk.sh build --nobuild //...
+      - name: Select software targets
+        run: |
+          target_pattern_file="$(mktemp)"
+          echo "target_pattern_file=${target_pattern_file}" >> "$GITHUB_ENV"
+
+          # Start with building the whole graph.
+          echo '//...' > "$target_pattern_file"
+          # Exclude some targets:
+          #
+          # 1. `//hw/...` is out of scope.
+          # 2. `//quality/...` is tested by the lint jobs.
+          # 3. `//sw/otbn/crypto/...` is tested by the OTBN job.
+          # 4. `//third_party/...` which is not our code.
+          printf "%s\n"             \
+            "-//hw/..."             \
+            "-//quality/..."        \
+            "-//sw/otbn/crypto/..." \
+            "-//third_party/..."    \
+            >> "$target_pattern_file"
+          # Exclude anything that requires a bitstream splice.
+          ./bazelisk.sh cquery                               \
+            --noinclude_aspects                              \
+            --output=starlark                                \
+            --starlark:expr='"-{}".format(target.label)'     \
+            --define DISABLE_VERILATOR_BUILD=true            \
+            -- "rdeps(//..., kind(bitstream_splice, //...))" \
+            >> "$target_pattern_file"
+      - name: Build software targets
+        run: |
+          # Build everything we selected, excluding some tags.
+          ./bazelisk.sh build                                \
+            --build_tests_only=false                         \
+            --define DISABLE_VERILATOR_BUILD=true            \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv \
+            --target_pattern_file="$target_pattern_file"
