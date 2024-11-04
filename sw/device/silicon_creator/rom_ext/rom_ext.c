@@ -50,6 +50,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
@@ -105,6 +106,13 @@ const epmp_region_t kFlashRegion = {
 // Certificate data.
 static uint8_t dice_certs_page[FLASH_CTRL_PARAM_BYTES_PER_PAGE];
 static hardened_bool_t dice_certs_page_dirty = kHardenedBoolFalse;
+static perso_tlv_cert_obj_t dice_cert_obj = {
+    .obj_p = dice_certs_page,        // Pointer to a perso TLV cert obj.
+    .obj_size = 0,                   // Perso TLV object size in bytes.
+    .cert_body_p = dice_certs_page,  // Pointer to the cert data in the TLV obj.
+    .cert_body_size = 0,             // Size of the cert data in bytes.
+    .name = {0},                     // Name of the cert.
+};
 static size_t dice_certs_page_offset = 0;
 static hmac_digest_t uds_pubkey_id;
 static hmac_digest_t cdi_0_pubkey_id;
@@ -314,14 +322,35 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
           (uintptr_t)_owner_virtual_start_address + CHIP_ROM_EXT_SIZE_MAX);
 }
 
+static size_t dice_certs_buffer_space_remaining(void) {
+  return FLASH_CTRL_PARAM_BYTES_PER_PAGE -
+         (size_t)(dice_cert_obj.obj_p - dice_certs_page);
+}
+
 /**
  * Increments the DICE cert page offset (ensuring to round up to the 64-bit
  * flash word offset to prevent potential ECC issues).
  */
-static void rom_ext_attestation_increment_cert_offset(size_t cert_size) {
-  HARDENED_CHECK_GE(cert_size, 4);
-  dice_certs_page_offset += util_size_to_words(cert_size) * sizeof(uint32_t);
+static rom_error_t rom_ext_attestation_increment_cert_offset(void) {
+  // Round up to next flash word for next perso TLV object offset.
+  HARDENED_CHECK_GE(dice_cert_obj.cert_body_size, 4);
+  dice_certs_page_offset +=
+      util_size_to_words(dice_cert_obj.obj_size) * sizeof(uint32_t);
   dice_certs_page_offset = util_round_up_to(dice_certs_page_offset, 3);
+
+  // Attempt to retrieve a perso TLV cert object.
+  rom_error_t err = perso_tlv_get_cert_obj(
+      dice_certs_page + dice_certs_page_offset,
+      FLASH_CTRL_PARAM_BYTES_PER_PAGE - dice_certs_page_offset, &dice_cert_obj);
+  if (err == kErrorPersoTlvCertObjNotFound) {
+    // If the cert is not found it is because we are running on a sim or FPGA
+    // platform, or the device has not yet been provisioned. Continue, and let
+    // the ROM_EXT generate an identity certificate for the current DICE stage.
+    return kErrorOk;
+  }
+  HARDENED_RETURN_IF_ERROR(err);
+
+  return kErrorOk;
 }
 
 OT_WARN_UNUSED_RESULT
@@ -336,12 +365,23 @@ static rom_error_t rom_ext_buffer_dice_certs_into_ram(void) {
     if (flash_ctrl_err_code.rd_err) {
       // If we encountered a read error, this could mean the certificate page
       // has been corrupted or is not provisioned yet. In this case, we mark the
-      // page as "dirty" and set the buffer to all 1s, which are the values read
-      // from a freshly erased flash page.
-      memset(dice_certs_page, UINT8_MAX, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
+      // page as "dirty" and set the buffer to all 0s.
+      memset(dice_certs_page, 0, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
       dice_certs_page_dirty = true;
       return kErrorOk;
     }
+    return err;
+  }
+
+  // Certificates are stored on flash info pages in perso LTV object form, see
+  // `sw/device/silicon_creator/manuf/base/perso_tlv_data.h` for more details.
+  // We must extract the offsets of the first DICE certificate (i.e., UDS).
+  err = perso_tlv_get_cert_obj(dice_certs_page, FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+                               &dice_cert_obj);
+  if (err == kErrorPersoTlvCertObjNotFound) {
+    // If the UDS cert is not found it is because we are running on a sim or
+    // FPGA platform, or the device has not yet been provisioned.
+    return kErrorOk;
   }
   return err;
 }
@@ -375,10 +415,9 @@ static rom_error_t rom_ext_attestation_silicon(void) {
       kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
       *kDiceKeyUds.keymgr_diversifier));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
-  uint32_t cert_size = 0;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      dice_certs_page, dice_certs_page_offset, (uint8_t *)uds_pubkey_id.digest,
-      &cert_valid, &cert_size));
+      dice_cert_obj.cert_body_p, 0, (uint8_t *)uds_pubkey_id.digest,
+      &cert_valid, /*out_cert_size=*/NULL));
   if (launder32(cert_valid) == kHardenedBoolFalse) {
     // The UDS key ID (and cert itself) should never change unless:
     // 1. there is a hardware issue, or
@@ -393,19 +432,21 @@ static rom_error_t rom_ext_attestation_silicon(void) {
     // fully, we expect the cert to be missing. In this case, we write a
     // 0-length (invalid) ASN.1 certificate header blob to avoid breaking tests
     // that run on these platforms.
-    if (cert_size == 0) {
+    if (dice_cert_obj.cert_body_size == 0) {
       dbg_printf("Writing empty UDS certificate ASN.1 blob.\r\n");
-      dice_certs_page[0] = 0x30;
-      dice_certs_page[1] = 0x82;
-      dice_certs_page[2] = 0x00;
-      dice_certs_page[3] = 0x00;
-      cert_size = 4;
+      uint8_t uds_cert[4] = {0x30, 0x82, 0x00, 0x00};
+      size_t cert_page_left = dice_certs_buffer_space_remaining();
+      HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+          "UDS", /*needs_endorsement=*/false, uds_cert, sizeof(uds_cert),
+          dice_cert_obj.obj_p, &cert_page_left));
       dice_certs_page_dirty = kHardenedBoolTrue;
+      // Reload the cert perso LTV object.
+      HARDENED_RETURN_IF_ERROR(perso_tlv_get_cert_obj(
+          dice_cert_obj.obj_p, dice_certs_buffer_space_remaining(),
+          &dice_cert_obj));
     }
   }
-
-  rom_ext_attestation_increment_cert_offset(cert_size);
-
+  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
   return kErrorOk;
 }
 
@@ -424,29 +465,33 @@ static rom_error_t rom_ext_attestation_creator(
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &cdi_0_pubkey_id, &curr_attestation_pubkey));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
-  uint32_t cert_size = 0;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      dice_certs_page, dice_certs_page_offset,
-      (uint8_t *)cdi_0_pubkey_id.digest, &cert_valid, &cert_size));
+      dice_cert_obj.cert_body_p, /*offset=*/0,
+      (uint8_t *)cdi_0_pubkey_id.digest, &cert_valid, /*out_cert_size=*/NULL));
   if (launder32(cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
-    uint32_t updated_cert_size = kCdi0MaxCertSizeBytes;
+    uint32_t cdi_0_cert_size = kCdi0MaxCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_0_cert_build(
         (hmac_digest_t *)boot_measurements.rom_ext.data,
         rom_ext_manifest->security_version, &cdi_0_key_ids,
-        &curr_attestation_pubkey, cdi_0_cert, &updated_cert_size));
+        &curr_attestation_pubkey, cdi_0_cert, &cdi_0_cert_size));
     // Update the cert page buffer.
-    memcpy(&dice_certs_page[dice_certs_page_offset], cdi_0_cert,
-           updated_cert_size);
+    size_t cert_page_left = dice_certs_buffer_space_remaining();
+    HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+        "CDI_0", /*needs_endorsement=*/false, cdi_0_cert, cdi_0_cert_size,
+        dice_cert_obj.obj_p, &cert_page_left));
     dice_certs_page_dirty = kHardenedBoolTrue;
-    rom_ext_attestation_increment_cert_offset(updated_cert_size);
+    // Reload the cert perso LTV object.
+    HARDENED_RETURN_IF_ERROR(perso_tlv_get_cert_obj(
+        dice_cert_obj.obj_p, dice_certs_buffer_space_remaining(),
+        &dice_cert_obj));
+    HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
     // If the CDI_0 cert is updated, it could overrun the CDI_1 cert, so we make
     // sure to update that as well by erasing the existing cert from the buffer.
-    memset(&dice_certs_page[dice_certs_page_offset], UINT8_MAX,
-           FLASH_CTRL_PARAM_BYTES_PER_PAGE - dice_certs_page_offset);
+    memset(dice_cert_obj.obj_p, 0, dice_certs_buffer_space_remaining());
   } else {
-    rom_ext_attestation_increment_cert_offset(cert_size);
+    HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
   }
   return kErrorOk;
 }
@@ -495,10 +540,9 @@ static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &cdi_1_pubkey_id, &curr_attestation_pubkey));
   hardened_bool_t cert_valid = kHardenedBoolFalse;
-  uint32_t cert_size = 0;
   HARDENED_RETURN_IF_ERROR(cert_x509_asn1_check_serial_number(
-      dice_certs_page, dice_certs_page_offset,
-      (uint8_t *)cdi_1_pubkey_id.digest, &cert_valid, &cert_size));
+      dice_cert_obj.cert_body_p, /*offset=*/0,
+      (uint8_t *)cdi_1_pubkey_id.digest, &cert_valid, /*out_cert_size=*/NULL));
   if (launder32(cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
@@ -507,16 +551,22 @@ static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
         (hmac_digest_t *)boot_measurements.bl0.data, &owner_measurement,
         owner_manifest->security_version, &cdi_1_key_ids,
         &curr_attestation_pubkey, cdi_1_cert, &cdi_1_cert_size));
-    memcpy(&dice_certs_page[dice_certs_page_offset], cdi_1_cert,
-           cdi_1_cert_size);
+    // Update the cert page buffer.
+    size_t cert_page_left = dice_certs_buffer_space_remaining();
+    HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+        "CDI_1", /*needs_endorsement=*/false, cdi_1_cert, cdi_1_cert_size,
+        dice_cert_obj.obj_p, &cert_page_left));
     dice_certs_page_dirty = kHardenedBoolTrue;
-    rom_ext_attestation_increment_cert_offset(cdi_1_cert_size);
+    // Reload the cert perso LTV object.
+    HARDENED_RETURN_IF_ERROR(perso_tlv_get_cert_obj(
+        dice_cert_obj.obj_p, dice_certs_buffer_space_remaining(),
+        &dice_cert_obj));
+    HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
     // If the CDI_1 cert is updated, it could be smaller than the previous CDI_1
     // cert, so we make sure to clear out the rest of the buffer.
-    memset(&dice_certs_page[dice_certs_page_offset], UINT8_MAX,
-           FLASH_CTRL_PARAM_BYTES_PER_PAGE - dice_certs_page_offset);
+    memset(dice_cert_obj.obj_p, 0, dice_certs_buffer_space_remaining());
   } else {
-    rom_ext_attestation_increment_cert_offset(cert_size);
+    HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
   }
 
   // TODO: elimiate this call when we've fully programmed keymgr and lock it.
