@@ -64,19 +64,17 @@ class pwm_base_vseq extends cip_base_vseq #(
     csr_update(ral.blink_param[channel]);
   endtask
 
-  // Summation of PARAM.X and PARAM.Y shouldn't go beyond MAX_16
-  // Summation of PARAM.y and DUTY_CYLE.A shouldn't go beyond MAX_16
-  // This is to prevent counter overflow
-  virtual task automatic rand_pwm_blink(int unsigned channel);
-    dc_blink_t duty_cycle, blink;
-
-    `DV_CHECK_FATAL(channel < NOutputs)
-    duty_cycle = `gmv(ral.duty_cycle[channel]);
-
+  // Return a randomized blink duty cycle where both fields are nonzero.
+  //
+  // Also ensure that the sum of A and B for the blink duty cycle fits in 16 bits. Similarly, ensure
+  // that BLINK.B + DUTY_CYCLE.A fits in 16 bits (taking the channel's duty cycle as an argument).
+  // This is to prevent counter overflow in both cases.
+  function dc_blink_t rand_pwm_blink(dc_blink_t duty_cycle);
+    dc_blink_t blink;
     blink.B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
     blink.A = $urandom_range(1, int'(MAX_16) - blink.B);
-    set_blink(channel, .A(blink.A), .B(blink.B));
-  endtask
+    return blink;
+  endfunction
 
   virtual task set_param(int unsigned channel, param_reg_t value);
     `DV_CHECK_FATAL(channel < NOutputs)
