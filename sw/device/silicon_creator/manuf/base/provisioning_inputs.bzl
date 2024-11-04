@@ -13,7 +13,6 @@ load(
 # these bazel targets.
 EARLGREY_OTP_CFGS = {
     "sival": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_consts",
-    "prodc": "//hw/ip/otp_ctrl/data/earlgrey_skus/prodc:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
 # A dictionary of SKU configurations that will be used to generate FT
@@ -47,14 +46,6 @@ EARLGREY_SKUS = {
             "//sw/device/silicon_creator/manuf/base:tpm_perso_fw_ext",
         ],
         "transport_image": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_prod_signed_slot_b",
-    },
-    # OTP Config: PRODC; DICE Certs: X.509; Additional Certs: None
-    "prodc": {
-        "otp": "prodc",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
-        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
-        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
-        "transport_image": "//sw/device/silicon_creator/rom_ext/prodc:rom_ext_fake_prod_signed_slot_b",
     },
 } | EXT_EARLGREY_SKUS
 

@@ -8,7 +8,6 @@ load(
     "CONST",
     "get_lc_items",
 )
-load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load(
     "//rules:otp.bzl",
     "STD_OTP_OVERLAYS",
@@ -30,6 +29,7 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -579,7 +579,6 @@ opentitan_test(
         {
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
             # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
             "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
         },
@@ -990,7 +989,6 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-            "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
         },
     ),
     silicon_owner = silicon_params(
