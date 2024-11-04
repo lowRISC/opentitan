@@ -29,7 +29,6 @@ endclass
 constraint pwm_rand_output_vseq::htbt_implies_blink_c {
   rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
   rand_reg_param.RsvParam == 0;
-  rand_reg_param.PhaseDelay inside {[0:MAX_16]};
 }
 
 constraint pwm_rand_output_vseq::low_power_c {
