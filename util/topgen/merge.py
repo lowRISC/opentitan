@@ -580,6 +580,10 @@ def _get_clock_group_name(clk: Union[str, OrderedDict],
     return group_name, src_name
 
 
+def is_unmanaged_clock(top: OrderedDict, clock: str):
+    return clock in top['unmanaged_clocks']._asdict()
+
+
 def extract_clocks(top: OrderedDict):
     '''Add clock exports to top and connections to endpoints
 
@@ -617,48 +621,51 @@ def extract_clocks(top: OrderedDict):
         ep_name = ep['name']
 
         for port, clk in ep['clock_srcs'].items():
-
             group_name, src_name = _get_clock_group_name(clk, ep_grp)
 
-            group = clocks.groups[group_name]
-
-            name = ''
-            hier_name = clocks.hier_paths[group.src]
-
-            if group.src == 'ext':
-                name = "{}_i".format(src_name)
-
-            elif group.unique:
-                # new unqiue clock name
-                name = "{}_{}".format(src_name, ep_name)
-
+            if is_unmanaged_clock(top, src_name):
+                # Unmanaged clocks have a simpler connection without clock groups
+                clock_connections[port] = top['unmanaged_clocks']._asdict()[clk].signal_name
             else:
-                # new group clock name
-                name = "{}_{}".format(src_name, group_name)
+                group = clocks.groups[group_name]
 
-            clk_name = "clk_" + name
+                name = ''
+                hier_name = clocks.hier_paths[group.src]
 
-            # add clock to a particular group
-            clk_sig = clocks.add_clock_to_group(group, clk_name, src_name)
-            clk_sig.add_endpoint(ep_name, port)
+                if group.src == 'ext':
+                    name = "{}_i".format(src_name)
 
-            # add clock connections
-            clock_connections[port] = hier_name + clk_name
+                elif group.unique:
+                    # new unqiue clock name
+                    name = "{}_{}".format(src_name, ep_name)
 
-            # clocks for this module are exported
-            for intf in export_if:
-                log.info("{} export clock name is {}".format(ep_name, name))
+                else:
+                    # new group clock name
+                    name = "{}_{}".format(src_name, group_name)
 
-                # create dict entry if it does not exit
-                if intf not in exported_clks:
-                    exported_clks[intf] = OrderedDict()
+                clk_name = "clk_" + name
 
-                # if first time encounter end point, declare
-                if ep_name not in exported_clks[intf]:
-                    exported_clks[intf][ep_name] = []
+                # add clock to a particular group
+                clk_sig = clocks.add_clock_to_group(group, clk_name, src_name)
+                clk_sig.add_endpoint(ep_name, port)
 
-                # append clocks
-                exported_clks[intf][ep_name].append(name)
+                # add clock connections
+                clock_connections[port] = hier_name + clk_name
+
+                # clocks for this module are exported
+                for intf in export_if:
+                    log.info("{} export clock name is {}".format(ep_name, name))
+
+                    # create dict entry if it does not exit
+                    if intf not in exported_clks:
+                        exported_clks[intf] = OrderedDict()
+
+                    # if first time encounter end point, declare
+                    if ep_name not in exported_clks[intf]:
+                        exported_clks[intf][ep_name] = []
+
+                    # append clocks
+                    exported_clks[intf][ep_name].append(name)
 
         # Add to endpoint structure
         ep['clock_connections'] = clock_connections
@@ -841,19 +848,32 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
         # 1) figure out the clock group assignment of the primary clock
         # Get the full clock name and split the hierarchy path, getting the last element
         clk = module['clock_connections'][block_clock.clock]
-        clk = clk.split(".")[-1]
-
-        # Discover what clock group we are related to
-        clock_group = clock_groups[clk]
+        # Unmanaged clocks are not part of the LPGs. Unmanaged clocks have the input signal
+        # identifier ('_i') directly in the signal name. Determine if that clock name is an
+        # unmanaged clock
+        unmanaged_clock = False
+        for clock in top['unmanaged_clocks']._asdict().values():
+            if clock.signal_name == clk:
+                unmanaged_clock = True
+                break
 
         # 2-3) get reset info
         reset_name = primary_reset['name']
         reset_domain = primary_reset['domain']
 
-        # using this info, we can create an LPG identifier
-        # and uniquify it via a dict.
-        lpg_name = '_'.join([clock_group.name, reset_name, reset_domain])
-        unique_cg = clock_group.unique and clock_group.sw_cg != "no"
+        if unmanaged_clock:
+            lpg_name = '_'.join([clk, reset_name, reset_domain])
+            unique_cg = False
+        else:
+            clk = clk.split(".")[-1]
+
+            # Discover what clock group we are related to
+            clock_group = clock_groups[clk]
+
+            # using this info, we can create an LPG identifier
+            # and uniquify it via a dict.
+            lpg_name = '_'.join([clock_group.name, reset_name, reset_domain])
+            unique_cg = clock_group.unique and clock_group.sw_cg != "no"
 
         # if clock group is "unique", add some uniquification to the tag
         lpg_name = f"{module['name']}_{lpg_name}" if unique_cg else lpg_name
@@ -865,8 +885,9 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
             clock = module['clock_connections'][block_clock.clock]
             top['alert_lpgs'].append({
                 'name': lpg_name,
-                'clock_group': clock_group,
+                'clock_group': None if unmanaged_clock else clock_group,
                 'clock_connection': clock,
+                'unmanaged_clock': unmanaged_clock,
                 'reset_connection': primary_reset
             })
             num_lpg += 1

@@ -33,7 +33,7 @@ from topgen import intermodule as im
 from topgen import lib as lib
 from topgen import merge_top, search_ips, secure_prng, validate_top
 from topgen.c_test import TopGenCTest
-from topgen.clocks import Clocks, ClockSignal
+from topgen.clocks import Clocks, ClockSignal, UnmanagedClocks
 from topgen.gen_dv import gen_dv
 from topgen.gen_top_docs import gen_top_docs
 from topgen.merge import connect_clocks, create_alert_lpgs, extract_clocks
@@ -704,6 +704,7 @@ def _process_top(
     # ip.hjson information.  All the information is embedded within
     # the top hjson file
     topcfg["clocks"] = Clocks(topcfg["clocks"])
+    topcfg['unmanaged_clocks'] = UnmanagedClocks(topcfg['unmanaged_clocks'])
     extract_clocks(topcfg)
     generate_clkmgr(topcfg, out_path)
 

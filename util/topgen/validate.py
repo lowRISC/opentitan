@@ -49,6 +49,7 @@ top_required = {
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
     'pinmux': ['g', 'pinmux configuration'],
+    'unmanaged_clocks': ['l', 'List of unmanaged external clocks']
 }
 
 top_optional = {
@@ -634,13 +635,15 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
+    unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['name'].lower()
         log.info("Checking clock/resets for %s" % ipcfg_name)
         error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets)
-        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs)
+        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
+                                unmanaged_clock_srcs)
 
         if error:
             log.error("module clock/reset checking failed")
@@ -653,7 +656,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
                                 reset_nets, "xbar")
         error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                clock_srcs, "xbar")
+                                clock_srcs, unmanaged_clock_srcs, "xbar")
 
         if error:
             log.error("xbar clock/reset checking failed")
@@ -748,7 +751,7 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 # For each defined clock_src in top*.hjson, there exists a defined port at the destination
 # and defined clock source
 # There are the same number of defined connections as there are ports
-def validate_clock(top, inst, clock_srcs, prefix=""):
+def validate_clock(top, inst, clock_srcs, unmanaged_clock_srcs, prefix=""):
     # Gather inst port list
     error = 0
 
@@ -782,7 +785,7 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
     for port, net in top['clock_srcs'].items():
         net_name = net['clock'] if isinstance(net, Dict) else net
 
-        if net_name not in clock_srcs:
+        if net_name not in clock_srcs and net_name not in unmanaged_clock_srcs:
             missing_net.append(net)
 
     if missing_net:
