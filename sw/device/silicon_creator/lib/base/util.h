@@ -12,6 +12,23 @@
 extern "C" {
 #endif
 
+enum {
+  /**
+   * Size of an ECDSA P256 signature component in bits.
+   */
+  kUtilEcdsaP256SignatureComponentBits = 256,
+  /**
+   * Size of an ECDSA P256 signature component in bytes.
+   */
+  kUtilEcdsaP256SignatureComponentBytes =
+      kUtilEcdsaP256SignatureComponentBits / 8,
+  /**
+   * Size of an ECDSA P256 signature component in 32b words.
+   */
+  kUtilEcdsaP256SignatureComponentWords =
+      kUtilEcdsaP256SignatureComponentBytes / sizeof(uint32_t),
+};
+
 /**
  * Rounds up the passed value to get it aligned to the requested number of bits.
  *
@@ -45,6 +62,16 @@ void util_reverse_bytes(void *buf, size_t num_bytes);
  * byte in.
  */
 void util_hexdump_byte(uint8_t byte, uint8_t *str);
+
+/**
+ * Convert the calculated signature (r,s) from little endian to big endian
+ *
+ * @param r ECDSA signature r value
+ * @param s ECDSA signature s value
+ */
+void util_p256_signature_le_to_be_convert(
+    uint32_t r[kUtilEcdsaP256SignatureComponentWords],
+    uint32_t s[kUtilEcdsaP256SignatureComponentWords]);
 
 #ifdef __cplusplus
 }
