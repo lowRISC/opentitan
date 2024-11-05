@@ -40,9 +40,20 @@ module pwm_chan #(
   logic unused_sum;
   logic [CntDw-1:0] blink_sum;
   assign {unused_sum, blink_sum} = blink_param_x_i + blink_param_y_i + 1'b1;
-  assign blink_ctr_d = (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) ? '0 :
-                       ((blink_ctr_q == blink_sum[CntDw-1:0]) && cycle_end_i)
-                       ? '0 : (cycle_end_i) ? blink_ctr_q + 1'b1 : blink_ctr_q;
+
+  always_comb begin
+    blink_ctr_d = blink_ctr_q;
+
+    if (!(blink_en_i && !htbt_en_i) || clr_blink_cntr_i) begin
+      blink_ctr_d = 0;
+    end else if (cycle_end_i) begin
+      if (blink_ctr_q == blink_sum[CntDw-1:0]) begin
+        blink_ctr_d = 0;
+      end else begin
+        blink_ctr_d = blink_ctr_q + 1;
+      end
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -68,9 +79,19 @@ module pwm_chan #(
   logic dc_htbt_end;
   logic dc_htbt_end_q;
 
-  assign htbt_ctr_d = (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) ? '0 :
-                      ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? '0 :
-                      (cycle_end_i) ? (htbt_ctr_q + 1'b1) : htbt_ctr_q;
+  always_comb begin
+    htbt_ctr_d = htbt_ctr_q;
+
+    if (!(blink_en_i && htbt_en_i) || clr_blink_cntr_i) begin
+      htbt_ctr_d = 0;
+    end else if (cycle_end_i) begin
+      if (htbt_ctr_q == blink_param_x_i) begin
+        htbt_ctr_d = 0;
+      end else begin
+        htbt_ctr_d = htbt_ctr_q + 1;
+      end
+    end
+  end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -122,11 +143,21 @@ module pwm_chan #(
   logic pattern_repeat;
   assign pattern_repeat = (~pos_htbt & ~neg_htbt);
   localparam int CntExtDw = CntDw + 1;
-  assign {dc_wrap, dc_htbt_d} = !(htbt_ctr_q == blink_param_x_i) ? (CntExtDw)'(dc_htbt_q) :
-                                ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) ?
-                                (CntExtDw)'(duty_cycle_a_i) : (htbt_direction) ?
-                                (CntExtDw)'(dc_htbt_q) - (CntExtDw)'(blink_param_y_i) - 1'b1 :
-                                (CntExtDw)'(dc_htbt_q) + (CntExtDw)'(blink_param_y_i) + 1'b1;
+  always_comb begin
+    dc_wrap   = 1'b0;
+    dc_htbt_d = dc_htbt_q;
+
+    if (htbt_ctr_q == blink_param_x_i) begin
+      if ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) begin
+        dc_htbt_d = duty_cycle_a_i;
+      end else if (htbt_direction) begin
+        {dc_wrap, dc_htbt_d} = (CntExtDw)'(dc_htbt_q) - (CntExtDw)'(blink_param_y_i) - 1'b1;
+      end else begin
+        {dc_wrap, dc_htbt_d} = (CntExtDw)'(dc_htbt_q) + (CntExtDw)'(blink_param_y_i) + 1'b1;
+      end
+    end
+  end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dc_wrap_q <= 1'b0;
