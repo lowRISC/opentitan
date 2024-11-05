@@ -141,17 +141,17 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otbn/lint/{tool}"
              },
-            //  {    name: otp_ctrl
-            //       fusesoc_core: lowrisc:ip:otp_ctrl
-            //       import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-            //       rel_path: "hw/ip/otp_ctrl/lint/{tool}"
-            //       overrides: [
-            //         {
-            //           name: design_level
-            //           value: "top"
-            //         }
-            //       ]
-            //  },
+             {    name: otp_ctrl
+                  fusesoc_core: lowrisc:ip:otp_ctrl_darjeeling
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/otp_ctrl_darjeeling/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
             //  {    name: pinmux
             //       fusesoc_core: lowrisc:ip:pinmux
             //       import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
