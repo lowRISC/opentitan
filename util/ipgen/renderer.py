@@ -61,10 +61,15 @@ class IpTemplateRendererBase:
             assert template_param.param_type in TemplateParameter.VALID_PARAM_TYPES
             try:
                 if template_param.param_type == 'string':
-                    val_typed = str(val)  # type: Union[int, str, object]
+                    val_typed = str(val)  # type: Union[bool, int, str, object]
                 elif template_param.param_type == 'int':
                     if not isinstance(val, int):
                         val_typed = int(val, 0)
+                    else:
+                        val_typed = val
+                elif template_param.param_type == 'bool':
+                    if not isinstance(val, bool):
+                        val_typed = bool(val, False)
                     else:
                         val_typed = val
                 elif template_param.param_type == 'object':
