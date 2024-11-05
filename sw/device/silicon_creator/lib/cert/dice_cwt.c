@@ -8,12 +8,10 @@
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/cert/dice.h"
-#include "sw/device/silicon_creator/lib/cert/dice_keys.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
