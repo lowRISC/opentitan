@@ -122,7 +122,7 @@ def _opentitan_top_dt_gen(ctx):
     inputs = [top.hjson]
     ips = []
     for (ipname, hjson) in top.ip_hjson.items():
-        if hjson != None and (ctx.attr.gen_top or ipname in ctx.attr.gen_ips):
+        if ipname in ctx.attr.gen_ips:
             inputs.append(hjson)
             ips.extend(["-i", hjson.path])
 
@@ -132,7 +132,7 @@ def _opentitan_top_dt_gen(ctx):
         "--outdir",
         outdir,
     ]
-    arguments.append("--gen-top" if ctx.attr.gen_top else "--gen-ip")
+    arguments.append("--gen-ip")
     for ipname in ctx.attr.gen_ips:
         if ipname not in top.ip_hjson:
             fail("Cannot generate IP headers: top {} does not contain IP {}".format(top.name, ipname))
@@ -172,7 +172,7 @@ opentitan_top_dt_gen = rule(
     },
 )
 
-def opentitan_ip_dt_header(name, top, ip, deps = None):
+def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = []):
     """
     Generate the C header for an IP block as used in a top. This library is created to the
     provided top and can have additional dependencies. The top target must export an
@@ -181,6 +181,8 @@ def opentitan_ip_dt_header(name, top, ip, deps = None):
     """
     if deps == None:
         deps = []
+    if target_compatible_with == None:
+        target_compatible_with = []
 
     opentitan_top_dt_gen(
         name = "{}_gen".format(name),
@@ -189,6 +191,7 @@ def opentitan_ip_dt_header(name, top, ip, deps = None):
         output_groups = {
             "hdr": ["dt_{}.h".format(ip)],
         },
+        target_compatible_with = target_compatible_with,
     )
 
     native.filegroup(

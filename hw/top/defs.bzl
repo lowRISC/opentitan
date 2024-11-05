@@ -24,6 +24,25 @@ def _all_ip_names():
 
 ALL_IP_NAMES = _all_ip_names()
 
+def opentitan_if_ip(ip, obj, default):
+    """
+    Return a select expression that evaluate to `obj` if the ip is
+    supported by the active top, and `default` otherwose.
+    """
+    compatible_tops = []
+    for top in ALL_TOPS:
+        for _ip in top.ips:
+            if _ip.name == ip:
+                compatible_tops.append(top.name)
+                break
+
+    return select({
+        "//hw/top:is_{}".format(top): obj
+        for top in compatible_tops
+    } | {
+        "//conditions:default": default,
+    })
+
 def opentitan_require_ip(ip):
     """
     Return a value that can be used with `target_compatible_with` to
@@ -35,16 +54,4 @@ def opentitan_require_ip(ip):
       target_compatible_with = opentitan_require_ip("uart"),
     )
     """
-    compatible_tops = []
-    for top in ALL_TOPS:
-        for _ip in top.ips:
-            if _ip.name == ip:
-                compatible_tops.append(top.name)
-                break
-
-    return select({
-        "//hw/top:is_{}".format(top): []
-        for top in compatible_tops
-    } | {
-        "//conditions:default": ["@platforms//:incompatible"],
-    })
+    return opentitan_if_ip(ip, [], ["@platforms//:incompatible"])

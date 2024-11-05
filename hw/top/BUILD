@@ -4,12 +4,14 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//rules/opentitan:hw.bzl", "select_top", "select_top_lib")
+load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
+    "opentitan_ip_dt_header",
     "opentitan_ip_rust_header",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentitan_require_ip")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_require_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -86,3 +88,26 @@ alias(
     )
     for ip in ALL_IP_NAMES
 ]
+
+[
+    opentitan_ip_dt_header(
+        name = "dt_{}".format(ip),
+        ip = ip,
+        target_compatible_with = opentitan_require_ip(ip),
+        top = ":top_desc",
+    )
+    for ip in ALL_IP_NAMES
+]
+
+cc_library(
+    name = "dt_headers",
+    srcs = [],
+    deps = flatten([
+        opentitan_if_ip(
+            ip,
+            ["dt_{}".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+)
