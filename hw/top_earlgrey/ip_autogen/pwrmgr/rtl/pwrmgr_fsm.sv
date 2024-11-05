@@ -7,12 +7,7 @@
 
 `include "prim_assert.sv"
 
-module pwrmgr_fsm
-  import pwrmgr_pkg::*;
-  import pwrmgr_reg_pkg::*;
-#(
-  parameter bit PwrFsmWaitForExtRst = 0
-) (
+module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
   input clk_i,
   input rst_ni,
   input clk_slow_i,
@@ -38,9 +33,6 @@ module pwrmgr_fsm
   output logic abort_o,
   output logic clr_hint_o,
   output logic clr_cfg_lock_o,
-  input  logic int_reset_req_i, // internally generated reset request.
-                                // Send to platform to assert reset
-  input  logic ext_reset_req_i, // Internal Req held until ext reset deasserts
 
   // rstmgr
   output pwr_rst_req_t pwr_rst_o,
@@ -126,8 +118,6 @@ module pwrmgr_fsm
   logic otp_init;
   logic lc_init;
   logic low_power_q, low_power_d;
-  logic ext_rst_req_d, ext_rst_req_q;
-  logic ext_rst_pending_q;
 
   assign pd_n_rsts_asserted = pwr_rst_i.rst_lc_src_n[PowerDomains-1:OffDomainSelStart] == '0 &
                               pwr_rst_i.rst_sys_src_n[PowerDomains-1:OffDomainSelStart] == '0;
@@ -162,34 +152,6 @@ module pwrmgr_fsm
   // when the reset cause is something else, it is invalid
   assign reset_valid = reset_cause_q == LowPwrEntry ? main_pd_ni | pd_n_rsts_asserted :
                        reset_cause_q == HwReq       ? all_rsts_asserted : 1'b0;
-
-  // Provide the ability to control the reset to OpenTitan RoT from an external source.  The logic
-  // below makes sure that when an internal reset request is generated, it is held high until the
-  // external SoC reset logic asserts and then deasserts deasserts the external reset signal.  The
-  // pwrmgr fast FSM is held in FastPwrStateResetWait state until the external reset deasserts.
-  // This ensure that the OT reset exit is synchronized with the rest of the SoC & platform.
-  if (PwrFsmWaitForExtRst) begin : gen_wait2ext_rst
-
-    assign ext_rst_req_d = ext_reset_req_i;
-
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        ext_rst_pending_q <= 1'b0;
-        ext_rst_req_q     <= 1'b0;
-      end else begin
-        ext_rst_req_q <= ext_rst_req_d;
-        if (ext_rst_pending_q && !ext_rst_req_d && ext_rst_req_q) begin
-          ext_rst_pending_q <= 1'b0;
-        end else if (int_reset_req_i) begin
-          ext_rst_pending_q <= 1'b1;
-        end
-      end
-    end
-  end else begin : gen_no_wait2ext_rst
-    assign ext_rst_pending_q = 1'b0;
-    assign ext_rst_req_q     = 1'b0;
-    assign ext_rst_req_d     = 1'b0;
-  end : gen_no_wait2ext_rst
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -509,9 +471,7 @@ module pwrmgr_fsm
         // cleared before proceeding.  This also implies if the system is under a persistent
         // glitch, or if someone just turned off the power before pwrmgr turns it off itself,
         // we will stay stuck here and perpetually hold the system in reset.
-        // Need to hold in reset until external reset deasserts (i.e. ext_rst_pending_q goes low)
-        if (reset_valid && !reset_reqs_i[ResetMainPwrIdx]
-                        && !ext_rst_pending_q ) begin
+        if (reset_valid && !reset_reqs_i[ResetMainPwrIdx]) begin
           state_d = FastPwrStateLowPower;
         end
       end

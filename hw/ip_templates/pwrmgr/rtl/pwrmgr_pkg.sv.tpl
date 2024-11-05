@@ -154,6 +154,7 @@ package pwrmgr_pkg;
   typedef struct packed {
     logic ndmreset_req;
   } pwrmgr_cpu_t;
+% if wait_for_external_reset:
 
   typedef struct packed {
     lc_ctrl_pkg::lc_tx_t                                           cpu_fetch_en;
@@ -164,6 +165,7 @@ package pwrmgr_pkg;
     logic                                                          light_reset_req;
     pwr_clk_rsp_t                                                  clk_status;
   } pwr_boot_status_t;
+% endif
 
   // exported resets
 
@@ -203,7 +205,7 @@ package pwrmgr_pkg;
 
   // fast fsm state enum
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 19 -n 12 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 19 -n 12 ${"\\"}
   //      -s 3096160381 --language=sv
   //
   // Hamming distance histogram:
@@ -251,7 +253,7 @@ package pwrmgr_pkg;
   } fast_pwr_state_e;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 12 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 12 -n 10 ${"\\"}
   //      -s 1726685338 --language=sv
   //
   // Hamming distance histogram:
