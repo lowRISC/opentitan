@@ -772,7 +772,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+        "//hw/top:pinmux_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
