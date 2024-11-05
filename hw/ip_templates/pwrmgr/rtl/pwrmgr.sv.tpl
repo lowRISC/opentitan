@@ -11,8 +11,7 @@ module pwrmgr
   import pwrmgr_pkg::*;
   import pwrmgr_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit PwrFsmWaitForExtRst = 0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   // Clocks and resets
   input clk_slow_i,
@@ -62,8 +61,9 @@ module pwrmgr
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
-
+% if wait_for_external_reset:
   output pwr_boot_status_t    boot_status_o,
+% endif
   // peripherals wakeup and reset requests
   input  [NumWkups-1:0]       wakeups_i,
   input  [NumRstReqs-1:0]     rstreqs_i,
@@ -90,11 +90,6 @@ module pwrmgr
   output intr_wakeup_o
 
 );
-
-  logic   internal_reset_req;
-  logic   strap_sampled;
-  logic   ext_reset_req;
-
   ////////////////////////////////////////////////////
   // Input handling                                 //
   ////////////////////////////////////////////////////
@@ -161,25 +156,25 @@ module pwrmgr
   // cycles in the fast fsm to generate outputs. However, esc_rst_req_q can be dropped due to
   // rst_lc_n, which will cause slow_peri_reqs_masked.rstreqs[ResetEscIdx] to drop.
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
-          esc_rst_req_q |-> ##[1:5] !esc_rst_req_q || slow_peri_reqs_masked.rstreqs[ResetEscIdx],
+          esc_rst_req_q |-> ${"##"}[1:5] !esc_rst_req_q || slow_peri_reqs_masked.rstreqs[ResetEscIdx],
           clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSecCmFsmEscToResetReq_A,
           slow_peri_reqs_masked.rstreqs[ResetEscIdx] |->
-          ##[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] || u_fsm.reset_reqs_i[ResetEscIdx],
+          ${"##"}[1:4] !slow_peri_reqs_masked.rstreqs[ResetEscIdx] || u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `else
   `ASSERT(PwrmgrSecCmEscToSlowResetReq_A,
-          esc_rst_req_d |-> ##[2:3] (
+          esc_rst_req_d |-> ${"##"}[2:3] (
               (!esc_rst_req_d && lc_ctrl_pkg::lc_tx_test_false_loose(fetch_en_o)) ||
               slow_peri_reqs_masked.rstreqs[ResetEscIdx]
           ), clk_slow_i, !rst_slow_ni)
   `ASSERT(PwrmgrSlowResetReqToFsmResetReq_A,
-          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ##1 u_fsm.reset_reqs_i[ResetEscIdx],
+          slow_peri_reqs_masked.rstreqs[ResetEscIdx] |-> ${"##"}1 u_fsm.reset_reqs_i[ResetEscIdx],
           clk_i, !rst_ni)
 `endif
 
   `ASSERT(PwrmgrSecCmEscToLCReset_A, u_fsm.reset_reqs_i[ResetEscIdx] &&
-          u_fsm.state_q == FastPwrStateActive |-> ##4 pwr_rst_o.rst_lc_req == 2'b11,
+          u_fsm.state_q == FastPwrStateActive |-> ${"##"}4 pwr_rst_o.rst_lc_req == 2'b11,
           clk_i, !rst_ni)
 
   always_ff @(posedge clk_lc or negedge rst_lc_n) begin
@@ -515,8 +510,12 @@ module pwrmgr
                                           {NumDebugRstReqs{1'b1}},
                                           {NumIntRstReqs{1'b1}},
                                           slow_reset_en};
-
+% if wait_for_external_reset:
   // TODO(#22711): Make this work also when `rstreqs` is structured differently.
+  logic strap_sampled;
+  logic internal_reset_req;
+  logic ext_reset_req;
+
   assign internal_reset_req            =|(
                                          slow_peri_reqs.rstreqs &
                                          {{NumSwRstReq{1'b1}},      // SW driven reset
@@ -530,6 +529,7 @@ module pwrmgr
   // The MSB of `slow_peri_reqs.rstreqs` is the external reset request. We want it to always
   // propagate, in order to continue from the Reset Wait state in the fast FSM.
   assign ext_reset_req              = slow_peri_reqs.rstreqs[NumRstReqs-1];
+% endif
 
   for (genvar i = 0; i < NumWkups; i++) begin : gen_wakeup_status
     assign hw2reg.wake_status[i].de = 1'b1;
@@ -602,9 +602,7 @@ module pwrmgr
   assign low_power_hint = reg2hw.control.low_power_hint.q == LowPower;
   assign low_power_entry = core_sleeping & low_power_hint;
 
-  pwrmgr_fsm #(
-    .PwrFsmWaitForExtRst(PwrFsmWaitForExtRst)
-  ) u_fsm (
+  pwrmgr_fsm u_fsm (
     .clk_i,
     .rst_ni,
     .clk_slow_i,
@@ -632,8 +630,10 @@ module pwrmgr
     .fall_through_o    (low_power_fall_through),
     .abort_o           (low_power_abort),
     .clr_hint_o        (clr_hint),
+% if wait_for_external_reset:
     .int_reset_req_i   (internal_reset_req),
     .ext_reset_req_i   (ext_reset_req),
+% endif
 
     // rstmgr
     .pwr_rst_o         (pwr_rst_o),
@@ -667,7 +667,11 @@ module pwrmgr
 
     // pinmux and other peripherals
     .strap_o,
+  % if wait_for_external_reset:
     .strap_sampled_o   (strap_sampled),     // to debug monitoring logic
+  % else:
+    .strap_sampled_o   (),
+  % endif
     .low_power_o
   );
 
@@ -718,6 +722,7 @@ module pwrmgr
     .intr_o                 (intr_wakeup_o)
   );
 
+% if wait_for_external_reset:
   ////////////////////////////////////////////////////
   // Routing status signal outputs for monitoring
   ////////////////////////////////////////////////////
@@ -728,6 +733,7 @@ module pwrmgr
   assign boot_status_o.clk_status      = pwr_clk_i;
   assign boot_status_o.light_reset_req = internal_reset_req;
   assign boot_status_o.strap_sampled   = strap_sampled;
+% endif
 
   ////////////////////////////
   ///  Assertions

@@ -18,7 +18,9 @@ module tb;
   wire clk_lc, rst_lc_n;
   wire clk_slow, rst_slow_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+% if wait_for_external_reset:
   wire int_reset_req;
+% endif
 
   // interfaces
   clk_rst_if clk_rst_if (
@@ -48,7 +50,9 @@ module tb;
   );
 
   assign interrupts[0] = pwrmgr_if.intr_wakeup;
+% if wait_for_external_reset:
   assign int_reset_req = tb.dut.internal_reset_req;
+% endif
 
   pwrmgr_if pwrmgr_if (
     .clk,
@@ -97,8 +101,12 @@ module tb;
 
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
+% if wait_for_external_reset:
     // TOOD(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
     .rstreqs_i ({int_reset_req, pwrmgr_if.rstreqs_i[0]}),
+% else:
+    .rstreqs_i (pwrmgr_if.rstreqs_i),
+% endif
     .ndmreset_req_i(pwrmgr_if.cpu_i.ndmreset_req),
 
     .lc_dft_en_i     (pwrmgr_if.lc_dft_en),

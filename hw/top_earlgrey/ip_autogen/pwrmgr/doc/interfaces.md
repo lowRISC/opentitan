@@ -10,29 +10,28 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct             | Type    | Act   |   Width | Description   |
-|:---------------|:----------------------------|:--------|:------|--------:|:--------------|
-| boot_status    | pwrmgr_pkg::pwr_boot_status | uni     | req   |       1 |               |
-| pwr_ast        | pwrmgr_pkg::pwr_ast         | req_rsp | req   |       1 |               |
-| pwr_rst        | pwrmgr_pkg::pwr_rst         | req_rsp | req   |       1 |               |
-| pwr_clk        | pwrmgr_pkg::pwr_clk         | req_rsp | req   |       1 |               |
-| pwr_otp        | pwrmgr_pkg::pwr_otp         | req_rsp | req   |       1 |               |
-| pwr_lc         | pwrmgr_pkg::pwr_lc          | req_rsp | req   |       1 |               |
-| pwr_flash      | pwrmgr_pkg::pwr_flash       | uni     | rcv   |       1 |               |
-| esc_rst_tx     | prim_esc_pkg::esc_tx        | uni     | rcv   |       1 |               |
-| esc_rst_rx     | prim_esc_pkg::esc_rx        | uni     | req   |       1 |               |
-| pwr_cpu        | pwrmgr_pkg::pwr_cpu         | uni     | rcv   |       1 |               |
-| wakeups        | logic                       | uni     | rcv   |       6 |               |
-| rstreqs        | logic                       | uni     | rcv   |       2 |               |
-| ndmreset_req   | logic                       | uni     | rcv   |       1 |               |
-| strap          | logic                       | uni     | req   |       1 |               |
-| low_power      | logic                       | uni     | req   |       1 |               |
-| rom_ctrl       | rom_ctrl_pkg::pwrmgr_data   | uni     | rcv   |       1 |               |
-| fetch_en       | lc_ctrl_pkg::lc_tx          | uni     | req   |       1 |               |
-| lc_dft_en      | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| lc_hw_debug_en | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| sw_rst_req     | prim_mubi_pkg::mubi4        | uni     | rcv   |       1 |               |
-| tl             | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name      | Package::Struct           | Type    | Act   |   Width | Description   |
+|:---------------|:--------------------------|:--------|:------|--------:|:--------------|
+| pwr_ast        | pwrmgr_pkg::pwr_ast       | req_rsp | req   |       1 |               |
+| pwr_rst        | pwrmgr_pkg::pwr_rst       | req_rsp | req   |       1 |               |
+| pwr_clk        | pwrmgr_pkg::pwr_clk       | req_rsp | req   |       1 |               |
+| pwr_otp        | pwrmgr_pkg::pwr_otp       | req_rsp | req   |       1 |               |
+| pwr_lc         | pwrmgr_pkg::pwr_lc        | req_rsp | req   |       1 |               |
+| pwr_flash      | pwrmgr_pkg::pwr_flash     | uni     | rcv   |       1 |               |
+| esc_rst_tx     | prim_esc_pkg::esc_tx      | uni     | rcv   |       1 |               |
+| esc_rst_rx     | prim_esc_pkg::esc_rx      | uni     | req   |       1 |               |
+| pwr_cpu        | pwrmgr_pkg::pwr_cpu       | uni     | rcv   |       1 |               |
+| wakeups        | logic                     | uni     | rcv   |       6 |               |
+| rstreqs        | logic                     | uni     | rcv   |       2 |               |
+| ndmreset_req   | logic                     | uni     | rcv   |       1 |               |
+| strap          | logic                     | uni     | req   |       1 |               |
+| low_power      | logic                     | uni     | req   |       1 |               |
+| rom_ctrl       | rom_ctrl_pkg::pwrmgr_data | uni     | rcv   |       1 |               |
+| fetch_en       | lc_ctrl_pkg::lc_tx        | uni     | req   |       1 |               |
+| lc_dft_en      | lc_ctrl_pkg::lc_tx        | uni     | rcv   |       1 |               |
+| lc_hw_debug_en | lc_ctrl_pkg::lc_tx        | uni     | rcv   |       1 |               |
+| sw_rst_req     | prim_mubi_pkg::mubi4      | uni     | rcv   |       1 |               |
+| tl             | tlul_pkg::tl              | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 

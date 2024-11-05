@@ -52,5 +52,11 @@
       type: "int"
       default: "2"
     }
+    {
+      name: "wait_for_external_reset"
+      desc: "Wait for external reset requests"
+      type: "bool"
+      default: false
+    }
   ]
 }
