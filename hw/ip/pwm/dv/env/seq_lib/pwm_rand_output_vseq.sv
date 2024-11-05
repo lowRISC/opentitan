@@ -44,20 +44,14 @@ task pwm_rand_output_vseq::body();
 
   // Set random dc and params for all channels
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-    param_reg_t pwm_param;
     dc_blink_t blink, duty_cycle;
 
     duty_cycle = rand_pwm_duty_cycle();
     blink = rand_pwm_blink(duty_cycle);
 
-    // phase delay of the PWM rising edge, in units of 2^(-16) PWM cycles
-    pwm_param.PhaseDelay = (rand_reg_param.PhaseDelay * (2**(-16)));
-    pwm_param.HtbtEn = rand_reg_param.HtbtEn;
-    pwm_param.BlinkEn = rand_reg_param.BlinkEn;
-
     set_duty_cycle(i, .A(duty_cycle.A), .B(duty_cycle.B));
     set_blink(i, .A(blink.A), .B(blink.B));
-    set_param(i, pwm_param);
+    set_param(i, rand_reg_param);
   end
 
   set_ch_invert(rand_invert);
