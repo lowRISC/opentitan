@@ -232,6 +232,7 @@ opentitan_top_dt_gen = rule(
     doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
         "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "gen_top": attr.bool(default = False, doc = "If true, generate the toplevel files"),
         "gen_ips": attr.string_list(doc = "List of IPs for which to generate header files"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
@@ -279,6 +280,78 @@ def opentitan_ip_dt_header(name, top, ip, deps = None):
         hdrs = [":{}_hdr".format(name)],
         deps = deps,
         # Make the header accessible as "dt_<ip>.h".
+        includes = ["."],
+    )
+
+def opentitan_top_dt_api(name, top, deps = None):
+    """
+    Create a library that exports the "dt_api.h" header. This library is created to the
+    provided top and can have additional dependencies. The top target must export an
+    OpenTitanTopInfo provider, e.g. by created by opentitan_top.
+    """
+    if deps == None:
+        deps = []
+
+    opentitan_top_dt_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        gen_top = True,
+        output_groups = {
+            "hdr": ["dt_api.h"],
+        },
+    )
+
+    native.filegroup(
+        name = "{}_hdr".format(name),
+        srcs = [":{}_gen".format(name)],
+        output_group = "hdr",
+    )
+
+    native.cc_library(
+        name = name,
+        srcs = [],
+        hdrs = [":{}_hdr".format(name)],
+        deps = deps,
+        # Make the dt_api.h header accessible as "dt_api.h".
+        includes = ["."],
+    )
+
+def opentitan_top_devicetables(name, top, deps = None):
+    """
+    Create a library that exports the "devicetables.h" header and contains the device tables.
+    This library is created to the provided top and can have additional dependencies.
+    The top target must export an OpenTitanTopInfo provider, e.g. by created by opentitan_top.
+    """
+    if deps == None:
+        deps = []
+
+    opentitan_top_dt_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        gen_top = True,
+        output_groups = {
+            "hdr": ["devicetables.h"],
+            "src": ["devicetables.c"],
+        },
+    )
+
+    native.filegroup(
+        name = "{}_hdr".format(name),
+        srcs = [":{}_gen".format(name)],
+        output_group = "hdr",
+    )
+    native.filegroup(
+        name = "{}_src".format(name),
+        srcs = [":{}_gen".format(name)],
+        output_group = "src",
+    )
+
+    native.cc_library(
+        name = name,
+        srcs = [":{}_src".format(name)],
+        hdrs = [":{}_hdr".format(name)],
+        deps = deps,
+        # Make the dt_api.h header accessible as "dt_api.h".
         includes = ["."],
     )
 
