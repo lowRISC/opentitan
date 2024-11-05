@@ -5,6 +5,7 @@
 load(
     "//rules:autogen.bzl",
     "opentitan_ip_c_header",
+    "opentitan_ip_dt_header",
     "opentitan_ip_rust_header",
 )
 
@@ -71,3 +72,18 @@ IPS = [
     )
     for ip in IPS
 ]
+
+[
+    opentitan_ip_dt_header(
+        name = "dt_{}".format(ip),
+        ip = ip,
+        top = ":top",
+    )
+    for ip in IPS
+]
+
+cc_library(
+    name = "dt_headers",
+    srcs = [],
+    deps = ["dt_{}".format(ip) for ip in IPS],
+)
