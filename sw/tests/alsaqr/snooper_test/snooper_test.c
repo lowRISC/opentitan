@@ -18,7 +18,7 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/tests/alsaqr/snooper_test/snooper_test.h"
 
-#define SNOOP_BASE    0x10405000
+#define SNOOP_BASE    0x10605000
 #define AXI_PORT_BASE 0x71000000
 
 #define SNOOP_ID 158
@@ -76,7 +76,7 @@ int main(int argc, char **argv) {
   abs_mmio_write32(SNOOP_BASE + CFG_REGS_RANGE_0_LAST_H_REG_OFFSET, 0x00000000);
   abs_mmio_write32(SNOOP_BASE + CFG_REGS_RANGE_0_LAST_L_REG_OFFSET, 0x90000000);
   abs_mmio_write32(SNOOP_BASE + CFG_REGS_TRIG_PC0_H_REG_OFFSET, 0x00000000);
-  abs_mmio_write32(SNOOP_BASE + CFG_REGS_TRIG_PC0_L_REG_OFFSET, 0x80001048);
+  abs_mmio_write32(SNOOP_BASE + CFG_REGS_TRIG_PC0_L_REG_OFFSET, 0x80000f7c);
 
   set_register_bit(SNOOP_BASE, CFG_REGS_CTRL_REG_OFFSET,CFG_REGS_CTRL_TRIG_PC_0_BIT);
   set_register_bit(SNOOP_BASE, CFG_REGS_CTRL_REG_OFFSET,CFG_REGS_CTRL_M_MODE_BIT);
