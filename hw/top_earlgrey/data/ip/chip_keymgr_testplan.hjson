@@ -32,7 +32,7 @@
               - Use SW to calculate that, and it will also exercise the Ibex.
               - SW sends all the keys through CSRs to KMAC to generate the degist data.
               - DV calls C functions to generate and backdoor load to a specific memory location
-                for SW. (Adpot this approach.)
+                for SW. (Adopt this approach.)
 
             X-ref'ed with kmac test.
             '''
@@ -85,7 +85,7 @@
               `manuf_ft_provision_rma_token_and_personalization` for more details.
             - Sideload is expected to work in the following keymgr states: `CreatorRootKey`,
               `OwnerIntKey` and `OwnerKey`. The test program should try to cover as many states
-              as possible give the initial device state.
+              as possible given the initial device state.
             - Key derivations must be reproducible across boot cycles during regular operating
               conditions.
 
@@ -148,13 +148,13 @@
               keymgr advance operation.
             - The keymgr shall be able to reproduce the same keys for a give device configuration
               and known set of inputs.
-            - The softwre binding registers must be locked after configuration until a keymgr
+            - The software binding registers must be locked after configuration until a keymgr
               advance operation.
 
             Notes:
 
             - The device initial state needs to be equivalent to the end state of the
-              `manuf_ft_provision_rma_token_and_personalization` testpoint, otherwise they keymgr
+              `manuf_ft_provision_rma_token_and_personalization` testpoint, otherwise the keymgr
               will fail to advance into operational states.
             - Ensure the entropy complex is running in continuous mode, and that KMAC is configured
               to extract entropy from EDN.
