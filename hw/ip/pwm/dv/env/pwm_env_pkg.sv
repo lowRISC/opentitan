@@ -47,7 +47,6 @@ package pwm_env_pkg;
   typedef struct packed {
     bit          BlinkEn;
     bit          HtbtEn;
-    bit [13:0]   RsvParam;
     bit [15:0]   PhaseDelay;
   } param_reg_t;
 
