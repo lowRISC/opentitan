@@ -115,15 +115,6 @@ const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
     .required_keymgr_state = kScKeymgrStateOwnerKey,
 };
 
-/**
- * Helper function to convert an attestation certificate signature from little
- * to big endian.
- */
-static void curr_tbs_signature_le_to_be_convert(ecdsa_p256_signature_t *sig) {
-  util_reverse_bytes(sig->r, kEcdsaP256SignatureComponentBytes);
-  util_reverse_bytes(sig->s, kEcdsaP256SignatureComponentBytes);
-}
-
 rom_error_t dice_uds_tbs_cert_build(
     hmac_digest_t *otp_creator_sw_cfg_measurement,
     hmac_digest_t *otp_owner_sw_cfg_measurement,
@@ -189,7 +180,9 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   hmac_sha256(cdi_0_cert_params.tbs, cdi_0_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
+                                       curr_tbs_signature.s);
+
   cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_0_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
   cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
@@ -238,7 +231,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   hmac_sha256(cdi_1_cert_params.tbs, cdi_1_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
+                                       curr_tbs_signature.s);
   cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_1_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
   cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;

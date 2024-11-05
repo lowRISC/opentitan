@@ -35,3 +35,10 @@ void util_hexdump_byte(uint8_t byte, uint8_t *str) {
   str[0] = hexdump_halfbyte((byte & 0xF0) >> 4);
   str[1] = hexdump_halfbyte(byte & 0x0F);
 }
+
+void util_p256_signature_le_to_be_convert(
+    uint32_t r[kUtilEcdsaP256SignatureComponentWords],
+    uint32_t s[kUtilEcdsaP256SignatureComponentWords]) {
+  util_reverse_bytes(r, kUtilEcdsaP256SignatureComponentBytes);
+  util_reverse_bytes(s, kUtilEcdsaP256SignatureComponentBytes);
+}
