@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Union
 
 import hjson  # type: ignore
-from reggen.lib import check_int, check_keys, check_list, check_name, check_str
+from reggen.lib import check_bool, check_int, check_keys, check_list, check_name, check_str
 from reggen.params import BaseParam, Params
 
 
@@ -33,6 +33,7 @@ class TemplateRenderError(Exception):
 class TemplateParameter(BaseParam):
     """ A template parameter. """
     VALID_PARAM_TYPES = (
+        'bool',
         'int',
         'string',
         'object',
@@ -71,7 +72,9 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
                          f'{", ".join(TemplateParameter.VALID_PARAM_TYPES)}.')
 
     r_default = rd.get('default')
-    if param_type == 'int':
+    if param_type == 'bool':
+        default = check_bool(r_default, f'default field of {name}, (a boolean parameter)')
+    elif param_type == 'int':
         default = check_int(
             r_default, f'default field of {name}, (an integer parameter)')
     elif param_type == 'string':
@@ -216,7 +219,7 @@ class IpConfig:
         Returns the parameter values in typed form if successful, and throws
         a ValueError otherwise.
         """
-        VALID_PARAM_TYPES = ('string', 'int', 'object')
+        VALID_PARAM_TYPES = ('bool', 'string', 'int', 'object')
 
         param_values_typed = {}
         for key, value in param_values.items():
@@ -236,7 +239,10 @@ class IpConfig:
                     f"Unknown template parameter type {param_type!r}. "
                     "Allowed types: " + ', '.join(VALID_PARAM_TYPES))
 
-            if param_type == 'string':
+            if param_type == 'bool':
+                param_value_typed = check_bool(
+                    value, f"the key {key} of the IP configuration")
+            elif param_type == 'string':
                 param_value_typed = check_str(
                     value, f"the key {key} of the IP configuration")
             elif param_type == 'int':
