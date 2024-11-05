@@ -23,6 +23,7 @@ IPS = [
     "rstmgr",
     "rv_plic",
     "pwrmgr",
+    "pinmux",
 ]
 
 [
