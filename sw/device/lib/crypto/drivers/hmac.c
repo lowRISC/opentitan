@@ -280,7 +280,7 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
  *
  * @param[out] ctx Context to which values are written.
  */
-static void tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
+static status_t tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
   // Insert delay which should be equivalent to at least 80 clock cycles
   ibex_timeout_t timeout;
   timeout.cycles = kNumIterTimeout / 2;  // 1/2 as a loop is 2 instructions
@@ -297,6 +297,9 @@ static void tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
   uint32_t cmd_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET);
   cmd_reg = bitfield_bit32_write(cmd_reg, HMAC_CMD_HASH_PROCESS_BIT, true);
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
+
+  // Wait for HMAC HWIP operation to be completed.
+  return hmac_idle_wait();
 }
 
 /**
