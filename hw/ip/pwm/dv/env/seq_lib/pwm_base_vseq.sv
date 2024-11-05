@@ -122,7 +122,9 @@ endtask
 task pwm_base_vseq::set_param(int unsigned channel, param_reg_t value);
   `DV_CHECK_FATAL(channel < NOutputs)
 
-  ral.pwm_param[channel].set(value);
+  ral.pwm_param[channel].blink_en.set(value.BlinkEn);
+  ral.pwm_param[channel].htbt_en.set(value.HtbtEn);
+  ral.pwm_param[channel].phase_delay.set(value.PhaseDelay);
   csr_update(ral.pwm_param[channel]);
 endtask // set_param
 
