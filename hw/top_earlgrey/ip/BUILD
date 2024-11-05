@@ -15,7 +15,7 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/alert_handler",
         "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
-        "//hw/top_earlgrey/ip_autogen/pinmux:all_files",
+        "//hw/top_earlgrey/ip_autogen/pinmux",
         "//hw/top_earlgrey/ip_autogen/pwrmgr",
         "//hw/top_earlgrey/ip_autogen/rstmgr",
         "//hw/top_earlgrey/ip_autogen/rv_plic",
