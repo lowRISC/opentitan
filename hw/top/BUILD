@@ -10,6 +10,8 @@ load(
     "opentitan_ip_c_header",
     "opentitan_ip_dt_header",
     "opentitan_ip_rust_header",
+    "opentitan_top_devicetables",
+    "opentitan_top_dt_api",
 )
 load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_require_ip")
 
@@ -109,12 +111,19 @@ alias(
     for ip in ALL_IP_NAMES
 ]
 
+opentitan_top_dt_api(
+    name = "dt_api",
+    top = ":top_desc",
+    deps = [":top_lib"],
+)
+
 [
     opentitan_ip_dt_header(
         name = "dt_{}".format(ip),
         ip = ip,
         target_compatible_with = opentitan_require_ip(ip),
         top = ":top_desc",
+        deps = [":dt_api"],
     )
     for ip in ALL_IP_NAMES
 ]
@@ -130,4 +139,10 @@ cc_library(
         )
         for ip in ALL_IP_NAMES
     ]),
+)
+
+opentitan_top_devicetables(
+    name = "dt",
+    top = ":top_desc",
+    deps = [":dt_headers"],
 )
