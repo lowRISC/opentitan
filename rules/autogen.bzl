@@ -181,6 +181,107 @@ opentitan_ip_rust_header = rule(
     } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
+def _opentitan_top_dt_gen(ctx):
+    outputs = []
+    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = []
+        for file in files:
+            deps.append(ctx.actions.declare_file(file))
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+
+    top = ctx.attr.top[OpenTitanTopInfo]
+
+    inputs = [top.hjson]
+    ips = []
+    for (ipname, hjson) in top.ip_hjson.items():
+        if hjson != None and (ctx.attr.gen_top or ipname in ctx.attr.gen_ips):
+            inputs.append(hjson)
+            ips.extend(["-i", hjson.path])
+
+    arguments = [
+        "--topgencfg",
+        top.hjson.path,
+        "--outdir",
+        outdir,
+    ]
+    arguments.append("--gen-top" if ctx.attr.gen_top else "--gen-ip")
+    for ipname in ctx.attr.gen_ips:
+        if ipname not in top.ip_hjson:
+            fail("Cannot generate IP headers: top {} does not contain IP {}".format(top.name, ipname))
+
+    arguments.extend(ips)
+
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
+        executable = ctx.executable._dttool,
+    )
+
+    return [
+        DefaultInfo(files = depset(outputs)),
+        OutputGroupInfo(**groups),
+    ]
+
+opentitan_top_dt_gen = rule(
+    implementation = _opentitan_top_dt_gen,
+    doc = "Generate the C headers for an IP block as used in a top",
+    attrs = {
+        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "gen_ips": attr.string_list(doc = "List of IPs for which to generate header files"),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = """
+                Mappings from output group names to lists of paths contained in
+                that group.
+            """,
+        ),
+        "_dttool": attr.label(
+            default = "//util:dttool",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+def opentitan_ip_dt_header(name, top, ip, deps = None):
+    """
+    Generate the C header for an IP block as used in a top. This library is created to the
+    provided top and can have additional dependencies. The top target must export an
+    OpenTitanTopInfo provider, e.g. by created by opentitan_top. If this IP is not included
+    in the top, an error will be thrown.
+    """
+    if deps == None:
+        deps = []
+
+    opentitan_top_dt_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        gen_ips = [ip],
+        output_groups = {
+            "hdr": ["dt_{}.h".format(ip)],
+        },
+    )
+
+    native.filegroup(
+        name = "{}_hdr".format(name),
+        srcs = [":{}_gen".format(name)],
+        output_group = "hdr",
+    )
+
+    native.cc_library(
+        name = name,
+        srcs = [],
+        hdrs = [":{}_hdr".format(name)],
+        deps = deps,
+        # Make the header accessible as "dt_<ip>.h".
+        includes = ["."],
+    )
+
 def _hjson_rust_header(ctx):
     node = []
     if ctx.attr.node:
