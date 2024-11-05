@@ -5270,7 +5270,7 @@ test_suite(
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+            "//hw/top:pinmux_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:adc_ctrl",
@@ -6200,7 +6200,7 @@ opentitan_test(
     deps = [
         "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/top:clkmgr_c_regs",
-        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+        "//hw/top:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
