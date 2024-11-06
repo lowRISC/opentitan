@@ -146,15 +146,32 @@ cc_library(
 )
 
 cc_library(
+    name = "cwt_template",
+    deps = [
+        ":cbor",
+        ":cwt_cose_key_template_library",
+        ":cwt_dice_chain_entry_input_template_library",
+        ":cwt_dice_chain_entry_payload_template_library",
+        ":cwt_dice_chain_entry_template_library",
+        "//sw/device/lib/base:status",
+    ],
+)
+
+cc_library(
     name = "dice_cwt",
     srcs = ["dice_cwt.c"],
     hdrs = ["dice.h"],
     deps = [
         ":cbor",
         ":cert",
+        ":cwt_template",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/cert:dice_keys",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
