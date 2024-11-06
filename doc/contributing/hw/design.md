@@ -107,8 +107,23 @@ The sections below show how to do items 2-4.
 $ make -C hw top
 ```
 
-After you revise the IP `.hjson`, IP top module, IP register interface, and DV testbench `tb.sv`, you can re-generate top-levels with the command above.
+After you revise the IP `.hjson`, IP top module, IP register interface, and DV testbench `tb.sv`, you can re-generate top-levels and some top-dependent IPs with the commands above.
 This reads the `.hjson` file and updates the interrupt signal and re-generates the PLIC module if needed.
+
+### Update MD Files
+
+Some `*.md` files generate contents using the `util/cmdgen.py` tool described at [CMDGEN](../doc/README.md##cmdgen).
+These files are generated using cmdgen via make.
+
+```console
+$ make -C hw cmdgen
+```
+
+Generating both top and cmdgen can be done conveniently with
+
+```console
+$ make -C hw top_and_cmdgen
+```
 
 ### New DIF
 
