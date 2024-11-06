@@ -125,8 +125,16 @@ jobs:
         uses: ./.github/actions/prepare-env
         with:
           configure-bazel: false
+      - name: Free disk space
+        uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
+      - name: Check disk space
+        run: |
+          df -h
       - name: Prepare airgapped environment
         run: ./util/prep-bazel-airgapped-build.sh
+      - name: Check disk space
+        run: |
+          df -h
       - name: Build in the airgapped environment
         run: ./ci/scripts/test-airgapped-build.sh
 
