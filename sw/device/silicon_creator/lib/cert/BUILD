@@ -101,9 +101,9 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+        "//sw/device/silicon_creator/lib/cert:dice_keys",
         "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
@@ -130,6 +130,15 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
+    ],
+)
+
+cc_library(
+    name = "dice_keys",
+    srcs = ["dice_keys.c"],
+    hdrs = ["dice_keys.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
