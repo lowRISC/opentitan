@@ -151,7 +151,7 @@
             '''
       features: ["ALERT_HANDLER.CRASH_DUMP"]
       stage: V2
-      si_stage: SV3
+      si_stage: SV1
       lc_states: ["PROD"]
       tests: ["chip_sw_rstmgr_alert_info"]
       bazel: ["//sw/device/tests:rstmgr_alert_info_test"]
