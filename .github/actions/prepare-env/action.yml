@@ -62,13 +62,8 @@ runs:
       run: |
         VERILATOR_TAR="verilator-v${{ inputs.verilator-version }}.tar.gz"
         VERILATOR_URL="https://storage.googleapis.com/verilator-builds/${VERILATOR_TAR}"
-        curl -f -Ls -o "/tmp/${VERILATOR_TAR}" "$VERILATOR_URL" || {
-          echo "failed to download Verilator from ${VERILATOR_URL}" >&2
-          exit 1
-        }
         sudo mkdir -p "${{ inputs.verilator-path }}"
-        sudo chmod 777 "${{ inputs.verilator-path }}"
-        tar -C "${{ inputs.verilator-path }}" -xvzf "/tmp/${VERILATOR_TAR}"
+        curl -sSfL "$VERILATOR_URL" | sudo tar -C "${{ inputs.verilator-path }}" -xvzf -
         echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
       shell: bash
 
@@ -76,13 +71,10 @@ runs:
       run: |
         VERIBLE_TAR="verible-${{ inputs.verible-version }}-linux-static-x86_64.tar.gz"
         VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/${{ inputs.verible-version }}/${VERIBLE_TAR}"
-        curl -f -Ls -o "/tmp/${VERIBLE_TAR}" "$VERIBLE_URL" || {
-          echo "failed to download Verible from ${VERIBLE_URL}" >&2
-          exit 1
-        }
         sudo mkdir -p "${{ inputs.verible-path }}"
-        sudo chmod 777 "${{ inputs.verible-path }}"
-        tar -C "${{ inputs.verible-path }}" -xvzf "/tmp/${VERIBLE_TAR}" --strip-components=1
+        curl -sSfL "$VERIBLE_URL" | sudo tar -C "${{ inputs.verible-path }}" -xvzf - --strip-components=1
+        # Fixup bin permission which is broken in tarball.
+        sudo chmod 755 "${{ inputs.verible-path }}/bin"
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
 
