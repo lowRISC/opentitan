@@ -6,15 +6,24 @@
 
 class hmac_error_vseq extends hmac_long_msg_vseq;
   `uvm_object_utils(hmac_error_vseq)
-  `uvm_object_new
 
-  function void pre_randomize();
-    this.legal_seq_c.constraint_mode(0);
-  endfunction : pre_randomize
-
-  virtual task pre_body();
-    // No need to trigger Save and Restore for this test
-    cfg.save_and_restore_pct = 0;
-    super.pre_body();
-  endtask : pre_body
+  // Standard SV/UVM methods
+  extern function new(string name="");
+  extern function void pre_randomize();
+  extern task pre_body();
 endclass : hmac_error_vseq
+
+
+function hmac_error_vseq::new(string name="");
+  super.new(name);
+endfunction : new
+
+function void hmac_error_vseq::pre_randomize();
+  this.legal_seq_c.constraint_mode(0);
+endfunction : pre_randomize
+
+task hmac_error_vseq::pre_body();
+  // No need to trigger Save and Restore for this test
+  cfg.save_and_restore_pct = 0;
+  super.pre_body();
+endtask : pre_body
