@@ -86,7 +86,7 @@
             This test already runs in CW310.
             '''
       stage: V2
-      si_stage: SV2
+      si_stage: SV1
       lc_states: ["PROD"]
       features: [
         "RSTMGR.CPU_INFO.CAPTURE",
@@ -133,7 +133,7 @@
             This can be an important diagnostic tool, so setting it to SV3.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: SV1
       lc_states: ["PROD"]
       features: [
         "RSTMGR.ALERT_INFO.CAPTURE",
