@@ -28,7 +28,7 @@ filegroup(
         "//hw/ip/prim_xilinx_ultrascale:all_files",
         "//hw/ip/pwm",
         "//hw/ip/rom_ctrl",
-        "//hw/ip/rv_core_ibex:all_files",
+        "//hw/ip/rv_core_ibex",
         "//hw/ip/rv_dm:all_files",
         "//hw/ip/rv_timer:all_files",
         "//hw/ip/spi_device:all_files",
