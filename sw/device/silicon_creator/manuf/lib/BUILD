@@ -42,9 +42,9 @@ cc_library(
     deps = [
         ":ast_program",
         ":sram_start_headers",
-        "//hw/ip/edn/data:edn_c_regs",
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
@@ -58,9 +58,9 @@ cc_library(
     deps = [
         ":ast_program",
         ":sram_start_headers",
-        "//hw/ip/edn/data:edn_c_regs",
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/top:csrng_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/crt",
         "//sw/device/lib/testing/test_framework:ottf_isrs",
