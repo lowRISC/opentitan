@@ -670,7 +670,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

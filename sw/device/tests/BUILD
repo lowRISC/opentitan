@@ -2263,7 +2263,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -2293,7 +2293,7 @@ opentitan_test(
     silicon = silicon_params(tags = ["broken"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
