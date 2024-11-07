@@ -37,14 +37,14 @@ class pwm_base_vseq extends cip_base_vseq #(
   extern task set_param(int unsigned channel, param_reg_t value);
 
   // Return a randomized duty cycle where both fields are nonzero.
-  extern function dc_blink_t rand_pwm_duty_cycle();
+  extern virtual function dc_blink_t rand_pwm_duty_cycle();
 
   // Return a randomized blink duty cycle where both fields are nonzero.
   //
   // Also ensure that the sum of A and B for the blink duty cycle fits in 16 bits. Similarly, ensure
   // that BLINK.B + DUTY_CYCLE.A fits in 16 bits (taking the channel's duty cycle as an argument).
   // This is to prevent counter overflow in both cases.
-  extern function dc_blink_t rand_pwm_blink(dc_blink_t duty_cycle);
+  extern virtual function dc_blink_t rand_pwm_blink(dc_blink_t duty_cycle);
 
   // Inject cycles of delay, disabling the main clock for a time in the middle if enable is true.
   extern task low_power_mode(bit enable, uint cycles);
