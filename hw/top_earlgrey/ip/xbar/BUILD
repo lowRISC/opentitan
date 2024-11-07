@@ -6,12 +6,6 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]) + [
-    ],
-)
-
 opentitan_ip(
     name = "xbar",
     files = glob(["**"]),

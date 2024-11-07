@@ -21,8 +21,3 @@ ld_library(
     name = "top_earlgrey_memory",
     includes = ["top_earlgrey_memory.ld"],
 )
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-)
