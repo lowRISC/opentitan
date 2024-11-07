@@ -27,6 +27,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   obj->obj_size = obj_size;
   // Extract LTV object type.
   PERSO_TLV_GET_FIELD(Objh, Type, objh, &obj_type);
+  obj->obj_type = obj_type;
   if (obj_type != kPersoObjectTypeX509Cert) {
     LOG_INFO("Skipping object of type %d", obj_type);
     return kErrorPersoTlvCertObjNotFound;
