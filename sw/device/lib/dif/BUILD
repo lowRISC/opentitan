@@ -977,7 +977,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_dm/data:rv_dm_c_regs",
+        "//hw/top:rv_dm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
