@@ -826,7 +826,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/ip/spi_device/data:spi_device_c_regs",
+            "//hw/top:spi_device_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -850,7 +850,7 @@ cc_test(
     ],
     deps = [
         dual_cc_device_library_of(":spi_device"),
-        "//hw/ip/spi_device/data:spi_device_c_regs",
+        "//hw/top:spi_device_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib:error",
