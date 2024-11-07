@@ -109,6 +109,17 @@
         tests: ["pwm_rand_output"]
     }
     {
+      name: heartbeat_wrap
+      desc: '''
+            Observe wrapping behaviour when doing heartbeat operation.
+
+            This will exercise saturation of the duty cycle value
+            (dc_htbt_q), which is clamped to [0, ffff].
+      '''
+      stage: V3
+      tests: ["pwm_heartbeat_wrap"]
+    }
+    {
       name: perf
       desc: '''
             Checking ip operation at min/max bandwidth
