@@ -238,7 +238,7 @@ cc_library(
         ":kmac_testutils",
         ":otp_ctrl_testutils",
         ":rstmgr_testutils",
-        "//hw/ip/keymgr/data:keymgr_c_regs",
+        "//hw/top:keymgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:mmio",
