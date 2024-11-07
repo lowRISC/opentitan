@@ -874,7 +874,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rom_ctrl/data:rom_ctrl_c_regs",
+        "//hw/top:rom_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
