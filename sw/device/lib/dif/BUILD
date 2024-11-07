@@ -1078,7 +1078,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/spi_device/data:spi_device_c_regs",
+        "//hw/top:spi_device_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
