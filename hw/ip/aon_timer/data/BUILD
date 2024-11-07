@@ -4,27 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "aon_timer_c_regs",
-    srcs = [
-        "aon_timer.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "aon_timer_rust_regs",
-    srcs = [
-        "aon_timer.hjson",
-    ],
-)
-
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["aon_timer.hjson"],
 )
