@@ -9,7 +9,6 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "lowrisc_defs",
     srcs = [
-        "//hw/ip/csrng/data:csrng_rust_regs",
         "//hw/ip/edn/data:edn_rust_regs",
         "//hw/ip/entropy_src/data:entropy_src_rust_regs",
         "//hw/ip/gpio/data:gpio_rust_regs",
@@ -34,6 +33,7 @@ filegroup(
         "//hw/top:adc_ctrl_rust_regs",
         "//hw/top:aes_rust_regs",
         "//hw/top:aon_timer_rust_regs",
+        "//hw/top:csrng_rust_regs",
     ],
     output_group = "tock",
 )
