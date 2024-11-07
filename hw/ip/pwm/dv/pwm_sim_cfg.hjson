@@ -54,7 +54,15 @@
     }
   ]
 
-  run_opts: ["+cdc_instrumentation_enabled=1"]
+  run_opts: [
+    "+cdc_instrumentation_enabled=1",
+
+    // Use a short enough timeout for a standard test. This is essentially driven by NUM_CYCLES,
+    // which is slightly over 1e6. The DV_COMMON_CLK_CONSTRAINT macro in dv_macros.svh guarantees a
+    // frequency of at least 5MHz. At a clock frequency of 5MHz, we'd expect 1e6 cycles to take
+    // 0.2 seconds, so we set the timeout to 0.3 seconds.
+    "+test_timeout_ns=300_000_000"
+  ]
 
   // Default UVM test and seq class name.
   uvm_test: pwm_base_test
