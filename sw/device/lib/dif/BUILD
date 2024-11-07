@@ -1213,7 +1213,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
+        "//hw/top:sysrst_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
