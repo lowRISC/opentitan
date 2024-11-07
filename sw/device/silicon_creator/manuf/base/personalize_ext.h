@@ -10,6 +10,19 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 
+enum {
+  /**
+   * Index of the first available page in the `cert_flash_layout` array that
+   * personalization extensions may use.
+   */
+  kCertFlashLayoutExt0Idx = 2,
+  /**
+   * Index of the second available page in the `cert_flash_layout` array that
+   * personalization extensions may use.
+   */
+  kCertFlashLayoutExt1Idx = 3,
+};
+
 /**
  * Parameters passed to personalization extension function invoked before data
  * is sent to the host for endorsement. Not all parameters are necessarily used

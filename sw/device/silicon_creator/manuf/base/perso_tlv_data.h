@@ -122,6 +122,10 @@ typedef struct perso_tlv_cert_obj {
    */
   size_t obj_size;
   /**
+   * LTV object type.
+   */
+  uint32_t obj_type;
+  /**
    * Pointer to the start of the certificate body (i.e., ASN.1 object for X.509
    * certificates, or CBOR object for CWT certificates).
    */

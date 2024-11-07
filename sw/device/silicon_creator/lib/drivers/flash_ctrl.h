@@ -79,7 +79,7 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageOwnerReserved1,      0, 6) \
   X(kFlashCtrlInfoPageOwnerReserved2,      0, 7) \
   X(kFlashCtrlInfoPageOwnerReserved3,      0, 8) \
-  X(kFlashCtrlInfoPageCreatorReserved0,    0, 9) \
+  X(kFlashCtrlInfoPageFactoryCerts,        0, 9) \
   /**
    * Bank 1 information partition type 0 pages.
    */ \
@@ -87,7 +87,7 @@ typedef enum flash_ctrl_partition {
   X(kFlashCtrlInfoPageBootData1,           1, 1) \
   X(kFlashCtrlInfoPageOwnerSlot0,          1, 2) \
   X(kFlashCtrlInfoPageOwnerSlot1,          1, 3) \
-  X(kFlashCtrlInfoPageCreatorReserved1,    1, 4) \
+  X(kFlashCtrlInfoPageCreatorReserved0,    1, 4) \
   X(kFlashCtrlInfoPageOwnerReserved4,      1, 5) \
   X(kFlashCtrlInfoPageOwnerReserved5,      1, 6) \
   X(kFlashCtrlInfoPageOwnerReserved6,      1, 7) \
@@ -317,6 +317,25 @@ OT_WARN_UNUSED_RESULT
 rom_error_t flash_ctrl_info_read(const flash_ctrl_info_page_t *info_page,
                                  uint32_t offset, uint32_t word_count,
                                  void *data);
+
+/**
+ * Reads data from an information page, returning all zeros if a read error code
+ * is encountered.
+ *
+ * The flash controller will truncate to the closest, lower word aligned
+ * address. For example, if 0x13 is supplied, the controller will start reading
+ * at address 0x10.
+ *
+ * @param info_page Information page to read from.
+ * @param offset Offset from the start of the page.
+ * @param word_count Number of bus words to read.
+ * @param[out] data Buffer to store the read data. Must be word aligned.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t flash_ctrl_info_read_zeros_on_read_error(
+    const flash_ctrl_info_page_t *info_page, uint32_t offset,
+    uint32_t word_count, void *data);
 
 /**
  * Writes data to the data partition.

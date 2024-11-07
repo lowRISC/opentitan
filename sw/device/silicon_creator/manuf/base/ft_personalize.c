@@ -118,10 +118,19 @@ static size_t cdi_0_offset;
 static size_t cdi_1_offset;
 static cert_flash_info_layout_t cert_flash_layout[] = {
     {
+        // The DICE UDS cert is placed on this page since it must remain stable
+        // post manufacturing. This page should never be erased by ROM_EXT, nor
+        // owner firmware.
+        .used = true,
+        .group_name = "FACTORY",
+        .info_page = &kFlashCtrlInfoPageFactoryCerts,
+        .num_certs = 1,
+    },
+    {
         .used = true,
         .group_name = "DICE",
         .info_page = &kFlashCtrlInfoPageDiceCerts,
-        .num_certs = 3,
+        .num_certs = 2,
     },
     // These flash info pages can be used by provisioning extensions to store
     // additional certificates SKU owners may desire to provision.
@@ -183,7 +192,12 @@ static void sw_reset(void) {
  */
 static status_t config_and_erase_certificate_flash_pages(void) {
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageFactoryCerts);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  // No need to erase the kFlashCtrlInfoPageAttestationKeySeeds page as it is
+  // erased on the first call to `manuf_personalize_flash_asymm_key_seed()`.
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageFactoryCerts,
+                            kFlashCtrlEraseTypePage));
   TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
@@ -667,7 +681,6 @@ static status_t personalize_endorse_certificates(ujson_t *uj) {
                   curr_layout.group_name, block.name);
         return OUT_OF_RANGE();
       }
-      // Write the entire certificate perso LTV object to flash.
       TRY(flash_ctrl_info_write(curr_layout.info_page, page_offset,
                                 cert_size_words, next_cert));
       LOG_INFO("Imported %s %s certificate.", curr_layout.group_name,
