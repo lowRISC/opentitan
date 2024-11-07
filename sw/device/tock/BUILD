@@ -9,7 +9,6 @@ package(default_visibility = ["//visibility:public"])
 filegroup(
     name = "lowrisc_defs",
     srcs = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_rust_regs",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_rust_regs",
         "//hw/ip/uart/data:uart_rust_regs",
         "//hw/ip/usbdev/data:usbdev_rust_regs",
@@ -34,6 +33,7 @@ filegroup(
         "//hw/top:rv_timer_rust_regs",
         "//hw/top:spi_device_rust_regs",
         "//hw/top:spi_host_rust_regs",
+        "//hw/top:sram_ctrl_rust_regs",
     ],
     output_group = "tock",
 )
