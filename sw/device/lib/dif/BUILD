@@ -1043,7 +1043,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",
