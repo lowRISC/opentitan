@@ -203,7 +203,7 @@ cc_library(
     hdrs = ["hmac_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top:hmac_c_regs",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:ibex",

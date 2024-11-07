@@ -31,6 +31,7 @@ IPS = [
     "edn",
     "entropy_src",
     "gpio",
+    "hmac",
 ]
 
 [
