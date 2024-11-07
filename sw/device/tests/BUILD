@@ -4812,7 +4812,6 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
@@ -4824,6 +4823,7 @@ opentitan_test(
         "//hw/top:pattgen_c_regs",
         "//hw/top:pwm_c_regs",
         "//hw/top:spi_host_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",

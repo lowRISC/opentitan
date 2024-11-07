@@ -718,7 +718,7 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
-        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",

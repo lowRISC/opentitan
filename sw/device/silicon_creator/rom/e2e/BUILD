@@ -378,8 +378,8 @@ opentitan_test(
         exit_success = MSG_PASS,
     ),
     deps = [
-        "//hw/ip/uart/data:uart_c_regs",
         "//hw/top:pinmux_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",

@@ -527,7 +527,7 @@ cc_library(
     hdrs = ["uart_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:uart",
