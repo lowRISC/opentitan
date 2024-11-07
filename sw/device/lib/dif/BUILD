@@ -945,7 +945,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/runtime:hart",
