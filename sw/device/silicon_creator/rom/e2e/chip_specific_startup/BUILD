@@ -36,10 +36,10 @@ package(default_visibility = ["//visibility:public"])
             test_harness = "//sw/host/tests/rom/e2e_chip_specific_startup",
         ),
         deps = [
-            "//hw/ip/edn/data:edn_c_regs",
             "//hw/ip/entropy_src/data:entropy_src_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top:csrng_c_regs",
+            "//hw/top:edn_c_regs",
             "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
