@@ -31,7 +31,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
@@ -367,7 +367,7 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//hw/top:keymgr_c_regs",
             "//hw/top:lc_ctrl_c_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/ip/uart/data:uart_c_regs",
@@ -445,9 +445,9 @@ cc_library(
     hdrs = ["bootstrap_unittest_util.h"],
     deps = [
         ":bootstrap",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
     ],

@@ -77,10 +77,10 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
@@ -121,9 +121,9 @@ cc_library(
     # This should be built only for english breakfast and skipped if using wildcards.
     tags = ["manual"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
@@ -157,13 +157,13 @@ cc_library(
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
         "//hw/top:entropy_src_c_regs",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
