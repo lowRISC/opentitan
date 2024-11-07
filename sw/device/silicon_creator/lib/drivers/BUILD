@@ -759,8 +759,8 @@ cc_library(
     hdrs = ["watchdog.h"],
     deps = [
         ":pwrmgr",
-        "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -775,8 +775,8 @@ cc_test(
     srcs = ["watchdog_unittest.cc"],
     deps = [
         ":watchdog",
-        "//hw/ip/aon_timer/data:aon_timer_c_regs",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",

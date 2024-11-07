@@ -629,7 +629,7 @@ opentitan_test(
     srcs = ["pwrmgr_b2b_sleep_reset_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/aon_timer/data:aon_timer_c_regs",
+        "//hw/top:aon_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
