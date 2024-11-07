@@ -34,7 +34,7 @@ filegroup(
         "//hw/ip/spi_device",
         "//hw/ip/spi_host",
         "//hw/ip/sram_ctrl",
-        "//hw/ip/sysrst_ctrl:all_files",
+        "//hw/ip/sysrst_ctrl",
         "//hw/ip/tlul:all_files",
         "//hw/ip/trial1:all_files",
         "//hw/ip/uart:all_files",
