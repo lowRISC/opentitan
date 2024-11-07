@@ -72,9 +72,9 @@ cc_library(
     srcs = ["flash_info_fields.c"],
     hdrs = ["flash_info_fields.h"],
     deps = [
+        "//hw/top:ast_c_regs",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing:flash_ctrl_testutils",
