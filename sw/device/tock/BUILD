@@ -49,7 +49,7 @@ filegroup(
         "//hw/top:pwrmgr_rust_regs",
         "//hw/top:rstmgr_rust_regs",
         "//hw/top:rv_plic_rust_regs",
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_rust_regs",
+        "//hw/top:sensor_ctrl_rust_regs",
     ],
     output_group = "tock",
 )
