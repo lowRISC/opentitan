@@ -354,30 +354,19 @@ static rom_error_t rom_ext_attestation_increment_cert_offset(void) {
 }
 
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_ext_buffer_dice_certs_into_ram(void) {
-  rom_error_t err = flash_ctrl_info_read(
-      &kFlashCtrlInfoPageDiceCerts, /*offset=*/0,
+static rom_error_t rom_ext_buffer_dice_certs_into_ram(
+    const flash_ctrl_info_page_t *info_page) {
+  // Read in a DICE certificate(s) page.
+  HARDENED_RETURN_IF_ERROR(flash_ctrl_info_read_zeros_on_read_error(
+      info_page, /*offset=*/0,
       /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
-      dice_certs_page);
-  if (err != kErrorOk) {
-    flash_ctrl_error_code_t flash_ctrl_err_code;
-    flash_ctrl_error_code_get(&flash_ctrl_err_code);
-    if (flash_ctrl_err_code.rd_err) {
-      // If we encountered a read error, this could mean the certificate page
-      // has been corrupted or is not provisioned yet. In this case, we mark the
-      // page as "dirty" and set the buffer to all 0s.
-      memset(dice_certs_page, 0, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
-      dice_certs_page_dirty = true;
-      return kErrorOk;
-    }
-    return err;
-  }
-
-  // Certificates are stored on flash info pages in perso LTV object form, see
-  // `sw/device/silicon_creator/manuf/base/perso_tlv_data.h` for more details.
-  // We must extract the offsets of the first DICE certificate (i.e., UDS).
-  err = perso_tlv_get_cert_obj(dice_certs_page, FLASH_CTRL_PARAM_BYTES_PER_PAGE,
-                               &dice_cert_obj);
+      dice_certs_page));
+  // Certificates are stored on flash info pages in perso LTV object form,
+  // see `sw/device/silicon_creator/manuf/base/perso_tlv_data.h` for more
+  // details. We must extract the offsets of the first DICE certificate
+  // (i.e., UDS).
+  rom_error_t err = perso_tlv_get_cert_obj(
+      dice_certs_page, FLASH_CTRL_PARAM_BYTES_PER_PAGE, &dice_cert_obj);
   if (err == kErrorPersoTlvCertObjNotFound) {
     // If the UDS cert is not found it is because we are running on a sim or
     // FPGA platform, or the device has not yet been provisioned.
@@ -420,33 +409,16 @@ static rom_error_t rom_ext_attestation_silicon(void) {
       &cert_valid, /*out_cert_size=*/NULL));
   if (launder32(cert_valid) == kHardenedBoolFalse) {
     // The UDS key ID (and cert itself) should never change unless:
-    // 1. there is a hardware issue, or
+    // 1. there is a hardware issue / the page has been corrupted, or
     // 2. the cert has not yet been provisioned.
     //
-    // In either case, we do not need to (re)generate the certificate since an
-    // out of band attestation attempt will detect both conditions.
+    // In both cases, we do nothing, and boot normally, later attestation
+    // attempts will fail in a detectable manner.
     HARDENED_CHECK_EQ(cert_valid, kHardenedBoolFalse);
     dbg_printf("Warning: UDS certificate not valid.\r\n");
-
-    // On sim and FPGA platforms, or silicon that has not been provisioned
-    // fully, we expect the cert to be missing. In this case, we write a
-    // 0-length (invalid) ASN.1 certificate header blob to avoid breaking tests
-    // that run on these platforms.
-    if (dice_cert_obj.cert_body_size == 0) {
-      dbg_printf("Writing empty UDS certificate ASN.1 blob.\r\n");
-      uint8_t uds_cert[4] = {0x30, 0x82, 0x00, 0x00};
-      size_t cert_page_left = dice_certs_buffer_space_remaining();
-      HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
-          "UDS", /*needs_endorsement=*/false, uds_cert, sizeof(uds_cert),
-          dice_cert_obj.obj_p, &cert_page_left));
-      dice_certs_page_dirty = kHardenedBoolTrue;
-      // Reload the cert perso LTV object.
-      HARDENED_RETURN_IF_ERROR(perso_tlv_get_cert_obj(
-          dice_cert_obj.obj_p, dice_certs_buffer_space_remaining(),
-          &dice_cert_obj));
-    }
   }
-  HARDENED_RETURN_IF_ERROR(rom_ext_attestation_increment_cert_offset());
+  HARDENED_RETURN_IF_ERROR(
+      rom_ext_buffer_dice_certs_into_ram(&kFlashCtrlInfoPageDiceCerts));
   return kErrorOk;
 }
 
@@ -931,7 +903,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Configure DICE certificate flash info page and buffer it into RAM.
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
-  HARDENED_RETURN_IF_ERROR(rom_ext_buffer_dice_certs_into_ram());
+  flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
+  HARDENED_RETURN_IF_ERROR(
+      rom_ext_buffer_dice_certs_into_ram(&kFlashCtrlInfoPageFactoryCerts));
 
   // Establish our identity.
   HARDENED_RETURN_IF_ERROR(rom_ext_attestation_silicon());
