@@ -4,11 +4,6 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "int_flag", "string_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
 load("//rules:const.bzl", "CONST", "EARLGREY_ALERTS", "EARLGREY_LOC_ALERTS")
 load(
     "//rules:otp.bzl",
@@ -59,30 +54,14 @@ string_flag(
 # this BUILD file.
 
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["otp_ctrl.hjson"],
 )
 
 exports_files([
     "otp_ctrl_img.h.tpl",
     "otp_ctrl_img.c.tpl",
 ])
-
-autogen_hjson_c_header(
-    name = "otp_ctrl_c_regs",
-    srcs = [
-        "otp_ctrl.hjson",
-    ],
-    node = "core",
-)
-
-autogen_hjson_rust_header(
-    name = "otp_ctrl_rust_regs",
-    srcs = [
-        "otp_ctrl.hjson",
-    ],
-    node = "core",
-)
 
 exports_files(["otp_ctrl_mmap.hjson"])
 

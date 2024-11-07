@@ -704,7 +704,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
