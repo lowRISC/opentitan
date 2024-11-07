@@ -149,7 +149,7 @@ cc_library(
     srcs = ["rom_fi.c"],
     hdrs = ["rom_fi.h"],
     deps = [
-        "//hw/ip/rom_ctrl/data:rom_ctrl_c_regs",
+        "//hw/top:rom_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
