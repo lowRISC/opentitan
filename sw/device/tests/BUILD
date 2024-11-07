@@ -4811,7 +4811,6 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
         "//hw/ip/aes:model",
         "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/csrng/data:csrng_c_regs",
@@ -4824,6 +4823,7 @@ opentitan_test(
         "//hw/ip/pwm/data:pwm_c_regs",
         "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:adc_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
@@ -5265,10 +5265,10 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
-            "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
             "//hw/ip/keymgr/data:keymgr_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
+            "//hw/top:adc_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
