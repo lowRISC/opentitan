@@ -456,9 +456,6 @@ package kmac_pkg;
     //  - Sw issues KMAC op without Entropy setting.
     ErrSwHashingWithoutEntropyReady = 8'h 09,
 
-    // Error Shadow register update
-    ErrShadowRegUpdate = 8'h C0,
-
     // Error due to lc_escalation_en_i or fatal fault
     ErrFatalError = 8'h C1,
 

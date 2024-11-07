@@ -301,8 +301,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     kmac_err_code: coverpoint kmac_err {
       ignore_bins ignore = {kmac_pkg::ErrNone};
       // Covered by direct sequence, if scb enabled for those seq, can remove it from this list.
-      illegal_bins il = {kmac_pkg::ErrShadowRegUpdate,
-                         kmac_pkg::ErrWaitTimerExpired,
+      illegal_bins il = {kmac_pkg::ErrWaitTimerExpired,
                          kmac_pkg::ErrIncorrectEntropyMode,
                          kmac_pkg::ErrSwHashingWithoutEntropyReady};
     }
