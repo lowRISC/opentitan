@@ -43,14 +43,6 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-enum {
-  /**
-   * Index of the `cert_flash_layout` array in the `ft_personalize.c` base
-   * firmware to use to hold the TPM EK certificate.
-   */
-  kTpmCertFlashLayoutIdx = 1,
-};
-
 /**
  * Configures flash info pages to store device certificates.
  */
@@ -73,9 +65,9 @@ static status_t personalize_gen_tpm_ek_certificate(
          kCertKeyIdSizeInBytes);
 
   // Set the flash info page layout.
-  cert_flash_layout[kTpmCertFlashLayoutIdx].used = true;
-  cert_flash_layout[kTpmCertFlashLayoutIdx].group_name = "TPM";
-  cert_flash_layout[kTpmCertFlashLayoutIdx].num_certs = 1;
+  cert_flash_layout[kCertFlashLayoutExt0Idx].used = true;
+  cert_flash_layout[kCertFlashLayoutExt0Idx].group_name = "TPM";
+  cert_flash_layout[kCertFlashLayoutExt0Idx].num_certs = 1;
 
   // Provision TPM keygen seeds to flash info.
   TRY(manuf_personalize_flash_asymm_key_seed(
