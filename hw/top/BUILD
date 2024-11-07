@@ -28,6 +28,7 @@ IPS = [
     "aes",
     "aon_timer",
     "csrng",
+    "edn",
 ]
 
 [
