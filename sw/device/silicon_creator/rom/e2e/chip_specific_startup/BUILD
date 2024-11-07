@@ -40,7 +40,7 @@ package(default_visibility = ["//visibility:public"])
             "//hw/top:edn_c_regs",
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+            "//hw/top:sensor_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:clkmgr",
