@@ -1112,7 +1112,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
+        "//hw/top:spi_host_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

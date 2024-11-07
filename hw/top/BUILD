@@ -45,6 +45,7 @@ IPS = [
     "rv_dm",
     "rv_timer",
     "spi_device",
+    "spi_host",
 ]
 
 [
