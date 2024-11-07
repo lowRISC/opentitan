@@ -22,7 +22,7 @@ filegroup(
         "//hw/ip/otbn:all_files",
         "//hw/ip/otp_ctrl",
         "//hw/ip/pattgen",
-        "//hw/ip/prim:all_files",
+        "//hw/ip/prim",
         "//hw/ip/prim_generic:all_files",
         "//hw/ip/prim_xilinx:all_files",
         "//hw/ip/prim_xilinx_ultrascale:all_files",
