@@ -11,7 +11,7 @@ filegroup(
         "//hw/top_earlgrey/ip/sensor_ctrl",
         "//hw/top_earlgrey/ip/xbar",
         "//hw/top_earlgrey/ip/xbar_main",
-        "//hw/top_earlgrey/ip/xbar_peri:all_files",
+        "//hw/top_earlgrey/ip/xbar_peri",
         "//hw/top_earlgrey/ip_autogen/alert_handler",
         "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
