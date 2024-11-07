@@ -327,7 +327,7 @@ opentitan_test(
         ":kmac",
         ":lifecycle",
         ":retention_sram",
-        "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -351,7 +351,7 @@ cc_library(
     srcs = ["kmac.c"],
     hdrs = ["kmac.h"],
     deps = [
-        "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",

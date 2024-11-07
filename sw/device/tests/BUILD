@@ -2205,9 +2205,9 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:keymgr_c_regs",
+        "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
@@ -2236,8 +2236,8 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/top:keymgr_c_regs",
+        "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -4812,7 +4812,6 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/ip/pattgen/data:pattgen_c_regs",
         "//hw/ip/pwm/data:pwm_c_regs",
         "//hw/ip/spi_host/data:spi_host_c_regs",
@@ -4824,6 +4823,7 @@ opentitan_test(
         "//hw/top:gpio_c_regs",
         "//hw/top:hmac_c_regs",
         "//hw/top:i2c_c_regs",
+        "//hw/top:kmac_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
