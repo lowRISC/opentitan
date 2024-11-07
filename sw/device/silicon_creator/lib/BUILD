@@ -369,7 +369,7 @@ dual_cc_library(
             "//hw/top:lc_ctrl_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:rv_core_ibex_c_regs",
-            "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+            "//hw/top:sram_ctrl_c_regs",
             "//hw/ip/uart/data:uart_c_regs",
             "//hw/top:alert_handler_c_regs",
             "//hw/top:flash_ctrl_c_regs",

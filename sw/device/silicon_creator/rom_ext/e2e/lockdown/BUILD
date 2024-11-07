@@ -68,7 +68,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+        "//hw/top:sram_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
