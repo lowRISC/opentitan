@@ -43,6 +43,7 @@ IPS = [
     "rom_ctrl",
     "rv_core_ibex",
     "rv_dm",
+    "rv_timer",
 ]
 
 [

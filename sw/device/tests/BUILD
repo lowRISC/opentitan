@@ -6271,8 +6271,8 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
         "//hw/top:pwm_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -6300,8 +6300,8 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
         "//hw/top:pwm_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
