@@ -6,13 +6,8 @@ load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
-)
-
 rust_library(
     name = "top_earlgrey",
-    srcs = [":all_files"],
+    srcs = glob(["*.rs"]),
     crate_root = "mod.rs",
 )

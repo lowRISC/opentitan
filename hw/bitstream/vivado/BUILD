@@ -40,7 +40,7 @@ fusesoc_build(
     name = "fpga_cw310",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw/top",
         _CW310_TESTROM,
         _OTP_RMA,
     ],
@@ -90,7 +90,7 @@ fusesoc_build(
     name = "fpga_cw310_hyperdebug",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw/top",
         _CW310_TESTROM,
         _OTP_RMA,
     ],
@@ -140,7 +140,7 @@ fusesoc_build(
     name = "fpga_cw340",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw/top",
         _CW340_TESTROM,
         _OTP_RMA,
     ],
