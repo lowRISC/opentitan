@@ -1245,7 +1245,7 @@ cc_library(
     hdrs = ["dif_uart.h"],
     deps = [
         ":base",
-        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:uart_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:math",

@@ -37,7 +37,7 @@ filegroup(
         "//hw/ip/sysrst_ctrl",
         "//hw/ip/tlul",
         "//hw/ip/trial1:all_files",
-        "//hw/ip/uart:all_files",
+        "//hw/ip/uart",
         "//hw/ip/usbdev:all_files",
     ],
 )
