@@ -3844,7 +3844,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -3887,7 +3887,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",

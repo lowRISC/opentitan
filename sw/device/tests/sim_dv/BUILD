@@ -653,7 +653,7 @@ opentitan_test(
     srcs = ["sensor_ctrl_status.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
@@ -908,7 +908,7 @@ opentitan_test(
     srcs = ["ast_clk_rst_inputs.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
