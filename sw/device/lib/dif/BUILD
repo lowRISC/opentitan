@@ -466,7 +466,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/i2c/data:i2c_c_regs",
+        "//hw/top:i2c_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
