@@ -33,7 +33,7 @@ filegroup(
         "//hw/ip/rv_timer",
         "//hw/ip/spi_device",
         "//hw/ip/spi_host",
-        "//hw/ip/sram_ctrl:all_files",
+        "//hw/ip/sram_ctrl",
         "//hw/ip/sysrst_ctrl:all_files",
         "//hw/ip/tlul:all_files",
         "//hw/ip/trial1:all_files",
