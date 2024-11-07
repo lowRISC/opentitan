@@ -11,7 +11,7 @@ filegroup(
         "//hw/ip/aes",
         "//hw/ip/aon_timer",
         "//hw/ip/csrng",
-        "//hw/ip/edn:all_files",
+        "//hw/ip/edn",
         "//hw/ip/entropy_src:all_files",
         "//hw/ip/gpio:all_files",
         "//hw/ip/hmac:all_files",

@@ -1085,7 +1085,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -1123,7 +1123,7 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -1158,7 +1158,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1189,7 +1189,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
