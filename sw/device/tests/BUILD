@@ -1603,7 +1603,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -1750,7 +1750,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -5265,11 +5265,11 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
             "//hw/top:adc_ctrl_c_regs",
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:keymgr_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",

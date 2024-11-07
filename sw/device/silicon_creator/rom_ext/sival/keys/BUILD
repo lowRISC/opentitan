@@ -16,7 +16,7 @@ cc_library(
         "earlgrey_z0_sival_1.h",
     ],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib/sigverify",
     ],

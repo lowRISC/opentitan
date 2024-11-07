@@ -66,7 +66,7 @@ ALERT_LC_STATES = get_lc_items(
             "OTP_ALERT_DIGEST=OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_ALERT_DIGEST_{}_OFFSET".format(lc_state.upper()),
         ],
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:alert",

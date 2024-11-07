@@ -72,8 +72,8 @@ cc_library(
     srcs = ["flash_info_fields.c"],
     hdrs = ["flash_info_fields.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top:flash_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -87,7 +87,7 @@ cc_library(
     srcs = ["otp_fields.c"],
     hdrs = ["otp_fields.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
     ],
 )
@@ -102,7 +102,7 @@ cc_library(
     srcs = ["util.c"],
     hdrs = ["util.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:hash",
@@ -174,7 +174,7 @@ cc_library(
         ":flash_info_fields",
         ":otp_img_types",
         ":util",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -220,7 +220,7 @@ opentitan_test(
         ":flash_info_fields",
         # Testing sival SKU only should be sufficient.
         ":individualize_sw_cfg_sival",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
@@ -287,9 +287,9 @@ opentitan_test(
     deps = [
         ":flash_info_fields",
         ":personalize",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:lc_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",

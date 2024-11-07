@@ -20,7 +20,7 @@ filegroup(
         "//hw/ip/kmac",
         "//hw/ip/lc_ctrl",
         "//hw/ip/otbn:all_files",
-        "//hw/ip/otp_ctrl:all_files",
+        "//hw/ip/otp_ctrl",
         "//hw/ip/pattgen:all_files",
         "//hw/ip/prim:all_files",
         "//hw/ip/prim_generic:all_files",

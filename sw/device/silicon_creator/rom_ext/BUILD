@@ -87,7 +87,7 @@ cc_library(
     srcs = ["bootstrap.c"],
     hdrs = ["bootstrap.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:bootstrap",

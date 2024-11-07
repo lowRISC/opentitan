@@ -34,7 +34,7 @@ cc_library(
     ],
     hdrs = ["ibex_fi.h"],
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
