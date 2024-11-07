@@ -398,7 +398,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/gpio/data:gpio_c_regs",
+        "//hw/top:gpio_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
