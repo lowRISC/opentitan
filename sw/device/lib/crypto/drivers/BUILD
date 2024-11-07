@@ -193,7 +193,7 @@ cc_library(
     hdrs = ["otbn.h"],
     deps = [
         ":entropy",
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",

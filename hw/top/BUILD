@@ -36,6 +36,7 @@ IPS = [
     "keymgr",
     "kmac",
     "lc_ctrl",
+    "otbn",
 ]
 
 [
