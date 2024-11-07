@@ -432,7 +432,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/hmac/data:hmac_c_regs",
+        "//hw/top:hmac_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
