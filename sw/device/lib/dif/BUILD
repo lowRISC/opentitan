@@ -332,7 +332,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
