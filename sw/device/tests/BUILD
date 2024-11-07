@@ -3921,7 +3921,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
+        "//hw/top:pwm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -4812,7 +4812,6 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/pwm/data:pwm_c_regs",
         "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
         "//hw/top:adc_ctrl_c_regs",
@@ -4824,6 +4823,7 @@ opentitan_test(
         "//hw/top:i2c_c_regs",
         "//hw/top:kmac_c_regs",
         "//hw/top:pattgen_c_regs",
+        "//hw/top:pwm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
@@ -6271,8 +6271,8 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
         "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:pwm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -6300,8 +6300,8 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
         "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:pwm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
