@@ -35,6 +35,7 @@ IPS = [
     "i2c",
     "keymgr",
     "kmac",
+    "lc_ctrl",
 ]
 
 [

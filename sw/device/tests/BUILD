@@ -6198,8 +6198,8 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
         "//hw/top:clkmgr_c_regs",
+        "//hw/top:lc_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
