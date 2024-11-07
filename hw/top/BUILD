@@ -24,6 +24,7 @@ IPS = [
     "rv_plic",
     "pwrmgr",
     "pinmux",
+    "adc_ctrl",
 ]
 
 [

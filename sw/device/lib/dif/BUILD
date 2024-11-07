@@ -37,7 +37,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
+        "//hw/top:adc_ctrl_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
