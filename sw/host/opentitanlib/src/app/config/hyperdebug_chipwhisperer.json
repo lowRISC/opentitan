@@ -1,5 +1,8 @@
 {
-  "includes": ["/__builtin__/opentitan.json"],
+  "includes": [
+    "/__builtin__/hyperdebug.json",
+    "/__builtin__/opentitan.json"
+  ],
   "pins": [
     {
       "name": "RESET",
