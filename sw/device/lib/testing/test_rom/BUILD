@@ -157,6 +157,7 @@ cc_library(
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
+        "//hw/top:ast_c_regs",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
@@ -164,7 +165,6 @@ cc_library(
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
