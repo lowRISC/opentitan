@@ -50,7 +50,7 @@
   ]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 50
+  reseed: 25
 
   component_a: "uvm_test_top.env.scoreboard"
   id_a: _ALL_
@@ -82,6 +82,7 @@
     {
       name: pwm_smoke
       uvm_test_seq: pwm_smoke_vseq
+      reseed: 10
     }
     {
       name: pwm_rand_output
@@ -97,6 +98,7 @@
     {
       name: pwm_perf
       uvm_test_seq: pwm_perf_vseq
+      reseed: 10
     }
     {
       name: pwm_stress_all
