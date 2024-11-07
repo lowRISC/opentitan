@@ -2205,9 +2205,9 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/keymgr/data:keymgr_c_regs",
         "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:aes_c_regs",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
@@ -4812,7 +4812,6 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/aes/data:aes_c_regs",
         "//hw/ip/csrng/data:csrng_c_regs",
         "//hw/ip/entropy_src/data:entropy_src_c_regs",
         "//hw/ip/gpio/data:gpio_c_regs",
@@ -4824,6 +4823,7 @@ opentitan_test(
         "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
         "//hw/top:adc_ctrl_c_regs",
+        "//hw/top:aes_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",

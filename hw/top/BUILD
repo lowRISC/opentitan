@@ -25,6 +25,7 @@ IPS = [
     "pwrmgr",
     "pinmux",
     "adc_ctrl",
+    "aes",
 ]
 
 [
