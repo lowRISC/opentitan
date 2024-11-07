@@ -28,6 +28,7 @@ opentitan_top(
     files = glob(["**"]),
     hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     ips = [
+        "//hw/top_earlgrey/ip/xbar_peri",
         "//hw/top_earlgrey/ip/xbar_main",
         "//hw/top_earlgrey/ip/xbar",
         "//hw/top_earlgrey/ip/sensor_ctrl",
