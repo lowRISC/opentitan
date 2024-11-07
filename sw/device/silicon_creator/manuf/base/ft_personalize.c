@@ -297,6 +297,8 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
                      kDiceMeasurementSizeInBytes);
   hmac_sha256_update((unsigned char *)inputs->owner_manifest_measurement,
                      kDiceMeasurementSizeInBytes);
+  hmac_sha256_process();
+  hmac_sha256_final(&combined_measurements);
   memcpy(attestation_binding_value.data, combined_measurements.digest,
          kDiceMeasurementSizeInBytes);
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
