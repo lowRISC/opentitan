@@ -38,6 +38,7 @@ IPS = [
     "lc_ctrl",
     "otbn",
     "otp_ctrl",
+    "pattgen",
 ]
 
 [
