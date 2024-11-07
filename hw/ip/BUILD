@@ -38,6 +38,6 @@ filegroup(
         "//hw/ip/tlul",
         "//hw/ip/trial1:all_files",
         "//hw/ip/uart",
-        "//hw/ip/usbdev:all_files",
+        "//hw/ip/usbdev",
     ],
 )
