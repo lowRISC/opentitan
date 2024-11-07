@@ -509,13 +509,6 @@ typedef enum logic [AddSOSelWidth-1:0] {
   ADD_SO_DIP  = MUX3_SEL_2
 } add_so_sel_e;
 
-parameter int SSelNum = 2;
-parameter int SSelWidth = Mux2SelWidth;
-typedef enum logic [SSelWidth-1:0] {
-  S_LOAD  = MUX2_SEL_0,
-  S_CLEAR = MUX2_SEL_1
-} s_sel_e;
-
 parameter int GHashInSelNum = 3;
 parameter int GHashInSelWidth = Mux3SelWidth;
 typedef enum logic [GHashInSelWidth-1:0] {
@@ -524,22 +517,14 @@ typedef enum logic [GHashInSelWidth-1:0] {
   GHASH_IN_S            = MUX3_SEL_2
 } ghash_in_sel_e;
 
-parameter int GHashStateSelNum = 5;
-parameter int GHashStateSelWidth = Mux5SelWidth;
+parameter int GHashStateSelNum = 4;
+parameter int GHashStateSelWidth = Mux4SelWidth;
 typedef enum logic [GHashStateSelWidth-1:0] {
-  GHASH_STATE_RESTORE = MUX5_SEL_0,
-  GHASH_STATE_INIT    = MUX5_SEL_1,
-  GHASH_STATE_ADD     = MUX5_SEL_2,
-  GHASH_STATE_MULT    = MUX5_SEL_3,
-  GHASH_STATE_CLEAR   = MUX5_SEL_4
+  GHASH_STATE_RESTORE = MUX4_SEL_0,
+  GHASH_STATE_INIT    = MUX4_SEL_1,
+  GHASH_STATE_ADD     = MUX4_SEL_2,
+  GHASH_STATE_MULT    = MUX4_SEL_3
 } ghash_state_sel_e;
-
-parameter int HashSubkeySelNum = 2;
-parameter int HashSubkeySelWidth = Mux2SelWidth;
-typedef enum logic [HashSubkeySelWidth-1:0] {
-  HASH_SUBKEY_LOAD  = MUX2_SEL_0,
-  HASH_SUBKEY_CLEAR = MUX2_SEL_1
-} hash_subkey_sel_e;
 
 parameter int DataOutSelNum = 2;
 parameter int DataOutSelWidth = Mux2SelWidth;

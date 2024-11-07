@@ -114,9 +114,6 @@ module aes_ghash
   input  logic                         alert_fatal_i,
   output logic                         alert_o,
 
-  // Pseudo-random data for register clearing
-  input  logic         [GCMDegree-1:0] prd_clearing_i [NumShares],
-
   // I/O data signals
   input  logic         [3:0][3:0][7:0] cipher_state_init_i [NumShares], // Masked cipher core input
                                                                         // for GCM_RESTORE
@@ -139,13 +136,11 @@ module aes_ghash
   logic [GCMDegree-1:0] s_d [NumSharesLocal];
   logic [GCMDegree-1:0] s_q [NumSharesLocal];
   sp2v_e                s_we;
-  s_sel_e               s_sel;
   logic [15:0][7:0]     ghash_in;
   logic [15:0][7:0]     ghash_in_valid;
   ghash_in_sel_e        ghash_in_sel;
   logic [GCMDegree-1:0] ghash_state_d [NumSharesLocal];
   logic [GCMDegree-1:0] ghash_state_q [NumSharesLocal];
-  logic [GCMDegree-1:0] ghash_state_zero [NumSharesLocal];
   logic [GCMDegree-1:0] ghash_state_add [NumSharesLocal];
   sp2v_e                ghash_state_we;
   ghash_state_sel_e     ghash_state_sel;
@@ -153,7 +148,6 @@ module aes_ghash
   logic [GCMDegree-1:0] hash_subkey_d [NumSharesLocal];
   logic [GCMDegree-1:0] hash_subkey_q [NumSharesLocal];
   sp2v_e                hash_subkey_we;
-  hash_subkey_sel_e     hash_subkey_sel;
   logic                 gf_mult_req;
   logic                 gf_mult_ack;
   aes_ghash_e           aes_ghash_ns, aes_ghash_cs;
@@ -164,17 +158,14 @@ module aes_ghash
   // Covert the input data to the internal data format.
   logic [GCMDegree-1:0] cipher_state_init [NumSharesLocal];
   logic [GCMDegree-1:0] cipher_state_done [NumSharesLocal];
-  logic [GCMDegree-1:0] prd_clearing [NumSharesLocal];
   logic [GCMDegree-1:0] data_in_prev;
   logic [GCMDegree-1:0] data_out;
   always_comb begin : data_in_conversion
     cipher_state_done = '{default: '0};
     cipher_state_init = '{default: '0};
-    prd_clearing      = '{default: '0};
     for (int s = 0; s < NumShares; s++) begin
       cipher_state_done[0] ^= aes_state_to_ghash_vec(cipher_state_done_i[s]);
       cipher_state_init[0] ^= aes_state_to_ghash_vec(cipher_state_init_i[s]);
-      prd_clearing[0]      ^= prd_clearing_i[s];
     end
     data_in_prev = aes_state_to_ghash_vec(aes_transpose(data_in_prev_i));
     data_out     = aes_state_to_ghash_vec(aes_transpose(data_out_i));
@@ -187,14 +178,10 @@ module aes_ghash
   // The initial counter block J_0 encrypted using the encryption key K. For the unmasked
   // implementation this is only used at the very end. For the masked implementaion, it is used
   // multiple times and in various forms throughout the computation of the authentication tag.
-  always_comb begin : s_mux
-    unique case (s_sel)
-      S_LOAD:  s_d = cipher_state_done;
-      S_CLEAR: s_d = prd_clearing;
-      default: s_d = prd_clearing;
-    endcase
-  end
-
+  //
+  // This register can be cleared with pseudo-random data by loading the output of the cipher
+  // core after having cleared the internal state of the cipher core.
+  assign s_d = cipher_state_done;
   always_ff @(posedge clk_i or negedge rst_ni) begin : s_reg
     if (!rst_ni) begin
       s_q <= '{default: '0};
@@ -212,7 +199,7 @@ module aes_ghash
       GHASH_IN_DATA_IN_PREV: ghash_in = data_in_prev;
       GHASH_IN_DATA_OUT:     ghash_in = data_out;
       GHASH_IN_S:            ghash_in = s_q[0];
-      default:               ghash_in = data_in_prev;
+      default:               ghash_in = data_out;
     endcase
   end
 
@@ -227,13 +214,6 @@ module aes_ghash
   /////////////////
   // GHASH State //
   /////////////////
-  if (!SecMasking || NumSharesLocal == 1) begin : gen_ghash_state_zero_unmasked
-    assign ghash_state_zero[0] = '0;
-  end else begin : gen_ghash_state_zero_unmasked
-    assign ghash_state_zero[0] = prd_clearing[0];
-    assign ghash_state_zero[1] = prd_clearing[1];
-  end
-
   // Add the GHASH input to the current state.
   assign ghash_state_add[0] = ghash_state_q[0] ^ ghash_in_valid;
   if (SecMasking || NumSharesLocal != 1) begin : gen_ghash_state_shares
@@ -246,14 +226,15 @@ module aes_ghash
   always_comb begin : ghash_state_mux
     unique case (ghash_state_sel)
       GHASH_STATE_RESTORE: ghash_state_d = cipher_state_init;
-      GHASH_STATE_INIT:    ghash_state_d = ghash_state_zero;
+      GHASH_STATE_INIT:    ghash_state_d = '{default: '0};
       GHASH_STATE_ADD:     ghash_state_d = ghash_state_add;
       GHASH_STATE_MULT:    ghash_state_d = ghash_state_mult;
-      GHASH_STATE_CLEAR:   ghash_state_d = prd_clearing;
-      default:             ghash_state_d = prd_clearing;
+      default:             ghash_state_d = ghash_state_add;
     endcase
   end
 
+  // This register can be cleared with pseudo-random data by adding the output of the cipher core
+  // to the current state after having cleared the internal state of the cipher core.
   always_ff @(posedge clk_i or negedge rst_ni) begin : ghash_state_reg
     if (!rst_ni) begin
       ghash_state_q <= '{default: '0};
@@ -265,14 +246,9 @@ module aes_ghash
   /////////////////
   // Hash Subkey //
   /////////////////
-  always_comb begin : hash_subkey_mux
-    unique case (hash_subkey_sel)
-      HASH_SUBKEY_LOAD:  hash_subkey_d = cipher_state_done;
-      HASH_SUBKEY_CLEAR: hash_subkey_d = prd_clearing;
-      default:           hash_subkey_d = prd_clearing;
-    endcase
-  end
-
+  // This register can be cleared with pseudo-random data by loading the output of the cipher
+  // core after having cleared the internal state of the cipher core.
+  assign hash_subkey_d = cipher_state_done;
   always_ff @(posedge clk_i or negedge rst_ni) begin : hash_subkey_reg
     if (!rst_ni) begin
       hash_subkey_q <= '{default: '0};
@@ -316,16 +292,14 @@ module aes_ghash
     out_valid_o = SP2V_LOW;
 
     // Data path
-    s_sel = S_CLEAR;
-    s_we  = SP2V_LOW;
+    s_we = SP2V_LOW;
 
-    ghash_in_sel = GHASH_IN_DATA_IN_PREV;
+    ghash_in_sel = GHASH_IN_DATA_OUT;
 
-    ghash_state_sel = GHASH_STATE_CLEAR;
+    ghash_state_sel = GHASH_STATE_ADD;
     ghash_state_we  = SP2V_LOW;
 
-    hash_subkey_sel = HASH_SUBKEY_CLEAR;
-    hash_subkey_we  = SP2V_LOW;
+    hash_subkey_we = SP2V_LOW;
 
     gf_mult_req = 1'b0;
 
@@ -347,13 +321,12 @@ module aes_ghash
 
           end else if (gcm_phase_i == GCM_INIT) begin
             if (load_hash_subkey_i == SP2V_HIGH) begin
-              // Load the hash subkey.
-              hash_subkey_sel = HASH_SUBKEY_LOAD;
-              hash_subkey_we  = SP2V_HIGH;
 
+              // Load the hash subkey.
+              hash_subkey_we  = SP2V_HIGH;
             end else begin
+
               // Load S and initialize the state.
-              s_sel           = S_LOAD;
               s_we            = SP2V_HIGH;
               ghash_state_sel = GHASH_STATE_INIT;
               ghash_state_we  = SP2V_HIGH;
@@ -373,7 +346,7 @@ module aes_ghash
                 (gcm_phase_i == GCM_TEXT && op_i == AES_DEC) ? GHASH_IN_DATA_IN_PREV :
                 (gcm_phase_i == GCM_TEXT && op_i == AES_ENC) ? GHASH_IN_DATA_OUT     :
                 (gcm_phase_i == GCM_TAG)                     ? GHASH_IN_DATA_IN_PREV :
-                                                               GHASH_IN_DATA_IN_PREV;
+                                                               GHASH_IN_DATA_OUT;
 
             // Add the current input to the GHASH state to start the multiplication in the next
             // clock cycle.
