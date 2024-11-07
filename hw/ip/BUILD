@@ -31,7 +31,7 @@ filegroup(
         "//hw/ip/rv_core_ibex",
         "//hw/ip/rv_dm",
         "//hw/ip/rv_timer",
-        "//hw/ip/spi_device:all_files",
+        "//hw/ip/spi_device",
         "//hw/ip/spi_host:all_files",
         "//hw/ip/sram_ctrl:all_files",
         "//hw/ip/sysrst_ctrl:all_files",
