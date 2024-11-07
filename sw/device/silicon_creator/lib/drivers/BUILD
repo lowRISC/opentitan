@@ -257,7 +257,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         shared = [
-            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+            "//hw/top:rv_core_ibex_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
@@ -589,7 +589,7 @@ dual_cc_library(
             "//sw/device/lib/base:hardened",
             "//hw/top:entropy_src_c_regs",
             "//hw/top:otp_ctrl_c_regs",
-            "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+            "//hw/top:rv_core_ibex_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:crc32",
         ],
@@ -612,8 +612,8 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":rnd"),
         ":otp",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/top:otp_ctrl_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/base:abs_mmio",

@@ -76,8 +76,8 @@ cc_library(
     srcs = ["device_silicon.c"],
     deps = [
         ":device",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
@@ -87,8 +87,8 @@ cc_library(
     srcs = ["device_sim_dv.c"],
     deps = [
         ":device",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
@@ -98,8 +98,8 @@ cc_library(
     srcs = ["device_sim_verilator.c"],
     deps = [
         ":device",
-        "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:rv_core_ibex_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
