@@ -25,7 +25,14 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_top(
     name = "top_earlgrey",
-    files = glob(["**"]),
+    files = glob(["**"]) + [
+        "//:cores",  # FIXME move those files somewhere else?
+        "//hw/dv:all_files",
+        "//hw/lint:all_files",
+        "//hw/top_earlgrey/data:all_files",
+        "//hw/top_earlgrey/dv:all_files",
+        "//hw/vendor:all_files",
+    ],
     hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     ips = [
         "//hw/top_earlgrey/ip/xbar_peri",
@@ -68,16 +75,6 @@ opentitan_top(
         "//hw/top_earlgrey/ip_autogen/clkmgr",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl",
         "//hw/top_earlgrey/ip_autogen/rv_plic",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]) + [
-        "//hw/top_earlgrey/data:all_files",
-        "//hw/top_earlgrey/dv/verilator:all_files",
-        "//hw/top_earlgrey/ip:all_files",
-        "//hw/top_earlgrey/sw:all_files",
     ],
 )
 
