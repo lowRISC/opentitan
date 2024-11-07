@@ -587,7 +587,7 @@ dual_cc_library(
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:hardened",
-            "//hw/ip/entropy_src/data:entropy_src_c_regs",
+            "//hw/top:entropy_src_c_regs",
             "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
