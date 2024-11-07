@@ -606,7 +606,6 @@ module aes_core
       .alert_fatal_i       ( alert_fatal_o          ),
       .alert_o             ( ghash_alert            ),
 
-      .prd_clearing_i      ( prd_clearing_128       ),
       .cipher_state_init_i ( state_init             ),
       .data_in_prev_i      ( data_in_prev_q         ),
       .data_out_i          ( data_out_d             ),
