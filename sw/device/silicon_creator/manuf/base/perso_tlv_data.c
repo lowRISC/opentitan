@@ -82,7 +82,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   return kErrorOk;
 }
 
-rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
+rom_error_t perso_tlv_cert_obj_build(const char *name,
+                                     const perso_tlv_object_type_t obj_type,
                                      const uint8_t *cert, size_t cert_size,
                                      uint8_t *buf, size_t *buf_size) {
   perso_tlv_object_header_t obj_header = 0;
@@ -107,14 +108,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
     return kErrorPersoTlvOutputBufTooSmall;
 
   // Setup the perso LTV object header.
-  if (needs_endorsement) {
-    PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeX509Tbs);
-  } else {
-    // TODO(lowRISC/opentitan:#24281): should decide the obj_type by other
-    // factor
-    // PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeX509Cert);
-    PERSO_TLV_SET_FIELD(Objh, Type, obj_header, kPersoObjectTypeCwtCert);
-  }
+  PERSO_TLV_SET_FIELD(Objh, Type, obj_header, obj_type);
   PERSO_TLV_SET_FIELD(Objh, Size, obj_header, obj_size);
 
   // Setup the cert object header.
@@ -138,11 +132,20 @@ rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
 
 status_t perso_tlv_push_cert_to_perso_blob(const char *name,
                                            bool needs_endorsement,
+                                           const dice_cert_format_t dice_format,
                                            const uint8_t *cert,
                                            size_t cert_size, perso_blob_t *pb) {
   // Build the perso TLV cert object and push it to the perso blob.
   size_t obj_size = sizeof(pb->body) - pb->next_free;
-  TRY(perso_tlv_cert_obj_build(name, needs_endorsement, cert, cert_size,
+  perso_tlv_object_type_t obj_type = kPersoObjectTypeCwtCert;
+  if (dice_format == kDiceCertFormatX509TcbInfo) {
+    if (needs_endorsement) {
+      obj_type = kPersoObjectTypeX509Tbs;
+    } else {
+      obj_type = kPersoObjectTypeX509Cert;
+    }
+  }
+  TRY(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
                                pb->body + pb->next_free, &obj_size));
 
   // Update the perso blob offset and object count.
