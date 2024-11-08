@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_EPMP_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_EPMP_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_EPMP_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_EPMP_H_
 
 #include <stdint.h>
 
@@ -14,7 +14,7 @@ extern "C" {
 #endif  // __cplusplus
 
 /**
- * ROM_EXT ROM enhanced Physical Memory Protection (ePMP) library.
+ * Enhanced Physical Memory Protection (ePMP) library.
  *
  * The ePMP configuration is managed in two parts:
  *
@@ -33,8 +33,6 @@ extern "C" {
  * initialized) with the in-memory copy of the state used to double check the
  * configuration as required.
  */
-// TODO(lowrisc/opentitan#8800): Implement ePMP initialization for ROM_EXT
-// stage.
 
 /**
  * Clear an ePMP entry.
@@ -43,7 +41,7 @@ extern "C" {
  *
  * @param entry The ePMP entry to clear.
  */
-void rom_ext_epmp_clear(uint8_t entry);
+void epmp_clear(uint8_t entry);
 
 /**
  * Configures an ePMP entry for a NAPOT or NA4 region.
@@ -59,8 +57,7 @@ void rom_ext_epmp_clear(uint8_t entry);
  * @param region The address region to configure.
  * @param perm The ePMP permissions for the region.
  */
-void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
-                            epmp_perm_t perm);
+void epmp_set_napot(uint8_t entry, epmp_region_t region, epmp_perm_t perm);
 
 /**
  * Configures an ePMP entry for a TOR region.
@@ -73,18 +70,17 @@ void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
  * @param region The address region to configure.
  * @param perm The ePMP permissions for the region.
  */
-void rom_ext_epmp_set_tor(uint8_t entry, epmp_region_t region,
-                          epmp_perm_t perm);
+void epmp_set_tor(uint8_t entry, epmp_region_t region, epmp_perm_t perm);
 
 /**
  * Clear the rule-locking-bypass (RLB) bit.
  *
  * Clearing RLB causes the Lock bit in the ePMP to be enforced.
  */
-void rom_ext_epmp_clear_rlb(void);
+void epmp_clear_rlb(void);
 
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_ROM_EXT_EPMP_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_DRIVERS_EPMP_H_

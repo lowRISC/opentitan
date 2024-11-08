@@ -16,19 +16,6 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "rom_ext_epmp",
-    srcs = ["rom_ext_epmp.c"],
-    hdrs = ["rom_ext_epmp.h"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:epmp_state",
-    ],
-)
-
-cc_library(
     name = "rescue",
     srcs = ["rescue.c"],
     hdrs = ["rescue.h"],
@@ -220,7 +207,6 @@ cc_library(
         ":rescue",
         ":rom_ext_boot_policy",
         ":rom_ext_boot_policy_ptrs",
-        ":rom_ext_epmp",
         ":sigverify_keys",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
@@ -249,6 +235,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
         "//sw/device/silicon_creator/lib/cert:dice",
         "//sw/device/silicon_creator/lib/drivers:ast",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
