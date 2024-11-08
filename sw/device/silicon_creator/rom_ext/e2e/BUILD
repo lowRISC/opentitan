@@ -34,7 +34,6 @@ otp_json(
             lock = True,
         ),
     ],
-    visibility = ["//visibility:private"],
 )
 
 otp_image(
