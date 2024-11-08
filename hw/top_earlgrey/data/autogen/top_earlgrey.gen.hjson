@@ -6531,6 +6531,29 @@
           name_top: SecKmacIdleAcceptSwMsg
         }
         {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          type: int
+          default: 3
+          local: "false"
+          expose: "true"
+          name_top: KmacNumAppIntf
+        }
+        {
+          name: AppCfg
+          desc:
+            '''
+            Application interface configuration.
+            Top-level connection to the application interface must follow this definition.
+            '''
+          type: kmac_pkg::app_config_t
+          unpacked_dimensions: "[KmacNumAppIntf]"
+          default: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl}"
+          local: "false"
+          expose: "true"
+          name_top: KmacAppCfg
+        }
+        {
           name: RndCnstLfsrSeed
           desc: Compile-time random data for PRNG default seed
           type: kmac_pkg::lfsr_seed_t
@@ -6591,7 +6614,17 @@
           package: kmac_pkg
           type: req_rsp
           act: rsp
-          width: 3
+          width:
+          {
+            name: NumAppIntf
+            desc: Number of application interfaces
+            param_type: int
+            unpacked_dimensions: null
+            default: 3
+            local: false
+            expose: true
+            name_top: KmacNumAppIntf
+          }
           inst_name: kmac
           default: ""
           end_idx: -1
@@ -20343,7 +20376,17 @@
         package: kmac_pkg
         type: req_rsp
         act: rsp
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         inst_name: kmac
         default: ""
         end_idx: -1
@@ -23449,7 +23492,17 @@
         package: kmac_pkg
         struct: app_req
         signame: kmac_app_req
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -23460,7 +23513,17 @@
         package: kmac_pkg
         struct: app_rsp
         signame: kmac_app_rsp
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         type: req_rsp
         end_idx: -1
         act: rsp

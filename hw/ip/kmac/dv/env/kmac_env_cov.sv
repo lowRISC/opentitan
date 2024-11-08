@@ -205,7 +205,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
   config_masked_cg config_masked_cg;
   config_unmasked_cg config_unmasked_cg;
 
-  app_cg_wrap app_cg_wrappers[kmac_pkg::NumAppIntf];
+  app_cg_wrap app_cg_wrappers[kmac_env_pkg::NUM_APP_INTF];
 
   covergroup msg_len_cg with function sample(int len);
     msg_len: coverpoint len {

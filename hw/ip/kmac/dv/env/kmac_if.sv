@@ -9,8 +9,8 @@ interface kmac_if(input clk_i, input rst_ni);
   logic                                          en_masking_o;
   lc_ctrl_pkg::lc_tx_t                           lc_escalate_en_i;
   prim_mubi_pkg::mubi4_t                         idle_o;
-  kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
-  kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
+  kmac_pkg::app_req_t [kmac_env_pkg::NUM_APP_INTF-1:0] app_req;
+  kmac_pkg::app_rsp_t [kmac_env_pkg::NUM_APP_INTF-1:0] app_rsp;
 
   function automatic void drive_lc_escalate(lc_ctrl_pkg::lc_tx_t val);
     lc_escalate_en_i = val;

@@ -10,7 +10,7 @@ class kmac_virtual_sequencer extends cip_base_virtual_sequencer #(
 
   `uvm_component_new
 
-  kmac_app_sequencer kmac_app_sequencer_h[kmac_pkg::NumAppIntf];
+  kmac_app_sequencer kmac_app_sequencer_h[kmac_env_pkg::NUM_APP_INTF];
   key_sideload_sequencer key_sideload_sequencer_h;
 
 endclass
