@@ -74,8 +74,8 @@ module pwm_core #(
   always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
     if (!rst_core_ni) begin
       beat_ctr_q <= '0;
-    end else begin
-      beat_ctr_q <= beat_ctr_en ? beat_ctr_d : beat_ctr_q;
+    end else if (beat_ctr_en) begin
+      beat_ctr_q <= beat_ctr_d;
     end
   end
 
