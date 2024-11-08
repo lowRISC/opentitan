@@ -152,8 +152,12 @@ module pwm_chan #(
 
   assign duty_cycle_htbt = !dc_wrap_q ? dc_htbt_q : pos_htbt ? 16'hffff : '0;
 
-  assign duty_cycle_actual = (blink_en_i && !htbt_en_i) ? duty_cycle_blink :
-                             (blink_en_i && htbt_en_i) ? duty_cycle_htbt : duty_cycle_a_i;
+  always_comb begin
+    duty_cycle_actual = duty_cycle_a_i;
+    if (blink_en_i) begin
+      duty_cycle_actual = (htbt_en_i) ? duty_cycle_htbt : duty_cycle_blink;
+    end
+  end
 
   // For cases when the desired duty_cycle does not line up with the chosen resolution
   // we mask away any used bits.
