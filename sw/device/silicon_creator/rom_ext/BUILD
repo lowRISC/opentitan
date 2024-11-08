@@ -347,6 +347,30 @@ opentitan_binary(
     ],
 )
 
+opentitan_binary(
+    name = "rom_ext_with_nop_imm_slot_virtual",
+    testonly = True,
+    # TODO(#22780): Integrate real keys for A1 flows.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
+    ],
+    linker_script = ":ld_slot_virtual",
+    manifest = ":manifest",
+    deps = [
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/imm_rom_ext/prebuilts:nop_imm_rom_ext",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
+    ],
+)
+
 manifest(d = {
     "name": "manifest_bad_address_translation",
     "address_translation": "0",
