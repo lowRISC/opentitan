@@ -451,7 +451,7 @@ static rom_error_t rom_ext_attestation_creator(
     // Update the cert page buffer.
     size_t cert_page_left = dice_certs_buffer_space_remaining();
     HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
-        "CDI_0", /*needs_endorsement=*/false, cdi_0_cert, cdi_0_cert_size,
+        "CDI_0", kPersoObjectTypeX509Cert, cdi_0_cert, cdi_0_cert_size,
         dice_cert_obj.obj_p, &cert_page_left));
     dice_certs_page_dirty = kHardenedBoolTrue;
     // Reload the cert perso LTV object.
@@ -526,7 +526,7 @@ static rom_error_t rom_ext_attestation_owner(const boot_data_t *boot_data,
     // Update the cert page buffer.
     size_t cert_page_left = dice_certs_buffer_space_remaining();
     HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
-        "CDI_1", /*needs_endorsement=*/false, cdi_1_cert, cdi_1_cert_size,
+        "CDI_1", kPersoObjectTypeX509Cert, cdi_1_cert, cdi_1_cert_size,
         dice_cert_obj.obj_p, &cert_page_left));
     dice_certs_page_dirty = kHardenedBoolTrue;
     // Reload the cert perso LTV object.

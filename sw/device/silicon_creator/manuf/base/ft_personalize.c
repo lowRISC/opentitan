@@ -476,7 +476,7 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   TRY(perso_tlv_push_cert_to_perso_blob(
       "UDS",
       /*needs_endorsement=*/kDiceCertFormat == kDiceCertFormatX509TcbInfo,
-      all_certs, curr_cert_size, &perso_blob_to_host));
+      kDiceCertFormat, all_certs, curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated UDS certificate.");
 
   // Generate CDI_0 keys and cert.
@@ -495,8 +495,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE "CDI_0" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_0", /*needs_endorsement=*/false,
-                                        all_certs, curr_cert_size,
-                                        &perso_blob_to_host));
+                                        kDiceCertFormat, all_certs,
+                                        curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated CDI_0 certificate.");
 
   // Generate CDI_1 keys and cert.
@@ -516,8 +516,8 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // DO NOT CHANGE THE "CDI_1" STRING BELOW with modifying the `dice_cert_names`
   // collection in sw/host/provisioning/ft_lib/src/lib.rs.
   TRY(perso_tlv_push_cert_to_perso_blob("CDI_1", /*needs_endorsement=*/false,
-                                        all_certs, curr_cert_size,
-                                        &perso_blob_to_host));
+                                        kDiceCertFormat, all_certs,
+                                        curr_cert_size, &perso_blob_to_host));
   LOG_INFO("Generated CDI_1 certificate.");
 
   return OK_STATUS();
