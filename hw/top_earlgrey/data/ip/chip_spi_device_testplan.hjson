@@ -99,7 +99,7 @@
                 - Clears the busy bit to allow the upstream SPI host to proceed to the next command.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: [ "PROD" ]
       features: [
         "SPI_DEVICE.MODE.PASSTHROUGH",
@@ -161,7 +161,7 @@
                which is why the "features" list is empty. It may be reclassifed in the future.
              '''
       stage: V3
-      si_stage: None
+      si_stage: SV3
       lc_states: [ "PROD" ]
       features: ["SPI_DEVICE.CFG",
                  "SPI_DEVICE.JEDEC_CC",

@@ -79,10 +79,9 @@
             `wakeup_en` CSR, bring the chip to normal sleep, optionally disabling the source's
             clock, have the source issue a wakeup event and verify `wake_info` indicates the
             expected wakeup.
-            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
-      si_stage: NA
+      si_stage: SV3
       tests: ["chip_sw_pwrmgr_normal_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_normal_sleep_all_wake_ups"]
     }
@@ -135,10 +134,9 @@
             This verifies ALL wake up sources. This also verifies that the pwrmgr sequencing is
             working correctly as expected. X-ref'ed with all individual IP tests. Similar to
             chip_pwrmgr_sleep_all_wake_ups, except `control.main_pd_n` is set to 0.
-            SiVal: No need to run this, run chip_sw_pwrmgr_random_sleep_all_wake_ups instead.
             '''
       stage: V2
-      si_stage: NA
+      si_stage: SV3
       tests: ["chip_sw_pwrmgr_deep_sleep_all_wake_ups"]
       bazel: ["//sw/device/tests:pwrmgr_deep_sleep_all_wake_ups"]
     }
@@ -160,7 +158,7 @@
             No need to run this, run chip_sw_pwrmgr_random_sleep_all_reset_reqs instead.
             '''
       stage: V2
-      si_stage: NA
+      si_stage: SV3
       features: [
         "PWRMGR.LOW_POWER.ENTRY",
         "PWRMGR.LOW_POWER.DISABLE_POWER"
