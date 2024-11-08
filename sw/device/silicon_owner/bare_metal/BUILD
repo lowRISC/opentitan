@@ -5,7 +5,7 @@
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:linker.bzl", "ld_library")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "cw310_params", "fpga_params", "opentitan_binary", "opentitan_test")
+load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_binary", "opentitan_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -84,6 +84,8 @@ opentitan_binary(
     srcs = ["bare_metal_start.S"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
