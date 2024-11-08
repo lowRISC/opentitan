@@ -886,3 +886,16 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+cc_library(
+    name = "epmp",
+    srcs = ["epmp.c"],
+    hdrs = ["epmp.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:epmp_state",
+    ],
+)
