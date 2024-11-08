@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
@@ -1177,6 +1178,11 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 }
 
 void rom_ext_main(void) {
+  // TODO(opentitan#24368): Call immutable main in .rom_ext_immutable.
+  // The immutable rom_ext startup code is not ready yet, so we call it here
+  // to avoid breaking tests.
+  imm_rom_ext_main();
+
   rom_ext_check_rom_expectations();
   boot_data_t boot_data;
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
@@ -1199,3 +1205,9 @@ void rom_ext_exception_handler(void);
 
 OT_ALIAS("rom_ext_interrupt_handler")
 void rom_ext_nmi_handler(void);
+
+// A no-op immutable rom_ext fallback to avoid breaking tests before the
+// proper bazel target is ready.
+// TODO(opentitan#24368): Remove this nop fallback.
+OT_SECTION(".rom_ext_immutable.fallback")
+void imm_rom_ext_placeholder(void) {}
