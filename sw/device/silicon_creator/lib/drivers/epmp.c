@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/csr.h"
@@ -16,7 +16,7 @@
   CSR_WRITE(CSR_REG_PMPADDR##addr_reg, pmpaddr);     \
   CSR_SET_BITS(CSR_REG_PMPCFG##cfg_reg, cfg);
 
-static void rom_ext_epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
+static void epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
   uint32_t shift = 8 * (entry % 4);
   uint32_t mask = 0xFFu << shift;
   uint32_t cfg = (pmpcfg & 0xFFu) << shift;
@@ -49,12 +49,9 @@ static void rom_ext_epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
   epmp_state.pmpaddr[entry] = pmpaddr;
 }
 
-void rom_ext_epmp_clear(uint8_t entry) {
-  rom_ext_epmp_set(entry, kEpmpModeOff, 0);
-}
+void epmp_clear(uint8_t entry) { epmp_set(entry, kEpmpModeOff, 0); }
 
-void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
-                            epmp_perm_t perm) {
+void epmp_set_napot(uint8_t entry, epmp_region_t region, epmp_perm_t perm) {
   uint32_t length = region.end - region.start;
   // The length must be 4 or more.
   HARDENED_CHECK_GE(length, 4);
@@ -64,18 +61,17 @@ void rom_ext_epmp_set_napot(uint8_t entry, epmp_region_t region,
   HARDENED_CHECK_EQ(region.start & (length - 1), 0);
   epmp_mode_t mode = length == 4 ? kEpmpModeNa4 : kEpmpModeNapot;
   uint32_t addr = (region.start >> 2) | ((length - 1) >> 3);
-  rom_ext_epmp_set(entry, (uint32_t)mode | (uint32_t)perm, addr);
+  epmp_set(entry, (uint32_t)mode | (uint32_t)perm, addr);
 }
 
-void rom_ext_epmp_set_tor(uint8_t entry, epmp_region_t region,
-                          epmp_perm_t perm) {
+void epmp_set_tor(uint8_t entry, epmp_region_t region, epmp_perm_t perm) {
   uint32_t start = region.start >> 2;
   uint32_t end = ((region.end + 3u) & ~3u) >> 2;
-  rom_ext_epmp_set(entry, kEpmpModeOff, start);
-  rom_ext_epmp_set(entry + 1, (uint32_t)kEpmpModeTor | (uint32_t)perm, end);
+  epmp_set(entry, kEpmpModeOff, start);
+  epmp_set(entry + 1, (uint32_t)kEpmpModeTor | (uint32_t)perm, end);
 }
 
-void rom_ext_epmp_clear_rlb(void) {
+void epmp_clear_rlb(void) {
   const uint32_t kMask = EPMP_MSECCFG_RLB;
   epmp_state.mseccfg &= ~kMask;
   CSR_CLEAR_BITS(CSR_REG_MSECCFG, kMask);
