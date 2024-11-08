@@ -26,6 +26,7 @@
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/ast.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
@@ -53,7 +54,6 @@
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
-#include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
 #include "flash_ctrl_regs.h"                          // Generated.
@@ -546,25 +546,25 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
                            kOtpSecMmioCreatorSwCfgLockDown);
 
   // ePMP region 15 gives read/write access to RAM.
-  rom_ext_epmp_set_napot(15, kRamRegion, kEpmpPermReadWrite);
+  epmp_set_napot(15, kRamRegion, kEpmpPermReadWrite);
 
   // Reconfigure the ePMP MMIO region to be NAPOT region 14, thus freeing
   // up an ePMP entry for use elsewhere.
-  rom_ext_epmp_set_napot(14, kMmioRegion, kEpmpPermReadWrite);
+  epmp_set_napot(14, kMmioRegion, kEpmpPermReadWrite);
 
   // ePMP region 13 allows RvDM access.
   if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
     // No RvDM access in Prod states, so we can clear the entry.
-    rom_ext_epmp_clear(13);
+    epmp_clear(13);
   } else {
-    rom_ext_epmp_set_napot(13, kRvDmRegion, kEpmpPermReadWriteExecute);
+    epmp_set_napot(13, kRvDmRegion, kEpmpPermReadWriteExecute);
   }
 
   // ePMP region 12 gives read access to all of flash for both M and U modes.
   // The flash access was in ePMP region 5.  Clear it so it doesn't take
   // priority over 12.
-  rom_ext_epmp_set_napot(12, kFlashRegion, kEpmpPermReadOnly);
-  rom_ext_epmp_clear(5);
+  epmp_set_napot(12, kFlashRegion, kEpmpPermReadOnly);
+  epmp_clear(5);
 
   // Move the ROM_EXT TOR region from entries 3/4/6 to 9/10/11.
   // If the ROM_EXT is located in the virtual window, the ROM will have
@@ -586,15 +586,13 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
     vwindow = (vwindow & ~(size - 1)) << 2;
     size <<= 3;
 
-    rom_ext_epmp_set_napot(
-        11, (epmp_region_t){.start = vwindow, .end = vwindow + size},
-        kEpmpPermReadOnly);
+    epmp_set_napot(11, (epmp_region_t){.start = vwindow, .end = vwindow + size},
+                   kEpmpPermReadOnly);
   }
-  rom_ext_epmp_set_tor(rxindex,
-                       (epmp_region_t){.start = start << 2, .end = end << 2},
-                       kEpmpPermReadExecute);
+  epmp_set_tor(rxindex, (epmp_region_t){.start = start << 2, .end = end << 2},
+               kEpmpPermReadExecute);
   for (int8_t i = (int8_t)rxindex - 1; i >= 0; --i) {
-    rom_ext_epmp_clear((uint8_t)i);
+    epmp_clear((uint8_t)i);
   }
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
@@ -616,7 +614,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
 
       // Unlock read-only for the whole rom_ext virtual memory.
       HARDENED_RETURN_IF_ERROR(epmp_state_check());
-      rom_ext_epmp_set_napot(
+      epmp_set_napot(
           4,
           (epmp_region_t){.start = (uintptr_t)_owner_virtual_start_address,
                           .end = (uintptr_t)_owner_virtual_start_address +
@@ -637,7 +635,7 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
       // anymore and since it isn't being used to encode access to the virtual
       // window.  However, for SiVal, we want to keep low entries locked to
       // prevent using low entries to override policy in higher entries.
-      // rom_ext_epmp_clear_rom_region();
+      // epmp_clear_rom_region();
       break;
     default:
       HARDENED_TRAP();
@@ -647,11 +645,11 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   // unlock the ROM_EXT code regions so the next stage can re-use those
   // entries and clear RLB to prevent further changes to locked ePMP regions.
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
-  rom_ext_epmp_set_tor(2, text_region, kEpmpPermReadExecute);
+  epmp_set_tor(2, text_region, kEpmpPermReadExecute);
 
   // Now that we're done reconfiguring the ePMP, we'll clear the RLB bit to
   // prevent any modification to locked entries.
-  rom_ext_epmp_clear_rlb();
+  epmp_clear_rlb();
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Lock the address translation windows.
