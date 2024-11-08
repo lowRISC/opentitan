@@ -230,6 +230,7 @@ cc_library(
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:hart",
+        "//sw/device/silicon_creator/imm_rom_ext:main_lib",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
