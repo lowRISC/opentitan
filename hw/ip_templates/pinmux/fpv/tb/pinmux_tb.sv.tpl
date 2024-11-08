@@ -32,7 +32,9 @@ module pinmux_tb
   input  clk_aon_i,
   input  rst_aon_ni,
   output logic pin_wkup_req_o,
+% if enable_usb_wakeup:
   output logic usb_wkup_req_o,
+% endif
   input  sleep_en_i,
   input  strap_en_i,
   input  strap_en_override_i,
@@ -49,6 +51,7 @@ module pinmux_tb
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   output jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
+% if enable_usb_wakeup:
   input usbdev_dppullup_en_i,
   input usbdev_dnpullup_en_i,
   output logic usb_dppullup_en_o,
@@ -59,6 +62,7 @@ module pinmux_tb
   output logic usbdev_bus_reset_o,
   output logic usbdev_sense_lost_o,
   output logic usbdev_wake_detect_active_o,
+% endif
   input tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   input prim_alert_pkg::alert_rx_t[NumAlerts-1:0] alert_rx_i,

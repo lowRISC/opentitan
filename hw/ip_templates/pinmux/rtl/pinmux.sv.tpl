@@ -28,7 +28,9 @@ module pinmux
   input                            rst_aon_ni,
   // Wakeup request, running on clk_aon_i
   output logic                     pin_wkup_req_o,
+% if enable_usb_wakeup:
   output logic                     usb_wkup_req_o,
+% endif
   // Sleep enable and strap sample enable
   // from pwrmgr, running on clk_i
   input                            sleep_en_i,
@@ -67,6 +69,7 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+% if enable_usb_wakeup:
   // Direct USB connection
   input                            usbdev_dppullup_en_i,
   input                            usbdev_dnpullup_en_i,
@@ -78,6 +81,7 @@ module pinmux
   output                           usbdev_bus_reset_o,
   output                           usbdev_sense_lost_o,
   output                           usbdev_wake_detect_active_o,
+% endif
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t        tl_i,
   output tlul_pkg::tl_d2h_t        tl_o,
@@ -379,6 +383,7 @@ module pinmux
     .dft_jtag_o,
     .dft_jtag_i
   );
+% if enable_usb_wakeup:
 
   ///////////////////////////////////////
   // USB wake detect module connection //
@@ -411,6 +416,7 @@ module pinmux
     .sense_lost_aon_o(usbdev_sense_lost_o),
     .wake_detect_active_aon_o(usbdev_wake_detect_active_o)
   );
+% endif
 
   /////////////////////////
   // Retention Registers //
@@ -654,8 +660,10 @@ module pinmux
 
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
+% if enable_usb_wakeup:
   `ASSERT_KNOWN(UsbWkupReqKnownO_A, usb_wkup_req_o, clk_aon_i, !rst_aon_ni)
   `ASSERT_KNOWN(UsbWakeDetectActiveKnownO_A, usbdev_wake_detect_active_o, clk_aon_i, !rst_aon_ni)
+% endif
 
   // The wakeup signal is not latched in the pwrmgr so must be held until acked by software
   `ASSUME(PinmuxWkupStable_A, pin_wkup_req_o |=> pin_wkup_req_o ||
@@ -680,7 +688,7 @@ module pinmux
   `ASSERT(FpvSecCmBusIntegrity_A,
           $rose(u_reg.intg_err)
           |->
-          ##[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
+          ${"##"}[0:`_SEC_CM_ALERT_MAX_CYC] (alert_tx_o[0].alert_p))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
