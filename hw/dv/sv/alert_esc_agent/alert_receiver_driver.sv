@@ -1,15 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-//
 
-// ---------------------------------------------
-// Alert_handler receiver driver
-// ---------------------------------------------
+// A driver that receives alerts. This is used in alert_esc_agent when configured in "device mode"
+// (so the dut is a device and the agent is expecting to receive alerts and send occasional pings)
 class alert_receiver_driver extends alert_esc_base_driver;
-
   `uvm_component_utils(alert_receiver_driver)
-
   `uvm_component_new
 
   virtual task drive_req();
@@ -63,35 +59,49 @@ class alert_receiver_driver extends alert_esc_base_driver;
     end // end forever
   endtask : send_ping
 
+  // Handle a sequence item that demands an alert response (and was thus put in r_alert_rsp_q).
+  //
+  // An item should only be added to that queue in response to an alert being generated on the
+  // interface. We will wait a randomised time (in set_ack_pins) before acknowledging the alert.
   virtual task rsp_alert();
     forever begin
       alert_esc_seq_item req, rsp;
       wait(r_alert_rsp_q.size() > 0 && !under_reset);
       req = r_alert_rsp_q.pop_front();
+
+      // If we get here then something should have been pushed onto the alert queue in response to
+      // an alert being generated. Wait a short time to allow the alert to propagate through the
+      // clocking blocks (which should only take a cycle, but give it a couple more to make sure)
+      repeat (4) begin
+        if (under_reset) continue;
+        if (cfg.vif.receiver_cb.alert_tx.alert_p) break;
+        @(cfg.vif.receiver_cb);
+      end
+      `DV_CHECK_FATAL(cfg.vif.receiver_cb.alert_tx.alert_p,
+                      "alert_p not high, despite an item in r_alert_rsp_q")
+
       `downcast(rsp, req.clone());
       rsp.set_id_info(req);
       `uvm_info(`gfn,
-          $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
+                $sformatf("rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
+                          req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
+                UVM_HIGH)
 
       fork
         begin : isolation_fork
           fork
-            begin
-              wait_alert();
-              set_ack_pins(req);
-            end
-            begin
-              wait(under_reset);
-            end
+            set_ack_pins(req);
+            wait(under_reset);
           join_any
           disable fork;
         end
       join
 
       `uvm_info(`gfn,
-          $sformatf("finished sending receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
-          req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
+                $sformatf("finished rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
+                          req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
+                UVM_HIGH)
+
       seq_item_port.put_response(rsp);
     end // end forever
   endtask : rsp_alert
