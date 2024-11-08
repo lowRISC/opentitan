@@ -166,6 +166,7 @@ cc_test(
             "//sw/device/lib/base:memory",
             "//sw/device/lib/base:stdasm",
             "//sw/device/lib/runtime:hart",
+            "//sw/device/silicon_creator/imm_rom_ext:main_lib",
             "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:boot_log",
             "//sw/device/silicon_creator/lib:dbg_print",
