@@ -34,6 +34,7 @@ module pinmux
   // Sleep enable and strap sample enable
   // from pwrmgr, running on clk_i
   input                            sleep_en_i,
+% if enable_strap_sampling:
   input                            strap_en_i,
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
   // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
@@ -69,6 +70,7 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+% endif
 % if enable_usb_wakeup:
   // Direct USB connection
   input                            usbdev_dppullup_en_i,
@@ -296,6 +298,7 @@ module pinmux
     assign hw2reg.mio_pad_attr[k].invert.d         = mio_attr[k].invert;
   end
 
+% if enable_strap_sampling:
 
   //////////////////////////
   // Strap Sampling Logic //
@@ -383,6 +386,7 @@ module pinmux
     .dft_jtag_o,
     .dft_jtag_i
   );
+% endif
 % if enable_usb_wakeup:
 
   ///////////////////////////////////////
@@ -692,9 +696,11 @@ module pinmux
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+% if enable_strap_sampling:
 
   // The strap sampling enable input shall be pulsed high for exactly one cycle after cold boot.
   `ASSUME(PwrMgrStrapSampleOnce0_A, strap_en_i |=> !strap_en_i)
   `ASSUME(PwrMgrStrapSampleOnce1_A, $fell(strap_en_i) |-> always !strap_en_i)
+% endif
 
 endmodule : pinmux

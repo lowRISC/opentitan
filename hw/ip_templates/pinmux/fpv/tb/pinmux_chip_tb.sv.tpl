@@ -25,6 +25,7 @@ module pinmux_chip_tb
   output logic usb_wkup_req_o,
 % endif
   input  sleep_en_i,
+% if enable_strap_sampling:
   input  strap_en_i,
   input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
@@ -40,6 +41,7 @@ module pinmux_chip_tb
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   output jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
+% endif
 % if enable_usb_wakeup:
   input usbdev_dppullup_en_i,
   input usbdev_dnpullup_en_i,
