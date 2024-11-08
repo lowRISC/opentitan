@@ -50,8 +50,8 @@ module pwm_chan #(
     end else begin
       if (clr_blink_cntr_i) begin
         blink_ctr_q <= '0;
-      end else begin
-        blink_ctr_q <= (blink_en_i && !htbt_en_i) ? blink_ctr_d : blink_ctr_q;
+      end else if (blink_en_i && !htbt_en_i) begin
+        blink_ctr_q <= blink_ctr_d;
       end
     end
   end
@@ -78,8 +78,8 @@ module pwm_chan #(
     end else begin
       if (clr_blink_cntr_i) begin
         htbt_ctr_q <= '0;
-      end else begin
-        htbt_ctr_q <= (blink_en_i && htbt_en_i) ? htbt_ctr_d : htbt_ctr_q;
+      end else if (blink_en_i && htbt_en_i) begin
+        htbt_ctr_q <= htbt_ctr_d;
       end
     end
   end
