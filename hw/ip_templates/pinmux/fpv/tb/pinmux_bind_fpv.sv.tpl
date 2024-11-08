@@ -22,6 +22,7 @@ module pinmux_bind_fpv;
     .usb_wkup_req_o,
 % endif
     .sleep_en_i,
+% if enable_strap_sampling:
     .strap_en_i,
     .strap_en_override_i,
     .lc_dft_en_i,
@@ -37,6 +38,7 @@ module pinmux_bind_fpv;
     .rv_jtag_i,
     .dft_jtag_o,
     .dft_jtag_i,
+% endif
 % if enable_usb_wakeup:
     .usbdev_dppullup_en_i,
     .usbdev_dnpullup_en_i,

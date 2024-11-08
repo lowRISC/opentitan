@@ -63,5 +63,11 @@
       type: "int"
       default: "1"
     }
+    {
+      name: "enable_strap_sampling"
+      desc: "Set to true to instantiate the HW strap sampling and TAP selection submodule wake submodule"
+      type: "int"
+      default: "1"
+    }
   ]
 }

@@ -27,6 +27,7 @@ module pinmux_assert_fpv
   input logic usb_wkup_req_o,
 % endif
   input  sleep_en_i,
+% if enable_strap_sampling:
   input  strap_en_i,
   input  strap_en_override_i,
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
@@ -42,6 +43,7 @@ module pinmux_assert_fpv
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   input jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
+% endif
 % if enable_usb_wakeup:
   input usbdev_dppullup_en_i,
   input usbdev_dnpullup_en_i,
@@ -570,6 +572,7 @@ module pinmux_assert_fpv
             (wkup_detector.mode.q == 3 && (cnter >= wkup_detector_cnt_th.q)) ||
             (wkup_detector.mode.q == 4 && (cnter >= wkup_detector_cnt_th.q))),
           clk_aon_i, !rst_aon_ni)
+% if enable_strap_sampling:
 
   // ------ JTAG pinmux input assertions ------
   `ASSERT(LcJtagOWoScanmode_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::LcTapSel &&
@@ -691,6 +694,7 @@ module pinmux_assert_fpv
                                              mio_in_i[TargetCfg.dft_strap0_idx]})))
 
 % if enable_usb_wakeup:
+% endif
   // ------ Check USB connectivity ------
   // Note the following assertions only work if the testbench blackboxed u_usbdev_aon_wake module.
   `ASSERT(UsbdevDppullupEnI_A, usbdev_dppullup_en_i <->
