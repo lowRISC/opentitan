@@ -18,7 +18,9 @@ module pinmux_bind_fpv;
     .clk_aon_i,
     .rst_aon_ni,
     .pin_wkup_req_o,
+% if enable_usb_wakeup:
     .usb_wkup_req_o,
+% endif
     .sleep_en_i,
     .strap_en_i,
     .strap_en_override_i,
@@ -35,6 +37,7 @@ module pinmux_bind_fpv;
     .rv_jtag_i,
     .dft_jtag_o,
     .dft_jtag_i,
+% if enable_usb_wakeup:
     .usbdev_dppullup_en_i,
     .usbdev_dnpullup_en_i,
     .usb_dppullup_en_o,
@@ -45,6 +48,7 @@ module pinmux_bind_fpv;
     .usbdev_bus_reset_o,
     .usbdev_sense_lost_o,
     .usbdev_wake_detect_active_o,
+% endif
     .tl_i,
     .tl_o,
     .alert_rx_i,
