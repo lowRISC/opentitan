@@ -12,12 +12,46 @@ load(
 )
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
+load(
+    "//rules:otp.bzl",
+    "STD_OTP_OVERLAYS",
+    "otp_hex",
+    "otp_image",
+    "otp_json_immutable_rom_ext",
+    "otp_partition",
+)
 
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "boot_test",
     srcs = ["boot_test.c"],
+)
+
+otp_json_immutable_rom_ext(
+    name = "otp_json_with_nop_imm_romext_enabled",
+    testonly = True,
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+            },
+        ),
+    ],
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_nop_imm_slot_virtual",
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_with_nop_imm_romext_enabled",
+    testonly = True,
+    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+        ":otp_json_with_nop_imm_romext_enabled",
+    ],
+    visibility = ["//visibility:private"],
 )
 
 _POSITIONS = {
@@ -27,6 +61,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "bl0_slot = AA__\r\n",
+        "otp_img": None,
     },
     "owner_slot_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -34,6 +69,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "owner_offset": "0x90000",
         "success": "bl0_slot = __BB\r\n",
+        "otp_img": None,
     },
     "owner_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -41,6 +77,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "owner_offset": "0x10000",
         "success": "bl0_slot = AA__\r\n",
+        "otp_img": None,
     },
     "owner_virtual_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -48,6 +85,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "owner_offset": "0x90000",
         "success": "bl0_slot = __BB\r\n",
+        "otp_img": None,
     },
     "romext_slot_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -55,6 +93,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = AA__\r\n",
+        "otp_img": None,
     },
     "romext_slot_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
@@ -62,6 +101,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = __BB\r\n",
+        "otp_img": None,
     },
     "romext_virtual_a": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
@@ -69,6 +109,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = AA__\r\n",
+        "otp_img": None,
     },
     "romext_virtual_b": {
         "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
@@ -76,6 +117,15 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = __BB\r\n",
+        "otp_img": None,
+    },
+    "romext_virtual_a_with_nop_imm_romext_enabled": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_with_nop_imm_slot_virtual",
+        "romext_offset": "0",
+        "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
+        "owner_offset": "0x10000",
+        "success": "rom_ext_slot = AA__\r\n",
+        "otp_img": ":otp_img_with_nop_imm_romext_enabled",
     },
 }
 
@@ -92,6 +142,7 @@ _POSITIONS = {
                 position["romext"]: "romext",
             },
             exit_success = position["success"],
+            otp = position["otp_img"],
             owner_offset = position["owner_offset"],
             romext_offset = position["romext_offset"],
         ),
