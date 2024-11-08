@@ -30,6 +30,10 @@ load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
 )
+load(
+    "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
+    "OWNER_SLOTS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -365,19 +369,21 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
         },
         fpga = fpga_params(
             timeout = "moderate",
-            assemble = "{ft_personalize}@{slot_a} {transport_image}@{slot_b}",
+            assemble = "{ft_personalize}@{rom_ext_slot_a} {rom_ext}@{rom_ext_slot_b} {owner_fw}@{owner_slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
-                    config["transport_image"]: "transport_image",
+                    config["rom_ext"]: "rom_ext",
+                    config["owner_fw"]: "owner_fw",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             needs_jtag = True,
             otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
-            slot_a = SLOTS["a"],
-            slot_b = SLOTS["b"],
+            owner_slot_b = OWNER_SLOTS["b"],
+            rom_ext_slot_a = SLOTS["a"],
+            rom_ext_slot_b = SLOTS["b"],
             tags = [
                 "lc_test_locked0",
                 "manuf",
@@ -386,19 +392,21 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
         silicon = silicon_params(
-            assemble = "{ft_personalize}@{slot_a} {transport_image}@{slot_b}",
+            assemble = "{ft_personalize}@{rom_ext_slot_a} {rom_ext}@{rom_ext_slot_b} {owner_fw}@{owner_slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
                     ":ft_personalize_{}".format(sku): "ft_personalize",
-                    config["transport_image"]: "transport_image",
+                    config["rom_ext"]: "rom_ext",
+                    config["owner_fw"]: "owner_fw",
                 },
             changes_otp = True,
             data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
             interface = "teacup",
             needs_jtag = True,
-            slot_a = SLOTS["a"],
-            slot_b = SLOTS["b"],
+            owner_slot_b = OWNER_SLOTS["b"],
+            rom_ext_slot_a = SLOTS["a"],
+            rom_ext_slot_b = SLOTS["b"],
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
