@@ -9,7 +9,7 @@ waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} -re
 
 waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} -location {kmac.sv} \
     -regexp {'tlram_addr' is not read} \
-    -comment "MSG_FIFO ignores the exact memory address but use strobe for alignement"
+    -comment "MSG_FIFO ignores the exact memory address but use strobe for alignment"
 
 waive -rules {HIER_NET_NOT_READ NOT_READ INPUT_NOT_READ} \
     -location {kmac_msgfifo.sv} -regexp {'packer_wmask.* is not read} \
@@ -29,3 +29,16 @@ waive -rules {INTEGER} -location {kmac_entropy.sv} \
 
 waive -rules {CASE_SEL_EXPR} -location {kmac_app.sv} \
     -comment "not a problem, just a suggested alternate implementation"
+
+waive -rules TWO_STATE_TYPE -location {kmac_pkg.sv} \
+      -regexp {'PrefixMode' is of two state type} \
+      -comment "Enum bit is used as a generate selection. OK to be two state"
+waive -rules TWO_STATE_TYPE -location {kmac_pkg.sv} \
+      -regexp {'app_mode_e' is of two state type} \
+      -comment "Enum bit is used in ifs only. OK to be two state"
+waive -rules TWO_STATE_TYPE -location {kmac_pkg.sv} \
+      -regexp {'Mode' is of two state type} \
+      -comment "Enum bit is used in ifs only. OK to be two state"
+waive -rules TWO_STATE_TYPE -location {kmac_pkg.sv} \
+      -regexp {'app_config_t' is of type struct which contains two state type field} \
+      -comment "Struct fields waived separately. OK to be two state"

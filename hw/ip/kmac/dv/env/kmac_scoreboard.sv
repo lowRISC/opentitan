@@ -153,16 +153,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                 ({KMAC_FIFO_DEPTH{1'b1}} << KmacStatusFifoDepthLSB);
 
   // TLM fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[kmac_pkg::NumAppIntf];
+  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[NUM_APP_INTF];
   uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
     .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)))
-    kmac_app_req_fifo[kmac_pkg::NumAppIntf];
+    kmac_app_req_fifo[NUM_APP_INTF];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+    for (int i = 0; i < NUM_APP_INTF; i++) begin
       kmac_app_req_fifo[i] = new($sformatf("kmac_app_req_fifo[%0d]", i), this);
       kmac_app_rsp_fifo[i] = new($sformatf("kmac_app_rsp_fifo[%0d]", i), this);
     end
@@ -1729,8 +1729,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     byte fname_arr[];
     byte custom_str_arr[];
 
-    if (en_kmac_app && kmac_pkg::AppCfg[app_mode].PrefixMode) begin
-      prefix_bytes = {<< byte {kmac_pkg::AppCfg[app_mode].Prefix}};
+    if (en_kmac_app && APP_CFG[app_mode].PrefixMode) begin
+      prefix_bytes = {<< byte {APP_CFG[app_mode].Prefix}};
     end else begin
       prefix_bytes = {<< 32 {prefix}};
       prefix_bytes = {<< byte {prefix_bytes}};

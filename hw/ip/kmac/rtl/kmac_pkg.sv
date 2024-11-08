@@ -190,15 +190,6 @@ package kmac_pkg;
   // Application interface //
   ///////////////////////////
 
-  // Number of the application interface
-  // Currently KMAC has three interface.
-  // 0: KeyMgr
-  // 1: LC_CTRL
-  // 2: ROM_CTRL
-  // Make sure to change `width` of app inter-module signal definition
-  // if this value is changed.
-  parameter int unsigned NumAppIntf = 3;
-
   // Application Algorithm
   // Each interface can choose algorithms among SHA3, cSHAKE, KMAC
   typedef enum bit [1:0] {
@@ -228,7 +219,7 @@ package kmac_pkg;
   typedef struct packed {
     app_mode_e Mode;
 
-    sha3_pkg::keccak_strength_e Strength;
+    sha3_pkg::keccak_strength_e KeccakStrength;
 
     // PrefixMode determines the origin value of Prefix that is used in KMAC
     // and cSHAKE operations.
@@ -241,33 +232,28 @@ package kmac_pkg;
     logic [NSPrefixW-1:0] Prefix;
   } app_config_t;
 
-  parameter app_config_t AppCfg [NumAppIntf] = '{
-    // KeyMgr
-    '{
-      Mode:       AppKMAC, // KeyMgr uses KMAC operation
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,   // Use prefix parameter
-      // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
-      Prefix:     NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
-    },
+  parameter app_config_t AppCfgKeyMgr = '{
+    Mode: AppKMAC, // KeyMgr uses KMAC operation
+    KeccakStrength: sha3_pkg::L256,
+    PrefixMode: 1'b1,   // Use prefix parameter
+    // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
+    Prefix: NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
+  };
 
-    // LC_CTRL
-    '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L128,
-      PrefixMode: 1'b 1,     // Use prefix parameter
-      // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
-    },
+  parameter app_config_t AppCfgLcCtrl= '{
+    Mode: AppCShake,
+    KeccakStrength: sha3_pkg::L128,
+    PrefixMode: 1'b1,     // Use prefix parameter
+    // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
+    Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
+  };
 
-    // ROM_CTRL
-    '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,     // Use prefix parameter
-      // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
-    }
+  parameter app_config_t AppCfgRomCtrl = '{
+    Mode: AppCShake,
+    KeccakStrength: sha3_pkg::L256,
+    PrefixMode: 1'b1,     // Use prefix parameter
+    // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
+    Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
   };
 
   // Exporting the app internal mux selection enum into the package. So that DV

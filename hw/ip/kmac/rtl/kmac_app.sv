@@ -10,9 +10,11 @@ module kmac_app
   import kmac_pkg::*;
 #(
   // App specific configs are defined in kmac_pkg
-  parameter  bit EnMasking = 1'b0,
-  localparam int Share = (EnMasking) ? 2 : 1, // derived parameter
-  parameter  bit SecIdleAcceptSwMsg = 1'b0
+  parameter  bit          EnMasking          = 1'b0,
+  localparam int          Share              = (EnMasking) ? 2 : 1, // derived parameter
+  parameter  bit          SecIdleAcceptSwMsg = 1'b0,
+  parameter  int unsigned NumAppIntf         = 3,
+  parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl, AppCfgRomCtrl}
 ) (
   input clk_i,
   input rst_ni,
@@ -872,7 +874,7 @@ module kmac_app
       kmac_en_o         <= AppCfg[arb_idx].Mode == AppKMAC ? 1'b 1 : 1'b 0;
       sha3_mode_o       <= AppCfg[arb_idx].Mode == AppSHA3
                            ? sha3_pkg::Sha3 : sha3_pkg::CShake;
-      keccak_strength_o <= AppCfg[arb_idx].Strength ;
+      keccak_strength_o <= AppCfg[arb_idx].KeccakStrength ;
     end else if (st == StIdle) begin
       kmac_en_o         <= reg_kmac_en_i;
       sha3_mode_o       <= reg_sha3_mode_i;
