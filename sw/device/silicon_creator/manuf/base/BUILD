@@ -276,6 +276,7 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/cert",
     ],
 )
 

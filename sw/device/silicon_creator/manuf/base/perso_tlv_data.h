@@ -11,6 +11,7 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
+#include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
 /**
@@ -184,8 +185,7 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * +----------------------------------------------+
  *
  * @param name The name of the certificate.
- * @param needs_endorsement Defines the type of the LTV object the certificate
- *                          is wrapped into (TBS or fully formed).
+ * @param obj_type The object type that needs to encoded.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
  * @param[out] buf Output buffer to copy the data into.
@@ -194,7 +194,8 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
+rom_error_t perso_tlv_cert_obj_build(const char *name,
+                                     const perso_tlv_object_type_t obj_type,
                                      const uint8_t *cert, size_t cert_size,
                                      uint8_t *buf, size_t *buf_size);
 
@@ -206,6 +207,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
  * @param name The name of the certificate.
  * @param needs_endorsement Defines the type of the LTV object the certificate
  *                          is wrapped into (TBS or fully formed).
+ * @param cert_format The format of the certificate.
  * @param cert The binary certificate blob.
  * @param cert_size Size of the certificate blob in bytes.
  * @param perso_blob Pointer to the `perso_blob_t` to copy the object to.
@@ -214,6 +216,7 @@ rom_error_t perso_tlv_cert_obj_build(const char *name, bool needs_endorsement,
 OT_WARN_UNUSED_RESULT
 status_t perso_tlv_push_cert_to_perso_blob(const char *name,
                                            bool needs_endorsement,
+                                           const dice_cert_format_t cert_format,
                                            const uint8_t *cert,
                                            size_t cert_size, perso_blob_t *pb);
 
