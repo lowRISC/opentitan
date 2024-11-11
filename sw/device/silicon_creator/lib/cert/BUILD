@@ -200,3 +200,29 @@ cc_library(
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
+
+cc_library(
+    name = "dice_chain",
+    srcs = ["dice_chain.c"],
+    hdrs = ["dice_chain.h"],
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:keymgr_binding",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
+        "//sw/device/silicon_creator/lib/base:sec_mmio",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
+        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+        "//sw/device/silicon_creator/lib/cert:dice",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+    ],
+)
