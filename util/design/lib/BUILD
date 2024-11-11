@@ -22,6 +22,16 @@ py_test(
 )
 
 py_library(
+    name = "immutable_section_processor",
+    srcs = ["ImmutableSectionProcessor.py"],
+    imports = ["../../"],
+    deps = [
+        requirement("pycryptodome"),
+        requirement("pyelftools"),
+    ],
+)
+
+py_library(
     name = "lc_st_enc",
     srcs = ["LcStEnc.py"],
     imports = ["../../"],
