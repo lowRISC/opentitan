@@ -107,12 +107,12 @@ class alert_receiver_driver extends alert_esc_base_driver;
   endtask : rsp_alert
 
   virtual task drive_alert_ping(alert_esc_seq_item req);
+    bit          have_sent_ping = 1'b0;
     int unsigned ping_delay = (cfg.use_seq_item_ping_delay) ? req.ping_delay :
                                $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
+
     if (!req.int_err) begin
       @(cfg.vif.receiver_cb);
-      repeat (ping_delay) @(cfg.vif.receiver_cb);
-      set_ping();
       // Ping fail and differential signal fail scenarios are not implemented now.
       // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
       // The current use-case does not test ping fail and differential signal fail scenarios.
@@ -121,11 +121,25 @@ class alert_receiver_driver extends alert_esc_base_driver;
         begin : isolation_fork
           fork
             begin : ping_timeout
+              // Wait ping_delay cycles before we actually send the ping
+              repeat (ping_delay) @(cfg.vif.receiver_cb);
+              // Now send the ping (which the alert sender should respond to)
+              set_ping();
+              have_sent_ping = 1'b1;
+              // Finally, hold the driver for handshake_timeout_cycle cycles to give the alert
+              // sender time to respond to the ping.
               repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
             end
             begin : wait_ping_handshake
               wait_alert();
-              set_ack_pins(req);
+              // If we have sent the ping then the alert we have just seen will be a response to it.
+              // Call the set_ack_pins task to wait a randomised time and then ack the response. If
+              // we haven't sent the ping yet, immediately finish handling the sequence item
+              // instead. Another item will be driven through rsp_alert to respond to the alert
+              // properly.
+              if (have_sent_ping) begin
+                set_ack_pins(req);
+              end
             end
           join_any
           disable fork;

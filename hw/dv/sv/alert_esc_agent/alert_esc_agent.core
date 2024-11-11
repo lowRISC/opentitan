@@ -30,6 +30,7 @@ filesets:
       - alert_esc_sequencer.sv: {is_include_file: true}
       - seq_lib/alert_receiver_base_seq.sv: {is_include_file: true}
       - seq_lib/alert_receiver_alert_rsp_seq.sv: {is_include_file: true}
+      - seq_lib/alert_receiver_ping_seq.sv: {is_include_file: true}
       - seq_lib/alert_receiver_seq.sv: {is_include_file: true}
       - seq_lib/alert_sender_base_seq.sv: {is_include_file: true}
       - seq_lib/alert_sender_ping_rsp_seq.sv: {is_include_file: true}

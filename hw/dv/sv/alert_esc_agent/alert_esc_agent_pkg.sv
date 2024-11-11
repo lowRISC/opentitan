@@ -72,6 +72,7 @@ package alert_esc_agent_pkg;
   // Sequences
   `include "seq_lib/alert_receiver_base_seq.sv"
   `include "seq_lib/alert_receiver_alert_rsp_seq.sv"
+  `include "seq_lib/alert_receiver_ping_seq.sv"
   `include "seq_lib/alert_receiver_seq.sv"
   `include "seq_lib/alert_sender_base_seq.sv"
   `include "seq_lib/alert_sender_ping_rsp_seq.sv"
