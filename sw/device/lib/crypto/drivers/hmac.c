@@ -69,12 +69,18 @@ enum {
   /* The beginning of the address space of HMAC. */
   kHmacBaseAddr = TOP_EARLGREY_HMAC_BASE_ADDR,
   /* Timeout value for the polling
-   * As max 4 clock cycles are required to perform a read access to the
-   * register. And as it should take less than 64 clock cycles in SHA2-256
-   * and 80 clock cycles in SHA2-384/512, let's take some margin and consider
-   * that 100 loops are a way enough to see IDLE status.
+   * As min 3 clock cycles are required to perform a read access to the STATUS
+   * hmac_idle register. And as we should observe 240 cycles (80 for the inner
+   * key, 80 for the outer key, and 80 for the result of the first round), plus
+   * 80 for msg itself -> 360 cycles in total as max (when HMAC is enabled).
+   * Which means, 360/3=120 loops before having the IDLE state.
+   * Let's take a large margin and consider that 200 loops are enough.
    */
-  kNumIterTimeout = 100,
+  kNumIterTimeout = 200,
+  /* Temporary delay linked to issue #24767, which should be equivalent to at
+   * least 80 clock cycles of the HMAC clock plus a margin.
+   */
+  kHmacTmpDelay = 200,
 };
 
 /**
@@ -281,9 +287,9 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
  * @param[out] ctx Context to which values are written.
  */
 static status_t tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
-  // Insert delay which should be equivalent to at least 80 clock cycles
+  // Insert a delay
   ibex_timeout_t timeout;
-  timeout.cycles = kNumIterTimeout / 2;  // 1/2 as a loop is 2 instructions
+  timeout.cycles = kHmacTmpDelay;
   timeout.start = ibex_mcycle_read();
   while (!ibex_timeout_check(&timeout)) {
     // NULL statement
