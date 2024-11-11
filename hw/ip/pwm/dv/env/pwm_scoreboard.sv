@@ -264,44 +264,42 @@ task pwm_scoreboard::compare_trans(int channel);
   int    p = 0;
 
   forever begin
-  // as this DUT signals needs to be evaluated over time
-  // they are only evaluated when the channel is off.
-  // this way it is known what the first and last item are
-  // as they might deviate from the settings due to rounding
-  // and termination.
+    // as this DUT signals needs to be evaluated over time they are only evaluated when the channel
+    // is off. this way it is known what the first and last item are as they might deviate from the
+    // settings due to rounding and termination.
 
-  // The very first item will be when the monitor detects the first active edge
-  // it will have no information
-  // wait for the first expected item
-  if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
-    item_fifo[channel].get(input_item);
-    generate_exp_item(compare_item, channel);
-  end else begin
-    item_fifo[channel].get(input_item);
-    generate_exp_item(compare_item, channel);
-    // After the state has switched to different state, settings will change
-    // Comparison ignored till two pulses
-    if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
-       // ignore items when resolution would round the duty cycle to 0 or 100
-       if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
-         && (input_item.period == compare_item.period)) begin
-           if(!input_item.compare(compare_item)) begin
-             `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
-             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-               channel, compare_item.sprint()),UVM_HIGH)
-             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-               channel, input_item.sprint()),UVM_HIGH)
-           end else begin
-             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
-             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-               channel, compare_item.sprint()),UVM_HIGH)
-             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-               channel, input_item.sprint()),UVM_HIGH)
-           end
-       end
-    end
+    // The very first item will be when the monitor detects the first active edge
+    // it will have no information
+    // wait for the first expected item
+    if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
+      item_fifo[channel].get(input_item);
+      generate_exp_item(compare_item, channel);
+    end else begin
+      item_fifo[channel].get(input_item);
+      generate_exp_item(compare_item, channel);
+      // After the state has switched to different state, settings will change
+      // Comparison ignored till two pulses
+      if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
+        // ignore items when resolution would round the duty cycle to 0 or 100
+        if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
+           && (input_item.period == compare_item.period)) begin
+          if(!input_item.compare(compare_item)) begin
+            `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                                      channel, compare_item.sprint()),UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                                      channel, input_item.sprint()),UVM_HIGH)
+          end else begin
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                                      channel, compare_item.sprint()),UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                                      channel, input_item.sprint()),UVM_HIGH)
+          end
+        end
+      end
       ignore_state_change[channel] -= 1 ;
-  end
+    end
     ignore_start_pulse[channel] -= 1 ;
   end
 endtask : compare_trans
