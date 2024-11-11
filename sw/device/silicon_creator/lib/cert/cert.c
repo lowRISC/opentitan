@@ -13,6 +13,10 @@
 
 #include "flash_ctrl_regs.h"  // Generated.
 
+static_assert(kCertX509Asn1SerialNumberSizeInBytes <= kHmacDigestNumBytes,
+              "The ASN.1 encoded X.509 serial number field should be <= the "
+              "size of a SHA256 digest.");
+
 static uint8_t actual_serial_number[kCertX509Asn1SerialNumberSizeInBytes] = {0};
 
 uint32_t cert_x509_asn1_decode_size_header(const uint8_t *header) {
