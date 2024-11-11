@@ -20,6 +20,10 @@ load(
     "otp_json_immutable_rom_ext",
     "otp_partition",
 )
+load(
+    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "IMM_ROM_EXT_TARGETS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -28,31 +32,37 @@ filegroup(
     srcs = ["boot_test.c"],
 )
 
-otp_json_immutable_rom_ext(
-    name = "otp_json_with_nop_imm_romext_enabled",
-    testonly = True,
-    partitions = [
-        otp_partition(
-            name = "CREATOR_SW_CFG",
-            items = {
-                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
-            },
-        ),
-    ],
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_nop_imm_slot_virtual",
-    visibility = ["//visibility:private"],
-)
+[
+    otp_json_immutable_rom_ext(
+        name = "otp_json_with_{}_imm_romext_enabled".format(name),
+        testonly = True,
+        partitions = [
+            otp_partition(
+                name = "CREATOR_SW_CFG",
+                items = {
+                    "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+                },
+            ),
+        ],
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
+        visibility = ["//visibility:private"],
+    )
+    for name in IMM_ROM_EXT_TARGETS
+]
 
-otp_image(
-    name = "otp_img_with_nop_imm_romext_enabled",
-    testonly = True,
-    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
-    overlays = STD_OTP_OVERLAYS + [
-        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
-        ":otp_json_with_nop_imm_romext_enabled",
-    ],
-    visibility = ["//visibility:private"],
-)
+[
+    otp_image(
+        name = "otp_img_with_{}_imm_romext_enabled".format(name),
+        testonly = True,
+        src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+        overlays = STD_OTP_OVERLAYS + [
+            "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+            ":otp_json_with_{}_imm_romext_enabled".format(name),
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for name in IMM_ROM_EXT_TARGETS
+]
 
 _POSITIONS = {
     "owner_slot_a": {
@@ -119,14 +129,16 @@ _POSITIONS = {
         "success": "rom_ext_slot = __BB\r\n",
         "otp_img": None,
     },
-    "romext_virtual_a_with_nop_imm_romext_enabled": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_with_nop_imm_slot_virtual",
+} | {
+    "romext_virtual_a_with_{}_imm_romext_enabled".format(name): {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_with_{}_imm_slot_virtual".format(name),
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = AA__\r\n",
-        "otp_img": ":otp_img_with_nop_imm_romext_enabled",
-    },
+        "otp_img": ":otp_img_with_{}_imm_romext_enabled".format(name),
+    }
+    for name in IMM_ROM_EXT_TARGETS
 }
 
 [
@@ -135,6 +147,7 @@ _POSITIONS = {
         srcs = [":boot_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
@@ -176,6 +189,7 @@ opentitan_test(
     srcs = [":boot_test"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
@@ -221,6 +235,7 @@ _KEYS = {
         srcs = [":boot_test"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
         },
         fpga = fpga_params(
             exit_failure = keyinfo["exit_failure"],
