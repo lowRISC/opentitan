@@ -26,7 +26,7 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
 
 
   // Configures the read pipeline when set to non-zero
-  rand bit [1:0]                                      read_pipeline_mode;
+  rand bit [1:0] read_pipeline_mode;
 
   constraint read_pipeline_mode_c {
     read_pipeline_mode <= 2;
@@ -114,7 +114,8 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
                                        opcode == local::opcode;
                                        address_q.size() == 0;
                                        payload_q.size() <= local::max_payload_size;
-                                       read_size == payload_q.size(););
+                                       read_size == payload_q.size();
+                                       cmd_in_mbx == 0;);
         `uvm_send(m_spi_host_seq);
         // Wait for a small delay to allow the device agent to push the response
         // into the queue.
@@ -129,7 +130,7 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
             // connected to the passthrough will have a couple of extra cycles of data, which
             // translates into an extra item in the queue when reading 4 lanes
             `uvm_info(`gfn, {"[Passtrhough sampled side] Last item in queue dropped due to",
-                      $sformatf(" read_pipeline enabled - : 0x%0x",device_rsp.payload_q[$])},
+                             $sformatf(" read_pipeline enabled - : 0x%0x",device_rsp.payload_q[$])},
                       UVM_DEBUG)
             void'(device_rsp.payload_q.pop_back());
             if (device_rsp.read_size > 0)

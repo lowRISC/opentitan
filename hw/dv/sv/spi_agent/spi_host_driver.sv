@@ -174,7 +174,7 @@ class spi_host_driver extends spi_driver;
       end else begin
         `DV_CHECK_EQ(req.payload_q.size, 0)
         sck_pulses += req.read_size * (8 / req.num_lanes);
-        if (req.read_pipeline_mode>0)
+        if (!req.cmd_in_mbx && req.read_pipeline_mode>0)
           sck_pulses += 2;
       end
     end
@@ -200,8 +200,11 @@ class spi_host_driver extends spi_driver;
       if (req.write_command) begin
         issue_data(req.payload_q, dummy_return_q);
       end else begin
-        repeat (req.read_pipeline_mode>0 ? 2 : 0)
-          cfg.wait_sck_edge(SamplingEdge, active_csb);
+        // If the command is in the mailbox the read pipeline does not apply
+        if (!req.cmd_in_mbx) begin
+          repeat (req.read_pipeline_mode>0 ? 2 : 0)
+            cfg.wait_sck_edge(SamplingEdge, active_csb);
+        end
         repeat (req.read_size) begin
           logic [7:0] data;
           cfg.read_byte(.num_lanes(req.num_lanes), .is_device_rsp(1),

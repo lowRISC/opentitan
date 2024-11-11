@@ -25,7 +25,7 @@ endclass
 
 class chip_spi_device_cg_wrap;
 
-  // This covergroup is only relevanf for those command info slots which have
+  // This covergroup is only relevant for those command info slots which have
   // the read pipeline available (5 <= slots <= 10): READ_NORMAL, READ_FAST,
   // READ_DUAL, READ_QUAD READ_DUALIO READ_QUADIO
   covergroup read_pipeline_cg(string name = "read_pipeline_cg")
