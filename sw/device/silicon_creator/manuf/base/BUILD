@@ -258,8 +258,6 @@ cc_library(
     srcs = ["perso_tlv_data.c"],
     deps = [
         ":perso_tlv_headers",
-        "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/cert",
     ],
@@ -273,7 +271,6 @@ cc_library(
     name = "perso_tlv_headers",
     hdrs = ["perso_tlv_data.h"],
     deps = [
-        "//sw/device/lib/base:status",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/cert",
