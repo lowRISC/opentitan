@@ -62,6 +62,15 @@ def nist_cavp_repos():
         ],
     )
     http_archive(
+        name = "nist_cavp_aes_kat",
+        build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
+        sha256 = "a203b16c9246b2ebae31dee5de21a606be80cf78ceabaca37150236fa098eb60",
+        urls = [
+            "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/aes/KAT_AES.zip",
+            "https://storage.googleapis.com/ot-crypto-test-vectors/nist/KAT_AES.zip",
+        ],
+    )
+    http_archive(
         name = "nist_cavp_aes_kw_sp_800_38f",
         build_file = Label("//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel"),
         strip_prefix = "kwtestvectors",

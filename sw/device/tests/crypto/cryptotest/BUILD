@@ -7,7 +7,7 @@ load(":cryptotest.bzl", "cryptotest")
 package(default_visibility = ["//visibility:public"])
 
 AES_TESTVECTOR_TARGETS = [
-    "//sw/host/cryptotest/testvectors/data/aes_nist_kat:{}_{}_{}_json".format(alg, kat_type, key_len)
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_aes_kat_{}_{}_{}_json".format(alg, kat_type, key_len)
     for alg in ("cbc", "cfb128", "ecb", "ofb")
     for kat_type in ("varkey", "gfsbox", "vartxt", "keysbox")
     for key_len in ("128", "192", "256")
