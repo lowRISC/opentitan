@@ -9,7 +9,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "sw/device/lib/base/status.h"
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -214,11 +213,10 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t perso_tlv_push_cert_to_perso_blob(const char *name,
-                                           bool needs_endorsement,
-                                           const dice_cert_format_t cert_format,
-                                           const uint8_t *cert,
-                                           size_t cert_size, perso_blob_t *pb);
+rom_error_t perso_tlv_push_cert_to_perso_blob(
+    const char *name, bool needs_endorsement,
+    const dice_cert_format_t cert_format, const uint8_t *cert, size_t cert_size,
+    perso_blob_t *pb);
 
 /**
  * Pushes arbitrary data to the perso blob that is sent between host and device.
@@ -229,7 +227,7 @@ status_t perso_tlv_push_cert_to_perso_blob(const char *name,
  * @return status of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
-                                      perso_blob_t *perso_blob);
+rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
+                                         perso_blob_t *perso_blob);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_BASE_PERSO_TLV_DATA_H_
