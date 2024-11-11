@@ -17,6 +17,11 @@
 extern "C" {
 #endif  // __cplusplus
 
+typedef struct hybrid_key {
+  ecdsa_p256_public_key_t ecdsa;
+  sigverify_spx_key_t spx;
+} hybrid_key_t;
+
 /**
  * An owner_key can be either a ECDSA P256 or SPX+ key.  The type of the key
  * material will be determined by a separate field on the owner block
@@ -24,6 +29,10 @@ extern "C" {
 typedef union owner_key {
   /** ECDSA P256 public key */
   ecdsa_p256_public_key_t ecdsa;
+  /** SPHINCS+ public key */
+  sigverify_spx_key_t spx;
+  /** Hybrid ECDSA & SPHINCS+ public key */
+  hybrid_key_t hybrid;
   /** Enough space to hold an ECDSA key and a SPX+ key for hybrid schemes */
   uint32_t raw[16 + 8];
 } owner_key_t;
@@ -55,10 +64,24 @@ typedef enum ownership_key_alg {
   kOwnershipKeyAlgRsa = 0x33415352,
   /** Key algorithm ECDSA P-256: `P256` */
   kOwnershipKeyAlgEcdsaP256 = 0x36353250,
-  /** Key algorithm SPX+: `SPX+` */
-  kOwnershipKeyAlgSpx = 0x2b585053,
-  /** Key algorithm SPX+q20: `Sq20` */
-  kOwnershipKeyAlgSpxq20 = 0x30327153,
+  /** Key algorithm SPX+ Pure: `S+Pu` */
+  kOwnershipKeyAlgSpxPure = 0x75502b53,
+  /** Key algorithm SPX+ Prehashed SHA256: `S+S2` */
+  kOwnershipKeyAlgSpxPrehash = 0x32532b53,
+  /** Key algorithm Hybrid P256 & SPX+ Pure: `H+Pu` */
+  kOwnershipKeyAlgHybridSpxPure = 0x75502b48,
+  /** Key algorithm Hybrid P256 & SPX+ Prehashed SHA256: `H+S2` */
+  kOwnershipKeyAlgHybridSpxPrehash = 0x32532b48,
+
+  // Tentative identifiers for SPHINCS+ q20 variants (not yet supported):
+  // Key algorithm SPX+ Pure: `SqPu`
+  kOwnershipKeyAlgSq20Pure = 0x75507153,
+  // Key algorithm SPX+ Prehashed SHA256: `SqS2`
+  kOwnershipKeyAlgSq20Prehash = 0x32537153,
+  // Key algorithm Hybrid P256 & SPX+ Pure: `HqPu`
+  kOwnershipKeyAlgHybridSq20Pure = 0x75507148,
+  // Key algorithm Hybrid P256 & SPX+ Prehashed SHA256: `HqS2`
+  kOwnershipKeyAlgHybridSq20Prehash = 0x32537148,
 } ownership_key_alg_t;
 
 typedef enum ownership_update_mode {
@@ -224,6 +247,7 @@ typedef struct owner_application_key {
     sigverify_rsa_key_t rsa;
     sigverify_spx_key_t spx;
     ecdsa_p256_public_key_t ecdsa;
+    hybrid_key_t hybrid;
   } data;
 } owner_application_key_t;
 
@@ -242,6 +266,8 @@ enum {
       offsetof(owner_application_key_t, data) + sizeof(sigverify_spx_key_t),
   kTlvLenApplicationKeyEcdsa =
       offsetof(owner_application_key_t, data) + sizeof(ecdsa_p256_public_key_t),
+  kTlvLenApplicationKeyHybrid =
+      offsetof(owner_application_key_t, data) + sizeof(hybrid_key_t),
 };
 
 // clang-format off
