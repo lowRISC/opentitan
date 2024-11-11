@@ -71,9 +71,8 @@ py_binary(
     srcs = ["gen-otp-immutable-rom-ext-json.py"],
     imports = ["."],
     deps = [
+        "//util/design/lib:immutable_section_processor",
         requirement("hjson"),
-        requirement("pycryptodome"),
-        requirement("pyelftools"),
     ],
 )
 
