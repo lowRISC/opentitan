@@ -4,8 +4,6 @@
 
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
-#include "sw/device/lib/base/status.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -30,7 +28,6 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   obj->obj_type = obj_type;
   if (obj_type != kPersoObjectTypeX509Cert &&
       obj_type != kPersoObjectTypeCwtCert) {
-    LOG_INFO("Skipping object of type %d", obj_type);
     return kErrorPersoTlvCertObjNotFound;
   }
   buf += sizeof(perso_tlv_object_header_t);
@@ -73,8 +70,6 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
     size_t decoded_cert_size =
         cert_x509_asn1_decode_size_header(obj->cert_body_p);
     if (decoded_cert_size != obj->cert_body_size) {
-      LOG_ERROR("Unexpected cert size %d instead of %d for cert %s",
-                decoded_cert_size, obj->cert_body_size, obj->name);
       return kErrorPersoTlvInternal;
     }
   }
@@ -130,11 +125,10 @@ rom_error_t perso_tlv_cert_obj_build(const char *name,
   return kErrorOk;
 }
 
-status_t perso_tlv_push_cert_to_perso_blob(const char *name,
-                                           bool needs_endorsement,
-                                           const dice_cert_format_t dice_format,
-                                           const uint8_t *cert,
-                                           size_t cert_size, perso_blob_t *pb) {
+rom_error_t perso_tlv_push_cert_to_perso_blob(
+    const char *name, bool needs_endorsement,
+    const dice_cert_format_t dice_format, const uint8_t *cert, size_t cert_size,
+    perso_blob_t *pb) {
   // Build the perso TLV cert object and push it to the perso blob.
   size_t obj_size = sizeof(pb->body) - pb->next_free;
   perso_tlv_object_type_t obj_type = kPersoObjectTypeCwtCert;
@@ -145,22 +139,22 @@ status_t perso_tlv_push_cert_to_perso_blob(const char *name,
       obj_type = kPersoObjectTypeX509Cert;
     }
   }
-  TRY(perso_tlv_cert_obj_build(name, obj_type, cert, cert_size,
-                               pb->body + pb->next_free, &obj_size));
+  HARDENED_RETURN_IF_ERROR(perso_tlv_cert_obj_build(
+      name, obj_type, cert, cert_size, pb->body + pb->next_free, &obj_size));
 
   // Update the perso blob offset and object count.
   pb->next_free += obj_size;
   pb->num_objs++;
 
-  return OK_STATUS();
+  return kErrorOk;
 }
 
-status_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
-                                      perso_blob_t *perso_blob) {
+rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
+                                         perso_blob_t *perso_blob) {
   size_t room = sizeof(perso_blob->body) - perso_blob->next_free;
   if (room < size)
-    return RESOURCE_EXHAUSTED();
+    return kErrorPersoTlvOutputBufTooSmall;
   memcpy(perso_blob->body + perso_blob->next_free, data, size);
   perso_blob->next_free += size;
-  return OK_STATUS();
+  return kErrorOk;
 }
