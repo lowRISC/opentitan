@@ -109,7 +109,6 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hash_kat",
         "//sw/device/tests/crypto:hmac_sha256_functest",
       ]
     }
