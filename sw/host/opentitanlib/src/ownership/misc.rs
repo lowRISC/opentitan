@@ -31,8 +31,10 @@ with_unknown! {
         Unknown = 0,
         Rsa = u32::from_le_bytes(*b"RSA3"),
         EcdsaP256 = u32::from_le_bytes(*b"P256"),
-        Spx = u32::from_le_bytes(*b"SPX+"),
-        Spxq20 = u32::from_le_bytes(*b"Sq20"),
+        SpxPure = u32::from_le_bytes(*b"S+Pu"),
+        SpxPrehash = u32::from_le_bytes(*b"S+S2"),
+        HybridEcdsaSpxPure = u32::from_le_bytes(*b"H+Pu"),
+        HybridEcdsaSpxPrehash = u32::from_le_bytes(*b"H+S2"),
     }
 }
 
@@ -130,6 +132,31 @@ impl TlvHeader {
     }
 }
 
+#[derive(Debug, Serialize, Deserialize)]
+pub struct HybridEcdsaSpxRawPublicKey {
+    #[serde(deserialize_with = "string_or_struct")]
+    pub ecdsa: EcdsaRawPublicKey,
+    #[serde(deserialize_with = "string_or_struct")]
+    pub spx: SpxRawPublicKey,
+}
+
+impl HybridEcdsaSpxRawPublicKey {
+    const SIZE: usize = EcdsaRawPublicKey::SIZE + SpxRawPublicKey::SIZE;
+
+    pub fn read(src: &mut impl Read) -> Result<Self> {
+        Ok(Self {
+            ecdsa: EcdsaRawPublicKey::read(src)?,
+            spx: SpxRawPublicKey::read(src)?,
+        })
+    }
+
+    pub fn write(&self, dest: &mut impl Write) -> Result<()> {
+        self.ecdsa.write(dest)?;
+        self.spx.write(dest)?;
+        Ok(())
+    }
+}
+
 /// Low-level key material (ie: bit representation).
 #[derive(Debug, Serialize, Deserialize)]
 #[allow(clippy::len_without_is_empty)]
@@ -142,6 +169,8 @@ pub enum KeyMaterial {
     Rsa(#[serde(deserialize_with = "string_or_struct")] RsaRawPublicKey),
     #[serde(alias = "spx")]
     Spx(#[serde(deserialize_with = "string_or_struct")] SpxRawPublicKey),
+    #[serde(alias = "hybrid_ecdsa_spx")]
+    HybridEcdsaSpx(HybridEcdsaSpxRawPublicKey),
 }
 
 impl Default for KeyMaterial {
@@ -156,6 +185,7 @@ impl KeyMaterial {
             KeyMaterial::Ecdsa(_) => EcdsaRawPublicKey::SIZE,
             KeyMaterial::Rsa(_) => RsaRawPublicKey::SIZE,
             KeyMaterial::Spx(_) => SpxRawPublicKey::SIZE,
+            KeyMaterial::HybridEcdsaSpx(_) => HybridEcdsaSpxRawPublicKey::SIZE,
             KeyMaterial::Unknown(u) => u.len(),
         }
     }
@@ -164,7 +194,8 @@ impl KeyMaterial {
         match self {
             KeyMaterial::Ecdsa(_) => OwnershipKeyAlg::EcdsaP256,
             KeyMaterial::Rsa(_) => OwnershipKeyAlg::Rsa,
-            KeyMaterial::Spx(_) => OwnershipKeyAlg::Spx,
+            KeyMaterial::Spx(_) => OwnershipKeyAlg::SpxPure,
+            KeyMaterial::HybridEcdsaSpx(_) => OwnershipKeyAlg::HybridEcdsaSpxPure,
             KeyMaterial::Unknown(_) => OwnershipKeyAlg::Unknown,
         }
     }
@@ -173,8 +204,11 @@ impl KeyMaterial {
         let result = match kind {
             OwnershipKeyAlg::Rsa => KeyMaterial::Rsa(RsaRawPublicKey::read(src)?),
             OwnershipKeyAlg::EcdsaP256 => KeyMaterial::Ecdsa(EcdsaRawPublicKey::read(src)?),
-            OwnershipKeyAlg::Spx | OwnershipKeyAlg::Spxq20 => {
+            OwnershipKeyAlg::SpxPure | OwnershipKeyAlg::SpxPrehash => {
                 KeyMaterial::Spx(SpxRawPublicKey::read(src)?)
+            }
+            OwnershipKeyAlg::HybridEcdsaSpxPure | OwnershipKeyAlg::HybridEcdsaSpxPrehash => {
+                KeyMaterial::HybridEcdsaSpx(HybridEcdsaSpxRawPublicKey::read(src)?)
             }
             _ => {
                 return Err(
@@ -208,6 +242,7 @@ impl KeyMaterial {
             KeyMaterial::Ecdsa(k) => k.write(dest)?,
             KeyMaterial::Rsa(k) => k.write(dest)?,
             KeyMaterial::Spx(k) => k.write(dest)?,
+            KeyMaterial::HybridEcdsaSpx(k) => k.write(dest)?,
             _ => {
                 return Err(Error::InvalidPublicKey(anyhow!("Unknown key type")).into());
             }
