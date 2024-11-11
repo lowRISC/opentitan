@@ -48,7 +48,7 @@ def parse_testcases(args) -> None:
 
         testcases.append(testcase)
 
-    json_filename = f"{args.dst}.json"
+    json_filename = f"{args.dst}"
     with open(json_filename, "w") as file:
         json.dump(testcases, file, indent=4)
 

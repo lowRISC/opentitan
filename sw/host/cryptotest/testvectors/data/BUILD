@@ -757,3 +757,48 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:hjson_kmac_parser",
 )
+
+################################################################################
+# NIST CAVP AES KAT
+################################################################################
+
+# NIST provides the AES KAT testvectors as RSP files which are named as
+# "{aes_mode}{test_type}{size}.rsp" (e.g. CBCGFSbox128.rsp)
+# The corresponding conventional cryptotest name uses snakecase:
+# "{aes_mode}_{test_type}_{size}" (e.g. cbc_gfsbox_128)
+NIST_CAVP_AES_KAT_TESTVECTORS = [
+    # (testname, rsp_filename, mode, size)
+    (
+        "{}_{}_{}".format(
+            mode.lower(),
+            test.lower(),
+            size.lower(),
+        ),
+        "{}{}{}.rsp".format(mode, test, size),
+        mode.lower(),
+        size.lower(),
+    )
+    for mode in ("CBC", "CFB128", "ECB", "OFB")
+    for test in ("GFSbox", "KeySbox", "VarKey", "VarTxt")
+    for size in ("128", "192", "256")
+]
+
+[
+    run_binary(
+        name = "nist_cavp_aes_kat_{}_json".format(testname),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
+            "@nist_cavp_aes_kat//:{}".format(rsp_filename),
+        ],
+        outs = ["nist_cavp_aes_kat_{}.json".format(testname)],
+        args = [
+            "$(location @nist_cavp_aes_kat//:{})".format(rsp_filename),  # src
+            "$(location :nist_cavp_aes_kat_{}.json)".format(testname),  # dst
+            mode,
+            size,
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",  # schema
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_aes_parser",
+    )
+    for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
+]
