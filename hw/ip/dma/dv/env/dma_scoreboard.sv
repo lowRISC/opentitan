@@ -42,6 +42,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
   // Interrupt enable state
   bit [NUM_MAX_INTERRUPTS-1:0] intr_enable;
+  // Interrupt test state (contributes to `intr_state`).
+  bit [NUM_MAX_INTERRUPTS-1:0] intr_test;
+  // Hardware  interrupt state (contributes to `intr_state`).
+  bit [NUM_MAX_INTERRUPTS-1:0] intr_state_hw;
 
   // Prediction of the state of an interrupt signal from the DUT.
   typedef struct packed {
@@ -60,7 +64,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   uint num_fifo_reg_write;
   // Variable to store clear_intr_src register intended for use in monitor_lsio_trigger task
   // since ref argument can not be used in fork-join_none
-  bit[31:0] clear_intr_src;
+  bit [31:0] clear_intr_src;
   bit [TL_DW-1:0] exp_digest[16];
 
   // Allow up to this number of clock cycles from CSR modification until interrupt signal change.
@@ -474,6 +478,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     if (item.d_error && !tl_error_suppressed) begin
       `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
       predict_interrupts(BusErrorToIntrLatency, 1 << DMA_ERROR, intr_enable);
+      intr_state_hw[DMA_ERROR] = 1'b1;
     end else if (got_dest_item) begin
       // Is this the final destination write?
       //
@@ -483,6 +488,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Whether a 'DONE' interrupt is expected depends upon whether it is enabled.
         `uvm_info(`gfn, "Final write completed", UVM_MEDIUM)
         predict_interrupts(WriteToDoneLatency, 1 << DMA_DONE, intr_enable);
+        intr_state_hw[DMA_DONE] = 1'b1;
       end
     end
   endtask
@@ -570,6 +576,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
     abort_via_reg_write = 0;
     fifo_intr_cleared = 0;
     intr_enable = 0;
+    intr_test = 0;
+    intr_state_hw = 0;
   endfunction
 
   // Method to check if DMA interrupt is expected
@@ -593,8 +601,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // by the function `predict_interrupts` above.
       if (cfg.under_reset) begin
         // Interrupts shall be deasserted by DUT reset, and any predictions no longer apply.
-        `uvm_info(`gfn, "Clearing interrupt predictions", UVM_MEDIUM)
-        for (uint i = 0; i < NUM_MAX_INTERRUPTS; i++) exp_intr_queue[i].delete();
+        clear_intr_predictions();
         prev_intr = 'b0;
       end else if (cfg.en_scb) begin
         bit [NUM_MAX_INTERRUPTS-1:0] exp_intr;
@@ -658,10 +665,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Note: this explicitly does NOT mean that they must CHANGE to achieve that state; only that
   //       they must be in that state by then.
   function void predict_interrupts(uint max_delay, bit [31:0] intr_affected, bit [31:0] exp_state);
+    // Clear all bits that do not map to defined interrupts, to avoid confusion in the log messages.
+    intr_affected &= {NumDmaInterrupts{1'b1}};
+    exp_state &= {NumDmaInterrupts{1'b1}};
+
     `uvm_info(`gfn, $sformatf("Predicting interrupt [0,%0x) -> intr_affected 0x%x == 0x%0x",
                               max_delay, intr_affected, exp_state), UVM_HIGH)
 
-    for (uint i = 0; i < NUM_MAX_INTERRUPTS && |intr_affected; i++) begin
+    for (uint i = 0; i < NumDmaInterrupts && |intr_affected; i++) begin
       if (intr_affected[i]) begin
         dma_intr_pred_t predict;
         predict.delay = max_delay;
@@ -670,6 +681,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
         intr_affected[i] = 0;
       end
     end
+  endfunction
+
+  // Clear all pending interrupt predictions; these are no longer expected to occur.
+  function void clear_intr_predictions();
+    `uvm_info(`gfn, "Clearing interrupt predictions", UVM_MEDIUM)
+    for (uint i = 0; i < NUM_MAX_INTERRUPTS; i++) exp_intr_queue[i].delete();
   endfunction
 
   // Task to monitor LSIO trigger and update scoreboard internal variables
@@ -748,6 +765,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
     endcase
   endfunction
 
+  // Returns the bitmap of Status-type interrupts that are set because of bits in the `status`
+  // register being asserted.
+
   // Utility function to check the contents of the destination memory/FIFO against the
   // corresponding reference source data.
   function void check_data(ref dma_seq_item dma_config, bit [63:0] src_addr, bit [63:0] dst_addr,
@@ -809,14 +829,28 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // that may be changed according to the new enable bits.
         predict_interrupts(CSRtoIntrLatency, `gmv(ral.intr_state), item.a_data);
       end
+      "intr_state": begin
+        // Writing 1 to an INTR_STATE bit clears the corresponding asserted 'Event' interrupt;
+        // Status type interrupts are unaffected.
+        uvm_reg_data_t intr = item.a_data & `gmv(ral.intr_enable) & ~ral.intr_state.get_ro_mask();
+        predict_interrupts(CSRtoIntrLatency, intr, 0);
+      end
       "intr_test": begin
+        // The 'Read Only' fields tell us which are Status-type interrupts.
+        uvm_reg_data_t ro_mask = ral.intr_state.get_ro_mask();
+        uvm_reg_data_t now_set;
+
         `uvm_info(`gfn, $sformatf("intr_test write 0x%x with enables 0x%0x",
                                   item.a_data, intr_enable), UVM_HIGH)
 
         // Should raise all tested interrupts that are enabled at the time of the test;
         // the intr_state bit and the interrupt line then remain high until cleared.
-        // Test bits are fire-and-forget; they are not retained anywhere.
-        predict_interrupts(CSRtoIntrLatency, item.a_data, `gmv(ral.intr_enable));
+        //
+        // For Status-type interrupts we must retain the fact that they are asserted because of
+        // the `intr_test` register.
+        intr_test = item.a_data & ro_mask;
+        now_set = item.a_data | intr_state_hw;
+        predict_interrupts(CSRtoIntrLatency, item.a_data | ro_mask, now_set & intr_enable);
       end
       "src_addr_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
@@ -950,12 +984,14 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.intr_src_wr_val[index] = item.a_data;
       end
       "status": begin
-        bit done, error;
-        done = get_field_val(ral.status.done, item.a_data);
-        error = get_field_val(ral.status.error, item.a_data);
-        // Clearing the status bits also clears the status interrupt
-        predict_interrupts(CSRtoIntrLatency, done << DMA_DONE & `gmv(ral.intr_enable), 0);
-        predict_interrupts(CSRtoIntrLatency, error << DMA_ERROR & `gmv(ral.intr_enable), 0);
+        uvm_reg_data_t clearing = 0;
+        clearing[DMA_DONE]  = get_field_val(ral.status.done, item.a_data);
+        clearing[DMA_ERROR] = get_field_val(ral.status.error, item.a_data);
+        // Clearing the hardware contribution to the `intr_state` fields.
+        intr_state_hw &= ~clearing;
+        // Clearing the status bits also clears the corresponding Status-type interrupt(s) unless
+        // the `intr_test` register is forcing them.
+        predict_interrupts(CSRtoIntrLatency, clearing, intr_test & intr_enable);
       end
       "control": begin
         bit go, initial_transfer, start_transfer;
@@ -1067,7 +1103,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
     case (csr.get_name())
       "intr_state": begin
         `uvm_info(`gfn, $sformatf("intr_state = %0x", item.d_data), UVM_MEDIUM)
-        do_read_check = 1;
+        // RAL is unaware of the combined contributions of `intr_test` and the `status` register.
+        `DV_CHECK_EQ(item.d_data, intr_test | intr_state_hw, "Mismatched interrupt state")
+        do_read_check = 1'b0;
       end
       "status": begin
         bit busy, done, chunk_done, aborted, error, sha2_digest_valid;
@@ -1097,10 +1135,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
             !(aborted || error) && // no abort or error detected
            !(src_tl_error_detected || dst_tl_error_detected))
         begin // no TL error
-            // Check if number of bytes transferred is as expected at this point in the transfer
-            `DV_CHECK_EQ(num_bytes_transferred, exp_bytes_transferred,
-                         $sformatf("act_data_size: %0d exp_data_size: %0d",
-                                   num_bytes_transferred, exp_bytes_transferred))
+          // Check if number of bytes transferred is as expected at this point in the transfer
+          `DV_CHECK_EQ(num_bytes_transferred, exp_bytes_transferred,
+                       $sformatf("act_data_size: %0d exp_data_size: %0d",
+                                 num_bytes_transferred, exp_bytes_transferred))
         end
         // STATUS.aborted should only be true if we requested an Abort.
         // However, the transfer may just have completed successfully even if we did request an
@@ -1108,6 +1146,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
         if (abort_via_reg_write) begin
           bit bus_error = src_tl_error_detected | dst_tl_error_detected;
           `DV_CHECK_EQ(|{aborted, bus_error, done}, 1'b1, "Transfer neither Aborted nor completed.")
+          // Invalidate any still-pending interrupt changes; the abort may have occurred after
+          // the final write has completed but before the DMA controller actually completes the
+          // transfer because e.g. the SHA digest calculation is still completing.
+          clear_intr_predictions();
         end else begin
           `DV_CHECK_EQ(aborted, 1'b0, "STATUS.aborted bit set when not expected")
         end
