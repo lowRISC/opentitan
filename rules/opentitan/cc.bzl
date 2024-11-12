@@ -9,6 +9,7 @@ load(
     _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
+load("@lowrisc_opentitan//rules:manifest.bzl", "update_manifest")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 load(
@@ -196,6 +197,9 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
+    if manifest and ctx.attr.immutable_rom_ext_enabled:
+        manifest = update_manifest(ctx, manifest, elf, exec_env._update_manifest_json)
+
     if (manifest or rsa_key) and kind != "ram":
         if not (manifest and (rsa_key or ecdsa_key)):
             fail("Signing requires a manifest and an rsa_key or ecdsa_key, and optionally an spx_key")
@@ -332,6 +336,10 @@ common_binary_attrs = {
         default = "//hw/ip/rom_ctrl/util:scramble_image",
         executable = True,
         cfg = "exec",
+    ),
+    "immutable_rom_ext_enabled": attr.bool(
+        doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
+        default = False,
     ),
 }
 
