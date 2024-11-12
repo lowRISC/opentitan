@@ -258,9 +258,12 @@ class uart_scoreboard extends cip_base_scoreboard #(.CFG_T(uart_env_cfg),
             end
 
             if (dec_q_size) begin
-              // Predict before decrement to model scenario where watermark triggers due to going
-              // above then immediate dropping below the threshold as TX item gets immediate popped.
+              // Predict the TX watermark/empty interrupts before waiting and decrementing
+              // to model the scenario where: a TX watermark (or empty) interrupt is briefly
+              // triggered due to the TX FIFO level going above the watermark threshold (or zero),
+              // then dropping below again one cycle later when the TX item gets popped.
               predict_tx_watermark_intr(loc_tx_q_size);
+              cfg.clk_rst_vif.wait_n_clks(1);
               loc_tx_q_size--;
             end
 
