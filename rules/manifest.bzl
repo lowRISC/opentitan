@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("//rules:const.bzl", "CONST", "hex")
 
 _SEL_DEVICE_ID = 1
@@ -167,3 +168,33 @@ _manifest = rule(
 def manifest(d):
     _manifest(**d)
     return d["name"]
+
+def update_manifest(ctx, manifest, elf, update_manifest_json_tool):
+    """Update the `manuf_state_creator` field in a ROM_EXT manifest.
+
+    Args:
+        ctx: The rule context.
+        manifest: The input JSON manifest file.
+        elf: The input ROM_EXT ELF file.
+        update_manifest_json_tool: The path to the `update-manifest-json` tool.
+
+    Returns:
+        The updated JSON manifest file.
+    """
+    output_file = ctx.actions.declare_file(
+        "{}.{}.with_manuf_state_creator_updated.json".format(
+            ctx.attr.name,
+            paths.split_extension(manifest.basename)[0],
+        ),
+    )
+    args = ctx.actions.args()
+    args.add("--input", manifest)
+    args.add("--elf", elf)
+    args.add("--output", output_file)
+    ctx.actions.run(
+        outputs = [output_file],
+        inputs = [manifest, elf],
+        arguments = [args],
+        executable = update_manifest_json_tool,
+    )
+    return output_file
