@@ -65,7 +65,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "name": "exec_enabled_hash_valid",
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": True,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -76,7 +75,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": True,
         "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
@@ -86,7 +84,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "name": "exec_disabled_hash_valid",
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -97,7 +94,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -105,9 +101,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
     },
     {
         "name": "exec_empty_hash_valid",
-        "otp_fields": {
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
-        },
+        "otp_fields": {},
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
@@ -116,7 +110,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "name": "exec_empty_hash_invalid",
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -127,7 +120,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET": otp_hex(0x4),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": True,
         # The hash check should fail, since the offset is included in the hash,
@@ -141,7 +133,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET": otp_hex(0x4),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -152,7 +143,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH": otp_hex(0x4),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": True,
         # The hash check should fail, since the length is included in the hash,
@@ -166,7 +156,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         "otp_fields": {
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_FALSE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH": otp_hex(0x4),
-            "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
         },
         "immutable_rom_ext_enabled": False,
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -220,7 +209,6 @@ IMMUTABLE_PARTITION_TEST_CASES = [
 manifest(d = {
     "name": "manifest",
     "identifier": hex(CONST.ROM_EXT),
-    "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
     "visibility": ["//visibility:private"],
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
