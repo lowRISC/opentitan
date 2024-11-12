@@ -50,6 +50,7 @@
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_verify.h"
 #include "sw/device/silicon_creator/lib/sigverify/sigverify.h"
+#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
@@ -257,19 +258,119 @@ void rom_ext_sram_exec(owner_sram_exec_mode_t mode) {
   }
 }
 
+// A version of spx_verify that is tailored to the ROM_EXT needs.
+// In particular:
+//   - We don't care about the OTP setting for SPX+ in the ROM_EXT.
+//   - We don't care about flash_exec in the ROM_EXT.
+//   - We have a different series of algorithm identifier values to accommodate
+//     hybrid signature schemes.
+OT_WARN_UNUSED_RESULT
+static rom_error_t rom_ext_spx_verify(
+    const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
+    uint32_t key_alg, const void *msg_prefix_1, size_t msg_prefix_1_len,
+    const void *msg_prefix_2, size_t msg_prefix_2_len, const void *msg,
+    size_t msg_len, const hmac_digest_t *digest) {
+  /*
+   * Shares for producing kErrorOk if SPHINCS+ verification succeeds.  The first
+   * three shares are generated using the `sparse-fsm-encode` script while the
+   * last share is
+   * `kErrorOk ^ shares[0] ^ ... ^ shares[2]`.
+   *
+   * Encoding generated with:
+   * $ ./util/design/sparse-fsm-encode.py -d 5 -m 3 -n 32 \
+   *     -s 1069420 --language=c
+   *
+   * Minimum Hamming distance: 14
+   * Maximum Hamming distance: 20
+   * Minimum Hamming weight: 14
+   * Maximum Hamming weight: 16
+   */
+
+  const uint32_t shares[] = {
+      0x11deb806,
+      0x06457f69,
+      0x647f10c4,
+      0x73e4d092,
+  };
+
+  key_alg &= ~(uint32_t)kOwnershipKeyAlgCategoryMask;
+  key_alg |= (uint32_t)kOwnershipKeyAlgCategorySpx;
+
+  sigverify_spx_root_t actual_root;
+  sigverify_spx_root_t expected_root;
+  spx_public_key_root(key->data, expected_root.data);
+  size_t i;
+  for (i = 0; launder32(i) < kSigverifySpxRootNumWords; ++i) {
+    expected_root.data[i] ^= shares[i];
+  }
+
+  switch (key_alg) {
+    case kOwnershipKeyAlgSpxPure:
+      HARDENED_RETURN_IF_ERROR(spx_verify(
+          signature->data, kSpxVerifyPureDomainSep, kSpxVerifyPureDomainSepSize,
+          msg_prefix_1, msg_prefix_1_len, msg_prefix_2, msg_prefix_2_len, msg,
+          msg_len, key->data, actual_root.data));
+      break;
+
+    case kOwnershipKeyAlgSpxPrehash:
+      HARDENED_RETURN_IF_ERROR(
+          spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
+                     kSpxVerifyPrehashDomainSepSize,
+                     /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
+                     /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
+                     (unsigned char *)digest->digest, sizeof(digest->digest),
+                     key->data, actual_root.data));
+      break;
+    default:
+      return kErrorSigverifyBadSpxConfig;
+  }
+  uint32_t result = 0;
+  uint32_t diff = 0;
+  for (--i; launder32(i) < kSigverifySpxRootNumWords; --i) {
+    uint32_t val = expected_root.data[i] ^ actual_root.data[i];
+    diff |= val ^ shares[i];
+    diff |= ~diff + 1;          // Set upper bits to 1 if not 0, no change o/w.
+    diff |= ~(diff >> 31) + 1;  // Set all 1s if MSB is set, no change o/w.
+    result ^= val;
+    result |= diff;
+  }
+  HARDENED_CHECK_EQ(i, SIZE_MAX);
+  if (result != kErrorOk) {
+    return kErrorSigverifyBadSpxSignature;
+  }
+  return result;
+}
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   dbg_print_epmp();
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
-  ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
-  RETURN_IF_ERROR(owner_keyring_find_key(
-      &keyring, key_alg,
-      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key),
-      &verify_key));
 
-  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key,
-             keyring.key[verify_key]->key_alg,
+  uint32_t key_id =
+      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key);
+  // Check if there is an SPX+ key.
+  const manifest_ext_spx_key_t *ext_spx_key;
+  const manifest_ext_spx_signature_t *ext_spx_signature;
+  rom_error_t spx_err = manifest_ext_get_spx_key(manifest, &ext_spx_key);
+  spx_err += manifest_ext_get_spx_signature(manifest, &ext_spx_signature);
+  switch ((uint32_t)spx_err) {
+    case kErrorOk * 2:
+      // Both extensions present: valid SPX+ signature.
+      key_id ^= sigverify_spx_key_id_get(&ext_spx_key->key);
+      break;
+    case kErrorManifestBadExtension * 2:
+      // Both extensions absent: ECDSA only.
+      break;
+    default:
+      // One present, one absent: bad configuration.
+      return kErrorManifestBadExtension;
+  }
+
+  RETURN_IF_ERROR(owner_keyring_find_key(&keyring, key_id, &verify_key));
+  uint32_t key_alg = keyring.key[verify_key]->key_alg;
+
+  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key, key_alg,
              keyring.key[verify_key]->key_domain);
 
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
@@ -297,9 +398,27 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   memcpy(&boot_measurements.bl0, &act_digest, sizeof(boot_measurements.bl0));
 
   uint32_t flash_exec = 0;
-  return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
-                                     &keyring.key[verify_key]->data.ecdsa,
-                                     &act_digest, &flash_exec);
+  if (key_alg == kOwnershipKeyAlgEcdsaP256) {
+    return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
+                                       &keyring.key[verify_key]->data.ecdsa,
+                                       &act_digest, &flash_exec);
+  } else if ((key_alg & kOwnershipKeyAlgCategoryMask) ==
+             kOwnershipKeyAlgCategoryHybrid) {
+    // Hybrid signatures check both ECDSA and SPX+ signatures.
+    // TODO: as a future optimization, start the ECDSA verify operation on
+    // OTBN and compute the SPX+ verify in parallel on Ibex.
+    HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
+        &manifest->ecdsa_signature, &keyring.key[verify_key]->data.hybrid.ecdsa,
+        &act_digest, &flash_exec));
+    return rom_ext_spx_verify(
+        &ext_spx_signature->signature,
+        &keyring.key[verify_key]->data.hybrid.spx, key_alg,
+        &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
+        digest_region.start, digest_region.length, &act_digest);
+  } else {
+    // TODO: consider whether an SPX+-only verify is sufficent.
+    return kErrorOwnershipInvalidAlgorithm;
+  }
 }
 
 /**

@@ -82,6 +82,13 @@ typedef enum ownership_key_alg {
   kOwnershipKeyAlgHybridSq20Pure = 0x75507148,
   // Key algorithm Hybrid P256 & SPX+ Prehashed SHA256: `HqS2`
   kOwnershipKeyAlgHybridSq20Prehash = 0x32537148,
+
+  /** Key algorithm category mask */
+  kOwnershipKeyAlgCategoryMask = 0xFF,
+  /** Key algorithm category for Sphincs+: `S...` */
+  kOwnershipKeyAlgCategorySpx = 0x53,
+  /** Key algorithm category for Hybrid: `H...` */
+  kOwnershipKeyAlgCategoryHybrid = 0x48,
 } ownership_key_alg_t;
 
 typedef enum ownership_update_mode {

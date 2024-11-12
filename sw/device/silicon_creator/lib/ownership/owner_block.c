@@ -304,11 +304,15 @@ rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info) {
 }
 
 rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
-                                   uint32_t key_alg, uint32_t key_id,
-                                   size_t *index) {
+                                   uint32_t key_id, size_t *index) {
   for (size_t i = 0; i < keyring->length; ++i) {
-    if (keyring->key[i]->key_alg == key_alg &&
-        keyring->key[i]->data.id == key_id) {
+    uint32_t id = keyring->key[i]->data.id;
+    if ((keyring->key[i]->key_alg & kOwnershipKeyAlgCategoryMask) ==
+        kOwnershipKeyAlgCategoryHybrid) {
+      // The ID of a hybrid key is the xor of the IDs of each key.
+      id ^= keyring->key[i]->data.hybrid.spx.data[0];
+    }
+    if (id == key_id) {
       *index = i;
       return kErrorOk;
     }
