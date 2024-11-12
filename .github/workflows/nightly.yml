@@ -21,7 +21,7 @@ permissions:
 jobs:
   fpga_cw310_sival_nightly:
     name: FPGA CW310 SiVal tests
-    runs-on: [ubuntu-20.04-fpga, cw310]
+    runs-on: [ubuntu-22.04-fpga, cw310]
 
     env:
       GS_PATH: gs://opentitan-test-results
