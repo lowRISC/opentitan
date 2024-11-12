@@ -188,8 +188,24 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
 
     spx_args = []
     if spx_key:
-        spx_args.append("--spx-key={}".format(spx_key.file.path))
-        inputs.append(spx_key.file)
+        # Check if the provider is KeyInfo or KeySetInfo
+        info = getattr(spx_key, "info", None)
+        selected_spx_key = getattr(spx_key, "file", None)
+        if info:
+            # Provider is KeyInfo; get the key file.
+            if info.private_key:
+                selected_spx_key = spx_key.info.private_key
+            elif info.pub_key:
+                selected_spx_key = spx_key.info.pub_key
+            else:
+                fail("Expected a SPHINCS+ key with a private_key or pub_key attributes.")
+        elif selected_spx_key:
+            # Provider is KeySetInfo; we already have the key file.
+            pass
+        else:
+            fail("Expected either KeyInfo or KeySetInfo; got neither")
+        spx_args.append("--spx-key={}".format(selected_spx_key.path))
+        inputs.append(selected_spx_key)
     ctx.actions.run(
         outputs = [pre],
         inputs = inputs,

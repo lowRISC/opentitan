@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:keyutils.bzl", "key_ecdsa")
+load("//rules/opentitan:keyutils.bzl", "key_ecdsa", "key_sphincs_plus")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,7 +12,9 @@ cc_library(
     hdrs = [
         "activate_ecdsa_p256.h",
         "app_dev_ecdsa_p256.h",
+        "app_dev_spx.h",
         "app_prod_ecdsa_p256.h",
+        "app_prod_spx.h",
         "app_test_ecdsa_p256.h",
         "owner_ecdsa_p256.h",
         "unlock_ecdsa_p256.h",
@@ -87,12 +89,32 @@ key_ecdsa(
     type = "ProdKey",
 )
 
+key_sphincs_plus(
+    name = "app_prod_spx",
+    config = "Sha2128s",
+    method = "local",
+    private_key = "app_prod_spx.pem",
+    pub_key = "app_prod_spx.pub.pem",
+    type = "ProdKey",
+)
+
 key_ecdsa(
     name = "app_dev_ecdsa",
     config = "EcdsaP256",
     method = "local",
     private_key = "app_dev_ecdsa_p256.der",
     pub_key = "app_dev_ecdsa_p256.pub.der",
+    type = "DevKey",
+)
+
+key_sphincs_plus(
+    name = "app_dev_spx",
+    # TODO(cfrantz): Change this to Prehash after putting
+    # the prehash infrastructure in place.
+    config = "Sha2128s",
+    method = "local",
+    private_key = "app_dev_spx.pem",
+    pub_key = "app_dev_spx.pub.pem",
     type = "DevKey",
 )
 
