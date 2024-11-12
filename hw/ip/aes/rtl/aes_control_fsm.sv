@@ -463,22 +463,7 @@ module aes_control_fsm
             aes_ctrl_ns = CTRL_GHASH_READY;
           end
 
-        end else if (start_gcm_restore) begin
-          // We don't have work for the AES cipher core but for the GHASH block only.
-          // Mask the input data and load it into the GHASH block.
-          state_in_sel_o     = SI_DATA;
-          add_state_in_sel_o = ADD_SI_ZERO;
-
-          // Perform handshake and advance to the loading state where the input data is marked as
-          // used.
-          ghash_in_valid_o = 1'b1;
-          if (ghash_in_ready_i) begin
-            doing_gcm_restore_d = 1'b1;
-            start_we            = 1'b1;
-            aes_ctrl_ns         = CTRL_LOAD;
-          end
-
-        end else if (start_gcm_aad || start_gcm_tag) begin
+        end else if (start_gcm_restore || start_gcm_aad || start_gcm_tag) begin
           // We don't have work for the AES cipher core but for the GHASH block only. Load the
           // input data into the previous input data register such that it can be loaded into
           // the GHASH block in unmasked form.
@@ -486,10 +471,11 @@ module aes_control_fsm
           data_in_prev_we_o  = 1'b1;
 
           // Advance to the loading state where the input data is marked as used.
-          doing_gcm_aad_d = start_gcm_aad;
-          doing_gcm_tag_d = start_gcm_tag;
-          start_we        = 1'b1;
-          aes_ctrl_ns     = CTRL_LOAD;
+          doing_gcm_restore_d = start_gcm_restore;
+          doing_gcm_aad_d     = start_gcm_aad;
+          doing_gcm_tag_d     = start_gcm_tag;
+          start_we            = 1'b1;
+          aes_ctrl_ns         = CTRL_LOAD;
 
         end else if (start_gcm_save) begin
           // We don't have work for the AES cipher core but for the GHASH block only. Update the
@@ -610,10 +596,13 @@ module aes_control_fsm
           end
 
         end else if (doing_gcm_restore_q) begin
-          // We're actually already done: The input data has already been forwarded to the GHASH
-          // block. We ended up here because we had to go through the loading state.
-          doing_gcm_restore_d = 1'b0;
-          aes_ctrl_ns         = CTRL_IDLE;
+          // Pass the previously saved GHASH state to the GHASH block. We're done after the input
+          // handshake.
+          ghash_in_valid_o = 1'b1;
+          if (ghash_in_ready_i) begin
+            doing_gcm_restore_d = 1'b0;
+            aes_ctrl_ns         = CTRL_IDLE;
+          end
 
         end else if (doing_gcm_aad_q) begin
           // Pass the AAD to the GHASH block. We're done after the input handshake.
