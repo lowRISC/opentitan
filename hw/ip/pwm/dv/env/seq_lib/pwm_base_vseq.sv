@@ -143,18 +143,33 @@ function dc_blink_t pwm_base_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
 endfunction
 
 task pwm_base_vseq::low_power_mode(bit enable, uint cycles);
-  if (enable) begin
-    `uvm_info(`gfn, "Running in low power mode...", UVM_HIGH)
-    cfg.clk_rst_vif.wait_clks(cycles/2);
-    // in the middle of test turn off tl_ul clk to observe that
-    // the output does not change
-    cfg.clk_rst_vif.stop_clk();
-    // use core clk to determine when to turn tl_ul clk back on
-    cfg.clk_rst_core_vif.wait_clks(1);
+  bit restart_clock = 1'b0;
+
+  fork begin : isolation_fork
+    fork
+      cfg.clk_rst_vif.wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
+      begin
+        if (enable) begin
+          cfg.clk_rst_vif.wait_clks(cycles/2);
+          // in the middle of test turn off tl_ul clk to observe that
+          // the output does not change
+          cfg.clk_rst_vif.stop_clk();
+          restart_clock = 1'b1;
+          // use core clk to determine when to turn tl_ul clk back on
+          cfg.clk_rst_core_vif.wait_clks(1);
+          cfg.clk_rst_vif.start_clk();
+          restart_clock = 1'b0;
+          cfg.clk_rst_vif.wait_clks(cycles/2);
+        end else begin
+          cfg.clk_rst_vif.wait_clks(cycles);
+        end
+      end
+    join_any
+    disable fork;
+  end join
+
+  if (restart_clock) begin
     cfg.clk_rst_vif.start_clk();
-    cfg.clk_rst_vif.wait_clks(cycles/2);
-  end else begin
-    cfg.clk_rst_vif.wait_clks(cycles);
   end
 endtask
 
