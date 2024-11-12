@@ -26,7 +26,7 @@ env:
 jobs:
   quick_lint:
     name: Lint (quick)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
         with:
@@ -69,7 +69,7 @@ jobs:
 
   slow_lint:
     name: Lint (slow)
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
@@ -115,7 +115,7 @@ jobs:
 
   airgapped_build:
     name: Airgapped build
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
@@ -172,7 +172,7 @@ jobs:
 
   verilator_englishbreakfast:
     name: Verilated English Breakfast
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
@@ -223,7 +223,7 @@ jobs:
 
   build_docker_containers:
     name: Build Docker Containers
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
