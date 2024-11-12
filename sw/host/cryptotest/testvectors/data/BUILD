@@ -320,9 +320,6 @@ run_binary(
         tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
     )
     for hash_alg in [
-        "sha3_256",
-        "sha3_384",
-        "sha3_512",
         "shake128",
         "shake256",
     ]
