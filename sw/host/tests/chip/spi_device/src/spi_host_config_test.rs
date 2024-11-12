@@ -63,7 +63,7 @@ fn spi_host_config_test(
     let output = &mut [0x7; SAMPLES];
     output[1] = 0x0f; // A rising edge on the D1 to indicate when the sampling started, which is helpfull when debugging.
     output[output.len() - 2] = 0x0f; // A rising edge on the D1 to indicate when the sampling finished, which is helpfull when debugging.
-    let mut waveform = [BitbangEntry::Both(output, &mut samples)];
+    let waveform = Box::new([BitbangEntry::Both(output, &mut samples)]);
 
     UartConsole::wait_for(
         &*uart,
@@ -91,7 +91,7 @@ fn spi_host_config_test(
             .map(Rc::borrow)
             .collect::<Vec<&dyn GpioPin>>(),
         Duration::from_micros(10),
-        &mut waveform,
+        waveform,
     )?;
 
     let mut decoder = test_utils::bitbanging::spi::decoder::Decoder::<
