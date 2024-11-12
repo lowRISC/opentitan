@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<refinement-file-root>
+  <rules>
+    <!--
+     The blocks of code below exclude some expression coverage in prim_reg_cdc to waive values of
+     the expression on line 125 that depends on the src_update value being nonzero. This is only
+     possible when DstWrReq is one, but it is zero in the instantiations in pwm.
+
+     This would be found by a UNR flow but this author (Rupert Swarbrick) hasn't got one working
+     locally and has to resort to a manual exclusion.
+    -->
+    <rule ccType="inst" entityName="pwm/u_reg/u_cfg_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_cfg_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_cfg_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_cfg_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_en_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_en_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_en_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_en_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+
+    <rule ccType="inst" entityName="pwm/u_reg/u_invert_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_invert_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_invert_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_invert_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_0_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_0_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_0_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_0_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_1_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_1_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_1_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_1_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_2_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_2_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_2_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_2_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_3_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_3_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_3_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_3_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_4_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_4_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_4_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_4_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_5_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_5_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_5_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_pwm_param_5_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_0_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_0_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_0_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_0_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_1_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_1_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_1_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_1_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_2_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_2_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_2_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_2_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_3_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_3_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_3_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_3_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_4_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_4_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_4_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_4_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_5_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_5_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_5_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_duty_cycle_5_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_0_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_0_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_0_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_0_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_1_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_1_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_1_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_1_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_2_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_2_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_2_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_2_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_3_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_3_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_3_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_3_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_4_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_4_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_4_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_4_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_5_cdc/6/1/1" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_5_cdc/6/1/2" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_5_cdc/6/1/5" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+    <rule ccType="inst" entityName="pwm/u_reg/u_blink_param_5_cdc/6/1/7" entityType="min-term" line="125" name="exclude" text="(src_busy_q &amp;&amp; src_ack) || (src_update &amp;&amp; (! busy))"/>
+  </rules>
+</refinement-file-root>
