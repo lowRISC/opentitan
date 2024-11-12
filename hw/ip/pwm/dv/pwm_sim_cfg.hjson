@@ -30,7 +30,7 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
-                //"{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
@@ -97,11 +97,6 @@
     {
       name: pwm_perf
       uvm_test_seq: pwm_perf_vseq
-    }
-    {
-      name: pwm_stress_all
-      uvm_test_seq: pwm_stress_all_vseq
-      run_opts:["+test_timeout_ns=10_000_000_000"]
     }
   ]
 
