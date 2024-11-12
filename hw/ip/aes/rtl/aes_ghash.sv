@@ -115,8 +115,6 @@ module aes_ghash
   output logic                         alert_o,
 
   // I/O data signals
-  input  logic         [3:0][3:0][7:0] cipher_state_init_i [NumShares], // Masked cipher core input
-                                                                        // for GCM_RESTORE
   input  logic         [GCMDegree-1:0] data_in_prev_i,                  // Ciphertext for decryption
                                                                         // or AAD
   input  logic [NumRegsData-1:0][31:0] data_out_i,                      // Ciphertext for encryption
@@ -142,6 +140,7 @@ module aes_ghash
   ghash_add_in_sel_e    ghash_add_in_sel [2];
   logic [GCMDegree-1:0] ghash_state_d [NumShares];
   logic [GCMDegree-1:0] ghash_state_q [NumShares];
+  logic [GCMDegree-1:0] ghash_state_restore [NumShares];
   logic [GCMDegree-1:0] ghash_state_add [NumShares];
   sp2v_e                ghash_state_we [2];
   ghash_state_sel_e     ghash_state_sel;
@@ -162,14 +161,12 @@ module aes_ghash
   // Input Data Format Conversion //
   //////////////////////////////////
   // Covert the input data to the internal data format.
-  logic [GCMDegree-1:0] cipher_state_init [NumShares];
   logic [GCMDegree-1:0] cipher_state_done [NumShares];
   logic [GCMDegree-1:0] data_in_prev;
   logic [GCMDegree-1:0] data_out;
   always_comb begin : data_in_conversion
     for (int s = 0; s < NumShares; s++) begin
       cipher_state_done[s] = aes_state_to_ghash_vec(cipher_state_done_i[s]);
-      cipher_state_init[s] = aes_state_to_ghash_vec(cipher_state_init_i[s]);
     end
     data_in_prev = aes_state_to_ghash_vec(aes_transpose(data_in_prev_i));
     data_out     = aes_state_to_ghash_vec(aes_transpose(data_out_i));
@@ -293,10 +290,19 @@ module aes_ghash
     assign ghash_state_add[0] = ghash_state_q[0] ^ ghash_in_valid;
   end
 
+  // For restoring a GHASH state, we overwrite Share 0 of the initialized GHASH state with the
+  // previously saved GHASH state in unmasked form. Share 1 is left untouched. This is identical to
+  // subtracing Share 1 of S which will be added again at the very end. To save muxing resources,
+  // Share 1 of the state multiplexer below is identical to the default.
+  assign ghash_state_restore[0] = data_in_prev;
+  if (SecMasking) begin : gen_ghash_state_restore_share_1
+    assign ghash_state_restore[1] = ghash_state_add[1];
+  end
+
   // We initialize the state with S (masked implementation) or with zero (unmasked implementation).
   always_comb begin : ghash_state_mux
     unique case (ghash_state_sel)
-      GHASH_STATE_RESTORE: ghash_state_d = cipher_state_init;
+      GHASH_STATE_RESTORE: ghash_state_d = ghash_state_restore;
       GHASH_STATE_INIT:    ghash_state_d = SecMasking ? cipher_state_done : '{default: '0};
       GHASH_STATE_ADD:     ghash_state_d = ghash_state_add;
       GHASH_STATE_MULT:    ghash_state_d = ghash_state_mult;
@@ -471,15 +477,13 @@ module aes_ghash
             end
 
           end else if (gcm_phase_i == GCM_RESTORE) begin
-            // Restore a previously loaded GHASH state.
+            // Restore a previously loaded GHASH state. We overwrite the Share 0 of the GHASH
+            // state and leave Share 1 untouched. For the masked implementation, this is equal to
+            // subtracting Share 1 of S. It is only added at the very end (or when saving the GHASH
+            // state).
             ghash_state_sel   = GHASH_STATE_RESTORE;
             ghash_state_we[0] = SP2V_HIGH;
-            ghash_state_we[1] = SP2V_HIGH;
             first_block_d     = 1'b0;
-
-            // For the masked implementation, we have to again substract Share 1 of S. It is only
-            // added at the very end (or when saving the GHASH state).
-            aes_ghash_ns = SecMasking ? GHASH_ADD_S : GHASH_IDLE;
 
           end else if (gcm_phase_i == GCM_AAD ||
                        gcm_phase_i == GCM_TEXT ||
@@ -588,14 +592,10 @@ module aes_ghash
         ghash_in_sel      = GHASH_IN_S;
         ghash_state_we[0] = SP2V_HIGH;
 
-        // When restoring a previously saved GHASH state in the masked implementation, Share 1 of S
-        // must be subtracted from the restored GHASH state before further blocks can be processed.
-        // It is added again at the very end. In case of the masked implementation, we have to
-        // unmask the GHASH state and can then output the final tag.
-        final_add_d  = gcm_phase_i != GCM_RESTORE;
-        aes_ghash_ns =
-            SecMasking && (gcm_phase_i == GCM_RESTORE) ? GHASH_IDLE                    :
-            SecMasking                                 ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
+        // In case of the masked implementation, we have to unmask the GHASH state and can then
+        // output the final tag.
+        final_add_d  = 1'b1;
+        aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
       end
 
       GHASH_OUT: begin
