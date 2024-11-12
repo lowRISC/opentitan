@@ -97,7 +97,7 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
         )
 
         if creator_manuf_state is None:
-            return
+            raise ValueError("CREATOR_SW_CFG_MANUF_STATE field doesn't exist")
 
         new_creator_manuf_state = self.update_creator_manuf_state_data(
             creator_manuf_state, f"0x{self.hash.hex()}"
@@ -155,8 +155,7 @@ def main() -> None:
 
     if imm_section_otp.immutable_rom_ext_enable():
         imm_section_otp.update_json_with_immutable_rom_ext_section_data()
-
-    imm_section_otp.update_json_with_creator_manuf_state_data()
+        imm_section_otp.update_json_with_creator_manuf_state_data()
 
     # Write out the OTP fields to a JSON file.
     with open(args.output, 'w') as f:
