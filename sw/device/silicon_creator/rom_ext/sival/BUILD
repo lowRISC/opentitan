@@ -24,7 +24,7 @@ LINK_ORDER = [
 manifest(d = {
     "name": "manifest_sival",
     "identifier": hex(CONST.ROM_EXT),
-    "manuf_state_creator": hex(CONST.MANUF_STATE.SIVAL),
+    "manuf_state_creator": hex(CONST.MANUF_STATE.PERSONALIZED),
     "version_major": ROM_EXT_VERSION.MAJOR,
     "version_minor": ROM_EXT_VERSION.MINOR,
     "security_version": ROM_EXT_VERSION.SECURITY,
@@ -32,7 +32,7 @@ manifest(d = {
 })
 
 # To test that the fake-signed SiVAL ROM_EXT can boot, you need a bitstream
-# with the OTP word CREATOR_SW_CCFG_MANUF_STATE set to `SIVAL` (as above
+# with the OTP word CREATOR_SW_CCFG_MANUF_STATE set to `PERSONALIZED` (as above
 # in the manifest definition).  You can manually create such a bitstream with:
 #
 # bazel build //hw/bitstream/universal:splice --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_sival

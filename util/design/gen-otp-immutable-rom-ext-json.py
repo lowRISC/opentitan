@@ -43,22 +43,6 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
                         return
                 partition["items"].append({"name": item_name, "value": value})
 
-    def update_key_value(self, item_name: str, value: str) -> None:
-        """Update the value of the item if it exists.
-        Args:
-            item_name: The name of the item to update.
-            value: The value to update the item with.
-        Returns:
-            None
-        """
-        for partition in self.json_data["partitions"]:
-            if partition["name"] == _OTP_PARTITION_NAME:
-                for item in partition["items"]:
-                    if item["name"] == item_name:
-                        item["value"] = value
-                        return
-        raise ValueError(f"{item_name} item doesn't exist")
-
     def get_key_value(self, item_name: str) -> Optional[str]:
         """Get the value of the item if it exists.
         Args:
@@ -92,17 +76,11 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
         Returns:
             None
         """
-        creator_manuf_state = self.get_key_value(
-            _CREATOR_MANUF_STATE_FIELD_NAME
-        )
-
-        if creator_manuf_state is None:
-            raise ValueError("CREATOR_SW_CFG_MANUF_STATE field doesn't exist")
 
         new_creator_manuf_state = self.update_creator_manuf_state_data(
-            creator_manuf_state, f"0x{self.hash.hex()}"
+            f"0x{self.hash.hex()}"
         )
-        self.update_key_value(
+        self.insert_key_value(
             _CREATOR_MANUF_STATE_FIELD_NAME, new_creator_manuf_state
         )
 

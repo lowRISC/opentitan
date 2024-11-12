@@ -68,42 +68,33 @@ class ImmutableSectionProcessor:
                 _ROM_EXT_IMMUTABLE_SECTION_NAME, self.rom_ext_elf))
             sys.exit(1)
 
-    def update_creator_manuf_state_data(self, creator_manuf_state, im_ext_hash) -> None:
+    def update_creator_manuf_state_data(self, im_ext_hash) -> None:
         """Update the creator's manufacturing state with the immutable ROM_EXT hash.
         Args:
-            creator_manuf_state: The creator's manufacturing state as a hexadecimal string.
             im_ext_hash: The immutable ROM_EXT hash as a hexadecimal string.
         Returns:
             The updated manufacturing state as a hexadecimal string.
         Raises:
-            ValueError: If the creator's manufacturing state does not have zeros
-                        in the first three bytes.
+            ValueError: If the immutable ROM_EXT hash are all zeros in the
+                        first four bytes.
         """
 
-        # Check if the state value starts with the hexadecimal prefix.
-        if creator_manuf_state[:2] == _PREFIX_FOR_HEX:
-            # Remove the hexadecimal prefix.
-            creator_manuf_state = creator_manuf_state[2:]
-        # Pad with leading zeros to ensure 4 bytes long.
-        creator_manuf_state = creator_manuf_state.zfill(8)
-
-        if creator_manuf_state[:6] != "0" * 6:
-            raise ValueError(
-                f"The first three bytes of CREATOR_MANUF_STATE must be zeros. "
-                f"Current value: 0x{creator_manuf_state}"
-            )
-
-        # Check if the state value starts with the hexadecimal prefix.
+        # Check if the hash value starts with the hexadecimal prefix.
         if im_ext_hash[:2] == _PREFIX_FOR_HEX:
             # Remove the hexadecimal prefix.
             im_ext_hash = im_ext_hash[2:]
         # Pad with leading zeros to ensure 4 bytes long.
         im_ext_hash = im_ext_hash.zfill(8)
 
-        # Embed the first three bytes of `IMMUTABLE_ROM_EXT_SHA256_HASH` into
+        # Ensure the hash is different from the `PERSO_INITIAL` defined in
+        # rules/const.bzl.
+        if im_ext_hash[:8] == "0" * 8:
+            raise ValueError("The hash value are all zeros.")
+
+        # Embed the first four bytes of `IMMUTABLE_ROM_EXT_SHA256_HASH` into
         # `CREATOR_MANUF_STATE`
         creator_manuf_state = (
-            _PREFIX_FOR_HEX + im_ext_hash[:6] + creator_manuf_state[6:]
+            _PREFIX_FOR_HEX + im_ext_hash[:8]
         )
 
         return creator_manuf_state
