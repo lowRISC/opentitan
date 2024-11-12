@@ -38,7 +38,10 @@
   sim_tops: ["pwm_bind", "pwm_cov_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Coverage exclusion
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"]
+  xcelium_cov_refine_files: [
+    "{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"
+    "{proj_root}/hw/ip/pwm/dv/cov/manual_excl.vRefine"
+  ]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

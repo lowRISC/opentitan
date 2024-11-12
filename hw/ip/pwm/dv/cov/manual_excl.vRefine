@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<refinement-file-root>
+  <rules>
+    <!--
+        Waive block coverage for a conditional which is true if the 'we' signal is true for the
+        REGWEN in register in prim_subreg_arb. If the signal is true, this denotes a write to the
+        register from hardware but the instantiation in pwm_reg_top wires it to zero.
+    -->
+    <rule ccType="inst"
+          entityName="pwm/u_reg/u_regwen/wr_en_data_arb/gen_w0c/gen_non_mubi/2"
+          entityType="block"
+          line="135"
+          name="exclude"></rule>
+  </rules>
+</refinement-file-root>
