@@ -10,7 +10,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.h"
+#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
@@ -128,6 +130,50 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
       .data =
           {
               .ecdsa = APP_PROD_ECDSA_P256,
+          },
+  };
+
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  *app = (owner_application_key_t){
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = kTlvLenApplicationKeyHybrid,
+          },
+      .key_alg = kOwnershipKeyAlgHybridSpxPure,
+      .key_domain = kOwnerAppDomainProd,
+      .key_diversifier = {0},
+      .usage_constraint = 0,
+      .data =
+          {
+              .hybrid =
+                  {
+                      .ecdsa = APP_PROD_ECDSA_P256,
+                      .spx = APP_PROD_SPX,
+                  },
+          },
+  };
+
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  *app = (owner_application_key_t){
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = kTlvLenApplicationKeyHybrid,
+          },
+      // TODO(cfrantz): Change this to Prehash after putting
+      // the prehash infrastructure in place.
+      .key_alg = kOwnershipKeyAlgHybridSpxPure,
+      .key_domain = kOwnerAppDomainDev,
+      .key_diversifier = {0},
+      .usage_constraint = 0,
+      .data =
+          {
+              .hybrid =
+                  {
+                      .ecdsa = APP_DEV_ECDSA_P256,
+                      .spx = APP_DEV_SPX,
+                  },
           },
   };
 
