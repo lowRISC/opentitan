@@ -213,22 +213,38 @@ opentitan_test(
 
 _KEYS = {
     "dev": {
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
+        "spx": {},
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    "dev_hybrid": {
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
+        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_spx": "dev_key_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "prod": {
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "spx": {},
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+    },
+    "prod_hybrid": {
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "test": {
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_test_ecdsa": "test_key_0"},
+        "spx": {},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     "unauthorized": {
-        "key": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_unauthorized_ecdsa": "unauthorized_key_0"},
+        "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_unauthorized_ecdsa": "unauthorized_key_0"},
+        "spx": {},
         "exit_success": DEFAULT_TEST_FAILURE_MSG,
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
     },
@@ -238,7 +254,7 @@ _KEYS = {
     opentitan_test(
         name = "key_{}".format(name),
         srcs = [":boot_test"],
-        ecdsa_key = keyinfo["key"],
+        ecdsa_key = keyinfo["ecdsa"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
@@ -247,6 +263,7 @@ _KEYS = {
             exit_failure = keyinfo["exit_failure"],
             exit_success = keyinfo["exit_success"],
         ),
+        spx_key = keyinfo["spx"],
         deps = [
             "//sw/device/lib/base:status",
             "//sw/device/lib/testing/test_framework:ottf_main",

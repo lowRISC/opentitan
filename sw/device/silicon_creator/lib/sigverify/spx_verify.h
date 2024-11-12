@@ -14,6 +14,11 @@
 extern "C" {
 #endif  // __cplusplus
 
+extern const uint8_t kSpxVerifyPureDomainSep[];
+extern const size_t kSpxVerifyPureDomainSepSize;
+extern const uint8_t kSpxVerifyPrehashDomainSep[];
+extern const size_t kSpxVerifyPrehashDomainSepSize;
+
 enum {
   /**
    * A non-trivial constant chosen such that `kSigverifySpxSuccess ^

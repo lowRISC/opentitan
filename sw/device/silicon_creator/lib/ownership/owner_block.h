@@ -129,8 +129,7 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
 rom_error_t owner_block_info_apply(const owner_flash_info_config_t *info);
 
 rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
-                                   uint32_t key_alg, uint32_t key_id,
-                                   size_t *index);
+                                   uint32_t key_id, size_t *index);
 
 /**
  * Determine whether the given key is on owner page 0 or page 1.
