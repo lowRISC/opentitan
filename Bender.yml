@@ -8,7 +8,7 @@ dependencies:
   cluster_interconnect: { git: "https://github.com/pulp-platform/cluster_interconnect.git", version: "1.1.2" }
   idma:                 { git: "git@github.com:pulp-platform/idma.git", version: 0.6.2 }
   register_interface:   { git: "https://github.com/pulp-platform/register_interface.git",  version: 0.4.3  }
-  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "2ba2c6f6d826356422fd35e7c6c51e3bbb2b8db5" } # branch: alsaqr-2.0
+  pulp_cluster:         { git: "git@github.com:AlSaqr-platform/pulp_cluster.git", rev: "74efa38f2fe96a7558947cf83b04506b9faf8871" } # branch: alsaqr-2.0
 
 export_include_dirs:
       - hw/ip/prim/rtl
@@ -202,6 +202,20 @@ sources:
       - hw/ip/prim/rtl/prim_util_get_scramble_params.svh
       - hw/ip/prim/rtl/prim_util_memload.svh
       - hw/ip/prim/rtl/prim_xoshiro256pp.sv
+
+##### gpio
+
+      - hw/ip/gpio/rtl/gpio_reg_pkg.sv
+      - hw/ip/gpio/rtl/gpio_reg_top.sv
+      - hw/ip/gpio/rtl/gpio.sv
+
+##### i2c
+
+      - hw/ip/i2c/rtl/i2c_reg_pkg.sv
+      - hw/ip/i2c/rtl/i2c_reg_top.sv
+      - hw/ip/i2c/rtl/i2c_fsm.sv
+      - hw/ip/i2c/rtl/i2c_core.sv
+      - hw/ip/i2c/rtl/i2c.sv
 
 ##### tlul
 
@@ -532,14 +546,6 @@ sources:
 #      - hw/ip/usbdev/rtl/usbdev.sv
       - hw/ip/usbdev/rtl/usbdev_empty.sv
 
-##### i2c
-
-      - hw/ip/i2c/rtl/i2c_reg_pkg.sv
-      - hw/ip/i2c/rtl/i2c_reg_top.sv
-      - hw/ip/i2c/rtl/i2c_fsm.sv
-      - hw/ip/i2c/rtl/i2c_core.sv
-      - hw/ip/i2c/rtl/i2c.sv
-
 ##### sensor ctrl
 
       - hw/top_earlgrey/ip/sensor_ctrl/rtl/sensor_ctrl_reg_pkg.sv
@@ -704,12 +710,6 @@ sources:
       - hw/ip/entropy_src/rtl/entropy_src_repcnts_ht.sv
       - hw/ip/entropy_src/rtl/entropy_src_watermark_reg.sv
       - hw/ip/entropy_src/rtl/entropy_src.sv
-
-##### gpio
-
-      - hw/ip/gpio/rtl/gpio_reg_pkg.sv
-      - hw/ip/gpio/rtl/gpio_reg_top.sv
-      - hw/ip/gpio/rtl/gpio.sv
 
 ###### spi_device
 
