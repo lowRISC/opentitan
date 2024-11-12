@@ -31,6 +31,8 @@ task pwm_smoke_vseq::body();
   set_ch_enables(32'h1);
 
   // add some run time so we get some pulses
-  cfg.clk_rst_vif.wait_clks(50000);
+  cfg.clk_rst_vif.wait_clks_or_rst(50000);
+  if (!cfg.clk_rst_vif.rst_n) return;
+
   shutdown_dut();
 endtask

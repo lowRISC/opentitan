@@ -68,6 +68,8 @@ task pwm_perf_vseq::body();
   rand_pwm_cfg_reg();
 
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
+    if (!cfg.clk_rst_vif.rst_n) return;
+
     set_duty_cycle(i, .A(rand_dc), .B(rand_dc));
     set_blink(i, .A(rand_blink), .B(rand_blink));
 
@@ -76,11 +78,11 @@ task pwm_perf_vseq::body();
     set_param(i, pwm_param[i]);
   end
 
+  if (!cfg.clk_rst_vif.rst_n) return;
   set_ch_invert(rand_invert);
   set_ch_enables(rand_chan);
 
   low_power_mode(low_power, NUM_CYCLES);
 
   shutdown_dut();
-
 endtask : body
