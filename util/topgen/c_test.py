@@ -28,21 +28,19 @@ class TestPeripheral:
     headers, rather than hard-coded constants. This is done to ensure that a
     single source of truth is referenced in all of the tests.
     """
-    def __init__(self, name: str, inst_name: str, base_addr_name: str,
-                 is_templated: bool):
+    def __init__(self, name: str, inst_name: str, base_addr_name: str):
         self.name = name
         self.inst_name = inst_name
         self.base_addr_name = base_addr_name
-        self.is_templated = is_templated
 
 
 class IrqTestPeripheral(TestPeripheral):
     """Captures a peripheral instance's attributes for use in IRQ test."""
     def __init__(self, name: str, inst_name: str, base_addr_name: str,
-                 is_templated: bool, plic_name: str, start_irq: str,
-                 end_irq: str, plic_start_irq: str, status_type_mask: int,
+                 plic_name: str, start_irq: str, end_irq: str,
+                 plic_start_irq: str, status_type_mask: int,
                  status_default_mask: int):
-        super().__init__(name, inst_name, base_addr_name, is_templated)
+        super().__init__(name, inst_name, base_addr_name)
         self.plic_name = plic_name
         self.start_irq = start_irq
         self.end_irq = end_irq
@@ -54,9 +52,8 @@ class IrqTestPeripheral(TestPeripheral):
 class AlertTestPeripheral(TestPeripheral):
     """Captures a peripheral instance's attributes for use in IRQ test."""
     def __init__(self, name: str, inst_name: str, base_addr_name: str,
-                 is_templated: bool, top_alert_name: str,
-                 dif_alert_name: str, num_alerts: int):
-        super().__init__(name, inst_name, base_addr_name, is_templated)
+                 top_alert_name: str, dif_alert_name: str, num_alerts: int):
+        super().__init__(name, inst_name, base_addr_name)
         self.top_alert_name = top_alert_name
         self.dif_alert_name = dif_alert_name
         self.num_alerts = num_alerts
@@ -95,7 +92,6 @@ class TopGenCTest(TopGenC):
                 sys.exit(1)
 
             base_addr_name = region.base_addr_name().as_c_define()
-            is_templated = 'attr' in entry and entry['attr'] == 'templated'
 
             plic_name = (self._top_name + Name(["plic", "peripheral"]) +
                          Name.from_snake_case(inst_name))
@@ -129,8 +125,7 @@ class TopGenCTest(TopGenC):
                     n += irq["width"]
 
             irq_peripheral = IrqTestPeripheral(name, inst_name, base_addr_name,
-                                               is_templated, plic_name,
-                                               start_irq, end_irq,
+                                               plic_name, start_irq, end_irq,
                                                plic_start_irq, status_type_mask,
                                                status_default_mask)
             irq_peripherals.append(irq_peripheral)
@@ -166,7 +161,6 @@ class TopGenCTest(TopGenC):
                     base_addr_name = region.base_addr_name().as_c_define()
                     break
 
-            is_templated = 'attr' in entry and entry['attr'] == 'templated'
             dif_alert_name = self.device_alerts[inst_name][0]
             num_alerts = len(self.device_alerts[inst_name])
 
@@ -179,7 +173,7 @@ class TopGenCTest(TopGenC):
             dif_alert_name = dif_alert_name.replace(inst_name, f"dif_{name}_alert", 1)
             dif_alert_name = Name.from_snake_case(dif_alert_name).as_c_enum()
 
-            alert_peripheral = AlertTestPeripheral(name, inst_name, base_addr_name, is_templated,
+            alert_peripheral = AlertTestPeripheral(name, inst_name, base_addr_name,
                                                    top_alert_name, dif_alert_name, num_alerts)
             alert_peripherals.append(alert_peripheral)
 

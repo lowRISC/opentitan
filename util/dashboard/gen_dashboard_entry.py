@@ -228,6 +228,7 @@ def gen_dashboard_row_html(config: Union[Path, Tuple[Path, Path]],
     Tuple -> (`hw/top_earlgrey/ip/clkmgr/data/autogen/clkmgr.hjson`,
               `hw/ip/clkmgr/`)
     """
+    # TODO: the tuple is obsolete since there are no more "templated" IPs.
 
     if isinstance(config, Tuple):
         hjson_path = config[0]

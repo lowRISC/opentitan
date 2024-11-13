@@ -592,12 +592,12 @@ def extract_clocks(top: OrderedDict):
     '''Add clock exports to top and connections to endpoints
 
     This function sets up all the clock-related machinery that is needed to
-    generate the (templated) clkmgr code. This runs before we load up IP blocks
-    with reggen, so can only see top-level configuration.
+    generate the clkmgr code. This runs before we load up IP blocks with
+    reggen, so can only see top-level configuration.
 
-    By default each end point (peripheral, memory etc) is in the same clock group.
-    However, it is possible to define the group attribute per clock if required.
-
+    By default each end point (peripheral, memory etc) is in the same clock
+    group. However, it is possible to define the group attribute per clock
+    if required.
     '''
     clocks = top['clocks']
     assert isinstance(clocks, Clocks)

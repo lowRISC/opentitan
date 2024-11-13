@@ -11,9 +11,8 @@ import sys
 import tempfile
 from collections import OrderedDict
 from copy import deepcopy
-from itertools import chain
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional, Tuple
 
 import hjson
 import tlgen
@@ -57,6 +56,8 @@ GENCMD = ("// util/topgen.py -t hw/{top_name}/data/{top_name}.hjson\n"
 SRCTREE_TOP = Path(__file__).parents[1].resolve()
 
 TOPGEN_TEMPLATE_PATH = SRCTREE_TOP / "util" / "topgen" / "templates"
+IP_RAW_PATH = SRCTREE_TOP / "hw" / "ip"
+IP_TEMPLATES_PATH = SRCTREE_TOP / "hw" / "ip_templates"
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
@@ -232,13 +233,8 @@ def generate_plic(top: Dict[str, object], out_path: Path) -> None:
     ipgen_render("rv_plic", topname, params, out_path)
 
 
-# TODO(lowrisc/opentitan#8440): For templated IPs we have to search
-# both the source and destination RTL directories, since not all files
-# are copied over. This is a workaround which can be removed once all
-# generated IPs have transitioned to IPgen.
 def generate_regfile_from_path(hjson_path: Path,
-                               generated_rtl_path: Path,
-                               original_rtl_path: Path = None) -> None:
+                               generated_rtl_path: Path) -> None:
     """Generate RTL register file from path and check countermeasure labels"""
     obj = IpBlock.from_path(str(hjson_path), [])
 
@@ -246,8 +242,6 @@ def generate_regfile_from_path(hjson_path: Path,
     # all .sv implementation files and check whether they match up
     # with what is defined inside the Hjson.
     sv_files = generated_rtl_path.glob("*.sv")
-    if original_rtl_path is not None:
-        sv_files = chain(sv_files, original_rtl_path.glob("*.sv"))
     rtl_names = CounterMeasure.search_rtl_files(sv_files)
     obj.check_cm_annotations(rtl_names, str(hjson_path))
     gen_rtl.gen_rtl(obj, str(generated_rtl_path))
@@ -478,20 +472,15 @@ def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
     log.info("Generating top only modules")
 
     for ip, reggen_only in top_only_dict.items():
-
-        if reggen_only and alt_hjson_path is not None:
-            hjson_dir = Path(alt_hjson_path)
+        ip_out_path = out_path / "ip" / ip
+        if reggen_only and alt_hjson_path:
+            hjson_path = Path(alt_hjson_path)
         else:
-            hjson_dir = (SRCTREE_TOP / "hw" / top_name / "ip" / ip / "data")
-
-        hjson_path = hjson_dir / f"{ip}.hjson"
-
-        genrtl_dir = out_path / "ip" / ip / "rtl"
+            hjson_path = ip_out_path / "data" / f"{ip}.hjson"
+        genrtl_dir = ip_out_path / "rtl"
         genrtl_dir.mkdir(parents=True, exist_ok=True)
-        log.info("Generating top modules {}, hjson: {}, output: {}".format(
-            ip, hjson_path, genrtl_dir))
-
-        # Generate reg files
+        log.info(f"Generating registers for top module {ip}, hjson: "
+                 f"{hjson_path}, output: {genrtl_dir}")
         generate_regfile_from_path(hjson_path, genrtl_dir)
 
 
@@ -513,12 +502,6 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
         block_name = module["type"]
         block = name_to_block[block_name]
         if "attr" in module:
-            if module["attr"] not in [
-                    "templated", "ipgen", "reggen_top", "reggen_only"
-            ]:
-                raise ValueError(
-                    "Unsupported value for attr field of {}: {!r}".format(
-                        inst_name, module["attr"]))
             attrs[inst_name] = module["attr"]
 
         inst_to_block[inst_name] = block_name
@@ -532,7 +515,7 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
         mems.append(create_mem(item, addrsep, regwidth))
 
     # Top-level may override the mem setting. Store the new type to name_to_block
-    # If no other instance uses the orignal type, delete it
+    # If no other instance uses the original type, delete it
     original_types = set()
     for module in top["module"]:
         if "memory" in module.keys() and len(module["memory"]) > 0:
@@ -636,15 +619,17 @@ def _process_top(
         topcfg: Dict[str, object], args: argparse.Namespace, cfg_path: Path,
         out_path: Path, pass_idx: int
 ) -> (Dict[str, object], Dict[str, IpBlock], Dict[str, Path]):
-    # Create generated list
-    # These modules are generated through topgen
-    templated_list = lib.get_templated_modules(topcfg)
-    log.info("Templated list is {}".format(templated_list))
+    # Check that all modules have valid attributes
+    invalid_attr_mods = [ip for ip in topcfg["module"]
+                         if not lib.is_module_attr_valid(ip)]
+    if invalid_attr_mods:
+        log.error("The following ips have incorrect attr fields: "
+                  ", ".join([ip['type'] for ip in invalid_attr_mods]))
+        raise SystemExit(sys.exc_info()[1])
 
+    # Create list of modules generated with ipgen
     ipgen_list = lib.get_ipgen_modules(topcfg)
     log.info("Ip gen list is {}".format(ipgen_list))
-
-    generated_list = templated_list + ipgen_list
 
     # These modules are NOT generated but belong to a specific top
     # and therefore not part of "hw/ip"
@@ -656,12 +641,11 @@ def _process_top(
 
     top_name = f"top_{topcfg['name']}"
 
-    # Sweep the IP directory and gather the config files
-    ip_dir = Path(__file__).parents[1] / "hw/ip"
-    ips = search_ips(ip_dir)
+    # Sweep the hw/ip directory and gather the config files
+    ips = search_ips(IP_RAW_PATH)
 
     # exclude filtered IPs (to use ${top_name} one) and
-    exclude_list = generated_list + list(top_only_dict.keys())
+    exclude_list = ipgen_list + list(top_only_dict.keys())
     ips = [x for x in ips if not x.parents[1].name in exclude_list]
 
     # Hack alert
@@ -674,45 +658,29 @@ def _process_top(
     generate_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
-    # TODO: first run of topgen will fail due to the absent of rv_plic.
+    # TODO: first run of topgen will fail due to the absence of rv_plic.
     # It needs to run up to amend_interrupt in merge_top function
     # then creates rv_plic.hjson then run xbar generation.
     hjson_dir = Path(args.topcfg).parent
 
-    for ip in generated_list:
+    for ip in ipgen_list:
         # For modules that are generated prior to gathering, we need to take it from
         # the output path.  For modules not generated before, it may exist in a
         # pre-defined area already.
         log.info("Appending {}".format(ip))
-        if ip in ipgen_list:
-            ip_relpath = "ip_autogen"
-            desc_file_relpath = "data"
-        else:
-            ip_relpath = "ip"
-            desc_file_relpath = "data/autogen"
-
-        if ip == "clkmgr" or (pass_idx > 0):
-            ip_hjson = (Path(out_path) / ip_relpath / ip / desc_file_relpath /
-                        f"{ip}.hjson")
-        else:
-            ip_hjson = (hjson_dir.parent / ip_relpath / ip /
-                        desc_file_relpath / f"{ip}.hjson")
+        ip_hjson = out_path / "ip_autogen" / ip / "data" / f"{ip}.hjson"
         ips.append(ip_hjson)
 
     for ip, reggen_only in top_only_dict.items():
         log.info("Appending {}".format(ip))
-
-        if reggen_only and args.hjson_path:
-            ip_hjson = Path(args.hjson_path) / f"{ip}.hjson"
-        else:
-            ip_hjson = hjson_dir.parent / f"ip/{ip}/data/{ip}.hjson"
-
+        ip_hjson = cfg_path / "ip" / ip / "data" / f"{ip}.hjson"
         ips.append(ip_hjson)
 
+    name_to_hjson: Dict[str, Path] = {}
+    ip_objs: List[IpBlock] = []
+
     # load Hjson and pass validate from reggen
-    name_to_hjson = {}  # type Dict[str, Path]
     try:
-        ip_objs = []
         for ip_desc_file in ips:
             ip_name = ip_desc_file.stem
             # Skip if it is not in the module list
@@ -727,48 +695,37 @@ def _process_top(
             # TODO: All of this is a rather ugly hack that we need to get rid
             # of as soon as we don't arbitrarily template IP description Hjson
             # files any more.
-            if ip_name in generated_list and not ip_desc_file.is_file():
-                if ip_name in ipgen_list:
-                    log.info(
-                        "To-be-auto-generated Hjson %s does not yet exist. "
-                        "Falling back to the default configuration of template "
-                        "%s for initial validation." % (ip_desc_file, ip_name))
+            if ip_name in ipgen_list and not ip_desc_file.is_file():
+                log.info(
+                    f"To-be-generated Hjson {ip_desc_file} does not yet exist. "
+                    "Falling back to the default configuration of template "
+                    f"{ip_name} for initial validation.")
 
-                    tpl_path = SRCTREE_TOP / "hw/ip_templates" / ip_name
-                    ip_template = IpTemplate.from_template_path(tpl_path)
-                    ip_config = IpConfig(ip_template.params,
-                                         f"{top_name}_{ip_name}")
+                tpl_path = IP_TEMPLATES_PATH / ip_name
+                ip_template = IpTemplate.from_template_path(tpl_path)
+                ip_config = IpConfig(ip_template.params,
+                                     f"{top_name}_{ip_name}")
 
-                    try:
-                        ip_desc = IpDescriptionOnlyRenderer(
-                            ip_template, ip_config).render()
-                    except TemplateRenderError as e:
-                        log.error(e.verbose_str())
-                        sys.exit(1)
-                    name_to_hjson[ip_name.lower()] = tpl_path
-                    s = "default description of IP template {}".format(ip_name)
-                    ip_objs.append(IpBlock.from_text(ip_desc, [], s))
-                else:
-                    # TODO: Remove this block as soon as all IP templates use
-                    # ipgen.
-                    template_hjson_file = ip_dir / "{}/data/{}.hjson".format(
-                        ip_name, ip_name)
-                    log.info(
-                        "To-be-auto-generated Hjson %s does not yet exist. "
-                        "Falling back to Hjson description file %s shipped "
-                        "with the IP template for initial validation." %
-                        (ip_desc_file, template_hjson_file))
-                    name_to_hjson[ip_name] = template_hjson_file
-                    ip_objs.append(
-                        IpBlock.from_path(str(template_hjson_file), []))
-            else:
+                try:
+                    ip_desc = IpDescriptionOnlyRenderer(
+                        ip_template, ip_config).render()
+                except TemplateRenderError as e:
+                    log.error(e.verbose_str())
+                    sys.exit(1)
+                name_to_hjson[ip_name.lower()] = tpl_path
+                s = "default description of IP template {}".format(ip_name)
+                ip_objs.append(IpBlock.from_text(ip_desc, [], s))
+            elif ip_desc_file.is_file():
                 name_to_hjson[ip_name] = ip_desc_file
                 ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
+            else:
+                log.error(f"Descrition file not found: {ip_desc_file}")
+                raise SystemExit(sys.exc_info()[1])
 
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
-    name_to_block = {}  # type: Dict[str, IpBlock]
+    name_to_block: Dict[str, IpBlock] = {}
     for block in ip_objs:
         lblock = block.name.lower()
         assert lblock not in name_to_block
@@ -795,8 +752,8 @@ def _process_top(
     # Read the crossbars under the top directory
     xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
-    log.info("Detected crossbars: %s" %
-             (", ".join([x["name"] for x in xbar_objs])))
+    log.info("Detected crossbars: " +
+             ", ".join([x["name"] for x in xbar_objs]))
 
     topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
     if error != 0:
@@ -835,8 +792,8 @@ def _process_top(
     generate_rstmgr(completecfg, out_path)
 
     # Generate top only modules
-    # These modules are not templated, but are not in hw/ip
-    generate_top_only(top_only_dict, out_path, top_name, args.hjson_path)
+    # These modules are not ipgen, but are not in hw/ip
+    generate_top_only(top_only_dict, cfg_path, top_name, args.hjson_path)
 
     return completecfg, name_to_block, name_to_hjson
 
@@ -847,25 +804,7 @@ def _check_countermeasures(completecfg: Dict[str, object],
     success = True
     for name, hjson_path in name_to_hjson.items():
         log.debug("name %s, hjson %s", name, hjson_path)
-        ip_index = [m['type'] for m in completecfg['module']].index(name)
-        # TODO(lowrisc/opentitan#8440): For templated IPs we have to search
-        # both the source and destination RTL directories, since not all files
-        # are copied over. This is a workaround which can be removed once all
-        # generated IPs have transitioned to IPgen.
-        if ('attr' in completecfg['module'][ip_index] and
-                completecfg['module'][ip_index]['attr'] == 'templated'):
-            ip_proper_rtl_path = hjson_path.parents[5] / 'ip' / name / 'rtl'
-            sv_files = (hjson_path.parents[2] / 'rtl' / 'autogen').glob('*.sv')
-            sv_files = set(sv_files)
-            sv_names = set([f.name for f in sv_files])
-            proper_rtl_files = {
-                f
-                for f in ip_proper_rtl_path.glob('*.sv')
-                if f.name not in sv_names
-            }
-            sv_files = sv_files | proper_rtl_files
-        else:
-            sv_files = (hjson_path.parents[1] / 'rtl').glob('*.sv')
+        sv_files = (hjson_path.parents[1] / 'rtl').glob('*.sv')
         rtl_names = CounterMeasure.search_rtl_files(sv_files)
         log.debug("Checking countermeasures for %s.", name)
         success &= name_to_block[name].check_cm_annotations(
@@ -1012,7 +951,7 @@ def main():
 
     if not args.outdir:
         outdir = Path(args.topcfg).parents[1]
-        log.info("TOP directory not given. Use %s", (outdir))
+        log.info("TOP directory not given. Using %s", (outdir))
     elif not Path(args.outdir).is_dir():
         log.error("'--outdir' should point to writable directory")
         raise SystemExit(sys.exc_info()[1])

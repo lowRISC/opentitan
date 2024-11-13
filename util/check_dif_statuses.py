@@ -36,16 +36,6 @@ from termcolor import colored
 
 import topgen.lib as lib
 
-# Maintain a list of IPs that only exist in the top-level area.
-#
-# Note that there are several templated IPs that are auto-generated in the
-# top-level area as well, but since the bulk of the code (including the
-# template) lives in the hw/ip area, we do not need to consider them.
-# These IPs are slowly being migrated to use the `ipgen` tooling, and are
-# defined in the IPS_USING_IPGEN list in the make_new_dif.ip module imported
-# above.
-_TOP_LEVEL_IPS = {"ast", "sensor_ctrl"}
-
 # Indicates that the DIF work has not yet started.
 _NOT_STARTED = colored("NOT STARTED", "red")
 
@@ -82,11 +72,12 @@ class DIFStatus:
         funcs_unimplemented (Set[str]): Set of unimplemted DIF functions.
 
     """
-    def __init__(self, ipgen_ips, top_level, dif_name):
+    def __init__(self, ipgen_ips, reggen_ips, top_level, dif_name):
         """Mines metadata to populate this DIFStatus object.
 
         Args:
             ipgen_ips: List of IPs generated with the ipgen.py tool.
+            reggen_ips: List of IPs residing in hw/<top>/ip.
             top_level: Name of the top level design.
             dif_name: Full name of the DIF including the IP name.
 
@@ -108,7 +99,7 @@ class DIFStatus:
         # Get (relative) HW RTL path.
         if self.ip in ipgen_ips:
             self.hw_path = Path(f"hw/{top_level}/ip_autogen/{self.ip}")
-        elif self.ip in _TOP_LEVEL_IPS:
+        elif self.ip in reggen_ips:
             self.hw_path = Path(f"hw/{top_level}/ip/{self.ip}")
         else:
             self.hw_path = Path(f"hw/ip/{self.ip}")
@@ -382,6 +373,7 @@ def main(argv):
     top_hjson_text = top_hjson.read_text()
     topcfg = hjson.loads(top_hjson_text, use_decimal=True)
     ipgen_ips = lib.get_ipgen_modules(topcfg)
+    reggen_ips = lib.get_top_reggen_modules(topcfg)
     # yapf: disable
     topgen_process = subprocess.run([topgen_tool, "-t", top_hjson,
                                      "--get_blocks", "-o", REPO_TOP],
@@ -398,7 +390,7 @@ def main(argv):
                                      desc="Analyzing statuses of DIFs ...",
                                      unit="DIFs")
     for dif in difs:
-        dif_statuses.append(DIFStatus(ipgen_ips, top_level, dif))
+        dif_statuses.append(DIFStatus(ipgen_ips, reggen_ips, top_level, dif))
         progress_bar.update()
     dif_statuses.sort(key=lambda x: x.ip)
 
