@@ -824,7 +824,13 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
         log.debug("Handling inter-sig {} {}".format(req_struct['name'], total_width))
 
         if isinstance(req_struct["width"], Parameter):
-            width = int(req_struct["width"].default)
+            param = req_struct["width"]
+            if param.expose:
+                # If it's a top-level exposed parameter, we need to find definition from there
+                module = lib.get_module_by_name(topcfg, req_m)
+                width = int(module['param_decl'].get(param.name, req_struct["width"].default))
+            else:
+                width = int(req_struct["width"].default)
         else:
             width = req_struct["width"]
 
