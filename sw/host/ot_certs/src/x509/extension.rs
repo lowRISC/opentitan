@@ -266,6 +266,19 @@ impl<'a> asn1::SimpleAsn1Readable<'a> for KeyUsage {
     }
 }
 
+// From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.1
+// AuthorityKeyIdentifier ::= SEQUENCE {
+//       keyIdentifier             [0] KeyIdentifier           OPTIONAL,
+//       authorityCertIssuer       [1] GeneralNames            OPTIONAL,
+//       authorityCertSerialNumber [2] CertificateSerialNumber OPTIONAL  }
+//
+// KeyIdentifier ::= OCTET STRING
+#[derive(asn1::Asn1Read)]
+struct AuthorityKeyIdentifier<'a> {
+    #[implicit(0)]
+    pub key_id: Option<&'a [u8]>,
+}
+
 /// Try to parse an X509 extension as a DICE TCB info extension.
 pub fn parse_dice_tcb_info_extension(ext: &[u8]) -> Result<DiceTcbInfoExtension> {
     asn1::parse_single::<DiceTcbInfo>(ext)
@@ -298,6 +311,23 @@ pub fn parse_basic_constraints(ext: &X509ExtensionRef) -> Result<BasicConstraint
     asn1::parse_single::<BasicConstraintsInternal>(ext.data.as_slice())
         .context("cannot parse DICE extension")?
         .to_basic_constraints()
+}
+
+pub fn parse_authority_key_id(ext: &X509ExtensionRef) -> Result<Vec<u8>> {
+    let auth = asn1::parse_single::<AuthorityKeyIdentifier>(ext.data.as_slice())?;
+    Ok(auth
+        .key_id
+        .context("authority key identifier extension is empty")?
+        .to_vec())
+}
+
+pub fn parse_subject_key_id(ext: &X509ExtensionRef) -> Result<Vec<u8>> {
+    // From https://datatracker.ietf.org/doc/html/rfc5280#section-4.2.1.2
+    // SubjectKeyIdentifier ::= KeyIdentifier
+    //
+    //  KeyIdentifier ::= OCTET STRING
+    let subj = asn1::parse_single::<&[u8]>(ext.data.as_slice())?;
+    Ok(subj.to_vec())
 }
 
 /// Try to parse an X509 extension.
