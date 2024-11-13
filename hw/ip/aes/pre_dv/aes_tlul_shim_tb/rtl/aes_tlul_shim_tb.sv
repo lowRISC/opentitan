@@ -53,7 +53,9 @@ module aes_tlul_shim_tb
   logic [top_pkg::TL_DW-1:0] shim_rdata;
 
   logic error;
-  assign error = shim_error | dpi_error;
+  logic c_dpi_data_error;
+  logic c_dpi_tag_error;
+  assign error = shim_error | c_dpi_data_error | c_dpi_tag_error;
 
   logic test_passed_q;
   logic test_done_q;
@@ -73,22 +75,36 @@ module aes_tlul_shim_tb
   // order to check whether an operation has finished. A convenient side-effect of this is that it
   // will generate a large number of TLUL requests, which in combination with the delayer serves as
   // a good stress test of the shim.
-  logic poll;
-
+  //
   // Reads of the AES status registers are repeated (without popping a new request from the stack)
   // until it matches the `shim_req.mask`. Such a stall can occur when the `IDLE` bit needs to be
   // asserted before the computation can advance.
+  logic poll;
   assign poll = ~shim_hld
       & (shim_req.addr == 32'(AES_STATUS_OFFSET))
       & ~|(shim_rdata & shim_req.mask);
-  assign shim_pop = ~shim_hld & ~poll;
+  assign shim_pop = (~shim_hld & ~poll) | ~shim_req.dv;
+
+  aes_mode_e aes_mode_q;
+  gcm_phase_e gcm_phase_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      gcm_phase_q <= '0;
+      aes_mode_q <= '0;
+    end else if (~shim_req.dv) begin
+      gcm_phase_q <= '0;
+      aes_mode_q <= shim_req.c_dpi_input.mode;
+    end else if (shim_req.addr == 32'(AES_CTRL_GCM_SHADOWED_OFFSET)) begin
+      gcm_phase_q <= shim_req.wdata[5:0];
+    end
+  end
 
   aes_tlul_shim_tb_reqs u_aes_tlul_shim_tb_reqs (
-    .clk_i     ( clk_i     ),
-    .rst_ni    ( rst_ni    ),
-    .pop_req_i ( shim_pop  ),
-    .req_o     ( shim_req  ),
-    .done_o    ( shim_done )
+    .clk_i         ( clk_i       ),
+    .rst_ni        ( rst_ni      ),
+    .pop_req_i     ( shim_pop    ),
+    .req_o         ( shim_req    ),
+    .done_o        ( shim_done   )
   );
 
   tlul_adapter_shim #(
@@ -153,83 +169,64 @@ module aes_tlul_shim_tb
   // AES-GCM Correctness Verification //
   //////////////////////////////////////
 
-  // This is a sanity check verifying whether the AES-128-GCM block has correctly
-  // computed the authentication tag for a single-block message
-  // with a zero key and IV inputs, which is congruent to test case #2 in
-  //
-  // https://csrc.nist.rip/groups/ST/toolkit/BCM/documents/proposedmodes/gcm/gcm-spec.pdf
-  //
-  // Instead of hardcoding the model tag, this testbench calls into the `c_dpi_aes`
-  // reference implementation.
+  // This is a sanity check verifying whether the AES Block has correctly computed the
+  // plaintext/ciphertext and tag (in the case of AES-GCM) by cross-checking the hardware output with
+  // the `c_dpi` model that interfaces with the OpenSSL/BoringSSL cryptographic library.
 
-  // The ciphertext and authentication tag parts are compared in the same cycle
-  // after a successful read of the AES data output register.
+  logic check_out;
+  logic check_data;
+  logic check_tag;
 
-  logic out_cntr_en;
-  assign out_cntr_en = ~shim_hld && (shim_req.addr == 32'(AES_DATA_OUT_0_OFFSET) ||
-                                     shim_req.addr == 32'(AES_DATA_OUT_1_OFFSET) ||
-                                     shim_req.addr == 32'(AES_DATA_OUT_2_OFFSET) ||
-                                     shim_req.addr == 32'(AES_DATA_OUT_3_OFFSET)) ? 1'b1 : 1'b0;
+  assign check_out = ~shim_hld && (shim_req.addr == 32'(AES_DATA_OUT_0_OFFSET) ||
+                                   shim_req.addr == 32'(AES_DATA_OUT_1_OFFSET) ||
+                                   shim_req.addr == 32'(AES_DATA_OUT_2_OFFSET) ||
+                                   shim_req.addr == 32'(AES_DATA_OUT_3_OFFSET)) ? 1'b1 : 1'b0;
 
-  int out_cntr_d, out_cntr_q;
-  always_comb begin
-    out_cntr_d = out_cntr_q;
-    if (out_cntr_en) begin
-      out_cntr_d = out_cntr_q + 1;
-    end
-  end
+  assign check_data = check_out && (aes_mode_q != AES_GCM || gcm_phase_q == GCM_TEXT) ? 1'b1 : 1'b0;
+  assign check_tag  = check_out && (gcm_phase_q == GCM_TAG)  ? 1'b1 : 1'b0;
+
+  // GCM allows incomplete plaintext/ciphertext blocks which need to be masked in order to establish
+  // correctness with the `c_dpi` model. We do this by initializing a counter to the number of data
+  // bytes and decrementing it whenever 32 data bits from the AES block arrive. The value of the
+  // counter steers a mask that is applied to both the AES block and the `c_dpi` model block. The
+  // counter is reset for every `c_dpi_load` request, i.e., shim_req.dv = 0.
+
+  int data_cntr_d, data_cntr_q;
+  assign data_cntr_d = ~shim_req.dv ? `DATA_LENGTH :
+                       check_data   ? (data_cntr_q >= 4 ? data_cntr_q - 4 : 0) : data_cntr_q;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      out_cntr_q <= 0;
+      data_cntr_q <= `DATA_LENGTH;
     end else begin
-      out_cntr_q <= out_cntr_d;
+      data_cntr_q <= data_cntr_d;
     end
   end
 
-  logic [255:0] c_dpi_key;
-  logic [127:0] c_dpi_iv;
-  logic [7:0]   c_dpi_pt [16];
-  assign c_dpi_key = '{default: '0};
-  assign c_dpi_iv  = '{default: '0};
-  assign c_dpi_pt  = '{default: '0};
+  logic [31:0] data_mask;
+  assign data_mask = data_cntr_q >= 4 ? 32'hffff_ffff :
+                     data_cntr_q == 3 ? 32'h00ff_ffff :
+                     data_cntr_q == 2 ? 32'h0000_ffff :
+                     data_cntr_q == 1 ? 32'h0000_00ff : '0;
 
-  logic [31:0][7:0] c_dpi_model_q;
-  logic [7:0] c_dpi_ct [16];
-  logic [3:0][3:0][7:0] c_dpi_tag;
+  logic [31:0] c_dpi_data, c_dpi_tag;
+  aes_tlul_shim_tb_c_dpi #(
+    .ADLength   ( `AD_LENGTH   ),
+    .DataLength ( `DATA_LENGTH )
+  ) u_aes_tlul_shim_tb_c_dpi (
+     .clk_i               ( clk_i                ),
+     .rst_ni              ( rst_ni               ),
+     .c_dpi_input_i       ( shim_req.c_dpi_input ),
+     .c_dpi_load_i        ( ~shim_req.dv         ),
+     .c_dpi_rotate_data_i ( check_data           ),
+     .c_dpi_rotate_tag_i  ( check_tag            ),
+     .c_dpi_data_o        ( c_dpi_data           ),
+     .c_dpi_tag_o         ( c_dpi_tag            )
+  );
 
-  always_comb begin
-    aes_model_dpi_pkg::c_dpi_aes_crypt_message(
-      1'b1,      // Reference Implementation: OpenSSL/BoringSSL
-      1'b0,      // Operation: Encryption
-      AES_GCM,   // Mode: GCM
-      c_dpi_iv,  // IV
-      AES_128,   // Key Length: 128
-      c_dpi_key, // Key
-      c_dpi_pt,  // Data Input
-      '0,        // AD Input: null
-      '0,        // Tag Input: null
-      c_dpi_ct,  // CT Output
-      c_dpi_tag  // Tag Output
-    );
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      c_dpi_model_q[31:16] <= aes_transpose(c_dpi_tag);
-      for (int i = 0; i < 16; i++) begin
-        c_dpi_model_q[i] <= c_dpi_ct[i];
-      end
-    end else if (out_cntr_en) begin
-      for (int i = 0; i < 32; i++) begin
-        // Rotate `c_dpi` output.
-        c_dpi_model_q[i] <= c_dpi_model_q[(i+4)%32];
-      end
-    end
-  end
-
-  logic dpi_error;
-  assign dpi_error = out_cntr_en && c_dpi_model_q[3:0] != shim_rdata ? 1'b1 : 1'b0;
+  assign c_dpi_data_error = check_data &&
+                            (c_dpi_data & data_mask) != (shim_rdata & data_mask) ? 1'b1 : 1'b0;
+  assign c_dpi_tag_error  = check_tag && (c_dpi_tag != shim_rdata) ? 1'b1 : 1'b0;
 
   // We do not care about alerts in this testbench. Set them to constant values.
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
