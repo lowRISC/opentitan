@@ -96,7 +96,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_kmac_entropy"]
-      bazel: []
+      bazel: ["//sw/device/tests:kmac_entropy_test"]
     }
     {
       name: chip_sw_kmac_idle
