@@ -6,7 +6,7 @@
 //! to test corner cases of the certificate generator.
 
 use anyhow::{ensure, Result};
-use rand::distributions::DistString;
+use rand::distributions::{DistString, Distribution, Uniform};
 
 use openssl::bn::{BigNum, BigNumContext};
 use openssl::ec::{EcGroup, EcKey};
@@ -53,12 +53,33 @@ impl Template {
             };
             data.values.insert(var.to_string(), val);
         }
+        // We want to make sure that we generate valid dates, otherwise tools like
+        // openssl might fail to parse the certificate.
+        if let Value::Variable(Variable { name, .. }) = &self.certificate.not_before {
+            data.values.insert(name.clone(), self.random_time());
+        }
+        if let Value::Variable(Variable { name, .. }) = &self.certificate.not_after {
+            data.values.insert(name.clone(), self.random_time());
+        }
         // We want to make sure that we generate a valid public key, otherwise
         // tools like openssl might fail to parse the certificate.
         for (key, val) in self.random_public_key()?.values {
             data.values.insert(key, val);
         }
         Ok(data)
+    }
+
+    fn random_time(&self) -> SubstValue {
+        // The smallest possible valid GeneralizedTime is YYYYMMDDHHMMSSZ
+        let mut rng = rand::thread_rng();
+        let year = Uniform::from(1900..2100).sample(&mut rng);
+        let month = Uniform::from(1..13).sample(&mut rng);
+        let day = Uniform::from(1..29).sample(&mut rng);
+        let hour = Uniform::from(0..24).sample(&mut rng);
+        let minute = Uniform::from(0..60).sample(&mut rng);
+        let sec = Uniform::from(0..60).sample(&mut rng);
+        let time = format!("{year:04}{month:02}{day:02}{hour:02}{minute:02}{sec:02}Z");
+        SubstValue::String(time)
     }
 
     fn random_public_key(&self) -> Result<SubstData> {
