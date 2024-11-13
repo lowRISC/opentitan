@@ -387,7 +387,8 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "NumWkups": n_wkups,
         "Wkups": top["wakeups"],
         "rst_reqs": top["reset_requests"],
-        "NumRstReqs": n_rstreqs
+        "NumRstReqs": n_rstreqs,
+        "wait_for_external_reset": top['power']['wait_for_external_reset']
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)
