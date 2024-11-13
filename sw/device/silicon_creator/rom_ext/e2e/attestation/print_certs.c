@@ -9,7 +9,7 @@
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
-OTTF_DEFINE_TEST_CONFIG();
+OTTF_DEFINE_TEST_CONFIG(.catch_alerts = true);
 
 const char kBase64[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -64,7 +64,14 @@ static status_t print_owner_block(char *dest,
 static status_t print_certs(void) {
   char buf[3072];
   // Print certificates.
-  TRY(print_cert(buf, &kFlashCtrlInfoPageFactoryCerts));
+  // TODO: print factory certs on FPGA;
+  // On non-silicon targets, the factory certs pages will not be provisioned,
+  // and it is not updated by the ROM_EXT if it is not provisioned. This will
+  // trigger an ECC error when trying to read a page that has scrambling setup
+  // by the ROM_EXT but is not erased after.
+  if (kDeviceType == kDeviceSilicon) {
+    TRY(print_cert(buf, &kFlashCtrlInfoPageFactoryCerts));
+  }
   TRY(print_cert(buf, &kFlashCtrlInfoPageDiceCerts));
 
   // Print owner information.
