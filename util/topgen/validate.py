@@ -72,7 +72,10 @@ top_optional = {
 
 top_added = {}
 
-pinmux_required = {}
+pinmux_required = {
+    'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
+    'enable_strap_sampling': ['pb', 'Enable hardware strap sampling of pinmux']
+}
 pinmux_optional = {
     'num_wkup_detect': [
         'd', 'Number of wakeup detectors'
