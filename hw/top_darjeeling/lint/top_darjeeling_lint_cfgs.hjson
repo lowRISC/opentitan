@@ -211,6 +211,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_dm/lint/{tool}"
              },
+             {    name: soc_dbg_ctrl
+                  fusesoc_core: lowrisc:ip:soc_dbg_ctrl
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/soc_dbg_ctrl/lint/{tool}"
+             },
              {    name: top_darjeeling_rv_plic
                   fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]

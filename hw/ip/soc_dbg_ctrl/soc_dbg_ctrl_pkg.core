@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:soc_dbg_ctrl_pkg:0.1"
+description: "SoC Debug Control Package"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:mubi
+    files:
+      - rtl/soc_dbg_ctrl_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
