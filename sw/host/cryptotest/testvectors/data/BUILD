@@ -326,30 +326,6 @@ run_binary(
 
 [
     run_binary(
-        name = "hjson_{}".format(hash_alg),
-        srcs = [
-            "//sw/device/tests/crypto/testvectors:{}_hardcoded.hjson".format(hash_alg),
-            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
-        ],
-        outs = [":hjson_{}.json".format(hash_alg)],
-        args = [
-            "--src",
-            "$(location //sw/device/tests/crypto/testvectors:{}_hardcoded.hjson)".format(hash_alg),
-            "--dst",
-            "$(location :hjson_{}.json)".format(hash_alg),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
-    )
-    for hash_alg in [
-        "shake128",
-        "shake256",
-    ]
-]
-
-[
-    run_binary(
         name = cryptotest_name,
         srcs = [
             "@wycheproof//testvectors_v1:{}".format(src_name),
