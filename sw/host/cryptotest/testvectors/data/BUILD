@@ -6,6 +6,8 @@ load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["cshake_hardcoded.hjson"])
+
 # Strip the inner layer of the DRBG repository, which is a zip of zips
 genrule(
     name = "nist_cavp_drbg_sp_800_90a_reseed",
@@ -231,6 +233,27 @@ ECDSA_RANDOM_COUNT = 128
         "LongMsg",
     ] + extra_msg_types
 ]
+
+################################################################################
+# CSHAKE - NIST Example Values
+################################################################################
+run_binary(
+    name = "cshake_nist_example_values_json",
+    srcs = [
+        ":cshake_nist_example_values.hjson",
+        "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+    ],
+    outs = [":cshake_nist_example_values.json"],
+    args = [
+        "--src",
+        "$(location :cshake_nist_example_values.hjson)",
+        "--dst",
+        "$(location :cshake_nist_example_values.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
+)
 
 run_binary(
     name = "nist_cavp_ecdh_sp_800_56a_json",
