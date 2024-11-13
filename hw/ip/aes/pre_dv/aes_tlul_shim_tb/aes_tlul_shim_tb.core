@@ -11,8 +11,14 @@ filesets:
       - lowrisc:dv:aes_model_dpi
       - lowrisc:tlul:adapter_shim
     files:
+      - data/gcm_k128_a20_d60.svh : {is_include_file : true}
+      - data/gcm_k128_a20_d64.svh : {is_include_file : true}
+      - data/gcm_k128_a0_d16.svh : {is_include_file : true}
+      - data/gcm_k128_a0_d0.svh : {is_include_file : true}
+      - data/modes_d64.svh : {is_include_file : true}
       - rtl/aes_tlul_shim_tb_pkg.sv
       - rtl/aes_tlul_shim_tb_reqs.sv
+      - rtl/aes_tlul_shim_tb_c_dpi.sv
       - rtl/aes_tlul_shim_delayer.sv
       - rtl/aes_tlul_shim_tb.sv
     file_type: systemVerilogSource
@@ -38,6 +44,7 @@ targets:
         verilator_options:
 # Disabling tracing reduces compile times by multiple times, but doesn't have a
 # huge influence on runtime performance. (Based on early observations.)
+          - '-DREQUESTS_FILE=\"gcm_k128_a20_d60.svh\"'
           - '--trace'
           - '--trace-fst' # this requires -DVM_TRACE_FMT_FST in CFLAGS below!
           - '--trace-structs'
