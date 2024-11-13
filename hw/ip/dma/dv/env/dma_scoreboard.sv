@@ -26,7 +26,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit operation_in_progress;
   // Tracks the number of bytes read from the source
   uint num_bytes_read;
-  // Expectation of how many bytes shall be transferred by the DMA controller before reporting Done
+  // Expectation of how many bytes shall be transferred by the DMA controller before reports
+  // 'Chunk Done' or 'Done.'
   // (for handshake mode this is the entire transfer, but for memory-to-memory operation it tracks
   //  the total size in bytes of the chunks thus far supplied).
   uint exp_bytes_transferred;
@@ -67,8 +68,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit [31:0] clear_intr_src;
   bit [TL_DW-1:0] exp_digest[16];
 
-  // Allow up to this number of clock cycles from CSR modification until interrupt signal change.
-  localparam uint CSRtoIntrLatency = 2;
+  // Allow up to this number of clock cycles from CSR modification until interrupt signal change;
+  // a change in the `control` register can lead to a change in the clock gate, and then delays
+  // through the register interface and `prim_intr_hw` modules.
+  localparam uint CSRtoIntrLatency = 4;
   // Maximum latency from bus error occurring to interrupt signal change reporting it.
   localparam uint BusErrorToIntrLatency = 4;
   // Maximum latency from detecting a memory limit crossing to interrupt signal change reporting it.
@@ -207,15 +210,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Are we expecting another access?
     if (num_bytes < dma_config.total_data_size) begin
-      if (!dma_config.chunk_data_size || (num_bytes % dma_config.chunk_data_size)) begin
-        // Still within this chunk; do we advance per bus transaction?
-        if (fifo_access && !dma_config.auto_inc_fifo) begin
-          // Fixed address.
-          next_addr = addr;
+      // No support for fixed source/destination address or overlapping of chunks in
+      // memory-to-memory mode.
+      if (dma_config.handshake) begin
+        if (!dma_config.chunk_data_size || (num_bytes % dma_config.chunk_data_size)) begin
+          // Still within this chunk; do we advance per bus transaction?
+          if (fifo_access && !dma_config.auto_inc_fifo) begin
+            // Fixed address.
+            next_addr = addr;
+          end
+        end else if (fifo_access || !dma_config.auto_inc_buffer) begin
+          // End of a chunk, but all chunks overlap.
+          next_addr = start_addr;
         end
-      end else if (fifo_access || !dma_config.auto_inc_buffer) begin
-        // End of a chunk, but all chunks overlap.
-        next_addr = start_addr;
       end
     end else begin
       next_addr = {64{1'b1}};  // Invalid; induce a mismatch if there is another access.
@@ -477,18 +484,25 @@ class dma_scoreboard extends cip_base_scoreboard #(
     // error whilst error-free 'clear interrupt' writes are occurring.
     if (item.d_error && !tl_error_suppressed) begin
       `uvm_info(`gfn, "Bus error detected", UVM_MEDIUM)
-      predict_interrupts(BusErrorToIntrLatency, 1 << DMA_ERROR, intr_enable);
-      intr_state_hw[DMA_ERROR] = 1'b1;
+      predict_interrupts(BusErrorToIntrLatency, 1 << IntrDmaError, intr_enable);
+      intr_state_hw[IntrDmaError] = 1'b1;
     end else if (got_dest_item) begin
       // Is this the final destination write?
       //
       // Note: we must perform this on the data channel (write response) because an error may occur
       //       on the very final write transaction, in which case DONE should not be seen.
       if (num_bytes_transferred >= exp_bytes_transferred) begin
-        // Whether a 'DONE' interrupt is expected depends upon whether it is enabled.
-        `uvm_info(`gfn, "Final write completed", UVM_MEDIUM)
-        predict_interrupts(WriteToDoneLatency, 1 << DMA_DONE, intr_enable);
-        intr_state_hw[DMA_DONE] = 1'b1;
+        // Whether an interrupt is expected also depends upon whether it is enabled.
+        // Have we yet completed the entire transfer?
+        if (num_bytes_transferred >= dma_config.total_data_size) begin
+          `uvm_info(`gfn, "Final write completed", UVM_MEDIUM)
+          predict_interrupts(WriteToDoneLatency, 1 << IntrDmaDone, intr_enable);
+          intr_state_hw[IntrDmaDone] = 1'b1;
+        end else begin
+          `uvm_info(`gfn, "Chunk writing completed", UVM_MEDIUM)
+          predict_interrupts(WriteToDoneLatency, 1 << IntrDmaChunkDone, intr_enable);
+          intr_state_hw[IntrDmaChunkDone] = 1'b1;
+        end
       end
     end
   endtask
@@ -612,10 +626,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
           if (curr_intr[i] !== exp_intr[i]) begin
             // Collect a list of the mismatched interrupts
             unique case (i)
-              DMA_DONE:       rsn = {rsn, "Done "};
-              DMA_CHUNK_DONE: rsn = {rsn, "Chunk Done "};
-              DMA_ERROR:      rsn = {rsn, "Error "};
-              default:        rsn = {rsn, "Unknown intr"};
+              IntrDmaDone:      rsn = {rsn, "Done "};
+              IntrDmaChunkDone: rsn = {rsn, "ChunkDone "};
+              IntrDmaError:     rsn = {rsn, "Error "};
+              default:          rsn = {rsn, "Unknown intr"};
             endcase
           end
         end
@@ -986,8 +1000,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "status": begin
         uvm_reg_data_t clearing = 0;
-        clearing[DMA_DONE]  = get_field_val(ral.status.done, item.a_data);
-        clearing[DMA_ERROR] = get_field_val(ral.status.error, item.a_data);
+        clearing[IntrDmaDone]      = get_field_val(ral.status.done, item.a_data);
+        clearing[IntrDmaChunkDone] = get_field_val(ral.status.chunk_done, item.a_data);
+        clearing[IntrDmaError]     = get_field_val(ral.status.error, item.a_data);
         // Clearing the hardware contribution to the `intr_state` fields.
         intr_state_hw &= ~clearing;
         // Clearing the status bits also clears the corresponding Status-type interrupt(s) unless
@@ -1038,8 +1053,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `uvm_info(`gfn, $sformatf("dma_config.is_valid_config = %b",
                                     dma_config.is_valid_config), UVM_MEDIUM)
           // Are we expecting an Error interrupt from an invalid configuration?
-          predict_interrupts(GoToCfgErrLatency, 1 << DMA_ERROR,
-                             (!dma_config.is_valid_config << DMA_ERROR) & intr_enable);
+          predict_interrupts(GoToCfgErrLatency, 1 << IntrDmaError,
+                             (!dma_config.is_valid_config << IntrDmaError) & intr_enable);
           // Expect digest to be cleared even for rejected configurations
           exp_digest = '{default:0};
           // Clear status variables
@@ -1047,20 +1062,16 @@ class dma_scoreboard extends cip_base_scoreboard #(
           num_bytes_transferred = 0;
           num_bytes_checked = 0;
           fifo_intr_cleared = 0;
-          // Expectation of bytes transferred before the first 'Done' signal
+          // Expectation of bytes transferred before the first 'Chunk Done' or 'Done' signal
           exp_bytes_transferred = dma_config.handshake ? dma_config.total_data_size
                                                        : dma_config.chunk_size(0);
         end else if (!dma_config.handshake && go) begin
+          // Status register is cleared, so all Status-type interrupts become deasserted.
+          uvm_reg_data_t clearing;
+          clearing = (1 << IntrDmaDone) | (1 << IntrDmaChunkDone) | (1 << IntrDmaError);
+          predict_interrupts(CSRtoIntrLatency, clearing, 0);
           // Nudging a multi-chunk memory-to-memory transfer to proceed.
           operation_in_progress = 1'b1;
-          if (dma_config.direction == DmaSendData && !dma_config.auto_inc_buffer) begin
-            // Source address shall rewind; chunks overlap.
-            exp_src_addr = dma_config.src_addr;
-          end
-          if (dma_config.direction == DmaRcvData && !dma_config.auto_inc_buffer) begin
-            // Destination address shall rewind; chunks overlap.
-            exp_dst_addr = dma_config.dst_addr;
-          end
           // In memory-to-memory mode, DV/FW is advancing to the next chunk
           exp_bytes_transferred += dma_config.chunk_size(exp_bytes_transferred);
         end
@@ -1127,7 +1138,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
           if (error)      reasons = {reasons, "Error" };
           if (chunk_done) reasons = {reasons, "ChunkDone "};
           operation_in_progress = 1'b0;
-          `uvm_info(`gfn, $sformatf("Detected end of DMA operation (%s)", reasons), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("Detected status of DMA operation (%s)", reasons), UVM_MEDIUM)
           // Clear variables
           num_fifo_reg_write = 0;
         end

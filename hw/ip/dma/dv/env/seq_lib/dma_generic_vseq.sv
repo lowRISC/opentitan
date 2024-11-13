@@ -148,9 +148,10 @@ class dma_generic_vseq extends dma_base_vseq;
         // They may optionally be exercised when using polling.
         intr_enables = $urandom;
         if (intr_driven) begin
-          intr_enables[DMA_DONE]  = 1'b1;
-          intr_enables[DMA_ERROR] = 1'b1;
+          intr_enables[IntrDmaDone]  = 1'b1;
+          intr_enables[IntrDmaError] = 1'b1;
         end
+        // Other interrupts are enabled or disabled at random.
         enable_interrupts( intr_enables, 1'b1);
         enable_interrupts(~intr_enables, 1'b0);
 
@@ -172,9 +173,13 @@ class dma_generic_vseq extends dma_base_vseq;
           // - timeout
           while (!stop) begin
             wait_for_completion(intr_driven, status);
-            if (status != StatusDone) begin
+            // Aborted and Error status bits take precedence over everything else; the DMA
+            // controller will have terminated the current operation.
+            if (status[StatusAborted] | status[StatusError]) begin
+              `uvm_info(`gfn, $sformatf("STATUS.aborted %d and error %d; transfer terminated",
+                                        status[StatusAborted], status[StatusError]), UVM_MEDIUM)
               stop = 1'b1;
-            end else begin
+            end else if (status[StatusDone]) begin
               // 'Done' but perhaps not yet finished
               bit [31:0] num_written = get_bytes_written(dma_config);
               `uvm_info(`gfn,
@@ -183,21 +188,30 @@ class dma_generic_vseq extends dma_base_vseq;
               // Has the entire transfer been completed yet?
               if (num_written >= dma_config.total_data_size) begin
                 stop = 1'b1;
-              end else if (!dma_config.handshake) begin
-                // Model the FirmWare running on the OT side, responding to the Done interrupt and
-                // nudging the controller to perform the next chunk of a multi-chunk transfer
-
-                // Supply the next chunk of input data
-                void'(configure_mem_model(dma_config, num_bytes_supplied));
-                num_bytes_supplied += dma_config.chunk_size(num_bytes_supplied);
-
-                // Nudge the DMA controller to start processing the next chunk of data
-                start_chunk(dma_config, 1'b0);
               end else begin
                 `uvm_fatal(`gfn,
                       $sformatf("STATUS.done bit set prematurely (0x%x byte(s) of 0x%x transferred",
                       num_written, dma_config.total_data_size))
               end
+            end else if (status[StatusChunkDone]) begin
+              if (dma_config.handshake) begin
+                `uvm_fatal(`gfn, "STATUS.chunk_done assertion in 'hardware handshaking' mode")
+              end
+
+              // Model the FirmWare running on the OT side, responding to the Done interrupt and
+              // nudging the controller to perform the next chunk of a multi-chunk transfer
+
+              // Supply the next chunk of input data
+              void'(configure_mem_model(dma_config, num_bytes_supplied));
+              `uvm_info(`gfn, $sformatf("Advancing to next chunk of 0x%x byte(s) at offset 0x%x",
+                                        dma_config.chunk_size(num_bytes_supplied),
+                                        num_bytes_supplied), UVM_MEDIUM)
+              num_bytes_supplied += dma_config.chunk_size(num_bytes_supplied);
+
+              // Nudge the DMA controller to start processing the next chunk of data
+              start_chunk(dma_config, 1'b0);
+            end else begin
+              stop = 1'b1;
             end
           end
           begin
@@ -279,7 +293,6 @@ class dma_generic_vseq extends dma_base_vseq;
         if (status[StatusChunkDone]) begin
           // Clear STATUS.chunk_done bit and then clear the interrupt, if enabled.
           clear_chunk_done();
-          clear_interrupts(1 << DMA_CHUNK_DONE);
           status[StatusChunkDone] = 1'b0;
         end
         if (status[StatusError]) begin
