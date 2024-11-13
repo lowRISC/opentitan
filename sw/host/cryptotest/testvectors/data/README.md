@@ -8,6 +8,14 @@ Source: [NIST CAVP Block Ciphers](https://csrc.nist.gov/Projects/Cryptographic-A
 
 We are using the AES KAT Vectors.
 
+## Hash Functions
+
+### NIST CSHAKE Example Values
+
+Source: [NIST Example Values](https://csrc.nist.gov/projects/cryptographic-standards-and-guidelines/example-values) - [file](https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Standards-and-Guidelines/documents/examples/cSHAKE_samples.pdf)
+
+The values were transcribed from the PDF into `cshake_nist_example_values.hjson`.
+
 ## ECDSA
 
 ### NIST CAVP ECDSA FIPS 186-4 Test Vectors
