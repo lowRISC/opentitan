@@ -60,13 +60,13 @@
     {
       name: "enable_usb_wakeup"
       desc: "Enable USB wakeup"
-      type: "int"
+      type: "bool"
       default: "1"
     }
     {
       name: "enable_strap_sampling"
       desc: "Set to true to instantiate the HW strap sampling and TAP selection submodule wake submodule"
-      type: "int"
+      type: "bool"
       default: "1"
     }
   ]
