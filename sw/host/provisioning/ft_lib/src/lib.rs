@@ -172,12 +172,12 @@ pub enum KeyWrapper {
 }
 
 fn send_rma_unlock_token_hash(
-    rma_unlock_token_hash: &ArrayVec<u32, 4>,
+    rma_unlock_token: &ArrayVec<u32, 4>,
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     let rma_token_hash = LcTokenHash {
-        hash: hash_lc_token(rma_unlock_token_hash.as_bytes())?,
+        hash: hash_lc_token(rma_unlock_token.as_bytes())?,
     };
 
     // Wait for test to start running.
@@ -465,7 +465,7 @@ pub fn run_ft_personalize(
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
     ca_certificate: PathBuf,
-    rma_unlock_token_hash: &ArrayVec<u32, 4>,
+    rma_unlock_token: &ArrayVec<u32, 4>,
     spi_console: &SpiConsoleDevice,
     second_bootstrap: PathBuf,
 ) -> Result<()> {
@@ -475,7 +475,7 @@ pub fn run_ft_personalize(
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
     // This time loading personalization binary in flash slot A and ROM_EXT + Owner FW in flash slot B.
     init.bootstrap.load(transport, &second_bootstrap)?;
-    send_rma_unlock_token_hash(rma_unlock_token_hash, timeout, spi_console)?;
+    send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console)?;
     provision_certificates(
         cert_endorsement_key_wrapper,
         perso_certgen_inputs,
