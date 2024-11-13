@@ -89,14 +89,12 @@ class Ip:
     """
 
     def __init__(self, name_snake: str, name_long_lower: str,
-                 templated_modules: List[str], ipgen_modules: List[str],
-                 reggen_top_modules: List[str]) -> None:
+                 ipgen_modules: List[str], reggen_top_modules: List[str]) -> None:
         """Mines metadata to populate this Ip object.
 
         Args:
             name_snake: IP short name in lower snake case (e.g., pwrmgr).
             name_long_lower: IP full name in lower case (e.g., power manager).
-            templated_modules: Templated modules where hjson is under top_*
             ipgen_modules: Ipgen modules where hjson is under ip_autogen
             reggen_top_modules: Top Reggen modules where hjson is under top_*
         """
@@ -114,9 +112,6 @@ class Ip:
         # Load HJSON data.
         if self.name_snake in ipgen_modules:
             data_dir = REPO_TOP / "hw/top_earlgrey/ip_autogen/{0}/data".format(
-                self.name_snake)
-        elif self.name_snake in templated_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/autogen".format(
                 self.name_snake)
         elif self.name_snake in reggen_top_modules:
             data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/".format(

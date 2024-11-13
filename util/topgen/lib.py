@@ -607,12 +607,6 @@ def get_unused_resets(top):
     return top['resets'].get_unused_resets(top['power']['domains'])
 
 
-def get_templated_modules(top):
-    """Returns list of all templated modules.
-    """
-    return [m['type'] for m in top['module'] if is_templated(m)]
-
-
 def get_ipgen_modules(top):
     """Returns list of all ipgen modules.
     """
@@ -625,10 +619,9 @@ def get_top_reggen_modules(top):
     return [m['type'] for m in top['module'] if is_top_reggen(m)]
 
 
-def is_templated(module):
-    """Returns an indication where a particular module is templated
-    """
-    return module.get('attr') in ["templated"]
+def is_module_attr_valid(module):
+    return ('attr' not in module or
+            module.get('attr') in ["ipgen", "reggen_top", "reggen_only"])
 
 
 def is_ipgen(module):
@@ -638,14 +631,14 @@ def is_ipgen(module):
 
 
 def is_top_reggen(module):
-    """Returns an indication where a particular module is NOT templated
+    """Returns an indication where a particular module is NOT generated
        and requires top level specific reggen
     """
     return module.get('attr') in ["reggen_top", "reggen_only"]
 
 
 def is_reggen_only(module):
-    """Returns an indication where a particular module is NOT templated,
+    """Returns an indication where a particular module is NOT generated,
        requires top level specific reggen and is NOT instantiated in the
        top
     """
@@ -661,7 +654,7 @@ def is_inst(module):
 
     if "attr" not in module:
         top_level_module = True
-    elif module["attr"] in ["normal", "templated", "ipgen", "reggen_top"]:
+    elif module["attr"] in ["normal", "ipgen", "reggen_top"]:
         top_level_module = True
     elif module["attr"] in ["reggen_only"]:
         top_level_module = False

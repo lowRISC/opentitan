@@ -42,14 +42,13 @@ def main():
     )
     args = parser.parse_args()
 
-    # Parse toplevel Hjson to get IPs that are templated / generated with IPgen.
+    # Parse toplevel Hjson to get IPs that are generated with IPgen.
     try:
         topcfg_text = args.topcfg_path.read_text()
     except FileNotFoundError:
         logging.error(f"hjson {args.topcfg_path} could not be found.")
         sys.exit(1)
     topcfg = hjson.loads(topcfg_text, use_decimal=True)
-    templated_modules = topgen_lib.get_templated_modules(topcfg)
     ipgen_modules = topgen_lib.get_ipgen_modules(topcfg)
 
     # Define autogen DIF directory.
@@ -67,8 +66,7 @@ def main():
         ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
-        ips_with_difs.append(
-            Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules))
+        ips_with_difs.append(Ip(ip_name_snake, "AUTOGEN", ipgen_modules))
 
     # Auto-generate testutils files.
     gen_testutils(ips_with_difs)

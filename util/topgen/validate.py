@@ -194,7 +194,7 @@ module_optional = {
     'clock_reset_export': ['l', 'optional list with prefixes for exported '
                                 'clocks and resets at the chip level'],
     'attr': ['s', 'optional attribute indicating whether the IP is '
-                  '"templated" or "reggen_only"'],
+                  '"ipgen", "reggen_top", or "reggen_only"'],
     'base_addr': ['g', 'dict of address space mapped to the corresponding '
                        'hex start address of the peripheral '
                        '(if the IP has only a single TL-UL interface)'],
