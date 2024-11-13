@@ -910,6 +910,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Configure DICE certificate flash info page and buffer it into RAM.
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
+                          kCertificateInfoPageCfg);
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
   HARDENED_RETURN_IF_ERROR(
       rom_ext_buffer_dice_certs_into_ram(&kFlashCtrlInfoPageFactoryCerts));
