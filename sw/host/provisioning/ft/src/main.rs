@@ -30,13 +30,17 @@ pub struct ManufFtProvisioningDataInput {
     #[arg(long)]
     pub device_id: String,
 
-    /// TestUnlock token.
+    /// TestUnlock token; a 128-bit hex string.
     #[arg(long)]
     pub test_unlock_token: String,
 
-    /// TestExit token.
+    /// TestExit token; a 128-bit hex string.
     #[arg(long)]
     pub test_exit_token: String,
+
+    /// RMA unlock token; a 128-bit hex string.
+    #[arg(long)]
+    pub rma_unlock_token: String,
 
     /// LC state to transition to from TEST_UNLOCKED*.
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
@@ -77,10 +81,6 @@ pub struct ManufFtProvisioningDataInput {
     /// CA certificate to be used for verifying a cert chain.
     #[arg(long)]
     pub ca_certificate: PathBuf,
-
-    /// RMA unlock token hash to pass to the device, a string of 16 hex digits.
-    #[arg(long)]
-    pub rma_unlock_token_hash: String,
 }
 
 #[derive(Debug, Parser)]
@@ -124,8 +124,8 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
     let _test_exit_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
-    let rma_unlock_token_hash =
-        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.rma_unlock_token_hash.as_str())?;
+    let rma_unlock_token =
+        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.rma_unlock_token.as_str())?;
     // Format ujson data payload(s).
     // Individualization ujson payload.
     let _ft_individualize_data_in = ManufFtIndividualizeData {
@@ -237,7 +237,7 @@ fn main() -> Result<()> {
         &_perso_certgen_inputs,
         opts.timeout,
         opts.provisioning_data.ca_certificate,
-        &rma_unlock_token_hash,
+        &rma_unlock_token,
         &spi_console_device,
         opts.second_bootstrap,
     )?;
