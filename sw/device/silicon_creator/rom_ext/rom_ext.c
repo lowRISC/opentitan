@@ -1052,6 +1052,8 @@ rom_error_t dice_chain_init(void) {
   // Configure DICE certificate flash info page and buffer it into RAM.
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
+                          kCertificateInfoPageCfg);
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
   HARDENED_RETURN_IF_ERROR(
       dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
