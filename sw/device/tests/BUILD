@@ -2210,15 +2210,22 @@ opentitan_test(
 opentitan_test(
     name = "kmac_entropy_test",
     srcs = ["kmac_entropy_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
-    # TODO(#15530): EDN doesn't timeout on FPGA
-    fpga = fpga_params(tags = ["broken"]),
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+        },
+    ),
+    verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/runtime:irq",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
