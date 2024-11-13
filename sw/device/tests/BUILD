@@ -5376,11 +5376,10 @@ opentitan_test(
     srcs = [
         "i2c_target_test.c",
     ],
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
     ),
     fpga = fpga_params(
