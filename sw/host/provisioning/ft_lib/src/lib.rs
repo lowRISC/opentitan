@@ -498,5 +498,30 @@ pub fn check_rom_ext_boot_up(
     let uart_console = transport.uart("console")?;
     let _ = UartConsole::wait_for(&*uart_console, r"Starting ROM_EXT.*\r\n", timeout)?;
 
+    // Timeout for waiting for a potential error message indicating invalid UDS certificate.
+    // This value is tested on fpga cw340 and could be potentially fine-tuned.
+    const UDS_CERT_INVALID_TIMEOUT: Duration = Duration::from_millis(200);
+
+    let result = UartConsole::wait_for(
+        &*uart_console,
+        r".*UDS certificate not valid.",
+        UDS_CERT_INVALID_TIMEOUT,
+    );
+
+    match result {
+        Ok(_captures) => {
+            // Error message found.
+            bail!("Invalid UDS certificate detected!");
+        }
+        Err(e) => {
+            if e.to_string().contains("Timed Out") {
+                // Error message not found after timeout. This is the expected behavior.
+            } else {
+                // An unexpected error occurred while waiting for the console output.
+                bail!(e);
+            }
+        }
+    }
+
     Ok(())
 }
