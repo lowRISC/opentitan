@@ -73,12 +73,12 @@ FT_PERSONALIZE_ENDORSEMENT_KEYS = [
 # Note that uds-auth-key-id below is the actual hash of the public key of cert_endorsement_key.sk.der
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
+  --rma-unlock-token="0x01234567_89abcdef_01234567_89abcdef"
   --rom-ext-measurement="0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
   --owner-manifest-measurement="0x22222222_22222222_22222222_22222222_22222222_22222222_22222222_22222222"
   --owner-measurement="0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333333"
   --rom-ext-security-version="0"
   --owner-security-version="0"
-  --rma-unlock-token-hash="0x01234567_89abcdef"
 """
 
 LOCAL_CERT_ENDORSEMENT_PARAMS = """
