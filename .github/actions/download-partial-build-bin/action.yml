@@ -1,0 +1,31 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Download partial build-bin artifacts
+description:  Download partial build-bin and merge them
+
+inputs:
+  job-patterns:
+    description: Glob patterns of jobs to download artifact from
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download partial build bins
+      uses: actions/download-artifact@v4
+      with:
+        pattern: partial-build-bin-${{ inputs.job-patterns }}
+        path: downloads
+    - name: Extract and merge bins
+      shell: bash
+      run: |
+        mkdir -p build-bin
+        find downloads -name "build-bin.tar" -exec \
+          tar -C build-bin --strip-components=1 -xvf {} \;
+        rm -rf downloads
+    - name: Show all downloads files
+      shell: bash
+      run: |
+        find build-bin

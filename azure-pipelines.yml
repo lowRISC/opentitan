@@ -349,34 +349,6 @@ jobs:
       top_name: earlgrey
       design_suffix: cw340
 
-- job: cache_bitstreams
-  displayName: Cache bitstreams to GCP
-  pool:
-    vmImage: ubuntu-20.04
-  dependsOn:
-    - chip_earlgrey_cw310
-    - chip_earlgrey_cw310_hyperdebug
-    - chip_earlgrey_cw340
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-  steps:
-    - template: ci/download-artifacts-template.yml
-      parameters:
-        downloadPartialBuildBinFrom:
-          - chip_earlgrey_cw310
-          - chip_earlgrey_cw310_hyperdebug
-          - chip_earlgrey_cw340
-    - bash: |
-        set -x
-        . util/build_consts.sh
-    - template: ci/gcp-upload-bitstream-template.yml
-      parameters:
-        fragmentFiles:
-          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310/manifest.json"
-          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw310_hyperdebug/manifest.json"
-          - "$BIN_DIR/hw/top_earlgrey/chip_earlgrey_cw340/manifest.json"
-        gcpKeyFile: "gcpkey.json"
-        bucketURI: "gs://opentitan-bitstreams/master"
-
 # CW310 FPGA jobs.
 - template: ci/fpga-job.yml
   parameters:

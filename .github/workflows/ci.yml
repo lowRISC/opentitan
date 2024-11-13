@@ -249,6 +249,40 @@ jobs:
       top_name: earlgrey
       design_suffix: cw340
 
+  cache_bitstreams:
+    name: Cache bitstreams to GCP
+    runs-on: ubuntu-22.04
+    if: ${{ github.event_name != 'pull_request' }}
+    needs:
+      - chip_earlgrey_cw310
+      - chip_earlgrey_cw310_hyperdebug
+      - chip_earlgrey_cw340
+    steps:
+      - uses: actions/checkout@v4
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+      - name: Download partial build-bin
+        uses: ./.github/actions/download-partial-build-bin
+        with:
+          job-patterns: chip_earlgrey_{cw310,cw310_hyperdebug,cw340}
+      - name: Create bitstream cache archive
+        run: |
+          shopt -s globstar # Allow use of **
+          ./bazelisk.sh build //util/py/scripts:bitstream_cache_create
+          ./bazelisk.sh run //util/py/scripts:bitstream_cache_create -- \
+            --schema $PWD/rules/scripts/bitstreams_manifest.schema.json \
+            --stamp-file $PWD/bazel-out/volatile-status.txt \
+            --out $PWD/build-bin/bitstream-cache \
+            $PWD/build-bin/**/manifest.json
+      - uses: google-github-actions/setup-gcloud@v2
+      - name: Upload bitstreams to GCP bucket
+        run: |
+          BUCKET_URI=gs://opentitan-bitstreams/${{ github.ref_name }}
+          printf "$(date -u +%Y-%m-%dT%H:%M:%S)\n${{ github.sha }}" > latest.txt
+          gcloud storage cp build-bin/bitstream-cache/bitstream-cache.tar.gz $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz
+          gcloud storage cp latest.txt $BUCKET_URI/latest.txt
+          gcloud storage cp $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz $BUCKET_URI/bitstream-latest.tar.gz
+
   build_docker_containers:
     name: Build Docker Containers
     runs-on: ubuntu-22.04
