@@ -1438,7 +1438,7 @@ module chip_${top["name"]}_${target["name"]} #(
 ###################################################################
 ## CW310/305 capture board interface                             ##
 ###################################################################
-% if target["name"] in ["cw310", "cw305"]:
+% if target["name"] in ["cw340", "cw310", "cw305"]:
 
   /////////////////////////////////////////////////////
   // ChipWhisperer CW310/305 Capture Board Interface //
@@ -1447,11 +1447,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // 20-pin connector. This is used for SCA/FI experiments only.
 
   logic unused_inputs;
-  % if target["name"] == "cw305":
-  assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger ^ manual_in_io_utx_debug;
-  % else:
   assign unused_inputs = manual_in_io_clkout ^ manual_in_io_trigger;
-  % endif
 
   // Synchronous clock output to capture board.
   assign manual_out_io_clkout = manual_in_io_clk;
@@ -1482,10 +1478,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({dio_out[DioGpioGpio11], dio_out[DioGpioGpio10]})
-    % else:
     unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
-    % endif
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1494,17 +1487,16 @@ module chip_${top["name"]}_${target["name"]} #(
     endcase;
   end
   assign clk_trans_idle = top_${top["name"]}.clkmgr_aon_idle[trigger_sel];
+  % endif
 
-  logic clk_io_div4_trigger_en, manual_in_io_clk_trigger_en;
-  logic clk_io_div4_trigger_oe, manual_in_io_clk_trigger_oe;
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = dio_out[DioGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = dio_oe[DioGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = dio_out[DioGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = dio_oe[DioGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(
@@ -1531,13 +1523,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_io_trigger =
       manual_in_io_clk_trigger_sw_en | (manual_in_io_clk_trigger_hw_en &
           prim_mubi_pkg::mubi4_test_false_strict(manual_in_io_clk_idle));
-% endif
-## This separate UART debugging output is needed for the CW305 only.
-% if target["name"] == "cw305":
-
-  // UART Tx for debugging. The UART itself is connected to the capture board.
-  assign manual_out_io_utx_debug = top_${top["name"]}.cio_uart0_tx_d2p;
-  assign manual_oe_io_utx_debug = 1'b1;
 % endif
 
 endmodule : chip_${top["name"]}_${target["name"]}
