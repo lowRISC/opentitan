@@ -20,5 +20,7 @@ module adc_ctrl_bind;
     .d2h(tl_o)
   );
 
-  bind adc_ctrl_fsm adc_ctrl_fsm_sva u_adc_ctrl_fsm_sva (.*);
+  bind adc_ctrl_fsm adc_ctrl_fsm_sva_if u_adc_ctrl_fsm_sva_if (.*);
+
+  bind adc_ctrl adc_ctrl_sva_if u_adc_ctrl_sva_if (.*);
 endmodule

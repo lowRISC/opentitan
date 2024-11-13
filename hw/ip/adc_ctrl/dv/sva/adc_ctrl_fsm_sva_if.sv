@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 // System verilog assertions for the adc_ctrl_fsm module
-module adc_ctrl_fsm_sva
+interface adc_ctrl_fsm_sva_if
   import adc_ctrl_pkg::*;
   (
   // adc_ctrl_fsm ports
@@ -42,4 +42,4 @@ module adc_ctrl_fsm_sva
   `ASSERT(FsmDebugOut_A, fsm_state_q === tb.dut.u_reg.hw2reg.adc_fsm_state.d,
       clk_aon_i, !rst_aon_ni)
 
-endmodule
+endinterface

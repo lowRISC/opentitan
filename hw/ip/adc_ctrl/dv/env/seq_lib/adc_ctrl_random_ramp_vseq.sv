@@ -53,10 +53,6 @@ class adc_ctrl_random_ramp_vseq extends adc_ctrl_base_vseq;
     super.pre_start();
   endtask
 
-  virtual task post_start();
-    // Don't do anything after the sequence ends
-  endtask
-
   virtual task body();
     bit all_ended;
 
