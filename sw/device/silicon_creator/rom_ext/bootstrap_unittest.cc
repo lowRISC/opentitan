@@ -24,7 +24,7 @@
 #include "sw/device/silicon_creator/testing/rom_test.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/ip/otp_ctrl/data/otp_ctrl_regs.h"
+#include "otp_ctrl_regs.h"
 
 // Custom equality operator for `flash_ctrl_cfg_t`. This must be defined outside
 // the test's namespace for GTest to find it.

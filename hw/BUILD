@@ -35,7 +35,7 @@ string_list_flag(
 fusesoc_build(
     name = "verilator_real",
     srcs = [
-        ":all_files",
+        "//hw/top",
     ],
     cores = [
         "//:cores",
@@ -98,25 +98,6 @@ genrule(
     cmd = """
         touch $@
     """,
-    visibility = ["//visibility:public"],
-)
-
-# TODO(lowRISC/opentitan#7972): Globbing all of the //hw/... hierarchy together
-# is a bit of a hack.  Longer term, we need proper rules for expressing the
-# relationships between verilog components.
-filegroup(
-    name = "all_files",
-    srcs = glob(
-        ["**"],
-        # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
-        exclude = ["foundry/**"],
-    ) + [
-        "//:tool_requirements.py",
-        "//hw/ip:all_files",
-        "//hw/ip_templates:all_files",
-        "//hw/top_earlgrey:all_files",
-        "//util:check_tool_requirements.py",
-    ],
     visibility = ["//visibility:public"],
 )
 

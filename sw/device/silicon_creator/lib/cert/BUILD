@@ -88,7 +88,7 @@ cc_library(
     hdrs = ["cert.h"],
     deps = [
         ":asn1",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -103,7 +103,7 @@ cc_test(
     srcs = ["cert_unittest.cc"],
     deps = [
         ":cert",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
@@ -152,7 +152,7 @@ cc_library(
     deps = [
         ":cbor",
         ":cert",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",

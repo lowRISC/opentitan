@@ -19,44 +19,62 @@ load(
     "sim_dv",
     "sim_verilator",
 )
+load("//rules/opentitan:hw.bzl", "opentitan_top")
 
 package(default_visibility = ["//visibility:public"])
 
-autogen_hjson_c_header(
-    name = "rv_plic_c_regs",
-    srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_plic_rust_regs",
-    srcs = [
-        "ip_autogen/rv_plic/data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "alert_handler_c_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "alert_handler_rust_regs",
-    srcs = [
-        "ip_autogen/alert_handler/data/alert_handler.hjson",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]) + [
+opentitan_top(
+    name = "top_earlgrey",
+    files = glob(["**"]) + [
+        "//:cores",  # FIXME move those files somewhere else?
+        "//hw/dv:all_files",
+        "//hw/lint:all_files",
         "//hw/top_earlgrey/data:all_files",
-        "//hw/top_earlgrey/dv/verilator:all_files",
-        "//hw/top_earlgrey/ip:all_files",
-        "//hw/top_earlgrey/sw:all_files",
+        "//hw/top_earlgrey/dv:all_files",
+        "//hw/vendor:all_files",
+    ],
+    hjson = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    ips = [
+        "//hw/top_earlgrey/ip/xbar_peri",
+        "//hw/top_earlgrey/ip/xbar_main",
+        "//hw/top_earlgrey/ip/xbar",
+        "//hw/top_earlgrey/ip/sensor_ctrl",
+        "//hw/top_earlgrey/ip/ast",
+        "//hw/ip/usbdev",
+        "//hw/ip/uart",
+        "//hw/ip/tlul",
+        "//hw/ip/sysrst_ctrl",
+        "//hw/ip/sram_ctrl",
+        "//hw/ip/spi_host",
+        "//hw/ip/spi_device",
+        "//hw/ip/rv_timer",
+        "//hw/ip/rv_dm",
+        "//hw/ip/rv_core_ibex",
+        "//hw/ip/rom_ctrl",
+        "//hw/ip/pwm",
+        "//hw/ip/prim",
+        "//hw/ip/pattgen",
+        "//hw/ip/otp_ctrl",
+        "//hw/ip/otbn",
+        "//hw/ip/lc_ctrl",
+        "//hw/ip/kmac",
+        "//hw/ip/keymgr",
+        "//hw/ip/i2c",
+        "//hw/ip/hmac",
+        "//hw/ip/gpio",
+        "//hw/ip/entropy_src",
+        "//hw/ip/edn",
+        "//hw/ip/csrng",
+        "//hw/ip/aon_timer",
+        "//hw/ip/aes",
+        "//hw/ip/adc_ctrl",
+        "//hw/top_earlgrey/ip_autogen/pinmux",
+        "//hw/top_earlgrey/ip_autogen/alert_handler",
+        "//hw/top_earlgrey/ip_autogen/pwrmgr",
+        "//hw/top_earlgrey/ip_autogen/rstmgr",
+        "//hw/top_earlgrey/ip_autogen/clkmgr",
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl",
+        "//hw/top_earlgrey/ip_autogen/rv_plic",
     ],
 )
 

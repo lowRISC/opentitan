@@ -4,27 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "spi_device_c_regs",
-    srcs = [
-        "spi_device.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "spi_device_rust_regs",
-    srcs = [
-        "spi_device.hjson",
-    ],
-)
-
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["spi_device.hjson"],
 )
