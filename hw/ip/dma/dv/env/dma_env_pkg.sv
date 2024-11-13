@@ -32,20 +32,21 @@ package dma_env_pkg;
   parameter uint HOST_DATA_WIDTH = 32;
   parameter uint SYS_ADDR_WIDTH = 64;
 
-  // Index of interrupt in intf_vif
-  // TODO: rename `DMA_x` to indicate that they are interrupt numbers.
-  parameter uint DMA_DONE = 0;
-  parameter uint DMA_CHUNK_DONE = 1;
-  parameter uint DMA_ERROR = 2;
-  parameter uint NumDmaInterrupts = 3;
+  // Index of interrupt in intf_vif and bits within `intr_` registers.
+  typedef enum {
+    IntrDmaDone = 0,
+    IntrDmaChunkDone,
+    IntrDmaError,
+    // Count of the number of used interrupts.
+    NumDmaInterrupts
+  } dma_intr_e;
 
   // Completion status bits (DV-internal)
   typedef enum {
     StatusDone,
     StatusChunkDone,
     StatusError,
-    StatusAborted,
-    StatusTimeout
+    StatusAborted
   } status_e;
   // Bitmask of completion reason(s)
   typedef uint status_t;

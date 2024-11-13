@@ -724,9 +724,9 @@ class dma_base_vseq extends cip_base_vseq #(
     if (intr_driven) begin
       forever begin
         delay(1);
-        if (cfg.intr_vif.pins[DMA_DONE])       status[StatusDone]      = 1'b1;
-        if (cfg.intr_vif.pins[DMA_CHUNK_DONE]) status[StatusChunkDone] = 1'b1;
-        if (cfg.intr_vif.pins[DMA_ERROR])      status[StatusError]     = 1'b1;
+        if (cfg.intr_vif.pins[IntrDmaDone])      status[StatusDone]      = 1'b1;
+        if (cfg.intr_vif.pins[IntrDmaChunkDone]) status[StatusChunkDone] = 1'b1;
+        if (cfg.intr_vif.pins[IntrDmaError])     status[StatusError]     = 1'b1;
       end
     end else begin
       // Rely upon the CSR reading in `poll_status` to detect completion.
@@ -744,12 +744,15 @@ class dma_base_vseq extends cip_base_vseq #(
       // Collect some STATUS bit that do not generate interrupts, and inform parallel threads
       // if (v[0]) ->e_busy;
       if (v[2]) status[StatusAborted] = 1'b1;
+      // Respond to STATUS.chunk_done even if we're interrupt driven because the interrupt may not
+      // have been enabled; we guarantee in the body of `dma_generic_vseq` only to enable the
+      // interrupts that signal conclusion of the full transfer operation.
+      if (v[5]) status[StatusChunkDone] = 1'b1;
       // Respond to the STATUS.done and STATUS.error bits only if we're not insisting upon
       // interrupt-driven completion.
       if (!intr_driven) begin
-        if (v[1]) status[StatusDone]      = 1'b1;
-        if (v[3]) status[StatusError]     = 1'b1;
-        if (v[5]) status[StatusChunkDone] = 1'b1;
+        if (v[1]) status[StatusDone]  = 1'b1;
+        if (v[3]) status[StatusError] = 1'b1;
       end
       // Note: sha2_digest_valid is not a completion event
       // v[12]

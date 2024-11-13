@@ -273,6 +273,7 @@ class dma_seq_item extends uvm_sequence_item;
     solve mem_range_limit before total_data_size;
     if (valid_dma_config) {
       total_data_size <= mem_range_limit - mem_range_base;
+      total_data_size > 0;
     }
   }
 
@@ -280,6 +281,7 @@ class dma_seq_item extends uvm_sequence_item;
     solve mem_range_limit before chunk_data_size;
     if (valid_dma_config) {
       chunk_data_size <= mem_range_limit - mem_range_base;
+      chunk_data_size > 0;
     }
     if (handshake) {
       // Add a soft constraint to model realistic FIFO transfers; smaller, more frequent transfers
@@ -314,6 +316,13 @@ class dma_seq_item extends uvm_sequence_item;
       per_transfer_width == DmaXfer4BperTxn -> chunk_data_size[1:0] == 2'd0;
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
     }
+  }
+
+  // Add a (normally disabled) constraint to guarantee that multi-chunk transfers are exercised.
+  // TODO: Perhaps there should be one or more sequences that specifically target single- and
+  // multi-chunk transfers?
+  constraint multi_chunk_c {
+    chunk_data_size < total_data_size;
   }
 
   constraint mem_range_valid_c {
@@ -581,6 +590,12 @@ class dma_seq_item extends uvm_sequence_item;
     end
     if (src_asid != SocSystemAddr && |src_addr[63:32]) begin
       `uvm_info(`gfn, " - Source addess out of range for source ASID", UVM_MEDIUM)
+      valid_config = 0;
+    end
+
+    // No empty transactions.
+    if (!chunk_data_size || !total_data_size) begin
+      `uvm_info(`gfn, " - Empty transaction; nothing to transfer", UVM_MEDIUM)
       valid_config = 0;
     end
 
