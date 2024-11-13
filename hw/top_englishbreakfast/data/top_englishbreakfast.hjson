@@ -963,6 +963,9 @@
     // Number of wakeup detectors to instantiate, and bitwidth for the wakeup counters.
     num_wkup_detect: 8
     wkup_cnt_width:  8
+    // Enable USB wakeup and hardware strap sampling for discrete OpenTitan
+    enable_usb_wakeup: true
+    enable_strap_sampling: true
   }
 
   // Implementation targets.

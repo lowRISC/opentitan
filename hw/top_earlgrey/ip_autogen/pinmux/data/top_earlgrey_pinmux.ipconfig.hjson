@@ -13,6 +13,8 @@
     n_dio_pads: 16
     n_dio_periph_in: 14
     n_dio_periph_out: 14
+    enable_usb_wakeup: true
+    enable_strap_sampling: true
     topname: earlgrey
   }
 }
