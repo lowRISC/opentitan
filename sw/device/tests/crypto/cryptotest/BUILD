@@ -277,6 +277,22 @@ cryptotest(
     test_vectors = SHAKE256_TESTVECTOR_TARGETS,
 )
 
+CSHAKE_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:cshake_nist_example_values_json",
+]
+
+CSHAKE_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in CSHAKE_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "cshake_kat",
+    test_args = CSHAKE_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = CSHAKE_TESTVECTOR_TARGETS,
+)
+
 DRBG_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_reseed_json",
     "//sw/host/cryptotest/testvectors/data:nist_cavp_drbg_sp_800_90a_no_reseed_json",
@@ -396,6 +412,7 @@ test_suite(
     name = "crypto_kat_test_suite",
     tests = [
         ":aes_kat",
+        ":cshake_kat",
         ":drbg_kat",
         ":ecdh_kat",
         ":ecdsa_kat",
