@@ -236,8 +236,6 @@ SHAKE128_TESTVECTOR_TARGETS = [
         "LongMsg",
         "VariableOut",
     ]
-] + [
-    "//sw/host/cryptotest/testvectors/data:hjson_shake128",
 ]
 
 SHAKE128_TESTVECTOR_ARGS = " ".join([
@@ -261,8 +259,6 @@ SHAKE256_TESTVECTOR_TARGETS = [
         "LongMsg",
         "VariableOut",
     ]
-] + [
-    "//sw/host/cryptotest/testvectors/data:hjson_shake256",
 ]
 
 SHAKE256_TESTVECTOR_ARGS = " ".join([
