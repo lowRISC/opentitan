@@ -304,8 +304,8 @@ jobs:
         with:
           context: site/redirector/landing
 
-  sw_build:
-    name: Build all software
+  sw_build_test:
+    name: Build and test software
     runs-on: ubuntu-22.04-vivado
     timeout-minutes: 120
     needs: quick_lint
@@ -355,3 +355,20 @@ jobs:
             --define DISABLE_VERILATOR_BUILD=true            \
             --test_tag_filters=-broken,-cw310,-verilator,-dv \
             --target_pattern_file="$target_pattern_file"
+      - name: Run software unit tests
+        run: |
+          ./bazelisk.sh test                                          \
+            --build_tests_only=false                                  \
+            --test_output=errors                                      \
+            --define DISABLE_VERILATOR_BUILD=true                     \
+            --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
+            --target_pattern_file="$target_pattern_file"
+      - name: Publish test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test_results
+          path: "**/test.xml"
+          overwrite: true
+      - name: Check for unrunnable tests
+        run: ./ci/scripts/check-unrunnable-tests.sh
+        continue-on-error: true
