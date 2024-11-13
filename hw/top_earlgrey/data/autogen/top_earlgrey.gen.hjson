@@ -21,6 +21,7 @@
       "0"
     ]
     default: "0"
+    wait_for_external_reset: false
   }
   clocks:
   {

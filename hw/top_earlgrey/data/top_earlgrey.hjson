@@ -24,6 +24,9 @@
 
     // Default power domain used for the design
     default: "0"
+
+    // Discrete OpenTitan does not need to wait for external resets
+    wait_for_external_reset: false
   },
 
   // This is the clock data structure of the design.

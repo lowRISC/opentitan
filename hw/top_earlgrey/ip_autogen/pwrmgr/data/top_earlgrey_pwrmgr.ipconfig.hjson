@@ -79,6 +79,7 @@
       ]
     }
     NumRstReqs: 2
+    wait_for_external_reset: false
     topname: earlgrey
   }
 }
