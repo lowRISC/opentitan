@@ -139,13 +139,11 @@ module tlul_adapter_sram
   assign intg_error_o = intg_error | rsp_fifo_error | sramreqfifo_error |
       reqfifo_error | intg_error_q;
 
-  // wr_attr_error: Check if the request size, mask are permitted.
-  //    Basic check of size, mask, addr align is done in tlul_err module.
-  //    Here it checks any partial write if ByteAccess isn't allowed.
-  assign wr_attr_error = (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData)
-                         ? ((ByteAccess == 0) ?
-                           (tl_i.a_mask != '1 || tl_i.a_size != 2'h2) : 1'b0)
-                           : 1'b0;
+  // wr_attr_error is true if this is a PUT with an unsupported request size or mask. This is only
+  // possible if ByteAccess is not allowed.
+  assign wr_attr_error = (ByteAccess == 0) &&
+                         (tl_i.a_opcode == PutFullData || tl_i.a_opcode == PutPartialData) &&
+                         (tl_i.a_mask != '1 || tl_i.a_size != 2'h2);
 
   // An instruction type transaction is only valid if en_ifetch is enabled
   // If the instruction type is completely invalid, also considered an instruction error
