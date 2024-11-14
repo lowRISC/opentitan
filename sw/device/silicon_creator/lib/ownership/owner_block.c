@@ -77,6 +77,7 @@ void owner_config_default(owner_config_t *config) {
   config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
   config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
   config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
+  config->isfb = (const owner_isfb_config_t *)kHardenedBoolFalse;
   config->sram_exec = kOwnerSramExecModeDisabledLocked;
 }
 
@@ -142,6 +143,12 @@ rom_error_t owner_block_parse(const owner_block_t *block,
         if ((hardened_bool_t)config->rescue != kHardenedBoolFalse)
           return kErrorOwnershipDuplicateItem;
         config->rescue = (const owner_rescue_config_t *)item;
+        break;
+      case kTlvTagIntegrationSpecificFirmwareBinding:
+        HARDENED_CHECK_EQ(tag, kTlvTagIntegrationSpecificFirmwareBinding);
+        if ((hardened_bool_t)config->isfb != kHardenedBoolFalse)
+          return kErrorOwnershipDuplicateItem;
+        config->isfb = (const owner_isfb_config_t *)item;
         break;
       default:
         return kErrorOwnershipInvalidTag;

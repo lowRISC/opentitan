@@ -216,6 +216,11 @@ enum module_ {
   X(kErrorOwnershipInvalidDin,        ERROR_(13, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipUnlockDenied,      ERROR_(14, kModuleOwnership, kPermissionDenied)), \
   X(kErrorOwnershipFlashConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipISFBNotPresent,    ERROR_(16, kModuleOwnership, kNotFound)), \
+  X(kErrorOwnershipISFBProductExpCnt, ERROR_(17, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipISFBStrikeMask,    ERROR_(18, kModuleOwnership, kPermissionDenied)), \
+  X(kErrorOwnershipISFBProductExp,    ERROR_(19, kModuleOwnership, kPermissionDenied)), \
+  X(kErrorOwnershipISFBFailed,        ERROR_(20, kModuleOwnership, kInternal)), \
   /* Group all of the tag version error codes together */ \
   X(kErrorOwnershipOWNRVersion,       ERROR_(0x70, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipAPPKVersion,       ERROR_(0x71, kModuleOwnership, kInvalidArgument)), \
