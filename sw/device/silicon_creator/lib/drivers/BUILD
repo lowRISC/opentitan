@@ -827,7 +827,7 @@ dual_cc_library(
         device = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:devicetables",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
