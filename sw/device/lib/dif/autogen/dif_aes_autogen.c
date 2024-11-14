@@ -24,6 +24,18 @@ dif_result_t dif_aes_init(mmio_region_t base_addr, dif_aes_t *aes) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_init_from_dt(const dt_aes_t *dt, dif_aes_t *aes) {
+  if (aes == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  aes->base_addr =
+      mmio_region_from_addr(dt_aes_reg_block(dt, kDtAesRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_aes_alert_force(const dif_aes_t *aes, dif_aes_alert_t alert) {
   if (aes == NULL) {
     return kDifBadArg;

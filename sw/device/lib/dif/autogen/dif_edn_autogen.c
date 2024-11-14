@@ -24,6 +24,18 @@ dif_result_t dif_edn_init(mmio_region_t base_addr, dif_edn_t *edn) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_edn_init_from_dt(const dt_edn_t *dt, dif_edn_t *edn) {
+  if (edn == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  edn->base_addr =
+      mmio_region_from_addr(dt_edn_reg_block(dt, kDtEdnRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_edn_alert_force(const dif_edn_t *edn, dif_edn_alert_t alert) {
   if (edn == NULL) {
     return kDifBadArg;
@@ -54,10 +66,10 @@ dif_result_t dif_edn_alert_force(const dif_edn_t *edn, dif_edn_alert_t alert) {
 static bool edn_get_irq_bit_index(dif_edn_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifEdnIrqEdnCmdReqDone:
+    case kDtEdnIrqEdnCmdReqDone:
       *index_out = EDN_INTR_COMMON_EDN_CMD_REQ_DONE_BIT;
       break;
-    case kDifEdnIrqEdnFatalErr:
+    case kDtEdnIrqEdnFatalErr:
       *index_out = EDN_INTR_COMMON_EDN_FATAL_ERR_BIT;
       break;
     default:
@@ -75,7 +87,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_edn_irq_get_type(const dif_edn_t *edn, dif_edn_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (edn == NULL || type == NULL || irq == kDifEdnIrqEdnFatalErr + 1) {
+  if (edn == NULL || type == NULL || irq == kDtEdnIrqCount) {
     return kDifBadArg;
   }
 

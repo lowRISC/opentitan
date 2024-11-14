@@ -24,6 +24,18 @@ dif_result_t dif_hmac_init(mmio_region_t base_addr, dif_hmac_t *hmac) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_hmac_init_from_dt(const dt_hmac_t *dt, dif_hmac_t *hmac) {
+  if (hmac == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  hmac->base_addr =
+      mmio_region_from_addr(dt_hmac_reg_block(dt, kDtHmacRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
                                   dif_hmac_alert_t alert) {
   if (hmac == NULL) {
@@ -52,13 +64,13 @@ dif_result_t dif_hmac_alert_force(const dif_hmac_t *hmac,
 static bool hmac_get_irq_bit_index(dif_hmac_irq_t irq,
                                    bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifHmacIrqHmacDone:
+    case kDtHmacIrqHmacDone:
       *index_out = HMAC_INTR_COMMON_HMAC_DONE_BIT;
       break;
-    case kDifHmacIrqFifoEmpty:
+    case kDtHmacIrqFifoEmpty:
       *index_out = HMAC_INTR_COMMON_FIFO_EMPTY_BIT;
       break;
-    case kDifHmacIrqHmacErr:
+    case kDtHmacIrqHmacErr:
       *index_out = HMAC_INTR_COMMON_HMAC_ERR_BIT;
       break;
     default:
@@ -77,7 +89,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_hmac_irq_get_type(const dif_hmac_t *hmac, dif_hmac_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (hmac == NULL || type == NULL || irq == kDifHmacIrqHmacErr + 1) {
+  if (hmac == NULL || type == NULL || irq == kDtHmacIrqCount) {
     return kDifBadArg;
   }
 

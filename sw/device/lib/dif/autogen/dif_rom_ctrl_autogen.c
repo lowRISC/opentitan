@@ -25,6 +25,19 @@ dif_result_t dif_rom_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rom_ctrl_init_from_dt(const dt_rom_ctrl_t *dt,
+                                       dif_rom_ctrl_t *rom_ctrl) {
+  if (rom_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  rom_ctrl->base_addr = mmio_region_from_addr(
+      dt_rom_ctrl_reg_block(dt, kDtRomCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_rom_ctrl_alert_force(const dif_rom_ctrl_t *rom_ctrl,
                                       dif_rom_ctrl_alert_t alert) {
   if (rom_ctrl == NULL) {

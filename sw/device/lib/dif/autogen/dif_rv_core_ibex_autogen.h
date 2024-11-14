@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_rv_core_ibex.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,10 +46,26 @@ typedef struct dif_rv_core_ibex {
  * @param base_addr The MMIO base address of the rv_core_ibex peripheral.
  * @param[out] rv_core_ibex Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_core_ibex_init(mmio_region_t base_addr,
                                    dif_rv_core_ibex_t *rv_core_ibex);
+
+/**
+ * Creates a new handle for a(n) rv_core_ibex peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] rv_core_ibex Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_core_ibex_init_from_dt(const dt_rv_core_ibex_t *dt,
+                                           dif_rv_core_ibex_t *rv_core_ibex);
 
 /**
  * A rv_core_ibex alert type.

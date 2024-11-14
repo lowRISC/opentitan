@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_uart.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_uart {
  * @param base_addr The MMIO base address of the uart peripheral.
  * @param[out] uart Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_init(mmio_region_t base_addr, dif_uart_t *uart);
+
+/**
+ * Creates a new handle for a(n) uart peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] uart Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_uart_init_from_dt(const dt_uart_t *dt, dif_uart_t *uart);
 
 /**
  * A uart alert type.
@@ -73,46 +89,54 @@ dif_result_t dif_uart_alert_force(const dif_uart_t *uart,
 
 /**
  * A uart interrupt request type.
+ *
+ * DEPRECATED Use `dt_uart_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_uart_irq {
-  /**
-   * Raised if the transmit FIFO is past the high-water mark.
-   */
-  kDifUartIrqTxWatermark = 0,
-  /**
-   * Raised if the receive FIFO is past the high-water mark.
-   */
-  kDifUartIrqRxWatermark = 1,
-  /**
-   * Raised if the transmit FIFO has emptied and no transmit is ongoing.
-   */
-  kDifUartIrqTxDone = 2,
-  /**
-   * Raised if the receive FIFO has overflowed.
-   */
-  kDifUartIrqRxOverflow = 3,
-  /**
-   * Raised if a framing error has been detected on receive.
-   */
-  kDifUartIrqRxFrameErr = 4,
-  /**
-   * Raised if break condition has been detected on receive.
-   */
-  kDifUartIrqRxBreakErr = 5,
-  /**
-   * Raised if RX FIFO has characters remaining in the FIFO without being
-   * retrieved for the programmed time period.
-   */
-  kDifUartIrqRxTimeout = 6,
-  /**
-   * Raised if the receiver has detected a parity error.
-   */
-  kDifUartIrqRxParityErr = 7,
-  /**
-   * Raised if the transmit FIFO is empty.
-   */
-  kDifUartIrqTxEmpty = 8,
-} dif_uart_irq_t;
+/**
+ * Raised if the transmit FIFO is past the high-water mark.
+ */
+#define kDifUartIrqTxWatermark kDtUartIrqTxWatermark
+/**
+ * Raised if the receive FIFO is past the high-water mark.
+ */
+#define kDifUartIrqRxWatermark kDtUartIrqRxWatermark
+/**
+ * Raised if the transmit FIFO has emptied and no transmit is ongoing.
+ */
+#define kDifUartIrqTxDone kDtUartIrqTxDone
+/**
+ * Raised if the receive FIFO has overflowed.
+ */
+#define kDifUartIrqRxOverflow kDtUartIrqRxOverflow
+/**
+ * Raised if a framing error has been detected on receive.
+ */
+#define kDifUartIrqRxFrameErr kDtUartIrqRxFrameErr
+/**
+ * Raised if break condition has been detected on receive.
+ */
+#define kDifUartIrqRxBreakErr kDtUartIrqRxBreakErr
+/**
+ * Raised if RX FIFO has characters remaining in the FIFO without being
+ * retrieved for the programmed time period.
+ */
+#define kDifUartIrqRxTimeout kDtUartIrqRxTimeout
+/**
+ * Raised if the receiver has detected a parity error.
+ */
+#define kDifUartIrqRxParityErr kDtUartIrqRxParityErr
+/**
+ * Raised if the transmit FIFO is empty.
+ */
+#define kDifUartIrqTxEmpty kDtUartIrqTxEmpty
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_uart_irq_t dif_uart_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -131,7 +155,7 @@ typedef uint32_t dif_uart_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_get_type(const dif_uart_t *uart, dif_uart_irq_t irq,
+dif_result_t dif_uart_irq_get_type(const dif_uart_t *uart, dif_uart_irq_t,
                                    dif_irq_type_t *type);
 
 /**
@@ -154,7 +178,7 @@ dif_result_t dif_uart_irq_get_state(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_is_pending(const dif_uart_t *uart, dif_uart_irq_t irq,
+dif_result_t dif_uart_irq_is_pending(const dif_uart_t *uart, dif_uart_irq_t,
                                      bool *is_pending);
 
 /**
@@ -188,8 +212,7 @@ dif_result_t dif_uart_irq_acknowledge_all(const dif_uart_t *uart);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
-                                      dif_uart_irq_t irq);
+dif_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart, dif_uart_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -201,7 +224,7 @@ dif_result_t dif_uart_irq_acknowledge(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_force(const dif_uart_t *uart, dif_uart_irq_t irq,
+dif_result_t dif_uart_irq_force(const dif_uart_t *uart, dif_uart_irq_t,
                                 const bool val);
 
 /**
@@ -222,8 +245,8 @@ typedef uint32_t dif_uart_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
-                                      dif_uart_irq_t irq, dif_toggle_t *state);
+dif_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart, dif_uart_irq_t,
+                                      dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -234,8 +257,8 @@ dif_result_t dif_uart_irq_get_enabled(const dif_uart_t *uart,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart,
-                                      dif_uart_irq_t irq, dif_toggle_t state);
+dif_result_t dif_uart_irq_set_enabled(const dif_uart_t *uart, dif_uart_irq_t,
+                                      dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

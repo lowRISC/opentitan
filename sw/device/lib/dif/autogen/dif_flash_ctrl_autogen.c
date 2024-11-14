@@ -25,6 +25,19 @@ dif_result_t dif_flash_ctrl_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_flash_ctrl_init_from_dt(const dt_flash_ctrl_t *dt,
+                                         dif_flash_ctrl_t *flash_ctrl) {
+  if (flash_ctrl == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  flash_ctrl->base_addr = mmio_region_from_addr(
+      dt_flash_ctrl_reg_block(dt, kDtFlashCtrlRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
                                         dif_flash_ctrl_alert_t alert) {
   if (flash_ctrl == NULL) {
@@ -66,22 +79,22 @@ dif_result_t dif_flash_ctrl_alert_force(const dif_flash_ctrl_t *flash_ctrl,
 static bool flash_ctrl_get_irq_bit_index(dif_flash_ctrl_irq_t irq,
                                          bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifFlashCtrlIrqProgEmpty:
+    case kDtFlashCtrlIrqProgEmpty:
       *index_out = FLASH_CTRL_INTR_COMMON_PROG_EMPTY_BIT;
       break;
-    case kDifFlashCtrlIrqProgLvl:
+    case kDtFlashCtrlIrqProgLvl:
       *index_out = FLASH_CTRL_INTR_COMMON_PROG_LVL_BIT;
       break;
-    case kDifFlashCtrlIrqRdFull:
+    case kDtFlashCtrlIrqRdFull:
       *index_out = FLASH_CTRL_INTR_COMMON_RD_FULL_BIT;
       break;
-    case kDifFlashCtrlIrqRdLvl:
+    case kDtFlashCtrlIrqRdLvl:
       *index_out = FLASH_CTRL_INTR_COMMON_RD_LVL_BIT;
       break;
-    case kDifFlashCtrlIrqOpDone:
+    case kDtFlashCtrlIrqOpDone:
       *index_out = FLASH_CTRL_INTR_COMMON_OP_DONE_BIT;
       break;
-    case kDifFlashCtrlIrqCorrErr:
+    case kDtFlashCtrlIrqCorrErr:
       *index_out = FLASH_CTRL_INTR_COMMON_CORR_ERR_BIT;
       break;
     default:
@@ -100,8 +113,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_get_type(const dif_flash_ctrl_t *flash_ctrl,
                                          dif_flash_ctrl_irq_t irq,
                                          dif_irq_type_t *type) {
-  if (flash_ctrl == NULL || type == NULL ||
-      irq == kDifFlashCtrlIrqCorrErr + 1) {
+  if (flash_ctrl == NULL || type == NULL || irq == kDtFlashCtrlIrqCount) {
     return kDifBadArg;
   }
 
