@@ -28,6 +28,8 @@ def render_template(template_path: Path, rendered_path: Path,
 
 
 def main():
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
+
     parser = argparse.ArgumentParser(prog="dtgen")
     parser.add_argument(
         "--topgencfg",
