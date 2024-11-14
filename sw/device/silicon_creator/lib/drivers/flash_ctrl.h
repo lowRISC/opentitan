@@ -105,13 +105,13 @@ typedef struct flash_ctrl_info_page {
    */
   uint32_t base_addr;
   /**
-   * Config write-enable register address.
+   * Config write-enable register address (offset from register base).
    */
-  uint32_t cfg_wen_addr;
+  uint32_t cfg_wen_off;
   /**
-   * Config register address.
+   * Config register address (offset from register base).
    */
-  uint32_t cfg_addr;
+  uint32_t cfg_off;
 } flash_ctrl_info_page_t;
 
 /**
