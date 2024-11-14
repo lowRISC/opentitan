@@ -269,7 +269,7 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_dev_manuf_individualized",
+        otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",
