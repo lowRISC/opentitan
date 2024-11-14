@@ -18,6 +18,8 @@ fn main() -> Result<()> {
         Template::from_hjson_str(GENERIC_CERT).expect("failed to parse generic template");
     // Generate some random test data.
     let test_data = generic_tmpl.random_test()?;
+    // Print test data so we can reproduce the test on failure.
+    println!("test data: {test_data:?}");
     // Substitute data into the template.
     let cert = generic_tmpl.subst(&test_data)?;
     // Use DER to generate a binary certificate.
