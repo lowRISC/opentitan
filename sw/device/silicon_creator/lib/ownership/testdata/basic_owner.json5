@@ -178,6 +178,15 @@
       }
     },
     {
+      IsfbConfig: {
+        bank: 0,
+        page: 5,
+        erase_conditions: 0x666,
+        key_domain: "Dev",
+        product_words: 4
+      }
+    },
+    {
       RescueConfig: {
         rescue_type: "Xmodem",
         start: 32,
