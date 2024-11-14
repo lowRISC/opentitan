@@ -18,13 +18,22 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "spi_host_macronix_flash_test",
     srcs = ["spi_host_macronix_flash_test.c"],
-    exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
-        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-    },
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+        },
+    ),
     fpga = fpga_params(
         tags = [
             "manual",
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    silicon = silicon_params(
+        tags = [
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
