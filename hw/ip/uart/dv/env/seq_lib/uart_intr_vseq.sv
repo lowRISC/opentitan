@@ -238,6 +238,7 @@ class uart_intr_vseq extends uart_base_vseq;
 
       RxTimeout: begin
         bit [TL_DW-1:0] rdata;
+        realtime timeout_last_reset;
         uint num_bytes   = $urandom_range(1, RxFifoDepth);
         uint timeout_val = ral.timeout_ctrl.val.get_mirrored_value();
         bit  en_timeout  = ral.timeout_ctrl.en.get_mirrored_value();
@@ -257,11 +258,16 @@ class uart_intr_vseq extends uart_base_vseq;
 
         if (!en_rx) return;
         // reset timeout timer by issuing a rdata read
+        timeout_last_reset = $realtime;
         csr_rd(.ptr(ral.rdata),  .value(rdata));
 
-        // wait for timeout_val-2 cycles (it's about to timeout) and then
-        // read or drive uart RX items to reset timeout cnt. More fifo read, less fifo write
-        // Repeat until fifo is empty. Timeout should never occur
+        // Wait until the device is about to timeout (timeout_val-2 cycles) and then
+        // read or drive uart RX items to reset timeout count. More FIFO reads than FIFO writes.
+        // Repeat until FIFO is empty. Timeout should never occur.
+        // Delay relative to last timeout reset so subsequent CSR reads do not affect total delay.
+        // Timeout value can increment in a fraction of the expected one baud-clock cycle with
+        // unlucky FIFO read or RX start timing, and both can happen between timeout resets
+        // (hence the need for timeout_val-2 rather than timeout_val-1).
         forever begin
           bit rxempty;
           bit rxfull;
@@ -270,9 +276,10 @@ class uart_intr_vseq extends uart_base_vseq;
               csr_rd(.ptr(ral.status.rxempty), .value(rxempty));
               if (rxempty) break; // exit forever
               // use -2 to have higher tolerance to avoid timeout
-              wait_for_baud_clock_cycles(timeout_val - 2);
+              wait_until_baud_clock_cycles_after(timeout_val - 2, timeout_last_reset);
               // Read more than one byte most of the time to reduce max runtime
               repeat ($urandom_range(RxFifoDepth >> 2, 1)) begin
+                timeout_last_reset = $realtime;
                 csr_rd(.ptr(ral.rdata), .value(rdata));
                 csr_rd(.ptr(ral.status.rxempty), .value(rxempty));
                 if (rxempty) break; // exit repeat
@@ -281,11 +288,16 @@ class uart_intr_vseq extends uart_base_vseq;
             1: begin // drive one RX item (fifo write)
               // use -2 to have higher tolerance to avoid timeout
               int cycles = timeout_val - bit_num_per_trans - 2;
-              wait_for_baud_clock_cycles(cycles > 0 ? cycles : 0);
+              wait_until_baud_clock_cycles_after(cycles > 0 ? cycles : 0, timeout_last_reset);
               csr_rd(.ptr(ral.status.rxfull), .value(rxfull));
               // it won't reset timeout timer if receiving a rx item when fifo is full
-              if (rxfull) csr_rd(.ptr(ral.rdata),  .value(rdata));
-              else        drive_rx_bytes(.num_bytes(1));
+              if (rxfull) begin
+                timeout_last_reset = $realtime; // timeout resets upon FIFO read request
+                csr_rd(.ptr(ral.rdata), .value(rdata));
+              end else begin
+                drive_rx_bytes(.num_bytes(1));
+                timeout_last_reset = $realtime; // timeout resets upon finishing receiving RX byte
+              end
             end
           endcase
           check_one_intr(.uart_intr(uart_intr), .exp(0));
@@ -308,11 +320,12 @@ class uart_intr_vseq extends uart_base_vseq;
     bit [TL_DW-1:0] act_intr_state;
     bit exp_pin;
 
-    csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
-    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state[uart_intr], exp)
+    // Check pins first in case they change during register read
     exp_pin = exp & en_intr[uart_intr];
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins[uart_intr], exp_pin, $sformatf(
         "uart_intr name/val: %0s/%0d, en_intr: %0h", uart_intr.name, uart_intr, en_intr))
+    csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
+    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state[uart_intr], exp)
   endtask : check_one_intr
 
   // check all interrupt state and pin
@@ -321,11 +334,12 @@ class uart_intr_vseq extends uart_base_vseq;
     bit [NumUartIntr-1:0] act_intr_state;
     bit [NumUartIntr-1:0] exp_pin;
 
-    csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
-    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state & exp_mask, exp)
+    // Check pins first in case they change during register read
     exp_pin = exp & en_intr;
     if (!cfg.under_reset) `DV_CHECK_EQ(cfg.intr_vif.pins[NumUartIntr-1:0] & exp_mask, exp_pin,
         $sformatf("uart_intr val: %0h, en_intr: %0h", exp, en_intr))
+    csr_rd(.ptr(ral.intr_state), .value(act_intr_state));
+    if (!cfg.under_reset) `DV_CHECK_EQ(act_intr_state & exp_mask, exp)
 
     if (do_clear) begin
       csr_wr(.ptr(ral.intr_state), .value(exp));
@@ -355,6 +369,13 @@ class uart_intr_vseq extends uart_base_vseq;
   task sync_up_rx_from_frame_err(uint cycles_per_trans);
     cfg.m_uart_agent_cfg.vif.uart_rx = 1;
     wait_for_baud_clock_cycles(cycles_per_trans);
+  endtask
+
+  task wait_until_baud_clock_cycles_after(uint cycles, realtime start);
+    realtime elapsed = $realtime - start;
+    realtime delay = (cfg.m_uart_agent_cfg.vif.uart_clk_period * cycles);
+    if (delay <= elapsed) return;
+    #(delay - elapsed);
   endtask
 
   task wait_for_baud_clock_cycles(uint cycles);
