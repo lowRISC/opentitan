@@ -21,8 +21,8 @@ addrmap aes {
             registers are ignored.
             Upon reset, these registers are cleared with pseudo-random data.";
         } KEY_SHARE0[31:0];
-    } KEY_SHARE0[8] @ 0x04 += 0x20;
-    reg0 {
+    } KEY_SHARE0[8] @ 0x04;
+    reg {
         field {
             sw = w;
             onwrite = woclr;
@@ -40,7 +40,7 @@ addrmap aes {
             registers are ignored.  Upon reset, these registers are
             cleared with pseudo-random data.";
         } KEY_SHARE1[31:0];
-    } KEY_SHARE1[8] @ 0x24 += 0x20;
+    } KEY_SHARE1[8] @ 0x24;
     reg {
         field {
             sw = rw;
@@ -62,7 +62,7 @@ addrmap aes {
             configured.  Upon reset, these registers are cleared with
             pseudo-random data.";
         } IV[31:0];
-    } IV[4] @ 0x44 += 0x10;
+    } IV[4] @ 0x44;
     reg {
         field {
             sw = w;
@@ -79,7 +79,7 @@ addrmap aes {
             registers (See INPUT_READY field of Status Register).  Upon
             reset, these registers are cleared with pseudo-random data.";
         } DATA_IN[31:0];
-    } DATA_IN[4] @ 0x54 += 0x10;
+    } DATA_IN[4] @ 0x54;
     reg {
         field {
             sw = r;
@@ -93,7 +93,7 @@ addrmap aes {
             order in which the registers are read does not matter.  Upon
             reset, these registers are cleared with pseudo-random data.";
         } DATA_OUT[31:0];
-    } DATA_OUT[4] @ 0x64 += 0x10;
+    } DATA_OUT[4] @ 0x64;
     reg {
         field {
             sw = rw;
@@ -310,11 +310,11 @@ addrmap aes {
             sw = r;
             desc = "Name register.";
         } NAME[31:0];
-    } NAME[2] @ 0x100 += 0x8;
+    } NAME[2] @ 0x100;
      reg {
         field {
             sw = r;
             desc = "Version register.";
         } VERSION[31:0];
-    } VERSION[2] @ 0x108 += 0x8;
+    } VERSION[2] @ 0x108;
  };
