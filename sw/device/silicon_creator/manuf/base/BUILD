@@ -4,7 +4,10 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//rules:const.bzl", "CONST", "hex")
+
+#load("//rules:files.bzl", "output_groups")
 load("//rules:manifest.bzl", "manifest")
+load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
@@ -356,6 +359,24 @@ _FT_PROVISIONING_CMD_ARGS = """
 })
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
+
+[
+    opentitan_binary_assemble(
+        name = "ft_fw_bundle_{}".format(sku),
+        testonly = True,
+        bins = {
+            ":ft_personalize_{}".format(sku): SLOTS["a"],
+            config["rom_ext"]: SLOTS["b"],
+            config["owner_fw"]: OWNER_SLOTS["b"],
+        },
+        exec_env = [
+            "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_earlgrey:silicon_creator",
+        ],
+    )
+    for sku, config in EARLGREY_SKUS.items()
+]
 
 [
     opentitan_test(
