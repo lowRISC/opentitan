@@ -268,6 +268,8 @@ cc_library(
     hdrs = [
         "dif_dma.h",
     ],
+    # TODO Update when we have a top with a keymgr_dpe.
+    target_compatible_with = ["@platforms//:incompatible"],
     deps = [
         ":base",
         "//hw/top:dma_c_regs",
@@ -547,6 +549,8 @@ cc_library(
     hdrs = [
         "dif_keymgr_dpe.h",
     ],
+    # TODO Update when we have a top with a keymgr_dpe.
+    target_compatible_with = ["@platforms//:incompatible"],
     deps = [
         ":base",
         "//hw/top:dt_keymgr_dpe",
@@ -651,6 +655,8 @@ cc_library(
     hdrs = [
         "dif_mbx.h",
     ],
+    # TODO Update when we have a top with a keymgr_dpe.
+    target_compatible_with = ["@platforms//:incompatible"],
     deps = [
         ":base",
         "//hw/top:dt_mbx",
