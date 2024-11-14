@@ -277,7 +277,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
