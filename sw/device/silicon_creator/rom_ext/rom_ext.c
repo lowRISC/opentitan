@@ -141,6 +141,12 @@ typedef struct dice_chain {
   size_t tail_offset;
 
   /**
+   * Indicate the info page currently buffered in `data`.
+   * This is used to skip unnecessary read ops.
+   */
+  const flash_ctrl_info_page_t *info_page;
+
+  /**
    * Id pair which points to the endorsement and cert ids below.
    */
   cert_key_id_pair_t key_ids;
@@ -226,7 +232,7 @@ rom_error_t dice_chain_attestation_owner(
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t dice_chain_update_flash(void);
+rom_error_t dice_chain_flush_flash(void);
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
@@ -581,13 +587,6 @@ static void dice_chain_next_cert_obj(void) {
   dice_chain_reset_cert_obj();
 }
 
-// Skip the TLV entry if the name matches.
-static void dice_chain_skip_cert_obj(const char *name, size_t name_size) {
-  if (memcmp(dice_chain.cert_obj.name, name, name_size) == 0) {
-    dice_chain_next_cert_obj();
-  }
-}
-
 /**
  * Load the tlv cert obj from the tail buffer and check if it's valid.
  *
@@ -623,7 +622,7 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
 
   // Check if this cert is what we are looking for.
   HARDENED_CHECK_LE(name_size, sizeof(dice_chain.cert_obj.name));
-  if (memcmp(dice_chain.cert_obj.name, name, name_size) != 0) {
+  if (name == NULL || memcmp(dice_chain.cert_obj.name, name, name_size) != 0) {
     // Name unmatched, keep the cert_obj but mark it as invalid.
     dice_chain.cert_valid = kHardenedBoolFalse;
     return kErrorOk;
@@ -638,10 +637,29 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
   return kErrorOk;
 }
 
+// Skip the TLV entry if the name matches.
+static rom_error_t dice_chain_skip_cert_obj(const char *name,
+                                            size_t name_size) {
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj(NULL, 0));
+  if (memcmp(dice_chain.cert_obj.name, name, name_size) == 0) {
+    dice_chain_next_cert_obj();
+  }
+  return kErrorOk;
+}
+
 // Load the certificate data from flash to RAM buffer.
 OT_WARN_UNUSED_RESULT
 static rom_error_t dice_chain_load_flash(
     const flash_ctrl_info_page_t *info_page) {
+  // Skip reload if it's already buffered.
+  if (dice_chain.info_page == info_page) {
+    dice_chain.tail_offset = 0;
+    return kErrorOk;
+  }
+
+  // We are switching to a different page, flush changes (if dirty) first.
+  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
+
   // Read in a DICE certificate(s) page.
   static_assert(sizeof(dice_chain.data) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
                 "Invalid dice_chain buffer size");
@@ -653,6 +671,8 @@ static rom_error_t dice_chain_load_flash(
   // Resets the flash page status.
   dice_chain.data_dirty = kHardenedBoolFalse;
   dice_chain.tail_offset = 0;
+  dice_chain.info_page = info_page;
+  dice_chain_reset_cert_obj();
 
   return kErrorOk;
 }
@@ -706,8 +726,26 @@ rom_error_t dice_chain_attestation_silicon(void) {
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyUds, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
-  // Move to the next object if the current one is UDS.
-  dice_chain_skip_cert_obj("UDS", 4);
+  // Switch page for the factory provisioned UDS cert.
+  HARDENED_RETURN_IF_ERROR(
+      dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
+
+  // Check if the UDS cert is valid.
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("UDS", /*name_size=*/4));
+  if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
+    // The UDS key ID (and cert itself) should never change unless:
+    // 1. there is a hardware issue / the page has been corrupted, or
+    // 2. the cert has not yet been provisioned.
+    //
+    // In both cases, we do nothing, and boot normally, later attestation
+    // attempts will fail in a detectable manner.
+    HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
+    dbg_printf("Warning: UDS certificate not valid.\r\n");
+  } else {
+    // Cert is valid, move to the next one.
+    HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolTrue);
+    dice_chain_next_cert_obj();
+  }
 
   // Save UDS key for signing next stage cert.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
@@ -733,8 +771,14 @@ rom_error_t dice_chain_attestation_creator(
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi0, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
+  // Switch page for the device generated CDI_0.
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
+
+  // Seek to skip previous objects.
+  HARDENED_RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
+
   // Check if the current CDI_0 cert is valid.
-  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", 6));
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
@@ -808,8 +852,15 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
       kDiceKeyCdi1, &dice_chain.subject_pubkey_id, &dice_chain.subject_pubkey));
 
+  // Switch page for the device generated CDI_1.
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_flash(&kFlashCtrlInfoPageDiceCerts));
+
+  // Seek to skip previous objects.
+  HARDENED_RETURN_IF_ERROR(dice_chain_skip_cert_obj("UDS", /*name_size=*/4));
+  HARDENED_RETURN_IF_ERROR(dice_chain_skip_cert_obj("CDI_0", /*name_size=*/6));
+
   // Check if the current CDI_0 cert is valid.
-  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", 6));
+  HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
     dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
@@ -841,20 +892,22 @@ rom_error_t dice_chain_attestation_owner(
 }
 
 // Write the DICE certs to flash if they have been updated.
-rom_error_t dice_chain_update_flash(void) {
-  if (launder32(dice_chain.data_dirty) == kHardenedBoolTrue) {
+rom_error_t dice_chain_flush_flash(void) {
+  if (dice_chain.data_dirty == kHardenedBoolTrue &&
+      dice_chain.info_page != NULL) {
     HARDENED_CHECK_EQ(dice_chain.data_dirty, kHardenedBoolTrue);
-    HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
-                                                   kFlashCtrlEraseTypePage));
+    HARDENED_RETURN_IF_ERROR(
+        flash_ctrl_info_erase(dice_chain.info_page, kFlashCtrlEraseTypePage));
     static_assert(sizeof(dice_chain.data) == FLASH_CTRL_PARAM_BYTES_PER_PAGE,
                   "Invalid dice_chain buffer size");
     HARDENED_RETURN_IF_ERROR(flash_ctrl_info_write(
-        &kFlashCtrlInfoPageDiceCerts,
+        dice_chain.info_page,
         /*offset=*/0,
         /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
         dice_chain.data));
-  } else {
-    HARDENED_CHECK_EQ(dice_chain.data_dirty, kHardenedBoolFalse);
+    dbg_printf("Flushed dice cert page %d\r\n",
+               dice_chain.info_page->base_addr);
+    dice_chain.data_dirty = kHardenedBoolFalse;
   }
   return kErrorOk;
 }
@@ -867,7 +920,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       boot_data, &boot_measurements.bl0, manifest));
 
   // Write the DICE certs to flash if they have been updated.
-  HARDENED_RETURN_IF_ERROR(dice_chain_update_flash());
+  HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
 
   // Remove write and erase access to the certificate pages before handing over
   // execution to the owner firmware (owner firmware can still read).
@@ -1208,6 +1261,8 @@ rom_error_t dice_chain_init(void) {
   // Variable initialization.
   memset(&dice_chain, 0, sizeof(dice_chain));
   dice_chain.subject_pubkey = (ecdsa_p256_public_key_t){.x = {0}, .y = {0}};
+  dice_chain.data_dirty = kHardenedBoolFalse;
+  dice_chain.info_page = NULL;
   dice_chain.key_ids = (cert_key_id_pair_t){
       .endorsement = &dice_chain.endorsement_pubkey_id,
       .cert = &dice_chain.subject_pubkey_id,
@@ -1220,9 +1275,6 @@ rom_error_t dice_chain_init(void) {
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
                           kCertificateInfoPageCfg);
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
-  HARDENED_RETURN_IF_ERROR(
-      dice_chain_load_flash(&kFlashCtrlInfoPageFactoryCerts));
-
   return kErrorOk;
 }
 
