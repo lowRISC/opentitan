@@ -247,3 +247,75 @@ size_t dt_device_index(dt_device_id_t dev) {
   }
   return 0;
 }
+
+<%
+    # List all muxed pads directly from the top.
+    pads = {pad["name"]: pad for pad in top['pinout']['pads'] if pad['connection'] == 'muxed'}
+
+    # List direct pads from the pinmux to avoid pins which are not relevant.
+    for pad in top['pinmux']['ios']:
+        if pad['connection'] == 'muxed':
+            continue
+        name = pad['name']
+        if pad['width'] > 1:
+            name += str(pad['idx'])
+        pads[name] = pad
+%>\
+// Pad descriptions.
+const dt_pad_t kDtPad[kDtPadCount] = {
+% for (padname, pad) in pads.items():
+<%
+    if pad["connection"] == "muxed":
+        pad_type = "Mio"
+        pad_mio_out_or_direct_pad = "kDtPadMioOutNone"
+        pad_insel = "kDtPadInselNone"
+        if pad["port_type"] in ["input", "inout"]:
+            pad_mio_out_or_direct_pad = snake_to_constant_name("top_{}_pinmux_mio_out_{}".format(top["name"], padname))
+        if pad["port_type"] in ["output", "inout"]:
+            pad_insel = snake_to_constant_name("top_{}_pinmux_insel_{}".format(top["name"], padname))
+    elif pad["connection"] == "direct":
+        pad_type = "Dio"
+        pad_mio_out_or_direct_pad = snake_to_constant_name("top_{}_direct_pads_{}".format(top["name"], padname))
+        pad_insel = "0"
+    else:
+        assert pad["connection"] == "manual", "unexpected connection type '{}'".format(pad["connection"])
+        pad_mio_out_or_direct_pad = "0"
+        pad_insel = "0"
+        pad_type = "Other"
+%>\
+  [${snake_to_constant_name("dt_pad_" + padname)}] = {
+    .__internal = {
+      .type = kDtPinType${pad_type},
+      .mio_out_or_direct_pad = ${pad_mio_out_or_direct_pad},
+      .insel = ${pad_insel},
+    }
+  },
+% endfor
+};
+
+/* Pin that is constantly tied to high-Z (input only) */
+const dt_pin_t kDtPinConstantHighZ = {
+  .__internal = {
+    .type = kDtPinTypeMio,
+    .periph_input_or_direct_pad = kDtPinPeriphInputNone,
+    .outsel = kDtPinOutselConstantHighZ,
+  }
+};
+
+/* Pin that is constantly tied to one (input/output) */
+const dt_pin_t kDtPinConstantZero = {
+  .__internal = {
+    .type = kDtPinTypeMio,
+    .periph_input_or_direct_pad = kDtPinPeriphInputNone,
+    .outsel = kDtPinOutselConstantZero,
+  }
+};
+
+/* Pin that is constantly tied to zero (input/output) */
+const dt_pin_t kDtPinConstantOne = {
+  .__internal = {
+    .type = kDtPinTypeMio,
+    .periph_input_or_direct_pad = kDtPinPeriphInputNone,
+    .outsel = kDtPinOutselConstantOne,
+  }
+};
