@@ -6,6 +6,7 @@
 
 #include <assert.h>
 
+#include "devicetables.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
@@ -17,8 +18,9 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
+
+static const dt_flash_ctrl_t *kFlashCtrlDt = &kDtFlashCtrl[0];
 
 // Values of `flash_ctrl_partition_t` constants must be distinct from each
 // other, and `kFlashCtrlRegionInfo* >> 1` should give the correct
@@ -32,12 +34,13 @@ static_assert(kFlashCtrlPartitionInfo1 >> 1 == 1,
 static_assert(kFlashCtrlPartitionInfo2 >> 1 == 2,
               "Incorrect enum value for kFlashCtrlRegionInfo2");
 
-enum {
-  /**
-   * Base address of the flash_ctrl registers.
-   */
-  kBase = TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR,
-};
+/**
+ * Base address of the flash_ctrl registers.
+ *
+ */
+static inline uint32_t flash_ctrl_core_base(void) {
+  return dt_flash_ctrl_reg_block(kFlashCtrlDt, kDtFlashCtrlRegBlockCore);
+}
 
 /**
  * Flash transaction parameters.
@@ -85,7 +88,8 @@ typedef struct transaction_params {
  */
 static void transaction_start(transaction_params_t params) {
   // Set the address.
-  abs_mmio_write32(kBase + FLASH_CTRL_ADDR_REG_OFFSET, params.addr);
+  abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_ADDR_REG_OFFSET,
+                   params.addr);
   // Configure flash_ctrl and start the transaction.
   const bool is_info =
       bitfield_bit32_read(params.partition, FLASH_CTRL_PARTITION_BIT_IS_INFO);
@@ -114,7 +118,7 @@ static void transaction_start(transaction_params_t params) {
   reg = bitfield_bit32_write(reg, FLASH_CTRL_CONTROL_ERASE_SEL_BIT, bank_erase);
   reg = bitfield_field32_write(reg, FLASH_CTRL_CONTROL_NUM_FIELD,
                                params.word_count - 1);
-  abs_mmio_write32(kBase + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
+  abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_CONTROL_REG_OFFSET, reg);
 }
 
 /**
@@ -128,7 +132,9 @@ static void transaction_start(transaction_params_t params) {
 static void fifo_read(size_t word_count, void *data) {
   size_t i = 0, r = word_count - 1;
   for (; launder32(i) < word_count && launder32(r) < word_count; ++i, --r) {
-    write_32(abs_mmio_read32(kBase + FLASH_CTRL_RD_FIFO_REG_OFFSET), data);
+    write_32(
+        abs_mmio_read32(flash_ctrl_core_base() + FLASH_CTRL_RD_FIFO_REG_OFFSET),
+        data);
     data = (char *)data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, word_count);
@@ -146,7 +152,8 @@ static void fifo_read(size_t word_count, void *data) {
 static void fifo_write(size_t word_count, const void *data) {
   size_t i = 0, r = word_count - 1;
   for (; launder32(i) < word_count && launder32(r) < word_count; ++i, --r) {
-    abs_mmio_write32(kBase + FLASH_CTRL_PROG_FIFO_REG_OFFSET, read_32(data));
+    abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_PROG_FIFO_REG_OFFSET,
+                     read_32(data));
     data = (const char *)data + sizeof(uint32_t);
   }
   HARDENED_CHECK_EQ(i, word_count);
@@ -163,9 +170,11 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t wait_for_done(rom_error_t error) {
   uint32_t op_status;
   do {
-    op_status = abs_mmio_read32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET);
+    op_status = abs_mmio_read32(flash_ctrl_core_base() +
+                                FLASH_CTRL_OP_STATUS_REG_OFFSET);
   } while (!bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_DONE_BIT));
-  abs_mmio_write32(kBase + FLASH_CTRL_OP_STATUS_REG_OFFSET, 0u);
+  abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_OP_STATUS_REG_OFFSET,
+                   0u);
 
   if (bitfield_bit32_read(op_status, FLASH_CTRL_OP_STATUS_ERR_BIT)) {
     return error;
@@ -229,8 +238,8 @@ static rom_error_t write(uint32_t addr, flash_ctrl_partition_t partition,
  * @param info_page An info page.
  */
 static void page_lockdown(const flash_ctrl_info_page_t *info_page) {
-  sec_mmio_write32(info_page->cfg_addr, 0);
-  sec_mmio_write32(info_page->cfg_wen_addr, 0);
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_off, 0);
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_wen_off, 0);
 }
 
 void flash_ctrl_init(void) {
@@ -257,12 +266,13 @@ void flash_ctrl_init(void) {
         reg_val, FLASH_CTRL_HW_INFO_CFG_OVERRIDE_ECC_DIS_FIELD, ecc_dis);
   }
   if (reg_val != FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_RESVAL) {
-    sec_mmio_write32(kBase + FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_OFFSET,
-                     reg_val);
+    sec_mmio_write32(
+        flash_ctrl_core_base() + FLASH_CTRL_HW_INFO_CFG_OVERRIDE_REG_OFFSET,
+        reg_val);
   }
 
   // Initialize the flash controller.
-  abs_mmio_write32(kBase + FLASH_CTRL_INIT_REG_OFFSET,
+  abs_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_INIT_REG_OFFSET,
                    bitfield_bit32_write(0, FLASH_CTRL_INIT_VAL_BIT, true));
   // Configure default scrambling, ECC, and HE settings for the data partition.
   otp_val =
@@ -289,7 +299,8 @@ void flash_ctrl_init(void) {
 
 void flash_ctrl_status_get(flash_ctrl_status_t *status) {
   // Read flash controller status.
-  uint32_t fc_status = abs_mmio_read32(kBase + FLASH_CTRL_STATUS_REG_OFFSET);
+  uint32_t fc_status =
+      abs_mmio_read32(flash_ctrl_core_base() + FLASH_CTRL_STATUS_REG_OFFSET);
 
   // Extract flash controller status bits.
   status->rd_full =
@@ -306,7 +317,8 @@ void flash_ctrl_status_get(flash_ctrl_status_t *status) {
 
 void flash_ctrl_error_code_get(flash_ctrl_error_code_t *error_code) {
   // Read flash error code.
-  uint32_t code = abs_mmio_read32(kBase + FLASH_CTRL_ERR_CODE_REG_OFFSET);
+  uint32_t code =
+      abs_mmio_read32(flash_ctrl_core_base() + FLASH_CTRL_ERR_CODE_REG_OFFSET);
 
   // Extract flash controller error code bits.
   error_code->macro_err =
@@ -429,10 +441,11 @@ rom_error_t flash_ctrl_data_erase_verify(uint32_t addr,
   addr &= ~byte_count + 1;
   uint32_t mask = kFlashCtrlErasedWord;
   size_t i = 0, r = byte_count - 1;
+  uint32_t mem_base =
+      dt_flash_ctrl_reg_block(kFlashCtrlDt, kDtFlashCtrlRegBlockMem);
   for (; launder32(i) < byte_count && launder32(r) < byte_count;
        i += sizeof(uint32_t), r -= sizeof(uint32_t)) {
-    uint32_t word =
-        abs_mmio_read32(TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR + addr + i);
+    uint32_t word = abs_mmio_read32(mem_base + addr + i);
     mask &= word;
     error &= word;
   }
@@ -462,21 +475,24 @@ rom_error_t flash_ctrl_info_erase(const flash_ctrl_info_page_t *info_page,
 
 void flash_ctrl_exec_set(uint32_t exec_val) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioExecSet, 1);
-  sec_mmio_write32(kBase + FLASH_CTRL_EXEC_REG_OFFSET, exec_val);
+  sec_mmio_write32(flash_ctrl_core_base() + FLASH_CTRL_EXEC_REG_OFFSET,
+                   exec_val);
 }
 
 void flash_ctrl_data_default_perms_set(flash_ctrl_perms_t perms) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultPermsSet, 1);
 
   // Read first to preserve ECC, scrambling, and high endurance bits.
-  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  uint32_t reg = sec_mmio_read32(flash_ctrl_core_base() +
+                                 FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_RD_EN_FIELD,
                                perms.read);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_PROG_EN_FIELD,
                                perms.write);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ERASE_EN_FIELD,
                                perms.erase);
-  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
+  sec_mmio_write32(
+      flash_ctrl_core_base() + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
@@ -484,7 +500,7 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoPermsSet, 1);
 
   // Read first to preserve ECC, scrambling, and high endurance bits.
-  uint32_t reg = sec_mmio_read32(info_page->cfg_addr);
+  uint32_t reg = sec_mmio_read32(flash_ctrl_core_base() + info_page->cfg_off);
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(
@@ -493,26 +509,28 @@ void flash_ctrl_info_perms_set(const flash_ctrl_info_page_t *info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_PROG_EN_0_FIELD, perms.write);
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ERASE_EN_0_FIELD, perms.erase);
-  sec_mmio_write32(info_page->cfg_addr, reg);
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_off, reg);
 }
 
 void flash_ctrl_data_default_cfg_set(flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioDataDefaultCfgSet, 1);
 
   // Read first to preserve permission bits.
-  uint32_t reg = sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  uint32_t reg = sec_mmio_read32(flash_ctrl_core_base() +
+                                 FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD,
                                cfg.scrambling);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_ECC_EN_FIELD,
                                cfg.ecc);
   reg = bitfield_field32_write(reg, FLASH_CTRL_DEFAULT_REGION_HE_EN_FIELD,
                                cfg.he);
-  sec_mmio_write32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
+  sec_mmio_write32(
+      flash_ctrl_core_base() + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET, reg);
 }
 
 flash_ctrl_cfg_t flash_ctrl_data_default_cfg_get(void) {
-  const uint32_t default_region =
-      sec_mmio_read32(kBase + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
+  const uint32_t default_region = sec_mmio_read32(
+      flash_ctrl_core_base() + FLASH_CTRL_DEFAULT_REGION_REG_OFFSET);
   return (flash_ctrl_cfg_t){
       .scrambling = bitfield_field32_read(
           default_region, FLASH_CTRL_DEFAULT_REGION_SCRAMBLE_EN_FIELD),
@@ -555,9 +573,9 @@ static void flash_ctrl_mp_region_write(flash_ctrl_region_index_t region,
         FLASH_CTRL_MP_REGION_##region_macro_arg##_SIZE_##region_macro_arg##_FIELD, \
         num_pages);                                                                \
     /* Write the bitfield to the MP_REGION_${region} register. */                  \
-    sec_mmio_write32(                                                              \
-        kBase + FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_OFFSET,              \
-        mp_region);                                                                \
+    sec_mmio_write32(flash_ctrl_core_base() +                                      \
+                         FLASH_CTRL_MP_REGION_##region_macro_arg##_REG_OFFSET,     \
+                     mp_region);                                                   \
     return;                                                                        \
   }
 
@@ -584,7 +602,8 @@ static void flash_ctrl_mp_region_cfg_reset(flash_ctrl_region_index_t region) {
         "'s reset value should disable the region");                                    \
     /* Reset the MP_REGION_CFG_${region} register. */                                   \
     sec_mmio_write32(                                                                   \
-        kBase + FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,               \
+        flash_ctrl_core_base() +                                                        \
+            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                   \
         FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_RESVAL);                      \
     return;                                                                             \
   }
@@ -638,7 +657,8 @@ static void flash_ctrl_mp_region_cfg_write(flash_ctrl_region_index_t region,
         FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_EN_##region_macro_arg##_FIELD,          \
         en);                                                                                  \
     sec_mmio_write32(                                                                         \
-        kBase + FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                     \
+        flash_ctrl_core_base() +                                                              \
+            FLASH_CTRL_MP_REGION_CFG_##region_macro_arg##_REG_OFFSET,                         \
         mp_region_cfg);                                                                       \
     return;                                                                                   \
   }
@@ -673,7 +693,7 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet, 1);
 
   // Read first to preserve permission bits.
-  uint32_t reg = sec_mmio_read32(info_page->cfg_addr);
+  uint32_t reg = sec_mmio_read32(flash_ctrl_core_base() + info_page->cfg_off);
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_EN_0_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(
@@ -683,7 +703,7 @@ void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_ECC_EN_0_FIELD, cfg.ecc);
   reg = bitfield_field32_write(
       reg, FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_HE_EN_0_FIELD, cfg.he);
-  sec_mmio_write32(info_page->cfg_addr, reg);
+  sec_mmio_write32(flash_ctrl_core_base() + info_page->cfg_off, reg);
 }
 
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
@@ -705,8 +725,8 @@ void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
       reg = 0U;
       break;
   }
-  sec_mmio_write32_shadowed(kBase + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET,
-                            reg);
+  sec_mmio_write32_shadowed(
+      flash_ctrl_core_base() + FLASH_CTRL_MP_BANK_CFG_SHADOWED_REG_OFFSET, reg);
 }
 
 /**
