@@ -4,6 +4,7 @@
 
 #include "sw/device/lib/testing/pinmux_testutils.h"
 
+#include "devicetables.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
@@ -13,29 +14,27 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+static const dt_gpio_t *kGpioDt = &kDtGpio[0];
+static const dt_uart_t *kUart0Dt = &kDtUart[0];
+static const dt_uart_t *kUart1Dt = &kDtUart[1];
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio22,
-                                       kTopEarlgreyPinmuxInselIoc0));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio23,
-                                       kTopEarlgreyPinmuxInselIoc1));
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio24,
-                                       kTopEarlgreyPinmuxInselIoc2));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      pinmux, dt_gpio_pin(kGpioDt, kDtGpioPinGpio22), kDtPad[kDtPadIoc0]));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      pinmux, dt_gpio_pin(kGpioDt, kDtGpioPinGpio23), kDtPad[kDtPadIoc1]));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      pinmux, dt_gpio_pin(kGpioDt, kDtGpioPinGpio24), kDtPad[kDtPadIoc2]));
 
   // Configure UART0 RX input to connect to MIO pad IOC3
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart0Rx,
-                                       kTopEarlgreyPinmuxInselIoc3));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc3,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      pinmux, dt_uart_pin(kUart0Dt, kDtUartPinRx), kDtPad[kDtPadIoc3]));
+  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kDtPad[kDtPadIoc3],
+                                            kDtPinConstantHighZ));
   // Configure UART0 TX output to connect to MIO pad IOC4
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc4,
-                                        kTopEarlgreyPinmuxOutselUart0Tx));
+  CHECK_DIF_OK(dif_pinmux_mio_select_output(
+      pinmux, kDtPad[kDtPadIoc4], dt_uart_pin(kUart0Dt, kDtUartPinTx)));
 
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
@@ -47,20 +46,19 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp};
 
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, kTopEarlgreyMuxedPadsIoc3,
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad(kDtPad[kDtPadIoc3]),
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
   };
 
   // Configure UART1 RX input to connect to MIO pad IOB4
-  CHECK_DIF_OK(dif_pinmux_input_select(pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInUart1Rx,
-                                       kTopEarlgreyPinmuxInselIob4));
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob4,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_mio_select_input(
+      pinmux, dt_uart_pin(kUart1Dt, kDtUartPinRx), kDtPad[kDtPadIob4]));
+  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kDtPad[kDtPadIob4],
+                                            kDtPinConstantHighZ));
   // Configure UART1 TX output to connect to MIO pad IOB5
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIob5,
-                                        kTopEarlgreyPinmuxOutselUart1Tx));
+  CHECK_DIF_OK(dif_pinmux_mio_select_output(
+      pinmux, kDtPad[kDtPadIob5], dt_uart_pin(kUart1Dt, kDtUartPinTx)));
 
 #if !OT_IS_ENGLISH_BREAKFAST
   // Configure a higher drive strength for the USB_P and USB_N pads because we
@@ -89,10 +87,12 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
 #endif
 
   // Configure USBDEV SENSE outputs to be high-Z (IOC7)
-  CHECK_DIF_OK(dif_pinmux_output_select(pinmux, kTopEarlgreyPinmuxMioOutIoc7,
-                                        kTopEarlgreyPinmuxOutselConstantHighZ));
+  CHECK_DIF_OK(dif_pinmux_mio_select_output(pinmux, kDtPad[kDtPadIoc7],
+                                            kDtPinConstantHighZ));
 }
 
+// FIXME convert to DT
+#ifndef OT_IS_ENGLISH_BREAKFAST
 // Mapping of Chip IOs to the GPIO peripheral.
 //
 // Depending on the simulation platform, there may be a limitation to how chip
@@ -138,6 +138,7 @@ const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
     kTopEarlgreyPinmuxMioOutIor6,  kTopEarlgreyPinmuxMioOutIor7,
     kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxMioOutIor11,
     kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxMioOutIor13};
+#endif
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
   switch (kDeviceType) {
@@ -159,7 +160,7 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
 
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
                                          dif_gpio_pin_t io,
-                                         top_earlgrey_muxed_pads_t pad) {
+                                         dt_pinmux_muxed_pad_t pad) {
   // Turn off the pull enable on the pad and read the IO.
   dif_pinmux_pad_attr_t attr = {.flags = 0};
   dif_pinmux_pad_attr_t attr_out;
@@ -193,12 +194,12 @@ uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
 uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio) {
   uint32_t strap = 0;
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 22,
-                                           kTopEarlgreyMuxedPadsIoc0);
+                                           dt_pad_mio_pad(kDtPad[kDtPadIoc0]));
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 23,
-                                           kTopEarlgreyMuxedPadsIoc1)
+                                           dt_pad_mio_pad(kDtPad[kDtPadIoc1]))
            << 2;
   strap |= pinmux_testutils_read_strap_pin(pinmux, gpio, 24,
-                                           kTopEarlgreyMuxedPadsIoc2)
+                                           dt_pad_mio_pad(kDtPad[kDtPadIoc2]))
            << 4;
   return strap;
 }
