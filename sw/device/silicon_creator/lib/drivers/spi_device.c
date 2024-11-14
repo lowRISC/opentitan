@@ -4,7 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
-#include "devicetables.h"
+#include "dt/dt_spi_device.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
@@ -14,13 +14,13 @@
 #include "flash_ctrl_regs.h"
 #include "spi_device_regs.h"
 
-static const dt_spi_device_t *kSpiDeviceDt = &kDtSpiDevice[0];
+static const dt_spi_device_t kSpiDeviceDt = kDtSpiDevice;
 
 /**
  * Base address of the spi_device registers.
  */
 static inline uint32_t spi_device_reg_base(void) {
-  return dt_spi_device_reg_block(kSpiDeviceDt, kDtSpiDeviceRegBlockDefault);
+  return dt_spi_device_primary_reg_block(kSpiDeviceDt);
 }
 
 enum {
