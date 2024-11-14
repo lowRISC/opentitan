@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
@@ -13,6 +12,20 @@
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
+
+#ifndef OT_IS_ENGLISH_BREAKFAST
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR   TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR             TOP_EARLGREY_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR      TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#else
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR   TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR             TOP_ENGLISHBREAKFAST_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR      TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#endif
 
 /**
  * Test ROM interrupt vectors.
@@ -148,16 +161,16 @@ _reset_start:
 _start:
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_skip
 
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
-  li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (AST_BASE_ADDR)
+  li   a1, (AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
@@ -171,10 +184,10 @@ _start:
   beqz t0, .L_ast_done_loop
 
   // Enable jittery clock if enabled in OTP.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
-  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  li   a0, CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_skip:
@@ -228,7 +241,7 @@ _start:
   // this to optimize test run times.
   lw    t0, kDeviceType
   beqz  t0, .L_sram_init_skip
-  li    a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li    a0, SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li    t0, (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw    t0, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 
