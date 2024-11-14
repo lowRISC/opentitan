@@ -219,12 +219,21 @@ enum module_ {
   X(kErrorOwnershipFlashConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipFlashConfigSlots,  ERROR_(18, kModuleOwnership, kInvalidArgument)), \
+  /* Group all of the ISFB error codes together */ \
+  X(kErrorOwnershipISFBNotPresent,    ERROR_(0x60, kModuleOwnership, kNotFound)), \
+  X(kErrorOwnershipISFBProductExpCnt, ERROR_(0x61, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipISFBStrikeMask,    ERROR_(0x62, kModuleOwnership, kPermissionDenied)), \
+  X(kErrorOwnershipISFBProductExp,    ERROR_(0x63, kModuleOwnership, kPermissionDenied)), \
+  X(kErrorOwnershipISFBFailed,        ERROR_(0x64, kModuleOwnership, kInternal)), \
+  X(kErrorOwnershipISFBPage,          ERROR_(0x65, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipISFBSize,          ERROR_(0x66, kModuleOwnership, kInvalidArgument)), \
   /* Group all of the tag version error codes together */ \
   X(kErrorOwnershipOWNRVersion,       ERROR_(0x70, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipAPPKVersion,       ERROR_(0x71, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipFLSHVersion,       ERROR_(0x72, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipINFOVersion,       ERROR_(0x73, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipRESQVersion,       ERROR_(0x74, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipISFBVersion,       ERROR_(0x75, kModuleOwnership, kInvalidArgument)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

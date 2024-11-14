@@ -4,15 +4,10 @@
 
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_TEST_ENVS",
-    "cw310_params",
-    "fpga_params",
     "opentitan_test",
-    "verilator_params",
 )
 load(
     "//rules:cross_platform.bzl",
-    "dual_cc_device_library_of",
     "dual_cc_library",
     "dual_inputs",
 )
@@ -65,6 +60,38 @@ opentitan_test(
         "//sw/device/lib/testing:hexstr",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
+    ],
+)
+
+cc_library(
+    name = "isfb",
+    srcs = ["isfb.c"],
+    hdrs = ["isfb.h"],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+    ],
+)
+
+cc_test(
+    name = "isfb_unittest",
+    srcs = [
+        "isfb_unittest.cc",
+    ],
+    deps = [
+        ":datatypes",
+        ":isfb",
+        ":owner_block",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
     ],
 )
 
