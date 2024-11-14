@@ -72,6 +72,7 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
                          f'{", ".join(TemplateParameter.VALID_PARAM_TYPES)}.')
 
     r_default = rd.get('default')
+    param_type: Union[bool, int, str, Dict[str, Any]]
     if param_type == 'bool':
         default = check_bool(r_default, f'default field of {name}, (a boolean parameter)')
     elif param_type == 'int':
@@ -134,8 +135,8 @@ class IpTemplate:
         - The IP template name (TEMPLATE_NAME) is equal to the directory name.
         - It contains a file 'data/TEMPLATE_NAME.tpldesc.hjson' containing all
           configuration information related to the template.
-        - It contains zero or more files ending in '.tpl'. These files are
-          Mako templates and rendered into an file in the same location without
+        - It contains some files ending in '.tpl', which are Mako templates
+          and are rendered into a file in the same relative location without
           the '.tpl' file extension.
         """
 
