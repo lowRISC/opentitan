@@ -1165,6 +1165,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
     .UsbdevStub(1'b1),
+    .RvCoreIbexSecureIbex(0),
 % else:
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
@@ -1185,16 +1186,17 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(1),
+    .RvCoreIbexSecureIbex(1),
 % elif target["name"] == "cw310":
     .KmacEnMasking(0),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(0),
     .SecKmacCmdDelay(0),
     .SecKmacIdleAcceptSwMsg(1'b0),
+    .RvCoreIbexSecureIbex(0),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (
