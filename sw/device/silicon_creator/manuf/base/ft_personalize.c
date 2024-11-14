@@ -32,6 +32,7 @@
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
 #include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/base/personalize_ext.h"
@@ -162,6 +163,26 @@ static void log_self_hash(void) {
            boot_measurements.rom_ext.data[1],
            boot_measurements.rom_ext.data[0]);
   // clang-format on
+}
+
+/*
+ * Return a pointer to the ROM_EXT manifest located in the slot b.
+ */
+static const manifest_t *rom_ext_manifest_b_get(void) {
+  return (const manifest_t *)(TOP_EARLGREY_EFLASH_BASE_ADDR +
+                              (TOP_EARLGREY_EFLASH_SIZE_BYTES / 2));
+}
+
+extern const uint32_t kCreatorSwCfgManufStateValue;
+
+/*
+ * Check if the `manuf_state_creator` field in the ROM_EXT manifest (slot b)
+ * matches the expected value that will be provisioned into the OTP.
+ */
+static status_t check_manuf_state_creator_binding(void) {
+  TRY_CHECK(rom_ext_manifest_b_get()->usage_constraints.manuf_state_creator ==
+            kCreatorSwCfgManufStateValue);
+  return OK_STATUS();
 }
 
 /**
@@ -733,8 +754,8 @@ static status_t check_otp_measurement_pre_lock(hmac_digest_t *measurement,
   TRY(measure_otp_partition(partition, &final_measurement,
                             /*use_expected_values=*/false));
 
-  HARDENED_CHECK_EQ(final_measurement.digest[1], measurement->digest[1]);
-  HARDENED_CHECK_EQ(final_measurement.digest[0], measurement->digest[0]);
+  TRY_CHECK(final_measurement.digest[1] == measurement->digest[1]);
+  TRY_CHECK(final_measurement.digest[0] == measurement->digest[0]);
   return OK_STATUS();
 }
 
@@ -748,13 +769,15 @@ static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
   uint64_t expected_digest = otp_read64(offset);
   uint32_t digest_hi = expected_digest >> 32;
   uint32_t digest_lo = expected_digest & UINT32_MAX;
-  HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
-  HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
+  TRY_CHECK(digest_hi == measurement->digest[1]);
+  TRY_CHECK(digest_lo == measurement->digest[0]);
   return OK_STATUS();
 }
 
 static status_t finalize_otp_partitions(void) {
   // TODO(#21554): Complete the provisioning of the root keys and key policies.
+
+  TRY(check_manuf_state_creator_binding());
 
   // Complete the provisioning of OTP OwnerSwCfg partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
