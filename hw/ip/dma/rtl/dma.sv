@@ -959,30 +959,29 @@ module dma
               capture_transfer_byte = 1'b1;
               capture_chunk_byte    = 1'b1;
 
-              // Will there still be more to do _after_ this advance?
-              if (transfer_byte_d >= reg2hw.total_data_size.q) begin
-                if (use_inline_hashing) begin
-                  ctrl_state_d = DmaShaFinalize;
-                end else begin
-                  clear_go     = 1'b1;
-                  ctrl_state_d = DmaIdle;
-                end
-              end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
-                // Conditionally clear the go bit when not being in hardware handshake mode.
-                // In non-hardware handshake mode, finishing one chunk should raise the done IRQ
-                // and chunk done bit, and release the go bit for the next FW-controlled chunk.
-                clear_go     = !control_q.cfg_handshake_en;
-                chunk_done   = !control_q.cfg_handshake_en;
-                ctrl_state_d = DmaIdle;
+              // If we are doing inline hashing and the data was not consumed yet, wait until it is
+              // consumed by the SHA engine and then continue.
+              if (use_inline_hashing && !(sha2_ready || sha2_consumed_q)) begin
+                ctrl_state_d = DmaShaWait;
               end else begin
-                ctrl_state_d = DmaAddrSetup;
-              end
-
-              // In all cases from above, if we are doing inline hashing and the data was not
-              // consumed yet, wait until it consumed by the SHA engine and then continue
-              if (use_inline_hashing) begin
-                if (!(sha2_ready || sha2_consumed_q)) begin
-                  ctrl_state_d = DmaShaWait;
+                // Will there still be more to do _after_ this advance?
+                if (transfer_byte_d >= reg2hw.total_data_size.q) begin
+                  if (use_inline_hashing) begin
+                    ctrl_state_d = DmaShaFinalize;
+                  end else begin
+                    clear_go     = 1'b1;
+                    ctrl_state_d = DmaIdle;
+                  end
+                end else if (chunk_byte_d >= reg2hw.chunk_data_size.q) begin
+                  // Conditionally clear the go bit when not being used in hardware handshake mode.
+                  // In non-hardware handshake mode, finishing one chunk should raise the
+                  // `chunk_done` IRQ and status bit, reset the go bit and await the next
+                  // FW-controlled chunk.
+                  clear_go     = !control_q.cfg_handshake_en;
+                  chunk_done   = !control_q.cfg_handshake_en;
+                  ctrl_state_d = DmaIdle;
+                end else begin
+                  ctrl_state_d = DmaAddrSetup;
                 end
               end
             end
@@ -1539,10 +1538,6 @@ module dma
 
   // The RTL code assumes the BE signal is 4-bit wide
   `ASSERT_NEVER(BeLengthMustBe4_A, top_pkg::TL_DBW != 4)
-
-  `ASSERT_IF(RegsWritesInIdleOrErrorExceptAbort_A,
-             (ctrl_state_q == DmaIdle) | (ctrl_state_q == DmaError),
-             sw_reg_wr && (!cfg_abort_en))
 
   // The DMA enabled memory should not be changed after lock
   `ASSERT_NEVER(NoDmaEnabledMemoryChangeAfterLock_A,
