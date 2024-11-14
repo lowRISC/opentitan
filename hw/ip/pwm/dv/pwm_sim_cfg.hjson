@@ -40,6 +40,15 @@
   // Coverage exclusion
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"]
 
+  overrides: [
+    {
+      // Override the base ccf coverage configuration file for the "default" build mode (used for tests
+      // other than the CSR tests). This will include the default cover.ccf file as its first item.
+      name: default_xcelium_cov_cfg_file
+      value: "{proj_root}/hw/ip/pwm/dv/cov/cover.ccf"
+    }
+  ]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
 
