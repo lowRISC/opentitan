@@ -13,6 +13,7 @@ load(
 # these bazel targets.
 EARLGREY_OTP_CFGS = {
     "sival": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_consts",
+    "emulation": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
 # A dictionary of SKU configurations that will be used to generate FT

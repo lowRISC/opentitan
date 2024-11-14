@@ -209,7 +209,7 @@ fpga_cw310(
     # binary.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = "fpga_cw310_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     tags = ["cw310_sival"],
 )
@@ -228,7 +228,7 @@ fpga_cw310(
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
     ],
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     tags = ["cw310_sival_rom_ext"],
 )
@@ -363,7 +363,7 @@ fpga_cw340(
     # binary.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = "fpga_cw340_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     tags = ["cw340_sival"],
 )
@@ -382,7 +382,7 @@ fpga_cw340(
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw340",
     ],
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     tags = ["cw340_sival_rom_ext"],
 )

@@ -664,7 +664,7 @@ opentitan_test(
         {"//hw/top_earlgrey:fpga_cw310_sival": None},
     ),
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_personalized",
     ),
     verilator = verilator_params(tags = ["broken"]),
     deps = [
@@ -681,7 +681,7 @@ opentitan_test(
         "//hw/top_earlgrey:sim_verilator": None,
     },
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_personalized",
         # TODO(lowrisc/opentitan#19620): fpga doesn't support lowering main clk frequency
         tags = ["broken"],
     ),
@@ -1606,13 +1606,13 @@ test_suite(
         name = "flash_ctrl_info_access_lc_{}_personalized".format(lc_state),
         srcs = ["flash_ctrl_info_access_lc.c"],
         dv = dv_params(
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
         },
         fpga = fpga_params(
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_{}_manuf_personalized".format(lc_state),
+            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_{}_manuf_personalized".format(lc_state),
         ),
         deps = [
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -1759,7 +1759,7 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_personalized",
         tags = [
             "broken",
             "lc_dev",
@@ -4556,7 +4556,7 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
         test_cmd = """
             --bootstrap="{firmware}"
         """,
@@ -4697,12 +4697,12 @@ opentitan_test(
 )
 
 _SIVAL_OTP_IMAGE = {
-    "test_unlocked1": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked1_manuf_individualized",
-    "test_locked0": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
-    "dev": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized",
-    "prod": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
-    "prod_end": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_end_manuf_personalized",
-    "rma": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_rma_manuf_personalized",
+    "test_unlocked1": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_unlocked1_manuf_individualized",
+    "test_locked0": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_locked0_manuf_initialized",
+    "dev": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_personalized",
+    "prod": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_manuf_personalized",
+    "prod_end": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_prod_end_manuf_personalized",
+    "rma": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
 }
 
 _RV_DM_JTAG_LC_STATES = get_lc_items(
@@ -4728,7 +4728,7 @@ _RV_DM_TEST_CONFIGURATIONS = [
         "name": "dev_rv_dm_delayed_enabled",
         "lc_state": "dev",
         "rv_dm_delayed_en": "--rv-dm-delayed-enable",
-        "otp": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
+        "otp": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
     },
     {
         "name": "rma",
@@ -6292,7 +6292,7 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "moderate",
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_rma_manuf_personalized",
+        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_rma_manuf_personalized",
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",
