@@ -7,26 +7,25 @@
 
 #include <stdint.h>
 
+#include "dt/dt_pinmux.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 /**
  * Define a pinmux configuration for a peripheral input and output .
  */
 typedef struct pinmux_testutils_peripheral_pin {
-  top_earlgrey_pinmux_peripheral_in_t peripheral_in;
-  top_earlgrey_pinmux_outsel_t outsel;
+  dt_pinmux_peripheral_in_t peripheral_in;
+  dt_pinmux_outsel_t outsel;
 } pinmux_testutils_peripheral_pin_t;
 
 /**
  * Define a pinmux configuration for a mio input and output.
  */
 typedef struct pinmux_testutils_mio_pin {
-  top_earlgrey_pinmux_mio_out_t mio_out;
-  top_earlgrey_pinmux_insel_t insel;
+  dt_pinmux_mio_out_t mio_out;
+  dt_pinmux_insel_t insel;
 } pinmux_testutils_mio_pin_t;
 
 /**
@@ -73,8 +72,7 @@ uint32_t pinmux_testutils_get_testable_gpios_mask(void);
  * @return A result in the range [0..3].
  */
 uint32_t pinmux_testutils_read_strap_pin(dif_pinmux_t *pinmux, dif_gpio_t *gpio,
-                                         dif_gpio_pin_t io,
-                                         top_earlgrey_muxed_pads_t pad);
+                                         dif_gpio_pin_t io, dt_pad_t pad);
 
 /**
  * Reads the OpenTitan sw strap pins for the strap configuration value.
@@ -93,6 +91,7 @@ uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio);
  * A convenience struct to associate pad attributes with a specific pad.
  */
 typedef struct pinmux_pad_attributes {
+  // TODO Convert to multitop
   dif_pinmux_index_t pad;
   dif_pinmux_pad_kind_t kind;
   dif_pinmux_pad_attr_flags_t flags;
