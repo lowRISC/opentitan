@@ -4,6 +4,7 @@
 
 #include "sw/device/silicon_creator/lib/drivers/spi_device.h"
 
+#include "devicetables.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
@@ -11,24 +12,28 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "spi_device_regs.h"
+
+static const dt_spi_device_t *kSpiDeviceDt = &kDtSpiDevice[0];
+
+/**
+ * Base address of the spi_device registers.
+ */
+static inline uint32_t spi_device_reg_base(void) {
+  return dt_spi_device_reg_block(kSpiDeviceDt, kDtSpiDeviceRegBlockDefault);
+}
 
 enum {
   /**
-   * Base address of the spi_device registers.
-   */
-  kBase = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
-  /**
    * Start address of the SFDP space in spi_device buffer.
    */
-  kSfdpAreaStartAddr =
-      kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset,
+  kSfdpAreaStartOff =
+      SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET + kSpiDeviceSfdpAreaOffset,
   /**
    * End address (exclusive) of the SFDP space in spi_device buffer.
    */
-  kSfdpAreaEndAddr = kBase + SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
-                     kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
+  kSfdpAreaEndOff = SPI_DEVICE_EGRESS_BUFFER_REG_OFFSET +
+                    kSpiDeviceSfdpAreaOffset + kSpiDeviceSfdpAreaNumBytes,
   /**
    * Flash data partition size in bits.
    */
@@ -493,7 +498,7 @@ static void cmd_info_set(cmd_info_t cmd_info) {
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_BUSY_0_BIT,
                              cmd_info.handled_in_sw);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_0_VALID_0_BIT, true);
-  abs_mmio_write32(kBase + cmd_info.reg_offset, reg);
+  abs_mmio_write32(spi_device_reg_base() + cmd_info.reg_offset, reg);
 }
 
 void spi_device_init(void) {
@@ -501,10 +506,11 @@ void spi_device_init(void) {
   uint32_t reg = bitfield_bit32_write(0, SPI_DEVICE_CFG_TX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_RX_ORDER_BIT, false);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CFG_MAILBOX_EN_BIT, false);
-  abs_mmio_write32(kBase + SPI_DEVICE_CFG_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_CFG_REG_OFFSET, reg);
 
   reg = bitfield_bit32_write(0, SPI_DEVICE_ADDR_MODE_ADDR_4B_EN_BIT, false);
-  abs_mmio_write32(kBase + SPI_DEVICE_ADDR_MODE_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_ADDR_MODE_REG_OFFSET,
+                   reg);
 
   // JEDEC manufacturer and device ID.
   // spi_device sends these in the following order: continuation codes,
@@ -513,7 +519,7 @@ void spi_device_init(void) {
                                kSpiDeviceJedecContCode);
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_CC_NUM_CC_FIELD,
                                kSpiDeviceJedecContCodeCount);
-  abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_CC_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_JEDEC_CC_REG_OFFSET, reg);
   // Note: The code below assumes that chip revision and generation numbers
   // from the life cycle controller (16-bits each) will fit in the revision and
   // generation fields of the device ID (3 and 4 bits, respectively).
@@ -529,10 +535,10 @@ void spi_device_init(void) {
                                kSpiDeviceJedecDensity);
   reg = bitfield_field32_write(reg, SPI_DEVICE_JEDEC_ID_MF_FIELD,
                                kSpiDeviceJedecManufId);
-  abs_mmio_write32(kBase + SPI_DEVICE_JEDEC_ID_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_JEDEC_ID_REG_OFFSET, reg);
 
   // Write SFDP table to the reserved region in spi_device buffer.
-  uint32_t dest = kSfdpAreaStartAddr;
+  uint32_t dest = spi_device_reg_base() + kSfdpAreaStartOff;
   const char *table = (const char *)&kSpiDeviceSfdpTable;
   for (size_t i = 0; i < kSpiDeviceSfdpTableNumWords; ++i) {
     abs_mmio_write32(dest, read_32(table));
@@ -540,12 +546,14 @@ void spi_device_init(void) {
     table += sizeof(uint32_t);
   }
   // Fill the remaining space with `0xff`s.
-  for (; dest < kSfdpAreaEndAddr; dest += sizeof(uint32_t)) {
+  for (; dest < spi_device_reg_base() + kSfdpAreaEndOff;
+       dest += sizeof(uint32_t)) {
     abs_mmio_write32(dest, UINT32_MAX);
   }
 
   // Reset status register
-  abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
+                   0);
 
   // Configure the READ_STATUS command (CMD_INFO_0).
   cmd_info_set((cmd_info_t){
@@ -607,10 +615,12 @@ void spi_device_init(void) {
   reg = bitfield_field32_write(0, SPI_DEVICE_CMD_INFO_WREN_OPCODE_FIELD,
                                kSpiDeviceOpcodeWriteEnable);
   reg = bitfield_bit32_write(reg, SPI_DEVICE_CMD_INFO_WREN_VALID_BIT, true);
-  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_CMD_INFO_WREN_REG_OFFSET,
+                   reg);
   reg = bitfield_field32_write(reg, SPI_DEVICE_CMD_INFO_WRDI_OPCODE_FIELD,
                                kSpiDeviceOpcodeWriteDisable);
-  abs_mmio_write32(kBase + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET, reg);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_CMD_INFO_WRDI_REG_OFFSET,
+                   reg);
 }
 
 rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
@@ -619,33 +629,38 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
   while (!cmd_pending) {
     // Note: Using INTR_STATE.UPLOAD_CMDFIFO_NOT_EMPTY because
     // UPLOAD_STATUS.CMDFIFO_NOTEMPTY is set before the SPI transaction ends.
-    reg = abs_mmio_read32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET);
+    reg = abs_mmio_read32(spi_device_reg_base() +
+                          SPI_DEVICE_INTR_STATE_REG_OFFSET);
     cmd_pending = bitfield_bit32_read(
         reg, SPI_DEVICE_INTR_COMMON_UPLOAD_CMDFIFO_NOT_EMPTY_BIT);
   }
-  abs_mmio_write32(kBase + SPI_DEVICE_INTR_STATE_REG_OFFSET, UINT32_MAX);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_INTR_STATE_REG_OFFSET,
+                   UINT32_MAX);
   if (bitfield_bit32_read(reg,
                           SPI_DEVICE_INTR_COMMON_UPLOAD_PAYLOAD_OVERFLOW_BIT)) {
     return kErrorSpiDevicePayloadOverflow;
   }
 
-  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
+  reg = abs_mmio_read32(spi_device_reg_base() +
+                        SPI_DEVICE_UPLOAD_CMDFIFO_REG_OFFSET);
   cmd->opcode =
       bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_CMDFIFO_DATA_FIELD);
   cmd->address = kSpiDeviceNoAddress;
-  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
+  reg = abs_mmio_read32(spi_device_reg_base() +
+                        SPI_DEVICE_UPLOAD_STATUS_REG_OFFSET);
   if (bitfield_bit32_read(reg,
                           SPI_DEVICE_UPLOAD_STATUS_ADDRFIFO_NOTEMPTY_BIT)) {
-    cmd->address =
-        abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
+    cmd->address = abs_mmio_read32(spi_device_reg_base() +
+                                   SPI_DEVICE_UPLOAD_ADDRFIFO_REG_OFFSET);
   }
 
-  reg = abs_mmio_read32(kBase + SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
+  reg = abs_mmio_read32(spi_device_reg_base() +
+                        SPI_DEVICE_UPLOAD_STATUS2_REG_OFFSET);
   cmd->payload_byte_count =
       bitfield_field32_read(reg, SPI_DEVICE_UPLOAD_STATUS2_PAYLOAD_DEPTH_FIELD);
   // `payload_byte_count` can be at most `kSpiDevicePayloadAreaNumBytes`.
   HARDENED_CHECK_LE(cmd->payload_byte_count, kSpiDevicePayloadAreaNumBytes);
-  uint32_t src = kBase + SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
+  uint32_t src = spi_device_reg_base() + SPI_DEVICE_INGRESS_BUFFER_REG_OFFSET +
                  kSpiDevicePayloadAreaOffset;
   char *dest = (char *)&cmd->payload;
   for (size_t i = 0; i < cmd->payload_byte_count; i += sizeof(uint32_t)) {
@@ -656,9 +671,11 @@ rom_error_t spi_device_cmd_get(spi_device_cmd_t *cmd) {
 }
 
 void spi_device_flash_status_clear(void) {
-  abs_mmio_write32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET, 0);
+  abs_mmio_write32(spi_device_reg_base() + SPI_DEVICE_FLASH_STATUS_REG_OFFSET,
+                   0);
 }
 
 uint32_t spi_device_flash_status_get(void) {
-  return abs_mmio_read32(kBase + SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
+  return abs_mmio_read32(spi_device_reg_base() +
+                         SPI_DEVICE_FLASH_STATUS_REG_OFFSET);
 }
