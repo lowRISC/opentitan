@@ -24,6 +24,18 @@ dif_result_t dif_dma_init(mmio_region_t base_addr, dif_dma_t *dma) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_init_from_dt(const dt_dma_t *dt, dif_dma_t *dma) {
+  if (dma == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  dma->base_addr =
+      mmio_region_from_addr(dt_dma_reg_block(dt, kDtDmaRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_dma_alert_force(const dif_dma_t *dma, dif_dma_alert_t alert) {
   if (dma == NULL) {
     return kDifBadArg;
@@ -51,7 +63,7 @@ dif_result_t dif_dma_alert_force(const dif_dma_t *dma, dif_dma_alert_t alert) {
 static bool dma_get_irq_bit_index(dif_dma_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifDmaIrqDmaDone:
+    case kDtDmaIrqDmaDone:
       *index_out = DMA_INTR_COMMON_DMA_DONE_BIT;
       break;
     case kDifDmaIrqDmaChunkDone:
@@ -76,7 +88,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_irq_get_type(const dif_dma_t *dma, dif_dma_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (dma == NULL || type == NULL || irq == kDifDmaIrqDmaError + 1) {
+  if (dma == NULL || type == NULL || irq == kDtDmaIrqCount) {
     return kDifBadArg;
   }
 

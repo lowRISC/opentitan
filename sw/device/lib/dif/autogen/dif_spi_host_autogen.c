@@ -25,6 +25,19 @@ dif_result_t dif_spi_host_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_spi_host_init_from_dt(const dt_spi_host_t *dt,
+                                       dif_spi_host_t *spi_host) {
+  if (spi_host == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  spi_host->base_addr = mmio_region_from_addr(
+      dt_spi_host_reg_block(dt, kDtSpiHostRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_spi_host_alert_force(const dif_spi_host_t *spi_host,
                                       dif_spi_host_alert_t alert) {
   if (spi_host == NULL) {
@@ -54,10 +67,10 @@ dif_result_t dif_spi_host_alert_force(const dif_spi_host_t *spi_host,
 static bool spi_host_get_irq_bit_index(dif_spi_host_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifSpiHostIrqError:
+    case kDtSpiHostIrqError:
       *index_out = SPI_HOST_INTR_COMMON_ERROR_BIT;
       break;
-    case kDifSpiHostIrqSpiEvent:
+    case kDtSpiHostIrqSpiEvent:
       *index_out = SPI_HOST_INTR_COMMON_SPI_EVENT_BIT;
       break;
     default:
@@ -76,7 +89,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_irq_get_type(const dif_spi_host_t *spi_host,
                                        dif_spi_host_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (spi_host == NULL || type == NULL || irq == kDifSpiHostIrqSpiEvent + 1) {
+  if (spi_host == NULL || type == NULL || irq == kDtSpiHostIrqCount) {
     return kDifBadArg;
   }
 

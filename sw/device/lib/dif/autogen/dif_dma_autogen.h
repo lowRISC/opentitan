@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_dma.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,24 @@ typedef struct dif_dma {
  * @param base_addr The MMIO base address of the dma peripheral.
  * @param[out] dma Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_init(mmio_region_t base_addr, dif_dma_t *dma);
+
+/**
+ * Creates a new handle for a(n) dma peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] dma Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_dma_init_from_dt(const dt_dma_t *dt, dif_dma_t *dma);
 
 /**
  * A dma alert type.
@@ -72,21 +88,25 @@ dif_result_t dif_dma_alert_force(const dif_dma_t *dma, dif_dma_alert_t alert);
 
 /**
  * A dma interrupt request type.
+ *
+ * DEPRECATED Use `dt_dma_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_dma_irq {
-  /**
-   * DMA operation has been completed.
-   */
-  kDifDmaIrqDmaDone = 0,
-  /**
-   * Indicates the transfer of a single chunk has been completed.
-   */
-  kDifDmaIrqDmaChunkDone = 1,
-  /**
-   * DMA error has occurred. DMA_STATUS.error_code register shows the details.
-   */
-  kDifDmaIrqDmaError = 2,
-} dif_dma_irq_t;
+/**
+ * DMA operation has been completed.
+ */
+#define kDifDmaIrqDmaDone kDtDmaIrqDmaDone
+/**
+ * DMA error has occurred. DMA_STATUS.error_code register shows the details.
+ */
+#define kDifDmaIrqDmaError kDtDmaIrqDmaError
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_dma_irq_t dif_dma_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -105,7 +125,7 @@ typedef uint32_t dif_dma_irq_state_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_get_type(const dif_dma_t *dma, dif_dma_irq_t irq,
+dif_result_t dif_dma_irq_get_type(const dif_dma_t *dma, dif_dma_irq_t,
                                   dif_irq_type_t *type);
 
 /**
@@ -128,7 +148,7 @@ dif_result_t dif_dma_irq_get_state(const dif_dma_t *dma,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_is_pending(const dif_dma_t *dma, dif_dma_irq_t irq,
+dif_result_t dif_dma_irq_is_pending(const dif_dma_t *dma, dif_dma_irq_t,
                                     bool *is_pending);
 
 /**
@@ -162,7 +182,7 @@ dif_result_t dif_dma_irq_acknowledge_all(const dif_dma_t *dma);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_acknowledge(const dif_dma_t *dma, dif_dma_irq_t irq);
+dif_result_t dif_dma_irq_acknowledge(const dif_dma_t *dma, dif_dma_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -174,7 +194,7 @@ dif_result_t dif_dma_irq_acknowledge(const dif_dma_t *dma, dif_dma_irq_t irq);
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_force(const dif_dma_t *dma, dif_dma_irq_t irq,
+dif_result_t dif_dma_irq_force(const dif_dma_t *dma, dif_dma_irq_t,
                                const bool val);
 
 /**
@@ -195,7 +215,7 @@ typedef uint32_t dif_dma_irq_enable_snapshot_t;
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_get_enabled(const dif_dma_t *dma, dif_dma_irq_t irq,
+dif_result_t dif_dma_irq_get_enabled(const dif_dma_t *dma, dif_dma_irq_t,
                                      dif_toggle_t *state);
 
 /**
@@ -207,7 +227,7 @@ dif_result_t dif_dma_irq_get_enabled(const dif_dma_t *dma, dif_dma_irq_t irq,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_irq_set_enabled(const dif_dma_t *dma, dif_dma_irq_t irq,
+dif_result_t dif_dma_irq_set_enabled(const dif_dma_t *dma, dif_dma_irq_t,
                                      dif_toggle_t state);
 
 /**

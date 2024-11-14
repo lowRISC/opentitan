@@ -17,6 +17,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_entropy_src.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -45,10 +46,26 @@ typedef struct dif_entropy_src {
  * @param base_addr The MMIO base address of the entropy_src peripheral.
  * @param[out] entropy_src Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_init(mmio_region_t base_addr,
                                   dif_entropy_src_t *entropy_src);
+
+/**
+ * Creates a new handle for a(n) entropy_src peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] entropy_src Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_entropy_src_init_from_dt(const dt_entropy_src_t *dt,
+                                          dif_entropy_src_t *entropy_src);
 
 /**
  * A entropy_src alert type.
@@ -81,30 +98,38 @@ dif_result_t dif_entropy_src_alert_force(const dif_entropy_src_t *entropy_src,
 
 /**
  * A entropy_src interrupt request type.
+ *
+ * DEPRECATED Use `dt_entropy_src_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_entropy_src_irq {
-  /**
-   * Asserted when entropy source bits are available for firmware for
-   * consumption via !!ENTROPY_DATA register.
-   */
-  kDifEntropySrcIrqEsEntropyValid = 0,
-  /**
-   * Asserted whenever the main state machine is in the alert state, e.g., due
-   * to health tests failing and reaching the threshold value configured in
-   * !!ALERT_THRESHOLD.
-   */
-  kDifEntropySrcIrqEsHealthTestFailed = 1,
-  /**
-   * Asserted when the observe FIFO has filled to the configured threshold level
-   * (see !!OBSERVE_FIFO_THRESH).
-   */
-  kDifEntropySrcIrqEsObserveFifoReady = 2,
-  /**
-   * Asserted when an fatal error condition is met, e.g., upon FIFO errors, or
-   * if an illegal state machine state is reached.
-   */
-  kDifEntropySrcIrqEsFatalErr = 3,
-} dif_entropy_src_irq_t;
+/**
+ * Asserted when entropy source bits are available for firmware for consumption
+ * via !!ENTROPY_DATA register.
+ */
+#define kDifEntropySrcIrqEsEntropyValid kDtEntropySrcIrqEsEntropyValid
+/**
+ * Asserted whenever the main state machine is in the alert state, e.g., due to
+ * health tests failing and reaching the threshold value configured in
+ * !!ALERT_THRESHOLD.
+ */
+#define kDifEntropySrcIrqEsHealthTestFailed kDtEntropySrcIrqEsHealthTestFailed
+/**
+ * Asserted when the observe FIFO has filled to the configured threshold level
+ * (see !!OBSERVE_FIFO_THRESH).
+ */
+#define kDifEntropySrcIrqEsObserveFifoReady kDtEntropySrcIrqEsObserveFifoReady
+/**
+ * Asserted when an fatal error condition is met, e.g., upon FIFO errors, or if
+ * an illegal state machine state is reached.
+ */
+#define kDifEntropySrcIrqEsFatalErr kDtEntropySrcIrqEsFatalErr
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_entropy_src_irq_t dif_entropy_src_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -124,7 +149,7 @@ typedef uint32_t dif_entropy_src_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_get_type(const dif_entropy_src_t *entropy_src,
-                                          dif_entropy_src_irq_t irq,
+                                          dif_entropy_src_irq_t,
                                           dif_irq_type_t *type);
 
 /**
@@ -149,7 +174,7 @@ dif_result_t dif_entropy_src_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_is_pending(
-    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t,
     bool *is_pending);
 
 /**
@@ -186,7 +211,7 @@ dif_result_t dif_entropy_src_irq_acknowledge_all(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_acknowledge(
-    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq);
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -199,8 +224,7 @@ dif_result_t dif_entropy_src_irq_acknowledge(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_force(const dif_entropy_src_t *entropy_src,
-                                       dif_entropy_src_irq_t irq,
-                                       const bool val);
+                                       dif_entropy_src_irq_t, const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -221,7 +245,7 @@ typedef uint32_t dif_entropy_src_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_get_enabled(
-    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t,
     dif_toggle_t *state);
 
 /**
@@ -234,7 +258,7 @@ dif_result_t dif_entropy_src_irq_get_enabled(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_set_enabled(
-    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t irq,
+    const dif_entropy_src_t *entropy_src, dif_entropy_src_irq_t,
     dif_toggle_t state);
 
 /**
