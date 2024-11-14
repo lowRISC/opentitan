@@ -109,6 +109,11 @@
       run_opts: ["+zero_delays=1 +partial_access_pct=20"]
     }
     {
+      name: "{name}_throughput_w_readback"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0 +init_w_readback=1"]
+    }
+    {
       name: "{name}_lc_escalation"
       uvm_test_seq: sram_ctrl_lc_escalation_vseq
     }
