@@ -28,6 +28,8 @@ def render_template(template_path: Path, rendered_path: Path,
 
 
 def main():
+    logging.basicConfig(format="%(levelname)s: %(message)s", level=logging.WARNING)
+
     parser = argparse.ArgumentParser(prog="dtgen")
     parser.add_argument(
         "--topgencfg",
@@ -122,8 +124,8 @@ def main():
                 # Pick the first one.
                 default_node = list(ip.reg_blocks.keys())[0]
                 if len(ip.reg_blocks) > 1:
-                    logging.warning(f"IP {ipname} has more than one register block node" +
-                                    "but no default was specified, will use {default_node}")
+                    logging.warning(f"IP {ipname} has more than one register block node but " +
+                                    f"no default was specified, will use {default_node}")
                 else:
                     # If there is a single node, it may not have a name, in which case
                     # the template will call it 'core'.
