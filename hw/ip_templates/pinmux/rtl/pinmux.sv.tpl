@@ -386,6 +386,12 @@ module pinmux
     .dft_jtag_o,
     .dft_jtag_i
   );
+% else:
+  // Just pass through these signals.
+  assign { dio_out_o,  mio_out_o  }  = { dio_out,  mio_out  };
+  assign { dio_oe_o ,  mio_oe_o   }  = { dio_oe,   mio_oe   };
+  assign { dio_in,     mio_i      }  = { dio_in_i, mio_in_i };
+  assign { dio_attr_o, mio_attr_o }  = { dio_attr, mio_attr };
 % endif
 % if enable_usb_wakeup:
 
