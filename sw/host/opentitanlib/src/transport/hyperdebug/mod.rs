@@ -450,6 +450,9 @@ pub struct Conn {
 impl MaintainConnection for Conn {}
 
 impl Inner {
+    /// General timeout for response on the HyperDebug text-based USB command console.
+    const COMMAND_TIMEOUT: Duration = Duration::from_millis(3000);
+
     /// Establish connection with HyperDebug console USB interface.
     pub fn connect(&self) -> Result<Rc<Conn>> {
         if let Some(conn) = self.conn.borrow().upgrade() {
@@ -462,7 +465,7 @@ impl Inner {
             .to_str()
             .ok_or(TransportError::UnicodePathError)?;
         let port =
-            TTYPort::open(&serialport::new(port_name, 115_200).timeout(Duration::from_millis(100)))
+            TTYPort::open(&serialport::new(port_name, 115_200).timeout(Self::COMMAND_TIMEOUT))
                 .context("Failed to open HyperDebug console")?;
         flock_serial(&port, port_name)?;
         let conn = Rc::new(Conn {
@@ -642,7 +645,17 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 
     fn apply_default_configuration(&self) -> Result<()> {
-        self.inner.cmd_no_output("reinit")
+        let mut error: Option<String> = None;
+        self.inner.execute_command("reinit", |line| {
+            log::warn!("Unexpected HyperDebug output: {}", line);
+            if line.starts_with("Error: ") {
+                error = Some(line.to_string());
+            }
+        })?;
+        if let Some(err) = error {
+            bail!(TransportError::CommunicationError(err));
+        }
+        Ok(())
     }
 
     // Create SPI Target instance, or return one from a cache of previously created instances.
