@@ -922,7 +922,10 @@ cc_library(
     name = "rstmgr_intf",
     srcs = ["//sw/device/lib/dif/autogen:rstmgr_hdr"],
     hdrs = ["dif_rstmgr.h"],
-    deps = [":base"],
+    deps = [
+        ":base",
+        "//hw/top:dt_rstmgr",
+    ],
 )
 
 cc_library(
