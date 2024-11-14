@@ -79,8 +79,11 @@ Silicon bring-up and validation activities have to be planned in a way that
 minimizes the number of OTP configurations given that there may be limited
 availability of samples during early post-silicon stages.
 
-`//hw/top_earlgrey/data/otp/sival_skus/BUILD` contains the OTP
-configurations used in Silicon Validation (SiVal) for the EarlGrey design.
+* `//hw/top_earlgrey/data/otp/emulation/BUILD`: contains the OTP
+  configurations used for pre-silicon simulation and emulation, as well as for
+  Silicon Validation (SiVal) targets running on the FPGA.
+* `//hw/top_earlgrey/data/otp/sival_skus/BUILD`: contains the OTP
+  configurations used in Silicon Validation (SiVal) for the EarlGrey design.
 
 ### `:otp_img_test_unlocked0_manuf_empty`
 
@@ -187,7 +190,7 @@ Configuration:
 ```python
 {
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    otp = "//hw/top_earlgrey/otp/data/sival_skus:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
 }
 ```
 
