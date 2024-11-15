@@ -66,7 +66,7 @@ static status_t print_flash_info_0_data_to_console(void) {
   TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldDeviceId,
                                   device_id, kHwCfgDeviceIdSizeIn32BitWords));
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", device_id[i]);
+    LOG_INFO("0x%08x", device_id[i]);
   }
 
   LOG_INFO("AST Calibration Values:");
@@ -74,7 +74,7 @@ static status_t print_flash_info_0_data_to_console(void) {
       &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
       kFlashInfoAstCalibrationDataSizeIn32BitWords));
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", ast_cfg_data[i]);
+    LOG_INFO("0x%08x", ast_cfg_data[i]);
   }
 
   return OK_STATUS();
