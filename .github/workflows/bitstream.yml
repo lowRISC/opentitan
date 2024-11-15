@@ -18,7 +18,7 @@ jobs:
   bitstream:
     name: Build bitstream
     runs-on: ubuntu-22.04-bitstream
-    timeout-minutes: 120
+    timeout-minutes: 240
     steps:
       - uses: actions/checkout@v4
         with:
