@@ -19,15 +19,15 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
   // add invalid value to rom_ctrl
   virtual task twirl_rom_response();
     add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
     cfg.clk_rst_vif.wait_clks(5);
     add_rom_rsp_noise();
     wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
     add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
     cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
   endtask
 
   task body();

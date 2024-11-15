@@ -15,16 +15,18 @@ module pwrmgr_cov_bind;
     .rst_ni (rst_ni),
     .val   (lc_hw_debug_en_i)
   );
+% for i in range(NumRomInputs):
 
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_good_mubi_cov_if (
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl${i}_good_mubi_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i.done)
+    .mubi   (rom_ctrl_i[${i}].done)
   );
 
-  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl_done_mubi_cov_if (
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl${i}_done_mubi_cov_if (
     .rst_ni (rst_ni),
-    .mubi   (rom_ctrl_i.good)
+    .mubi   (rom_ctrl_i[${i}].good)
   );
+% endfor
 
   bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_sw_rst_req_mubi_cov_if (
     .rst_ni (rst_ni),

@@ -58,5 +58,11 @@
       type: "bool"
       default: false
     }
+    {
+      name: "NumRomInputs"
+      desc: "Number of ROM inputs"
+      type: "int"
+      default: "1"
+    }
   ]
 }

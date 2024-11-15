@@ -102,7 +102,7 @@ module tb;
     .fetch_en_o(pwrmgr_if.fetch_en),
     .wakeups_i (pwrmgr_if.wakeups_i),
 % if wait_for_external_reset:
-    // TOOD(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
+    // TODO(#22710): properly cooperate with `pwrmgr_if.rstreqs_i[1]`
     .rstreqs_i ({int_reset_req, pwrmgr_if.rstreqs_i[0]}),
 % else:
     .rstreqs_i (pwrmgr_if.rstreqs_i),

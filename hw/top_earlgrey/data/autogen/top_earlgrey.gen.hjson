@@ -3361,8 +3361,8 @@
           type: uni
           act: rcv
           width: 1
+          default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
-          default: ""
           top_signame: rom_ctrl_pwrmgr_data
           index: -1
         }
@@ -18568,8 +18568,8 @@
         type: uni
         act: rcv
         width: 1
+        default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
-        default: ""
         top_signame: rom_ctrl_pwrmgr_data
         index: -1
       }
