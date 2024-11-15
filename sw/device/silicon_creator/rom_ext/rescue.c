@@ -29,7 +29,11 @@ const uint32_t kFlashBankSize =
 static rescue_state_t rescue_state;
 
 rom_error_t flash_firmware_block(rescue_state_t *state) {
+  uint32_t bank_offset =
+      state->mode == kRescueModeFirmwareSlotB ? kFlashBankSize : 0;
   if (state->flash_offset == 0) {
+    // TODO(#24428): Make sure we interact correctly with owner flash region
+    // configuration.
     flash_ctrl_data_default_perms_set((flash_ctrl_perms_t){
         .read = kMultiBitBool4True,
         .write = kMultiBitBool4True,
@@ -38,14 +42,14 @@ rom_error_t flash_firmware_block(rescue_state_t *state) {
     for (uint32_t addr = state->flash_start; addr < state->flash_limit;
          addr += kFlashPageSize) {
       HARDENED_RETURN_IF_ERROR(
-          flash_ctrl_data_erase(addr, kFlashCtrlEraseTypePage));
+          flash_ctrl_data_erase(bank_offset + addr, kFlashCtrlEraseTypePage));
     }
     state->flash_offset = state->flash_start;
   }
   if (state->flash_offset < state->flash_limit) {
     HARDENED_RETURN_IF_ERROR(flash_ctrl_data_write(
-        state->flash_offset, sizeof(state->data) / sizeof(uint32_t),
-        state->data));
+        bank_offset + state->flash_offset,
+        sizeof(state->data) / sizeof(uint32_t), state->data));
     state->flash_offset += sizeof(state->data);
   } else {
     xmodem_cancel(iohandle);
@@ -134,6 +138,7 @@ static void validate_mode(uint32_t mode, rescue_state_t *state,
         }
         break;
       case kRescueModeFirmware:
+      case kRescueModeFirmwareSlotB:
         dbg_printf("ok: send firmware via xmodem-crc\r\n");
         break;
       case kRescueModeReboot:
