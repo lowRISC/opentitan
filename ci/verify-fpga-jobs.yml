@@ -24,6 +24,7 @@ jobs:
   # but we still want to verify the FPGA jobs.
   condition: succeededOrFailed()
   steps:
+  - template: checkout-template.yml
   - ${{ each job in parameters.fpga_jobs }}:
     - task: DownloadPipelineArtifact@2
       inputs:
