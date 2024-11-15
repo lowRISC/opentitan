@@ -504,9 +504,9 @@ def generate_top_ral(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
 
     # Generate a map from instance name to the block that it instantiates,
     # together with a map of interface addresses.
-    inst_to_block = {}  # type: Dict[str, str]
-    if_addrs = {}  # type: Dict[Tuple[str, Optional[str]], int]
-    attrs = {}  # type: Dict[str, str]
+    inst_to_block: Dict[str, str] = {}
+    if_addrs: Dict[Tuple[str, Optional[str]], int] = {}
+    attrs: Dict[str, str] = {}
 
     for module in top["module"]:
         inst_name = module["name"]
