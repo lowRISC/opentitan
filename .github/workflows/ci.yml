@@ -245,7 +245,6 @@ jobs:
 
   chip_earlgrey_cw310_hyperdebug:
     name: Earl Grey for CW310 Hyperdebug
-    if: ${{ github.event_name != 'pull_request' }}
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
@@ -255,7 +254,6 @@ jobs:
 
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
-    if: ${{ github.event_name != 'pull_request' }}
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     secrets: inherit
@@ -298,6 +296,153 @@ jobs:
           gcloud storage cp build-bin/bitstream-cache/bitstream-cache.tar.gz $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz
           gcloud storage cp latest.txt $BUCKET_URI/latest.txt
           gcloud storage cp $BUCKET_URI/bitstream-${{ github.sha }}.tar.gz $BUCKET_URI/bitstream-latest.tar.gz
+
+  # CW310 FPGA jobs.
+  execute_test_rom_fpga_tests_cw310:
+    name: CW310 Test ROM Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_test_rom_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: cw310_test_rom
+
+  execute_rom_fpga_tests_cw310:
+    name: CW310 ROM Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf"
+      timeout: 90
+
+  execute_rom_ext_fpga_tests_cw310:
+    name: CW310 ROM_EXT Tests
+    needs: chip_earlgrey_cw310
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_ext_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310
+      board: cw310
+      interface: cw310
+      tag_filters: cw310_rom_ext
+
+  execute_sival_fpga_tests_cw310:
+    name: CW310 SiVal Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "cw310_sival,-manuf"
+
+  execute_sival_rom_ext_fpga_tests_cw310:
+    name: CW310 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_rom_ext_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: cw310_sival_rom_ext
+
+  execute_manuf_fpga_tests_cw310:
+    name: CW310 Manufacturing Tests
+    needs: chip_earlgrey_cw310_hyperdebug
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_manuf_fpga_tests_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
+      board: cw310
+      interface: hyper310
+      tag_filters: "manuf,-cw340"
+
+  # CW340 FPGA jobs
+  execute_test_rom_fpga_tests_cw340:
+    name: CW340 Test ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_test_rom_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_test_rom
+
+  execute_rom_fpga_tests_cw340:
+    name: CW340 ROM Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_rom_with_fake_keys,cw340_rom_with_real_keys,-manuf"
+
+  execute_rom_ext_fpga_tests_cw340:
+    name: CW340 ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_rom_ext
+
+  execute_sival_fpga_tests_cw340:
+    name: CW340 SiVal Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "cw340_sival,-manuf"
+
+  execute_sival_rom_ext_fpga_tests_cw340:
+    name: CW340 SiVal ROM_EXT Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_sival_rom_ext_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: cw340_sival_rom_ext
+
+  execute_manuf_fpga_tests_cw340:
+    name: CW340 Manufacturing Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/fpga.yml
+    secrets: inherit
+    with:
+      job_name: execute_manuf_fpga_tests_cw340
+      bitstream: chip_earlgrey_cw340
+      board: cw340
+      interface: cw340
+      tag_filters: "manuf,-hyper310"
 
   build_docker_containers:
     name: Build Docker Containers
