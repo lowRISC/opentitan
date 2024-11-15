@@ -112,6 +112,12 @@ opentitan_ip_rust_header = rule(
 def _opentitan_top_dt_gen(ctx):
     outputs = []
     outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    top = ctx.attr.top[OpenTitanTopInfo]
+
+    # Make sure the requested IPs are all in the top.
+    for ipname in ctx.attr.gen_ips:
+        if ipname not in top.ip_hjson:
+            return []
 
     groups = {}
     for group, files in ctx.attr.output_groups.items():
@@ -120,8 +126,6 @@ def _opentitan_top_dt_gen(ctx):
             deps.append(ctx.actions.declare_file(file))
         outputs.extend(deps)
         groups[group] = depset(deps)
-
-    top = ctx.attr.top[OpenTitanTopInfo]
 
     inputs = [top.hjson]
     ips = []
@@ -137,9 +141,6 @@ def _opentitan_top_dt_gen(ctx):
         outdir,
     ]
     arguments.append("--gen-top" if ctx.attr.gen_top else "--gen-ip")
-    for ipname in ctx.attr.gen_ips:
-        if ipname not in top.ip_hjson:
-            fail("Cannot generate IP headers: top {} does not contain IP {}".format(top.name, ipname))
 
     arguments.extend(ips)
 
