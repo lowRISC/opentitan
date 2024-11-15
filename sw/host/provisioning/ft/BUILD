@@ -13,7 +13,6 @@ package(default_visibility = ["//visibility:public"])
 [
     rust_binary(
         name = "ft_{}".format(sku),
-        testonly = True,
         srcs = ["src/main.rs"],
         deps = [
             "//sw/host/opentitanlib",
@@ -31,7 +30,6 @@ package(default_visibility = ["//visibility:public"])
 
 filegroup(
     name = "ft_all",
-    testonly = True,
     srcs = [
         ":ft_{}".format(sku)
         for sku in EARLGREY_SKUS.keys()

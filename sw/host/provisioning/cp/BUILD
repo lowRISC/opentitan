@@ -8,7 +8,6 @@ package(default_visibility = ["//visibility:public"])
 
 rust_binary(
     name = "cp",
-    testonly = True,
     srcs = ["src/main.rs"],
     deps = [
         "//sw/host/opentitanlib",
