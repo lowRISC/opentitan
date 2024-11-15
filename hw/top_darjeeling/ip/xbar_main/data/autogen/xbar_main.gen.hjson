@@ -1,0 +1,1121 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson -o hw/top_darjeeling/
+
+{
+  name: main
+  clock_srcs:
+  {
+    clk_main_i: main
+    clk_fixed_i: io_div4
+    clk_usb_i: usb
+  }
+  clock_group: infra
+  reset: rst_main_ni
+  reset_connections:
+  {
+    rst_main_ni:
+    {
+      name: lc
+      domain: "0"
+    }
+    rst_fixed_ni:
+    {
+      name: lc_io_div4
+      domain: "0"
+    }
+    rst_usb_ni:
+    {
+      name: lc_usb
+      domain: "0"
+    }
+  }
+  min_spacing: 0x100
+  clock_connections:
+  {
+    clk_main_i: clkmgr_aon_clocks.clk_main_infra
+    clk_fixed_i: clkmgr_aon_clocks.clk_io_div4_infra
+    clk_usb_i: clkmgr_aon_clocks.clk_usb_infra
+  }
+  domain:
+  [
+    "0"
+  ]
+  connections:
+  {
+    rv_core_ibex.corei:
+    [
+      rom_ctrl0.rom
+      rom_ctrl1.rom
+      rv_dm.mem
+      sram_ctrl_main.ram
+      soc_proxy.ctn
+    ]
+    rv_core_ibex.cored:
+    [
+      rom_ctrl0.rom
+      rom_ctrl0.regs
+      rom_ctrl1.rom
+      rom_ctrl1.regs
+      rv_dm.mem
+      rv_dm.regs
+      sram_ctrl_main.ram
+      peri
+      aes
+      csrng
+      edn0
+      edn1
+      hmac
+      rv_plic
+      otbn
+      keymgr_dpe
+      kmac
+      sram_ctrl_main.regs
+      rv_core_ibex.cfg
+      sram_ctrl_mbox.ram
+      sram_ctrl_mbox.regs
+      soc_proxy.ctn
+      soc_proxy.core
+      dma
+      mbx0.core
+      mbx1.core
+      mbx2.core
+      mbx3.core
+      mbx4.core
+      mbx5.core
+      mbx6.core
+      mbx_jtag.core
+      mbx_pcie0.core
+      mbx_pcie1.core
+    ]
+    rv_dm.sba:
+    [
+      rom_ctrl0.rom
+      rom_ctrl0.regs
+      rom_ctrl1.rom
+      rom_ctrl1.regs
+      rv_dm.mem
+      rv_dm.regs
+      sram_ctrl_main.ram
+      peri
+      aes
+      csrng
+      edn0
+      edn1
+      hmac
+      rv_plic
+      otbn
+      keymgr_dpe
+      kmac
+      sram_ctrl_main.regs
+      rv_core_ibex.cfg
+      sram_ctrl_mbox.ram
+      sram_ctrl_mbox.regs
+      soc_proxy.ctn
+      soc_proxy.core
+      dma
+      mbx0.core
+      mbx1.core
+      mbx2.core
+      mbx3.core
+      mbx4.core
+      mbx5.core
+      mbx6.core
+      mbx_jtag.core
+      mbx_pcie0.core
+      mbx_pcie1.core
+    ]
+    dma.host:
+    [
+      sram_ctrl_main.ram
+      sram_ctrl_mbox.ram
+      aes
+      hmac
+      otbn
+      keymgr_dpe
+      kmac
+      soc_proxy.ctn
+      peri
+    ]
+    mbx0.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx1.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx2.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx3.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx4.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx5.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx6.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx_jtag.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx_pcie0.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+    mbx_pcie1.sram:
+    [
+      sram_ctrl_mbox.ram
+    ]
+  }
+  nodes:
+  [
+    {
+      name: rv_core_ibex.corei
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rv_core_ibex.cored
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: rv_dm.sba
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      pipeline: true
+    }
+    {
+      name: rv_dm.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rv_dm
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21200000
+          }
+          size_byte: 0x10
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rv_dm.mem
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rv_dm
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl0.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x8000
+          }
+          size_byte: 0x8000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl0.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x211e0000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl1.rom
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: true
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x20000
+          }
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rom_ctrl1.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rom_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x211e1000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: peri
+      type: device
+      clock: clk_fixed_i
+      reset: rst_fixed_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      xbar: true
+      stub: false
+      pipeline: true
+      addr_space: hart
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x30000000
+          }
+          size_byte: 0x800000
+        }
+      ]
+    }
+    {
+      name: soc_proxy.core
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: soc_proxy
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22030000
+          }
+          size_byte: 0x10
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: soc_proxy.ctn
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipefile: false
+      inst_type: soc_proxy
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40000000
+          }
+          size_byte: 0x40000000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+      req_fifo_pass: true
+    }
+    {
+      name: hmac
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: hmac
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21110000
+          }
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: kmac
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: kmac
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21120000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: aes
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: aes
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21100000
+          }
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: csrng
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: csrng
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21150000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: edn0
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21170000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: edn1
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: edn
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21180000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rv_plic
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      inst_type: rv_plic
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x28000000
+          }
+          size_byte: 0x8000000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: otbn
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: otbn
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21130000
+          }
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: keymgr_dpe
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: keymgr_dpe
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x21140000
+          }
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: rv_core_ibex.cfg
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: rv_core_ibex
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x211f0000
+          }
+          size_byte: 0x100
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: sram_ctrl_main.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x211c0000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: sram_ctrl_main.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x10000000
+          }
+          size_byte: 0x10000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_mbox.regs
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x211d0000
+          }
+          size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: sram_ctrl_mbox.ram
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: sram_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x11000000
+          }
+          size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: dma
+      type: device
+      clock: clk_main_i
+      reset: rst_main_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: dma
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22010000
+          }
+          size_byte: 0x200
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: dma.host
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx0.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx0.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx1.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000100
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx1.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx2.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000200
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx2.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx3.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000300
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx3.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx4.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000400
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx4.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx5.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000500
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx5.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx6.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000600
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx6.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx_jtag.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22000800
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx_jtag.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx_pcie0.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22040000
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx_pcie0.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+    {
+      name: mbx_pcie1.core
+      type: device
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      inst_type: mbx
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x22040100
+          }
+          size_byte: 0x80
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: mbx_pcie1.sram
+      type: host
+      addr_space: hart
+      clock: clk_main_i
+      reset: rst_main_ni
+      pipeline: false
+      xbar: false
+      stub: false
+      inst_type: ""
+      req_fifo_pass: true
+      rsp_fifo_pass: true
+    }
+  ]
+  addr_spaces:
+  [
+    hart
+  ]
+  clock: clk_main_i
+  type: xbar
+}
