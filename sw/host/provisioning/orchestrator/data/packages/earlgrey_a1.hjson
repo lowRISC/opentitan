@@ -1,0 +1,16 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# Earglrey A1 package identifiers.
+#
+# Mapping of package names to package IDs. These will be encoded in the device
+# ID if required by the SKU. All IDs are encoded as a hex string.
+
+{
+  npcr10: "0x0",
+  npcr11: "0x1",
+  npcr12: "0x2",
+  npcr13: "0x3",
+  npcr1e: "0xE",
+}
