@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// interface for input data from LC, OTP and flash
+// interface for input data from LC or OTP
 interface keymgr_dpe_if(input clk, input rst_n);
 
   import uvm_pkg::*;
@@ -20,7 +20,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
   lc_ctrl_pkg::lc_keymgr_div_t                        keymgr_dpe_div;
   otp_ctrl_pkg::otp_device_id_t                       otp_device_id;
   otp_ctrl_pkg::otp_keymgr_key_t                      otp_key;
-  flash_ctrl_pkg::keymgr_flash_t                      flash;
   rom_ctrl_pkg::keymgr_data_t[NumRomDigestInputs-1:0] rom_digests;
 
   keymgr_pkg::hw_key_req_t kmac_key;
@@ -104,8 +103,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // current value of the keyslots in the dut.
   keymgr_dpe_pkg::keymgr_dpe_slot_t [keymgr_dpe_pkg::DpeNumSlots-1:0] internal_key_slots;
 
-  parameter bit UseOtpSeedsInsteadOfFlash = 1;
-
   task automatic init(bit rand_otp_key, bit invalid_otp_key);
     // Keymgr_dpe only latches OTP key once, so this scb does not support change OTP key on the
     // fly. Will write a direct sequence to cover otp key change on the fly.
@@ -117,7 +114,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
     keymgr_dpe_div = 64'h5CFBD765CE33F34E;
     otp_device_id = 'hF0F0;
     otp_key = otp_ctrl_pkg::OTP_KEYMGR_KEY_DEFAULT;
-    flash   = flash_ctrl_pkg::KEYMGR_FLASH_DEFAULT;
     for (int i = 0; i < NumRomDigestInputs; ++i) begin
       rom_digests[i].data = 256'hA20A046CF42E6EAC560A3F82BFA76285B5C1D4AEA7C915E49A32D1C89BE0F507;
       rom_digests[i].valid = '1;
@@ -172,21 +168,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(otp_device_id, !(otp_device_id inside {0, '1});, , msg_id)
     if (is_invalid) begin
       otp_device_id = ($urandom & 1) ? '0 : '1;
-    end
-  endfunction
-
-  // Set the flash signal to a random value. This signal will contain up to num_bad_seeds seeds
-  // which are constained to be all-zero or all-one.
-  function automatic void set_random_flash(int num_bad_seeds);
-    // Start by picking non-constant seeds
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(flash,
-                                       foreach (flash.seeds[i]) {
-                                         !(flash.seeds[i] inside {0, '1});
-                                       }, , msg_id)
-    // If num_bad_seeds is positive, set some randomly chosen seeds to be '0 or '1
-    repeat (num_bad_seeds) begin
-      int i = $urandom % flash_ctrl_pkg::NumSeeds;
-      flash.seeds[i]  = ($urandom & 1) ? '0 : '1;
     end
   endfunction
 

@@ -13,9 +13,6 @@ module keymgr_dpe
   import keymgr_dpe_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  // In case this is set to true, the keymgr will ignore the creator / owner seeds
-  // on the flash_i port and use the seeds provided in otp_key_i instead.
-  parameter bit UseOtpSeedsInsteadOfFlash      = 1'b0,
   parameter bit KmacEnMasking                  = 1'b1,
   parameter lfsr_seed_t RndCnstLfsrSeed        = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm        = RndCnstLfsrPermDefault,
@@ -59,7 +56,6 @@ module keymgr_dpe
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input otp_ctrl_pkg::otp_keymgr_key_t otp_key_i,
   input otp_ctrl_pkg::otp_device_id_t otp_device_id_i,
-  input flash_ctrl_pkg::keymgr_flash_t flash_i,
 
   // connection to edn
   output edn_pkg::edn_req_t edn_o,
@@ -451,29 +447,14 @@ module keymgr_dpe
   // Advance to creator_root_key
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
-  logic unused_creator_seed;
-  if (UseOtpSeedsInsteadOfFlash) begin : gen_otp_creator_seed
-    assign unused_creator_seed = ^{flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx],
-                                   otp_key_i.creator_seed_valid};
-    assign creator_seed = otp_key_i.creator_seed;
-  end else begin : gen_flash_creator_seed
-    assign unused_creator_seed = ^{otp_key_i.creator_seed,
-                                   otp_key_i.creator_seed_valid};
-    assign creator_seed = flash_i.seeds[flash_ctrl_pkg::CreatorSeedIdx];
-  end
+  assign unused_creator_seed = ^{otp_key_i.creator_seed_valid};
+  assign creator_seed = otp_key_i.creator_seed;
 
   // Advance to owner_intermediate_key
   logic [KeyWidth-1:0] owner_seed;
   logic unused_owner_seed;
-  if (UseOtpSeedsInsteadOfFlash) begin : gen_otp_owner_seed
-    assign unused_owner_seed = ^{flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx],
-                                 otp_key_i.owner_seed_valid};
-    assign owner_seed = otp_key_i.owner_seed;
-  end else begin : gen_flash_owner_seed
-    assign unused_owner_seed = ^{otp_key_i.owner_seed,
-                                 otp_key_i.owner_seed_valid};
-    assign owner_seed = flash_i.seeds[flash_ctrl_pkg::OwnerSeedIdx];
-  end
+  assign unused_owner_seed = ^{otp_key_i.owner_seed_valid};
+  assign owner_seed = otp_key_i.owner_seed;
 
   always_comb begin : gen_adv_matrix_all
     adv_matrix = {(2**DpeNumBootStagesWidth){AdvDataWidth'(sw_binding)}};

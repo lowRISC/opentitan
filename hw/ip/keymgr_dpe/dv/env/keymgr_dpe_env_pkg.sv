@@ -45,9 +45,7 @@ package keymgr_dpe_env_pkg;
     LcStateInvalid,
     OtpDevIdInvalid,
     RomDigestInvalid,
-    RomDigestValidLow,
-    FlashCreatorSeedInvalid,
-    FlashOwnerSeedInvalid
+    RomDigestValidLow
   } keymgr_dpe_invalid_hw_input_type_e;
 
   typedef enum bit[1:0] {
