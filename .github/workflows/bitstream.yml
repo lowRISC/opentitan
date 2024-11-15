@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: CI
+name: FPGA bitstream build
 on:
   workflow_call:
     inputs:
