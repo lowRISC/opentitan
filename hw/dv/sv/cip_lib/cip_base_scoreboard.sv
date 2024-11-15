@@ -449,7 +449,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     cip_tl_seq_item cip_item;
     tl_intg_err_e tl_intg_err_type;
-    uint num_cmd_err_bits, num_data_err_bits;
+    logic cmd_intg_err, data_intg_err;
+
     bit write_w_instr_type_err, instr_type_err, csr_read_err;
 
     unmapped_err = !is_tl_access_mapped_addr(item, ral_name);
@@ -483,8 +484,9 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     ecc_err = ecc_error_addr.exists({item.a_addr[AddrWidth-1:3],3'b0});
 
     `downcast(cip_item, item)
-    cip_item.get_a_chan_err_info(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+    cip_item.get_a_chan_err_info(tl_intg_err_type, cmd_intg_err, data_intg_err,
                                  write_w_instr_type_err, instr_type_err);
+
     exp_d_error |= byte_wr_err | bus_intg_err | csr_size_err | tl_item_err |
                    write_w_instr_type_err | instr_type_err |
                    ecc_err | csr_read_err;
@@ -503,7 +505,7 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
       // sample covergroup
       if (cfg.en_tl_intg_err_cov) begin
-        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, num_cmd_err_bits, num_data_err_bits,
+        tl_intg_err_cgs_wrap[ral_name].sample(tl_intg_err_type, cmd_intg_err, data_intg_err,
                                               is_mem_addr(item, ral_name));
 
         if (tl_intg_err_mem_subword_cgs_wrap.exists(ral_name)) begin

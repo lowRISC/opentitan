@@ -135,20 +135,15 @@ endclass
 class tl_intg_err_cg_wrap;
   // This covergroup sampled all kinds of TL integrity error and numbers of error bits.
   covergroup tl_intg_err_cg (string name) with function sample(tl_intg_err_e tl_intg_err_type,
-                                                                   uint          num_cmd_err_bits,
-                                                                   uint          num_data_err_bits,
-                                                                   bit           is_mem);
+                                                               logic         cmd_intg_err,
+                                                               logic         data_intg_err,
+                                                               bit           is_mem);
     option.per_instance = 1;
     option.name = name;
 
     cp_tl_intg_err_type: coverpoint tl_intg_err_type;
-
-    cp_num_cmd_err_bits: coverpoint num_cmd_err_bits {
-      bins values[] = {[0:MAX_TL_ECC_ERRORS]};
-    }
-    cp_num_data_err_bits: coverpoint num_data_err_bits {
-      bins values[] = {[0:MAX_TL_ECC_ERRORS]};
-    }
+    cp_cmd_intg_err: coverpoint cmd_intg_err;
+    cp_data_intg_err: coverpoint data_intg_err;
     cp_is_mem: coverpoint is_mem;
   endgroup
 
