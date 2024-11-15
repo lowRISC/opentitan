@@ -245,6 +245,10 @@ module pinmux
     assign hw2reg.mio_pad_attr[k].invert.d         = mio_attr[k].invert;
   end
 
+  // Local versions of the input signals
+  logic [NMioPads-1:0] mio_out, mio_oe, mio_in;
+  logic [NDioPads-1:0] dio_out, dio_oe, dio_in;
+
   // Just pass through these signals.
   assign { dio_out_o,  mio_out_o  }  = { dio_out,  mio_out  };
   assign { dio_oe_o ,  mio_oe_o   }  = { dio_oe,   mio_oe   };
