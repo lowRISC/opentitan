@@ -42,11 +42,9 @@ module tb;
   assign keymgr_dpe_if.lfsr_en   = dut.lfsr_en;
 
   // dut
-  keymgr_dpe #(
-    // TODO(opentitan-integrated/issues/332):
-    // need to model the OTP seed input
-    .UseOtpSeedsInsteadOfFlash(keymgr_dpe_if.UseOtpSeedsInsteadOfFlash)
-  ) dut (
+  // TODO(opentitan-integrated/issues/332):
+  // need to model the OTP seed input
+  keymgr_dpe dut (
     .clk_i                (clk           ),
     .rst_ni               (rst_n         ),
     .rst_shadowed_ni      (rst_shadowed_n),
@@ -65,7 +63,6 @@ module tb;
     .rom_digest_i         (keymgr_dpe_if.rom_digests),
     .edn_o                (edn_if[0].req),
     .edn_i                ({edn_if[0].ack, edn_if[0].d_data}),
-    .flash_i              (keymgr_dpe_if.flash),
     .intr_op_done_o       (interrupts[0]),
     .alert_rx_i           (alert_rx   ),
     .alert_tx_o           (alert_tx   ),

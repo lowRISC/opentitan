@@ -89,12 +89,6 @@
       act:     "rcv",
       package: "otp_ctrl_pkg",
     },
-    { struct:  "keymgr_flash",
-      type:    "uni",
-      name:    "flash",
-      act:     "rcv",
-      package: "flash_ctrl_pkg",
-    },
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_keymgr_en",
@@ -124,18 +118,6 @@
   ],
 
   param_list: [
-    { name:      "UseOtpSeedsInsteadOfFlash",
-      desc:      '''
-                 Flag indicating whether to use the creator / owner seeds provided
-                 via otp_key_i instead of the the ones provided in flash_i. This option
-                 can be used in integrations where that do not have an embedded flash
-                 controller (in which case flash_i should just be tied off).
-                 ''',
-      type:      "bit",
-      default:   "0",
-      local:     "false",
-      expose:    "true",
-    }
     { name:      "KmacEnMasking",
       desc:      "Flag indicating with kmac masking is enabled",
       type:      "bit",
