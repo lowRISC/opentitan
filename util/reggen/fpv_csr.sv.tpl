@@ -53,6 +53,7 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   hro_idx_width = num_hro_regs.bit_length()
 %>\
 
+  import prim_mubi_pkg::*;
 `ifdef UVM
   import uvm_pkg::*;
 `endif
@@ -169,6 +170,31 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   % endfor
   assign regwen[${num_hro_regs}] = 1;
 
+  // Types of REGWEN supported.
+  typedef enum {
+    NotRegwen,
+    MuBi4Regwen,
+    MuBi8Regwen,
+    MuBi12Regwen,
+    MuBi16Regwen
+  } regwen_type_t;
+
+  // The REGWEN type of each register, if any.
+  regwen_type_t regwen_types[${num_hro_regs}];
+  % for hro_reg in hro_regs_list:
+    % if hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 4:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi4Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 8:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi8Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 12:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi12Regwen;
+    % elif hro_reg.fields[0].mubi and hro_reg.fields[0].bits.width() == 16:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = MuBi16Regwen;
+    % else:
+      assign regwen_types[${hro_map.get(hro_reg.offset)[0]}] = NotRegwen;
+    % endif
+  % endfor
+
   typedef enum bit {
     FpvDefault,
     FpvRw0c
@@ -214,7 +240,24 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
           if (!d2h.d_error && regwen[hro_idx]) begin
             if (access_policy[hro_idx] == FpvRw0c) begin
               // Assume FpvWr0c policy only has one field that is wr0c.
-              exp_vals[hro_idx] <= exp_vals[hro_idx][0] == 0 ? 0 : pend_trans[d_source_idx].wr_data;
+              unique case (regwen_types[hro_idx])
+                MuBi4Regwen:
+                  exp_vals[hro_idx] <= mubi4_and_hi(mubi4_t'(exp_vals[hro_idx][3:0]),
+                                                    mubi4_t'(pend_trans[d2h.d_source].wr_data[3:0]));
+                MuBi8Regwen:
+                  exp_vals[hro_idx] <= mubi8_and_hi(mubi8_t'(exp_vals[hro_idx][7:0]),
+                                                    mubi8_t'(pend_trans[d2h.d_source].wr_data[7:0]));
+                MuBi12Regwen:
+                  exp_vals[hro_idx] <= mubi12_and_hi(
+                                          mubi12_t'(exp_vals[hro_idx][11:0]),
+                                          mubi12_t'(pend_trans[d2h.d_source].wr_data[11:0]));
+                MuBi16Regwen:
+                  exp_vals[hro_idx] <= mubi16_and_hi(
+                                          mubi16_t'(exp_vals[hro_idx][15:0]),
+                                          mubi16_t'(pend_trans[d2h.d_source].wr_data[15:0]));
+                default:
+                  exp_vals[hro_idx] <= exp_vals[hro_idx][0] ? pend_trans[d2h.d_source].wr_data : 0;
+              endcase
             end else begin
               exp_vals[hro_idx] <= pend_trans[d_source_idx].wr_data;
             end
