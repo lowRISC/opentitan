@@ -378,6 +378,19 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
     for sku, config in EARLGREY_SKUS.items()
 ]
 
+filegroup(
+    name = "ft_personalize_all",
+    testonly = True,
+    srcs = [
+               ":ft_personalize_{}".format(sku)
+               for sku in EARLGREY_SKUS.keys()
+           ] +
+           [
+               ":ft_fw_bundle_{}".format(sku)
+               for sku in EARLGREY_SKUS.keys()
+           ],
+)
+
 [
     opentitan_test(
         name = "ft_provision_{}".format(sku),
