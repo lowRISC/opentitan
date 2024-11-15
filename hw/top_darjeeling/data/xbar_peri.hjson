@@ -1,0 +1,150 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{ name: "peri",
+  type: "xbar",
+  clock_primary: "clk_peri_i", // Main clock, used in sockets
+  other_clock_list: [] // Secondary clocks used by specific nodes
+  reset_primary: "rst_peri_ni", // Main reset, used in sockets
+  other_reset_list: [] // Secondary resets used by specific nodes
+
+  nodes: [
+    { name:  "main",
+      type:  "host",
+      addr_space: "hart",
+      clock: "clk_peri_i",
+      reset: "rst_peri_ni",
+      xbar:  "true",
+      pipeline: false
+
+    },
+    { name:      "uart0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "i2c0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "gpio",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "spi_host0",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "spi_device",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "rv_timer",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "pwrmgr_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "rstmgr_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "clkmgr_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "pinmux_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "otp_ctrl.core",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "otp_ctrl.prim",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "lc_ctrl.regs",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "sensor_ctrl",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false,
+    },
+    { name:      "alert_handler",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false,
+    },
+    { name:      "sram_ctrl_ret_aon.regs",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "sram_ctrl_ret_aon.ram",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    },
+    { name:      "aon_timer_aon",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false,
+    },
+    { name:      "ast",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false,
+    },
+  ],
+  connections: {
+    // Note that only the following masters have access to the peri
+    // crossbar: rv_dm.sba, rv_core_ibex.cored, TODO:dma_ctrl
+    // The ibex instruction fetch port does NOT have access to these
+    // peripherals.
+    main:  [
+      "uart0", "i2c0"
+      "gpio", "spi_host0", "spi_device", "rv_timer",
+      "pwrmgr_aon", "rstmgr_aon", "clkmgr_aon", "pinmux_aon",
+      "otp_ctrl.core", "otp_ctrl.prim", "lc_ctrl.regs", "sensor_ctrl",
+      "alert_handler", "ast", "sram_ctrl_ret_aon.ram", "sram_ctrl_ret_aon.regs",
+      "aon_timer_aon"
+    ],
+  },
+}
