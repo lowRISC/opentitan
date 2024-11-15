@@ -1,0 +1,138 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_darjeeling:0.1"
+description: "Technology-independent Darjeeling toplevel"
+filesets:
+  files_rtl_generic:
+    depend:
+      # Place the autogen packages first to avoid conflicts
+      - lowrisc:opentitan:top_darjeeling_alert_handler_reg
+      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
+      - lowrisc:ip:uart:0.1
+      - lowrisc:ip:gpio
+      - lowrisc:ip:rv_core_ibex
+      - lowrisc:ip:rv_dm
+      - lowrisc:ip:rv_timer
+      - lowrisc:ip:tlul
+      - lowrisc:ip:spi_device
+      - lowrisc:ip:spi_host
+      - lowrisc:ip:i2c
+      - lowrisc:ip:pattgen
+      - lowrisc:ip:aes
+      - lowrisc:ip:entropy_src_pkg
+      - lowrisc:ip:csrng
+      - lowrisc:ip:edn
+      - lowrisc:ip:dma
+      - lowrisc:ip:hmac
+      - lowrisc:ip:kmac
+      - lowrisc:ip:otbn
+      - lowrisc:prim:ram_1p_scr
+      - lowrisc:ip:sram_ctrl
+      - lowrisc:ip:keymgr_dpe
+      - lowrisc:constants:top_pkg
+      - lowrisc:constants:jtag_id_pkg
+      - lowrisc:constants:ibex_pmp_reset_pkg
+      - lowrisc:ip:otp_ctrl
+      - lowrisc:ip:lc_ctrl
+      - lowrisc:ip:mbx
+      - lowrisc:top_darjeeling:xbar_dbg
+      - lowrisc:top_darjeeling:xbar_main
+      - lowrisc:top_darjeeling:xbar_mbx
+      - lowrisc:top_darjeeling:xbar_peri
+      - lowrisc:opentitan:top_darjeeling_alert_handler
+      - lowrisc:opentitan:top_darjeeling_clkmgr
+      - lowrisc:opentitan:top_darjeeling_rstmgr
+      - lowrisc:opentitan:top_darjeeling_rv_plic
+      - lowrisc:opentitan:top_darjeeling_pinmux
+      - lowrisc:opentitan:top_darjeeling_pwrmgr
+      - lowrisc:ip:aon_timer
+      - lowrisc:ip:adc_ctrl
+      - lowrisc:ip:sysrst_ctrl
+      - lowrisc:ip:rom_ctrl
+      - lowrisc:systems:sensor_ctrl
+      - lowrisc:systems:soc_proxy
+      - lowrisc:tlul:headers
+      - lowrisc:prim:all
+      - lowrisc:prim:mubi
+      - lowrisc:systems:top_darjeeling_pkg
+      - "fileset_partner  ? (partner:systems:ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+    files:
+      - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
+      - rtl/autogen/top_darjeeling.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_darjeeling.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_darjeeling.waiver
+    file_type: waiver
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/top_darjeeling.vbw
+    file_type: veribleLintWaiver
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl_generic
+    toplevel: top_darjeeling
+
+  sim:
+    default_tool: icarus
+    filesets:
+      - files_rtl_generic
+    toplevel: top_darjeeling
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+    toplevel: top_darjeeling
+
+  formal:
+    <<: *default_target
+    toplevel: top_darjeeling
