@@ -1,0 +1,103 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: FPGA test
+on:
+  workflow_call:
+    inputs:
+      job_name:
+        required: true
+        type: string
+        description: Name of the job
+      bitstream:
+        required: true
+        type: string
+        description: Bitstream to use
+      board:
+        required: true
+        type: string
+        description: FPGA board to use
+      interface:
+        required: true
+        type: string
+        description: opentitantool interface to use
+      tag_filters:
+        required: true
+        type: string
+        description: Bazel tag filters for the tests
+      timeout:
+        default: 60
+        type: number
+        description: Timeout for the job in minutes
+      vivado_version:
+        default: "2021.1"
+        type: string
+
+jobs:
+  fpga:
+    name: FPGA test
+    runs-on: [ubuntu-22.04-fpga, "${{ inputs.board }}"]
+    timeout-minutes: ${{ inputs.timeout }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Download bitstream
+        uses: ./.github/actions/download-partial-build-bin
+        with:
+          job-patterns: ${{ inputs.bitstream }}
+
+      # We run the update command twice to workaround an issue with udev on the container,
+      # where rusb cannot dynamically update its device list in CI (udev is not completely
+      # functional). If the device is in normal mode, the first thing that opentitantool
+      # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
+      # never detected. But if we run the tool another time, the device list is queried again
+      # and opentitantool can finish the update. The device will now reboot in normal mode
+      # and work for the hyperdebug job.
+      - name: Update hyperdebug firmware
+        if: inputs.interface == 'hyper310'
+        run: |
+          ./bazelisk.sh run \
+              //sw/host/opentitantool:opentitantool -- \
+              --interface=hyperdebug_dfu transport update-firmware \
+          || ./bazelisk.sh run \
+              //sw/host/opentitantool:opentitantool -- \
+              --interface=hyperdebug_dfu transport update-firmware || true
+
+      - name: Execute tests
+        run: |
+          . util/build_consts.sh
+          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+
+          # Execute a query to find all targets that match the test tags and store them in a file.
+          ci/scripts/run-bazel-test-query.sh \
+            target_pattern_file.txt \
+            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            //... @manufacturer_test_hooks//...
+
+          # Run FPGA tests
+          if [[ -s target_pattern_file.txt ]]; then
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt || {
+              res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
+            }
+          else
+            echo "No tests to run after filtering"
+          fi
+
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: ${{ inputs.job_name }}-test-results
+
+      - name: Upload target pattern file
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-targets
+          path: target_pattern_file.txt
