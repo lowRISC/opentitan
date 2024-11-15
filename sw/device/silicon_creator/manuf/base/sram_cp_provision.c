@@ -140,21 +140,21 @@ static status_t print_inputs_to_console(
 
   LOG_INFO("Device ID:");
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", provisioning_data->device_id[i]);
+    LOG_INFO("0x%08x", provisioning_data->device_id[i]);
   }
   LOG_INFO("Test Unlock Token Hash:");
   for (size_t i = 0; i < ARRAYSIZE(provisioning_data->test_unlock_token_hash);
        ++i) {
     high = provisioning_data->test_unlock_token_hash[i] >> 32;
     low = provisioning_data->test_unlock_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%x%x", high, low);
+    LOG_INFO("0x%08x%08x", high, low);
   }
   LOG_INFO("Test Exit Token Hash:");
   for (size_t i = 0; i < ARRAYSIZE(provisioning_data->test_exit_token_hash);
        ++i) {
     high = provisioning_data->test_exit_token_hash[i] >> 32;
     low = provisioning_data->test_exit_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%x%x", high, low);
+    LOG_INFO("0x%08x%08x", high, low);
   }
   return OK_STATUS();
 }
