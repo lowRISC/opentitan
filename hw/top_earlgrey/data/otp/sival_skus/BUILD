@@ -12,7 +12,6 @@ load(
     "CONST",
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
-    "get_lc_items",
 )
 load(
     "//rules:otp.bzl",
@@ -20,7 +19,6 @@ load(
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
-    "otp_image",
     "otp_image_consts",
     "otp_json",
     "otp_partition",
@@ -206,79 +204,19 @@ otp_alert_digest(
     otp_img = ":otp_json_owner_sw_cfg",
 )
 
-# Create an overlay that enalbes the rv_dm late debug feature.
-otp_json(
-    name = "otp_json_hw_cfg1_enable_rv_dm_late_debug",
-    partitions = [
-        otp_partition(
-            name = "HW_CFG1",
-            items = {
-                # Use legacy behavior and disable late debug enable.
-                "DIS_RV_DM_LATE_DEBUG": False,
-            },
-            lock = True,
-        ),
-    ],
-)
-
-# The `LC_MISSION_STATES` object contains the set of mission mode life cycle
-# states. A device is considered to be mission mode configured if it has a
-# matching `MANUF_PERSONALIZED` OTP configuration.
-LC_MISSION_STATES = get_lc_items(
-    CONST.LCV.DEV,
-    CONST.LCV.PROD,
-    CONST.LCV.PROD_END,
-)
-
-# The `MANUF_INITIALIZED` OTP profile configures the SECRET0 partition to
-# enable the device to transition between test_unlock and test_locked states,
-# as well as to transition out of test_unlock into any mission mode state.
-# This profile represents the OTP state of a device that has completed CP
-# provisioning.
-MANUF_INITIALIZED = [
-    "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
-]
-
-# The `MANUF_SW_INITIALIZED` OTP profile configures the following partitions:
-# - CREATOR_SW_CFG, and
-# - OWNER_SW_CFG.
-# This profile is used to construct the `MANUF_INDIVIDUALIZED` profile below.
-MANUF_SW_INITIALIZED = [
-    ":alert_digest_cfg",
-    ":otp_json_creator_sw_cfg",
-    ":otp_json_owner_sw_cfg",
-]
-
-# The `MANUF_INDIVIDUALIZED` OTP profile configures the following partitions:
-# - CREATOR_SW_CFG,
-# - OWNER_SW_CFG,
-# - ROT_CREATOR_AUTH_CODESIGN,
-# - ROT_CREATOR_AUTH_STATE, and
-# - HW_CFG0/1.
-# It also includes the `MANUF_INITIALIZED` profile defined above. It represents
-# the OTP state of a device that has completed FT individualize provisioning.
-MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
-    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
-]
-
-# The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
-# partitions. It also includes the `MANUF_INDIVIDUALIZED` profile. It represents
-# the OTP state of a device that has completed all provisioning steps.
-MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
-    "//hw/top_earlgrey/data/otp:otp_json_secret1",
-    "//hw/top_earlgrey/data/otp:otp_json_fixed_secret2",
-]
-
 # OTP *_SW_CFG and ROT_CREATOR_AUTH_* constants used to generate an FT
 # individualization binary.
 otp_image_consts(
     name = "otp_consts_c_file",
     src = "//hw/top_earlgrey/data/otp:otp_json_baseline",
     mmap_def = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
-    # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
-    # OTP profile instead.
-    overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
+    # TODO: Replace `OTP_SIGVERIFY_FAKE_KEYS` for real keys once they are
+    # available.
+    overlays = [
+        ":alert_digest_cfg",
+        ":otp_json_creator_sw_cfg",
+        ":otp_json_owner_sw_cfg",
+    ] + OTP_SIGVERIFY_FAKE_KEYS,
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
@@ -290,84 +228,4 @@ cc_library(
         "//hw/top:otp_ctrl_c_regs",
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
     ],
-)
-
-# Initial test_unlocked state. Only applicable for test_unlocked0. All other
-# test states require the SECRET0 partition to be configured.
-# In this configuration, ROM execution is disabled by default. JTAG should be
-# used to bootstrap code into SRAM or FLASH.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-otp_image(
-    name = "otp_img_test_unlocked0_manuf_empty",
-    src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
-)
-
-# `MANUF_INITIALIZED` configuration. This configuration will be generally used
-# to lock the chips before shipping to the Final-Test test house.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-otp_image(
-    name = "otp_img_test_locked0_manuf_initialized",
-    src = "//hw/top_earlgrey/data/otp:otp_json_test_locked0",
-    overlays = MANUF_INITIALIZED,
-)
-
-# `MANUF_INITIALIZED` OTP configuration. Available on TEST_UNLOCK states 1-7.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_test_unlocked{}_manuf_initialized".format(i),
-        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
-        overlays = MANUF_INITIALIZED,
-    )
-    for i in range(1, 8)
-]
-
-# `MANUF_INDIVIDUALIZED` configuration. Available on TEST_UNLOCK states 1-7, as
-# well as DEV, PROD, PROD_END and RMA. This configuration has flash scrambling
-# disabled. See the personalized OTP configuration for targets requiring flash
-# scrambling enabled.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_{}_manuf_individualized".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
-        overlays = MANUF_INDIVIDUALIZED,
-    )
-    for lc_state, _ in get_lc_items(
-        CONST.LCV.TEST_UNLOCKED1,
-        CONST.LCV.TEST_UNLOCKED2,
-        CONST.LCV.TEST_UNLOCKED3,
-        CONST.LCV.TEST_UNLOCKED4,
-        CONST.LCV.TEST_UNLOCKED5,
-        CONST.LCV.TEST_UNLOCKED6,
-        CONST.LCV.TEST_UNLOCKED7,
-        CONST.LCV.DEV,
-        CONST.LCV.PROD,
-        CONST.LCV.PROD_END,
-    )
-]
-
-# `MANUF_PERSONALIZED` configuration. Available on `LC_MISSION_STATES` life
-# cycle states.
-# See sw/device/tests/doc/sival/devguide.md for more details.
-[
-    otp_image(
-        name = "otp_img_{}_manuf_personalized".format(lc_state),
-        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
-        overlays = MANUF_PERSONALIZED,
-    )
-    for lc_state, _ in LC_MISSION_STATES
-]
-
-otp_image(
-    name = "otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
-    src = "//hw/top_earlgrey/data/otp:otp_json_dev",
-    overlays = MANUF_PERSONALIZED + [":otp_json_hw_cfg1_enable_rv_dm_late_debug"],
-)
-
-# `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
-otp_image(
-    name = "otp_img_rma_manuf_personalized",
-    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
-    overlays = MANUF_PERSONALIZED,
 )
