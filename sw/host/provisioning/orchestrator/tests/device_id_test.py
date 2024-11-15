@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unittests for device_id.py module."""
 
-import binascii
 import unittest
 
 import hjson
@@ -105,10 +104,8 @@ class TestDeviceId(unittest.TestCase):
                 format_hex(actual_field, width=2),
                 format_hex(expected_field, width=2)))
 
-    def test_crc32_field(self):
-        expected_field = binascii.crc32(
-            ((self.din.to_int() << 32) | 0x00024001).to_bytes(
-                length=12, byteorder="little"))
+    def test_uid_reserved_field(self):
+        expected_field = 0
         actual_field = (self.device_id.to_int() >> 96) & 0xffffffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
