@@ -10,12 +10,6 @@ rust_binary(
     name = "cp",
     testonly = True,
     srcs = ["src/main.rs"],
-    data = [
-        "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
-        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
-        "//third_party/openocd:jtag_olimex_cfg",
-        "//third_party/openocd:openocd_bin",
-    ],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/cp_lib",
