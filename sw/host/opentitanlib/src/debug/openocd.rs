@@ -48,6 +48,7 @@ impl OpenOcd {
         stderr: &mut impl BufRead,
         regex: &Regex,
         timeout: Duration,
+        log_stdio: bool,
         s: &'a mut String,
     ) -> Result<regex::Captures<'a>> {
         let start = Instant::now();
@@ -58,7 +59,9 @@ impl OpenOcd {
             if n == 0 {
                 bail!("OpenOCD stopped before being ready?");
             }
-            log::info!(target: concat!(module_path!(), "::stderr"), "{}", s);
+            if log_stdio {
+                log::info!(target: concat!(module_path!(), "::stderr"), "{}", s);
+            }
             if regex.is_match(s) {
                 // This is not a `if let Some(capture) = regex.captures(s) {}` to to Rust
                 // borrow checker limitations. Can be modified if Polonius lands.
@@ -73,7 +76,7 @@ impl OpenOcd {
     }
 
     /// Spawn an OpenOCD server with given path.
-    pub fn spawn(path: &Path) -> Result<Self> {
+    pub fn spawn(path: &Path, log_stdio: bool) -> Result<Self> {
         let mut cmd = Command::new(path);
 
         // Let OpenOCD choose which port to bind to, in order to never unnecesarily run into
@@ -110,7 +113,9 @@ impl OpenOcd {
         let mut stderr = BufReader::new(child.stderr.take().unwrap());
         // Wait until we see 'Info : Listening on port XXX for tcl connections' before knowing
         // which port to connect to.
-        log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
+        if log_stdio {
+            log::info!("Waiting for OpenOCD to be ready to accept a TCL connection...");
+        }
         static READY_REGEX: Lazy<Regex> = Lazy::new(|| {
             Regex::new("Info : Listening on port ([0-9]+) for tcl connections").unwrap()
         });
@@ -119,25 +124,28 @@ impl OpenOcd {
             &mut stderr,
             &READY_REGEX,
             Self::OPENOCD_TCL_READY_TMO,
+            log_stdio,
             &mut buf,
         )
         .context("OpenOCD was not ready in time to accept a connection")?;
         let openocd_port: u16 = regex_captures.get(1).unwrap().as_str().parse()?;
         // Print stdout and stderr with log
-        std::thread::spawn(move || {
-            printer::accumulate(
-                stdout,
-                concat!(module_path!(), "::stdout"),
-                Default::default(),
-            )
-        });
-        std::thread::spawn(move || {
-            printer::accumulate(
-                stderr,
-                concat!(module_path!(), "::stderr"),
-                Default::default(),
-            )
-        });
+        if log_stdio {
+            std::thread::spawn(move || {
+                printer::accumulate(
+                    stdout,
+                    concat!(module_path!(), "::stdout"),
+                    Default::default(),
+                )
+            });
+            std::thread::spawn(move || {
+                printer::accumulate(
+                    stderr,
+                    concat!(module_path!(), "::stderr"),
+                    Default::default(),
+                )
+            });
+        }
 
         let kill_guard = scopeguard::guard(child, |mut child| {
             let _ = child.kill();
@@ -248,7 +256,7 @@ impl_serializable_error!(OpenOcdError);
 impl OpenOcdJtagChain {
     /// Start OpenOCD with given JTAG options but do not connect any TAP.
     pub fn new(adapter_command: &str, opts: &JtagParams) -> Result<OpenOcdJtagChain> {
-        let mut openocd = OpenOcd::spawn(&opts.openocd)?;
+        let mut openocd = OpenOcd::spawn(&opts.openocd, opts.log_stdio)?;
 
         openocd.execute(adapter_command)?;
         openocd.execute(&format!("adapter speed {}", opts.adapter_speed_khz))?;
