@@ -409,6 +409,7 @@
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
+  % if enable_strap_sampling:
     { name: "LC_DFT_EN.INTERSIG.MUBI",
       desc: "The life cycle DFT enable signal is multibit encoded."
     }
@@ -435,6 +436,7 @@
                the DFT TAP can only be selected when LC_DFT_EN is asserted.
             '''
     }
+  % endif
   ]
 
   registers: [
