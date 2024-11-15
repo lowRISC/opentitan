@@ -152,6 +152,7 @@ module aes_ghash
   logic                 first_block_q;
   logic                 final_add_d;
   logic                 final_add_q;
+  logic                 advance;
 
   //////////////////////////////////
   // Input Data Format Conversion //
@@ -429,6 +430,7 @@ module aes_ghash
     aes_ghash_ns  = aes_ghash_cs;
     first_block_d = first_block_q;
     final_add_d   = final_add_q;
+    advance       = 1'b0;
 
     // Alert
     alert_o = 1'b0;
@@ -506,11 +508,10 @@ module aes_ghash
           end else if (gcm_phase_i == GCM_SAVE) begin
             // Get ready to output the current GHASH state.
 
-            // For the masked implementation, first add Share 1 and then unmask the GHASH state.
-            ghash_in_sel      = SecMasking ? GHASH_IN_S : GHASH_IN_DATA_OUT;
-            ghash_state_we[0] = SecMasking ? SP2V_HIGH  : SP2V_LOW;
-            final_add_d       = 1'b1;
-            aes_ghash_ns      = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
+            // For the masked implementation, first unmask the GHASH state and then add Share 1 of
+            // S.
+            final_add_d  = 1'b1;
+            aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
 
           end else begin
             // Handshake without a valid command. We should never get here. If we do (e.g. via a
@@ -540,9 +541,12 @@ module aes_ghash
         ghash_add_in_sel[0] = ADD_IN_CORR_B;
         ghash_state_sel     = GHASH_STATE_ADD;
         ghash_state_we[0]   = SP2V_HIGH;
-        final_add_d         = 1'b0;
-        aes_ghash_ns        = ((gcm_phase_i == GCM_SAVE) ||
-                               (gcm_phase_i == GCM_TAG)) && final_add_q ? GHASH_OUT : GHASH_MULT;
+
+        // We need to add Share 1 of S next, in case we're saving the context or producing the
+        // final authentication tag.
+        final_add_d  = 1'b0;
+        aes_ghash_ns = ((gcm_phase_i == GCM_SAVE) ||
+                        (gcm_phase_i == GCM_TAG)) && final_add_q ? GHASH_ADD_S : GHASH_MULT;
       end
 
       GHASH_MULT: begin
@@ -574,10 +578,11 @@ module aes_ghash
             ghash_state_we[0] = SP2V_HIGH;
             ghash_state_we[1] = SP2V_HIGH;
             first_block_d     = 1'b0;
-            aes_ghash_ns      = (gcm_phase_i == GCM_TAG) ? GHASH_ADD_S : GHASH_IDLE;
+            advance           = 1'b1;
           end
         end else begin
           // We don't have to do another multiplication.
+          advance = 1'b1;
 
           // Note: Share 0 of the state now depends on Share 0 of the hash subkey. Thus, we don't
           // forward it to the second multiplier as this may lead to undesirable SCA leakage in the
@@ -587,7 +592,16 @@ module aes_ghash
           // Add the previously computed correction terms.
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
-          aes_ghash_ns      = (gcm_phase_i == GCM_TAG) ? GHASH_ADD_S : GHASH_IDLE;
+        end
+
+        // In case we're producing the final authentication tag, we have to unmask the state next.
+        if (advance) begin
+          if (gcm_phase_i == GCM_TAG) begin
+            final_add_d  = 1'b1;
+            aes_ghash_ns = GHASH_MASKED_ADD_STATE_SHARES;
+          end else begin
+            aes_ghash_ns = GHASH_IDLE;
+          end
         end
       end
 
@@ -595,11 +609,7 @@ module aes_ghash
         // Add S to the GHASH state and then get ready to output the final tag.
         ghash_in_sel      = GHASH_IN_S;
         ghash_state_we[0] = SP2V_HIGH;
-
-        // In case of the masked implementation, we have to unmask the GHASH state and can then
-        // output the final tag.
-        final_add_d  = 1'b1;
-        aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
+        aes_ghash_ns      = GHASH_OUT;
       end
 
       GHASH_OUT: begin
@@ -658,6 +668,9 @@ module aes_ghash
     logic unused_final_add_d;
     assign final_add_q = 1'b0;
     assign unused_final_add_d = final_add_d;
+
+    logic unused_advance;
+    assign unused_advance = advance;
   end
 
   /////////////
