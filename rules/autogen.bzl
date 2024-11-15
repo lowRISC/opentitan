@@ -92,23 +92,25 @@ def _opentitan_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
     top = ctx.attr.top[OpenTitanTopInfo]
     if ctx.attr.ip not in top.ip_hjson:
-        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
-    hjson = top.ip_hjson[ctx.attr.ip]
+        # If this IP is not in the top, simply generate an an empty file.
+        ctx.actions.write(header, "")
+    else:
+        hjson = top.ip_hjson[ctx.attr.ip]
 
-    arguments = [
-        "-D",
-        "-q",
-        "-o",
-        header.path,
-        hjson.path,
-    ]
+        arguments = [
+            "-D",
+            "-q",
+            "-o",
+            header.path,
+            hjson.path,
+        ]
 
-    ctx.actions.run(
-        outputs = [header],
-        inputs = [hjson],
-        arguments = arguments,
-        executable = ctx.executable._regtool,
-    )
+        ctx.actions.run(
+            outputs = [header],
+            inputs = [hjson],
+            arguments = arguments,
+            executable = ctx.executable._regtool,
+        )
 
     return [
         CcInfo(compilation_context = cc_common.create_compilation_context(
@@ -139,26 +141,28 @@ def _opentitan_ip_rust_header_impl(ctx):
     tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
     top = ctx.attr.top[OpenTitanTopInfo]
     if ctx.attr.ip not in top.ip_hjson:
-        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
-    hjson = top.ip_hjson[ctx.attr.ip]
+        # If this IP is not in the top, simply generate an an empty file.
+        ctx.actions.write(tock, "")
+    else:
+        hjson = top.ip_hjson[ctx.attr.ip]
 
-    stamp_args = []
-    stamp_files = []
-    if stamping_enabled(ctx):
-        stamp_files = [ctx.version_file]
-        stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
+        stamp_args = []
+        stamp_files = []
+        if stamping_enabled(ctx):
+            stamp_files = [ctx.version_file]
+            stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
 
-    ctx.actions.run(
-        outputs = [tock],
-        inputs = [hjson] + stamp_files,
-        arguments = [
-            "--tock",
-            "-q",
-            "-o",
-            tock.path,
-        ] + stamp_args + [hjson.path],
-        executable = ctx.executable._regtool,
-    )
+        ctx.actions.run(
+            outputs = [tock],
+            inputs = [hjson] + stamp_files,
+            arguments = [
+                "--tock",
+                "-q",
+                "-o",
+                tock.path,
+            ] + stamp_args + [hjson.path],
+            executable = ctx.executable._regtool,
+        )
 
     return [
         DefaultInfo(files = depset([tock])),
