@@ -84,7 +84,7 @@ endif
 
 .PHONY: $(ips_reg) $(tops_gen) $(tops_reg)
 
-all: $(ips_reg) $(tops_gen) $(tops_reg)
+all: $(ips_reg) $(tops_gen) $(tops_reg) cmdgen
 
 regs: $(ips_reg) $(tops_reg)
 
