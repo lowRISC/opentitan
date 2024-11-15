@@ -585,10 +585,14 @@ module aes_core
     logic ghash_clear;
     assign ghash_clear = cipher_key_clear | cipher_key_clear_busy;
 
+    // The number of cycles must be a power of two and ideally matches the minimum latency of the
+    // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
+    localparam int unsigned GhashGFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
+
     // The actual GHASH module.
     aes_ghash #(
-      .SecMasking  ( SecMasking  ),
-      .SecSBoxImpl ( SecSBoxImpl )
+      .SecMasking   ( SecMasking        ),
+      .GFMultCycles ( GhashGFMultCycles )
     ) u_aes_ghash (
       .clk_i               ( clk_i                  ),
       .rst_ni              ( rst_ni                 ),
