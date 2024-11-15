@@ -99,9 +99,9 @@ int crypto_encrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
-  // Disable padding - It is safe to do so here because we only ever encrypt
-  // multiples of 16 bytes (the block size).
-  EVP_CIPHER_CTX_set_padding(ctx, 0);
+  // Apply padding for a partial last message block.
+  int pad = (input_len % 16 != 0) ? 1 : 0;
+  EVP_CIPHER_CTX_set_padding(ctx, pad);
 
   // Feed AAD into cipher, when in GCM mode.
   if (mode == kCryptoAesGcm) {
@@ -164,9 +164,9 @@ int crypto_decrypt(unsigned char *output, const unsigned char *iv,
     return -1;
   }
 
-  // Disable padding - It is safe to do so here because we only ever decrypt
-  // multiples of 16 bytes (the block size).
-  EVP_CIPHER_CTX_set_padding(ctx, 0);
+  // Apply padding for a partial last message block.
+  int pad = (input_len % 16 != 0) ? 1 : 0;
+  EVP_CIPHER_CTX_set_padding(ctx, pad);
 
   // Feed AAD into cipher, when in GCM mode.
   if (mode == kCryptoAesGcm) {

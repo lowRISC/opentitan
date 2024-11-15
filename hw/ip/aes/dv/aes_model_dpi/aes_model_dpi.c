@@ -201,6 +201,19 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
   // Get message length.
   int data_len = svSize(data_i, 1);
 
+  int pad_len = (16 - (data_len % 16)) % 16;
+
+  // An incomplete last message block is only allowed in GCM mode.
+  if (((mode == kCryptoAesEcb) || (mode == kCryptoAesCbc) ||
+       (mode == kCryptoAesCfb) || (mode == kCryptoAesOfb) ||
+       (mode == kCryptoAesCtr)) &&
+      (pad_len != 0)) {
+    printf(
+        "ERROR: Message length must be a multiple of 16 bytes (the block "
+        "size).\n");
+    return;
+  }
+
   // Get AAD length.
   int aad_len = svSize(aad_i, 1);
 
@@ -210,19 +223,11 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
 
   // Allocate output buffers.
   unsigned char *ref_out =
-      (unsigned char *)malloc(data_len * sizeof(unsigned char));
+      (unsigned char *)malloc((data_len + pad_len) * sizeof(unsigned char));
   assert(ref_out);
   unsigned char *tag_out =
       (unsigned char *)malloc(tag_len * sizeof(unsigned char));
   assert(tag_out);
-
-  // OpenSSL/BoringSSL
-  if ((int)data_len % 16) {
-    printf(
-        "ERROR: Message length must be a multiple of 16 bytes (the block "
-        "size).\n");
-    return;
-  }
 
   if (impl == 0) {
     // The C model is currently not supported.
