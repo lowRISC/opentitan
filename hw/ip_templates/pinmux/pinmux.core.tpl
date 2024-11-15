@@ -28,7 +28,9 @@ filesets:
       - rtl/pinmux_wkup.sv
       - rtl/pinmux_jtag_buf.sv
       - rtl/pinmux_jtag_breakout.sv
+    % if enable_strap_sampling:
       - rtl/pinmux_strap_sampling.sv
+    % endif
       - rtl/pinmux.sv
     file_type: systemVerilogSource
 

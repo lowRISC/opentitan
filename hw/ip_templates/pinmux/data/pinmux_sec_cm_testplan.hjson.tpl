@@ -29,6 +29,7 @@
       stage: V2S
       tests: []
     }
+  % if enable_strap_sampling:
     {
       name: sec_cm_lc_dft_en_intersig_mubi
       desc: "Verify the countermeasure(s) LC_DFT_EN.INTERSIG.MUBI."
@@ -65,5 +66,6 @@
       stage: V2S
       tests: []
     }
+  % endif
   ]
 }
