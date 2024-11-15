@@ -2,7 +2,7 @@
 
 ## Configuration of NitroKeys
 
-> The following configuration only works in the `earlgrey_es_sival` branch.
+> The following configuration only works in the `earlgrey_1.0.0` branch.
 
 NitroKeys are a personal security token used to hold the signing keys for
 TEST and DEV devices.  NitroKeys can be used to sign tests and binaries for
@@ -13,7 +13,7 @@ NitroKey.  The profile is defined by the keyset you want to use for signing.
 The configuration should map the profile name to the specific token holding
 the private key material for the named keyset.
 
-For example, a configuration for `//sw/device/silicon_creator/rom/keys/real/rsa:keyset`
+For example, a configuration for `//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset`
 might look like the following:
 
 >Locate this file in $HOME/.config/hsmtool/profiles.json and set the file
@@ -21,8 +21,8 @@ mode to 600.
 
 ```json
 {
-  "earlgrey_a0": {
-    "token": "earlgrey_a0_000",
+  "earlgrey_a1_sival_root": {
+    "token": "earlgrey_a1_000",
     "user": "user",
     "pin": "xxxxxx"
   }
@@ -37,7 +37,7 @@ Once a profile configuration is in place, you can build binaries signed by
 the keyset by telling bazel that you want to use a token.
 
 In the example below, we instruct bazel to use a NitroKey as the token
-and to sign with the key specified by the `rsa_key` attribute of the target
+and to sign with the key specified by the `ecdsa_key` attribute of the target
 (or the target's `exec_env`).
 
 ```console
@@ -45,13 +45,13 @@ bazel build --//signing:token=//signing/tokens:nitrokey //label-of-target
 ```
 
 To sign with an alternate key, you can override the key label via the
-keyset in question.  For `silicon_creator` code, the keyset is
-`//sw/device/silicon_creator/rom/keys/real/rsa:keyset`.
+keyset in question.  For the `sival` sku, the keyset is
+`//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset`:
 
 ```console
 bazel build \
     --//signing:token=//signing/tokens:nitrokey \
-    --//sw/device/silicon_creator/rom/keys/real/rsa:keyset=earlgrey_a0_dev_0 \
+    --//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset=sv00-earlgrey-a1-root-ecdsa-test-0 \
     //label-of-target
 ```
 
@@ -68,8 +68,8 @@ mode to 600.
 
 ```json
 {
-  "earlgrey_z0_sival": {
-    "token": "ot-earlgrey-z0-sival",
+  "earlgrey_a1_sival_owner": {
+    "token": "ot-earlgrey-a1-sival",
     "user": "user"
   }
 }
@@ -80,13 +80,13 @@ example:
 
 ```json
 {
-  "earlgrey_a0": {
-    "token": "earlgrey_a0_000",
+  "earlgrey_a1_sival_root": {
+    "token": "earlgrey_a1",
     "user": "user",
     "pin": "XXXXXX"
   },
-  "earlgrey_z0_sival": {
-    "token": "ot-earlgrey-z0-sival",
+  "earlgrey_a1_sival": {
+    "token": "ot-earlgrey-a1-sival",
     "user": "user"
   }
 }

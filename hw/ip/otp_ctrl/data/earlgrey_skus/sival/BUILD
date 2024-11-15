@@ -12,13 +12,14 @@ load(
     "CONST",
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
+    "get_lc_items",
 )
 load(
     "//rules:otp.bzl",
-    "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
+    "otp_image",
     "otp_image_consts",
     "otp_json",
     "otp_partition",
@@ -28,6 +29,10 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
+
+OTP_SIGVERIFY_REAL_KEYS = [
+    "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:ecdsa_root_keys",
+]
 
 otp_json(
     name = "otp_json_creator_sw_cfg",
@@ -40,11 +45,11 @@ otp_json(
                 # and not listed directly in this configuration.
                 "CREATOR_SW_CFG_AST_INIT_EN": otp_hex(CONST.MUBI4_TRUE),
                 "CREATOR_SW_CFG_ROM_EXT_SKU": otp_hex(0x0),
-                # Enable SPX+ signature verification. See the definitions of
+                # Disable SPX+ signature verification. See the definitions of
                 # `kSigverifySpxDisabledOtp` in
                 # sw/device/silicon_creator/lib/sigverify/spx_verify.h for
                 # details on how to disable this feature.
-                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x0),
+                "CREATOR_SW_CFG_SIGVERIFY_SPX_EN": otp_hex(0x8d6c8c17),
                 # Enable flash data page scrambling and ECC.
                 "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG": "0000090606",
                 "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG": otp_hex(0x0),
@@ -208,13 +213,11 @@ otp_alert_digest(
 otp_image_consts(
     name = "otp_consts_c_file",
     src = "//hw/ip/otp_ctrl/data:otp_json_baseline",
-    # TODO: Replace `OTP_SIGVERIFY_FAKE_KEYS` for real keys once they are
-    # available.
     overlays = [
         ":alert_digest_cfg",
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
-    ] + OTP_SIGVERIFY_FAKE_KEYS,
+    ] + OTP_SIGVERIFY_REAL_KEYS,
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
@@ -227,3 +230,32 @@ cc_library(
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
     ],
 )
+
+# The `LC_MISSION_STATES` object contains the set of mission mode life cycle
+# states.
+LC_MISSION_STATES = get_lc_items(
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+)
+
+# Personalized configuration for FPGA testing. Available on `LC_MISSION_STATES`
+# life cycle states.
+# See sw/device/tests/doc/sival/devguide.md for more details.
+[
+    otp_image(
+        name = "otp_img_{}_manuf_personalized".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+            ":alert_digest_cfg",
+            ":otp_json_creator_sw_cfg",
+            ":otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
+            "//hw/ip/otp_ctrl/data:otp_json_secret1",
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
+        ] + OTP_SIGVERIFY_REAL_KEYS,
+    )
+    for lc_state, _ in LC_MISSION_STATES
+]

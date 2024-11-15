@@ -4,6 +4,6 @@
 
 ---
 tokens:
-  - key_ring: "projects/otkms-407107/locations/us-west1/keyRings/ot-earlgrey-z0-sival"
-    label: "ot-earlgrey-z0-sival"
+  - key_ring: "projects/otkms-407107/locations/us-west1/keyRings/ot-earlgrey-a1-sival"
+    label: "ot-earlgrey-a1-sival"
 log_directory: "/tmp"

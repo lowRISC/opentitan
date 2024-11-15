@@ -1,0 +1,68 @@
+{
+  config_version: 1,
+  update_mode: "Open",
+  sram_exec: "DisabledLocked",
+  min_security_version_bl0: "NoChange",
+
+  ownership_key_alg: "EcdsaP256",
+  owner_key: {
+    Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-ownership-owner-0.pub.der"
+    // Opentitantool will load this DER file and transform the key into the
+    // little-endian representation of the x/y cooridiantes.
+    //
+    // Ecdsa: {
+    //   x: "<hex string>",
+    //   y: "<hex string>"
+    // }
+  },
+  activate_key: {
+    Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-ownership-activate-0.pub.der"
+  },
+  unlock_key: {
+    Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-ownership-unlock-0.pub.der"
+  },
+  data: [
+    {
+      ApplicationKey: {
+        header: {
+          identifier: "ApplicationKey",
+          length: 0
+        },
+        key_alg: "EcdsaP256",
+        key_domain: "Prod",
+        usage_constraint: 0,
+        key: {
+          Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-app-key-prod-0.pub.der"
+        }
+      }
+    },
+    {
+      ApplicationKey: {
+        header: {
+          identifier: "ApplicationKey",
+          length: 0
+        },
+        key_alg: "EcdsaP256",
+        key_domain: "Dev",
+        usage_constraint: 0,
+        key: {
+          Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-app-key-dev-0.pub.der"
+        }
+      }
+    },
+    {
+      ApplicationKey: {
+        header: {
+          identifier: "ApplicationKey",
+          length: 0
+        },
+        key_alg: "EcdsaP256",
+        key_domain: "Test",
+        usage_constraint: 0,
+        key: {
+          Ecdsa: "sw/device/silicon_creator/rom_ext/sival/keys/sv00-app-key-test-0.pub.der"
+        }
+      }
+    },
+  ],
+}
