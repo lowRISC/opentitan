@@ -36,23 +36,28 @@ manifest(d = {
 # with the OTP word CREATOR_SW_CCFG_MANUF_STATE set to `PERSONALIZED` (as above
 # in the manifest definition).  You can manually create such a bitstream with:
 #
-# bazel build //hw/bitstream/universal:splice --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_sival
+# bazel build //hw/bitstream/universal:splice \
+#   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_ext \
+#   --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized
 [
     opentitan_binary(
-        name = "rom_ext_fake_prod_signed_slot_{}".format(slot),
-        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        name = "rom_ext_fake_slot_{}".format(slot),
+        ecdsa_key = select({
+            "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+            "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
+        }),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
-            "//hw/top_earlgrey:sim_dv_base",
-            "//hw/top_earlgrey:sim_verilator_base",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         manifest = ":manifest_sival",
-        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
+            # The sival_owner C library is included only in the "fake" ROM_EXT,
+            # as it is typically used to test FPGA flows and the FPGA doesn't
+            # retain ownership information across bitstream reloads.
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
@@ -64,7 +69,7 @@ manifest(d = {
 
 [
     opentitan_binary(
-        name = "rom_ext_real_prod_signed_slot_{}".format(slot),
+        name = "rom_ext_prod_slot_{}".format(slot),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
@@ -73,7 +78,8 @@ manifest(d = {
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         deps = [
-            ":sival_owner",
+            # The sival_owner C library is excluded from the real ROM_EXT,
+            # as chips maintain their ownership configuration in flash.
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/rom_ext",
@@ -86,11 +92,12 @@ offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
     srcs = [
-        ":rom_ext_real_prod_signed_slot_a",
-        ":rom_ext_real_prod_signed_slot_b",
+        ":rom_ext_prod_slot_a",
+        ":rom_ext_prod_slot_b",
+        ":rom_ext_prod_slot_virtual",
     ],
     ecdsa_key = {
-        "//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0_ecdsa_p256",
+        "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0",
     },
     manifest = ":manifest_sival",
     tags = ["manual"],
@@ -118,14 +125,16 @@ offline_signature_attach(
 
 cc_library(
     name = "sival_owner",
-    srcs = ["sival_owner.c"],
+    srcs = [
+        "sival_owner.c",
+        "sival_owner.h",
+    ],
     deps = [
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/ownership",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/ownership:owner_block",
-        "//sw/device/silicon_creator/rom_ext/sival/keys:includes",
     ],
     alwayslink = True,
 )
