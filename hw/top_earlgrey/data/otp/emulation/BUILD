@@ -2,10 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# SKU: SiVal Bringup. ASCII code `SV00`.
-# The SiVal bringup SKU is intended to be use in early bring-up stages of
-# Earl Grey silicon. Some of the countermeasures in the ROM are disabled to
-# de-risk bring-up and provisioning tests.
+# This file contains the build rules for the OTP data for pre-silicon and
+# post-silicon simulation and emulation targets.
 
 load(
     "//rules:const.bzl",
@@ -56,7 +54,7 @@ otp_json(
                 "CREATOR_SW_CFG_RNG_EN": otp_hex(CONST.HARDENED_FALSE),
                 "CREATOR_SW_CFG_JITTER_EN": otp_hex(CONST.MUBI4_FALSE),
                 "CREATOR_SW_CFG_RET_RAM_RESET_MASK": otp_hex(0x0),
-                "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.SIVAL),
+                "CREATOR_SW_CFG_MANUF_STATE": otp_hex(CONST.MANUF_STATE.PERSONALIZED),
                 # ROM execution is enabled if this item is set to a non-zero
                 # value.
                 "CREATOR_SW_CFG_ROM_EXEC_EN": otp_hex(0xffffffff),
