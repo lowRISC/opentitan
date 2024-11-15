@@ -89,10 +89,10 @@ module aes_ghash
   import aes_pkg::*;
   import aes_reg_pkg::*;
 #(
-  parameter bit         SecMasking   = 1,
-  parameter sbox_impl_e SecSBoxImpl  = SBoxImplDom,
+  parameter bit          SecMasking   = 1,
+  parameter int unsigned GFMultCycles = 32,
 
-  localparam int        NumShares    = SecMasking ? 2 : 1 // derived parameter
+  localparam int         NumShares    = SecMasking ? 2 : 1 // derived parameter
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -122,11 +122,6 @@ module aes_ghash
   input  logic         [3:0][3:0][7:0] cipher_state_done_i [NumShares], // Masked cipher core output
   output logic [NumRegsData-1:0][31:0] ghash_state_done_o
 );
-
-  // Parameters
-  // The number of cycles must be a power of two and ideally matches the minimum latency of the
-  // cipher core which is 56 clock cycles (masked) or 12 clock cycles (unmasked) for AES-128.
-  localparam int unsigned GFMultCycles = (SecSBoxImpl == SBoxImplDom) ? 32 : 8;
 
   // Signals
   logic [GCMDegree-1:0] s_d;
