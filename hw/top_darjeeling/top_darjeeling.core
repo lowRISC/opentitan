@@ -32,8 +32,8 @@ filesets:
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe
       - lowrisc:constants:top_pkg
-      - lowrisc:constants:jtag_id_pkg
-      - lowrisc:constants:ibex_pmp_reset_pkg
+      - lowrisc:constants:top_darjeeling_jtag_id_pkg
+      - lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:mbx
