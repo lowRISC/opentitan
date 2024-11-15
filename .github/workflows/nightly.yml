@@ -78,5 +78,5 @@ jobs:
           # Bazel produce one xml for each test. So we merge them together.
           find -L bazel-out -name "test.xml" | xargs merge-junit -o "$BAZEL_TEST_RESULTS"
 
-          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ github.ref_name }}/$(date +%Y-%m-%d-%H%M%S)_${BAZEL_TEST_RESULTS}
+          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_${BAZEL_TEST_RESULTS}
           gcloud storage cp $BAZEL_TEST_RESULTS "$BUCKET_PATH"
