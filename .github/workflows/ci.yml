@@ -235,6 +235,7 @@ jobs:
 
   chip_earlgrey_cw310_hyperdebug:
     name: Earl Grey for CW310 Hyperdebug
+    if: ${{ github.event_name != 'pull_request' }}
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     with:
@@ -243,6 +244,7 @@ jobs:
 
   chip_earlgrey_cw340:
     name: Earl Grey for CW340
+    if: ${{ github.event_name != 'pull_request' }}
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
     with:
