@@ -62,6 +62,35 @@ impl DifLcCtrlState {
         (0..6).fold(0u32, |acc, _| (acc << 5) | value)
     }
 
+    pub fn lc_state_to_str(self) -> &'static str {
+        match self {
+            DifLcCtrlState::Raw => "raw",
+            DifLcCtrlState::TestUnlocked0 => "test_unlocked0",
+            DifLcCtrlState::TestLocked0 => "test_locked0",
+            DifLcCtrlState::TestUnlocked1 => "test_unlocked1",
+            DifLcCtrlState::TestLocked1 => "test_locked1",
+            DifLcCtrlState::TestUnlocked2 => "test_unlocked2",
+            DifLcCtrlState::TestLocked2 => "test_locked2",
+            DifLcCtrlState::TestUnlocked3 => "test_unlocked3",
+            DifLcCtrlState::TestLocked3 => "test_locked3",
+            DifLcCtrlState::TestUnlocked4 => "test_unlocked4",
+            DifLcCtrlState::TestLocked4 => "test_locked4",
+            DifLcCtrlState::TestUnlocked5 => "test_unlocked5",
+            DifLcCtrlState::TestLocked5 => "test_locked5",
+            DifLcCtrlState::TestUnlocked6 => "test_unlocked6",
+            DifLcCtrlState::TestLocked6 => "test_locked6",
+            DifLcCtrlState::TestUnlocked7 => "test_unlocked7",
+            DifLcCtrlState::Dev => "dev",
+            DifLcCtrlState::Prod => "prod",
+            DifLcCtrlState::ProdEnd => "prod_end",
+            DifLcCtrlState::Rma => "rma",
+            DifLcCtrlState::Scrap => "scrap",
+            DifLcCtrlState::PostTransition => "post_transition",
+            DifLcCtrlState::Escalate => "escalate",
+            _ => "invalid",
+        }
+    }
+
     pub fn parse_lc_state_str(lc_state_str: &str) -> Result<Self> {
         match lc_state_str {
             "raw" => Ok(DifLcCtrlState::Raw),
