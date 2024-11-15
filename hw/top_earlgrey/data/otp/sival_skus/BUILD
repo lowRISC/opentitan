@@ -12,13 +12,14 @@ load(
     "CONST",
     "EARLGREY_ALERTS",
     "EARLGREY_LOC_ALERTS",
+    "get_lc_items",
 )
 load(
     "//rules:otp.bzl",
-    "OTP_SIGVERIFY_FAKE_KEYS",
     "otp_alert_classification",
     "otp_alert_digest",
     "otp_hex",
+    "otp_image",
     "otp_image_consts",
     "otp_json",
     "otp_partition",
@@ -28,6 +29,10 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
+
+OTP_SIGVERIFY_REAL_KEYS = [
+    "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:ecdsa_root_keys",
+]
 
 otp_json(
     name = "otp_json_creator_sw_cfg",
@@ -210,13 +215,11 @@ otp_image_consts(
     name = "otp_consts_c_file",
     src = "//hw/top_earlgrey/data/otp:otp_json_baseline",
     mmap_def = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
-    # TODO: Replace `OTP_SIGVERIFY_FAKE_KEYS` for real keys once they are
-    # available.
     overlays = [
         ":alert_digest_cfg",
         ":otp_json_creator_sw_cfg",
         ":otp_json_owner_sw_cfg",
-    ] + OTP_SIGVERIFY_FAKE_KEYS,
+    ] + OTP_SIGVERIFY_REAL_KEYS,
 )
 
 # Library containing {CREATOR,OWNER}_SW_CFG and
@@ -229,3 +232,32 @@ cc_library(
         "//sw/device/silicon_creator/manuf/lib:otp_img_types",
     ],
 )
+
+# The `LC_MISSION_STATES` object contains the set of mission mode life cycle
+# states.
+LC_MISSION_STATES = get_lc_items(
+    CONST.LCV.DEV,
+    CONST.LCV.PROD,
+    CONST.LCV.PROD_END,
+)
+
+# Personalized configuration for FPGA testing. Available on `LC_MISSION_STATES`
+# life cycle states.
+# See sw/device/tests/doc/sival/devguide.md for more details.
+[
+    otp_image(
+        name = "otp_img_{}_manuf_personalized".format(lc_state),
+        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        overlays = [
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+            ":alert_digest_cfg",
+            ":otp_json_creator_sw_cfg",
+            ":otp_json_owner_sw_cfg",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
+            "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
+            "//hw/ip/otp_ctrl/data:otp_json_secret1",
+            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
+        ] + OTP_SIGVERIFY_REAL_KEYS,
+    )
+    for lc_state, _ in LC_MISSION_STATES
+]

@@ -6,66 +6,17 @@ load("//rules:signing.bzl", "keyset")
 
 package(default_visibility = ["//visibility:public"])
 
-cc_library(
-    name = "includes",
-    hdrs = [
-        "appkey_dev_0.h",
-        "appkey_prod_0.h",
-        "appkey_test_0.h",
-        "earlgrey_z0_sival_1.h",
-        "ownership_activate_key.h",
-        "ownership_owner_key.h",
-        "ownership_unlock_key.h",
-    ],
-)
-
-cc_library(
-    name = "keys",
-    srcs = [
-        "sigverify_rsa_keys_sival.c",
-        "//sw/device/silicon_creator/rom_ext:sigverify_keys.h",
-    ],
-    hdrs = [
-        "earlgrey_z0_sival_1.h",
-    ],
-    deps = [
-        "//hw/top:otp_ctrl_c_regs",
-        "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib/sigverify",
-    ],
-)
-
-cc_test(
-    name = "keys_unittest",
-    srcs = [
-        "sigverify_rsa_keys_sival_unittest.cc",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_verify.c",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_verify.h",
-    ],
-    deps = [
-        ":keys",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/sigverify:mod_exp_ibex_device_library",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_key",
-        "//sw/device/silicon_creator/lib/sigverify:rsa_verify",
-        "//sw/device/silicon_creator/rom_ext:sigverify_keys",
-        "//sw/device/silicon_creator/testing:rom_test",
-        "@googletest//:gtest_main",
-    ],
-)
+# TODO(#22155, #18313): Decide on keyset vs. keyinfo for supplying signing info to the
+# offline/token signing flows.  Currently, only keyset supports tokens.
 
 keyset(
     name = "keyset",
     build_setting_default = "",
     keys = {
-        "earlgrey_z0_sival_1.der": "earlgrey_z0_sival_1",
-        "appkey_dev_0.der": "appkey_dev_0",
-        "appkey_prod_0.der": "appkey_prod_0",
-        "appkey_test_0.der": "appkey_test_0",
+        "sv00-app-key-prod-0.pub.der": "sv00-app-key-prod-0",
+        "sv00-app-key-dev-0.pub.der": "sv00-app-key-dev-0",
+        "sv00-app-key-test-0.pub.der": "sv00-app-key-test-0",
     },
-    profile = "earlgrey_z0_sival",
+    profile = "earlgrey_a1_sival_owner",
     tool = "//signing:token",
 )
