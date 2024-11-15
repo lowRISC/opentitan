@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@ot_python_deps//:requirements.bzl", "requirement")
-load("@rules_python//python:defs.bzl", "py_library")
+load("@rules_python//python:defs.bzl", "py_binary", "py_library")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -46,4 +46,42 @@ py_library(
     srcs = ["util.py"],
     imports = ["."],
     deps = [requirement("hjson")],
+)
+
+py_library(
+    name = "ot_dut",
+    srcs = ["ot_dut.py"],
+    imports = ["."],
+    deps = [
+        ":device_id",
+        ":sku_config",
+        ":util",
+    ],
+)
+
+py_binary(
+    name = "orchestrator",
+    testonly = True,
+    srcs = ["orchestrator.py"],
+    data = [
+        "//hw/bitstream/universal:splice",
+        "//sw/device/silicon_creator/manuf/base:ft_personalize_all",
+        "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
+        "//sw/device/silicon_creator/manuf/base:sram_ft_individualize_all",
+        "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
+        "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
+        "//sw/host/provisioning/cp",
+        "//sw/host/provisioning/ft:ft_all",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+        "//third_party/openocd:jtag_olimex_cfg",
+        "//third_party/openocd:openocd_bin",
+    ],
+    imports = ["."],
+    deps = [
+        ":device_id",
+        ":ot_dut",
+        ":sku_config",
+        ":util",
+        requirement("hjson"),
+    ],
 )
