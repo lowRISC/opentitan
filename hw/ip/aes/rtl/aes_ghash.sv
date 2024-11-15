@@ -578,6 +578,13 @@ module aes_ghash
           end
         end else begin
           // We don't have to do another multiplication.
+
+          // Note: Share 0 of the state now depends on Share 0 of the hash subkey. Thus, we don't
+          // forward it to the second multiplier as this may lead to undesirable SCA leakage in the
+          // multiplier.
+          gf_mult1_in_sel = MULT_IN_S1;
+
+          // Add the previously computed correction terms.
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
           aes_ghash_ns      = (gcm_phase_i == GCM_TAG) ? GHASH_ADD_S : GHASH_IDLE;
