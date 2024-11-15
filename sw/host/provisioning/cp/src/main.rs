@@ -6,6 +6,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
+use zerocopy::AsBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, ManufCpProvisioningDataInput};
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -49,8 +50,14 @@ fn main() -> Result<()> {
         wafer_auth_secret: hex_string_to_u32_arrayvec::<8>(
             opts.provisioning_data.wafer_auth_secret.as_str(),
         )?,
-        test_unlock_token_hash: hash_lc_token(opts.provisioning_data.test_unlock_token.as_bytes())?,
-        test_exit_token_hash: hash_lc_token(opts.provisioning_data.test_exit_token.as_bytes())?,
+        test_unlock_token_hash: hash_lc_token(
+            hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?
+                .as_bytes(),
+        )?,
+        test_exit_token_hash: hash_lc_token(
+            hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?
+                .as_bytes(),
+        )?,
     };
 
     // Only run CP provisioning if requested in any of the TestUnlocked states, except the last
@@ -61,6 +68,7 @@ fn main() -> Result<()> {
         &opts.init.jtag_params,
         opts.init.bootstrap.options.reset_delay,
     )?;
+    log::info!("CP starting LC state: {:?}", lc_state.lc_state_to_str());
     match lc_state {
         DifLcCtrlState::TestUnlocked0
         | DifLcCtrlState::TestUnlocked1
