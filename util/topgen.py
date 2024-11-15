@@ -369,6 +369,9 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
     n_rstreqs = len(top["reset_requests"]["peripheral"])
     log.info("Found {} reset request signals".format(n_rstreqs))
 
+    n_rom_ctrl = lib.num_rom_ctrl(top['module'])
+    assert n_rom_ctrl > 0
+
     if n_wkups < 1:
         n_wkups = 1
         log.warning(
@@ -384,7 +387,8 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "Wkups": top["wakeups"],
         "rst_reqs": top["reset_requests"],
         "NumRstReqs": n_rstreqs,
-        "wait_for_external_reset": top['power']['wait_for_external_reset']
+        "wait_for_external_reset": top['power']['wait_for_external_reset'],
+        "NumRomInputs": n_rom_ctrl
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)

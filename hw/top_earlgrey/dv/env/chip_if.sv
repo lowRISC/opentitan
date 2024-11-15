@@ -686,8 +686,8 @@ interface chip_if;
 
   wire flash_core1_host_req = 0;
 `else
-  wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i.done == prim_mubi_pkg::MuBi4True;
-  wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i.good == prim_mubi_pkg::MuBi4True;
+  wire rom_ctrl_done = `PWRMGR_HIER.rom_ctrl_i[0].done == prim_mubi_pkg::MuBi4True;
+  wire rom_ctrl_good = `PWRMGR_HIER.rom_ctrl_i[0].good == prim_mubi_pkg::MuBi4True;
 
   wire rv_core_ibex_icache_otp_key_req = `RV_CORE_IBEX_HIER.icache_otp_key_o.req;
   wire rv_core_ibex_icache_otp_key_ack = `RV_CORE_IBEX_HIER.icache_otp_key_i.ack;

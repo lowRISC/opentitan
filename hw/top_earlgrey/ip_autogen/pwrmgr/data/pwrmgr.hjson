@@ -264,7 +264,9 @@
       type:    "uni",
       name:    "rom_ctrl",
       act:     "rcv",
+      width:   "1"
       package: "rom_ctrl_pkg",
+      default: "rom_ctrl_pkg::PWRMGR_DATA_DEFAULT"
     },
 
     { struct:  "lc_tx",
@@ -363,6 +365,13 @@
 
     { name: "NumDebugRstReqs",
       desc: "Number of debug reset requets",
+      type: "int",
+      default: "1",
+      local: "true"
+    },
+
+    { name: "NumRomInputs",
+      desc: "Number of inputs from ROM_CTRL",
       type: "int",
       default: "1",
       local: "true"

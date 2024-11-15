@@ -798,44 +798,44 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
                                          bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4False;
                                          bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4True;)
       `uvm_info(`gfn, $sformatf("add_rom_rsp_noise to 0x%x", bad_bits), UVM_HIGH)
-      cfg.pwrmgr_vif.rom_ctrl = bad_bits;
+      cfg.pwrmgr_vif.rom_ctrl[0] = bad_bits;
       #(delay * 10ns);
     end
   endtask : add_rom_rsp_noise
 
   // Drive rom_ctrl at post reset stage
   virtual task init_rom_response();
-    if (cfg.pwrmgr_vif.rom_ctrl.done != prim_mubi_pkg::MuBi4True) begin
-      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+    if (cfg.pwrmgr_vif.rom_ctrl[0].done != prim_mubi_pkg::MuBi4True) begin
+      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
-      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
       `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
-      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
-      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
       cfg.slow_clk_rst_vif.wait_clks(10);
-      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
-      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
       cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(1), .other_weight(1)
       );
-      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
           .t_weight(0), .f_weight(1), .other_weight(1)
       );
       cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
-      cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+      cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
+      cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
     end
     `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
   endtask
