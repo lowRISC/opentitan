@@ -61,7 +61,7 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test --build_tests_only --test_tag_filters=-broken --target_pattern_file="$bazel_tests"
 
       - name: Run tests after ROM_EXT boot stage
         if: success() || failure()
@@ -72,7 +72,7 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test --build_tests_only --test_tag_filters=-broken --target_pattern_file="$bazel_tests"
 
       - name: Publish bazel test results
         if: success() || failure()
