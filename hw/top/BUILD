@@ -10,6 +10,7 @@ load(
     "opentitan_top_devicetables",
     "opentitan_top_dt_api",
 )
+load("//hw/top:defs.bzl", IPS = "OPENTITAN_ALL_IPS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -22,45 +23,6 @@ alias(
     name = "top_lib",
     actual = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
 )
-
-# List of IPs for which to generate headers.
-IPS = [
-    "alert_handler",
-    "flash_ctrl",
-    "clkmgr",
-    "rstmgr",
-    "rv_plic",
-    "pwrmgr",
-    "pinmux",
-    "adc_ctrl",
-    "aes",
-    "aon_timer",
-    "csrng",
-    "edn",
-    "entropy_src",
-    "gpio",
-    "hmac",
-    "i2c",
-    "keymgr",
-    "kmac",
-    "lc_ctrl",
-    "otbn",
-    "otp_ctrl",
-    "pattgen",
-    "pwm",
-    "rom_ctrl",
-    "rv_core_ibex",
-    "rv_dm",
-    "rv_timer",
-    "spi_device",
-    "spi_host",
-    "sram_ctrl",
-    "sysrst_ctrl",
-    "uart",
-    "usbdev",
-    "ast",
-    "sensor_ctrl",
-]
 
 [
     opentitan_ip_c_header(

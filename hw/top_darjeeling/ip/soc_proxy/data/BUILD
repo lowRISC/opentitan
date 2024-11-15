@@ -4,27 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "soc_proxy_c_regs",
-    srcs = [
-        "soc_proxy.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "soc_proxy_rust_regs",
-    srcs = [
-        "soc_proxy.hjson",
-    ],
-)
-
 filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+    name = "hjson",
+    srcs = ["soc_proxy.hjson"],
 )
