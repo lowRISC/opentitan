@@ -226,20 +226,41 @@ class cip_tl_seq_item extends tl_seq_item;
     end
   endfunction : report_intg_mismatch
 
-  // extract error info for coverage
-  virtual function void get_a_chan_err_info(output tl_intg_err_e tl_intg_err_type,
-                                            output uint num_cmd_err_bits,
-                                            output uint num_data_err_bits,
-                                            output bit write_w_instr_type_err,
-                                            output bit instr_type_err);
-    tl_a_user_t exp_a_user = compute_a_user();
+  // Extract the cmd_intg field from the A channel of this item (mirroring
+  // tlul_pkg::extract_h2d_cmd_intg)
+  function tl_h2d_cmd_intg_t get_h2d_cmd_intg();
+    tl_h2d_cmd_intg_t payload;
     tl_a_user_t act_a_user = tl_a_user_t'(a_user);
-    bit         is_cmd_ok  = (act_a_user.cmd_intg == exp_a_user.cmd_intg);
-    bit         is_data_ok = (act_a_user.data_intg == exp_a_user.data_intg);
 
-    num_cmd_err_bits  = $countones(exp_a_user.cmd_intg ^ act_a_user.cmd_intg);
-    num_data_err_bits = $countones(exp_a_user.data_intg ^ act_a_user.data_intg);
-    tl_intg_err_type  = get_tl_intg_err_type(is_cmd_ok, is_data_ok);
+    payload.addr = a_addr;
+    payload.opcode = tl_a_op_e'(a_opcode);
+    payload.mask = a_mask;
+    payload.instr_type = act_a_user.instr_type;
+    return payload;
+  endfunction
+
+  virtual function void get_a_chan_err_info(output tl_intg_err_e tl_intg_err_type,
+                                            output logic         cmd_intg_err,
+                                            output logic         data_intg_err,
+                                            output bit           write_w_instr_type_err,
+                                            output bit           instr_type_err);
+    import prim_secded_pkg::secded_64_57_t, prim_secded_pkg::secded_39_32_t;
+    import prim_secded_pkg::prim_secded_inv_64_57_dec, prim_secded_pkg::prim_secded_inv_39_32_dec;
+
+    tl_a_user_t act_a_user = tl_a_user_t'(a_user);
+    secded_64_57_t dec_cmd;
+    secded_39_32_t dec_data;
+
+    // The cmd_intg and data_intg fields are SECDED parity bits for the command and data fields.
+    // Using prim_secded_inv_64_57_dec and prim_secded_inv_39_32_dec, respectively, allows us to
+    // spot errors.
+    dec_cmd = prim_secded_inv_64_57_dec({act_a_user.cmd_intg, H2DCmdMaxWidth'(get_h2d_cmd_intg())});
+    dec_data = prim_secded_inv_39_32_dec({act_a_user.data_intg, a_data});
+
+    cmd_intg_err = |dec_cmd.err;
+    data_intg_err = |dec_data.err;
+
+    tl_intg_err_type  = get_tl_intg_err_type(!cmd_intg_err, !data_intg_err);
 
     // d_error will be set if it's a write with instr_type=True
     write_w_instr_type_err = a_opcode inside {PutFullData, PutPartialData} &&
