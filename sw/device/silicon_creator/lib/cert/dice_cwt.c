@@ -20,6 +20,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 
 #include "otp_ctrl_regs.h"  // Generated.
 
@@ -306,5 +307,13 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
       kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
       *kDiceKeyCdi1.keymgr_diversifier));
 
+  return kErrorOk;
+}
+
+rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
+                                  const hmac_digest_t *pubkey_id,
+                                  const ecdsa_p256_public_key_t *pubkey,
+                                  hardened_bool_t *cert_valid_output) {
+  // TODO(lowRISC/opentitan:#24281): implement body
   return kErrorOk;
 }
