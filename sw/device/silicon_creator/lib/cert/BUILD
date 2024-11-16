@@ -130,6 +130,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
     ],
 )
@@ -171,6 +172,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:dice_keys",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
     ],
 )
 
