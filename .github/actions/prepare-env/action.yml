@@ -6,6 +6,9 @@ name: Prepare environment
 description: Install dependencies and prepare environment needed for OpenTitan
 
 inputs:
+  service_account_json:
+    description: Service account JSON for Google Cloud access
+    default: ''
   verilator-version:
     description: Verilator version to install
     required: true
@@ -78,13 +81,13 @@ runs:
         echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
       shell: bash
 
-    # Log into Google Cloud using Workload Identity Federation
-    # This needs `id-token: write` permission and doesn't work for pull request.
+    # Log into Google Cloud using service account JSON.
+    # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
+    # This needs access to secrets and thus doesn't work for pull request.
     - uses: google-github-actions/auth@v2
       if: github.event_name != 'pull_request'
       with:
-        project_id: active-premise-257318
-        workload_identity_provider: projects/281751345158/locations/global/workloadIdentityPools/github-actions/providers/github-actions
+        credentials_json: '${{ inputs.service_account_json }}'
 
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
