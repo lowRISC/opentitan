@@ -471,6 +471,22 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     ipgen_render("flash_ctrl", topname, params, out_path)
 
 
+# generate ac_range_check with ipgen
+def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
+    # Not all tops have an ac range check instance
+    if 'ac_range_check' not in topcfg:
+        return
+
+    log.info('Generating ac_range_check with ipgen')
+    topname = topcfg['name']
+
+    params = {
+        "num_ranges": topcfg['ac_range_check']['num_ranges']
+    }
+
+    ipgen_render("ac_range_check", topname, params, out_path)
+
+
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
                       top_name: str, alt_hjson_path: str) -> None:
     log.info("Generating top only modules")
@@ -795,6 +811,9 @@ def _process_top(
 
     # Generate rstmgr
     generate_rstmgr(completecfg, out_path)
+
+    # Generate ac_range_check
+    generate_ac_range_check(completecfg, out_path)
 
     # Generate top only modules
     # These modules are not ipgen, but are not in hw/ip
