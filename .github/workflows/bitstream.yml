@@ -25,6 +25,8 @@ jobs:
           fetch-depth: 0 # Required by get-bitstream-strategy.sh
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
 
       - name: Configure bitstream strategy
         id: strategy
