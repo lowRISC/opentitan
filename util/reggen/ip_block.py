@@ -61,7 +61,8 @@ KNOWN_CIP_IDS = {
     37: 'mbx',
     38: 'soc_proxy',
     39: 'keymgr_dpe',
-    40: 'ascon'
+    40: 'ascon',
+    41: 'ac_range_check'
 }
 
 REQUIRED_ALIAS_FIELDS = {
