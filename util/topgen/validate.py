@@ -53,6 +53,7 @@ top_required = {
 }
 
 top_optional = {
+    'ac_range_check': ['g', 'Optional AC range configuration'],
     'alert_async': ['l', 'async alerts (generated)'],
     'alert': ['lnw', 'alerts (generated)'],
     'alert_module': [
