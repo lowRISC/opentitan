@@ -35,6 +35,8 @@ jobs:
 
       - name: Install dependencies
         uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
 
       - uses: google-github-actions/setup-gcloud@v2
 
