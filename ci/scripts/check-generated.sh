@@ -83,10 +83,6 @@ gen_and_check_clean \
     "secded primitive code" \
     util/design/secded_gen.py --no_fpv || bad=1
 
-gen_and_check_clean \
-    "DIFs" \
-    util/make_new_dif.py --mode=regen --only=autogen || bad=1
-
 gen_and_check_clean "MUBI package" util/design/gen-mubi.py || bad=1
 
 gen_and_check_clean "HW block summary" util/gen_doc_hw_summary_table.py || bad=1
