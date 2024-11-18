@@ -291,16 +291,24 @@ module aes_ghash
   // previously saved GHASH state in unmasked form. Share 1 is left untouched. This is identical to
   // subtracing Share 1 of S which will be added again at the very end. To save muxing resources,
   // Share 1 of the state multiplexer below is identical to the default.
-  assign ghash_state_restore[0] = data_in_prev;
-  if (SecMasking) begin : gen_ghash_state_restore_share_1
+  //
+  // For the unmasked implementation, we add the previously saved GHASH state to the GHASH state
+  // previously initialized with S. S is then substracted again seperately. Doing this allows
+  // saving one multiplexer input.
+  if (SecMasking) begin : gen_ghash_state_restore_masked
+    assign ghash_state_restore[0] = data_in_prev;
     assign ghash_state_restore[1] = ghash_state_add[1];
+  end else begin : gen_ghash_state_restore_unmasked
+    assign ghash_state_restore[0] = ghash_state_add[0];
   end
 
-  // We initialize the state with S (masked implementation) or with zero (unmasked implementation).
+  // We initialize the state with S. In case of the unmasked implementation, S has to be
+  // substracted in a second step to reach the required zero state. Doing it this way allows saving
+  // one multiplexer input.
   always_comb begin : ghash_state_mux
     unique case (ghash_state_sel)
       GHASH_STATE_RESTORE: ghash_state_d = ghash_state_restore;
-      GHASH_STATE_INIT:    ghash_state_d = SecMasking ? cipher_state_done : '{default: '0};
+      GHASH_STATE_INIT:    ghash_state_d = cipher_state_done;
       GHASH_STATE_ADD:     ghash_state_d = ghash_state_add;
       GHASH_STATE_MULT:    ghash_state_d = ghash_state_mult;
       default:             ghash_state_d = ghash_state_add;
@@ -463,7 +471,7 @@ module aes_ghash
               hash_subkey_we  = SP2V_HIGH;
             end else begin
 
-              // Load S and initialize the state (with S in case of the masked implementation).
+              // Load S and initialize the state with S.
               s_we              = SP2V_HIGH;
               ghash_state_sel   = GHASH_STATE_INIT;
               ghash_state_we[0] = SP2V_HIGH;
@@ -471,8 +479,9 @@ module aes_ghash
               first_block_d     = 1'b1;
 
               // We have now all pre-requisites to compute the correction terms for the masked
-              // implementation.
-              aes_ghash_ns = SecMasking ? GHASH_MASKED_INIT : GHASH_IDLE;
+              // implementation. For the unmasked implementation, we now have to subtract S again
+              // from the state. Doing it this way allows saving one multiplexer input.
+              aes_ghash_ns = SecMasking ? GHASH_MASKED_INIT : GHASH_ADD_S;
             end
 
           end else if (gcm_phase_i == GCM_RESTORE) begin
@@ -483,6 +492,11 @@ module aes_ghash
             ghash_state_sel   = GHASH_STATE_RESTORE;
             ghash_state_we[0] = SP2V_HIGH;
             first_block_d     = 1'b0;
+
+            // For the unmasked implementation, the previously restored GHASH state is added to the
+            // GHASH state initialized with S, meaning S needs to be subtracted again to continue.
+            ghash_in_sel = !SecMasking ? GHASH_IN_DATA_IN_PREV : GHASH_IN_DATA_OUT;
+            aes_ghash_ns = !SecMasking ? GHASH_ADD_S           : GHASH_IDLE;
 
           end else if (gcm_phase_i == GCM_AAD ||
                        gcm_phase_i == GCM_TEXT ||
@@ -509,9 +523,9 @@ module aes_ghash
             // Get ready to output the current GHASH state.
 
             // For the masked implementation, first unmask the GHASH state and then add Share 1 of
-            // S.
+            // S. For the unmasked implementation, add S directly.
             final_add_d  = 1'b1;
-            aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_OUT;
+            aes_ghash_ns = SecMasking ? GHASH_MASKED_ADD_STATE_SHARES : GHASH_ADD_S;
 
           end else begin
             // Handshake without a valid command. We should never get here. If we do (e.g. via a
@@ -606,10 +620,13 @@ module aes_ghash
       end
 
       GHASH_ADD_S: begin
-        // Add S to the GHASH state and then get ready to output the final tag.
+        // Add S to the GHASH state and then get ready to output the final tag or return to the
+        // idle state in case this state has been reached as part of an initialization or state
+        // restore operation.
         ghash_in_sel      = GHASH_IN_S;
         ghash_state_we[0] = SP2V_HIGH;
-        aes_ghash_ns      = GHASH_OUT;
+        aes_ghash_ns      = ((gcm_phase_i == GCM_INIT) ||
+                             (gcm_phase_i == GCM_RESTORE)) ? GHASH_IDLE : GHASH_OUT;
       end
 
       GHASH_OUT: begin
