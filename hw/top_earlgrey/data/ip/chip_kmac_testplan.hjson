@@ -181,6 +181,7 @@
       tests: []
       bazel: [
         "//sw/device/tests:kmac_mode_cshake_test",
+        "//sw/device/tests/crypto/cryptotest:cshake_kat",
       ]
     }
     {
@@ -191,17 +192,16 @@
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
             - Use endianess configuration used in the crypto library.
-            - Verify multiple XOF configurations.
             '''
       features: [
         "KMAC.MODE.KMAC",
-        "KMAC.MODE.XOF",
       ]
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
       bazel: [
+        "//sw/device/tests/crypto:kmac_functest_hardcoded",
         "//sw/device/tests/crypto/cryptotest:kmac_kat",
       ]
     }
