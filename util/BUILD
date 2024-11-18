@@ -71,6 +71,17 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "autogen_dif",
+    srcs = ["autogen_dif.py"],
+    deps = [
+        "//util/topgen",
+        requirement("mako"),
+        # FIXME this is actually used by reggen that has a deps on it but it doesn't work...
+        requirement("pyyaml"),
+    ],
+)
+
 py_test(
     name = "generate_compilation_db_test",
     srcs = [
