@@ -85,3 +85,11 @@ py_library(
     name = "version_file",
     srcs = ["version_file.py"],
 )
+
+cc_binary(
+    name = "fw_error_decode",
+    srcs = ["fw_error_decoder.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
