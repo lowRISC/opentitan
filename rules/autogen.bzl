@@ -185,7 +185,7 @@ opentitan_autogen_dif_gen = rule(
 )
 
 # See opentitan_autogen_dif_gen for documentation of parameters.
-def opentitan_autogen_dif(name, top, ip):
+def opentitan_autogen_dif(name, top, ip, target_compatible_with = []):
     opentitan_autogen_dif_gen(
         name = "{}_gen".format(name),
         top = top,
@@ -195,6 +195,7 @@ def opentitan_autogen_dif(name, top, ip):
             "src": ["dif_{}_autogen.c".format(ip)],
             "unittest": ["dif_{}_autogen_unittest.cc".format(ip)],
         },
+        target_compatible_with = target_compatible_with,
     )
 
     for grp in ["hdr", "src", "unittest"]:
