@@ -1,0 +1,75 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "seed"
+      desc: "256 bit seed to be used for generation of partition item default values"
+      type: "string"
+      default: "12345"
+    }
+    {
+      name: "otp"
+      desc: "Size parameters"
+      type: "object"
+      default: {
+        "width": "2"  // bytes
+        "depth": "1024"
+      }
+    }
+    {
+      name: "scrambling_sizes"
+      desc: "Definition of scrambling and digest sizes"
+      type: "object"
+      default: {
+        "key_size": "16"  // bytes
+        "iv_size": "8"    // bytes
+        "cnst_size": "16" // bytes
+      }
+    }
+    {
+      name: "scrambling"
+      desc: "Definition of scrambling and digest constants and keys"
+      type: "object"
+      default: {
+        keys: [
+          {
+            name: "Secret0Key"
+            value: "<random>"
+          }
+        ]
+        digests: [
+          {
+            name: "CnstyDigest"
+            iv_value: "<random>"
+            cnst_value: "<random>"
+          }
+        ]
+      }
+    }
+    {
+      name: "partitions"
+      desc: "List of partitions"
+      type: "list"
+      default: [
+        {
+	  name: "VENDOR_TEST"
+	  variant: "Unbuffered"
+	  items: [
+	    {
+	      name: "SCRATCH"
+	      size: "56"
+	    }
+	  ]
+	}
+      ]
+    }
+  ]
+}
