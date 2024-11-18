@@ -129,6 +129,14 @@ module top_${top["name"]} #(
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_cg_en_${alert_group}_o,
   output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
   % endfor
+  % for alert_group in top['incoming_alert'].keys():
+  
+  // Incoming alerts for group ${alert_group}
+  input  prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_tx_i,
+  output prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_rx_o,
+  input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_cg_en_${alert_group}_i,
+  input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
+  % endfor
 
   // All clocks forwarded to ast
   output clkmgr_pkg::clkmgr_out_t clks_ast_o,
@@ -622,6 +630,20 @@ slice = f"{lo+w-1}:{lo}"
     % endfor
   );
 % endfor
+
+% for alert_group, alerts in top['incoming_alert'].items():
+<%
+w = len(alerts)
+slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+%>
+  // Alert mapping to the alert handler for alert group ${alert_group}
+  % for alert in alerts:
+  // [${alert_idx}]: ${alert['name']}<% alert_idx += 1 %>
+  % endfor
+  assign alerts_tx[${slice}] = incoming_alert_${alert_group}_tx_i;
+  assign incoming_alert_${alert_group}_rx_o = alerts_rx[${slice}];
+% endfor
+
   // interrupt assignments
 <% base = interrupt_num %>\
   assign intr_vector = {

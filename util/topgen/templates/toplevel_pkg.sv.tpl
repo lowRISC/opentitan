@@ -83,6 +83,14 @@ package top_${top["name"]}_pkg;
     ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_id_count").as_camel_case()}
   } ${"outgoing_alert_" + alert_group + "_id_e"};
 % endfor
+% for alert_group, alerts in top["incoming_alert"].items():
+
+  // Number of ${alert_group} incoming alerts
+  parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
+
+  // Number of LPGs for incoming alert group ${alert_group}
+  parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
+% endfor
 
   // Enumeration of alert modules
   typedef enum int unsigned {

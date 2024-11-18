@@ -1042,7 +1042,12 @@ class TopGen:
         # module name to the full name object used for the enum constant.
         source_name_map = {}
 
-        for name in self.top["alert_module"]:
+        # Uniquify the incoming alert module list
+        incoming_module_names = []
+        for incoming_alerts in self.top['incoming_alert'].values():
+            incoming_module_names.extend({alert['module_name'] for alert in incoming_alerts})
+
+        for name in self.top["alert_module"] + incoming_module_names:
             source_name = sources.add_constant(Name.from_snake_case(name),
                                                docstring=name)
             source_name_map[name] = source_name
@@ -1052,11 +1057,12 @@ class TopGen:
         else:
             sources.add_last_constant("Final Alert peripheral")
 
-        self.device_alerts = defaultdict(list)
-        for alert in self.top["alert"]:
+        def add_alert(alert, name_prefix=None):
             if "width" in alert and int(alert["width"]) != 1:
                 for i in range(int(alert["width"])):
                     name = Name.from_snake_case(alert["name"]) + Name([str(i)])
+                    if name_prefix:
+                        name = name_prefix + name
                     irq_id = alerts.add_constant(name,
                                                  docstring="{} {}".format(
                                                      alert["name"], i))
@@ -1070,6 +1076,14 @@ class TopGen:
                 source_name = source_name_map[alert["module_name"]]
                 alert_mapping.add_entry(alert_id, source_name)
                 self.device_alerts[alert["module_name"]].append(alert["name"])
+
+        self.device_alerts = defaultdict(list)
+        for alert in self.top["alert"]:
+            add_alert(alert)
+
+        for alert_group, incoming_alerts in self.top['incoming_alert'].items():
+            for alert in incoming_alerts:
+                add_alert(alert, Name(f'incoming_{alert_group}'))
 
         if isinstance(alerts, RustEnum):
             alerts.add_number_of_variants("The number of Alert ID.")
