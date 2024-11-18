@@ -63,6 +63,7 @@ top_optional = {
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
+    'incoming_alert': ['g', 'Parsed incoming alerts (generated)'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupt': ['lnw', 'interrupts (generated)'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],

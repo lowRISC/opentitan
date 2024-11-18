@@ -176,6 +176,14 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
     # Count number of alerts and LPGs
     n_alerts = sum([x["width"] if "width" in x else 1 for x in top["alert"]])
     n_lpg = len(top["alert_lpgs"])
+    n_lpg_incoming_offset = n_lpg
+
+    # Add incoming alerts and their LPGs
+    for alerts in top['incoming_alert'].values():
+        n_alerts += len(alerts)
+        # Number of LPGs is maximum index + 1
+        n_lpg += max(alert['lpg_idx'] for alert in alerts) + 1
+
     n_lpg_width = n_lpg.bit_length()
     # format used to print out indices in binary format
     async_on_format = "1'b{:01b}"
@@ -198,9 +206,17 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
         async_on = []
         lpg_map = []
         for alert in top["alert"]:
-            for k in range(alert["width"]):
+            for _ in range(alert["width"]):
                 async_on.append(async_on_format.format(int(alert["async"])))
                 lpg_map.append(lpg_idx_format.format(int(alert["lpg_idx"])))
+
+        lpg_prev_offset = n_lpg_incoming_offset
+        for alerts in top['incoming_alert'].values():
+            for alert in alerts:
+                for _ in range(alert["width"]):
+                    async_on.append(async_on_format.format(int(alert["async"])))
+                    lpg_map.append(lpg_idx_format.format(lpg_prev_offset + int(alert["lpg_idx"])))
+                lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
 
     params = {
         "n_alerts": n_alerts,
@@ -1015,6 +1031,20 @@ def main():
             topcfg = hjson.load(ftop,
                                 use_decimal=True,
                                 object_pairs_hook=OrderedDict)
+
+        # Read external alert mappings for all available alert handlers if defined and inject
+        # that to the alert handler's module definition.
+        if 'incoming_alert' not in topcfg:
+            topcfg['incoming_alert'] = {}
+
+        for m in topcfg['module']:
+            if m['type'] == 'alert_handler':
+                for alert_mappings_path in m.get('incoming_alert', []):
+                    with open(Path(args.topcfg).parent / alert_mappings_path, "r") as falert:
+
+                        mapping = hjson.load(falert)
+                        for alert_group, alerts in mapping.items():
+                            topcfg['incoming_alert'][alert_group] = alerts
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 
