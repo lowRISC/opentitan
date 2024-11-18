@@ -14,14 +14,35 @@ load("//hw/top:defs.bzl", IPS = "OPENTITAN_ALL_IPS")
 
 package(default_visibility = ["//visibility:public"])
 
+# FIXME rework that properly with platforms
+constraint_setting(
+    name = "top_setting",
+    default_constraint_value = ":top_earlgrey",
+)
+
+constraint_value(
+    name = "top_earlgrey",
+    constraint_setting = ":top_setting",
+)
+
 alias(
     name = "top",
-    actual = "//hw/top_earlgrey",
+    actual = select(
+        {
+            ":top_earlgrey": "//hw/top_earlgrey",
+        },
+        no_match_error = "no top selected",
+    ),
 )
 
 alias(
     name = "top_lib",
-    actual = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    actual = select(
+        {
+            ":top_earlgrey": "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        },
+        no_match_error = "no top selected",
+    ),
 )
 
 [
