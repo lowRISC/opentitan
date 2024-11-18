@@ -1,0 +1,24 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otp_ctrl_cov"
+description: "OTP_CTRL functional coverage and bind files"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:ip:otp_ctrl
+
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+    files:
+      - otp_ctrl_cov_if.sv
+      - otp_ctrl_cov_bind.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
+      - files_dv
