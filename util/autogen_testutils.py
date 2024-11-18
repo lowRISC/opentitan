@@ -49,7 +49,6 @@ def main():
         logging.error(f"hjson {args.topcfg_path} could not be found.")
         sys.exit(1)
     topcfg = hjson.loads(topcfg_text, use_decimal=True)
-    ipgen_modules = topgen_lib.get_ipgen_modules(topcfg)
 
     # Define autogen DIF directory.
     autogen_dif_directory = REPO_TOP / "sw/device/lib/dif/autogen"
@@ -64,9 +63,13 @@ def main():
         # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
         # case snake mode (i.e., uart).
         ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
+
+        hjson_file = topgen_lib.get_ip_hjson_path(ip_name_snake, topcfg, REPO_TOP)
+
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
-        ips_with_difs.append(Ip(ip_name_snake, "AUTOGEN", ipgen_modules))
+        ips_with_difs.append(
+            Ip(ip_name_snake, "AUTOGEN", hjson_file))
 
     # Auto-generate testutils files.
     gen_testutils(ips_with_difs)

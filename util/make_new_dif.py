@@ -99,8 +99,7 @@ def main():
     except FileNotFoundError:
         print(f"hjson {topcfg_path} could not be found")
         sys.exit(1)
-    ipgen_modules = lib.get_ipgen_modules(topcfg)
-    reggen_top_modules = lib.get_top_reggen_modules(topcfg)
+
     all_modules = [m['type'] for m in topcfg['module']]
 
     # Check for regeneration mode (used in CI check:
@@ -119,16 +118,17 @@ def main():
             # Only considers IPs for that particular top.
             if ip_name_snake not in all_modules:
                 continue
+            hjson_file = lib.get_ip_hjson_path(ip_name_snake, topcfg, REPO_TOP)
             # NOTE: ip.name_long_* not needed for auto-generated files which
             # are the only files (re-)generated in regen mode.
             ips.append(
-                Ip(ip_name_snake, "AUTOGEN", ipgen_modules, reggen_top_modules))
+                Ip(ip_name_snake, "AUTOGEN", hjson_file))
     else:
         assert args.ip_name_snake and args.ip_name_long, \
             "ERROR: pass --ip-name-snake and --ip-name-long when --mode=new."
+        hjson_file = lib.get_ip_hjson_path(ip_name_snake, topcfg, REPO_TOP)
         ips.append(
-            Ip(args.ip_name_snake, args.ip_name_long, ipgen_modules,
-               reggen_top_modules))
+            Ip(args.ip_name_snake, args.ip_name_long, hjson_file))
 
     # Default to generating all parts.
     if len(args.only) == 0:
