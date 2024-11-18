@@ -284,6 +284,86 @@ def opentitan_top_devicetables(name, top, deps = None):
         includes = ["."],
     )
 
+def _opentitan_autogen_dif_gen(ctx):
+    outputs = []
+    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
+    top = ctx.attr.top[OpenTitanTopInfo]
+
+    # If the requested IP is not in the top, produces empty outputs
+    if ctx.attr.ip not in top.ip_hjson:
+        return []
+    ip_hjson = top.ip_hjson[ctx.attr.ip]
+
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = []
+        for file in files:
+            deps.append(ctx.actions.declare_file(file))
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+
+    inputs = [ip_hjson]
+
+    arguments = [
+        "--ipcfg",
+        ip_hjson.path,
+        "--outdir",
+        outdir,
+    ]
+
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
+        executable = ctx.executable._autogen_dif,
+    )
+
+    return [
+        DefaultInfo(files = depset(outputs)),
+        OutputGroupInfo(**groups),
+    ]
+
+opentitan_autogen_dif_gen = rule(
+    implementation = _opentitan_autogen_dif_gen,
+    doc = "Generate the DIFs file for an IP",
+    attrs = {
+        "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "ip": attr.string(mandatory = True, doc = "Name of the IP for which to generate the DIF"),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = """
+                Mappings from output group names to lists of paths contained in
+                that group.
+            """,
+        ),
+        "_autogen_dif": attr.label(
+            default = "//util:autogen_dif",
+            executable = True,
+            cfg = "exec",
+        ),
+    },
+)
+
+# See opentitan_autogen_dif_gen for documentation of parameters.
+def opentitan_autogen_dif(name, top, ip):
+    opentitan_autogen_dif_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        ip = ip,
+        output_groups = {
+            "hdr": ["dif_{}_autogen.h".format(ip)],
+            "src": ["dif_{}_autogen.c".format(ip)],
+            "unittest": ["dif_{}_autogen_unittest.cc".format(ip)],
+        },
+    )
+
+    for grp in ["hdr", "src", "unittest"]:
+        native.filegroup(
+            name = "{}_{}".format(name, grp),
+            srcs = [":{}_gen".format(name)],
+            output_group = grp,
+        )
+
 def _chip_info_src(ctx):
     stamp_args = []
     stamp_files = []
