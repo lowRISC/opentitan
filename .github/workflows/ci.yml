@@ -444,6 +444,61 @@ jobs:
       interface: cw340
       tag_filters: "manuf,-hyper310"
 
+  verify_fpga_jobs:
+    name: Verify FPGA jobs
+    runs-on: ubuntu-22.04
+    needs:
+      - execute_test_rom_fpga_tests_cw310
+      - execute_rom_fpga_tests_cw310
+      - execute_rom_ext_fpga_tests_cw310
+      - execute_sival_fpga_tests_cw310
+      - execute_sival_rom_ext_fpga_tests_cw310
+      - execute_manuf_fpga_tests_cw310
+      - execute_test_rom_fpga_tests_cw340
+      - execute_rom_fpga_tests_cw340
+      - execute_rom_ext_fpga_tests_cw340
+      - execute_sival_fpga_tests_cw340
+      - execute_sival_rom_ext_fpga_tests_cw340
+      - execute_manuf_fpga_tests_cw340
+    if: success() || failure()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download target pattern files
+        uses: actions/download-artifact@v4
+        with:
+          pattern: execute_*-targets
+          path: verify_fpga_jobs
+      - name: List all target pattern files
+        run: |
+          find verify_fpga_jobs
+      - name: Checking for duplicate test runs
+        run: |
+          # Find and display all duplicates:
+          # - for each target file and each line, print '<job_name> <target>'
+          # - then sort by the target name
+          # - then keep all duplicated lines
+          pattern_files=$(find verify_fpga_jobs -name target_pattern_file.txt)
+          awk '{ print(gensub(/.*\/(.+)\/target_pattern_file.txt/, "\\1", "g", FILENAME) " " $0) }' $pattern_files | sort -k2 | uniq -D -f1 > duplicates.txt
+          if [ -s duplicates.txt ]; then
+            echo "The following tests ran in two or more jobs:"
+            cat duplicates.txt
+            false
+          fi
+      - name: Checking for missing test runs
+        if: success() || failure()
+        run: |
+          # Find and display tests that did not run:
+          ./ci/scripts/run-bazel-test-query.sh all_fpga.txt fpga,-manual,-broken,-skip_in_ci //... @manufacturer_test_hooks//...
+          sort -o all_fpga.txt all_fpga.txt
+          pattern_files=$(find verify_fpga_jobs -name target_pattern_file.txt)
+          sort $pattern_files > all_run.txt
+          comm -23 all_fpga.txt all_run.txt > missing.txt
+          if [ -s missing.txt ]; then
+            echo "The following tests did not run in any job:"
+            cat missing.txt
+            false
+          fi
+
   build_docker_containers:
     name: Build Docker Containers
     runs-on: ubuntu-22.04
