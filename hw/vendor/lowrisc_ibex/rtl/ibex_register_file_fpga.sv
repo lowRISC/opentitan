@@ -147,14 +147,14 @@ module ibex_register_file_fpga #(
       .out_o (mem_o_b)
     );
 
-    assign rdata_a_o = (raddr_a_i == '0) ? '0 : mem_o_a;
-    assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem_o_b;
+    assign rdata_a_o = (raddr_a_i == '0) ? WordZeroVal : mem_o_a;
+    assign rdata_b_o = (raddr_b_i == '0) ? WordZeroVal : mem_o_b;
   end else begin : gen_no_rdata_mux_check
     // async_read a
-    assign rdata_a_o = (raddr_a_i == '0) ? '0 : mem[raddr_a_i];
+    assign rdata_a_o = (raddr_a_i == '0) ? WordZeroVal : mem[raddr_a_i];
 
     // async_read b
-    assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem[raddr_b_i];
+    assign rdata_b_o = (raddr_b_i == '0) ? WordZeroVal : mem[raddr_b_i];
   end
 
   // we select
