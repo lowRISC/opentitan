@@ -4,7 +4,6 @@
 
 from collections import OrderedDict
 from pathlib import Path
-from typing import List
 
 import hjson
 
@@ -89,7 +88,7 @@ class Ip:
     """
 
     def __init__(self, name_snake: str, name_long_lower: str,
-                 ipgen_modules: List[str], reggen_top_modules: List[str]) -> None:
+                 hjson_file: str) -> None:
         """Mines metadata to populate this Ip object.
 
         Args:
@@ -109,17 +108,8 @@ class Ip:
         # UART to Uart.
         self.name_long_upper = (self.name_long_lower[0].upper() +
                                 self.name_long_lower[1:])
-        # Load HJSON data.
-        if self.name_snake in ipgen_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip_autogen/{0}/data".format(
-                self.name_snake)
-        elif self.name_snake in reggen_top_modules:
-            data_dir = REPO_TOP / "hw/top_earlgrey/ip/{0}/data/".format(
-                self.name_snake)
-        else:
-            data_dir = REPO_TOP / "hw/ip/{0}/data".format(self.name_snake)
-        _hjson_file = data_dir / "{0}.hjson".format(self.name_snake)
-        with _hjson_file.open("r") as f:
+
+        with hjson_file.open("r") as f:
             _hjson_str = f.read()
         self._hjson_data = hjson.loads(_hjson_str)
         # Load Alert data from HJSON.
