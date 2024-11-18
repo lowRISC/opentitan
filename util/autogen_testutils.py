@@ -51,6 +51,7 @@ def main():
     topcfg = hjson.loads(topcfg_text, use_decimal=True)
     templated_modules = topgen_lib.get_templated_modules(topcfg)
     ipgen_modules = topgen_lib.get_ipgen_modules(topcfg)
+    reggen_top_modules = topgen_lib.get_top_reggen_modules(topcfg)
 
     # Define autogen DIF directory.
     autogen_dif_directory = REPO_TOP / "sw/device/lib/dif/autogen"
@@ -65,10 +66,25 @@ def main():
         # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
         # case snake mode (i.e., uart).
         ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
+
+        # Load HJSON data.
+        if ip_name_snake in ipgen_modules:
+            data_dir = REPO_TOP / "hw/{}/ip_autogen/{}/data".format(
+                topcfg.name, ip_name_snake)
+        elif ip_name_snake in templated_modules:
+            data_dir = REPO_TOP / "hw/{}/ip/{}/data/autogen".format(
+                topcfg.name, ip_name_snake)
+        elif ip_name_snake in reggen_top_modules:
+            data_dir = REPO_TOP / "hw/{}/ip/{}/data/".format(
+                topcfg.name, ip_name_snake)
+        else:
+            data_dir = REPO_TOP / "hw/ip/{}/data".format(ip_name_snake)
+        hjson_file = data_dir / "{}.hjson".format(ip_name_snake)
+
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
         ips_with_difs.append(
-            Ip(ip_name_snake, "AUTOGEN", templated_modules, ipgen_modules))
+            Ip(ip_name_snake, "AUTOGEN", hjson_file))
 
     # Auto-generate testutils files.
     gen_testutils(ips_with_difs)
