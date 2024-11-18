@@ -179,7 +179,7 @@
      property __name``_p;                                                                                        \
        __type initial_state;                                                                                     \
        (!$stable(__state) & __name``_cond, initial_state = $past(__state)) |->                                   \
-           (__state != initial_state) until (__rst == 1'b1);                                                     \
+           (__state != initial_state) until !(__name``_cond);                                                    \
      endproperty                                                                                                 \
    `ASSERT(__name, __name``_p, __clk, 0)                                                                         \
   `endif
