@@ -28,9 +28,9 @@ cc_library(
 cc_library(
     name = "adc_ctrl",
     srcs = [
-        "autogen/dif_adc_ctrl_autogen.c",
-        "autogen/dif_adc_ctrl_autogen.h",
         "dif_adc_ctrl.c",
+        "//sw/device/lib/dif/autogen:adc_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:adc_ctrl_src",
     ],
     hdrs = [
         "dif_adc_ctrl.h",
@@ -51,8 +51,8 @@ cc_library(
 cc_test(
     name = "adc_ctrl_unittest",
     srcs = [
-        "autogen/dif_adc_ctrl_autogen_unittest.cc",
         "dif_adc_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:adc_ctrl_unittest",
     ],
     deps = [
         ":adc_ctrl",
@@ -64,9 +64,9 @@ cc_test(
 cc_library(
     name = "aes",
     srcs = [
-        "autogen/dif_aes_autogen.c",
-        "autogen/dif_aes_autogen.h",
         "dif_aes.c",
+        "//sw/device/lib/dif/autogen:aes_hdr",
+        "//sw/device/lib/dif/autogen:aes_src",
     ],
     hdrs = [
         "dif_aes.h",
@@ -86,8 +86,8 @@ cc_library(
 cc_test(
     name = "aes_unittest",
     srcs = [
-        "autogen/dif_aes_autogen_unittest.cc",
         "dif_aes_unittest.cc",
+        "//sw/device/lib/dif/autogen:aes_unittest",
     ],
     deps = [
         ":aes",
@@ -99,9 +99,9 @@ cc_test(
 cc_library(
     name = "alert_handler",
     srcs = [
-        "autogen/dif_alert_handler_autogen.c",
-        "autogen/dif_alert_handler_autogen.h",
         "dif_alert_handler.c",
+        "//sw/device/lib/dif/autogen:alert_handler_hdr",
+        "//sw/device/lib/dif/autogen:alert_handler_src",
     ],
     hdrs = [
         "dif_alert_handler.h",
@@ -121,8 +121,8 @@ cc_library(
 cc_test(
     name = "alert_handler_unittest",
     srcs = [
-        "autogen/dif_alert_handler_autogen_unittest.cc",
         "dif_alert_handler_unittest.cc",
+        "//sw/device/lib/dif/autogen:alert_handler_unittest",
     ],
     deps = [
         ":alert_handler",
@@ -134,9 +134,9 @@ cc_test(
 cc_library(
     name = "aon_timer",
     srcs = [
-        "autogen/dif_aon_timer_autogen.c",
-        "autogen/dif_aon_timer_autogen.h",
         "dif_aon_timer.c",
+        "//sw/device/lib/dif/autogen:aon_timer_hdr",
+        "//sw/device/lib/dif/autogen:aon_timer_src",
     ],
     hdrs = [
         "dif_aon_timer.h",
@@ -156,8 +156,8 @@ cc_library(
 cc_test(
     name = "aon_timer_unittest",
     srcs = [
-        "autogen/dif_aon_timer_autogen_unittest.cc",
         "dif_aon_timer_unittest.cc",
+        "//sw/device/lib/dif/autogen:aon_timer_unittest",
     ],
     deps = [
         ":aon_timer",
@@ -169,9 +169,9 @@ cc_test(
 cc_library(
     name = "clkmgr",
     srcs = [
-        "autogen/dif_clkmgr_autogen.c",
-        "autogen/dif_clkmgr_autogen.h",
         "dif_clkmgr.c",
+        "//sw/device/lib/dif/autogen:clkmgr_hdr",
+        "//sw/device/lib/dif/autogen:clkmgr_src",
     ],
     hdrs = ["dif_clkmgr.h"],
     deps = [
@@ -189,8 +189,8 @@ cc_library(
 cc_test(
     name = "clkmgr_unittest",
     srcs = [
-        "autogen/dif_clkmgr_autogen_unittest.cc",
         "dif_clkmgr_unittest.cc",
+        "//sw/device/lib/dif/autogen:clkmgr_unittest",
     ],
     deps = [
         ":clkmgr",
@@ -202,8 +202,8 @@ cc_test(
 cc_library(
     name = "csrng_shared",
     srcs = [
-        "autogen/dif_csrng_autogen.h",
         "dif_csrng_shared.c",
+        "//sw/device/lib/dif/autogen:csrng_hdr",
     ],
     hdrs = [
         "dif_csrng.h",
@@ -225,9 +225,9 @@ cc_library(
 cc_library(
     name = "csrng",
     srcs = [
-        "autogen/dif_csrng_autogen.c",
-        "autogen/dif_csrng_autogen.h",
         "dif_csrng.c",
+        "//sw/device/lib/dif/autogen:csrng_hdr",
+        "//sw/device/lib/dif/autogen:csrng_src",
     ],
     hdrs = [
         "dif_csrng.h",
@@ -248,8 +248,8 @@ cc_library(
 cc_test(
     name = "csrng_unittest",
     srcs = [
-        "autogen/dif_csrng_autogen_unittest.cc",
         "dif_csrng_unittest.cc",
+        "//sw/device/lib/dif/autogen:csrng_unittest",
     ],
     deps = [
         ":csrng",
@@ -261,9 +261,9 @@ cc_test(
 cc_library(
     name = "dma",
     srcs = [
-        "autogen/dif_dma_autogen.c",
-        "autogen/dif_dma_autogen.h",
         "dif_dma.c",
+        "//sw/device/lib/dif/autogen:dma_hdr",
+        "//sw/device/lib/dif/autogen:dma_src",
     ],
     hdrs = [
         "dif_dma.h",
@@ -282,8 +282,8 @@ cc_library(
 cc_test(
     name = "dma_unittest",
     srcs = [
-        "autogen/dif_dma_autogen_unittest.cc",
         "dif_dma_unittest.cc",
+        "//sw/device/lib/dif/autogen:dma_unittest",
     ],
     deps = [
         ":dma",
@@ -295,9 +295,9 @@ cc_test(
 cc_library(
     name = "edn",
     srcs = [
-        "autogen/dif_edn_autogen.c",
-        "autogen/dif_edn_autogen.h",
         "dif_edn.c",
+        "//sw/device/lib/dif/autogen:edn_hdr",
+        "//sw/device/lib/dif/autogen:edn_src",
     ],
     hdrs = [
         "dif_edn.h",
@@ -318,8 +318,8 @@ cc_library(
 cc_test(
     name = "edn_unittest",
     srcs = [
-        "autogen/dif_edn_autogen_unittest.cc",
         "dif_edn_unittest.cc",
+        "//sw/device/lib/dif/autogen:edn_unittest",
     ],
     deps = [
         ":edn",
@@ -331,9 +331,9 @@ cc_test(
 cc_library(
     name = "entropy_src",
     srcs = [
-        "autogen/dif_entropy_src_autogen.c",
-        "autogen/dif_entropy_src_autogen.h",
         "dif_entropy_src.c",
+        "//sw/device/lib/dif/autogen:entropy_src_hdr",
+        "//sw/device/lib/dif/autogen:entropy_src_src",
     ],
     hdrs = [
         "dif_entropy_src.h",
@@ -353,8 +353,8 @@ cc_library(
 cc_test(
     name = "entropy_src_unittest",
     srcs = [
-        "autogen/dif_entropy_src_autogen_unittest.cc",
         "dif_entropy_src_unittest.cc",
+        "//sw/device/lib/dif/autogen:entropy_src_unittest",
     ],
     deps = [
         ":entropy_src",
@@ -366,10 +366,10 @@ cc_test(
 cc_library(
     name = "flash_ctrl",
     srcs = [
-        "autogen/dif_flash_ctrl_autogen.c",
-        "autogen/dif_flash_ctrl_autogen.h",
         "dif_flash_ctrl.c",
         "dif_flash_ctrl.h",
+        "//sw/device/lib/dif/autogen:flash_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:flash_ctrl_src",
     ],
     deps = [
         ":base",
@@ -386,8 +386,8 @@ cc_library(
 cc_test(
     name = "flash_ctrl_unittest",
     srcs = [
-        "autogen/dif_flash_ctrl_autogen_unittest.cc",
         "dif_flash_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:flash_ctrl_unittest",
     ],
     deps = [
         ":flash_ctrl",
@@ -399,9 +399,9 @@ cc_test(
 cc_library(
     name = "gpio",
     srcs = [
-        "autogen/dif_gpio_autogen.c",
-        "autogen/dif_gpio_autogen.h",
         "dif_gpio.c",
+        "//sw/device/lib/dif/autogen:gpio_hdr",
+        "//sw/device/lib/dif/autogen:gpio_src",
     ],
     hdrs = [
         "dif_gpio.h",
@@ -421,8 +421,8 @@ cc_library(
 cc_test(
     name = "gpio_unittest",
     srcs = [
-        "autogen/dif_gpio_autogen_unittest.cc",
         "dif_gpio_unittest.cc",
+        "//sw/device/lib/dif/autogen:gpio_unittest",
     ],
     deps = [
         ":gpio",
@@ -434,9 +434,9 @@ cc_test(
 cc_library(
     name = "hmac",
     srcs = [
-        "autogen/dif_hmac_autogen.c",
-        "autogen/dif_hmac_autogen.h",
         "dif_hmac.c",
+        "//sw/device/lib/dif/autogen:hmac_hdr",
+        "//sw/device/lib/dif/autogen:hmac_src",
     ],
     hdrs = [
         "dif_hmac.h",
@@ -456,8 +456,8 @@ cc_library(
 cc_test(
     name = "hmac_unittest",
     srcs = [
-        "autogen/dif_hmac_autogen_unittest.cc",
         "dif_hmac_unittest.cc",
+        "//sw/device/lib/dif/autogen:hmac_unittest",
     ],
     deps = [
         ":hmac",
@@ -469,9 +469,9 @@ cc_test(
 cc_library(
     name = "i2c",
     srcs = [
-        "autogen/dif_i2c_autogen.c",
-        "autogen/dif_i2c_autogen.h",
         "dif_i2c.c",
+        "//sw/device/lib/dif/autogen:i2c_hdr",
+        "//sw/device/lib/dif/autogen:i2c_src",
     ],
     hdrs = [
         "dif_i2c.h",
@@ -491,8 +491,8 @@ cc_library(
 cc_test(
     name = "i2c_unittest",
     srcs = [
-        "autogen/dif_i2c_autogen_unittest.cc",
         "dif_i2c_unittest.cc",
+        "//sw/device/lib/dif/autogen:i2c_unittest",
     ],
     deps = [
         ":i2c",
@@ -504,9 +504,9 @@ cc_test(
 cc_library(
     name = "keymgr",
     srcs = [
-        "autogen/dif_keymgr_autogen.c",
-        "autogen/dif_keymgr_autogen.h",
         "dif_keymgr.c",
+        "//sw/device/lib/dif/autogen:keymgr_hdr",
+        "//sw/device/lib/dif/autogen:keymgr_src",
     ],
     hdrs = [
         "dif_keymgr.h",
@@ -526,8 +526,8 @@ cc_library(
 cc_test(
     name = "keymgr_unittest",
     srcs = [
-        "autogen/dif_keymgr_autogen_unittest.cc",
         "dif_keymgr_unittest.cc",
+        "//sw/device/lib/dif/autogen:keymgr_unittest",
     ],
     deps = [
         ":keymgr",
@@ -539,9 +539,9 @@ cc_test(
 cc_library(
     name = "keymgr_dpe",
     srcs = [
-        "autogen/dif_keymgr_dpe_autogen.c",
-        "autogen/dif_keymgr_dpe_autogen.h",
         "dif_keymgr_dpe.c",
+        "//sw/device/lib/dif/autogen:keymgr_dpe_hdr",
+        "//sw/device/lib/dif/autogen:keymgr_dpe_src",
     ],
     hdrs = [
         "dif_keymgr_dpe.h",
@@ -560,7 +560,7 @@ cc_library(
 cc_test(
     name = "keymgr_dpe_unittest",
     srcs = [
-        "autogen/dif_keymgr_dpe_autogen_unittest.cc",
+        "//sw/device/lib/dif/autogen:keymgr_dpe_unittest",
     ],
     deps = [
         ":keymgr_dpe",
@@ -572,9 +572,9 @@ cc_test(
 cc_library(
     name = "kmac",
     srcs = [
-        "autogen/dif_kmac_autogen.c",
-        "autogen/dif_kmac_autogen.h",
         "dif_kmac.c",
+        "//sw/device/lib/dif/autogen:kmac_hdr",
+        "//sw/device/lib/dif/autogen:kmac_src",
     ],
     hdrs = [
         "dif_kmac.h",
@@ -594,8 +594,8 @@ cc_library(
 cc_test(
     name = "kmac_unittest",
     srcs = [
-        "autogen/dif_kmac_autogen_unittest.cc",
         "dif_kmac_unittest.cc",
+        "//sw/device/lib/dif/autogen:kmac_unittest",
     ],
     deps = [
         ":kmac",
@@ -607,9 +607,9 @@ cc_test(
 cc_library(
     name = "lc_ctrl",
     srcs = [
-        "autogen/dif_lc_ctrl_autogen.c",
-        "autogen/dif_lc_ctrl_autogen.h",
         "dif_lc_ctrl.c",
+        "//sw/device/lib/dif/autogen:lc_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:lc_ctrl_src",
     ],
     hdrs = [
         "dif_lc_ctrl.h",
@@ -629,8 +629,8 @@ cc_library(
 cc_test(
     name = "lc_ctrl_unittest",
     srcs = [
-        "autogen/dif_lc_ctrl_autogen_unittest.cc",
         "dif_lc_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:lc_ctrl_unittest",
     ],
     deps = [
         ":lc_ctrl",
@@ -642,9 +642,9 @@ cc_test(
 cc_library(
     name = "mbx",
     srcs = [
-        "autogen/dif_mbx_autogen.c",
-        "autogen/dif_mbx_autogen.h",
         "dif_mbx.c",
+        "//sw/device/lib/dif/autogen:mbx_hdr",
+        "//sw/device/lib/dif/autogen:mbx_src",
     ],
     hdrs = [
         "dif_mbx.h",
@@ -664,8 +664,8 @@ cc_library(
 cc_test(
     name = "mbx_unittest",
     srcs = [
-        "autogen/dif_mbx_autogen_unittest.cc",
         "dif_mbx_unittest.cc",
+        "//sw/device/lib/dif/autogen:mbx_unittest",
     ],
     deps = [
         ":mbx",
@@ -677,9 +677,9 @@ cc_test(
 cc_library(
     name = "otbn",
     srcs = [
-        "autogen/dif_otbn_autogen.c",
-        "autogen/dif_otbn_autogen.h",
         "dif_otbn.c",
+        "//sw/device/lib/dif/autogen:otbn_hdr",
+        "//sw/device/lib/dif/autogen:otbn_src",
     ],
     hdrs = [
         "dif_otbn.h",
@@ -699,8 +699,8 @@ cc_library(
 cc_test(
     name = "otbn_unittest",
     srcs = [
-        "autogen/dif_otbn_autogen_unittest.cc",
         "dif_otbn_unittest.cc",
+        "//sw/device/lib/dif/autogen:otbn_unittest",
     ],
     deps = [
         ":otbn",
@@ -712,9 +712,9 @@ cc_test(
 cc_library(
     name = "otp_ctrl",
     srcs = [
-        "autogen/dif_otp_ctrl_autogen.c",
-        "autogen/dif_otp_ctrl_autogen.h",
         "dif_otp_ctrl.c",
+        "//sw/device/lib/dif/autogen:otp_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:otp_ctrl_src",
     ],
     hdrs = [
         "dif_otp_ctrl.h",
@@ -734,8 +734,8 @@ cc_library(
 cc_test(
     name = "otp_ctrl_unittest",
     srcs = [
-        "autogen/dif_otp_ctrl_autogen_unittest.cc",
         "dif_otp_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:otp_ctrl_unittest",
     ],
     deps = [
         ":otp_ctrl",
@@ -747,9 +747,9 @@ cc_test(
 cc_library(
     name = "pattgen",
     srcs = [
-        "autogen/dif_pattgen_autogen.c",
-        "autogen/dif_pattgen_autogen.h",
         "dif_pattgen.c",
+        "//sw/device/lib/dif/autogen:pattgen_hdr",
+        "//sw/device/lib/dif/autogen:pattgen_src",
     ],
     hdrs = [
         "dif_pattgen.h",
@@ -769,8 +769,8 @@ cc_library(
 cc_test(
     name = "pattgen_unittest",
     srcs = [
-        "autogen/dif_pattgen_autogen_unittest.cc",
         "dif_pattgen_unittest.cc",
+        "//sw/device/lib/dif/autogen:pattgen_unittest",
     ],
     deps = [
         ":pattgen",
@@ -782,9 +782,9 @@ cc_test(
 cc_library(
     name = "pinmux",
     srcs = [
-        "autogen/dif_pinmux_autogen.c",
-        "autogen/dif_pinmux_autogen.h",
         "dif_pinmux.c",
+        "//sw/device/lib/dif/autogen:pinmux_hdr",
+        "//sw/device/lib/dif/autogen:pinmux_src",
     ],
     hdrs = [
         "dif_pinmux.h",
@@ -805,8 +805,8 @@ cc_library(
 cc_test(
     name = "pinmux_unittest",
     srcs = [
-        "autogen/dif_pinmux_autogen_unittest.cc",
         "dif_pinmux_unittest.cc",
+        "//sw/device/lib/dif/autogen:pinmux_unittest",
     ],
     deps = [
         ":pinmux",
@@ -818,9 +818,9 @@ cc_test(
 cc_library(
     name = "pwm",
     srcs = [
-        "autogen/dif_pwm_autogen.c",
-        "autogen/dif_pwm_autogen.h",
         "dif_pwm.c",
+        "//sw/device/lib/dif/autogen:pwm_hdr",
+        "//sw/device/lib/dif/autogen:pwm_src",
     ],
     hdrs = [
         "dif_pwm.h",
@@ -840,7 +840,7 @@ cc_library(
 cc_test(
     name = "pwm_unittest",
     srcs = [
-        "autogen/dif_pwm_autogen_unittest.cc",
+        "//sw/device/lib/dif/autogen:pwm_unittest",
     ],
     deps = [
         ":pwm",
@@ -852,9 +852,9 @@ cc_test(
 cc_library(
     name = "pwrmgr",
     srcs = [
-        "autogen/dif_pwrmgr_autogen.c",
-        "autogen/dif_pwrmgr_autogen.h",
         "dif_pwrmgr.c",
+        "//sw/device/lib/dif/autogen:pwrmgr_hdr",
+        "//sw/device/lib/dif/autogen:pwrmgr_src",
     ],
     hdrs = [
         "dif_pwrmgr.h",
@@ -874,8 +874,8 @@ cc_library(
 cc_test(
     name = "pwrmgr_unittest",
     srcs = [
-        "autogen/dif_pwrmgr_autogen_unittest.cc",
         "dif_pwrmgr_unittest.cc",
+        "//sw/device/lib/dif/autogen:pwrmgr_unittest",
     ],
     deps = [
         ":pwrmgr",
@@ -887,9 +887,9 @@ cc_test(
 cc_library(
     name = "rom_ctrl",
     srcs = [
-        "autogen/dif_rom_ctrl_autogen.c",
-        "autogen/dif_rom_ctrl_autogen.h",
         "dif_rom_ctrl.c",
+        "//sw/device/lib/dif/autogen:rom_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:rom_ctrl_src",
     ],
     hdrs = [
         "dif_rom_ctrl.h",
@@ -909,7 +909,7 @@ cc_library(
 cc_test(
     name = "rom_ctrl_unittest",
     srcs = [
-        "autogen/dif_rom_ctrl_autogen_unittest.cc",
+        "//sw/device/lib/dif/autogen:rom_ctrl_unittest",
     ],
     deps = [
         ":rom_ctrl",
@@ -920,7 +920,7 @@ cc_test(
 
 cc_library(
     name = "rstmgr_intf",
-    srcs = ["autogen/dif_rstmgr_autogen.h"],
+    srcs = ["//sw/device/lib/dif/autogen:rstmgr_hdr"],
     hdrs = ["dif_rstmgr.h"],
     deps = [":base"],
 )
@@ -928,8 +928,8 @@ cc_library(
 cc_library(
     name = "rstmgr",
     srcs = [
-        "autogen/dif_rstmgr_autogen.c",
         "dif_rstmgr.c",
+        "//sw/device/lib/dif/autogen:rstmgr_src",
     ],
     deps = [
         ":base",
@@ -947,8 +947,8 @@ cc_library(
 cc_test(
     name = "rstmgr_unittest",
     srcs = [
-        "autogen/dif_rstmgr_autogen_unittest.cc",
         "dif_rstmgr_unittest.cc",
+        "//sw/device/lib/dif/autogen:rstmgr_unittest",
     ],
     deps = [
         ":rstmgr",
@@ -960,9 +960,9 @@ cc_test(
 cc_library(
     name = "rv_core_ibex",
     srcs = [
-        "autogen/dif_rv_core_ibex_autogen.c",
-        "autogen/dif_rv_core_ibex_autogen.h",
         "dif_rv_core_ibex.c",
+        "//sw/device/lib/dif/autogen:rv_core_ibex_hdr",
+        "//sw/device/lib/dif/autogen:rv_core_ibex_src",
     ],
     hdrs = [
         "dif_rv_core_ibex.h",
@@ -979,8 +979,8 @@ cc_library(
 cc_test(
     name = "rv_core_ibex_unittest",
     srcs = [
-        "autogen/dif_rv_core_ibex_autogen_unittest.cc",
         "dif_rv_core_ibex_unittest.cc",
+        "//sw/device/lib/dif/autogen:rv_core_ibex_unittest",
     ],
     deps = [
         ":rv_core_ibex",
@@ -992,9 +992,9 @@ cc_test(
 cc_library(
     name = "rv_dm",
     srcs = [
-        "autogen/dif_rv_dm_autogen.c",
-        "autogen/dif_rv_dm_autogen.h",
         "dif_rv_dm.c",
+        "//sw/device/lib/dif/autogen:rv_dm_hdr",
+        "//sw/device/lib/dif/autogen:rv_dm_src",
     ],
     hdrs = [
         "dif_rv_dm.h",
@@ -1012,8 +1012,8 @@ cc_library(
 cc_test(
     name = "rv_dm_unittest",
     srcs = [
-        "autogen/dif_rv_dm_autogen_unittest.cc",
         "dif_rv_dm_unittest.cc",
+        "//sw/device/lib/dif/autogen:rv_dm_unittest",
     ],
     deps = [
         ":rv_dm",
@@ -1025,9 +1025,9 @@ cc_test(
 cc_library(
     name = "rv_plic",
     srcs = [
-        "autogen/dif_rv_plic_autogen.c",
-        "autogen/dif_rv_plic_autogen.h",
         "dif_rv_plic.c",
+        "//sw/device/lib/dif/autogen:rv_plic_hdr",
+        "//sw/device/lib/dif/autogen:rv_plic_src",
     ],
     hdrs = [
         "dif_rv_plic.h",
@@ -1047,8 +1047,8 @@ cc_library(
 cc_test(
     name = "rv_plic_unittest",
     srcs = [
-        "autogen/dif_rv_plic_autogen_unittest.cc",
         "dif_rv_plic_unittest.cc",
+        "//sw/device/lib/dif/autogen:rv_plic_unittest",
     ],
     deps = [
         ":rv_plic",
@@ -1060,9 +1060,9 @@ cc_test(
 cc_library(
     name = "rv_timer",
     srcs = [
-        "autogen/dif_rv_timer_autogen.c",
-        "autogen/dif_rv_timer_autogen.h",
         "dif_rv_timer.c",
+        "//sw/device/lib/dif/autogen:rv_timer_hdr",
+        "//sw/device/lib/dif/autogen:rv_timer_src",
     ],
     hdrs = [
         "dif_rv_timer.h",
@@ -1083,8 +1083,8 @@ cc_library(
 cc_test(
     name = "rv_timer_unittest",
     srcs = [
-        "autogen/dif_rv_timer_autogen_unittest.cc",
         "dif_rv_timer_unittest.cc",
+        "//sw/device/lib/dif/autogen:rv_timer_unittest",
     ],
     deps = [
         ":rv_timer",
@@ -1096,9 +1096,9 @@ cc_test(
 cc_library(
     name = "spi_device",
     srcs = [
-        "autogen/dif_spi_device_autogen.c",
-        "autogen/dif_spi_device_autogen.h",
         "dif_spi_device.c",
+        "//sw/device/lib/dif/autogen:spi_device_hdr",
+        "//sw/device/lib/dif/autogen:spi_device_src",
     ],
     hdrs = [
         "dif_spi_device.h",
@@ -1118,8 +1118,8 @@ cc_library(
 cc_test(
     name = "spi_device_unittest",
     srcs = [
-        "autogen/dif_spi_device_autogen_unittest.cc",
         "dif_spi_device_unittest.cc",
+        "//sw/device/lib/dif/autogen:spi_device_unittest",
     ],
     deps = [
         ":spi_device",
@@ -1131,9 +1131,9 @@ cc_test(
 cc_library(
     name = "spi_host",
     srcs = [
-        "autogen/dif_spi_host_autogen.c",
-        "autogen/dif_spi_host_autogen.h",
         "dif_spi_host.c",
+        "//sw/device/lib/dif/autogen:spi_host_hdr",
+        "//sw/device/lib/dif/autogen:spi_host_src",
     ],
     hdrs = [
         "dif_spi_host.h",
@@ -1153,8 +1153,8 @@ cc_library(
 cc_test(
     name = "spi_host_unittest",
     srcs = [
-        "autogen/dif_spi_host_autogen_unittest.cc",
         "dif_spi_host_unittest.cc",
+        "//sw/device/lib/dif/autogen:spi_host_unittest",
     ],
     deps = [
         ":spi_host",
@@ -1167,9 +1167,9 @@ cc_test(
 cc_library(
     name = "sram_ctrl",
     srcs = [
-        "autogen/dif_sram_ctrl_autogen.c",
-        "autogen/dif_sram_ctrl_autogen.h",
         "dif_sram_ctrl.c",
+        "//sw/device/lib/dif/autogen:sram_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:sram_ctrl_src",
     ],
     hdrs = [
         "dif_sram_ctrl.h",
@@ -1189,8 +1189,8 @@ cc_library(
 cc_test(
     name = "sram_ctrl_unittest",
     srcs = [
-        "autogen/dif_sram_ctrl_autogen_unittest.cc",
         "dif_sram_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:sram_ctrl_unittest",
     ],
     deps = [
         ":sram_ctrl",
@@ -1202,9 +1202,9 @@ cc_test(
 cc_library(
     name = "sensor_ctrl",
     srcs = [
-        "autogen/dif_sensor_ctrl_autogen.c",
-        "autogen/dif_sensor_ctrl_autogen.h",
         "dif_sensor_ctrl.c",
+        "//sw/device/lib/dif/autogen:sensor_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:sensor_ctrl_src",
     ],
     hdrs = [
         "dif_sensor_ctrl.h",
@@ -1222,8 +1222,8 @@ cc_library(
 cc_test(
     name = "sensor_ctrl_unittest",
     srcs = [
-        "autogen/dif_sensor_ctrl_autogen_unittest.cc",
         "dif_sensor_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:sensor_ctrl_unittest",
     ],
     deps = [
         ":sensor_ctrl",
@@ -1235,9 +1235,9 @@ cc_test(
 cc_library(
     name = "sysrst_ctrl",
     srcs = [
-        "autogen/dif_sysrst_ctrl_autogen.c",
-        "autogen/dif_sysrst_ctrl_autogen.h",
         "dif_sysrst_ctrl.c",
+        "//sw/device/lib/dif/autogen:sysrst_ctrl_hdr",
+        "//sw/device/lib/dif/autogen:sysrst_ctrl_src",
     ],
     hdrs = [
         "dif_sysrst_ctrl.h",
@@ -1257,8 +1257,8 @@ cc_library(
 cc_test(
     name = "sysrst_ctrl_unittest",
     srcs = [
-        "autogen/dif_sysrst_ctrl_autogen_unittest.cc",
         "dif_sysrst_ctrl_unittest.cc",
+        "//sw/device/lib/dif/autogen:sysrst_ctrl_unittest",
     ],
     deps = [
         ":sysrst_ctrl",
@@ -1270,9 +1270,9 @@ cc_test(
 cc_library(
     name = "uart",
     srcs = [
-        "autogen/dif_uart_autogen.c",
-        "autogen/dif_uart_autogen.h",
         "dif_uart.c",
+        "//sw/device/lib/dif/autogen:uart_hdr",
+        "//sw/device/lib/dif/autogen:uart_src",
     ],
     hdrs = ["dif_uart.h"],
     deps = [
@@ -1291,8 +1291,8 @@ cc_library(
 cc_test(
     name = "uart_unittest",
     srcs = [
-        "autogen/dif_uart_autogen_unittest.cc",
         "dif_uart_unittest.cc",
+        "//sw/device/lib/dif/autogen:uart_unittest",
     ],
     deps = [
         ":test_base",
@@ -1304,9 +1304,9 @@ cc_test(
 cc_library(
     name = "usbdev",
     srcs = [
-        "autogen/dif_usbdev_autogen.c",
-        "autogen/dif_usbdev_autogen.h",
         "dif_usbdev.c",
+        "//sw/device/lib/dif/autogen:usbdev_hdr",
+        "//sw/device/lib/dif/autogen:usbdev_src",
     ],
     hdrs = [
         "dif_usbdev.h",
@@ -1326,8 +1326,8 @@ cc_library(
 cc_test(
     name = "usbdev_unittest",
     srcs = [
-        "autogen/dif_usbdev_autogen_unittest.cc",
         "dif_usbdev_unittest.cc",
+        "//sw/device/lib/dif/autogen:usbdev_unittest",
     ],
     deps = [
         ":test_base",
