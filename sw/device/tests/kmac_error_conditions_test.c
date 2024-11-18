@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
@@ -690,9 +691,11 @@ status_t test_err_sw_pushed_msg_fifo(void) {
 
 bool test_main(void) {
   // The first three tests don't run on CW310 (see lowRISC/opentitan#15530).
-  test_err_wait_timer_expired();
-  test_err_incorrect_entropy_mode();
-  test_err_sw_hashing_without_entropy_ready();
+  if (kDeviceType != kDeviceFpgaCw310) {
+    test_err_wait_timer_expired();
+    test_err_incorrect_entropy_mode();
+    test_err_sw_hashing_without_entropy_ready();
+  }
 
   test_err_incorrect_fnc_name();
   test_err_key_not_valid();
