@@ -383,12 +383,11 @@ jobs:
             --define DISABLE_VERILATOR_BUILD=true                     \
             --test_tag_filters=-broken,-cw310,-verilator,-dv,-silicon \
             --target_pattern_file="$target_pattern_file"
-      - name: Publish test results
-        uses: actions/upload-artifact@v4
+      - name: Publish Bazel test results
+        uses: ./.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
         with:
-          name: test_results
-          path: "**/test.xml"
-          overwrite: true
+          artifact-name: sw_build_test-test-results
       - name: Check for unrunnable tests
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
