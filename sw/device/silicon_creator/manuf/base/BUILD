@@ -322,6 +322,7 @@ manifest(d = {
             "//sw/device/lib/testing/test_framework:ujson_ottf",
             "//sw/device/silicon_creator/lib:attestation",
             "//sw/device/silicon_creator/lib:otbn_boot_services",
+            "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:util",
             "//sw/device/silicon_creator/lib/cert",
             "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
