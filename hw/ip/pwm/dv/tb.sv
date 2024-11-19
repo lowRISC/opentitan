@@ -52,7 +52,7 @@ module tb;
   `ASSERT(PwmEnTiedHigh_A, cio_pwm_en == '1, clk, rst_n)
 
   for (genvar n = 0; n < PWM_NUM_CHANNELS; n++) begin: gen_pwm_if_conn
-    pwm_if pwm_if(.clk(clk), .rst_n(rst_n), .pwm(cio_pwm[n]));
+    pwm_if pwm_if(.clk(clk_core), .rst_n(rst_core_n), .pwm(cio_pwm[n]));
 
     initial begin
       uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", n), "vif",
