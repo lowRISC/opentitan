@@ -23,7 +23,7 @@
 +incdir+./hw/ip/i2c/dv/env/seq_lib
 +incdir+./hw/ip/i2c/dv/tests
 
-define+UVM
++define+UVM
 +define+UVM_NO_DEPRECATED
 +define+UVM_REGEX_NO_DPI
 +define+UVM_REG_ADDR_WIDTH=32
