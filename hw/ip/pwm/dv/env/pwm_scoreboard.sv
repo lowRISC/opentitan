@@ -41,7 +41,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                        blink[PWM_NUM_CHANNELS];
   uint                              initial_dc[PWM_NUM_CHANNELS]   = '{default:0};
-  string                            txt                      ="";
 
   // UVM phases
   extern function void build_phase(uvm_phase phase);
@@ -135,23 +134,24 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     end
 
     "pwm_en": begin
+      string txt = "";
+
       channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
-      foreach(channel_en[ii]) begin
-      bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
-        if (pwm_en)begin
+      foreach (channel_en[ii]) begin
+        bit pwm_en = get_field_val(ral.pwm_en[0].en[ii], item.a_data);
+        if (pwm_en) begin
           `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
           blink_state[ii] = CycleA;
         end
-        txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+        txt = {txt, $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]) };
         if (cfg.en_cov) begin
           cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
                                  $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
         end
-       end
-        `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
-        txt = "";
-        prev_channel_en = channel_en;
       end
+      `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
+      prev_channel_en = channel_en;
+    end
 
     "cfg": begin
         channel_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
@@ -163,12 +163,14 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       end
 
     "invert": begin
-        invert = item.a_data[PWM_NUM_CHANNELS-1:0];
-        foreach(invert[ii]) begin
-          txt = {txt, $sformatf("\n Invert Channel[%d] : %0b",ii, invert[ii])};
-        end
-        `uvm_info(`gfn, $sformatf("Setting channel Inverts %s ", txt), UVM_HIGH)
+      string txt = "";
+
+      invert = item.a_data[PWM_NUM_CHANNELS-1:0];
+      foreach (invert[ii]) begin
+        txt = {txt, $sformatf("\n Invert Channel[%d] : %0b", ii, invert[ii])};
       end
+      `uvm_info(`gfn, $sformatf("Setting channel Inverts %s ", txt), UVM_HIGH)
+    end
 
     "pwm_param_0",
     "pwm_param_1",
@@ -176,17 +178,21 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     "pwm_param_3",
     "pwm_param_4",
     "pwm_param_5": begin
-        int idx = get_multireg_idx(csr_name);
-        channel_param[idx].PhaseDelay = get_field_val(ral.pwm_param[idx].phase_delay,
-                                                      item.a_data);
-        channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
-        channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
-        txt = $sformatf("\n Setting Param for channel[%d]", idx);
-        txt = { txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
-        txt = {txt,  $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
-        txt = {txt,  $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
-        `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
-      end
+      int idx = get_multireg_idx(csr_name);
+      channel_param[idx].PhaseDelay = get_field_val(ral.pwm_param[idx].phase_delay, item.a_data);
+      channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
+      channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
+      `uvm_info(`gfn,
+                $sformatf({"Setting Channel Param for CH[%d]\n",
+                           " ----| Phase Delay %0h\n",
+                           " ----| Heart Beat enable: %0b\n",
+                           " ----| Blink enable: %0b"},
+                          idx,
+                          channel_param[idx].PhaseDelay,
+                          channel_param[idx].HtbtEn,
+                          channel_param[idx].BlinkEn),
+                UVM_HIGH)
+    end
 
      "duty_cycle_0",
      "duty_cycle_1",
@@ -260,7 +266,6 @@ endfunction
 task pwm_scoreboard::compare_trans(int channel);
   pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
   pwm_item input_item   = new($sformatf("input_item_%0d", channel));
-  string txt            = "";
   int    p = 0;
   bit    chatty = (channel == 2);
 
