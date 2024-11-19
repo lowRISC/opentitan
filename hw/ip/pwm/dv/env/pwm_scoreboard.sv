@@ -22,7 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  param_reg_t                channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                 duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                 blink[PWM_NUM_CHANNELS];
   state_e                    blink_state[PWM_NUM_CHANNELS]         = '{default:CycleA};
@@ -178,18 +177,15 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         "pwm_param_4",
         "pwm_param_5": begin
           int idx = get_multireg_idx(csr_name);
-          channel_param[idx].PhaseDelay = get_field_val(ral.pwm_param[idx].phase_delay, item.a_data);
-          channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
-          channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
           `uvm_info(`gfn,
                     $sformatf({"Setting Channel Param for CH[%d]\n",
                                " ----| Phase Delay %0h\n",
                                " ----| Heart Beat enable: %0b\n",
                                " ----| Blink enable: %0b"},
                               idx,
-                              channel_param[idx].PhaseDelay,
-                              channel_param[idx].HtbtEn,
-                              channel_param[idx].BlinkEn),
+                              `gmv(ral.pwm_param[idx].phase_delay),
+                              `gmv(ral.pwm_param[idx].htbt_en),
+                              `gmv(ral.pwm_param[idx].blink_en)),
                     UVM_HIGH)
         end
 
@@ -237,9 +233,9 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       cov.pwm_chan_en_inv_cg.sample(channel_en, invert);
       cov.pwm_per_channel_cg.sample(channel_en,
                                     invert,
-                                    channel_param[ii].PhaseDelay,
-                                    channel_param[ii].BlinkEn,
-                                    channel_param[ii].HtbtEn,
+                                    `gmv(ral.pwm_param[ii].phase_delay),
+                                    `gmv(ral.pwm_param[ii].blink_en),
+                                    `gmv(ral.pwm_param[ii].htbt_en),
                                     duty_cycle[ii].A,
                                     duty_cycle[ii].B,
                                     blink[ii].A,
@@ -319,9 +315,9 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
   // compare duty cycle for modifier
   dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
 
-  if (channel_param[channel].BlinkEn) begin
+  if (`gmv(ral.pwm_param[channel].blink_en)) begin
     // Unique case for violation report
-    case (channel_param[channel].HtbtEn)
+    case (`gmv(ral.pwm_param[channel].htbt_en))
       1'b0: begin
         // When HTBT_EN is cleared, the standard blink behavior applies, meaning
         // that the output duty cycle alternates between DUTY_CYCLE.A for (BLINK_PARAM.X+1)
@@ -427,10 +423,6 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
             blink_state[channel] = CycleA;
           end
         endcase
-      end
-      default: begin
-        `uvm_info(`gfn, $sformatf("Error: Channel %d: HtbtEn == %b is not a valid state.",
-                                  channel, channel_param[channel].HtbtEn), UVM_HIGH)
       end
     endcase
   end else int_dc[channel] = duty_cycle[channel].A;
