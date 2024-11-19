@@ -222,7 +222,7 @@ impl Codegen<'_> {
         // Don't try to exactly compute how many bytes we need for the length.
         self.max_out_size += Self::tag_and_content_size(max_size);
         self.push_str_with_indent(&format!(
-            "RETURN_IF_ERROR(asn1_push_oid_raw(&state, {expr}, {expr_size}));\n"
+            "asn1_push_oid_raw(&state, {expr}, {expr_size});\n"
         ))
     }
 
@@ -231,7 +231,7 @@ impl Codegen<'_> {
         match val {
             Value::Literal(x) => {
                 self.push_str_with_indent(&format!(
-                    "RETURN_IF_ERROR(asn1_bitstring_push_bit({bitstring_tagname}, {x}));\n"
+                    "asn1_bitstring_push_bit({bitstring_tagname}, {x});\n"
                 ));
             }
             Value::Variable(Variable { name, convert }) => {
@@ -248,7 +248,9 @@ impl Codegen<'_> {
                         let VariableCodegenInfo::Boolean { value_expr } = codegen else {
                             bail!("internal error: boolean not represented by a VariableCodegenInfo::Boolean");
                         };
-                        self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_bitstring_push_bit({bitstring_tagname}, {value_expr}));\n"));
+                        self.push_str_with_indent(&format!(
+                            "asn1_bitstring_push_bit({bitstring_tagname}, {value_expr});\n"
+                        ));
                     }
                     _ => bail!(
                         "conversion from to {:?} to boolean is not supported",
@@ -290,9 +292,7 @@ impl Tag {
 impl Builder for Codegen<'_> {
     /// Push a byte into the ASN1 output, the value can be any C expression.
     fn push_byte(&mut self, val: u8) -> Result<()> {
-        self.push_str_with_indent(&format!(
-            "RETURN_IF_ERROR(asn1_push_byte(&state, {val}));\n"
-        ));
+        self.push_str_with_indent(&format!("asn1_push_byte(&state, {val});\n"));
         self.max_out_size += 1;
         Ok(())
     }
@@ -303,7 +303,7 @@ impl Builder for Codegen<'_> {
             Value::Literal(x) => {
                 let bool_str = if *x { "true" } else { "false" };
                 self.push_str_with_indent(&format!(
-                    "RETURN_IF_ERROR(asn1_push_bool(&state, {}, {}));\n",
+                    "asn1_push_bool(&state, {}, {});\n",
                     tag.codestring(),
                     bool_str
                 ));
@@ -324,7 +324,7 @@ impl Builder for Codegen<'_> {
                 match codegen {
                     VariableCodegenInfo::Boolean { value_expr } => {
                         self.push_str_with_indent(&format!(
-                            "RETURN_IF_ERROR(asn1_push_bool(&state, {}, {value_expr}));\n",
+                            "asn1_push_bool(&state, {}, {value_expr});\n",
                             tag.codestring()
                         ))
                     }
@@ -355,7 +355,7 @@ impl Builder for Codegen<'_> {
             Value::Literal(x) => {
                 if x.bits() <= 32 {
                     self.push_str_with_indent(&format!(
-                        "RETURN_IF_ERROR(asn1_push_uint32(&state, {}, {x}));\n",
+                        "asn1_push_uint32(&state, {}, {x});\n",
                         tag.codestring()
                     ));
                     self.max_out_size += Self::tag_and_content_size(1 + (x.bits() + 7) / 8);
@@ -364,7 +364,7 @@ impl Builder for Codegen<'_> {
                     let const_name = self.add_constant_byte_array(name_hint, &bytes);
                     self.push_str_with_indent(
                         &format!(
-                            "RETURN_IF_ERROR(asn1_push_integer(&state, {}, false, {const_name}, sizeof({const_name})));\n",
+                            "asn1_push_integer(&state, {}, false, {const_name}, sizeof({const_name}));\n",
                             tag.codestring())
                     );
                     self.max_out_size += Self::tag_and_content_size(1 + bytes.len())
@@ -400,7 +400,7 @@ impl Builder for Codegen<'_> {
                 match codegen {
                     VariableCodegenInfo::Int32 { value_expr } => {
                         self.push_str_with_indent(&format!(
-                            "RETURN_IF_ERROR(asn1_push_uint32(&state, {}, {value_expr}));\n",
+                            "asn1_push_uint32(&state, {}, {value_expr});\n",
                             tag.codestring()
                         ))
                     }
@@ -409,7 +409,10 @@ impl Builder for Codegen<'_> {
                         size_expr,
                     } => {
                         // Make sure the type is correct and get the size.
-                        self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_integer(&state, {}, false, {ptr_expr}, {size_expr}));\n", tag.codestring()))
+                        self.push_str_with_indent(&format!(
+                            "asn1_push_integer(&state, {}, false, {ptr_expr}, {size_expr});\n",
+                            tag.codestring()
+                        ))
                     }
                     _ => bail!("internal error: integer represented by a {source_type:?}"),
                 }
@@ -431,7 +434,9 @@ impl Builder for Codegen<'_> {
                 let data = &x.to_bytes_be();
                 let data = [vec![0; size - data.len()], data.clone()].concat();
                 let const_name = self.add_constant_byte_array(name_hint, &data);
-                self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_bytes(&state, {const_name}, sizeof({const_name})));\n"));
+                self.push_str_with_indent(&format!(
+                    "asn1_push_bytes(&state, {const_name}, sizeof({const_name}));\n"
+                ));
                 // There is not tag, we are just pushing the data itself.
                 self.max_out_size += data.len();
             }
@@ -453,7 +458,7 @@ impl Builder for Codegen<'_> {
                         // There is not tag, we are just pushing the data itself.
                         self.max_out_size += size;
                         self.push_str_with_indent(&format!(
-                            "RETURN_IF_ERROR(asn1_push_integer_pad(&state, false, {ptr_expr}, {size_expr}, {size}));\n"
+                            "asn1_push_integer_pad(&state, false, {ptr_expr}, {size_expr}, {size});\n"
                         ))
                     }
                     _ => bail!(
@@ -471,7 +476,9 @@ impl Builder for Codegen<'_> {
         match val {
             Value::Literal(x) => {
                 let const_name = self.add_constant_byte_array(name_hint, x);
-                self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_bytes(&state, {const_name}, sizeof({const_name})));\n"));
+                self.push_str_with_indent(&format!(
+                    "asn1_push_bytes(&state, {const_name}, sizeof({const_name}));\n"
+                ));
                 // There is not tag, we are just pushing the data itself.
                 self.max_out_size += x.len();
             }
@@ -493,7 +500,7 @@ impl Builder for Codegen<'_> {
                         // There is not tag, we are just pushing the data itself.
                         self.max_out_size += size;
                         self.push_str_with_indent(&format!(
-                            "RETURN_IF_ERROR(asn1_push_bytes(&state, {ptr_expr}, {size_expr}));\n"
+                            "asn1_push_bytes(&state, {ptr_expr}, {size_expr});\n"
                         ))
                     }
                     _ => bail!(
@@ -517,7 +524,7 @@ impl Builder for Codegen<'_> {
             Value::Literal(x) => {
                 let len = x.len();
                 self.push_str_with_indent(&format!(
-                    "RETURN_IF_ERROR(asn1_push_string(&state, {str_type}, \"{x}\", {len}));\n"
+                    "asn1_push_string(&state, {str_type}, \"{x}\", {len});\n"
                 ));
                 // A tagged string needs a tag (up to 3 bytes of length) and the string itself.
                 // Don't try to exactly compute how many bytes we need for the length.
@@ -543,7 +550,9 @@ impl Builder for Codegen<'_> {
                         else {
                             bail!("internal error: string not represented by a VariableCodegenInfo::Pointer");
                         };
-                        self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_push_string(&state, {str_type}, {ptr_expr}, {size_expr}));\n"));
+                        self.push_str_with_indent(&format!(
+                            "asn1_push_string(&state, {str_type}, {ptr_expr}, {size_expr});\n"
+                        ));
                         self.max_out_size += Self::tag_and_content_size(size);
                     }
                     VariableType::ByteArray { size } => {
@@ -556,7 +565,7 @@ impl Builder for Codegen<'_> {
                                 // The conversion doubles the size.
                                 self.max_out_size += Self::tag_and_content_size(2 * size);
                                 self.push_str_with_indent(
-                                    &format!("RETURN_IF_ERROR(asn1_push_hexstring(&state, {str_type}, {ptr_expr}, {size_expr}));\n"))
+                                    &format!("asn1_push_hexstring(&state, {str_type}, {ptr_expr}, {size_expr});\n"))
                             }
                             _ => bail!("conversion {convert:?} from byte array to string is not supported"),
                         }
@@ -582,9 +591,7 @@ impl Builder for Codegen<'_> {
             );
             builder.tag_idx += 1;
             builder.push_str_with_indent(&format!("asn1_bitstring_t {tag_name};\n"));
-            builder.push_str_with_indent(&format!(
-                "RETURN_IF_ERROR(asn1_start_bitstring(&state, &{tag_name}));\n"
-            ));
+            builder.push_str_with_indent(&format!("asn1_start_bitstring(&state, &{tag_name});\n"));
             builder.push_str_with_indent("{\n");
             builder.indent_lvl += 1;
             for bit in bits {
@@ -594,9 +601,7 @@ impl Builder for Codegen<'_> {
             builder.max_out_size += 1 + (bits.len() + 7) / 8;
             builder.indent_lvl -= 1;
             builder.push_str_with_indent("}\n");
-            builder.push_str_with_indent(&format!(
-                "RETURN_IF_ERROR(asn1_finish_bitstring(&{tag_name}));\n"
-            ));
+            builder.push_str_with_indent(&format!("asn1_finish_bitstring(&{tag_name});\n"));
             Ok(())
         })
     }
@@ -629,7 +634,7 @@ impl Builder for Codegen<'_> {
         self.tag_idx += 1;
         self.push_str_with_indent(&format!("asn1_tag_t {tag_name};\n"));
         self.push_str_with_indent(&format!(
-            "RETURN_IF_ERROR(asn1_start_tag(&state, &{tag_name}, {}));\n",
+            "asn1_start_tag(&state, &{tag_name}, {});\n",
             tag.codestring()
         ));
         self.push_str_with_indent("{\n");
@@ -643,7 +648,7 @@ impl Builder for Codegen<'_> {
         self.max_out_size += Self::tag_size(max_size);
         self.indent_lvl -= 1;
         self.push_str_with_indent("}\n");
-        self.push_str_with_indent(&format!("RETURN_IF_ERROR(asn1_finish_tag(&{tag_name}));\n"));
+        self.push_str_with_indent(&format!("asn1_finish_tag(&{tag_name});\n"));
         Ok(())
     }
 }
