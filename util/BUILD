@@ -81,8 +81,17 @@ py_binary(
         "//util/reggen:version",
         "//util/topgen",
         requirement("mako"),
-        # FIXME this is actually used by reggen that has a deps on it but it doesn't work...
-        requirement("pyyaml"),
+    ],
+)
+
+py_binary(
+    name = "gen_testutils",
+    srcs = ["gen_testutils.py"],
+    deps = [
+        "//util/autogen_testutils",
+        "//util/topgen",
+        requirement("mako"),
+        requirement("hjson"),
     ],
 )
 
