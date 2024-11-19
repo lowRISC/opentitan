@@ -22,7 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  bit                        regwen                   =  0;
   cfg_reg_t                  channel_cfg              = '0;
 
   bit [PWM_NUM_CHANNELS-1:0] channel_en               = '0;
@@ -133,8 +132,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
       "regwen": begin
-        regwen = item.a_data[0];
-        `uvm_info(`gfn, $sformatf("Register Write en: %0b", regwen), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Register Write en: %0b", item.a_data[0]), UVM_HIGH)
       end
 
       "pwm_en": begin
