@@ -25,7 +25,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   cfg_reg_t                  channel_cfg              = '0;
 
   bit [PWM_NUM_CHANNELS-1:0] channel_en               = '0;
-  bit [PWM_NUM_CHANNELS-1:0] prev_channel_en          = '0;
   bit [PWM_NUM_CHANNELS-1:0] invert                   = '0;
 
   param_reg_t                channel_param[PWM_NUM_CHANNELS];
@@ -152,7 +151,6 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
           end
         end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
-        prev_channel_en = channel_en;
       end
 
       "cfg": begin
