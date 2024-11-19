@@ -84,19 +84,17 @@ pub fn main() -> anyhow::Result<()> {
     let bus: Box<dyn Driver> = match options.bus {
         TpmBus::Spi { params, gsc_ready } => {
             let spi = params.create(&transport, "TPM")?;
-            let ready_pin = match &gsc_ready {
-                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
-                None => None,
-            };
-            Box::new(SpiDriver::new(spi, ready_pin)?)
+            if let Some(pin) = &gsc_ready {
+                spi.set_pins(None, None, None, None, Some(&transport.gpio_pin(pin)?))?;
+            }
+            Box::new(SpiDriver::new(spi, gsc_ready.is_some())?)
         }
         TpmBus::I2C { params, gsc_ready } => {
             let i2c = params.create(&transport, "TPM")?;
-            let ready_pin = match &gsc_ready {
-                Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
-                None => None,
-            };
-            Box::new(I2cDriver::new(i2c, ready_pin)?)
+            if let Some(pin) = &gsc_ready {
+                i2c.set_pins(None, None, Some(&transport.gpio_pin(pin)?))?;
+            }
+            Box::new(I2cDriver::new(i2c, gsc_ready.is_some())?)
         }
     };
     bus.init()?;
