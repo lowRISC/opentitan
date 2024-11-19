@@ -68,6 +68,7 @@ cc_library(
     srcs = ["asn1.c"],
     hdrs = ["asn1.h"],
     deps = [
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
     ],
