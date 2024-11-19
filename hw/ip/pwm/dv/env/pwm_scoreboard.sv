@@ -22,8 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  cfg_reg_t                  channel_cfg              = '0;
-
   bit [PWM_NUM_CHANNELS-1:0] channel_en               = '0;
   bit [PWM_NUM_CHANNELS-1:0] invert                   = '0;
 
@@ -154,12 +152,10 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       end
 
       "cfg": begin
-        channel_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
-        channel_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
-        channel_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
         `uvm_info(`gfn,
                   $sformatf("PWM global cfg: \n Clk Div: %0h, \n Dc Resn: %0h, \n Cntr en: %0b:",
-                            channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn), UVM_HIGH)
+                            `gmv(ral.cfg.clk_div), `gmv(ral.cfg.dc_resn), `gmv(ral.cfg.cntr_en)),
+                  UVM_HIGH)
       end
 
       "invert": begin
@@ -230,7 +226,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
   // Sample for coverage
   if (cfg.en_cov) begin
     cov.clock_cg.sample(cfg.get_clk_core_freq(), cfg.clk_rst_vif.clk_freq_mhz);
-    cov.cfg_cg.sample(channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn);
+    cov.cfg_cg.sample(`gmv(ral.cfg.clk_div), `gmv(ral.cfg.dc_resn), `gmv(ral.cfg.cntr_en));
     foreach (channel_en[ii]) begin
       cov.pwm_chan_en_inv_cg.sample(channel_en, invert);
       cov.pwm_per_channel_cg.sample(channel_en,
@@ -312,11 +308,6 @@ endtask : compare_trans
 
 task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
                                        input bit [PWM_NUM_CHANNELS-1:0] channel);
-  uint beats_cycle     = 0;
-  uint period          = 0;
-  uint high_cycles     = 0;
-  uint low_cycles      = 0;
-  uint phase_count     = 0;
   dc_mod_e dc_mod;
 
   // compare duty cycle for modifier
@@ -471,18 +462,29 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
     blink_state[channel] = CycleB;
   end
 
-  beats_cycle = 2**(channel_cfg.DcResn + 1);
-  period      = beats_cycle * (channel_cfg.ClkDiv + 1);
-  high_cycles = ((int_dc[channel][15:0] >> (16 - (channel_cfg.DcResn + 1))) *
-                 (channel_cfg.ClkDiv + 1));
-  low_cycles  = period - high_cycles;
-  // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
-  // increments by 2^(16-DC_RESN-1)(modulo 65536)
-  phase_count = (period / (2**(channel_cfg.DcResn + 1)) * (2**(16 - (channel_cfg.DcResn - 1))));
+  item.invert = invert[channel];
 
-  item.invert          = invert[channel];
-  item.active_cnt      = high_cycles;
-  item.inactive_cnt    = low_cycles;
-  item.phase           = (phase_count % 65536);
+  begin
+    bit [26:0] clk_div;
+    bit [3:0]  dc_resn;
+    bit        cntr_en;
+    uint beats_cycle, period, high_cycles, low_cycles, phase_count;
 
+    clk_div = `gmv(ral.cfg.clk_div);
+    dc_resn = `gmv(ral.cfg.dc_resn);
+    cntr_en = `gmv(ral.cfg.cntr_en);
+
+    beats_cycle = 2**(dc_resn + 1);
+    period      = beats_cycle * (clk_div + 1);
+    high_cycles = ((int_dc[channel][15:0] >> (16 - (dc_resn + 1))) * (clk_div + 1));
+    low_cycles  = period - high_cycles;
+
+    // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
+    // increments by 2^(16-DC_RESN-1)(modulo 65536)
+    phase_count = (period / (2**(dc_resn + 1)) * (2**(16 - (dc_resn - 1))));
+
+    item.active_cnt      = high_cycles;
+    item.inactive_cnt    = low_cycles;
+    item.phase           = (phase_count % 65536);
+  end
 endtask
