@@ -22,7 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  dc_blink_t                 blink[PWM_NUM_CHANNELS];
   state_e                    blink_state[PWM_NUM_CHANNELS]         = '{default:CycleA};
   int                        blink_cnt[PWM_NUM_CHANNELS]           = '{default:0};
   int                        ignore_start_pulse[PWM_NUM_CHANNELS]  = '{default:2};
@@ -209,11 +208,12 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         "blink_param_4",
         "blink_param_5": begin
           int idx = get_multireg_idx(csr_name);
-          blink[idx].A = get_field_val(ral.blink_param[idx].x, item.a_data);
-          blink[idx].B = get_field_val(ral.blink_param[idx].y, item.a_data);
           `uvm_info(`gfn, $sformatf("\n Setting channel[%d] Blink X:%0h Y:%0h",
-                                    idx, blink[idx].A ,blink[idx].B), UVM_HIGH)
-          blink_cnt[idx] = blink[idx].A;
+                                    idx,
+                                    `gmv(ral.blink_param[idx].x),
+                                    `gmv(ral.blink_param[idx].y)),
+                    UVM_HIGH)
+          blink_cnt[idx] = `gmv(ral.blink_param[idx].x);
         end
 
       default: begin
@@ -238,8 +238,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
                                     `gmv(ral.pwm_param[ii].htbt_en),
                                     `gmv(ral.duty_cycle[ii].a),
                                     `gmv(ral.duty_cycle[ii].b),
-                                    blink[ii].A,
-                                    blink[ii].B);
+                                    `gmv(ral.blink_param[ii].x),
+                                    `gmv(ral.blink_param[ii].y));
     end
   end
 
@@ -313,6 +313,8 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
   pwm_item item     = new($sformatf("expected_item_%0d", channel));
   int unsigned dc_a = `gmv(ral.duty_cycle[channel].a);
   int unsigned dc_b = `gmv(ral.duty_cycle[channel].b);
+  int unsigned blink_x = `gmv(ral.blink_param[channel].x);
+  int unsigned blink_y = `gmv(ral.blink_param[channel].y);
 
   dc_mod_e dc_mod = (dc_a > dc_b) ? LargeA : LargeB;
 
@@ -326,11 +328,11 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
         if (blink_cnt[channel] == 0) begin
           if (blink_state[channel] == CycleB) begin
             blink_state[channel] = CycleA;
-            blink_cnt[channel] = blink[channel].A;
+            blink_cnt[channel] = blink_x;
             int_dc[channel] = dc_a;
           end else begin
             blink_state[channel] = CycleB;
-            blink_cnt[channel]   = blink[channel].B;
+            blink_cnt[channel]   = blink_y;
             int_dc[channel] = dc_b;
           end
           ignore_state_change[channel] = SettleTime ;
@@ -349,11 +351,11 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
             // current duty cycle
             int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : dc_a;
             // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
-            if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
+            if (subcycle_cnt[channel] == (blink_x + 1)) begin
               // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
               int_dc[channel] = (dc_mod == 1'b0) ?
-                                (int_dc[channel] - (blink[channel].B + 1)) :
-                                (int_dc[channel] + (blink[channel].B + 1));
+                                (int_dc[channel] - (blink_y + 1)) :
+                                (int_dc[channel] + (blink_y + 1));
               // reset subcycle_cnt after increment (decrement)
               subcycle_cnt[channel] = LocalCount;
               ignore_state_change[channel] = SettleTime ;
@@ -387,10 +389,10 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
             endcase
           end
           CycleB: begin
-            if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
+            if (subcycle_cnt[channel] == (blink_x + 1'b1)) begin
               int_dc[channel] = (dc_mod == 1'b1) ?
-                                (int_dc[channel] - (blink[channel].B + 1'b1)) :
-                                (int_dc[channel] + (blink[channel].B + 1'b1));
+                                (int_dc[channel] - (blink_y + 1'b1)) :
+                                (int_dc[channel] + (blink_y + 1'b1));
               subcycle_cnt[channel] = LocalCount;
               ignore_state_change[channel] = SettleTime ;
               initial_dc[channel]++;
@@ -427,7 +429,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
       end
     endcase
   end else int_dc[channel] = dc_a;
-  if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
+  if ( subcycle_cnt[channel] == blink_x + 1'b1 ) begin
     ignore_state_change[channel] = SettleTime ;
   end
 
@@ -438,12 +440,12 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
     end
     int_dc[channel][15:0] = 16'hFFFF;
     initial_dc[channel] = LocalCount;
-    if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
+    if (subcycle_cnt[channel] == (blink_x + 1'b1)) begin
       // This calculation is done to bring back previous state of DC before overflow occurs
-      // Instead of int_dc[channel] = int_dc[channel] - blink[channel].B + 1'b1 ;
+      // Instead of int_dc[channel] = int_dc[channel] - blink_y + 1'b1 ;
       int_dc[channel][15:0] = dc_a + 1 +
                               ((16'hFFFF - dc_a ) /
-                               (blink[channel].B + 1'b1) * blink[channel].B);
+                               (blink_y + 1'b1) * blink_y);
 
       int_dc[channel][16]   = 0 ;
       subcycle_cnt[channel] = LocalCount;
@@ -455,7 +457,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
     if (cfg.en_cov) begin
       cov.dc_uf_ovf_tb_cg.sample(channel, ~int_dc[channel][16]);
     end
-    int_dc[channel] = int_dc[channel] + blink[channel].B + 1'b1 ;
+    int_dc[channel] = int_dc[channel] + blink_y + 1'b1 ;
     int_dc[channel][16] = 0 ;
     subcycle_cnt[channel] = LocalCount;
     blink_state[channel] = CycleB;
