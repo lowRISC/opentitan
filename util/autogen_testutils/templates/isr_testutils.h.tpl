@@ -15,7 +15,7 @@ ${autogen_banner}
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
   % if ip.irqs:
-    #include "sw/device/lib/dif/dif_${ip.name_snake}.h"
+    #include "sw/device/lib/dif/autogen/dif_${ip.name_snake}_autogen.h"
   % endif
 % endfor
 

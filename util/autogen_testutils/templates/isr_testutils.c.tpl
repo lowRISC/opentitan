@@ -9,9 +9,10 @@ ${autogen_banner}
 
 #include "sw/device/lib/dif/dif_rv_plic.h"
 % for ip in ips_with_difs:
-  % if ip.irqs:
-    #include "sw/device/lib/dif/dif_${ip.name_snake}.h"
-% endif
+%  if ip.name_snake == "adc_ctrl":
+## See below.
+#include "sw/device/lib/dif/dif_adc_ctrl.h"
+%  endif
 % endfor
 #include "sw/device/lib/testing/test_framework/check.h"
 
