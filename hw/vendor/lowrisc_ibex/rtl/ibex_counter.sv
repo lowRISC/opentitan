@@ -56,7 +56,11 @@ module ibex_counter #(
   (* use_dsp = DspPragma *) logic [CounterWidth-1:0] counter_q;
 
   // DSP output register requires synchronous reset.
-  `define COUNTER_FLOP_RST posedge clk_i
+  if (CounterWidth < 49) begin
+    `define COUNTER_FLOP_RST posedge clk_i
+  end else begin
+    `define COUNTER_FLOP_RST posedge clk_i or negedge rst_ni
+  end
 `else
   logic [CounterWidth-1:0] counter_q;
 
