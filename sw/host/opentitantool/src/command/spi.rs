@@ -294,14 +294,12 @@ impl CommandDispatch for SpiTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let ready_pin = match &self.gsc_ready {
-            Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
-            None => None,
-        };
-        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
-            context.params.create(transport, "TPM")?,
-            ready_pin,
-        )?);
+        let spi = context.params.create(transport, "TPM")?;
+        if let Some(pin) = &self.gsc_ready {
+            spi.set_pins(None, None, None, None, Some(&transport.gpio_pin(pin)?))?;
+        }
+        let tpm_driver: Box<dyn tpm::Driver> =
+            Box::new(tpm::SpiDriver::new(spi, self.gsc_ready.is_some())?);
         self.command.run(&tpm_driver, transport)
     }
 }
