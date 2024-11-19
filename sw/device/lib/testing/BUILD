@@ -17,17 +17,12 @@ cc_library(
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:dma",
         "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:mbx",
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:otp_ctrl",
         "//sw/device/lib/dif:pattgen",
@@ -39,9 +34,21 @@ cc_library(
         "//sw/device/lib/dif:spi_host",
         "//sw/device/lib/dif:sysrst_ctrl",
         "//sw/device/lib/dif:uart",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + select(
+        {
+            # FIXME improve this when we have proper platforms
+            "//hw/top:top_earlgrey": [
+                "//sw/device/lib/dif:flash_ctrl",
+                "//sw/device/lib/dif:keymgr",
+                "//sw/device/lib/dif:usbdev",
+            ],
+            # TODO: add "//sw/device/lib/dif:mbx",
+            # "//sw/device/lib/dif:keymgr_dpe",
+            # "//sw/device/lib/dif:dma",
+        },
+        no_match_error = "no top selected",
+    ),
 )
 
 cc_library(
