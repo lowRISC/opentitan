@@ -90,12 +90,10 @@ task pwm_monitor::collect_transaction();
     item.invert       = cfg.invert;
     item.active_cnt   = active_cycles;
     item.inactive_cnt = inactive_cycles;
-    item.period       = inactive_cycles + active_cycles;
-    item.duty_cycle   = item.get_duty_cycle();
 
     // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit
     // phase counter increments by 2^(16-DC_RESN-1)(modulo 65536)
-    phase_count = ((item.period / (2 ** (cfg.resolution + 1))) *
+    phase_count = ((item.get_period() / (2 ** (cfg.resolution + 1))) *
                    (2 ** (16 - (cfg.resolution - 1))));
     item.phase = (phase_count % 65536);
     analysis_port.write(item);

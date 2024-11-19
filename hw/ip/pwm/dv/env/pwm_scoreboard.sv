@@ -299,7 +299,7 @@ task pwm_scoreboard::compare_trans(int channel);
     if (compare_item.active_cnt == 0 || compare_item.inactive_cnt == 0) continue;
 
     // Finally, we only check items if the period is what we're expecting.
-    if (input_item.period != compare_item.period) continue;
+    if (input_item.get_period() != compare_item.get_period()) continue;
 
     `uvm_info(`gfn,
               $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
@@ -483,10 +483,8 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
   phase_count = (period / (2**(channel_cfg.DcResn + 1)) * (2**(16 - (channel_cfg.DcResn - 1))));
 
   item.invert          = invert[channel];
-  item.period          = period;
   item.active_cnt      = high_cycles;
   item.inactive_cnt    = low_cycles;
-  item.duty_cycle      = item.get_duty_cycle();
   item.phase           = (phase_count % 65536);
 
 endtask
