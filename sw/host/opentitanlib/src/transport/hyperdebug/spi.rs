@@ -24,6 +24,7 @@ pub struct HyperdebugSpiTarget {
     target_enable_cmd: u8,
     target_idx: u8,
     feature_bitmap: u16,
+    supports_tpm_poll: bool,
     max_sizes: MaxSizes,
     cs_asserted_count: Cell<u32>,
 }
@@ -73,6 +74,8 @@ const EEPROM_FLAGS_WIDTH_4WIRE: u32 = 0x00000100;
 const EEPROM_FLAGS_WIDTH_8WIRE: u32 = 0x00000180;
 const EEPROM_FLAGS_DTR: u32 = 0x00000200;
 const EEPROM_FLAGS_DUMMY_CYCLES_POS: u8 = 10;
+const EEPROM_FLAGS_GSC_READY: u32 = 0x04000000;
+const EEPROM_FLAGS_TPM: u32 = 0x08000000;
 const EEPROM_FLAGS_WRITE_ENABLE: u32 = 0x10000000;
 const EEPROM_FLAGS_POLL_BUSY: u32 = 0x20000000;
 const EEPROM_FLAGS_DOUBLE_BUFFER: u32 = 0x40000000;
@@ -251,6 +254,7 @@ impl HyperdebugSpiTarget {
         spi_interface: &BulkInterface,
         enable_cmd: u8,
         idx: u8,
+        supports_tpm_poll: bool,
     ) -> Result<Self> {
         let mut usb_handle = inner.usb_device.borrow_mut();
 
@@ -293,6 +297,7 @@ impl HyperdebugSpiTarget {
             target_enable_cmd: enable_cmd,
             target_idx: idx,
             feature_bitmap: resp.feature_bitmap,
+            supports_tpm_poll,
             max_sizes: MaxSizes {
                 read: resp.max_read_chunk as usize,
                 write: resp.max_write_chunk as usize,
@@ -324,6 +329,52 @@ impl HyperdebugSpiTarget {
         let databytes = std::cmp::min(USB_MAX_SIZE - 6, wbuf.len());
         req.data[0..databytes].clone_from_slice(&wbuf[0..databytes]);
         self.usb_write_bulk(&req.as_bytes()[0..6 + databytes])?;
+        let mut index = databytes;
+
+        while index < wbuf.len() {
+            let mut req = CmdTransferContinue::new();
+            req.data_index = index as u16;
+            let databytes = std::cmp::min(USB_MAX_SIZE - 4, wbuf.len() - index);
+            req.data[0..databytes].clone_from_slice(&wbuf[index..index + databytes]);
+            self.usb_write_bulk(&req.as_bytes()[0..4 + databytes])?;
+            index += databytes;
+        }
+        Ok(())
+    }
+
+    /// Preform TPM transactions, that is, send four bytes of header/address, then repeatedly poll
+    /// for ready statys from the device, before sending/receiving the data bytes.  Optionally
+    /// wait for falling edge on "GSC ready" pin, at appropriate time during tracsation.
+    fn tpm_transmit(&self, wbuf: &[u8], rbuf_len: usize, await_gsc_ready: bool) -> Result<()> {
+        const TPM_HEADER_SIZE: usize = 4;
+        let mut req = CmdEepromTransferStart::new();
+        if rbuf_len == 0 {
+            req.flags |= EEPROM_FLAGS_WRITE;
+            req.count = (wbuf.len() - TPM_HEADER_SIZE) as u16;
+            ensure!(
+                wbuf.len() > TPM_HEADER_SIZE,
+                SpiError::InvalidDataLength(wbuf.len())
+            );
+        } else {
+            req.count = rbuf_len as u16;
+            ensure!(
+                wbuf.len() == TPM_HEADER_SIZE,
+                SpiError::InvalidDataLength(wbuf.len())
+            );
+        }
+
+        req.flags |= (TPM_HEADER_SIZE as u32) << EEPROM_FLAGS_ADDR_LEN_POS;
+        req.flags |= EEPROM_FLAGS_TPM;
+        if await_gsc_ready {
+            req.flags |= EEPROM_FLAGS_GSC_READY;
+        }
+
+        let data_start_offset = 0;
+        // Optional write data bytes
+        let databytes = std::cmp::min(USB_MAX_SIZE - 8 - data_start_offset, wbuf.len());
+        req.data[data_start_offset..data_start_offset + databytes]
+            .clone_from_slice(&wbuf[0..databytes]);
+        self.usb_write_bulk(&req.as_bytes()[0..8 + data_start_offset + databytes])?;
         let mut index = databytes;
 
         while index < wbuf.len() {
@@ -685,7 +736,7 @@ impl Target for HyperdebugSpiTarget {
     }
 
     fn supports_tpm_poll(&self) -> Result<bool> {
-        Ok(false)
+        Ok(self.supports_tpm_poll)
     }
 
     fn set_pins(
@@ -696,16 +747,19 @@ impl Target for HyperdebugSpiTarget {
         chip_select: Option<&Rc<dyn GpioPin>>,
         gsc_ready: Option<&Rc<dyn GpioPin>>,
     ) -> Result<()> {
-        if serial_clock.is_some()
-            || host_out_device_in.is_some()
-            || host_in_device_out.is_some()
-            || gsc_ready.is_some()
-        {
+        if serial_clock.is_some() || host_out_device_in.is_some() || host_in_device_out.is_some() {
             bail!(SpiError::InvalidPin);
         }
         if let Some(pin) = chip_select {
             self.inner.cmd_no_output(&format!(
                 "spi set cs {} {}",
+                &self.target_idx,
+                pin.get_internal_pin_name().ok_or(SpiError::InvalidPin)?
+            ))?;
+        }
+        if let Some(pin) = gsc_ready {
+            self.inner.cmd_no_output(&format!(
+                "spi set ready {} {}",
                 &self.target_idx,
                 pin.get_internal_pin_name().ok_or(SpiError::InvalidPin)?
             ))?;
@@ -755,6 +809,36 @@ impl Target for HyperdebugSpiTarget {
                 self.receive(rbuf)?;
                 return Ok(());
             }
+            [Transfer::Write(wbuf), Transfer::GscReady, Transfer::TpmPoll, Transfer::Read(rbuf)] => {
+                // Hyperdebug can do SPI TPM transaction as a single USB
+                // request/reply.
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.tpm_transmit(wbuf, rbuf.len(), true)?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf), Transfer::TpmPoll, Transfer::Read(rbuf)] => {
+                // Hyperdebug can do SPI TPM transaction as a single USB
+                // request/reply.
+                ensure!(
+                    wbuf.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf.len())
+                );
+                ensure!(
+                    rbuf.len() <= self.max_sizes.read,
+                    SpiError::InvalidDataLength(rbuf.len())
+                );
+                self.tpm_transmit(wbuf, rbuf.len(), false)?;
+                self.receive(rbuf)?;
+                return Ok(());
+            }
             [Transfer::Write(wbuf)] => {
                 ensure!(
                     wbuf.len() <= self.max_sizes.write,
@@ -773,6 +857,35 @@ impl Target for HyperdebugSpiTarget {
                     self.receive(&mut [])?;
                     return Ok(());
                 }
+            }
+            [Transfer::Write(wbuf1), Transfer::TpmPoll, Transfer::Write(wbuf2), Transfer::GscReady] =>
+            {
+                // Hyperdebug can do SPI TPM transaction as a single USB
+                // request/reply.
+                ensure!(
+                    wbuf1.len() + wbuf2.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf1.len() + wbuf2.len())
+                );
+                let mut combined_buf = vec![0u8; wbuf1.len() + wbuf2.len()];
+                combined_buf[..wbuf1.len()].clone_from_slice(wbuf1);
+                combined_buf[wbuf1.len()..].clone_from_slice(wbuf2);
+                self.tpm_transmit(&combined_buf, 0, true)?;
+                self.receive(&mut [])?;
+                return Ok(());
+            }
+            [Transfer::Write(wbuf1), Transfer::TpmPoll, Transfer::Write(wbuf2)] => {
+                // Hyperdebug can do SPI TPM transaction as a single USB
+                // request/reply.
+                ensure!(
+                    wbuf1.len() + wbuf2.len() <= self.max_sizes.write,
+                    SpiError::InvalidDataLength(wbuf1.len() + wbuf2.len())
+                );
+                let mut combined_buf = vec![0u8; wbuf1.len() + wbuf2.len()];
+                combined_buf[..wbuf1.len()].clone_from_slice(wbuf1);
+                combined_buf[wbuf1.len()..].clone_from_slice(wbuf2);
+                self.tpm_transmit(&combined_buf, 0, false)?;
+                self.receive(&mut [])?;
+                return Ok(());
             }
             [Transfer::Read(rbuf)] => {
                 ensure!(

@@ -138,6 +138,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
     const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
     const GOOGLE_CAP_UART_QUEUE_CLEAR: u16 = 0x0010;
+    const GOOGLE_CAP_TPM_POLL: u16 = 0x0020;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -669,6 +670,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             &self.spi_interface,
             enable_cmd,
             idx,
+            self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_TPM_POLL != 0,
         )?);
         self.cached_io_interfaces
             .spis
