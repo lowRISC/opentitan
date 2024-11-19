@@ -23,6 +23,8 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: None
     "emulation": {
         "otp": "emulation",
+        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
+        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -33,6 +35,8 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
         "otp": "emulation",
+        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
+        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -43,6 +47,8 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
         "otp": "emulation",
+        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
+        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": [
@@ -68,13 +74,6 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --wafer-auth-secret="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
 """
 
-FT_PERSONALIZE_ENDORSEMENT_KEYS = [
-    "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
-    "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
-    "//sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem",
-    "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der",
-]
-
 # Note that uds-auth-key-id below is the actual hash of the public key of cert_endorsement_key.sk.der
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
@@ -84,16 +83,4 @@ FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --owner-measurement="0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333333"
   --rom-ext-security-version="0"
   --owner-security-version="0"
-"""
-
-LOCAL_CERT_ENDORSEMENT_PARAMS = """
-  --ca-key-der-file="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der)"
-  --ca-key-id="0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
-  --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem)"
-"""
-
-CLOUD_KMS_CERT_ENDORSEMENT_PARAMS = """
-  --ca-key-ckms-id="gcs-kms-earlgrey-ze-ca-p256-sha256-key"
-  --ca-key-id="0x40aac5fb_2b1205f9_003f40ab_7f3df784_1d5b59f5"
-  --ca-certificate="$(rootpath //sw/device/silicon_creator/manuf/keys/fake:ckms_ca.pem)"
 """

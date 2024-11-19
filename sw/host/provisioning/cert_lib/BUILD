@@ -9,7 +9,7 @@ package(default_visibility = ["//visibility:public"])
 rust_library(
     name = "cert_lib",
     srcs = ["src/lib.rs"],
-    data = ["//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem"],
+    data = ["//sw/device/silicon_creator/manuf/keys/fake:ca.pem"],
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
@@ -21,6 +21,7 @@ rust_library(
         "@crate_index//:num-bigint-dig",
         "@crate_index//:openssl",
         "@crate_index//:p256",
+        "@crate_index//:serde",
     ],
 )
 

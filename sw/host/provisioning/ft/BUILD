@@ -17,12 +17,16 @@ package(default_visibility = ["//visibility:public"])
         deps = [
             "//sw/host/opentitanlib",
             "//sw/host/provisioning/ft_lib:ft_lib_{}".format(sku),
+            "//sw/host/provisioning/cert_lib",
             "//sw/host/provisioning/ujson_lib",
             "//sw/host/provisioning/util_lib",
             "@crate_index//:anyhow",
             "@crate_index//:clap",
+            "@crate_index//:elliptic-curve",
             "@crate_index//:humantime",
             "@crate_index//:log",
+            "@crate_index//:p256",
+            "@lowrisc_serde_annotate//serde_annotate",
         ],
     )
     for sku in EARLGREY_SKUS.keys()
