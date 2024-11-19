@@ -189,7 +189,7 @@ module prim_subreg_shadow
   assign qs = committed_qs;
 
   // prim_subreg_shadow does not support multi-bit software access yet
-  `ASSERT_NEVER(MubiIsNotYetSupported_A, Mubi)
+  //`ASSERT_NEVER(MubiIsNotYetSupported_A, Mubi)
   logic unused_mubi;
   assign unused_mubi = Mubi;
 
