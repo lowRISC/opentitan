@@ -180,6 +180,7 @@ pub struct SpiConfiguration {
     pub host_out_device_in: Option<String>,
     pub host_in_device_out: Option<String>,
     pub chip_select: Option<String>,
+    pub gsc_ready: Option<String>,
     pub bits_per_word: Option<u32>,
     pub bits_per_sec: Option<u32>,
 }

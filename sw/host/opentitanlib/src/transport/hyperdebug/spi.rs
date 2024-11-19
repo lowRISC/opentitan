@@ -684,14 +684,23 @@ impl Target for HyperdebugSpiTarget {
         Ok((self.feature_bitmap & FEATURE_BIT_FULL_DUPLEX) != 0)
     }
 
+    fn supports_tpm_poll(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn set_pins(
         &self,
         serial_clock: Option<&Rc<dyn GpioPin>>,
         host_out_device_in: Option<&Rc<dyn GpioPin>>,
         host_in_device_out: Option<&Rc<dyn GpioPin>>,
         chip_select: Option<&Rc<dyn GpioPin>>,
+        gsc_ready: Option<&Rc<dyn GpioPin>>,
     ) -> Result<()> {
-        if serial_clock.is_some() || host_out_device_in.is_some() || host_in_device_out.is_some() {
+        if serial_clock.is_some()
+            || host_out_device_in.is_some()
+            || host_in_device_out.is_some()
+            || gsc_ready.is_some()
+        {
             bail!(SpiError::InvalidPin);
         }
         if let Some(pin) = chip_select {
@@ -832,6 +841,8 @@ impl Target for HyperdebugSpiTarget {
                     self.transmit(wbuf, FULL_DUPLEX)?;
                     self.receive(rbuf)?;
                 }
+                [Transfer::TpmPoll, ..] => bail!(TransportError::UnsupportedOperation),
+                [Transfer::GscReady, ..] => bail!(TransportError::UnsupportedOperation),
                 [] => (),
             }
             idx += 1;

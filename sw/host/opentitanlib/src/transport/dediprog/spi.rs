@@ -349,6 +349,10 @@ impl Target for DediprogSpi {
         Ok(false)
     }
 
+    fn supports_tpm_poll(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
         Ok(42)

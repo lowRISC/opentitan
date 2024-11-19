@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{bail, Result};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -35,6 +35,7 @@ impl<B: Board> Spi<B> {
                 Transfer::Read(buf) => usb.spi1_read(buf)?,
                 Transfer::Write(buf) => usb.spi1_write(buf)?,
                 Transfer::Both(wbuf, rbuf) => usb.spi1_both(wbuf, rbuf)?,
+                _ => bail!(TransportError::UnsupportedOperation),
             }
         }
         Ok(())
@@ -79,20 +80,26 @@ impl<B: Board> Target for Spi<B> {
         Ok(true)
     }
 
+    fn supports_tpm_poll(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn set_pins(
         &self,
         serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
         host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
         host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
         chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+        gsc_ready: Option<&Rc<dyn gpio::GpioPin>>,
     ) -> Result<()> {
         match (
             serial_clock,
             host_out_device_in,
             host_in_device_out,
             chip_select,
+            gsc_ready,
         ) {
-            (Some(clk), Some(sdo), Some(sdi), Some(cs)) => {
+            (Some(clk), Some(sdo), Some(sdi), Some(cs), None) => {
                 let usb = self.device.borrow();
                 usb.spi1_enable(false)?;
                 usb.spi1_setpins(
@@ -104,7 +111,7 @@ impl<B: Board> Target for Spi<B> {
                 usb.spi1_enable(true)?;
                 Ok(())
             }
-            (None, None, None, None) => Ok(()),
+            (None, None, None, None, None) => Ok(()),
             _ => {
                 // Explicitly choosing pins for some of the SPI signals, while leaving others at
                 // their default, is not supported.
