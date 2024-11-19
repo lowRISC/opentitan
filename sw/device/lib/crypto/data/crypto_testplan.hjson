@@ -31,8 +31,7 @@
             Run the follow operations and compare the result against the NIST test vector:
              - ECDSA signature.
              - ECDSA signature verification.
-             - ECDH signature.
-             - ECDH signature verification.
+             - ECDH key exchange.
       '''
       stage: N.A.
       si_stage: SV3
@@ -54,7 +53,7 @@
             platform (FPGA or Silicon).
             For each key pair:
              - Sign a message with the private key.
-             - Verify the signarue with public key.
+             - Verify the signature with the public key.
       '''
       stage: N.A.
       si_stage: SV3
@@ -96,8 +95,8 @@
       desc: '''Check that the aes implementation is correct.
 
             Run the following operations and compare the result against the NIST test vector:
-             - AES-CDC encryption.
-             - AES-CDC decryption.
+             - AES-CBC encryption.
+             - AES-CBC decryption.
              - AES-GCM encryption.
              - AES-GCM decryption.
       '''
