@@ -8,8 +8,8 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "isr_testutils",
-    srcs = ["autogen/isr_testutils.c"],
-    hdrs = ["autogen/isr_testutils.h"],
+    srcs = ["//sw/device/lib/testing/autogen:isr_testutils_src"],
+    hdrs = ["//sw/device/lib/testing/autogen:isr_testutils_hdr"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
