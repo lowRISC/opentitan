@@ -9,6 +9,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use zerocopy::{AsBytes, FromBytes, FromZeroes};
 
+use crate::io::gpio::GpioPin;
 use crate::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};
 use crate::transport::hyperdebug::{BulkInterface, Inner};
 use crate::transport::{TransportError, TransportInterfaceType};
@@ -59,7 +60,7 @@ struct CmdTransferLong {
     write_count: u8,
     read_count: u8,
     read_count1: u8,
-    reserved: u8,
+    flags: u8,
     data: [u8; USB_MAX_SIZE - 6],
 }
 
@@ -175,7 +176,13 @@ impl HyperdebugI2cBus {
     }
 
     /// Transmit data for a single I2C operation, using one or more USB packets.
-    fn transmit_then_receive(&self, addr: u8, wbuf: &[u8], rbuf: &mut [u8]) -> Result<()> {
+    fn transmit_then_receive(
+        &self,
+        addr: u8,
+        wbuf: &[u8],
+        rbuf: &mut [u8],
+        gsc_ready: bool,
+    ) -> Result<()> {
         ensure!(
             rbuf.len() < self.max_read_size,
             I2cError::InvalidDataLength(rbuf.len())
@@ -185,7 +192,7 @@ impl HyperdebugI2cBus {
             I2cError::InvalidDataLength(wbuf.len())
         );
         let encapsulation_header_size = if self.cmsis_encapsulation { 1 } else { 0 };
-        let mut index = if rbuf.len() < 128 {
+        let mut index = if rbuf.len() < 128 && !gsc_ready {
             // Short format header
             let mut req = CmdTransferShort {
                 encapsulation_header: Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
@@ -200,15 +207,15 @@ impl HyperdebugI2cBus {
             self.usb_write_bulk(&req.as_bytes()[1 - encapsulation_header_size..1 + 4 + databytes])?;
             databytes
         } else {
-            // Long format header
+            // Long format header (wider read_count field and additional flags)
             let mut req = CmdTransferLong {
                 encapsulation_header: Self::CMSIS_DAP_CUSTOM_COMMAND_I2C,
                 port: self.bus_idx | (((wbuf.len() & 0x0F00) >> 4) as u8),
                 addr,
                 write_count: (wbuf.len() & 0x00FF) as u8,
-                read_count: (rbuf.len() & 0x007F) as u8,
+                read_count: (rbuf.len() & 0x007F | 0x0080) as u8,
                 read_count1: (rbuf.len() >> 7) as u8,
-                reserved: 0,
+                flags: if gsc_ready { 0x80 } else { 0x00 },
                 data: [0; USB_MAX_SIZE - 6],
             };
             let databytes = cmp::min(USB_MAX_SIZE - 6 - encapsulation_header_size, wbuf.len());
@@ -336,6 +343,25 @@ impl Bus for HyperdebugI2cBus {
             .cmd_no_output(&format!("i2c set speed {} {}", &self.bus_idx, max_speed))
     }
 
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn GpioPin>>,
+        serial_data: Option<&Rc<dyn GpioPin>>,
+        gsc_ready: Option<&Rc<dyn GpioPin>>,
+    ) -> Result<()> {
+        if serial_clock.is_some() || serial_data.is_some() {
+            bail!(I2cError::InvalidPin);
+        }
+        if let Some(pin) = gsc_ready {
+            self.inner.cmd_no_output(&format!(
+                "i2c set ready {} {}",
+                &self.bus_idx,
+                pin.get_internal_pin_name().ok_or(I2cError::InvalidPin)?
+            ))?;
+        }
+        Ok(())
+    }
+
     fn set_default_address(&self, addr: u8) -> Result<()> {
         self.default_addr.set(Some(addr));
         Ok(())
@@ -347,6 +373,22 @@ impl Bus for HyperdebugI2cBus {
             .ok_or(I2cError::MissingAddress)?;
         while !transaction.is_empty() {
             match transaction {
+                [Transfer::Write(wbuf), Transfer::GscReady, Transfer::Read(rbuf), ..] => {
+                    // Hyperdebug can do I2C write followed by I2C read as a single USB
+                    // request/reply.  Take advantage of that by detecting pairs of
+                    // Transfer::Write followed by Transfer::Read.
+                    ensure!(
+                        wbuf.len() <= self.max_write_size,
+                        I2cError::InvalidDataLength(wbuf.len())
+                    );
+                    ensure!(
+                        rbuf.len() <= self.max_read_size,
+                        I2cError::InvalidDataLength(rbuf.len())
+                    );
+                    self.transmit_then_receive(addr, wbuf, rbuf, true)?;
+                    // Skip three steps ahead, as three items were processed.
+                    transaction = &mut transaction[3..];
+                }
                 [Transfer::Write(wbuf), Transfer::Read(rbuf), ..] => {
                     // Hyperdebug can do I2C write followed by I2C read as a single USB
                     // request/reply.  Take advantage of that by detecting pairs of
@@ -359,7 +401,16 @@ impl Bus for HyperdebugI2cBus {
                         rbuf.len() <= self.max_read_size,
                         I2cError::InvalidDataLength(rbuf.len())
                     );
-                    self.transmit_then_receive(addr, wbuf, rbuf)?;
+                    self.transmit_then_receive(addr, wbuf, rbuf, false)?;
+                    // Skip two steps ahead, as two items were processed.
+                    transaction = &mut transaction[2..];
+                }
+                [Transfer::Write(wbuf), Transfer::GscReady, ..] => {
+                    ensure!(
+                        wbuf.len() <= self.max_write_size,
+                        I2cError::InvalidDataLength(wbuf.len())
+                    );
+                    self.transmit_then_receive(addr, wbuf, &mut [], true)?;
                     // Skip two steps ahead, as two items were processed.
                     transaction = &mut transaction[2..];
                 }
@@ -368,7 +419,7 @@ impl Bus for HyperdebugI2cBus {
                         wbuf.len() <= self.max_write_size,
                         I2cError::InvalidDataLength(wbuf.len())
                     );
-                    self.transmit_then_receive(addr, wbuf, &mut [])?;
+                    self.transmit_then_receive(addr, wbuf, &mut [], false)?;
                     transaction = &mut transaction[1..];
                 }
                 [Transfer::Read(rbuf), ..] => {
@@ -376,7 +427,7 @@ impl Bus for HyperdebugI2cBus {
                         rbuf.len() <= self.max_read_size,
                         I2cError::InvalidDataLength(rbuf.len())
                     );
-                    self.transmit_then_receive(addr, &[], rbuf)?;
+                    self.transmit_then_receive(addr, &[], rbuf, false)?;
                     transaction = &mut transaction[1..];
                 }
                 [] => (),
