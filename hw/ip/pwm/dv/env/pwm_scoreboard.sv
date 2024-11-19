@@ -22,7 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  dc_blink_t                 duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                 blink[PWM_NUM_CHANNELS];
   state_e                    blink_state[PWM_NUM_CHANNELS]         = '{default:CycleA};
   int                        blink_cnt[PWM_NUM_CHANNELS]           = '{default:0};
@@ -196,10 +195,11 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         "duty_cycle_4",
         "duty_cycle_5": begin
           int idx = get_multireg_idx(csr_name);
-          duty_cycle[idx].A = get_field_val(ral.duty_cycle[idx].a, item.a_data);
-          duty_cycle[idx].B = get_field_val(ral.duty_cycle[idx].b, item.a_data);
           `uvm_info(`gfn, $sformatf("\n Setting channel[%d] duty cycle A:%0h B:%0h",
-                                    idx, duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
+                                    idx,
+                                    `gmv(ral.duty_cycle[idx].a),
+                                    `gmv(ral.duty_cycle[idx].b)),
+                    UVM_HIGH)
         end
 
       "blink_param_0",
@@ -236,8 +236,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
                                     `gmv(ral.pwm_param[ii].phase_delay),
                                     `gmv(ral.pwm_param[ii].blink_en),
                                     `gmv(ral.pwm_param[ii].htbt_en),
-                                    duty_cycle[ii].A,
-                                    duty_cycle[ii].B,
+                                    `gmv(ral.duty_cycle[ii].a),
+                                    `gmv(ral.duty_cycle[ii].b),
                                     blink[ii].A,
                                     blink[ii].B);
     end
@@ -310,8 +310,11 @@ task pwm_scoreboard::compare_trans(int channel);
 endtask : compare_trans
 
 function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
-  pwm_item item   = new($sformatf("expected_item_%0d", channel));
-  dc_mod_e dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
+  pwm_item item     = new($sformatf("expected_item_%0d", channel));
+  int unsigned dc_a = `gmv(ral.duty_cycle[channel].a);
+  int unsigned dc_b = `gmv(ral.duty_cycle[channel].b);
+
+  dc_mod_e dc_mod = (dc_a > dc_b) ? LargeA : LargeB;
 
   if (`gmv(ral.pwm_param[channel].blink_en)) begin
     // Unique case for violation report
@@ -324,16 +327,16 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
           if (blink_state[channel] == CycleB) begin
             blink_state[channel] = CycleA;
             blink_cnt[channel] = blink[channel].A;
-            int_dc[channel] = duty_cycle[channel].A;
+            int_dc[channel] = dc_a;
           end else begin
             blink_state[channel] = CycleB;
             blink_cnt[channel]   = blink[channel].B;
-            int_dc[channel] = duty_cycle[channel].B;
+            int_dc[channel] = dc_b;
           end
           ignore_state_change[channel] = SettleTime ;
         end else begin
-          int_dc[channel] = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
-                            duty_cycle[channel].B;
+          int_dc[channel] = (blink_state[channel] == CycleA) ? dc_a :
+                            dc_b;
           blink_cnt[channel] -= 1;
         end
       end
@@ -344,7 +347,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
         case (blink_state[channel])
           CycleA: begin
             // current duty cycle
-            int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : duty_cycle[channel].A;
+            int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : dc_a;
             // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
             if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
               // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
@@ -363,7 +366,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
             // enter CycleB when duty cycle is reached
             case (dc_mod)
               LargeA: begin
-                if (int_dc[channel] <= duty_cycle[channel].B) begin
+                if (int_dc[channel] <= dc_b) begin
                   blink_state[channel] = CycleB;
                   subcycle_cnt[channel] = LocalCount;
                   ignore_state_change[channel] = SettleTime ;
@@ -371,7 +374,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
                 end
               end
               LargeB: begin
-                if (int_dc[channel] >= duty_cycle[channel].B) begin
+                if (int_dc[channel] >= dc_b) begin
                   blink_state[channel] = CycleB;
                   ignore_state_change[channel] = SettleTime ;
                   subcycle_cnt[channel] = LocalCount;
@@ -397,7 +400,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
             end
             case (dc_mod)
               LargeB: begin
-                if (int_dc[channel] <= duty_cycle[channel].A) begin
+                if (int_dc[channel] <= dc_a) begin
                   blink_state[channel] = CycleA;
                   ignore_state_change[channel] = SettleTime ;
                   subcycle_cnt[channel] = LocalCount;
@@ -405,7 +408,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
                 end
               end
               LargeA: begin
-                if (int_dc[channel] >= duty_cycle[channel].A) begin
+                if (int_dc[channel] >= dc_a) begin
                   blink_state[channel] = CycleA;
                   ignore_state_change[channel] = SettleTime ;
                   subcycle_cnt[channel] = LocalCount;
@@ -423,13 +426,13 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
         endcase
       end
     endcase
-  end else int_dc[channel] = duty_cycle[channel].A;
+  end else int_dc[channel] = dc_a;
   if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
     ignore_state_change[channel] = SettleTime ;
   end
 
   // Overflow condition  check
-  if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B > duty_cycle[channel].A)) begin
+  if ((int_dc[channel][16] == 1) && (dc_b > dc_a)) begin
     if (cfg.en_cov) begin
       cov.dc_uf_ovf_tb_cg.sample(channel, int_dc[channel][16]);
     end
@@ -438,8 +441,8 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
     if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
       // This calculation is done to bring back previous state of DC before overflow occurs
       // Instead of int_dc[channel] = int_dc[channel] - blink[channel].B + 1'b1 ;
-      int_dc[channel][15:0] = duty_cycle[channel].A + 1 +
-                              ((16'hFFFF - duty_cycle[channel].A ) /
+      int_dc[channel][15:0] = dc_a + 1 +
+                              ((16'hFFFF - dc_a ) /
                                (blink[channel].B + 1'b1) * blink[channel].B);
 
       int_dc[channel][16]   = 0 ;
@@ -448,7 +451,7 @@ function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
     blink_state[channel] = CycleA;
   end
   // Underflow condition check
-  if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B < duty_cycle[channel].A)) begin
+  if ((int_dc[channel][16] == 1) && (dc_b < dc_a)) begin
     if (cfg.en_cov) begin
       cov.dc_uf_ovf_tb_cg.sample(channel, ~int_dc[channel][16]);
     end
