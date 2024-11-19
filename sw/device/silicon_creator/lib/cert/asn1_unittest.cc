@@ -45,9 +45,14 @@ TEST(Asn1, PushByte) {
   asn1_state_t state;
   uint8_t buf[1] = {0xff};
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_byte(&state, 0xa5), kErrorOk);
+  asn1_push_byte(&state, 0xa5);
+  EXPECT_EQ(state.error, kErrorOk);
+
   // Buffer is full, expect an error.
-  EXPECT_EQ(asn1_push_byte(&state, 0xb6), kErrorAsn1BufferExhausted);
+  asn1_push_byte(&state, 0xb6);
+  EXPECT_EQ(state.error, kErrorAsn1BufferExhausted);
+  asn1_clear_error(&state);
+
   size_t out_size = 42;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   EXPECT_EQ(out_size, 1);
@@ -60,7 +65,8 @@ TEST(Asn1, PushBytes) {
   uint8_t buf[3] = {0xff, 0xff, 0xff};
   const std::array<uint8_t, 2> kData = {0xa5, 0xb6};
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_bytes(&state, kData.begin(), kData.size()), kErrorOk);
+  asn1_push_bytes(&state, kData.begin(), kData.size());
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size = 42;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   EXPECT_EQ_CONST_ARRAY(buf, out_size, kData);
@@ -73,8 +79,9 @@ TEST(Asn1, PushBytesOverflow) {
   uint8_t buf[3] = {0xff, 0xff, 0xff};
   const uint8_t kData[] = {0xa5, 0xb6, 0x32, 0xff};
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_bytes(&state, kData, sizeof(kData)),
-            kErrorAsn1BufferExhausted);
+  asn1_push_bytes(&state, kData, sizeof(kData));
+  EXPECT_EQ(state.error, kErrorAsn1BufferExhausted);
+  asn1_clear_error(&state);
 }
 
 // Make sure that we can push an empty tag.
@@ -83,8 +90,10 @@ TEST(Asn1, PushEmptyTag) {
   uint8_t buf[16];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
   asn1_tag_t tag;
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberSequence), kErrorOk);
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 2> kExpectedResult = {
@@ -98,8 +107,10 @@ TEST(Asn1, PushBoolean) {
   asn1_state_t state;
   uint8_t buf[16];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_bool(&state, kAsn1TagNumberBoolean, true), kErrorOk);
-  EXPECT_EQ(asn1_push_bool(&state, kAsn1TagClassContext | 42, false), kErrorOk);
+  asn1_push_bool(&state, kAsn1TagNumberBoolean, true);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_bool(&state, kAsn1TagClassContext | 42, false);
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 6> kExpectedResult = {
@@ -115,12 +126,16 @@ TEST(Asn1, PushInt32) {
   asn1_state_t state;
   uint8_t buf[24];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_uint32(&state, kAsn1TagNumberInteger, 0), kErrorOk);
-  EXPECT_EQ(asn1_push_int32(&state, kAsn1TagNumberInteger, 0x1234), kErrorOk);
-  EXPECT_EQ(asn1_push_uint32(&state, kAsn1TagNumberOctetString, 0x8000),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_int32(&state, kAsn1TagNumberInteger, -1), kErrorOk);
-  EXPECT_EQ(asn1_push_int32(&state, kAsn1TagNumberInteger, -3000), kErrorOk);
+  asn1_push_uint32(&state, kAsn1TagNumberInteger, 0);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_int32(&state, kAsn1TagNumberInteger, 0x1234);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_uint32(&state, kAsn1TagNumberOctetString, 0x8000);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_int32(&state, kAsn1TagNumberInteger, -1);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_int32(&state, kAsn1TagNumberInteger, -3000);
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 19> kExpectedResult = {
@@ -147,15 +162,15 @@ TEST(Asn1, PushIntUnsigned) {
   const uint8_t kBigInt3[] = {0x00, 0x00, 0x00, 0x80,
                               0x00};  // Extra zeroes for testing.
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt1,
-                              sizeof(kBigInt1)),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt2,
-                              sizeof(kBigInt2)),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt3,
-                              sizeof(kBigInt3)),
-            kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt1,
+                    sizeof(kBigInt1));
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt2,
+                    sizeof(kBigInt2));
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, false, kBigInt3,
+                    sizeof(kBigInt3));
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 12> kExpectedResult = {
@@ -178,15 +193,15 @@ TEST(Asn1, PushIntSigned) {
   const uint8_t kBigInt3[] = {0xff, 0xff, 0xf4,
                               0x48};  // Extra zeroes for testing.
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt1,
-                              sizeof(kBigInt1)),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt2,
-                              sizeof(kBigInt2)),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt3,
-                              sizeof(kBigInt3)),
-            kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt1,
+                    sizeof(kBigInt1));
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt2,
+                    sizeof(kBigInt2));
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer(&state, kAsn1TagNumberInteger, true, kBigInt3,
+                    sizeof(kBigInt3));
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 10> kExpectedResult = {
@@ -208,24 +223,27 @@ TEST(Asn1, PushIntPad) {
   const uint8_t kBigInt4[] = {0x30, 0x47, 0x80, 0x01};
   const uint8_t kBigInt5[] = {0x30, 0x47, 0x80, 0x01, 0x17};
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt1, sizeof(kBigInt1), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt1, sizeof(kBigInt1), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt2, sizeof(kBigInt2), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt2, sizeof(kBigInt2), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt3, sizeof(kBigInt3), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt3, sizeof(kBigInt3), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, false, kBigInt4, sizeof(kBigInt4), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt4, sizeof(kBigInt4), 4),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_integer_pad(&state, true, kBigInt5, sizeof(kBigInt5), 4),
-            kErrorAsn1PushIntegerPadInvalidArgument);
+  asn1_push_integer_pad(&state, false, kBigInt1, sizeof(kBigInt1), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, true, kBigInt1, sizeof(kBigInt1), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, false, kBigInt2, sizeof(kBigInt2), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, true, kBigInt2, sizeof(kBigInt2), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, false, kBigInt3, sizeof(kBigInt3), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, true, kBigInt3, sizeof(kBigInt3), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, false, kBigInt4, sizeof(kBigInt4), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_integer_pad(&state, true, kBigInt4, sizeof(kBigInt4), 4);
+  EXPECT_EQ(state.error, kErrorOk);
+
+  asn1_push_integer_pad(&state, true, kBigInt5, sizeof(kBigInt5), 4);
+  EXPECT_EQ(state.error, kErrorAsn1PushIntegerPadInvalidArgument);
+  asn1_clear_error(&state);
+
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 32> kExpectedResult = {
@@ -256,15 +274,15 @@ TEST(Asn1, PushStrings) {
   const char kString1[] = "lowRISC";
   const char kString2[] = "OpenTitanAndMore!";
   const char kString3[] = "";
-  EXPECT_EQ(asn1_push_string(&state, kAsn1TagNumberPrintableString, kString1,
-                             strlen(kString1)),
-            kErrorOk);
+  asn1_push_string(&state, kAsn1TagNumberPrintableString, kString1,
+                   strlen(kString1));
+  EXPECT_EQ(state.error, kErrorOk);
   // Cut the second string short on purpose.
-  EXPECT_EQ(asn1_push_string(&state, kAsn1TagNumberUtf8String, kString2, 9),
-            kErrorOk);
-  EXPECT_EQ(asn1_push_string(&state, kAsn1TagNumberOctetString, kString3,
-                             strlen(kString3)),
-            kErrorOk);
+  asn1_push_string(&state, kAsn1TagNumberUtf8String, kString2, 9);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_push_string(&state, kAsn1TagNumberOctetString, kString3,
+                   strlen(kString3));
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   // clang-format off
@@ -288,34 +306,53 @@ TEST(Asn1, PushBitString) {
   asn1_bitstring_t bitstring;
   asn1_tag_t tag;
   // Empty bitstring.
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
-  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
-  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberBitString);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_start_bitstring(&state, &bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_bitstring(&bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorOk);
   // Two trivial bitstrings.
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
-  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
-  EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, true), kErrorOk);
-  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberBitString);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_start_bitstring(&state, &bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_bitstring_push_bit(&bitstring, true);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_bitstring(&bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorOk);
 
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
-  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
-  EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, false), kErrorOk);
-  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberBitString);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_start_bitstring(&state, &bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_bitstring_push_bit(&bitstring, false);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_bitstring(&bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorOk);
   // A longer bitstring.
   const std::array<bool, 12> kBitString = {
       true,  false, true, true,  false, false,
       false, false, true, false, false, true,
   };
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberBitString), kErrorOk);
-  EXPECT_EQ(asn1_start_bitstring(&state, &bitstring), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberBitString);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_start_bitstring(&state, &bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
   for (bool bit : kBitString) {
-    EXPECT_EQ(asn1_bitstring_push_bit(&bitstring, bit), kErrorOk);
+    asn1_bitstring_push_bit(&bitstring, bit);
+    EXPECT_EQ(state.error, kErrorOk);
   }
-  EXPECT_EQ(asn1_finish_bitstring(&bitstring), kErrorOk);
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);
+  asn1_finish_bitstring(&bitstring);
+  EXPECT_EQ(state.error, kErrorOk);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 16> kExpectedResult = {
@@ -338,7 +375,8 @@ TEST(Asn1, PushRawOid) {
   uint8_t buf[30];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
   const uint8_t kRawOid[] = {0x88, 0x037, 0x03};  // Corresponds to "2.999.3".
-  EXPECT_EQ(asn1_push_oid_raw(&state, kRawOid, sizeof(kRawOid)), kErrorOk);
+  asn1_push_oid_raw(&state, kRawOid, sizeof(kRawOid));
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 5> kExpectedResult = {
@@ -355,9 +393,9 @@ TEST(Asn1, PushHexStrings) {
   uint8_t buf[12];
   EXPECT_EQ(asn1_start(&state, buf, sizeof(buf)), kErrorOk);
   const uint8_t kData[] = {0x01, 0x23, 0xab, 0xef};
-  EXPECT_EQ(asn1_push_hexstring(&state, kAsn1TagNumberPrintableString, kData,
-                                sizeof(kData)),
-            kErrorOk);
+  asn1_push_hexstring(&state, kAsn1TagNumberPrintableString, kData,
+                      sizeof(kData));
+  EXPECT_EQ(state.error, kErrorOk);
   size_t out_size;
   EXPECT_EQ(asn1_finish(&state, &out_size), kErrorOk);
   const std::array<uint8_t, 10> kExpectedResult = {
@@ -388,14 +426,18 @@ TEST(Asn1, TagOverflow) {
   EXPECT_EQ(asn1_start(&state, &buf[0], kBufferSize), kErrorOk);
   // The function will allocate one byte for the tag length.
   asn1_tag_t tag;
-  EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberSequence), kErrorOk);
+  asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);
+  EXPECT_EQ(state.error, kErrorOk);
   // Push 0x100 bytes so that the length tag requires two bytes.
   std::vector<uint8_t> tmp;
   tmp.resize(0x100, 0xff);
-  EXPECT_EQ(asn1_push_bytes(&state, &tmp[0], tmp.size()), kErrorOk);
+  asn1_push_bytes(&state, &tmp[0], tmp.size());
+  EXPECT_EQ(state.error, kErrorOk);
   // At this point, the function will need to move the data forward by one byte
   // so it should hit the buffer size.
-  EXPECT_EQ(asn1_finish_tag(&tag), kErrorAsn1BufferExhausted);
+  asn1_finish_tag(&tag);
+  EXPECT_EQ(state.error, kErrorAsn1BufferExhausted);
+  asn1_clear_error(&state);
   // Make sure that that even though it returned an error, the function did not
   // actually write anything past the end of the buffer.
   EXPECT_EQ(buf[kBufferSize], kPattern);
@@ -408,18 +450,21 @@ TEST(Asn1, TagLengthEncoding) {
   buf.resize(0xfffff);
   std::vector<uint8_t> expected;
 
-#define ADD_BYTES(fill, fill_size, ...)                                        \
-  do {                                                                         \
-    std::vector<uint8_t> tmp(fill_size, fill);                                 \
-    const uint8_t kData[] = {__VA_ARGS__};                                     \
-    expected.push_back(0x30); /* Identifier octet (universal, sequence). */    \
-    expected.insert(expected.end(), kData,                                     \
-                    kData + sizeof(kData)); /* Length encoding */              \
-    expected.insert(expected.end(), tmp.begin(), tmp.end());                   \
-    asn1_tag_t tag;                                                            \
-    EXPECT_EQ(asn1_start_tag(&state, &tag, kAsn1TagNumberSequence), kErrorOk); \
-    EXPECT_EQ(asn1_push_bytes(&state, &tmp[0], tmp.size()), kErrorOk);         \
-    EXPECT_EQ(asn1_finish_tag(&tag), kErrorOk);                                \
+#define ADD_BYTES(fill, fill_size, ...)                                     \
+  do {                                                                      \
+    std::vector<uint8_t> tmp(fill_size, fill);                              \
+    const uint8_t kData[] = {__VA_ARGS__};                                  \
+    expected.push_back(0x30); /* Identifier octet (universal, sequence). */ \
+    expected.insert(expected.end(), kData,                                  \
+                    kData + sizeof(kData)); /* Length encoding */           \
+    expected.insert(expected.end(), tmp.begin(), tmp.end());                \
+    asn1_tag_t tag;                                                         \
+    asn1_start_tag(&state, &tag, kAsn1TagNumberSequence);                   \
+    EXPECT_EQ(state.error, kErrorOk);                                       \
+    asn1_push_bytes(&state, &tmp[0], tmp.size());                           \
+    EXPECT_EQ(state.error, kErrorOk);                                       \
+    asn1_finish_tag(&tag);                                                  \
+    EXPECT_EQ(state.error, kErrorOk);                                       \
   } while (0)
 
   EXPECT_EQ(asn1_start(&state, &buf[0], buf.size()), kErrorOk);
