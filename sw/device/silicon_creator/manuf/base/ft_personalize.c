@@ -20,6 +20,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/silicon_creator/lib/attestation.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
+#include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
@@ -176,12 +177,10 @@ static const manifest_t *rom_ext_manifest_b_get(void) {
 extern const uint32_t kCreatorSwCfgManufStateValue;
 
 /*
- * Check if the `manuf_state_creator` field in the ROM_EXT manifest (slot b)
- * matches the expected value that will be provisioned into the OTP.
+ * Check if the `identifier` field in slot_b is a ROM_EXT.
  */
-static status_t check_manuf_state_creator_binding(void) {
-  TRY_CHECK(rom_ext_manifest_b_get()->usage_constraints.manuf_state_creator ==
-            kCreatorSwCfgManufStateValue);
+static status_t check_next_slot_bootable(void) {
+  TRY_CHECK(rom_ext_manifest_b_get()->identifier == CHIP_ROM_EXT_IDENTIFIER);
   return OK_STATUS();
 }
 
@@ -777,7 +776,7 @@ static status_t check_otp_measurement_post_lock(hmac_digest_t *measurement,
 static status_t finalize_otp_partitions(void) {
   // TODO(#21554): Complete the provisioning of the root keys and key policies.
 
-  TRY(check_manuf_state_creator_binding());
+  TRY(check_next_slot_bootable());
 
   // Complete the provisioning of OTP OwnerSwCfg partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
