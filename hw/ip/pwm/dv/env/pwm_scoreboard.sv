@@ -22,9 +22,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // This gives checker two pulses buffer to sync to DUT pwm_o pulse accurately.
   localparam int SettleTime = 2;
 
-  bit [PWM_NUM_CHANNELS-1:0] channel_en               = '0;
-  bit [PWM_NUM_CHANNELS-1:0] invert                   = '0;
-
   param_reg_t                channel_param[PWM_NUM_CHANNELS];
   dc_blink_t                 duty_cycle[PWM_NUM_CHANNELS];
   dc_blink_t                 blink[PWM_NUM_CHANNELS];
@@ -58,6 +55,12 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
   // Compute an expected pwm_item that we would like the monitor to see, based on the current
   // configuration registers.
   extern task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
+
+  // Return the bits of the PWM_EN multi-register, collected up into a bit vector
+  extern function bit [PWM_NUM_CHANNELS-1:0] get_channel_en();
+
+  // Return the bits of the INVERT multi-register, collected up into a bit vector
+  extern function bit [PWM_NUM_CHANNELS-1:0] get_invert();
 
 endclass : pwm_scoreboard
 
@@ -133,9 +136,9 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       end
 
       "pwm_en": begin
+        bit [PWM_NUM_CHANNELS-1:0] channel_en = get_channel_en();
         string txt = "";
 
-        channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
         foreach (channel_en[ii]) begin
           bit pwm_en = get_field_val(ral.pwm_en[0].en[ii], item.a_data);
           if (pwm_en) begin
@@ -160,8 +163,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
 
       "invert": begin
         string txt = "";
+        bit [PWM_NUM_CHANNELS-1:0] invert = get_invert();
 
-        invert = item.a_data[PWM_NUM_CHANNELS-1:0];
         foreach (invert[ii]) begin
           txt = {txt, $sformatf("\n Invert Channel[%d] : %0b", ii, invert[ii])};
         end
@@ -225,6 +228,9 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
 
   // Sample for coverage
   if (cfg.en_cov) begin
+    bit [PWM_NUM_CHANNELS-1:0] channel_en = get_channel_en();
+    bit [PWM_NUM_CHANNELS-1:0] invert = get_invert();
+
     cov.clock_cg.sample(cfg.get_clk_core_freq(), cfg.clk_rst_vif.clk_freq_mhz);
     cov.cfg_cg.sample(`gmv(ral.cfg.clk_div), `gmv(ral.cfg.dc_resn), `gmv(ral.cfg.cntr_en));
     foreach (channel_en[ii]) begin
@@ -462,7 +468,7 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
     blink_state[channel] = CycleB;
   end
 
-  item.invert = invert[channel];
+  item.invert = get_invert()[channel];
 
   begin
     bit [26:0] clk_div;
@@ -488,3 +494,11 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
     item.phase           = (phase_count % 65536);
   end
 endtask
+
+function bit [PWM_NUM_CHANNELS-1:0] pwm_scoreboard::get_channel_en();
+  return `gmv(ral.pwm_en[0]);
+endfunction
+
+function bit [PWM_NUM_CHANNELS-1:0] pwm_scoreboard::get_invert();
+  return `gmv(ral.invert[0]);
+endfunction
