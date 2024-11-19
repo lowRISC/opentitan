@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_ASN1_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_ASN1_H_
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
@@ -25,7 +26,18 @@ typedef struct asn1_state {
   size_t size;
   // Current offset in the output.
   size_t offset;
+  // Tracking the last active error.
+  // When there is an active error, all operations other than `asn1_start`,
+  // `asn1_finish` and `asn1_clear_error` will be no-op.
+  rom_error_t error;
 } asn1_state_t;
+
+/**
+ * Clear the ASN1 builder active error in the `state`.
+ *
+ * @param[out] state Pointer to a user-allocated state to be cleared.
+ */
+void asn1_clear_error(asn1_state_t *state);
 
 /**
  * Start generating an ASN1 stream.
@@ -35,6 +47,7 @@ typedef struct asn1_state {
  * @param size Size of the user-provided buffer.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t asn1_start(asn1_state_t *new_state, uint8_t *buffer, size_t size);
 
 /**
@@ -47,27 +60,33 @@ rom_error_t asn1_start(asn1_state_t *new_state, uint8_t *buffer, size_t size);
  * the stream.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 rom_error_t asn1_finish(asn1_state_t *state, size_t *out_size);
 
 /**
  * Push a byte into the ASN1 buffer.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the initialized by asn1_start.
  * @param byte Byte to add to the buffer.
- * @return The result of the operation.
  */
-rom_error_t asn1_push_byte(asn1_state_t *state, uint8_t byte);
+void asn1_push_byte(asn1_state_t *state, uint8_t byte);
 
 /**
  * Push bytes into the ASN1 buffer.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the initialized by asn1_start.
  * @param bytes Pointer to an array of bytes.
  * @param size Number of bytes in the array.
- * @return The result of the operation.
  */
-rom_error_t asn1_push_bytes(asn1_state_t *state, const uint8_t *bytes,
-                            size_t size);
+void asn1_push_bytes(asn1_state_t *state, const uint8_t *bytes, size_t size);
 
 /**
  * Structure holding the information about an unfinished tag sequence.
@@ -132,14 +151,16 @@ typedef enum asn1_tag_number {
 /**
  * Start an ASN1 tag.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param[out] new_tag Pointer to a user-allocated tag to be initialized.
  * @param id Identifier byte of the tag (see ASN1_CLASS_*, ASN1_FORM_* and
  * ASN1_TAG_*).
- * @return The result of the operation.
  */
-rom_error_t asn1_start_tag(asn1_state_t *state, asn1_tag_t *new_tag,
-                           uint8_t id);
+void asn1_start_tag(asn1_state_t *state, asn1_tag_t *new_tag, uint8_t id);
 
 /**
  * Finish an ASN1 tag.
@@ -150,11 +171,14 @@ rom_error_t asn1_start_tag(asn1_state_t *state, asn1_tag_t *new_tag,
  *
  * Note: the `tag` will be cleared out after this call.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Pointer to the tag initialized by asn1_start_tag.
- * @return The result of the operation.
  */
-rom_error_t asn1_finish_tag(asn1_tag_t *tag);
+void asn1_finish_tag(asn1_tag_t *tag);
 
 /**
  * Push a tagged boolean into the buffer.
@@ -162,11 +186,15 @@ rom_error_t asn1_finish_tag(asn1_tag_t *tag);
  * Note: this function will encode true as 0xff (any non-zero value is
  * acceptable per the specification).
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Identifier octet of the tag.
  * @param value Boolean value.
  */
-rom_error_t asn1_push_bool(asn1_state_t *state, uint8_t tag, bool value);
+void asn1_push_bool(asn1_state_t *state, uint8_t tag, bool value);
 
 /**
  * Push a tagged integer into the buffer.
@@ -174,17 +202,21 @@ rom_error_t asn1_push_bool(asn1_state_t *state, uint8_t tag, bool value);
  * This function allows the caller to set the tag to a non-standard value which
  * can be useful for IMPLICIT integers. Use ASN1_TAG_INTEGER for standard
  * integers.
+ *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
  *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Identifier octet of the tag.
  * @param value Integer value.
  */
-rom_error_t asn1_push_int32(asn1_state_t *state, uint8_t tag, int32_t value);
+void asn1_push_int32(asn1_state_t *state, uint8_t tag, int32_t value);
 
 /**
  * See asn1_push_int32()
  */
-rom_error_t asn1_push_uint32(asn1_state_t *state, uint8_t tag, uint32_t value);
+void asn1_push_uint32(asn1_state_t *state, uint8_t tag, uint32_t value);
 
 /**
  * Push a tagged integer into the buffer.
@@ -192,6 +224,10 @@ rom_error_t asn1_push_uint32(asn1_state_t *state, uint8_t tag, uint32_t value);
  * This function allows the caller to set the tag to a non-standard value which
  * can be useful for IMPLICIT integers. Use ASN1_TAG_INTEGER for standard
  * integers.
+ *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
  *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Identifier octet of the tag.
@@ -201,8 +237,8 @@ rom_error_t asn1_push_uint32(asn1_state_t *state, uint8_t tag, uint32_t value);
  * format.
  * @param size Number of the bytes in the array.
  */
-rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
-                              const uint8_t *bytes_be, size_t size);
+void asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
+                       const uint8_t *bytes_be, size_t size);
 
 /**
  * Push a padded integer into the buffer.
@@ -212,6 +248,10 @@ rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
  * value in two's complement. If the integer size is larger than the requested
  * size with padding, an error will be reported.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param is_signed If true, the byte array represents a signed integer in two's
  * complement.
@@ -220,9 +260,9 @@ rom_error_t asn1_push_integer(asn1_state_t *state, uint8_t tag, bool is_signed,
  * @param size Number of the bytes in the array.
  * @param size Number of the bytes to output with padding.
  */
-rom_error_t asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
-                                  const uint8_t *bytes_be, size_t size,
-                                  size_t padded_size);
+void asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
+                           const uint8_t *bytes_be, size_t size,
+                           size_t padded_size);
 
 /**
  * Push an object identifier into the buffer.
@@ -230,12 +270,15 @@ rom_error_t asn1_push_integer_pad(asn1_state_t *state, bool is_signed,
  * The object identifier must already be encoded according to the X.690 spec,
  * section 8.19 (https://www.itu.int/rec/T-REC-X.690).
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param bytes Pointer to a byte array holding the object identifier.
  * @param size Number of the bytes in the array.
  */
-rom_error_t asn1_push_oid_raw(asn1_state_t *state, const uint8_t *bytes,
-                              size_t size);
+void asn1_push_oid_raw(asn1_state_t *state, const uint8_t *bytes, size_t size);
 
 /**
  * Push a tagged string into the buffer.
@@ -248,13 +291,17 @@ rom_error_t asn1_push_oid_raw(asn1_state_t *state, const uint8_t *bytes,
  * in the string or after processing the provided number of characters,
  * whichever comes first.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Identifier octet of the tag.
  * @param str Pointer to a (not necessarily zero-terminated) string.
  * @param max_len Maximum number of characters to read from the string.
  */
-rom_error_t asn1_push_string(asn1_state_t *state, uint8_t tag, const char *str,
-                             size_t max_len);
+void asn1_push_string(asn1_state_t *state, uint8_t tag, const char *str,
+                      size_t max_len);
 
 /**
  * Push a tagged hexstring into the buffer.
@@ -263,36 +310,51 @@ rom_error_t asn1_push_string(asn1_state_t *state, uint8_t tag, const char *str,
  * can be useful for IMPLICIT strings. This function takes an array of bytes
  * and output exactly two lowercase hex characters per byte in the input buffer.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param state Pointer to the state initialized by asn1_start.
  * @param tag Identifier octet of the tag.
  * @param str Pointer to a byte array.
  * @param size Number of the bytes in the array.
  */
-rom_error_t asn1_push_hexstring(asn1_state_t *state, uint8_t tag,
-                                const uint8_t *bytes, size_t size);
+void asn1_push_hexstring(asn1_state_t *state, uint8_t tag, const uint8_t *bytes,
+                         size_t size);
 
 /**
  * Start an ASN1 bitstring.
+ *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
  *
  * @param state Pointer to the state initialized by asn1_start.
  * @param[out] out_bitstring Pointer to a user-allocated bitstring to be
  * initialized.
  */
-rom_error_t asn1_start_bitstring(asn1_state_t *state,
-                                 asn1_bitstring_t *out_bitstring);
+void asn1_start_bitstring(asn1_state_t *state, asn1_bitstring_t *out_bitstring);
 
 /** Add a bit to a bitstring.
+ *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
  *
  * @param bitstring Pointer to a bitstring initialized by asn1_start_bitstring.
  * @param bit Bit to add at the end of the string.
  */
-rom_error_t asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit);
+void asn1_bitstring_push_bit(asn1_bitstring_t *bitstring, bool bit);
 
 /** Finish an ASN1 bitstring.
  *
+ * Note: This function tracks its error in the asn1 state, and the error will
+ * be returned by `asn1_finish` in the end. This function will be no-op when
+ * the state has an active error.
+ *
  * @param bitstring Pointer to a bitstring initialized by asn1_start_bitstring.
  */
-rom_error_t asn1_finish_bitstring(asn1_bitstring_t *bitstring);
+void asn1_finish_bitstring(asn1_bitstring_t *bitstring);
 
 #ifdef __cplusplus
 }  // extern "C"
