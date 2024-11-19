@@ -161,6 +161,28 @@ cryptotest(
     test_vectors = SHA512_TESTVECTOR_TARGETS,
 )
 
+SHA3_224_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_224_{}_json".format(
+        msg_type.lower(),
+    )
+    for msg_type in [
+        "ShortMsg",
+        "LongMsg",
+    ]
+]
+
+SHA3_224_TESTVECTOR_ARGS = " ".join([
+    "--hash-json=\"$(rootpath {})\"".format(target)
+    for target in SHA3_224_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "sha3_224_kat",
+    test_args = SHA3_224_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/hash_kat:harness",
+    test_vectors = SHA3_224_TESTVECTOR_TARGETS,
+)
+
 SHA3_256_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_sha3_fips_202_sha3_256_{}_json".format(
         msg_type.lower(),
@@ -418,6 +440,7 @@ test_suite(
         ":kmac_kat",
         ":sha256_kat",
         ":sha384_kat",
+        ":sha3_224_kat",
         ":sha3_256_kat",
         ":sha3_384_kat",
         ":sha3_512_kat",
