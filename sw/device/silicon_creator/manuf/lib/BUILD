@@ -271,7 +271,6 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_dev_manuf_individualized",
         tags = [

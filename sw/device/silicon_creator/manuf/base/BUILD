@@ -2,10 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("//rules:const.bzl", "CONST", "hex")
-
-#load("//rules:files.bzl", "output_groups")
 load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:cc.bzl", "opentitan_binary_assemble")
 load(
@@ -17,13 +14,10 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "CLOUD_KMS_CERT_ENDORSEMENT_PARAMS",
     "CP_PROVISIONING_INPUTS",
     "EARLGREY_OTP_CFGS",
     "EARLGREY_SKUS",
-    "FT_PERSONALIZE_ENDORSEMENT_KEYS",
     "FT_PROVISIONING_INPUTS",
-    "LOCAL_CERT_ENDORSEMENT_PARAMS",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -343,24 +337,12 @@ manifest(d = {
     for sku, config in EARLGREY_SKUS.items()
 ]
 
-config_setting(
-    name = "ckms_cert_endorsement_params",
-    flag_values = {":endorse_certs_with_ckms": "True"},
-)
-
-bool_flag(
-    name = "endorse_certs_with_ckms",
-    build_setting_default = False,
-)
-
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize}
   --second-bootstrap={firmware}
-""" + FT_PROVISIONING_INPUTS + select({
-    ":ckms_cert_endorsement_params": CLOUD_KMS_CERT_ENDORSEMENT_PARAMS,
-    "//conditions:default": LOCAL_CERT_ENDORSEMENT_PARAMS,
-})
+  --ca-config={ca_config}
+""" + FT_PROVISIONING_INPUTS
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
 
@@ -412,9 +394,10 @@ filegroup(
                     ":ft_personalize_{}".format(sku): "ft_personalize",
                     config["rom_ext"]: "rom_ext",
                     config["owner_fw"]: "owner_fw",
+                    config["ca_config"]: "ca_config",
                 },
             changes_otp = True,
-            data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
+            data = config["ca_data"],
             needs_jtag = True,
             otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_locked0_manuf_initialized",
             owner_slot_b = OWNER_SLOTS["b"],
@@ -435,9 +418,10 @@ filegroup(
                     ":ft_personalize_{}".format(sku): "ft_personalize",
                     config["rom_ext"]: "rom_ext",
                     config["owner_fw"]: "owner_fw",
+                    config["ca_config"]: "ca_config",
                 },
             changes_otp = True,
-            data = FT_PERSONALIZE_ENDORSEMENT_KEYS,
+            data = config["ca_data"],
             interface = "teacup",
             needs_jtag = True,
             owner_slot_b = OWNER_SLOTS["b"],

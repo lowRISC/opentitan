@@ -4,6 +4,7 @@
 
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
+use std::path::PathBuf;
 use std::process::Command;
 
 use anyhow::{bail, Context, Result};
@@ -12,12 +13,44 @@ use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
 use p256::ecdsa::SigningKey;
 use p256::NistP256;
+use serde::Deserialize;
 
 use opentitanlib::crypto::sha256::sha256;
 use opentitanlib::util::tmpfilename;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
 use ot_certs::x509::generate_certificate_from_tbs;
 use ot_certs::CertFormat;
+
+/// Certificate Authority key type.
+#[derive(Debug, Clone, Deserialize)]
+pub enum CaKeyType {
+    Raw,
+    Token,
+}
+
+/// Certificate Authority key input formats.
+///
+/// The following ECC P256 private key representations are supported:
+///   1. RawKey: provided as a file path pointing to a DER encoded key file.
+///   2. TokenKey: provided as a PKCS#11 token ID string.
+#[derive(Debug, Clone)]
+pub enum CaKey {
+    RawKey(SecretKey<NistP256>),
+    TokenKey(String),
+}
+
+/// Certificate Authority (CA) parameters.
+#[derive(Debug, Clone, Deserialize)]
+pub struct CaConfig {
+    /// CA certificate PEM file path.
+    pub certificate: PathBuf,
+    /// CA certificate key ID (160-bit hex string serial number used in CA certificate).
+    pub key_id: String,
+    /// CA key type.
+    pub key_type: CaKeyType,
+    /// CA key (file path to raw key DER file or Cloud KMS key ID).
+    pub key: String,
+}
 
 /// Execute an openssl invocation, passing the args[] as command line parameters.
 ///
@@ -57,24 +90,16 @@ pub fn get_cert_size(cert: &[u8]) -> Result<usize> {
     Ok(size)
 }
 
-/// This provides two different certificate signing key representations:
-///   1. a SecretKey object in case of fake key or a String object, or
-///   2. the ID of the key used by Google Cloud KMS.
-pub enum CertEndorsementKey {
-    LocalKey(SecretKey<NistP256>),
-    CkmsKey(String),
-}
-
 /// Parses an X.509 ASN.1 DER encoded certificate, signs it with the specified
 /// key, and attaches a signature to it.
-pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CertEndorsementKey) -> Result<Vec<u8>> {
+pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CaKey) -> Result<Vec<u8>> {
     match key {
-        CertEndorsementKey::CkmsKey(key_id) => parse_and_endorse_x509_cert_ckms(tbs, key_id),
-        CertEndorsementKey::LocalKey(ca_sk) => parse_and_endorse_x509_cert_local(tbs, ca_sk),
+        CaKey::TokenKey(key_id) => parse_and_endorse_x509_cert_token(tbs, key_id),
+        CaKey::RawKey(sk) => parse_and_endorse_x509_cert_raw(tbs, sk),
     }
 }
 
-fn parse_and_endorse_x509_cert_local(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
+fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
     let tbs_digest = sha256(&tbs);
     let signing_key = SigningKey::from(ca_sk);
@@ -93,7 +118,7 @@ fn parse_and_endorse_x509_cert_local(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) 
     generate_certificate_from_tbs(tbs, &signature)
 }
 
-fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<Vec<u8>> {
+fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u8>> {
     // Let openssl hash and sign the TBS.
     let base_name = tmpfilename("cert_signing");
     let binding_tbs = base_name.to_owned() + ".tbs";
@@ -111,7 +136,7 @@ fn parse_and_endorse_x509_cert_ckms(tbs: Vec<u8>, ckms_key_id: &str) -> Result<V
     file.write_all(&tbs)?;
     drop(file);
 
-    let binding_key = String::from("pkcs11:object=") + ckms_key_id;
+    let binding_key = String::from("pkcs11:object=") + key_id;
     openssl_command(&[
         "dgst",
         "-sha256",
@@ -269,7 +294,7 @@ mod tests {
 
     #[test]
     fn validate_good() {
-        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/fake_ca.pem";
+        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/raw/raw_ca.pem";
         // The below byte blob is a proper TPM EK certificate generated during test runs.
         let mut cert0 = EndorsedCert {
             format: CertFormat::X509,
