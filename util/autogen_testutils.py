@@ -14,7 +14,6 @@ $ util/autogen_testutils.py
 """
 
 import argparse
-import glob
 import logging
 import sys
 from pathlib import Path
@@ -37,10 +36,26 @@ def main():
         "--topcfg_path",
         "-t",
         type=Path,
-        default=(REPO_TOP / "hw/top_earlgrey/data/top_earlgrey.hjson"),
+        required=True,
         help="path of the top hjson file.",
     )
+    parser.add_argument(
+        "--ipcfg",
+        "-i",
+        type=Path,
+        action="append",
+        default=[],
+        help="path of an IP hjson file (if not specified, will be guessed by the tool).",
+    )
+    parser.add_argument(
+        "--outdir",
+        "-o",
+        type=Path,
+        help="Output directory"
+    )
     args = parser.parse_args()
+
+    logging.getLogger().setLevel(logging.INFO)
 
     # Parse toplevel Hjson to get IPs that are templated / generated with IPgen.
     try:
@@ -54,40 +69,48 @@ def main():
     reggen_top_modules = topgen_lib.get_top_reggen_modules(topcfg)
 
     # Define autogen DIF directory.
-    autogen_dif_directory = REPO_TOP / "sw/device/lib/dif/autogen"
+    outdir = args.outdir if args.outdir else REPO_TOP / "sw/device/lib/testing/autogen"
+
+    # First load provided IPs.
+    ip_hjson = {}
+    for ipcfg in args.ipcfg:
+        # Assume that the file name is "<ip>.hjson"
+        ipname = ipcfg.stem
+        ip_hjson[ipname] = ipcfg
 
     # Create list of IPs to generate shared testutils code for. This is all IPs
     # that have a DIF library, that the testutils functions can use. Note, the
     # templates will take care of only generating ISR testutil functions for IPs
     # that can actually generate interrupts.
-    ips_with_difs = []
-    for autogen_dif_filename in glob.iglob(str(autogen_dif_directory / "*.h")):
-        # NOTE: the line below takes as input a file path
-        # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
-        # case snake mode (i.e., uart).
-        ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
-
-        # Load HJSON data.
-        if ip_name_snake in ipgen_modules:
-            data_dir = REPO_TOP / "hw/{}/ip_autogen/{}/data".format(
-                topcfg.name, ip_name_snake)
-        elif ip_name_snake in templated_modules:
-            data_dir = REPO_TOP / "hw/{}/ip/{}/data/autogen".format(
-                topcfg.name, ip_name_snake)
-        elif ip_name_snake in reggen_top_modules:
-            data_dir = REPO_TOP / "hw/{}/ip/{}/data/".format(
-                topcfg.name, ip_name_snake)
+    ips = []
+    for ipname in list({m['type'] for m in topcfg['module']}):
+        # If the IP's hjson path was not provided on the command line, guess
+        # its location based on the type and top name.
+        if ipname in ip_hjson:
+            hjson_file = ip_hjson[ipname]
         else:
-            data_dir = REPO_TOP / "hw/ip/{}/data".format(ip_name_snake)
-        hjson_file = data_dir / "{}.hjson".format(ip_name_snake)
+            # Load HJSON data.
+            if ipname in ipgen_modules:
+                data_dir = REPO_TOP / "hw/top_{}/ip_autogen/{}/data".format(
+                    topcfg["name"], ipname)
+            elif ipname in templated_modules:
+                data_dir = REPO_TOP / "hw/top_{}/ip/{}/data/autogen".format(
+                    topcfg["name"], ipname)
+            elif ipname in reggen_top_modules:
+                data_dir = REPO_TOP / "hw/top_{}/ip/{}/data/".format(
+                    topcfg["name"], ipname)
+            else:
+                data_dir = REPO_TOP / "hw/ip/{}/data".format(ipname)
+            hjson_file = data_dir / "{}.hjson".format(ipname)
+            logging.info("IP hjson path for {} was not provided".format(ipname) +
+                         "guessing its location to be {}".format(hjson_file.relative_to(REPO_TOP)))
 
         # NOTE: ip.name_long_* not needed for auto-generated files which
         # are the only files (re-)generated in batch mode.
-        ips_with_difs.append(
-            Ip(ip_name_snake, "AUTOGEN", hjson_file))
+        ips.append(Ip(ipname, "AUTOGEN", hjson_file))
 
     # Auto-generate testutils files.
-    gen_testutils(ips_with_difs)
+    gen_testutils(outdir, ips)
 
 
 if __name__ == "__main__":
