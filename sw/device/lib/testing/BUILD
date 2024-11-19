@@ -2,7 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:util.bzl", "flatten")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -12,36 +14,13 @@ cc_library(
     hdrs = ["//sw/device/lib/testing/autogen:isr_testutils_hdr"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/dif:adc_ctrl",
-        "//sw/device/lib/dif:alert_handler",
-        "//sw/device/lib/dif:aon_timer",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:dma",
-        "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
-        "//sw/device/lib/dif:i2c",
-        "//sw/device/lib/dif:keymgr",
-        "//sw/device/lib/dif:keymgr_dpe",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/dif:mbx",
-        "//sw/device/lib/dif:otbn",
-        "//sw/device/lib/dif:otp_ctrl",
-        "//sw/device/lib/dif:pattgen",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/dif:rv_timer",
-        "//sw/device/lib/dif:sensor_ctrl",
-        "//sw/device/lib/dif:spi_device",
-        "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:sysrst_ctrl",
-        "//sw/device/lib/dif:uart",
-        "//sw/device/lib/dif:usbdev",
+        "//hw/top:top_lib",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + flatten([
+        opentitan_if_ip(ip, ["//sw/device/lib/dif:{}".format(ip)], [])
+        for ip in ALL_IP_NAMES
+        if ip not in ["ast", "soc_proxy"]
+    ])
 )
 
 cc_library(
