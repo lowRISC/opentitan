@@ -322,6 +322,7 @@ manifest(d = {
             "//sw/device/lib/testing/test_framework:status",
             "//sw/device/lib/testing/test_framework:ujson_ottf",
             "//sw/device/silicon_creator/lib:attestation",
+            "//sw/device/silicon_creator/lib:boot_data",
             "//sw/device/silicon_creator/lib:otbn_boot_services",
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:util",
@@ -333,10 +334,12 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
             "//sw/device/silicon_creator/lib/drivers:kmac",
+            "//sw/device/silicon_creator/lib/ownership:owner_block",
+            "//sw/device/silicon_creator/lib/ownership:ownership_key",
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
             "//sw/device/silicon_creator/manuf/lib:personalize",
-        ] + config["dice_libs"] + config["device_ext_libs"],
+        ] + config["dice_libs"] + config["device_ext_libs"] + config.get("ownership_libs", []),
     )
     for sku, config in EARLGREY_SKUS.items()
 ]
