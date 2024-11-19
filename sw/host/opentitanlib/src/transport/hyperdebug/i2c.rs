@@ -380,6 +380,7 @@ impl Bus for HyperdebugI2cBus {
                     transaction = &mut transaction[1..];
                 }
                 [] => (),
+                _ => bail!(TransportError::UnsupportedOperation),
             }
         }
         Ok(())

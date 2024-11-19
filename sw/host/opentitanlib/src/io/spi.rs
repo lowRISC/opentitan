@@ -45,7 +45,13 @@ impl SpiParams {
     ) -> Result<Rc<dyn Target>> {
         let spi = transport.spi(self.bus.as_deref().unwrap_or(default_instance))?;
         if let Some(ref cs) = self.chip_select {
-            spi.set_pins(None, None, None, Some(&transport.gpio_pin(cs.as_str())?))?;
+            spi.set_pins(
+                None,
+                None,
+                None,
+                Some(&transport.gpio_pin(cs.as_str())?),
+                None,
+            )?;
         }
         if let Some(speed) = self.speed {
             spi.set_max_speed(speed)?;
@@ -156,6 +162,10 @@ pub enum Transfer<'rd, 'wr> {
     Write(&'wr [u8]),
     // Check supports_bidirectional_transfer before using this.
     Both(&'wr [u8], &'rd mut [u8]),
+    // Repeatedly poll until device response with 0x01
+    TpmPoll,
+    // Wait for pulse on non-standard Google signal
+    GscReady,
 }
 
 /// A trait which represents a SPI Target.
@@ -178,6 +188,9 @@ pub trait Target {
     /// Indicates whether `Transfer::Both()` is supported.
     fn supports_bidirectional_transfer(&self) -> Result<bool>;
 
+    /// Indicates whether `Transfer::TpmPoll` is supported.
+    fn supports_tpm_poll(&self) -> Result<bool>;
+
     /// Sets which pins should be used for SPI communication.  `None` value means use the same pin
     /// as previously, or the implementation default if never before specified.  This call is not
     /// supported by most backend transports, and ones that do support it may still have
@@ -188,6 +201,7 @@ pub trait Target {
         _host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
         _host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
         _chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+        _gsc_ready: Option<&Rc<dyn gpio::GpioPin>>,
     ) -> Result<()> {
         Err(SpiError::InvalidPin.into())
     }

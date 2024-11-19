@@ -8,7 +8,8 @@ use std::rc::Rc;
 use std::time::Duration;
 
 use super::ProxyError;
-use crate::io::i2c::{Bus, DeviceStatus, Mode, Transfer};
+use crate::io::gpio;
+use crate::io::i2c::{Bus, DeviceStatus, I2cError, Mode, Transfer};
 use crate::proxy::protocol::{
     I2cRequest, I2cResponse, I2cTransferRequest, I2cTransferResponse, Request, Response,
 };
@@ -42,6 +43,17 @@ impl ProxyI2c {
     }
 }
 
+fn i2c_pin_name(pin: Option<&Rc<dyn gpio::GpioPin>>) -> Result<Option<String>> {
+    if let Some(pin) = pin {
+        let Some(name) = pin.get_internal_pin_name() else {
+            bail!(I2cError::InvalidPin)
+        };
+        Ok(Some(name.to_string()))
+    } else {
+        Ok(None)
+    }
+}
+
 impl Bus for ProxyI2c {
     fn set_mode(&self, mode: Mode) -> Result<()> {
         match mode {
@@ -71,6 +83,22 @@ impl Bus for ProxyI2c {
         }
     }
 
+    fn set_pins(
+        &self,
+        serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
+        serial_data: Option<&Rc<dyn gpio::GpioPin>>,
+        gsc_ready: Option<&Rc<dyn gpio::GpioPin>>,
+    ) -> Result<()> {
+        match self.execute_command(I2cRequest::SetPins {
+            serial_clock: i2c_pin_name(serial_clock)?,
+            serial_data: i2c_pin_name(serial_data)?,
+            gsc_ready: i2c_pin_name(gsc_ready)?,
+        })? {
+            I2cResponse::SetPins => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set_default_address(&self, addr: u8) -> Result<()> {
         self.default_address.set(Some(addr));
         Ok(())
@@ -87,6 +115,7 @@ impl Bus for ProxyI2c {
                 Transfer::Write(wbuf) => req.push(I2cTransferRequest::Write {
                     data: wbuf.to_vec(),
                 }),
+                Transfer::GscReady => req.push(I2cTransferRequest::GscReady),
             }
         }
         match self.execute_command(I2cRequest::RunTransaction {
@@ -104,6 +133,7 @@ impl Bus for ProxyI2c {
                             rbuf.clone_from_slice(data);
                         }
                         (I2cTransferResponse::Write, Transfer::Write(_)) => (),
+                        (I2cTransferResponse::GscReady, Transfer::GscReady) => (),
                         _ => bail!(ProxyError::UnexpectedReply()),
                     }
                 }

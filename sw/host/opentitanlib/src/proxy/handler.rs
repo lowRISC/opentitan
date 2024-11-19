@@ -334,17 +334,23 @@ impl<'a> TransportCommandHandler<'a> {
                             has_support,
                         }))
                     }
+                    SpiRequest::SupportsTpmPoll => {
+                        let has_support = instance.supports_tpm_poll()?;
+                        Ok(Response::Spi(SpiResponse::SupportsTpmPoll { has_support }))
+                    }
                     SpiRequest::SetPins {
                         serial_clock,
                         host_out_device_in,
                         host_in_device_out,
                         chip_select,
+                        gsc_ready,
                     } => {
                         instance.set_pins(
                             self.optional_pin(serial_clock)?.as_ref(),
                             self.optional_pin(host_out_device_in)?.as_ref(),
                             self.optional_pin(host_in_device_out)?.as_ref(),
                             self.optional_pin(chip_select)?.as_ref(),
+                            self.optional_pin(gsc_ready)?.as_ref(),
                         )?;
                         Ok(Response::Spi(SpiResponse::SetPins))
                     }
@@ -378,6 +384,8 @@ impl<'a> TransportCommandHandler<'a> {
                                 SpiTransferRequest::Both { data } => SpiTransferResponse::Both {
                                     data: vec![0; data.len()],
                                 },
+                                SpiTransferRequest::TpmPoll => SpiTransferResponse::TpmPoll,
+                                SpiTransferRequest::GscReady => SpiTransferResponse::GscReady,
                             })
                             .collect();
                         // Now carefully craft a proper parameter to the
@@ -400,6 +408,12 @@ impl<'a> TransportCommandHandler<'a> {
                                     SpiTransferRequest::Both { data: wdata },
                                     SpiTransferResponse::Both { data },
                                 ) => spi::Transfer::Both(wdata, data),
+                                (SpiTransferRequest::TpmPoll, SpiTransferResponse::TpmPoll) => {
+                                    spi::Transfer::TpmPoll
+                                }
+                                (SpiTransferRequest::GscReady, SpiTransferResponse::GscReady) => {
+                                    spi::Transfer::GscReady
+                                }
                                 _ => {
                                     // This can only happen if the logic in this method is
                                     // flawed.  (Never due to network input.)
@@ -452,6 +466,18 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_max_speed(*value)?;
                         Ok(Response::I2c(I2cResponse::SetMaxSpeed))
                     }
+                    I2cRequest::SetPins {
+                        serial_clock,
+                        serial_data,
+                        gsc_ready,
+                    } => {
+                        instance.set_pins(
+                            self.optional_pin(serial_clock)?.as_ref(),
+                            self.optional_pin(serial_data)?.as_ref(),
+                            self.optional_pin(gsc_ready)?.as_ref(),
+                        )?;
+                        Ok(Response::I2c(I2cResponse::SetPins))
+                    }
                     I2cRequest::RunTransaction {
                         address,
                         transaction: reqs,
@@ -464,6 +490,7 @@ impl<'a> TransportCommandHandler<'a> {
                                     data: vec![0; *len as usize],
                                 },
                                 I2cTransferRequest::Write { .. } => I2cTransferResponse::Write,
+                                I2cTransferRequest::GscReady => I2cTransferResponse::GscReady,
                             })
                             .collect();
                         // Now carefully craft a proper parameter to the
@@ -482,6 +509,9 @@ impl<'a> TransportCommandHandler<'a> {
                                     I2cTransferRequest::Write { data },
                                     I2cTransferResponse::Write,
                                 ) => i2c::Transfer::Write(data),
+                                (I2cTransferRequest::GscReady, I2cTransferResponse::GscReady) => {
+                                    i2c::Transfer::GscReady
+                                }
                                 _ => {
                                     // This can only happen if the logic in this method is
                                     // flawed.  (Never due to network input.)
