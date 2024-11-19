@@ -262,6 +262,7 @@ task pwm_scoreboard::compare_trans(int channel);
   pwm_item input_item   = new($sformatf("input_item_%0d", channel));
   string txt            = "";
   int    p = 0;
+  bit    chatty = (channel == 2);
 
   forever begin
     // as this DUT signals needs to be evaluated over time they are only evaluated when the channel
@@ -270,6 +271,13 @@ task pwm_scoreboard::compare_trans(int channel);
 
     item_fifo[channel].get(input_item);
     generate_exp_item(compare_item, channel);
+
+    if (chatty) begin
+    `uvm_info(`gfn,
+              $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                        channel, input_item.sprint()),
+              UVM_LOW)
+    end
 
     // The very first item will be when the monitor detects the first active edge and will have no
     // information. Wait for the first expected item.
@@ -474,7 +482,6 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
   // increments by 2^(16-DC_RESN-1)(modulo 65536)
   phase_count = (period / (2**(channel_cfg.DcResn + 1)) * (2**(16 - (channel_cfg.DcResn - 1))));
 
-  item.monitor_id      = channel;
   item.invert          = invert[channel];
   item.period          = period;
   item.active_cnt      = high_cycles;

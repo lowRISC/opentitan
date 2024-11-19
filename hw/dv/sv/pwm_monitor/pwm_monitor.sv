@@ -88,7 +88,6 @@ task pwm_monitor::collect_transaction();
     uint phase_count;
     pwm_item item = pwm_item::type_id::create("item");
     item.invert       = cfg.invert;
-    item.monitor_id   = cfg.monitor_id;
     item.active_cnt   = active_cycles;
     item.inactive_cnt = inactive_cycles;
     item.period       = inactive_cycles + active_cycles;

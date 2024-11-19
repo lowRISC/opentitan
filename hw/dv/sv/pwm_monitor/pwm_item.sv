@@ -4,7 +4,6 @@
 
 class pwm_item extends uvm_sequence_item;
 
-  int monitor_id    = 0; // for debugging purpose only
   int period        = 0; // clks in a beat
   int duty_cycle    = 0; // high vs low cnt
   int active_cnt    = 0; // number of clocks pwm was high
@@ -19,7 +18,6 @@ class pwm_item extends uvm_sequence_item;
     `uvm_field_int(inactive_cnt, UVM_DEFAULT)
     `uvm_field_int(phase, UVM_DEFAULT)
     `uvm_field_int(invert, UVM_DEFAULT)
-    `uvm_field_int(monitor_id, UVM_DEFAULT)
   `uvm_object_utils_end
 
   `uvm_object_new
@@ -27,7 +25,6 @@ class pwm_item extends uvm_sequence_item;
     function string convert2string();
       string txt ="";
       txt = "\n------| PWM ITEM |------";
-      txt = { txt, $sformatf("\n Item from monitor %d", monitor_id) };
       txt = { txt, $sformatf("\n Period %d clocks", period) };
       txt = { txt, $sformatf("\n Duty cycle %0d pct ", duty_cycle) };
       txt = { txt, $sformatf("\n inverted %0b", invert) };
