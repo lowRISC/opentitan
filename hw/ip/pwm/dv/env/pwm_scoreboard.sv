@@ -53,7 +53,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(.CFG_T(pwm_env_cfg),
 
   // Compute an expected pwm_item that we would like the monitor to see, based on the current
   // configuration registers.
-  extern task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
+  extern function pwm_item generate_exp_item(int unsigned channel);
 
   // Return the bits of the PWM_EN multi-register, collected up into a bit vector
   extern function bit [PWM_NUM_CHANNELS-1:0] get_channel_en();
@@ -261,17 +261,18 @@ function void pwm_scoreboard::reset(string kind = "HARD");
 endfunction
 
 task pwm_scoreboard::compare_trans(int channel);
-  pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
-  pwm_item input_item   = new($sformatf("input_item_%0d", channel));
+  pwm_item input_item = new($sformatf("input_item_%0d", channel));
   int    p = 0;
 
   forever begin
+    pwm_item compare_item;
+
     // as this DUT signals needs to be evaluated over time they are only evaluated when the channel
     // is off. this way it is known what the first and last item are as they might deviate from the
     // settings due to rounding and termination.
 
     item_fifo[channel].get(input_item);
-    generate_exp_item(compare_item, channel);
+    compare_item = generate_exp_item(channel);
 
     // The very first item will be when the monitor detects the first active edge and will have no
     // information. Wait for the first expected item.
@@ -308,12 +309,9 @@ task pwm_scoreboard::compare_trans(int channel);
   end
 endtask : compare_trans
 
-task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
-                                       input bit [PWM_NUM_CHANNELS-1:0] channel);
-  dc_mod_e dc_mod;
-
-  // compare duty cycle for modifier
-  dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
+function pwm_item pwm_scoreboard::generate_exp_item(int unsigned channel);
+  pwm_item item   = new($sformatf("expected_item_%0d", channel));
+  dc_mod_e dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
 
   if (`gmv(ral.pwm_param[channel].blink_en)) begin
     // Unique case for violation report
@@ -485,7 +483,9 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
     item.inactive_cnt    = low_cycles;
     item.phase           = (phase_count % 65536);
   end
-endtask
+
+  return item;
+endfunction
 
 function bit [PWM_NUM_CHANNELS-1:0] pwm_scoreboard::get_channel_en();
   return `gmv(ral.pwm_en[0]);
