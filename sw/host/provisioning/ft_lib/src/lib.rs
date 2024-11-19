@@ -3,20 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
-use elliptic_curve::pkcs8::DecodePrivateKey;
-use elliptic_curve::SecretKey;
-use p256::NistP256;
 use zerocopy::AsBytes;
 
-use cert_lib::{
-    parse_and_endorse_x509_cert, validate_cert_chain, CertEndorsementKey, EndorsedCert,
-};
+use cert_lib::{parse_and_endorse_x509_cert, validate_cert_chain, CaConfig, CaKey, EndorsedCert};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -162,15 +158,6 @@ pub fn test_exit(
     Ok(())
 }
 
-// This enum provides two different certificate signing key representations. In
-// case the local fake certificate is used for certificate chain validation, the
-// key is a path to the file containing the private key. In case a Cloud KMS
-// certificate is used, the key is a string, the ID of the key in cloud storage.
-pub enum KeyWrapper {
-    LocalKey(PathBuf),
-    CkmsKey(String),
-}
-
 fn send_rma_unlock_token_hash(
     rma_unlock_token: &ArrayVec<u32, 4>,
     timeout: Duration,
@@ -289,10 +276,10 @@ fn process_dev_seeds(seeds: &[u8]) -> Result<()> {
 }
 
 fn provision_certificates(
-    cert_endorsement_key_wrapper: KeyWrapper,
+    ca_cfgs: HashMap<String, CaConfig>,
+    ca_keys: HashMap<String, CaKey>,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
-    ca_certificate: PathBuf,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     // Send attestation TCB measurements for generating DICE certificates.
@@ -302,18 +289,6 @@ fn provision_certificates(
     // Wait until the device exports the TBS certificates.
     let _ = UartConsole::wait_for(spi_console, r"Exporting TBS certificates ...", timeout)?;
     let perso_blob = PersoBlob::recv(spi_console, timeout, true)?;
-
-    // Select the CA endorsement key to use.
-    let key = match cert_endorsement_key_wrapper {
-        KeyWrapper::LocalKey(path) => {
-            log::info!("Using local key for cert endorsement");
-            CertEndorsementKey::LocalKey(SecretKey::<NistP256>::read_pkcs8_der_file(path)?)
-        }
-        KeyWrapper::CkmsKey(key_id) => {
-            log::info!("Using Cloud KMS key for cert endorsement");
-            CertEndorsementKey::CkmsKey(key_id)
-        }
-    };
 
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
     // During the process, both:
@@ -326,6 +301,12 @@ fn provision_certificates(
     let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
+
+    // Extract CAs.
+    let dice_ca_cert = &ca_cfgs["dice"].certificate;
+    let dice_ca_key = &ca_keys["dice"];
+    let ext_ca_cert = &ca_cfgs["ext"].certificate;
+    let ext_ca_key = &ca_keys["ext"];
 
     // DICE certificate names.
     let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
@@ -359,7 +340,11 @@ fn provision_certificates(
         // Extract the certificate bytes and endorse the cert if needed.
         let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
             // Endorse the cert and updates its size.
-            let cert_bytes = parse_and_endorse_x509_cert(cert.cert_body.clone(), &key)?;
+            let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
+                parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
+            } else {
+                parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
+            };
 
             // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
             if !dice_cert_names.contains(cert.cert_name) {
@@ -441,15 +426,12 @@ fn provision_certificates(
     // Validate the certificate endorsements with OpenSSL.
     // TODO(lowRISC/opentitan:#24281): Add CWT verifier
     log::info!("Validating DICE certificate chain with OpenSSL ...");
-    validate_cert_chain(ca_certificate.to_str().unwrap(), &dice_cert_chain)?;
+    validate_cert_chain(dice_ca_cert.to_str().unwrap(), &dice_cert_chain)?;
     log::info!("Success.");
     log::info!("Validating SKU-specific certificates with OpenSSL ...");
     if !sku_specific_certs.is_empty() {
         for sku_specific_cert in sku_specific_certs.iter() {
-            validate_cert_chain(
-                ca_certificate.to_str().unwrap(),
-                &[sku_specific_cert.clone()],
-            )?;
+            validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
         }
     }
     log::info!("Success.");
@@ -461,28 +443,27 @@ fn provision_certificates(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    cert_endorsement_key_wrapper: KeyWrapper,
-    perso_certgen_inputs: &ManufCertgenInputs,
-    timeout: Duration,
-    ca_certificate: PathBuf,
     rma_unlock_token: &ArrayVec<u32, 4>,
-    spi_console: &SpiConsoleDevice,
+    ca_cfgs: HashMap<String, CaConfig>,
+    ca_keys: HashMap<String, CaKey>,
+    perso_certgen_inputs: &ManufCertgenInputs,
     second_bootstrap: PathBuf,
+    spi_console: &SpiConsoleDevice,
+    timeout: Duration,
 ) -> Result<()> {
-    // Bootstrap personalization binary into flash.
+    // Bootstrap only personalization binary into ROM_EXT slot A in flash.
     init.bootstrap.init(transport)?;
-    // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
+
+    // Bootstrap personalization + ROM_EXT + Owner FW binaries into flash, since
+    // flash scrambling seeds were provisioned in the previous step.
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
-    // This time loading personalization binary in flash slot A and ROM_EXT + Owner FW in flash slot B.
     init.bootstrap.load(transport, &second_bootstrap)?;
+
+    // Send RMA unlock token digest to device.
     send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console)?;
-    provision_certificates(
-        cert_endorsement_key_wrapper,
-        perso_certgen_inputs,
-        timeout,
-        ca_certificate,
-        spi_console,
-    )?;
+
+    // Provision all device certificates.
+    provision_certificates(ca_cfgs, ca_keys, perso_certgen_inputs, timeout, spi_console)?;
 
     let _ = UartConsole::wait_for(spi_console, r"Personalization done.", timeout)?;
 
