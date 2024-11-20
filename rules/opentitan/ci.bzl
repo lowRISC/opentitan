@@ -14,6 +14,7 @@ _ONLY_RUN_ONE_IN_CI_SORTED = [
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
     "//hw/top_earlgrey:fpga_cw310_rom_ext",
     "//hw/top_earlgrey:fpga_cw310_sival",
+    "//hw/top_earlgrey:fpga_hyper310_rom_ext",
     "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys",
     "//hw/top_earlgrey:fpga_cw310_test_rom",
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
