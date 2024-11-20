@@ -294,7 +294,7 @@ mod tests {
 
     #[test]
     fn validate_good() {
-        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/raw/raw_ca.pem";
+        let ca_pem = "./sw/device/silicon_creator/manuf/keys/fake/ext_ca.pem";
         // The below byte blob is a proper TPM EK certificate generated during test runs.
         let mut cert0 = EndorsedCert {
             format: CertFormat::X509,
