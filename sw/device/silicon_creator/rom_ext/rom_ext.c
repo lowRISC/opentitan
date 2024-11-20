@@ -449,7 +449,6 @@ static rom_error_t rom_ext_spx_verify(
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
-  dbg_print_epmp();
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
 
   uint32_t key_id =
