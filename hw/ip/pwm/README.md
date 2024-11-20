@@ -14,7 +14,7 @@ See that document for integration overview within the broader top-level system.
 
 ## Features
 
-- Pulse-width modulated (PWM) with adjustable duty cycle
+- Pulse-width modulation (PWM) with adjustable duty cycle
 - Suitable for general-purpose use, but primarily designed for control of tri-color LEDs
 - Parameterizable number of output channels
 - Separate clock domains for TL-UL I/O vs. core operations
@@ -23,7 +23,7 @@ See that document for integration overview within the broader top-level system.
 - Programmable resolution (1 to 16 bits) in adjusting the output duty cycle and phase
 - All output channels are driven at the same pulse frequency, which is selected by a 27-bit clock divider
 - Hardware-controlled blink feature
-   - Blinking channel toggles between two separably programmable duty cycles
+   - Blinking channel toggles between two separately programmable duty cycles
    - Blink timing is independently programmable for each channel
 - "Heartbeat" blink mode
    - Output duty cycle linearly increments and decrements between two programmable values
@@ -35,7 +35,7 @@ See that document for integration overview within the broader top-level system.
 
 The PWM IP is primarily designed to drive a parameterizable number of pulse-width modulated outputs with periodic pulses each with a programmable frequency, phase, and duty cycle (i.e. the ratio between the pulse duration and the overall period between pulses.)
 
-The phase and duty cycle of each output channel can then be controlled with programmable resolution, from 1-bit (half-cycle resolution) to 16-bit (in which case pulse width and timing can be controlled to one part in 2<sup>16</sup> relative to the pulse period)
+The phase and duty cycle of each output channel can then be controlled with programmable resolution, from 1 bit (half-cycle resolution) to 16 bits (in which case pulse width and timing can be controlled to one part in 2<sup>16</sup> relative to the pulse period)
 
 By default the output pulses are active-high, however the polarity can also be inverted by firmware.
 
@@ -47,10 +47,10 @@ The overall pulse frequency depends on this clock-divider and the phase-resoluti
 The primary application is to control tri-color LEDs.
 The intensity of each LED channel can be adjusted by varying the duty cycle of the PWM outputs.
 The IP provides capabilities for driving a trio of RGB LEDs at any 24-bit RGB-color combination.
-It principle, this requires a minimum of 8-bits of programmable duty cycle resolution for each output.
+It principle, this requires a minimum of 8 bits of programmable duty cycle resolution for each output.
 However, the proper mapping of LED duty-cycles to perceived colors will depend on many factors, such as non-linear response function of the chosen LED and the choice of current driver.
-Thus the IP provides up to 16-bits of duty cycle resolution, to allow for fine-grain duty cycle control.
-The resolution can be also reduced down as low as 1-bit, to allow for more frequent pulses when connected to a low-frequency, low-power bus.
+Thus the IP provides up to 16 bits of duty cycle resolution, to allow for fine-grained duty cycle control.
+The resolution can be also reduced down as low as 1 bit, to allow for more frequent pulses when connected to a low-frequency, low-power bus.
 
 This IP only controls the *timing* of the PWM drive signal.
 The drive *current* must be managed by the system designer by including the appropriate off-chip circuitry.
