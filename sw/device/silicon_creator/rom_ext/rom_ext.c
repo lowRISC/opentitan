@@ -471,7 +471,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   RETURN_IF_ERROR(owner_keyring_find_key(&keyring, key_id, &verify_key));
   uint32_t key_alg = keyring.key[verify_key]->key_alg;
 
-  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key, key_alg,
+  dbg_printf("verify: key%u;%C;%C\r\n", verify_key, key_alg,
              keyring.key[verify_key]->key_domain);
 
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
@@ -739,7 +739,7 @@ rom_error_t dice_chain_attestation_silicon(void) {
     // In both cases, we do nothing, and boot normally, later attestation
     // attempts will fail in a detectable manner.
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
-    dbg_printf("Warning: UDS certificate not valid.\r\n");
+    dbg_printf("error: UDS certificate not valid\r\n");
   } else {
     // Cert is valid, move to the next one.
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolTrue);
@@ -780,7 +780,7 @@ rom_error_t dice_chain_attestation_creator(
   HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
-    dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
+    dbg_printf("warning: CDI_0 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(
@@ -862,7 +862,7 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
-    dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
+    dbg_printf("warning: CDI_1 certificate not valid. updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
@@ -904,7 +904,7 @@ rom_error_t dice_chain_flush_flash(void) {
         /*offset=*/0,
         /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
         dice_chain.data));
-    dbg_printf("Flushed dice cert page %d\r\n",
+    dbg_printf("info: flushed dice cert page %d\r\n",
                dice_chain.info_page->base_addr);
     dice_chain.data_dirty = kHardenedBoolFalse;
   }
@@ -1050,8 +1050,6 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   // Lock the flash according to the ownership configuration.
   HARDENED_RETURN_IF_ERROR(
       ownership_flash_lockdown(boot_data, boot_log->bl0_slot, &owner_config));
-
-  dbg_print_epmp();
 
   // Verify expectations before jumping to owner code.
   // TODO: we really want to call rnd_uint32 here to select a random starting
@@ -1280,8 +1278,7 @@ rom_error_t dice_chain_init(void) {
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
-  dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
-             self->version_minor);
+  dbg_printf("ROM_EXT:%u.%u\r\n", self->version_major, self->version_minor);
 
   // Establish our identity.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
@@ -1307,7 +1304,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // TODO(cfrantz): evaluate permissible ownership init failure conditions
   // and change this to HARDENED_RETURN_IF_ERROR.
   if (error != kErrorOk) {
-    dbg_printf("ownership_init: %x\r\n", error);
+    dbg_printf("error: ownership_init=%x\r\n", error);
   }
 
   HARDENED_RETURN_IF_ERROR(
