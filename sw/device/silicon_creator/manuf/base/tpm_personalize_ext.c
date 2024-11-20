@@ -61,7 +61,7 @@ static status_t personalize_gen_tpm_ek_certificate(
     cert_flash_info_layout_t *cert_flash_layout) {
   size_t curr_cert_size = 0;
   // Set the endorsement key ID.
-  memcpy(tpm_endorsement_key_id.digest, certgen_inputs->auth_key_key_id,
+  memcpy(tpm_endorsement_key_id.digest, certgen_inputs->ext_auth_key_key_id,
          kCertKeyIdSizeInBytes);
 
   // Set the flash info page layout.
