@@ -22,7 +22,10 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_jtag_csr_rw"]
-      bazel: ["//sw/device/tests:rv_dm_csr_rw"],
+      bazel: ["//sw/device/tests:rv_dm_csr_rw_test_unlocked1",
+              "//sw/device/tests:rv_dm_csr_rw_dev_rv_dm_default_enabled",
+              "//sw/device/tests:rv_dm_csr_rw_dev_rv_dm_delayed_enabled",
+              "//sw/device/tests:rv_dm_csr_rw_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -53,7 +56,10 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_jtag_mem_access"]
-      bazel: ["//sw/device/tests:rv_dm_mem_access"],
+      bazel: ["//sw/device/tests:rv_dm_mem_access_test_unlocked1",
+              "//sw/device/tests:rv_dm_mem_access_dev_rv_dm_default_enabled",
+              "//sw/device/tests:rv_dm_mem_access_dev_rv_dm_delayed_enabled",
+              "//sw/device/tests:rv_dm_mem_access_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -93,7 +99,13 @@
       si_stage: SV3
       tests: ["rom_e2e_jtag_debug_test_unlocked0", "rom_e2e_jtag_debug_dev",
               "rom_e2e_jtag_debug_rma"]
-      bazel: ["//sw/device/silicon_creator/rom/e2e/jtag_inject:rom_e2e_openocd_debug_test"],
+      bazel: [
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_dev",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_prod_end",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_rma",
+        "//sw/device/silicon_creator/rom/e2e/jtag_inject:openocd_debug_test_otp_test_unlocked0"
+      ],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -117,7 +129,9 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_test_unlocked1",
+              "//sw/device/tests:rv_dm_ndm_reset_req_dev",
+              "//sw/device/tests:rv_dm_ndm_reset_req_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -149,7 +163,9 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_dm_ndm_reset_req_when_cpu_halted"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_test_unlocked1",
+              "//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_dev",
+              "//sw/device/tests:rv_dm_ndm_reset_req_when_cpu_halted_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -170,7 +186,9 @@
       stage: V2
       si_stage: SV3
       tests: ["chip_sw_rv_dm_access_after_wakeup"]
-      bazel: ["//sw/device/tests:rv_dm_access_after_wakeup"],
+      bazel: ["//sw/device/tests:rv_dm_access_after_wakeup_test_unlocked1",
+              "//sw/device/tests:rv_dm_access_after_wakeup_dev",
+              "//sw/device/tests:rv_dm_access_after_wakeup_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -188,7 +206,9 @@
       stage: V3
       si_stage: SV3
       tests: ["chip_sw_rv_dm_access_after_escalation_reset"]
-      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset"],
+      bazel: ["//sw/device/tests:rv_dm_access_after_hw_reset_test_unlocked1",
+              "//sw/device/tests:rv_dm_access_after_hw_reset_dev",
+              "//sw/device/tests:rv_dm_access_after_hw_reset_rma"],
       lc_states: ["DEV"]
       features: [
         "RV_DM.JTAG.FSM",
@@ -207,7 +227,10 @@
       stage: V2
       si_stage: SV2
       tests: ["chip_tap_straps_rma"]
-      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel_test_unlocked1",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -250,8 +273,17 @@
       si_stage: SV2
       tests: ["chip_rv_dm_lc_disabled"],
       bazel: [
-        "//sw/device/tests:rv_dm_lc_disabled_tl",
-        "//sw/device/tests:rv_dm_lc_disabled_jtag",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_test_unlocked1",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_dev",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_prod",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_prod_end",
+        "//sw/device/tests:rv_dm_lc_disabled_tl_rma",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_test_unlocked1",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_test_locked0",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_dev",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_prod",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_prod_end",
+        "//sw/device/tests:rv_dm_lc_disabled_jtag_rma",
       ],
       lc_states: ["RAW", "TEST_LOCKED", "TEST_UNLOCKED", "DEV", "RMA", "PROD",
         "PROD_END", "SCRAP"]
@@ -273,7 +305,10 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_jtag"],
+      bazel: ["//sw/device/tests:rv_dm_jtag_test_unlocked1",
+              "//sw/device/tests:rv_dm_jtag_dev_rv_dm_default_enabled",
+              "//sw/device/tests:rv_dm_jtag_dev_rv_dm_delayed_enabled",
+              "//sw/device/tests:rv_dm_jtag_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -292,7 +327,9 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_dtm"],
+      bazel: ["//sw/device/tests:rv_dm_dtm_test_unlocked1",
+              "//sw/device/tests:rv_dm_dtm_dev",
+              "//sw/device/tests:rv_dm_dtm_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
@@ -321,7 +358,9 @@
       stage: V2
       si_stage: SV3
       tests: []
-      bazel: ["//sw/device/tests:rv_dm_control_status"],
+      bazel: ["//sw/device/tests:rv_dm_control_status_test_unlocked1",
+              "//sw/device/tests:rv_dm_control_status_dev",
+              "//sw/device/tests:rv_dm_control_status_rma"],
       lc_states: ["DEV"]
       host_support: true
       features: [
