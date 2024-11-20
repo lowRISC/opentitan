@@ -2,25 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
-load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load("//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("//rules/opentitan:defs.bzl", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
     "SLOTS",
 )
-load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
-
-# In order to prevent the linker from prematurely discarding symbols, we
-# need to give the CRT library last.
-LINK_ORDER = [
-    "$(location //sw/device/silicon_creator/rom_ext)",
-    "$(location //sw/device/lib/crt)",
-]
 
 manifest(d = {
     "name": "manifest_sival",
@@ -40,7 +34,7 @@ manifest(d = {
 #   --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized
 [
     opentitan_binary(
-        name = "rom_ext_fake_slot_{}".format(slot),
+        name = "rom_ext_{}_fake_slot_{}".format(variation, slot),
         ecdsa_key = select({
             "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
             "//conditions:default": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-test-0"},
@@ -51,7 +45,12 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
-        linkopts = LINK_ORDER,
+        # In order to prevent the linker from prematurely discarding symbols, we
+        # need to give the CRT library last.
+        linkopts = [
+            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
+            "$(location //sw/device/lib/crt)",
+        ],
         manifest = ":manifest_sival",
         deps = [
             # The sival_owner C library is included only in the "fake" ROM_EXT,
@@ -60,30 +59,35 @@ manifest(d = {
             ":sival_owner",
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
-            "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
         ],
     )
+    for variation in ROM_EXT_VARIATIONS.keys()
     for slot in SLOTS
 ]
 
 [
     opentitan_binary(
-        name = "rom_ext_prod_slot_{}".format(slot),
+        name = "rom_ext_{}_prod_slot_{}".format(variation, slot),
         exec_env = [
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
-        linkopts = LINK_ORDER,
+        linkopts = [
+            "$(location //sw/device/silicon_creator/rom_ext:rom_ext_{})".format(variation),
+            "$(location //sw/device/lib/crt)",
+        ],
         deps = [
             # The sival_owner C library is excluded from the real ROM_EXT,
             # as chips maintain their ownership configuration in flash.
             "//sw/device/lib/crt",
             "//sw/device/silicon_creator/lib:manifest_def",
-            "//sw/device/silicon_creator/rom_ext",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_{}".format(variation),
         ],
     )
+    for variation in ROM_EXT_VARIATIONS.keys()
     for slot in SLOTS
 ]
 

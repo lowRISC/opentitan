@@ -9,7 +9,9 @@ load("//rules:manifest.bzl", "manifest")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
     "ROM_EXT_VERSION",
+    "SLOTS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -155,65 +157,67 @@ cc_test(
     ],
 )
 
-cc_library(
-    name = "rom_ext",
-    srcs = [
-        "rom_ext.c",
-        "rom_ext_start.S",
-    ],
-    hdrs = ["rom_ext.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":rescue",
-        ":rom_ext_boot_policy",
-        ":rom_ext_boot_policy_ptrs",
-        ":rom_ext_epmp",
-        ":sigverify_keys",
-        "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//sw/device/lib/arch:device",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:macros",
-        "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/crypto/drivers:entropy",
-        "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:attestation",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:boot_log",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:keymgr_binding",
-        "//sw/device/silicon_creator/lib:manifest",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
-        "//sw/device/silicon_creator/lib:shutdown",
-        "//sw/device/silicon_creator/lib/base:chip",
-        "//sw/device/silicon_creator/lib/base:sec_mmio",
-        "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/base:util",
-        "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/cert",
-        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:dice",
-        "//sw/device/silicon_creator/lib/drivers:ast",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:otp",
-        "//sw/device/silicon_creator/lib/drivers:pinmux",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rnd",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-        "//sw/device/silicon_creator/lib/ownership",
-        "//sw/device/silicon_creator/lib/ownership:ownership_activate",
-        "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
-        "//sw/device/silicon_creator/lib/sigverify",
-        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
-        "//sw/otbn/crypto:boot",
-    ],
-)
+[
+    cc_library(
+        name = "rom_ext_{}".format(variation_name),
+        srcs = [
+            "rom_ext.c",
+            "rom_ext_start.S",
+        ],
+        hdrs = ["rom_ext.h"],
+        target_compatible_with = [OPENTITAN_CPU],
+        deps = [
+            ":rescue",
+            ":rom_ext_boot_policy",
+            ":rom_ext_boot_policy_ptrs",
+            ":rom_ext_epmp",
+            ":sigverify_keys",
+            "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:csr",
+            "//sw/device/lib/base:macros",
+            "//sw/device/lib/base:stdasm",
+            "//sw/device/lib/crypto/drivers:entropy",
+            "//sw/device/lib/runtime:hart",
+            "//sw/device/silicon_creator/lib:attestation",
+            "//sw/device/silicon_creator/lib:boot_data",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib:dbg_print",
+            "//sw/device/silicon_creator/lib:keymgr_binding",
+            "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib:otbn_boot_services",
+            "//sw/device/silicon_creator/lib:shutdown",
+            "//sw/device/silicon_creator/lib/base:chip",
+            "//sw/device/silicon_creator/lib/base:sec_mmio",
+            "//sw/device/silicon_creator/lib/base:static_critical",
+            "//sw/device/silicon_creator/lib/base:util",
+            "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+            "//sw/device/silicon_creator/lib/cert",
+            "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
+            "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
+            "//sw/device/silicon_creator/lib/drivers:ast",
+            "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+            "//sw/device/silicon_creator/lib/drivers:hmac",
+            "//sw/device/silicon_creator/lib/drivers:ibex",
+            "//sw/device/silicon_creator/lib/drivers:keymgr",
+            "//sw/device/silicon_creator/lib/drivers:lifecycle",
+            "//sw/device/silicon_creator/lib/drivers:otp",
+            "//sw/device/silicon_creator/lib/drivers:pinmux",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+            "//sw/device/silicon_creator/lib/drivers:rnd",
+            "//sw/device/silicon_creator/lib/drivers:uart",
+            "//sw/device/silicon_creator/lib/ownership",
+            "//sw/device/silicon_creator/lib/ownership:ownership_activate",
+            "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
+            "//sw/device/silicon_creator/lib/sigverify",
+            "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+            "//sw/otbn/crypto:boot",
+        ] + variation_deps,
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+]
 
 manifest(d = {
     "name": "manifest",
@@ -224,76 +228,33 @@ manifest(d = {
     "security_version": ROM_EXT_VERSION.SECURITY,
 })
 
-opentitan_binary(
-    name = "rom_ext_slot_a",
-    testonly = True,
-    # TODO(#22780): Integrate real keys for A1 flows.
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-        "//hw/top_earlgrey:silicon_creator",
-    ],
-    linker_script = ":ld_slot_a",
-    manifest = ":manifest",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-    deps = [
-        ":rom_ext",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_slot_b",
-    testonly = True,
-    # TODO(#22780): Integrate real keys for A1 flows.
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-        "//hw/top_earlgrey:silicon_creator",
-    ],
-    linker_script = ":ld_slot_b",
-    manifest = ":manifest",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
-    deps = [
-        ":rom_ext",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-    ],
-)
-
-opentitan_binary(
-    name = "rom_ext_slot_virtual",
-    testonly = True,
-    # TODO(#22780): Integrate real keys for A1 flows.
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-        "//hw/top_earlgrey:silicon_creator",
-    ],
-    linker_script = ":ld_slot_virtual",
-    manifest = ":manifest",
-    deps = [
-        ":rom_ext",
-        "//sw/device/lib/crt",
-        "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib/ownership:test_owner",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake",
-    ],
-)
+[
+    opentitan_binary(
+        name = "rom_ext_{}_slot_{}".format(variation_name, slot),
+        testonly = True,
+        # TODO(#22780): Integrate real keys for A1 flows.
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_earlgrey:sim_dv_base",
+            "//hw/top_earlgrey:sim_verilator_base",
+            "//hw/top_earlgrey:silicon_creator",
+        ],
+        linker_script = ":ld_slot_{}".format(slot),
+        manifest = ":manifest",
+        spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+        deps = [
+            ":rom_ext_{}".format(variation_name),
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:test_owner",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        ],
+    )
+    for variation_name, variation_deps in ROM_EXT_VARIATIONS.items()
+    for slot in SLOTS
+]
 
 # This binary is a test-only ROM_EXT that has ownership initialized in
 # the "NewVersion" update mode.  Initializing in this mode makes the
@@ -308,7 +269,7 @@ opentitan_binary(
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     deps = [
-        ":rom_ext",
+        ":rom_ext_dice_x509",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner_update_mode_newversion",
@@ -323,7 +284,7 @@ manifest(d = {
 })
 
 opentitan_binary(
-    name = "rom_ext_slot_a_bad_address_translation",
+    name = "rom_ext_dice_x509_slot_a_bad_address_translation",
     testonly = True,
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = [
@@ -335,7 +296,7 @@ opentitan_binary(
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
     deps = [
-        ":rom_ext",
+        ":rom_ext_dice_x509",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib/ownership:test_owner",
