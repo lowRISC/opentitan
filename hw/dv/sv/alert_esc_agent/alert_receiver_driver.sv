@@ -71,37 +71,49 @@ class alert_receiver_driver extends alert_esc_base_driver;
 
       // If we get here then something should have been pushed onto the alert queue in response to
       // an alert being generated. Wait a short time to allow the alert to propagate through the
-      // clocking blocks (which should only take a cycle, but give it a couple more to make sure)
-      repeat (4) begin
-        if (under_reset) continue;
-        if (cfg.vif.receiver_cb.alert_tx.alert_p) break;
-        @(cfg.vif.receiver_cb);
+      // clocking blocks (which should only take a cycle, but give it a couple more to make sure).
+      // Stop early if we go into reset.
+      fork begin : isolation_fork_1
+        fork
+          wait(under_reset);
+          repeat (4) begin
+            if (cfg.vif.receiver_cb.alert_tx.alert_p) break;
+            @(cfg.vif.receiver_cb);
+          end
+        join_any
+        disable fork;
+      end join
+
+      if (!under_reset) begin
+        // If we haven't gone into reset, we have an item and have waited a bit for the alert to be
+        // visible. Check that it really has arrived.
+        `DV_CHECK_FATAL(cfg.vif.receiver_cb.alert_tx.alert_p,
+                        "alert_p not high, despite an item in r_alert_rsp_q")
+
+        `uvm_info(`gfn,
+                  $sformatf("rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
+                            req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
+                  UVM_HIGH)
+
+        fork
+          begin : isolation_fork_2
+            fork
+              set_ack_pins(req);
+              wait(under_reset);
+            join_any
+            disable fork;
+          end
+        join
       end
-      `DV_CHECK_FATAL(cfg.vif.receiver_cb.alert_tx.alert_p,
-                      "alert_p not high, despite an item in r_alert_rsp_q")
+
+      `uvm_info(`gfn,
+                $sformatf("%0s rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
+                          under_reset ? "aborting" : "finished",
+                          req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
+                UVM_HIGH)
 
       `downcast(rsp, req.clone());
       rsp.set_id_info(req);
-      `uvm_info(`gfn,
-                $sformatf("rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
-                          req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
-                UVM_HIGH)
-
-      fork
-        begin : isolation_fork
-          fork
-            set_ack_pins(req);
-            wait(under_reset);
-          join_any
-          disable fork;
-        end
-      join
-
-      `uvm_info(`gfn,
-                $sformatf("finished rsp_alert item (ping_send=%0b, alert_rsp=%0b, int_fail=%0b)",
-                          req.r_alert_ping_send, req.r_alert_rsp, req.int_err),
-                UVM_HIGH)
-
       seq_item_port.put_response(rsp);
     end // end forever
   endtask : rsp_alert
