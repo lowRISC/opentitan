@@ -132,7 +132,7 @@ static status_t run_rsa_2048_encrypt(const uint8_t *msg, size_t msg_len,
 /**
  * Helper function to run the RSA-2048 decryption routine.
  *
- * Packages input into cryptolib-style structs and calls `otcrypto_rsa_encrypt`
+ * Packages input into cryptolib-style structs and calls `otcrypto_rsa_decrypt`
  * using the constant test private key.
  *
  * The caller must allocate enough space at `msg` for the maximum message
