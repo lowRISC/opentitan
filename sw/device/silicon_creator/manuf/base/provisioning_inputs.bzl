@@ -29,22 +29,22 @@ EARLGREY_SKUS = {
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
-        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
-    # TODO(#24281): uncomment when DICE CWT cert flows are fully supported
-    # "emulation_dice_cwt": {
-    #     "otp": "emulation",
-    #     "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-    #     "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
-    #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
-    #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
-    #     "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
-    #     "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
-    #     "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
-    # },
-    # OTP Config: SIVAL; DICE Certs: X.509; Additional Certs: TPM EK
+    "emulation_dice_cwt": {
+        "otp": "emulation",
+        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
+        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
+        "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
+        "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
+        "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_cwt_slot_b",
+        "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
+    },
+    # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
@@ -56,7 +56,7 @@ EARLGREY_SKUS = {
             "//sw/device/silicon_creator/manuf/base:tpm_perso_fw_ext",
         ],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
-        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
     },
 } | EXT_EARLGREY_SKUS

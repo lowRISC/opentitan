@@ -3,16 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules/opentitan:defs.bzl",
-    "cw310_params",
-    "fpga_params",
-    "opentitan_test",
-)
-load(
     "//rules:const.bzl",
     "CONST",
-    "hex",
     "hex_digits",
+)
+load(
+    "//rules/opentitan:defs.bzl",
+    "fpga_params",
+    "opentitan_test",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -32,7 +30,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a": "firmware",
         },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
@@ -49,7 +47,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b": "firmware",
         },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
@@ -66,7 +64,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a": "firmware",
         },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
@@ -83,7 +81,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b": "firmware",
         },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.STORE_ACCESS)),
@@ -100,7 +98,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual": "firmware",
         },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
@@ -117,7 +115,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual": "firmware",
         },
         exit_failure = CONST.SHUTDOWN.PREFIX.BFV,
         exit_success = MSG_STARTING_ROM_EXT,
@@ -134,7 +132,7 @@ opentitan_test(
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
         binaries = {
-            "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a_bad_address_translation": "firmware",
+            "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a_bad_address_translation": "firmware",
         },
         exit_failure = MSG_STARTING_ROM_EXT,
         exit_success = MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
