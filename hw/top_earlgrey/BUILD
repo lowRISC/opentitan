@@ -167,7 +167,7 @@ fpga_cw310(
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
 )
 
 # FPGA configuration used to emulate silicon targets. This rule can be used by
@@ -206,7 +206,7 @@ fpga_cw310(
         "//hw/top_earlgrey/sw/dt:fpga_cw310",
     ],
     otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
     tags = ["cw310_sival_rom_ext"],
 )
 
@@ -322,7 +322,7 @@ fpga_cw340(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
 )
 
 # FPGA configuration used to emulate silicon targets. This rule can be used by
@@ -361,7 +361,7 @@ fpga_cw340(
         "//hw/top_earlgrey/sw/dt:fpga_cw340",
     ],
     otp = "//hw/top_earlgrey/data/otp/emulation:otp_img_prod_manuf_personalized",
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
     tags = ["cw340_sival_rom_ext"],
 )
 
@@ -434,8 +434,8 @@ silicon(
     # target once available:
     # //sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_prod_slot_a
     rom_ext = select({
-        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_fake_slot_a",
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
     }),
     test_cmd = """
         --exec="transport init"
