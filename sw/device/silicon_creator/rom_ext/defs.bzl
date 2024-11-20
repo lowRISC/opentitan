@@ -11,6 +11,15 @@ ROM_EXT_VERSION = struct(
     SECURITY = "0",
 )
 
+ROM_EXT_VARIATIONS = {
+    "dice_x509": [
+        "//sw/device/silicon_creator/lib/cert:dice",
+    ],
+    "dice_cwt": [
+        "//sw/device/silicon_creator/lib/cert:dice_cwt",
+    ],
+}
+
 SLOTS = [
     "a",
     "b",
