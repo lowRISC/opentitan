@@ -302,7 +302,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   RETURN_IF_ERROR(owner_keyring_find_key(&keyring, key_id, &verify_key));
   uint32_t key_alg = keyring.key[verify_key]->key_alg;
 
-  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key, key_alg,
+  dbg_printf("verify: key=%u;%C;%C\r\n", verify_key, key_alg,
              keyring.key[verify_key]->key_domain);
 
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
@@ -694,8 +694,7 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
-  dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
-             self->version_minor);
+  dbg_printf("ROM_EXT:%u.%u\r\n", self->version_major, self->version_minor);
 
   uint32_t hash_enforcement =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
@@ -728,7 +727,7 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // TODO(cfrantz): evaluate permissible ownership init failure conditions
   // and change this to HARDENED_RETURN_IF_ERROR.
   if (error != kErrorOk) {
-    dbg_printf("ownership_init: %x\r\n", error);
+    dbg_printf("error: ownership_init=%x\r\n", error);
   }
 
   // Configure SRAM execution as the owner requested.

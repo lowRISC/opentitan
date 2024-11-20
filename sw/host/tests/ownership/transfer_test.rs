@@ -95,7 +95,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         log::info!("###### Pre-transfer Boot Check ######");
         let capture = UartConsole::wait_for(
             &*uart,
-            r"(?msR)Starting.*ownership_state = (\w+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+            r"(?msR)Running.*ownership_state = (\w+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
             opts.timeout,
         )?;
         if capture[0].starts_with("BFV") {
@@ -146,7 +146,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
         let capture = UartConsole::wait_for(
             &*uart,
-            r"(?msR)Starting.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+            r"(?msR)Running.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
             opts.timeout,
         )?;
         if capture[0].starts_with("BFV") {
@@ -189,7 +189,7 @@ fn transfer_test(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     transport.reset_target(Duration::from_millis(50), /*clear_uart=*/ true)?;
     let capture = UartConsole::wait_for(
         &*uart,
-        r"(?msR)Starting.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
+        r"(?msR)Running.*ownership_state = (\w+)$.*ownership_transfers = (\d+)$.*PASS!$|BFV:([0-9A-Fa-f]{8})$",
         opts.timeout,
     )?;
     if capture[0].starts_with("BFV") {
