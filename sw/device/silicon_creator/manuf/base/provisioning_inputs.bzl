@@ -74,7 +74,6 @@ CP_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --wafer-auth-secret="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
 """
 
-# Note that uds-auth-key-id below is the actual hash of the public key of cert_endorsement_key.sk.der
 FT_PROVISIONING_INPUTS = _DEVICE_ID_AND_TEST_TOKENS + """
   --target-mission-mode-lc-state="prod"
   --rma-unlock-token="0x01234567_89abcdef_01234567_89abcdef"
