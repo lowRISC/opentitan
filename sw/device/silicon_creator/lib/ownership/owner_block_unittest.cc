@@ -219,7 +219,7 @@ const owner_flash_info_config_t info_config = {
             {
                 // Disallowed page
                 .bank = 0,
-                .page = 5,
+                .page = 9,
                 .access = FLASH_ACCESS(
                     /*index=*/1,
                     /*read=*/true,
