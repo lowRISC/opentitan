@@ -760,6 +760,7 @@ static const flash_ctrl_info_page_t *kInfoPagesNoOwnerAccess[] = {
     // Bank 1
     &kFlashCtrlInfoPageBootData0,
     &kFlashCtrlInfoPageBootData1,
+    &kFlashCtrlInfoPageCreatorReserved0,
 };
 
 enum {
@@ -805,6 +806,7 @@ void flash_ctrl_cert_info_page_creator_cfg(
 void flash_ctrl_cert_info_page_owner_restrict(
     const flash_ctrl_info_page_t *info_page) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageOwnerRestrict,
-                                  1);
+                                  2);
   flash_ctrl_info_perms_set(info_page, kCertificateInfoPageOwnerAccess);
+  sec_mmio_write32(info_page->cfg_wen_addr, 0);
 }
