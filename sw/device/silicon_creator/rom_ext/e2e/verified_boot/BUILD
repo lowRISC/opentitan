@@ -2,13 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules:const.bzl", "CONST", "hex")
+load("//rules:manifest.bzl", "manifest")
 load(
     "//rules/opentitan:defs.bzl",
-    "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
-    "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_test",
 )
@@ -71,7 +70,7 @@ filegroup(
 
 _POSITIONS = {
     "owner_slot_a": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
@@ -79,7 +78,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "owner_slot_b": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "owner_offset": "0x90000",
@@ -87,7 +86,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "owner_virtual_a": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "owner_offset": "0x10000",
@@ -95,7 +94,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "owner_virtual_b": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         "owner_offset": "0x90000",
@@ -103,7 +102,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "romext_slot_a": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
@@ -111,7 +110,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "romext_slot_b": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_b",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "romext_offset": "0x80000",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
@@ -119,7 +118,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "romext_virtual_a": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
@@ -127,7 +126,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "romext_virtual_b": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         "romext_offset": "0x80000",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
@@ -135,7 +134,7 @@ _POSITIONS = {
         "otp_img": None,
     },
     "imm_section_virtual_a": {
-        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_slot_virtual",
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
         "romext_offset": "0",
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
