@@ -55,7 +55,7 @@ bool test_main(void) {
   sideload_params.dest = kDifKeymgrVersionedKeyDestAes;
   CHECK_STATUS_OK(
       keymgr_testutils_generate_versioned_key(&keymgr, sideload_params));
-  LOG_INFO("Keymgr generated HW output for Aes at %sState", state_name);
+  LOG_INFO("Keymgr generated HW output for Aes at %s State", state_name);
 
   sideload_params.dest = kDifKeymgrVersionedKeyDestOtbn;
   CHECK_STATUS_OK(
