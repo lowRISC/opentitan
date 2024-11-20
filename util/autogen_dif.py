@@ -79,7 +79,6 @@ def main():
         template_file = template_path / f"dif_autogen{filetype}.tpl"
         out_file = (args.outdir /
                     f"dif_{ip.name_snake}_autogen{filetype}")
-        print(out_file)
 
         # Read in template.
         template = Template(template_file.read_text(),
