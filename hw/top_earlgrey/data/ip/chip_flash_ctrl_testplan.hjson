@@ -161,8 +161,14 @@
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       boot_stages: ["rom_ext"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
-      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states",
-              "//sw/device/tests:flash_ctrl_info_access_lc_states_personalized"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_dev",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_end",
+              "//sw/device/tests:flash_ctrl_info_access_lc_rma",
+              "//sw/device/tests:flash_ctrl_info_access_lc_test_unlocked0",
+              "//sw/device/tests:flash_ctrl_info_access_lc_dev_personalized",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_personalized",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_end_personalized"]
 
     }
     {
@@ -194,7 +200,11 @@
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       boot_stages: ["rom_ext"]
-      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_dev",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_end",
+              "//sw/device/tests:flash_ctrl_info_access_lc_rma",
+              "//sw/device/tests:flash_ctrl_info_access_lc_test_unlocked0"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_rd_en
@@ -214,7 +224,11 @@
       lc_states: ["DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       boot_stages: ["rom_ext"]
-      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_dev",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_end",
+              "//sw/device/tests:flash_ctrl_info_access_lc_rma",
+              "//sw/device/tests:flash_ctrl_info_access_lc_test_unlocked0"]
     }
     {
       name: chip_sw_flash_lc_iso_part_sw_wr_en
@@ -234,7 +248,11 @@
       lc_states: ["TEST_LOCKED", "DEV", "PROD", "SCRAP"]
       tests: ["chip_sw_flash_ctrl_lc_rw_en"]
       boot_stages: ["rom_ext"]
-      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_states"]
+      bazel: ["//sw/device/tests:flash_ctrl_info_access_lc_dev",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod",
+              "//sw/device/tests:flash_ctrl_info_access_lc_prod_end",
+              "//sw/device/tests:flash_ctrl_info_access_lc_rma",
+              "//sw/device/tests:flash_ctrl_info_access_lc_test_unlocked0"]
     }
     {
       name: chip_sw_flash_lc_seed_hw_rd_en
