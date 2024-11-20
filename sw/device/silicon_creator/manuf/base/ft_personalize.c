@@ -434,9 +434,9 @@ static status_t personalize_gen_dice_certificates(ujson_t *uj) {
   // sw/host/provisioning/ft_lib/src/lib.rs
   LOG_INFO("Waiting for certificate inputs ...");
   TRY(ujson_deserialize_manuf_certgen_inputs_t(uj, &certgen_inputs));
-  // We copy over the TPM/UDS endorsement key ID to an SHA256 digest type, since
+  // We copy over the UDS endorsement key ID to an SHA256 digest type, since
   // this is the format of key IDs generated on-dice.
-  memcpy(uds_endorsement_key_id.digest, certgen_inputs.auth_key_key_id,
+  memcpy(uds_endorsement_key_id.digest, certgen_inputs.dice_auth_key_key_id,
          kCertKeyIdSizeInBytes);
 
   // Initialize entropy complex / KMAC for key manager operations.

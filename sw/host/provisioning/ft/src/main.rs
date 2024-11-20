@@ -158,14 +158,16 @@ fn main() -> Result<()> {
     let owner_measurement =
         hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.owner_measurement.as_str())?;
     let owner_security_version = opts.provisioning_data.owner_security_version;
-    let ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
+    let dice_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["dice"].key_id.as_str())?;
+    let ext_ca_key_id = hex_string_to_u8_arrayvec::<20>(ca_cfgs["ext"].key_id.as_str())?;
     let _perso_certgen_inputs = ManufCertgenInputs {
         rom_ext_measurement: rom_ext_measurement.clone(),
         rom_ext_security_version,
         owner_manifest_measurement: owner_manifest_measurement.clone(),
         owner_measurement: owner_measurement.clone(),
         owner_security_version,
-        auth_key_key_id: ca_key_id.clone(),
+        dice_auth_key_key_id: dice_ca_key_id.clone(),
+        ext_auth_key_key_id: ext_ca_key_id.clone(),
     };
 
     // Only run test unlock operation if we are in a locked LC state.
