@@ -9,8 +9,9 @@ exports_files(glob(["**"]))
 filegroup(
     name = "ca_data",
     srcs = [
-        ":ca.pem",
         ":ca_config.json",
+        ":dice_ca.pem",
+        ":ext_ca.pem",
         ":sk.pkcs8.der",
     ],
 )
