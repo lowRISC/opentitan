@@ -99,12 +99,13 @@ static void init_peripheral_handles(void) {
 }
 
 /**
- * Compare two masked key manager outputs without unmasking.
+ * Equality check of two masked key manager outputs without unmasking.
  *
  * @param output_a First key manager output.
  * @param output_b Second key manager output.
+ * @return Result of the equality check.
  */
-static void compare_outputs(const dif_keymgr_output_t *output_a,
+static bool compare_outputs(const dif_keymgr_output_t *output_a,
                             const dif_keymgr_output_t *output_b) {
   uint32_t scratch[kKeymgrOutputSizeWords];
   for (int i = 0; i < kKeymgrOutputSizeWords; i++) {
@@ -118,8 +119,11 @@ static void compare_outputs(const dif_keymgr_output_t *output_a,
     // In order to prevent an accidental unmasking through reordering of the
     // operation after compilation, `t` is read into an auxiliary array.
     scratch[i] = output_a->value[0][i] ^ output_b->value[0][i];
-    CHECK((scratch[i] ^ output_a->value[1][i] ^ output_b->value[1][i]) == 0x0);
+    if ((scratch[i] ^ output_a->value[1][i] ^ output_b->value[1][i]) != 0x0) {
+      return false;
+    }
   }
+  return true;
 }
 
 /**
@@ -266,14 +270,8 @@ static void derive_keys(const char *state_name,
   derive_sideload_otbn_key(state_name, next_outputs->sideload_key);
 
   if (prev_outputs) {
-    CHECK_ARRAYS_NE(prev_outputs->identity.value[0],
-                    next_outputs->identity.value[0], kKeymgrOutputSizeWords);
-    CHECK_ARRAYS_NE(prev_outputs->identity.value[1],
-                    next_outputs->identity.value[1], kKeymgrOutputSizeWords);
-    CHECK_ARRAYS_NE(prev_outputs->sw_key.value[0],
-                    next_outputs->sw_key.value[0], kKeymgrOutputSizeWords);
-    CHECK_ARRAYS_NE(prev_outputs->sw_key.value[1],
-                    next_outputs->sw_key.value[1], kKeymgrOutputSizeWords);
+    CHECK(!compare_outputs(&prev_outputs->identity, &next_outputs->identity));
+    CHECK(!compare_outputs(&prev_outputs->sw_key, &next_outputs->sw_key));
     CHECK_ARRAYS_NE(prev_outputs->sideload_key, next_outputs->sideload_key,
                     kKeymgrOutputSizeWords);
   }
@@ -284,8 +282,8 @@ static void derive_keys(const char *state_name,
     cdi_outputs_t scratch;
     ret_sram_read_keys(&scratch, offset);
 
-    compare_outputs(&scratch.identity, &next_outputs->identity);
-    compare_outputs(&scratch.sw_key, &next_outputs->sw_key);
+    CHECK(compare_outputs(&scratch.identity, &next_outputs->identity));
+    CHECK(compare_outputs(&scratch.sw_key, &next_outputs->sw_key));
     CHECK_ARRAYS_EQ(scratch.sideload_key, next_outputs->sideload_key,
                     kKeymgrOutputSizeWords);
   }
