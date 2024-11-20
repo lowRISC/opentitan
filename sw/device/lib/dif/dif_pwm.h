@@ -232,11 +232,6 @@ dif_result_t dif_pwm_configure(const dif_pwm_t *pwm, dif_pwm_config_t config);
 /**
  * Configures a single PWM channel.
  *
- * Since changes to `CLK_DIV` and `DC_RESN` are only allowed when the PWM is
- * disabled, this function has the side effect of temporarily disabling the
- * PWM while configurations are updated, before returning the block to its
- * original enablement state.
- *
  * This function should only need to be called once for each PWM channel that
  * will be used.
  *
