@@ -34,7 +34,7 @@ MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
     "{1}",
 )
 
-MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
+MSG_STARTING_ROM_EXT = "ROM_EXT:[^\r\n]*\r\n"
 
 MSG_PASS = "PASS!"
 
