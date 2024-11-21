@@ -9,6 +9,19 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
+ * otbn.fi.char_dmem_access command handler.
+ *
+ * OTBN loads WDRs with words from DMEM. These values are stored in different
+ * data sections.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj The received uJSON data.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_char_dmem_access(ujson_t *uj);
+
+/**
  * otbn.fi.char.hardware.dmem.op.loop command handler.
  *
  * This FI penetration tests executes the following instructions on OTBN:
@@ -40,6 +53,46 @@ status_t handle_otbn_fi_char_hardware_dmem_op_loop(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj);
+
+/**
+ * otbn.fi.char.jal command handler.
+ *
+ * The goal of this test is to fault to JAL instruction such that the jump is
+ * not performed. Then, a counter gets incremented. When no effective fault
+ * occurs, the counter is 0.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_char_jal(ujson_t *uj);
+
+/**
+ * otbn.fi.char_mem command handler.
+ *
+ * Initializes IMEM and DMEM of OTBN with a fixed pattern. Inject a fault and
+ * check whether the data in memory got corrupted.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_char_mem(ujson_t *uj);
+
+/**
+ * otbn.fi.char_rf command handler.
+ *
+ * Init GPRs and WDRs of OTBN with reference values. Inject faults during 10000
+ * NOPS. Read back GPRs and WDRs and compare against reference values. Report
+ * faulty values back to host.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_fi_char_register_file(ujson_t *uj);
 
 /**
  * otbn.fi.char.unrolled.dmem.op.loop command handler.
