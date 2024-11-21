@@ -2477,7 +2477,7 @@ opentitan_test(
         "//sw/device/lib/testing:profile",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 

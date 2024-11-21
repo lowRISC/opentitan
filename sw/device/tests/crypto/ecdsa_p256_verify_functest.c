@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -32,10 +32,10 @@ status_t ecdsa_p256_verify_test(
   TRY(otcrypto_hash(msg_buf, digest));
 
   // Attempt to verify signature.
-  TRY(ecdsa_p256_verify_start(&testvec->signature, digest.data,
+  TRY(p256_ecdsa_verify_start(&testvec->signature, digest.data,
                               &testvec->public_key));
   hardened_bool_t result;
-  TRY(ecdsa_p256_verify_finalize(&testvec->signature, &result));
+  TRY(p256_ecdsa_verify_finalize(&testvec->signature, &result));
 
   if (testvec->valid && result != kHardenedBoolTrue) {
     LOG_ERROR("Valid signature failed verification.");
