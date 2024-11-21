@@ -26,7 +26,7 @@ To run on silicon, run:
 ```
 bazel run \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
-    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/sival.hjson \
+    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token=<token as a hexstring> \
     --test-exit-token=<token as a hexstring> \
     --rma-unlock-token=<token as a hexstring> \
