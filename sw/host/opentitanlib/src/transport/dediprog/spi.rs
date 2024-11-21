@@ -379,6 +379,27 @@ impl Target for DediprogSpi {
         inner.set_voltage()
     }
 
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        let inner = self.inner.borrow();
+        let voltage = match inner.voltage {
+            super::Voltage::V0 => "0V",
+            super::Voltage::V1p8 => "1.8V",
+            super::Voltage::V2p5 => "2.5V",
+            super::Voltage::V3p5 => "3.5V",
+        };
+        let spispeed = match inner.spi_clock {
+            ClockSpeed::Clk24Mhz => "24M",
+            ClockSpeed::Clk12Mhz => "12M",
+            ClockSpeed::Clk8Mhz => "8M",
+            ClockSpeed::Clk3Mhz => "3M",
+            ClockSpeed::Clk2p18Mhz => "2.18M",
+            ClockSpeed::Clk1p5Mhz => "1.5M",
+            ClockSpeed::Clk750Khz => "750k",
+            ClockSpeed::Clk375Khz => "375k",
+        };
+        Ok(format!("dediprog:voltage={voltage},spispeed={spispeed}"))
+    }
+
     /// Dediprog has limited support for "plain" SPI transactions.  It can only hold the CS
     /// asserted across a write then optional read, both of at most 16 bytes.
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {

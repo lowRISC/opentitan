@@ -362,6 +362,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_voltage(*voltage)?;
                         Ok(Response::Spi(SpiResponse::SetVoltage))
                     }
+                    SpiRequest::GetFlashromArgs => {
+                        let programmer = instance.get_flashrom_programmer()?;
+                        Ok(Response::Spi(SpiResponse::GetFlashromArgs { programmer }))
+                    }
                     SpiRequest::RunTransaction { transaction: reqs } => {
                         // Construct proper response to each transfer in request.
                         let mut resps: Vec<SpiTransferResponse> = reqs

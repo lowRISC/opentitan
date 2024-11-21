@@ -147,6 +147,13 @@ impl Target for ProxySpi {
         }
     }
 
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        match self.execute_command(SpiRequest::GetFlashromArgs)? {
+            SpiResponse::GetFlashromArgs { programmer } => Ok(programmer),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut req: Vec<SpiTransferRequest> = Vec::new();
         for transfer in transaction.iter() {
