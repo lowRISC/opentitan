@@ -33,6 +33,18 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rom_ext_manifest",
+    srcs = ["rom_ext_manifest.c"],
+    hdrs = ["rom_ext_manifest.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:manifest",
+    ],
+)
+
 dual_cc_library(
     name = "rom_ext_boot_policy_ptrs",
     srcs = dual_inputs(
@@ -207,6 +219,7 @@ cc_library(
         ":rescue",
         ":rom_ext_boot_policy",
         ":rom_ext_boot_policy_ptrs",
+        ":rom_ext_manifest",
         ":sigverify_keys",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
@@ -220,9 +233,11 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
