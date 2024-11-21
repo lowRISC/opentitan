@@ -447,6 +447,7 @@ module keymgr_dpe
   // Advance to creator_root_key
   // The values coming from otp_ctrl / lc_ctrl are treat as quasi-static for CDC purposes
   logic [KeyWidth-1:0] creator_seed;
+  logic unused_creator_seed;
   assign unused_creator_seed = ^{otp_key_i.creator_seed_valid};
   assign creator_seed = otp_key_i.creator_seed;
 
@@ -500,7 +501,8 @@ module keymgr_dpe
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
   keymgr_input_checks #(
-    .KmacEnMasking(KmacEnMasking)
+    .KmacEnMasking(KmacEnMasking),
+    .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
     .rom_digest_i,
     // In keymgr_dpe, key version comparison is handled by the ctrl logic.

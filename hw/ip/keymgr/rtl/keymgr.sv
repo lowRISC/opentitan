@@ -29,7 +29,7 @@ module keymgr
   parameter seed_t RndCnstAesSeed              = RndCnstAesSeedDefault,
   parameter seed_t RndCnstOtbnSeed             = RndCnstOtbnSeedDefault,
   parameter seed_t RndCnstKmacSeed             = RndCnstKmacSeedDefault,
-  parameter seed_t RndCnstCdi                  = RndCnstCdiDefault
+  parameter seed_t RndCnstCdi                  = RndCnstCdiDefault,
 ) (
   input clk_i,
   input rst_ni,
@@ -87,6 +87,8 @@ module keymgr
   import prim_mubi_pkg::mubi4_test_false_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_t;
+
+  localparam int uinsigned NumRomDigestInputs = 1
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -507,7 +509,8 @@ module keymgr
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
   keymgr_input_checks #(
-    .KmacEnMasking(KmacEnMasking)
+    .KmacEnMasking(KmacEnMasking),
+    .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
     .rom_digest_i,
     .cur_max_key_version_i(cur_max_key_version),
