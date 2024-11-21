@@ -5,21 +5,21 @@
 # OpenTitan SIVAL SKU configuration.
 
 {
-  name: "sival",
+  name: "emulation",
   product: "earlgrey_a1",
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
   dice_ca: {
-    certificate: "sw/device/silicon_creator/manuf/keys/fake/fake_ca.pem",
-    key: "sw/device/silicon_creator/manuf/keys/fake/cert_endorsement_key.sk.der",
-    key_type: "raw",
+    certificate: "sw/device/silicon_creator/manuf/keys/fake/dice_ca.pem",
+    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
+    key_type: "Raw",
     key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   }
   ext_ca: {
-    certificate: "sw/device/silicon_creator/manuf/keys/fake/fake_ca.pem",
-    key: "sw/device/silicon_creator/manuf/keys/fake/cert_endorsement_key.sk.der",
-    key_type: "raw",
+    certificate: "sw/device/silicon_creator/manuf/keys/fake/ext_ca.pem",
+    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
+    key_type: "Raw",
     key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   }
 }

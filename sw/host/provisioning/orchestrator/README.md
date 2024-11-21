@@ -12,9 +12,9 @@ To run on an CW310 FPGA for testing, run:
 ```
 bazel run \
   --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys \
-  --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_empty \
+  --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
-    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/sival.hjson \
+    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token="0x11111111_11111111_11111111_11111111" \
     --test-exit-token="0x22222222_22222222_22222222_22222222" \
     --rma-unlock-token="0x33333333_33333333_33333333_33333333" \
@@ -26,7 +26,7 @@ To run on silicon, run:
 ```
 bazel run \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
-    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/sival.hjson \
+    --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token=<token as a hexstring> \
     --test-exit-token=<token as a hexstring> \
     --rma-unlock-token=<token as a hexstring> \
