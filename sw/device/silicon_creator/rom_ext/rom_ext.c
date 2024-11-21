@@ -46,6 +46,7 @@
 #include "sw/device/silicon_creator/rom_ext/rescue.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_boot_policy_ptrs.h"
+#include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
 #include "flash_ctrl_regs.h"                          // Generated.
@@ -138,17 +139,6 @@ static uint32_t rom_ext_current_slot(void) {
     HARDENED_TRAP();
   }
   return side;
-}
-
-OT_WARN_UNUSED_RESULT
-const manifest_t *rom_ext_manifest(void) {
-  uint32_t pc = 0;
-  asm("auipc %[pc], 0;" : [pc] "=r"(pc));
-  const uint32_t kFlashHalf = TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES / 2;
-  // Align the PC to the current flash side.  The ROM_EXT must be the first
-  // entity in each flash side, so this alignment is the manifest address.
-  pc &= ~(kFlashHalf - 1);
-  return (const manifest_t *)pc;
 }
 
 void rom_ext_check_rom_expectations(void) {
@@ -619,11 +609,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   dbg_printf("Starting ROM_EXT %u.%u\r\n", self->version_major,
              self->version_minor);
 
-  // Establish our identity.
+  // Prepare dice chain builder for CDI_1.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
-  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
-  HARDENED_RETURN_IF_ERROR(
-      dice_chain_attestation_creator(&boot_measurements.rom_ext, self));
 
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_rom_chip_info_start;
