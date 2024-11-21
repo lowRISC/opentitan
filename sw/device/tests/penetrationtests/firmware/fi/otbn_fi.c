@@ -30,6 +30,10 @@ static dif_keymgr_t keymgr;
 
 // Indicates whether the load_integrity test is already initialized.
 static bool load_integrity_init;
+// Indicates whether the char mem test is already initialized.
+static bool char_mem_init;
+// Indicates whether the char mem test config is valid.
+static bool char_mem_test_cfg_valid;
 // Reference checksum for the load integrity test.
 static uint32_t load_checksum_ref;
 // Load integrity test. Initialize OTBN app, load it, and get interface to
@@ -66,8 +70,28 @@ static const otbn_addr_t kOtbnAppKeySideloadks1l =
 static const otbn_addr_t kOtbnAppKeySideloadks1h =
     OTBN_ADDR_T_INIT(otbn_key_sideload, k_s1_h);
 
+// Config for the otbn.fi.char_mem test.
+static bool char_mem_imem;
+static bool char_mem_dmem;
+static uint32_t char_mem_byte_offset;
+static uint32_t char_mem_num_words;
+
 uint32_t key_share_0_l_ref, key_share_0_h_ref;
 uint32_t key_share_1_l_ref, key_share_1_h_ref;
+
+// NOP macros.
+#define NOP1 "addi x0, x0, 0\n"
+#define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
+#define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
+
+// Reference values.
+static const uint32_t ref_values[32] = {
+    0x1BADB002, 0x8BADF00D, 0xA5A5A5A5, 0xABABABAB, 0xABBABABE, 0xABADCAFE,
+    0xBAAAAAAD, 0xBAD22222, 0xBBADBEEF, 0xBEBEBEBE, 0xBEEFCACE, 0xC00010FF,
+    0xCAFED00D, 0xCAFEFEED, 0xCCCCCCCC, 0xCDCDCDCD, 0x0D15EA5E, 0xDEAD10CC,
+    0xDEADBEEF, 0xDEADCAFE, 0xDEADC0DE, 0xDEADFA11, 0xDEADF00D, 0xDEFEC8ED,
+    0xDEADDEAD, 0xD00D2BAD, 0xEBEBEBEB, 0xFADEDEAD, 0xFDFDFDFD, 0xFEE1DEAD,
+    0xFEEDFACE, 0xFEEEFEEE};
 
 static const dif_keymgr_versioned_key_params_t kKeyVersionedParamsOTBNFI = {
     .dest = kDifKeymgrVersionedKeyDestSw,
@@ -123,6 +147,55 @@ status_t read_otbn_load_checksum(uint32_t *checksum) {
  */
 status_t clear_otbn_load_checksum(void) {
   TRY(dif_otbn_clear_load_checksum(&otbn));
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Config for the otbn.fi.char_dmem_access test.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_access);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_dmem_access, values);
+  static const otbn_app_t kOtbnAppCharDmemAccess =
+      OTBN_APP_T_INIT(otbn_char_dmem_access);
+  static const otbn_addr_t kOtbnVarCharDmemAccessValues =
+      OTBN_ADDR_T_INIT(otbn_char_dmem_access, values);
+
+  otbn_load_app(kOtbnAppCharDmemAccess);
+
+  // FI code target.
+  pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Read DMEM
+  otbn_fi_data_t uj_output;
+  uj_output.res = 0;
+  memset(uj_output.data, 0, sizeof(uj_output.data));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarCharDmemAccessValues, uj_output.data,
+                         sizeof(uj_output.data)));
+  // Read OTBN instruction counter
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_data_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
@@ -217,6 +290,247 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_loop_counter_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_char_jal(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Initialize OTBN app, load it, and get interface to OTBN data memory.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_jal);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_jal, res);
+  const otbn_app_t kOtbnAppCharJal = OTBN_APP_T_INIT(otbn_char_jal);
+  static const otbn_addr_t kOtbnAppCharJalRes =
+      OTBN_ADDR_T_INIT(otbn_char_jal, res);
+  otbn_load_app(kOtbnAppCharJal);
+
+  // FI code target.
+  pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read counter (x1) from OTBN data memory.
+  otbn_fi_result_cnt_t uj_output;
+  uj_output.result = 0;
+  otbn_dmem_read(1, kOtbnAppCharJalRes, &uj_output.result);
+
+  // Read OTBN instruction counter.
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send back to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_result_cnt_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_char_mem(ujson_t *uj) {
+  // Get the test mode. The test mode only can be set at the beginning of a
+  // test.
+  if (!char_mem_test_cfg_valid) {
+    otbn_fi_mem_cfg_t uj_cfg;
+    TRY(ujson_deserialize_otbn_fi_mem_cfg_t(uj, &uj_cfg));
+    char_mem_imem = uj_cfg.imem;
+    char_mem_dmem = uj_cfg.dmem;
+    char_mem_byte_offset = uj_cfg.byte_offset;
+    char_mem_num_words = uj_cfg.num_words;
+    // Set config to valid.
+    char_mem_test_cfg_valid = true;
+  }
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Reference values for DMEM and IMEM.
+  uint32_t dmem_array_ref[char_mem_num_words];
+  uint32_t imem_array_ref[char_mem_num_words];
+  if (char_mem_dmem) {
+    memset(dmem_array_ref, 0xab, sizeof(dmem_array_ref));
+  }
+  if (char_mem_imem) {
+    memset(imem_array_ref, 0xdf, sizeof(imem_array_ref));
+  }
+
+  if (!char_mem_init) {
+    if (char_mem_dmem) {
+      TRY(dif_otbn_dmem_write(&otbn, char_mem_byte_offset, dmem_array_ref,
+                              sizeof(dmem_array_ref)));
+    }
+    if (char_mem_imem) {
+      TRY(dif_otbn_imem_write(&otbn, char_mem_byte_offset, imem_array_ref,
+                              sizeof(imem_array_ref)));
+    }
+    char_mem_init = true;
+  }
+
+  // FI code target.
+  pentest_set_trigger_high();
+  asm volatile(NOP100);
+  pentest_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  otbn_fi_mem_t uj_output;
+  // Init with all 0 for defaults.
+  memset(uj_output.dmem_data, 0, sizeof(uj_output.dmem_data));
+  memset(uj_output.dmem_addr, 0, sizeof(uj_output.dmem_addr));
+  memset(uj_output.imem_data, 0, sizeof(uj_output.imem_data));
+  memset(uj_output.imem_addr, 0, sizeof(uj_output.imem_addr));
+  uj_output.res = 0;
+
+  // Check DMEM for data errors.
+  size_t fault_pos = 0;
+  if (char_mem_dmem) {
+    uint32_t dmem_array_res[char_mem_num_words];
+    TRY(dif_otbn_dmem_read(&otbn, char_mem_byte_offset, dmem_array_res,
+                           sizeof(dmem_array_ref)));
+    for (size_t it = 0; it < char_mem_num_words; it++) {
+      if (dmem_array_res[it] != dmem_array_ref[it] &&
+          fault_pos < ARRAYSIZE(uj_output.dmem_data)) {
+        uj_output.dmem_data[fault_pos] = dmem_array_res[it];
+        uj_output.dmem_addr[fault_pos] = it;
+        fault_pos++;
+        // Re-init memory.
+        char_mem_init = false;
+        uj_output.res = 1;
+      }
+    }
+  }
+
+  // Check IMEM for data errors.
+  uint32_t imem_array_res[char_mem_num_words];
+  if (char_mem_imem) {
+    TRY(dif_otbn_imem_read(&otbn, char_mem_byte_offset, imem_array_res,
+                           sizeof(imem_array_ref)));
+    fault_pos = 0;
+    for (size_t it = 0; it < char_mem_num_words; it++) {
+      if (imem_array_res[it] != imem_array_ref[it] &&
+          fault_pos < ARRAYSIZE(uj_output.imem_data)) {
+        uj_output.imem_data[fault_pos] = imem_array_res[it];
+        uj_output.imem_addr[fault_pos] = it;
+        fault_pos++;
+        // Re-init memory.
+        char_mem_init = false;
+        uj_output.res = 1;
+      }
+    }
+  }
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_mem_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_char_register_file(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Config for the otbn.fi.char_rf test.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_rf);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_rf, otbn_ref_values);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_rf, otbn_res_values_gpr);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_rf, otbn_res_values_wdr);
+
+  static const otbn_app_t kOtbnAppCharRF = OTBN_APP_T_INIT(otbn_char_rf);
+  static const otbn_addr_t kOtbnVarCharRFRefValues =
+      OTBN_ADDR_T_INIT(otbn_char_rf, otbn_ref_values);
+  static const otbn_addr_t kOtbnVarCharRFResValuesGPR =
+      OTBN_ADDR_T_INIT(otbn_char_rf, otbn_res_values_gpr);
+  static const otbn_addr_t kOtbnVarCharRFResValuesWDR =
+      OTBN_ADDR_T_INIT(otbn_char_rf, otbn_res_values_wdr);
+
+  // Init application and load reference values into DMEM.
+  otbn_load_app(kOtbnAppCharRF);
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnVarCharRFRefValues, ref_values,
+                          sizeof(ref_values)));
+
+  pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Read GPR RF values from DMEM.
+  uint32_t res_values_gpr[29];
+  memset(res_values_gpr, 0, sizeof(res_values_gpr));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarCharRFResValuesGPR, res_values_gpr,
+                         sizeof(res_values_gpr)));
+
+  // Compare GPR RF values to reference values.
+  otbn_fi_rf_char_t uj_output;
+  memset(uj_output.faulty_gpr, 0, sizeof(uj_output.faulty_gpr));
+  uj_output.res = 0;
+  for (size_t it = 0; it < ARRAYSIZE(res_values_gpr); it++) {
+    if (res_values_gpr[it] != ref_values[it]) {
+      uj_output.res = 1;
+      // Report reference value XOR faulty value back to also detect faulty
+      // values that are 0.
+      uj_output.faulty_gpr[it] = res_values_gpr[it] ^ ref_values[it];
+    }
+  }
+
+  // Read WDR RF values from DMEM.
+  uint32_t res_values_wdr[256];
+  memset(res_values_wdr, 0, sizeof(res_values_wdr));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarCharRFResValuesWDR, res_values_wdr,
+                         sizeof(res_values_wdr)));
+
+  // Compare WDR RF values to reference values.
+  memset(uj_output.faulty_wdr, 0, sizeof(uj_output.faulty_wdr));
+  for (size_t it = 0; it < ARRAYSIZE(res_values_wdr); it++) {
+    if (res_values_wdr[it] != ref_values[it % 32]) {
+      uj_output.res = 1;
+      // Report reference value XOR faulty value back to also detect faulty
+      // values that are 0.
+      uj_output.faulty_wdr[it] = res_values_wdr[it] ^ ref_values[it % 32];
+    }
+  }
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_rf_char_t, uj, &uj_output);
+
   return OK_STATUS();
 }
 
@@ -341,10 +655,12 @@ status_t handle_otbn_fi_init(ujson_t *uj) {
   // Disable the instruction cache and dummy instructions for FI attacks.
   pentest_configure_cpu();
 
-  // The load integrity & key sideloading tests get initialized at the first
-  // run.
+  // The load integrity, key sideloading, and char_mem tests get initialized at
+  // the first run.
   load_integrity_init = false;
   key_sideloading_init = false;
+  char_mem_init = false;
+  char_mem_test_cfg_valid = false;
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
@@ -506,10 +822,18 @@ status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
+    case kOtbnFiSubcommandCharDmemAccess:
+      return handle_otbn_fi_char_dmem_access(uj);
     case kOtbnFiSubcommandCharHardwareDmemOpLoop:
       return handle_otbn_fi_char_hardware_dmem_op_loop(uj);
     case kOtbnFiSubcommandCharHardwareRegOpLoop:
       return handle_otbn_fi_char_hardware_reg_op_loop(uj);
+    case kOtbnFiSubcommandCharJal:
+      return handle_otbn_fi_char_jal(uj);
+    case kOtbnFiSubcommandCharMem:
+      return handle_otbn_fi_char_mem(uj);
+    case kOtbnFiSubcommandCharRF:
+      return handle_otbn_fi_char_register_file(uj);
     case kOtbnFiSubcommandCharUnrolledDmemOpLoop:
       return handle_otbn_fi_char_unrolled_dmem_op_loop(uj);
     case kOtbnFiSubcommandCharUnrolledRegOpLoop:
