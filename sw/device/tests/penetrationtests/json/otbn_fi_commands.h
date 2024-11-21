@@ -12,8 +12,12 @@ extern "C" {
 // clang-format off
 
 #define OTBNFI_SUBCOMMAND(_, value) \
+    value(_, CharDmemAccess) \
     value(_, CharHardwareDmemOpLoop) \
     value(_, CharHardwareRegOpLoop) \
+    value(_, CharJal) \
+    value(_, CharMem) \
+    value(_, CharRF) \
     value(_, CharUnrolledDmemOpLoop) \
     value(_, CharUnrolledRegOpLoop) \
     value(_, Init) \
@@ -43,6 +47,50 @@ UJSON_SERDE_STRUCT(OtbnFiResultOutput, otbn_fi_result_t, OTBNFI_RESULT_OUTPUT);
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(OtbnFiKeyOutput, otbn_fi_keys_t, OTBNFI_KEY_OUTPUT);
+
+#define OTBNFI_MEM_CFG(field, string) \
+    field(byte_offset, uint32_t) \
+    field(num_words, uint32_t) \
+    field(imem, bool) \
+    field(dmem, bool)
+UJSON_SERDE_STRUCT(OtbnFiMemCfg, otbn_fi_mem_cfg_t, OTBNFI_MEM_CFG);
+
+#define OTBNFI_MEM_OUTPUT(field, string) \
+    field(res, uint32_t) \
+    field(imem_data, uint32_t, 8) \
+    field(imem_addr, uint32_t, 8) \
+    field(dmem_data, uint32_t, 8) \
+    field(dmem_addr, uint32_t, 8) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiMemOutput, otbn_fi_mem_t, OTBNFI_MEM_OUTPUT);
+
+#define OTBNFI_DATA_OUTPUT(field, string) \
+    field(res, uint32_t) \
+    field(data, uint32_t, 256) \
+    field(insn_cnt, uint32_t) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiDataOutput, otbn_fi_data_t, OTBNFI_DATA_OUTPUT);
+
+#define OTBNFI_RF_CHAR_OUTPUT(field, string) \
+    field(res, uint32_t) \
+    field(faulty_gpr, uint32_t, 29) \
+    field(faulty_wdr, uint32_t, 256) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiRfCharOutput, otbn_fi_rf_char_t, OTBNFI_RF_CHAR_OUTPUT);
+
+#define OTBNFI_RESULT_CNT_OUTPUT(field, string) \
+    field(result, uint32_t) \
+    field(insn_cnt, uint32_t) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiResultCntOutput, otbn_fi_result_cnt_t, OTBNFI_RESULT_CNT_OUTPUT);
 
 // clang-format on
 
