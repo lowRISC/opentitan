@@ -216,6 +216,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/soc_dbg_ctrl/lint/{tool}"
              },
+             {    name: socdbg_ctrl_decode
+                  fusesoc_core: lowrisc:ip:socdbg_ctrl_decode
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
+             },
              {    name: top_darjeeling_rv_plic
                   fusesoc_core: lowrisc:opentitan:top_darjeeling_rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -224,7 +229,7 @@
              {    name: rv_timer
                   fusesoc_core: lowrisc:ip:rv_timer
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_timer/lint/{tool}"
+                  rel_path:  "hw/ip/rv_timer/lint/{tool}"
              },
              {    name: soc_proxy
                   fusesoc_core: lowrisc:systems:soc_proxy

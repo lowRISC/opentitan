@@ -81,17 +81,6 @@
     }
     { struct:  "lc_tx"
       type:    "uni"
-      name:    "lc_escalate_en"
-      act:     "rcv"
-      default: "lc_ctrl_pkg::Off"
-      package: "lc_ctrl_pkg"
-      desc:    '''
-               Life cycle escalation enable coming from life cycle controller.
-               This signal moves all FSMs within OTP into the error state.
-               '''
-    }
-    { struct:  "lc_tx"
-      type:    "uni"
       name:    "lc_hw_debug_en"
       act:     "rcv"
       default: "lc_ctrl_pkg::Off"
