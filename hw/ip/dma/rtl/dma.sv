@@ -426,7 +426,7 @@ module dma
   );
 
   // The SHA engine requires the message length in bits
-  logic [127:0] sha2_message_len_bits;
+  logic [63:0] sha2_message_len_bits;
   assign sha2_message_len_bits = reg2hw.total_data_size.q << 3;
 
   // Translate the DMA opcode to the SHA2 digest mode
