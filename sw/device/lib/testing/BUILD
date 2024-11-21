@@ -178,8 +178,8 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":flash_ctrl_testutils",
+        "//hw/top:devicetables",
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:check",
     ],
