@@ -13,15 +13,19 @@ use crate::module::Module;
 
 mod destroy;
 mod list;
+mod read;
 mod show;
 mod update;
+mod write;
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Object {
     Destroy(destroy::Destroy),
     List(list::List),
+    Read(read::Read),
     Show(show::Show),
     Update(update::Update),
+    Write(write::Write),
 }
 
 #[typetag::serde(name = "__object__")]
@@ -35,8 +39,10 @@ impl Dispatch for Object {
         match self {
             Object::Destroy(x) => x.run(context, hsm, session),
             Object::List(x) => x.run(context, hsm, session),
+            Object::Read(x) => x.run(context, hsm, session),
             Object::Show(x) => x.run(context, hsm, session),
             Object::Update(x) => x.run(context, hsm, session),
+            Object::Write(x) => x.run(context, hsm, session),
         }
     }
     fn leaf(&self) -> &dyn Dispatch
@@ -46,8 +52,10 @@ impl Dispatch for Object {
         match self {
             Object::Destroy(x) => x.leaf(),
             Object::List(x) => x.leaf(),
+            Object::Read(x) => x.leaf(),
             Object::Show(x) => x.leaf(),
             Object::Update(x) => x.leaf(),
+            Object::Write(x) => x.leaf(),
         }
     }
 }
