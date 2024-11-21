@@ -57,11 +57,24 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/tests/penetrationtests/firmware/fi:crypto_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:lc_ctrl_fi",
-    "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:otp_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rng_fi",
     "//sw/device/tests/penetrationtests/firmware/fi:rom_fi",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/penetrationtests/json:commands",
+]
+
+FIRMWARE_DEPS_FI_OTBN = [
+    "//sw/device/tests/penetrationtests/firmware/fi:otbn_fi",
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
@@ -124,6 +137,22 @@ opentitan_test(
         ],
     ),
     deps = FIRMWARE_DEPS_FI,
+)
+
+opentitan_test(
+    name = "chip_pen_test_fi_otbn",
+    srcs = [":firmware_fi_otbn.c"],
+    exec_env = {
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    silicon_owner = silicon_params(
+        tags = [
+            "broken",
+            "manual",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_FI_OTBN,
 )
 
 opentitan_test(

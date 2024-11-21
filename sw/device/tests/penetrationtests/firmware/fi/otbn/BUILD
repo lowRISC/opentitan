@@ -7,6 +7,13 @@ load("//rules:otbn.bzl", "otbn_binary")
 package(default_visibility = ["//visibility:public"])
 
 otbn_binary(
+    name = "otbn_char_dmem_access",
+    srcs = [
+        "otbn_char_dmem_access.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_hardware_dmem_op_loop",
     srcs = [
         "otbn_char_hardware_dmem_op_loop.s",
@@ -17,6 +24,20 @@ otbn_binary(
     name = "otbn_char_hardware_reg_op_loop",
     srcs = [
         "otbn_char_hardware_reg_op_loop.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_jal",
+    srcs = [
+        "otbn_char_jal.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_rf",
+    srcs = [
+        "otbn_char_rf.s",
     ],
 )
 
