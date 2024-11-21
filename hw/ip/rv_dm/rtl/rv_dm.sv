@@ -115,7 +115,7 @@ module rv_dm
   tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
   logic regs_intg_error, rom_intg_error, dmi_intg_error, dbg_intg_error;
-  logic sba_gate_intg_error, rom_gate_intg_error, dmi_gate_intg_error;
+  logic sba_gate_intg_error, rom_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
     .clk_i,
@@ -136,7 +136,7 @@ module rv_dm
   logic [NumAlerts-1:0] alert_test, alerts;
 
   assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error | dbg_intg_error |
-                     sba_gate_intg_error | rom_gate_intg_error | dmi_gate_intg_error;
+                     sba_gate_intg_error | rom_gate_intg_error;
 
   assign alert_test = {
     regs_reg2hw.alert_test.q &
@@ -481,8 +481,10 @@ module rv_dm
     assign dbg_tl_d_o = tlul_pkg::TL_D2H_DEFAULT;
 `endif
 
-    // Tied-off signals from the JTAG interface
+    // Tied-off signals from the JTAG interface and read unsed signals
     assign jtag_o = '0;
+    logic unused_signals;
+    assign unused_signals = ^{jtag_i, scan_rst_ni, pinmux_hw_debug_en_i};
   end else begin : gen_jtag_gating
     // Gating of JTAG signals
     jtag_pkg::jtag_req_t jtag_in_int;
@@ -573,7 +575,6 @@ module rv_dm
     // Tied-off and ignore signals from the DMI interface
     assign dmi_intg_error      = 1'b0;
     assign dbg_intg_error      = 1'b0;
-    assign dmi_gate_intg_error = 1'b0;
     assign dbg_tl_d_o          = tlul_pkg::TL_D2H_DEFAULT;
 
     logic unused_signals;
