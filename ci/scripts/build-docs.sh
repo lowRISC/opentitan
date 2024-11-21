@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# Build docs and tell the Azure runner to upload any doxygen warnings
+# Build docs and tell the GitHub Actions runner to upload any doxygen warnings
 
 set -e
 util/site/build-docs.sh build-local || {
