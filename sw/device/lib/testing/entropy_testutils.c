@@ -3,14 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/testing/entropy_testutils.h"
 
+#include "devicetables.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'y')
 
@@ -34,14 +33,13 @@ dif_entropy_src_config_t entropy_testutils_config_default(void) {
 }
 
 status_t entropy_testutils_auto_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_entropy_src_t entropy_src;
+  TRY(dif_entropy_src_init_from_dt(&kDtEntropySrc[0], &entropy_src));
+  dif_csrng_t csrng;
+  TRY(dif_csrng_init_from_dt(&kDtCsrng[0], &csrng));
+  dif_edn_t edn0, edn1;
+  TRY(dif_edn_init_from_dt(&kDtEdn[0], &edn0));
+  TRY(dif_edn_init_from_dt(&kDtEdn[1], &edn1));
 
   TRY(entropy_testutils_stop_all());
 
@@ -139,14 +137,13 @@ status_t entropy_testutils_auto_mode_init(void) {
 }
 
 status_t entropy_testutils_boot_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_entropy_src_t entropy_src;
+  TRY(dif_entropy_src_init_from_dt(&kDtEntropySrc[0], &entropy_src));
+  dif_csrng_t csrng;
+  TRY(dif_csrng_init_from_dt(&kDtCsrng[0], &csrng));
+  dif_edn_t edn0, edn1;
+  TRY(dif_edn_init_from_dt(&kDtEdn[0], &edn0));
+  TRY(dif_edn_init_from_dt(&kDtEdn[1], &edn1));
 
   TRY(entropy_testutils_stop_all());
 
@@ -212,12 +209,11 @@ status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src) {
 }
 
 status_t entropy_testutils_stop_csrng_edn(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_csrng_t csrng;
+  TRY(dif_csrng_init_from_dt(&kDtCsrng[0], &csrng));
+  dif_edn_t edn0, edn1;
+  TRY(dif_edn_init_from_dt(&kDtEdn[0], &edn0));
+  TRY(dif_edn_init_from_dt(&kDtEdn[1], &edn1));
 
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));
@@ -226,8 +222,8 @@ status_t entropy_testutils_stop_csrng_edn(void) {
 }
 
 status_t entropy_testutils_stop_all(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
+  dif_entropy_src_t entropy_src;
+  TRY(dif_entropy_src_init_from_dt(&kDtEntropySrc[0], &entropy_src));
 
   CHECK_STATUS_OK(entropy_testutils_stop_csrng_edn());
   TRY(dif_entropy_src_stop(&entropy_src));
