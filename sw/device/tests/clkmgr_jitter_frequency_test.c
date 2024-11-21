@@ -33,7 +33,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * When jitter is enabled it checks that using jitter thresholds the checks
  * pass, and with normal thresholds we encounter recoverable errors.
  *
- * When jitter is disabled it checks that neither sets of thresholds cause
+ * When jitter is disabled it checks that neither set of thresholds cause
  * errors.
  *
  * The test flow depends on jitter enable lock:
@@ -89,7 +89,7 @@ static void test_clock_frequencies_with_jitter_disabled(uint32_t delay_micros) {
   // This checks there are no errors.
   CHECK_STATUS_OK(clkmgr_testutils_check_measurement_counts(&clkmgr));
   CHECK_STATUS_OK(clkmgr_testutils_disable_clock_counts(&clkmgr));
-  // Set thresholds for jitter disabled expecting no ailures.
+  // Set thresholds for jitter disabled expecting no failures.
   CHECK_STATUS_OK(clkmgr_testutils_enable_clock_counts_with_expected_thresholds(
       &clkmgr, /*jitter_enabled=*/true, /*external_clk=*/false,
       /*low_speed=*/false));
