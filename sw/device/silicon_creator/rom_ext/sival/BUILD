@@ -102,7 +102,8 @@ offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
     srcs = [
-        ":rom_ext_real_prod_signed_slot_{}".format(slot)
+        ":rom_ext_{}_prod_slot_{}".format(variation, slot)
+        for variation in ROM_EXT_VARIATIONS.keys()
         for slot in SLOTS
     ],
     ecdsa_key = {
