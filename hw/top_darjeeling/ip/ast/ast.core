@@ -15,8 +15,7 @@ filesets:
       - lowrisc:prim:clock_inv
       - lowrisc:prim:lc_dec
       - lowrisc:prim:lfsr
-      - lowrisc:ip:pinmux_reg
-      - lowrisc:ip:pinmux_component
+      - lowrisc:ip_interfaces:pinmux_pkg
       - lowrisc:prim:assert
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:mubi
@@ -25,8 +24,8 @@ filesets:
       - lowrisc:ip:edn_pkg
       - lowrisc:ip:entropy_src_pkg
       - lowrisc:ip_interfaces:alert_handler_reg
-      - lowrisc:ip:rstmgr_pkg
-      - lowrisc:systems:clkmgr_pkg
+      - lowrisc:ip_interfaces:clkmgr_pkg
+      - lowrisc:ip_interfaces:rstmgr_pkg
     files:
       - rtl/ast_reg_pkg.sv
       - rtl/ast_pkg.sv
