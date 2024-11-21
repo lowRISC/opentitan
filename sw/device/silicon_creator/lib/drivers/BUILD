@@ -114,7 +114,6 @@ cc_library(
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
     deps = [
-        ":flash_ctrl",
         ":lifecycle",
         ":otp",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
