@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_otbn.h"
@@ -20,18 +21,23 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+enum {
+  kPlicTarget = 0,
+};
+
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kOtbnClock =
     kTopEarlgreyHintableClocksMainOtbn;
 
+static const dt_otbn_t *kOtbnDt = &kDtOtbn[0];
+static const dt_rv_plic_t *kRvPlicDt = &kDtRvPlic[0];
+static const dt_clkmgr_t *kClkmgrDt = &kDtClkmgr[0];
 static dif_rv_plic_t plic;
 static dif_otbn_t otbn;
 /**
  * These variables are used for ISR communication hence they are volatile.
  */
-static volatile top_earlgrey_plic_peripheral_t plic_peripheral;
-static volatile dif_rv_plic_irq_id_t irq_id;
-static volatile dif_otbn_irq_t irq;
+static volatile bool irq_otbn_done;
 
 /**
  * Provides external IRQ handling for otbn tests.
@@ -46,14 +52,12 @@ static volatile dif_otbn_irq_t irq;
  * 5. Completes the IRQ service at PLIC.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0,
-                                     (dif_rv_plic_irq_id_t *)&irq_id));
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
 
-  plic_peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[irq_id];
-
-  irq = (dif_otbn_irq_t)(irq_id -
-                         (dif_rv_plic_irq_id_t)kTopEarlgreyPlicIrqIdOtbnDone);
+  if (irq_id == dt_otbn_irq_to_plic_id(kOtbnDt, kDtOtbnIrqDone)) {
+    irq_otbn_done = true;
+  }
 
   // Otbn clock is disabled, so we can not acknowledge the irq. Disabling it to
   // avoid an infinite loop here.
@@ -61,52 +65,39 @@ void ottf_external_isr(uint32_t *exc_info) {
   irq_external_ctrl(false);
 
   // Complete the IRQ by writing the IRQ source to the Ibex register.
-  CHECK_DIF_OK(
-      dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0, irq_id));
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
 }
 
 static void otbn_wait_for_done_irq(dif_otbn_t *otbn) {
   // Clear the otbn irq variable: we'll set it in the interrupt handler when
   // we see the Done interrupt fire.
-  irq = UINT32_MAX;
-  irq_id = UINT32_MAX;
-  plic_peripheral = UINT32_MAX;
+  irq_otbn_done = false;
   CHECK_DIF_OK(
       dif_otbn_irq_set_enabled(otbn, kDifOtbnIrqDone, kDifToggleEnabled));
 
   // OTBN should be running. Wait for an interrupt that says
   // it's done.
-  ATOMIC_WAIT_FOR_INTERRUPT(plic_peripheral != UINT32_MAX);
-  CHECK(plic_peripheral == kTopEarlgreyPlicPeripheralOtbn,
-        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        kTopEarlgreyPlicPeripheralOtbn, plic_peripheral);
-
-  // Check this is the interrupt we expected.
-  CHECK(irq_id == kTopEarlgreyPlicIrqIdOtbnDone);
+  ATOMIC_WAIT_FOR_INTERRUPT(irq_otbn_done);
 }
 
 static void otbn_init_irq(void) {
-  mmio_region_t plic_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(plic_base_addr, &plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
 
   // Set interrupt priority to be positive.
-  dif_rv_plic_irq_id_t irq_id = kTopEarlgreyPlicIrqIdOtbnDone;
+  dif_rv_plic_irq_id_t irq_id = dt_otbn_irq_to_plic_id(kOtbnDt, kDtOtbnIrqDone);
   CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&plic, irq_id, 0x1));
 
-  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-      &plic, irq_id, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&plic, irq_id, kPlicTarget,
+                                           kDifToggleEnabled));
 
-  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(
-      &plic, kTopEarlgreyPlicTargetIbex0, 0x0));
+  CHECK_DIF_OK(dif_rv_plic_target_set_threshold(&plic, kPlicTarget, 0x0));
 
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 }
 
 status_t initialize_clkmgr(void) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kClkmgrDt, &clkmgr));
 
   // Get initial hint and enable for OTBN clock and check both are enabled.
   dif_toggle_t clock_hint_state;
@@ -159,8 +150,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
   CHECK_STATUS_OK(initialize_clkmgr());
 
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR);
-  CHECK_DIF_OK(dif_otbn_init(addr, &otbn));
+  CHECK_DIF_OK(dif_otbn_init_from_dt(kOtbnDt, &otbn));
 
   otbn_init_irq();
   return status_ok(execute_test());
