@@ -21,7 +21,7 @@ Download the SVG from Google Draw, open it in Inkscape once and save it without 
 -->
 ![CI Overview](continuous_integration_overview.svg)
 
-OpenTitan uses [Azure Pipelines](https://azure.microsoft.com/en-gb/services/devops/pipelines/) as continuous integration provider: test jobs are described in an Azure Pipelines-specific way, and then executed on compute resources, some of which are provided by Azure Pipelines, and others of which are provided by lowRISC.
+OpenTitan uses [GitHub Actions](https://github.com/features/actions) as continuous integration provider: test jobs are described in an GitHub Actions-specific way, and then executed on compute resources, some of which are provided by GitHub, and others of which are provided by lowRISC.
 
 Two things are special in the way OpenTitan does continuous integration: private CI, and testing on FPGA boards.
 
@@ -31,53 +31,43 @@ We run such test jobs in a separate environment where only OpenTitan project mem
 The test result (pass/fail) is still shared publicly to enable outside contributors to at least get some feedback if their pull request passed our tests.
 
 To test OpenTitan (both the hardware and the software) on FPGAs we have various FPGA boards connected to a machine at lowRISC.
-Azure Pipelines is configured to schedule test jobs on this machine when FPGA testing is required.
+We configure GitHub Actions to schedule test jobs on this machine when FPGA testing is required.
 The results and logs of these test runs are shown publicly.
-
-## Azure Pipelines projects
-
-OpenTitan CI uses two Azure DevOps projects (which Azure Pipelines is a part of):
-
-* https://dev.azure.com/lowrisc/opentitan/ for public CI.
-* https://dev.azure.com/lowrisc/opentitan-private/ for private CI.
 
 ## Test descriptions
 
-All tests are described in a Azure Pipelines-specific YAML syntax.
-`$REPO_TOP/azure-pipelines.yml` is the main configuration file for all public CI jobs.
+All tests are described in a GitHub Actions-specific YAML syntax.
+`$REPO_TOP/.github/workflows/ci.yml` is the main configuration file for all public CI jobs.
 The private CI jobs are described in a separate private repository, [lowrisc/opentitan-private-ci](https://github.com/lowRISC/opentitan-private-ci), to keep the job descriptions internal for legal reasons.
 
-The [YAML schema](https://docs.microsoft.com/en-us/azure/devops/pipelines/yaml-schema) is part of the Azure Pipelines documentation.
+GitHub Actions documentation can be found at https://docs.github.com/en/actions.
 
-## Compute resources: agent pools and agents
+## Compute resources: runners
 
-Each test in the YAML file also specifies which type of compute resource it wants to run on.
-Identical compute resources are grouped into *agent pools*, and an individual compute resource is called an *agent*.
+Each job in the YAML file also specifies which type of compute resource it wants to run on.
+An individual compute resource is called a *runner*, and we separate runners by giving them distinct labels for runners with different capability.
 
-For OpenTitan, we have the following agent pools available, which can also be seen in the [Azure Pipelines UI](https://dev.azure.com/lowrisc/opentitan/_settings/agentqueues):
-* The *Azure Pipelines* pool is a Microsoft-provided pool of VMs which are free of charge for us.
-  They are described in more detail in the [Azure Pipelines documentation](https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted).
-* The *ci-public* pool has a lowRISC-specific setup with tools such as Xilinx Vivado installed, but has no access to tools with special license restrictions.
-* The *ci-eda* pool has proprietary EDA tools installed and access to the respective licenses.
-* The *FPGA* pool currently consists of a single machine with our FPGA boards connected to it.
+For OpenTitan, we have the following runner labels available:
+* The *ubuntu-22.04* label is backed a GitHub-provided pool of VMs which are free of charge for us.
+  They are described in more detail in the [GitHub Actions documentation](https://docs.github.com/en/actions/using-github-hosted-runners/using-github-hosted-runners/about-github-hosted-runners).
+* The *ubuntu-22.04-vivado* label is backed by containers with a lowRISC-specific setup with Xilinx Vivado installed, but has no access to tools with special license restrictions.
+* The *ubuntu-22.04-&lt;vendor&gt;* labels have proprietary EDA tools installed and access to the respective licenses.
+* The *ubuntu-22.04-fpga* label currently consists of containers on a single machine with our FPGA boards connected to it.
 
-All pools except for the *Azure Pipelines* pool are managed by lowRISC IT.
+All self-hosted runners (i.e. non-GitHub runners) are managed by lowRISC IT.
 
-All agents provide ephemeral test environments: the test environment is initialized at the start of a test job and completely destroyed at the end.
+All runners provide ephemeral test environments: the test environment is initialized at the start of a test job and completely destroyed at the end.
 This is achieved by running tests in Docker containers which are recreated after each run.
-The base image used for all lowRISC-hosted agent pools is available [as lowrisc/container-ci-eda on DockerHub](https://hub.docker.com/r/lowrisc/container-ci-eda).
+The base image used for all lowRISC-hosted runners is available [as lowrisc/eda-runner-ubuntu-22.04 on DockerHub](https://hub.docker.com/r/lowrisc/eda-runner-ubuntu-22.04).
 (The build rules/Dockerfile for this image are lowRISC-internal.)
 
-lowRISC-provided agents run in a Kubernetes cluster on Google Cloud (GCP), where we also define the resources allocated for the individual agents.
-The agent pools are static in size, i.e. the number of agents doesn't increase and decrease depending on the number of scheduled jobs.
+lowRISC-provided runners run in a Kubernetes cluster on Google Cloud (GCP), where we also define the resources allocated for the individual runners.
+The number of runners automatically scale depending on the number of scheduled jobs and has an upper limit.
 
 ## Job scheduling, build triggers and status reporting
 
-Builds are triggered by GitHub, which sends notifications to Azure Pipelines on a range of events, e.g. the creation of new pull requests, the merge of code into a branch, etc.
+When an event, e.g. the creation of new pull requests, are triggered, GitHub Actions compares them with the configured workflow triggers in the `.github/workflows/ci.yml` file.
+It then processes the workflow description and queues and dispatches test jobs to the respective runners, taking test dependencies into account.
 
-The Azure Pipelines scheduler consumes these events and compares them with the configured pipeline triggers in the `azure-pipelines.yml` file.
-It then processes the pipeline description and adds test jobs to the respective agent pool queues, taking test dependencies into account.
-
-After the agent has completed a test job it reports back the result to the Azure Pipelines scheduler, which makes this information (build artifacts and logs) available to users through the web UI.
-
-Azure Pipelines also reports the test status back to GitHub, where it is displayed below a pull request, as marks next to commits, and in various other places.
+After the runner has completed a test job it reports back the result GitHub Actions, which makes this information (build artifacts and logs) available to users through the web UI.
+The status of GitHub Actions is displayed below a pull request, as marks next to commits, and in various other places.
