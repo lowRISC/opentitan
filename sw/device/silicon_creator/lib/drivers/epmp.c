@@ -16,7 +16,7 @@
   CSR_WRITE(CSR_REG_PMPADDR##addr_reg, pmpaddr);     \
   CSR_SET_BITS(CSR_REG_PMPCFG##cfg_reg, cfg);
 
-static void epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
+void epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
   uint32_t shift = 8 * (entry % 4);
   uint32_t mask = 0xFFu << shift;
   uint32_t cfg = (pmpcfg & 0xFFu) << shift;
@@ -51,16 +51,41 @@ static void epmp_set(uint8_t entry, uint32_t pmpcfg, uint32_t pmpaddr) {
 
 void epmp_clear(uint8_t entry) { epmp_set(entry, kEpmpModeOff, 0); }
 
-void epmp_set_napot(uint8_t entry, epmp_region_t region, epmp_perm_t perm) {
-  uint32_t length = region.end - region.start;
+void epmp_clear_lock_bits(void) {
+  const uint32_t mask =
+      ((uint32_t)EPMP_CFG_L << 0 * 8) | ((uint32_t)EPMP_CFG_L << 1 * 8) |
+      ((uint32_t)EPMP_CFG_L << 2 * 8) | ((uint32_t)EPMP_CFG_L << 3 * 8);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG0, mask);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG1, mask);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG2, mask);
+  CSR_CLEAR_BITS(CSR_REG_PMPCFG3, mask);
+  for (int cfgent = 0; cfgent < 4; ++cfgent) {
+    epmp_state.pmpcfg[cfgent] &= ~mask;
+  }
+}
+
+uint32_t epmp_encode_napot(epmp_region_t region) {
+  const uint32_t length = region.end - region.start;
   // The length must be 4 or more.
   HARDENED_CHECK_GE(length, 4);
   // The length must be a power of 2.
   HARDENED_CHECK_EQ(bitfield_popcount32(length), 1);
   // The start address must be naturally aligned with length.
   HARDENED_CHECK_EQ(region.start & (length - 1), 0);
-  epmp_mode_t mode = length == 4 ? kEpmpModeNa4 : kEpmpModeNapot;
-  uint32_t addr = (region.start >> 2) | ((length - 1) >> 3);
+  return (region.start >> 2) | ((length - 1) >> 3);
+}
+
+epmp_region_t epmp_decode_napot(uint32_t pmpaddr) {
+  uint32_t size = 1 << bitfield_count_trailing_zeroes32(~pmpaddr);
+  pmpaddr = (pmpaddr & ~(size - 1)) << 2;
+  size <<= 3;
+  return (epmp_region_t){.start = pmpaddr, .end = pmpaddr + size};
+}
+
+void epmp_set_napot(uint8_t entry, epmp_region_t region, epmp_perm_t perm) {
+  uint32_t addr = epmp_encode_napot(region);
+  epmp_mode_t mode =
+      region.end - region.start == 4 ? kEpmpModeNa4 : kEpmpModeNapot;
   epmp_set(entry, (uint32_t)mode | (uint32_t)perm, addr);
 }
 
