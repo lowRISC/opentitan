@@ -1061,6 +1061,7 @@ def crate_repositories():
             "-p2",
         ],
         patches = [
+            "@lowrisc_opentitan//third_party/rust/patches:cryptoki-profile.patch",
             "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
         ],
         sha256 = "95d9fb68c88020896fa3741a10e41f206b2ace927724170a753a3f2ba5f77c2b",
