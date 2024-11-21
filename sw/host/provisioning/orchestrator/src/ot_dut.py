@@ -2,8 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+import json
 import logging
 import os
+import tempfile
 from dataclasses import dataclass
 
 from device_id import DeviceId
@@ -139,43 +141,48 @@ class OtDut():
             fw_bundle_bin = fw_bundle_bin.format(self.sku_config.name,
                                                  "silicon_creator")
 
-        # Assemble FT command.
-        # TODO: support multiple CAs
-        # TODO: support cloud KMS CAs
-        # TODO: autocompute measurements of expected ROM_EXT + Owner FW payloads
-        # TODO: add expected ROM_EXT / Owner security versions
-        cmd = f"""{host_bin}
-        --rcfile= \
-        --logging=info \
-        {host_flags} \
-        --elf={individ_elf} \
-        --bootstrap={perso_bin} \
-        --second-bootstrap={fw_bundle_bin} \
-        --device-id="{self.device_id}" \
-        --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
-        --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
-        --rma-unlock-token="{format_hex(self.rma_unlock_token, width=32)}" \
-        --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
-        --rom-ext-measurement="{_ZERO_256BIT_HEXSTR}" \
-        --owner-manifest-measurement="{_ZERO_256BIT_HEXSTR}" \
-        --owner-measurement="{_ZERO_256BIT_HEXSTR}" \
-        --rom-ext-security-version="0" \
-        --owner-security-version="0" \
-        --ca-key-der-file={self.sku_config.dice_ca.key} \
-        --ca-key-id={self.sku_config.dice_ca.key_id} \
-        --ca-certificate={self.sku_config.dice_ca.certificate} \
-        """
+        # Write CA configs to a JSON tmpfile.
+        ca_config_dict = {
+            "dice": self.sku_config.dice_ca.to_dict_entry(),
+            "ext": self.sku_config.ext_ca.to_dict_entry(),
+        }
+        with tempfile.NamedTemporaryFile(mode="w+") as ca_config_file:
+            json.dump(ca_config_dict, ca_config_file)
+            ca_config_file.flush()
 
-        # Get user confirmation before running command.
-        logging.info(f"Running command: {cmd}")
-        if self.require_confirmation:
-            confirm()
+            # Assemble FT command.
+            # TODO: autocompute measurements of expected ROM_EXT + Owner FW payloads
+            # TODO: add expected ROM_EXT / Owner security versions
+            cmd = f"""{host_bin}
+            --rcfile= \
+            --logging=info \
+            {host_flags} \
+            --elf={individ_elf} \
+            --bootstrap={perso_bin} \
+            --second-bootstrap={fw_bundle_bin} \
+            --device-id="{self.device_id}" \
+            --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
+            --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
+            --rma-unlock-token="{format_hex(self.rma_unlock_token, width=32)}" \
+            --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
+            --rom-ext-measurement="{_ZERO_256BIT_HEXSTR}" \
+            --owner-manifest-measurement="{_ZERO_256BIT_HEXSTR}" \
+            --owner-measurement="{_ZERO_256BIT_HEXSTR}" \
+            --rom-ext-security-version="0" \
+            --owner-security-version="0" \
+            --ca-config={ca_config_file.name} \
+            """
 
-        # Run provisioning flow and collect logs.
-        res = run(cmd, f"{self.log_dir}/ft_out.log.txt",
-                  f"{self.log_dir}/ft_err.log.txt")
-        if res.returncode != 0:
-            logging.warning(f"FT failed with exit code: {res.returncode}.")
-            confirm()
-        else:
-            logging.info("FT completed successfully.")
+            # Get user confirmation before running command.
+            logging.info(f"Running command: {cmd}")
+            if self.require_confirmation:
+                confirm()
+
+            # Run provisioning flow and collect logs.
+            res = run(cmd, f"{self.log_dir}/ft_out.log.txt",
+                      f"{self.log_dir}/ft_err.log.txt")
+            if res.returncode != 0:
+                logging.warning(f"FT failed with exit code: {res.returncode}.")
+                confirm()
+            else:
+                logging.info("FT completed successfully.")

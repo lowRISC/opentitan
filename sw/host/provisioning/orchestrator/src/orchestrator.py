@@ -54,7 +54,7 @@ fpga:          {args.fpga}
         confirm()
 
 
-def main():
+def main(args_in):
     # Setup logging.
     logging.basicConfig(
         level=logging.DEBUG,
@@ -112,7 +112,7 @@ def main():
         default="logs",
         help="Root directory to store log files under.",
     )
-    args = parser.parse_args()
+    args = parser.parse_args(args_in)
 
     # Load and validate a SKU configuration file.
     sku_config_args = {}
@@ -156,4 +156,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[1:])
