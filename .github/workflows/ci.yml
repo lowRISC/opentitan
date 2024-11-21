@@ -33,8 +33,6 @@ jobs:
           fetch-depth: 0 # Required so we can lint commit messages.
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Show environment
         run: ./ci/scripts/show-env.sh
       - name: Commit metadata
@@ -81,8 +79,6 @@ jobs:
           fetch-depth: 0 # Bitstream cache requires all commits.
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Countermeasures implemented (earlgrey)
         run: ./ci/scripts/check-countermeasures.sh earlgrey
         continue-on-error: true
@@ -132,7 +128,6 @@ jobs:
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
           configure-bazel: false
       - name: Free disk space
         uses: jlumbroso/free-disk-space@54081f138730dfa15788a46383842cd2f914a1be
@@ -187,8 +182,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build simulator with Verilator
         run: ./ci/scripts/build-chip-verilator.sh englishbreakfast
       - name: Upload binary
@@ -209,8 +202,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build bitstream
         run: |
           # Build CW305 test rom required by `build-bitstream-vivado.sh`
@@ -238,7 +229,6 @@ jobs:
     name: Earl Grey for CW310
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
     with:
       top_name: earlgrey
       design_suffix: cw310
@@ -247,7 +237,6 @@ jobs:
     name: Earl Grey for CW310 Hyperdebug
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
     with:
       top_name: earlgrey
       design_suffix: cw310_hyperdebug
@@ -256,7 +245,6 @@ jobs:
     name: Earl Grey for CW340
     needs: quick_lint
     uses: ./.github/workflows/bitstream.yml
-    secrets: inherit
     with:
       top_name: earlgrey
       design_suffix: cw340
@@ -273,8 +261,6 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Download partial build-bin
         uses: ./.github/actions/download-partial-build-bin
         with:
@@ -533,8 +519,6 @@ jobs:
           fetch-depth: 0 # Required for bitstream cache to work.
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Check Bazel build graph
         run: |
           # Test the graph with both an empty and filled bitstream cache.
