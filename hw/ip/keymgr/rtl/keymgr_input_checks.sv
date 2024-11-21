@@ -9,9 +9,10 @@
 
 // We should also check for input validity
 module keymgr_input_checks import keymgr_pkg::*; #(
-  parameter bit KmacEnMasking = 1'b1
+  parameter bit          KmacEnMasking      = 1'b1,
+  parameter int unsigned NumRomDigestInputs = 1
 ) (
-  input rom_ctrl_pkg::keymgr_data_t rom_digest_i,
+  input rom_ctrl_pkg::keymgr_data_t [NumRomDigestInputs-1:0] rom_digest_i,
   input [KeyVersionWidth-1:0] cur_max_key_version_i,
   input hw_key_req_t key_i,
   input [31:0] key_version_i,
@@ -97,8 +98,11 @@ module keymgr_input_checks import keymgr_pkg::*; #(
 
   assign key_vld_o = &key_chk;
 
-  // rom digest check
-  assign rom_digest_vld_o = rom_digest_i.valid &
-                            valid_chk(MaxWidth'(rom_digest_i.data));
+  always_comb begin
+    rom_digest_vld_o = 1'b1;
+    for (int k = 0; k < NumRomDigestInputs; k++) begin
+      rom_digest_vld_o &= rom_digest_i[k].valid && valid_chk(MaxWidth'(rom_digest_i[k].data));
+    end
+  end
 
 endmodule // keymgr_input_checks
