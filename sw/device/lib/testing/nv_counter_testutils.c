@@ -8,12 +8,12 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "devicetables.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #include "flash_ctrl_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 enum {
   kNonVolatileCounterFlashWords = 256,
@@ -82,11 +82,11 @@ status_t flash_ctrl_testutils_counter_set_at_least(
     return OK_STATUS();
   }
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0, 0};
-  return flash_ctrl_testutils_write(flash_state,
-                                    (uint32_t)&kNvCounters[counter][val - 1] -
-                                        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-                                    0, new_val, kDifFlashCtrlPartitionTypeData,
-                                    ARRAYSIZE(new_val));
+  uint32_t flash_mem_base =
+      dt_flash_ctrl_reg_block(&kDtFlashCtrl[0], kDtFlashCtrlRegBlockMem);
+  return flash_ctrl_testutils_write(
+      flash_state, (uint32_t)&kNvCounters[counter][val - 1] - flash_mem_base, 0,
+      new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val));
 }
 
 // At the beginning of the simulation (Verilator, VCS,etc.),
@@ -99,12 +99,12 @@ status_t flash_ctrl_testutils_counter_init_zero(
     dif_flash_ctrl_state_t *flash_state, size_t counter) {
   uint32_t new_val[FLASH_CTRL_PARAM_BYTES_PER_WORD / sizeof(uint32_t)] = {0xaa,
                                                                           0xbb};
+  uint32_t flash_mem_base =
+      dt_flash_ctrl_reg_block(&kDtFlashCtrl[0], kDtFlashCtrlRegBlockMem);
   for (int ii = 0; ii < kNonVolatileCounterFlashWords; ii++) {
     TRY(flash_ctrl_testutils_erase_and_write_page(
-        flash_state,
-        (uint32_t)&kNvCounters[counter][ii] -
-            TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        0, new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
+        flash_state, (uint32_t)&kNvCounters[counter][ii] - flash_mem_base, 0,
+        new_val, kDifFlashCtrlPartitionTypeData, ARRAYSIZE(new_val)));
   }
   return OK_STATUS();
 }
