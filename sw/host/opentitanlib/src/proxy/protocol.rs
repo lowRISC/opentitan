@@ -240,6 +240,7 @@ pub enum SpiRequest {
     SetVoltage {
         voltage: Voltage,
     },
+    GetFlashromArgs,
     RunTransaction {
         transaction: Vec<SpiTransferRequest>,
     },
@@ -275,6 +276,9 @@ pub enum SpiResponse {
         sizes: MaxSizes,
     },
     SetVoltage,
+    GetFlashromArgs {
+        programmer: String,
+    },
     RunTransaction {
         transaction: Vec<SpiTransferResponse>,
     },
