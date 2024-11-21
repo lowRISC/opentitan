@@ -88,6 +88,8 @@ module keymgr
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_t;
 
+  localparam int unsigned NumRomDigestInputs = 1;
+
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
@@ -507,7 +509,8 @@ module keymgr
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
   keymgr_input_checks #(
-    .KmacEnMasking(KmacEnMasking)
+    .KmacEnMasking(KmacEnMasking),
+    .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
     .rom_digest_i,
     .cur_max_key_version_i(cur_max_key_version),
