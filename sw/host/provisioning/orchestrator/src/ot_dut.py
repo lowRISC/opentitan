@@ -171,7 +171,10 @@ class OtDut():
             --rom-ext-security-version="0" \
             --owner-security-version="0" \
             --ca-config={ca_config_file.name} \
+            --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
+            if self.rma_unlock_token is not None:
+                cmd += f'--rma-unlock-token="{format_hex(self.rma_unlock_token, width=32)}" \\\n'
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")

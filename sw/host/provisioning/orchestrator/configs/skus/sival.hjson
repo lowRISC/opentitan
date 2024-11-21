@@ -22,4 +22,5 @@
     key_type: "Raw",
     key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
   }
+  token_encrypt_key: "sw/device/silicon_creator/manuf/keys/fake/rma_unlock_enc_rsa3072.pub.der"
 }
