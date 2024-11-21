@@ -15,8 +15,7 @@ module pinmux
   // Taget-specific pinmux configuration passed down from the
   // target-specific top-level.
   parameter target_cfg_t TargetCfg = DefaultTargetCfg,
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit SecVolatileRawUnlockEn = 0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
   input                            clk_i,
   input                            rst_ni,
@@ -252,7 +251,7 @@ module pinmux
   // Just pass through these signals.
   assign { dio_out_o,  mio_out_o  }  = { dio_out,  mio_out  };
   assign { dio_oe_o ,  mio_oe_o   }  = { dio_oe,   mio_oe   };
-  assign { dio_in,     mio_i      }  = { dio_in_i, mio_in_i };
+  assign { dio_in,     mio_in     }  = { dio_in_i, mio_in_i };
   assign { dio_attr_o, mio_attr_o }  = { dio_attr, mio_attr };
 
   /////////////////////////

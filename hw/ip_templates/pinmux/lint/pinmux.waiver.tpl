@@ -12,6 +12,7 @@ waive -rules HIER_NET_NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdat
 
 waive -rules VAR_INDEX_RANGE -location {pinmux.sv} -regexp {.*maximum value.*} \
       -comment "Indexed arrays may not be fully populated."
+% if enable_strap_sampling:
 
 waive -rules RESET_USE -location {pinmux_strap_sampling.sv} -regexp {'rst_ni' is connected to 'prim_clock_mux2' port 'clk1_i
 ', and used as an asynchronous reset or set at pinmux_strap_sampling} \
@@ -25,6 +26,11 @@ waive -rules {CLOCK_DRIVER CLOCK_MUX} -location {pinmux_strap_sampling.sv} -rege
 
 waive -rules CLOCK_MUX -location {pinmux_strap_sampling.sv pinmux.sv} -regexp {Clock '(in_padring_i\[38\]|mio_in_i\[38\]|jtag_req.tck)' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
       -comment "The 'mio_in_i[TckPadIdx]' input signal is connected to 'jtag_req.tck' which eventually feeds into the JTAG Selection Mux."
+% else:
+
+waive -rules CLOCK_MUX -location {pinmux.sv} -regexp {Clock '(in_padring_i\[38\]|mio_in_i\[38\]|jtag_req.tck)' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "The 'mio_in_i[TckPadIdx]' input signal is connected to 'jtag_req.tck' which eventually feeds into the JTAG Selection Mux."
+% endif
 
 waive -rules CLOCK_DRIVER -location {pinmux.sv} -regexp {'mio_attr\[28\].pull_select' is driven here, and used as a clock} \
       -comment "'MioPadIoc6' at index 28 may also serve as an external clock input. The 'pull_select' signal impacts the actual value obtained from the pad simulation model."

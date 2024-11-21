@@ -57,12 +57,15 @@
     { name: "pin_wkup_req",
       desc: "pin wake request"
     },
+  % if enable_usb_wakeup:
     { name: "usb_wkup_req",
       desc: "usb wake request"
     },
+  % endif
   ],
 
   inter_signal_list: [
+  % if enable_strap_sampling:
     // Life cycle inputs
     { struct:  "lc_tx"
       type:    "uni"
@@ -170,6 +173,7 @@
                ''',
       default: "'0"
     }
+  % endif
     // Define pwr mgr <-> pinmux signals
     { struct:  "logic",
       type:    "uni",
@@ -181,6 +185,7 @@
                ''',
       default: "1'b0"
     },
+  % if enable_strap_sampling:
     { struct:  "logic",
       type:    "uni",
       name:    "strap_en",
@@ -203,6 +208,7 @@
                ''',
       default: "1'b0"
     },
+  % endif
     { struct:  "logic",
       type:    "uni",
       name:    "pin_wkup_req",
@@ -213,6 +219,7 @@
                ''',
       default: "1'b0"
     },
+  % if enable_usb_wakeup:
     { name:    "usbdev_dppullup_en",
       type:    "uni",
       act:     "rcv",
@@ -329,9 +336,11 @@
       width:   1,
       default: "1'b0"
     },
+  % endif
   ]
 
   param_list: [
+  % if enable_strap_sampling:
     // Secure parameters
     { name:    "SecVolatileRawUnlockEn",
       type:    "bit",
@@ -347,6 +356,7 @@
       local:   "false",
       expose:  "true"
     },
+  % endif
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
