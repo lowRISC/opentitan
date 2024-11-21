@@ -169,6 +169,8 @@ static void configure_output(pinmux_output_t output) {
       output.outsel);
 }
 
+void pinmux_init_uart0_tx(void) { configure_output(kOutputUart0); }
+
 void pinmux_init(void) {
   uint32_t bootstrap_dis =
       otp_read32(OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET);

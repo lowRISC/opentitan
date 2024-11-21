@@ -369,6 +369,8 @@ rom_error_t dice_chain_attestation_creator(
   }
   dice_chain.endorsement_pubkey_id = dice_chain.subject_pubkey_id;
 
+  sc_keymgr_sw_binding_unlock_wait();
+
   return kErrorOk;
 }
 

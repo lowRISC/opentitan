@@ -24,7 +24,8 @@ package(default_visibility = ["//visibility:public"])
 opentitan_test(
     name = "rom_ext_a_flash_a",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -40,7 +41,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_b_flash_b",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -56,7 +58,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_a_flash_b",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -72,7 +75,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_b_flash_a",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -88,7 +92,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_v_flash_a",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -104,7 +109,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_v_flash_b",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
@@ -120,7 +126,8 @@ opentitan_test(
 opentitan_test(
     name = "rom_ext_a_flash_a_bad_addr_trans",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
     },
     fpga = fpga_params(
         assemble = "{firmware}@{offset}",
