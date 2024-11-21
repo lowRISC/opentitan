@@ -81,6 +81,10 @@ jobs:
         //... @manufacturer_test_hooks//...
       # Run FPGA tests.
       if [ -s "${{ parameters.target_pattern_file }}" ]; then
+        # Disable ROM e2e test cases. These are not needed in this branch as we
+        # have sufficient coverage from //sw/device/silicon_creator/... unittests
+        # and functests.
+        echo "-//sw/device/silicon_creator/rom/e2e/..." >> "${{ parameters.target_pattern_file }}"
         ci/scripts/run-fpga-tests.sh "${{ parameters.interface }}" "${{ parameters.target_pattern_file }}" || { res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}"; }
       else
         echo "No tests to run after filtering"

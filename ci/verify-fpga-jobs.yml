@@ -40,7 +40,12 @@ jobs:
       # - then sort by the target name
       # - then keep all duplicated lines
       pattern_files=$(find $(Pipeline.Workspace)/verify_fpga_jobs -name target_pattern_file.txt)
-      awk '{ print(gensub(/.*\/(.+)\/target_pattern_file.txt/, "\\1", "g", FILENAME) " " $0) }' $pattern_files | sort -k2 | uniq -D -f1 > duplicates.txt
+      # Filter -//sw/device/silicon_creator/rom/e2e/... occurrences as these
+      # are tests patterns that are harcoded across all FPGA jobs to skip
+      # the ROM E2E tests in CI. See ci/fpga-job.yml for more details.
+      awk '!/-\/\/sw\/device\/silicon_creator\/rom\/e2e\/.../ {
+              print(gensub(/.*\/(.+)\/target_pattern_file.txt/, "\\1", "g", FILENAME) " " $0)
+          }' $pattern_files | sort -k2 | uniq -D -f1 > duplicates.txt
       if [ -s duplicates.txt ]; then
         echo "The following tests ran in two or more jobs:"
         cat duplicates.txt
