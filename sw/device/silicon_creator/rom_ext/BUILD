@@ -39,6 +39,18 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rom_ext_manifest",
+    srcs = ["rom_ext_manifest.c"],
+    hdrs = ["rom_ext_manifest.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:manifest",
+    ],
+)
+
 dual_cc_library(
     name = "rom_ext_boot_policy_ptrs",
     srcs = dual_inputs(
@@ -161,6 +173,7 @@ cc_test(
             ":rescue",
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
+            ":rom_ext_manifest",
             ":sigverify_keys",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
