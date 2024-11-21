@@ -33,14 +33,21 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
       bins key_none    = {6'h20};
       bins key_invalid = key_length with (!$onehot0(item));
     }
-    cfg_cross: cross hmac_en, endian_swap, digest_swap, key_swap;
+    cfg_cross: cross hmac_en, endian_swap, digest_swap, key_swap, digest_size, key_length;
     hmac_dis_x_sha_en: cross hmac_en, sha_en {
       bins b0 = binsof(hmac_en.disabled) && binsof(sha_en.enabled);
     }
-    key_x_digest_mismatch: cross key_length, digest_size {
-      bins b0 = binsof(key_length.key_1024) && binsof(digest_size.sha2_256);
+    hmac_en_x_key_none: cross hmac_en, key_length {
+      bins b0 = binsof(hmac_en.enabled) && binsof(key_length.key_none);
+    }
+    key_x_digest_mismatch: cross hmac_en, key_length, digest_size {
+      bins b0 = binsof(hmac_en.enabled) && binsof(key_length.key_1024) &&
+                binsof(digest_size.sha2_256);
     }
     key_length_x_digest_size: cross key_length, digest_size;
+    hmac_en_x_digest_size: cross hmac_en, digest_size;
+    hmac_en_x_key_length: cross hmac_en, key_length;
+    hmac_swap_x_key_length: cross key_swap, key_length;
   endgroup : cfg_cg
 
   covergroup status_cg with function sample (bit [TL_DW-1:0] sta, bit [TL_DW-1:0] cfg);
@@ -48,6 +55,7 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     endian_swap     : coverpoint cfg[EndianSwap];
     digest_swap     : coverpoint cfg[DigestSwap];
     key_swap        : coverpoint cfg[KeySwap];
+    sta_hmac_idle   : coverpoint sta[HmacStaIdle];
     sta_fifo_empty  : coverpoint sta[HmacStaMsgFifoEmpty];
     sta_fifo_full   : coverpoint sta[HmacStaMsgFifoFull];
     sta_fifo_depth  : coverpoint sta[HmacStaMsgFifoDepthMsb:HmacStaMsgFifoDepthLsb] {
@@ -123,8 +131,11 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     cp: coverpoint trig_rst_during_hash {bins true = {1'b1};}
   endgroup : trig_rst_during_hash_cg
 
-  covergroup rd_digest_during_hmac_en_cg with function sample (logic rd_digest_during_hmac_en);
-    cp: coverpoint rd_digest_during_hmac_en {bins true = {1'b1};}
+  covergroup rd_digest_during_hmac_en_cg with function sample (logic hmac_en);
+    cp: coverpoint hmac_en {
+      bins false  = {1'b0};
+      bins true   = {1'b1};
+    }
   endgroup : rd_digest_during_hmac_en_cg
 
   covergroup save_and_restore_cg with function sample (save_and_restore_e sar_ctxt,
