@@ -2559,6 +2559,7 @@ opentitan_test(
     verilator = verilator_params(timeout = "long"),
     deps = [
         ":otbn_randomness_impl",
+        "//hw/top:devicetables",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
