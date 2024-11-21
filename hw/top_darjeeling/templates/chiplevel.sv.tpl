@@ -172,6 +172,37 @@ module chip_${top["name"]}_${target["name"]} #(
 % for attr in pad_attr:
       ${attr}${" " if loop.last else ","} // MIO Pad ${len(pad_attr) - loop.index - 1}
 % endfor
+    },
+    // Pad scan roles
+    dio_scan_role: {
+<%
+  scan_roles = []
+  for sig in list(reversed(top["pinmux"]["ios"])):
+    if sig["connection"] != "muxed":
+      if (len(sig['pad']) > 0) and (target["name"] != "cw305"):
+        scan_string = lib.Name.from_snake_case('dio_pad_' + sig['pad'] + '_scan_role')
+        scan_roles.append((f'scan_role_pkg::{scan_string.as_camel_case()}', sig['name']))
+      else:
+        scan_roles.append(('NoScan', sig['name']))
+%>\
+% for scan_role, name in list(scan_roles):
+      ${scan_role}${"" if loop.last else ","} // DIO ${name}
+% endfor
+    },
+    mio_scan_role: {
+<%
+  scan_roles = []
+  for pad in list(reversed(pinout["pads"])):
+    if pad["connection"] == "muxed":
+      if target["name"] != "cw305":
+        scan_string = lib.Name.from_snake_case('mio_pad_' + pad['name'] + '_scan_role')
+        scan_roles.append(f'scan_role_pkg::{scan_string.as_camel_case()}')
+      else:
+        scan_roles.append('NoScan')
+%>\
+% for scan_role in list(scan_roles):
+      ${scan_role}${"" if loop.last else ","}
+% endfor
     }
   };
 
@@ -408,74 +439,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign usb_rx_d = 1'b0;
 
 % endif
-###################################################################
-## USB for CW310                                                 ##
-###################################################################
-% if target["name"] == "cw310":
-  % if "usbdev" in {module["type"] for module in top["module"]}:
-  // TODO: generalize this USB mux code and align with other tops.
-
-  // Only use the UPHY on CW310, which does not support pin flipping.
-  logic usb_dp_pullup_en;
-  logic usb_dn_pullup_en;
-  logic usb_rx_d;
-  logic usb_tx_d;
-  logic usb_tx_se0;
-  logic usb_rx_enable;
-
-  // DioUsbdevUsbDn
-  assign manual_attr_io_usb_dn_tx = '0;
-  assign manual_out_io_usb_dn_tx = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_io_usb_dn_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDn] = manual_in_io_usb_dn_rx;
-  // DioUsbdevUsbDp
-  assign manual_attr_io_usb_dp_tx = '0;
-  assign manual_out_io_usb_dp_tx = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_dp_tx = 1'b1;
-  assign dio_in[DioUsbdevUsbDp] = manual_in_io_usb_dp_rx;
-
-  assign manual_attr_io_usb_oe_n = '0;
-  assign manual_out_io_usb_oe_n = ~dio_oe[DioUsbdevUsbDp];
-  assign manual_oe_io_usb_oe_n = 1'b1;
-
-  // DioUsbdevD
-  assign manual_attr_io_usb_d_rx = '0;
-  assign usb_rx_d = manual_in_io_usb_d_rx;
-
-  // Pull-up / soft connect pin
-  assign manual_attr_io_usb_connect = '0;
-  assign manual_out_io_usb_connect = usb_dp_pullup_en;
-  assign manual_oe_io_usb_connect = 1'b1;
-
-  // Set SPD to full-speed
-  assign manual_attr_io_usb_speed = '0;
-  assign manual_out_io_usb_speed = 1'b1;
-  assign manual_oe_io_usb_speed = 1'b1;
-
-  // TUSB1106 low-power mode
-  assign manual_attr_io_usb_suspend = '0;
-  assign manual_out_io_usb_suspend = !usb_rx_enable;
-  assign manual_oe_io_usb_suspend = 1'b1;
-
-  logic unused_usb_sigs;
-  assign unused_usb_sigs = ^{
-    usb_dn_pullup_en,
-    usb_tx_d,
-    usb_tx_se0,
-    manual_in_io_usb_connect,
-    manual_in_io_usb_oe_n,
-    manual_in_io_usb_speed,
-    manual_in_io_usb_suspend,
-    // DP and DN are broken out into multiple unidirectional pins
-    dio_oe[DioUsbdevUsbDp],
-    dio_oe[DioUsbdevUsbDn],
-    dio_attr[DioUsbdevUsbDp],
-    dio_attr[DioUsbdevUsbDn]
-  };
-
-  % endif
-% endif
-
 
 ###################################################################
 ## AST For all targets                                           ##
@@ -539,7 +502,6 @@ module chip_${top["name"]}_${target["name"]} #(
   // DFT connections
   logic scan_en;
   lc_ctrl_pkg::lc_tx_t lc_dft_en;
-  pinmux_pkg::dft_strap_test_req_t dft_strap_test;
 
   // Jitter enable
   prim_mubi_pkg::mubi4_t jen;
@@ -560,10 +522,12 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_ram_1p_pkg::ram_1p_cfg_t ram_1p_cfg;
   assign ram_1p_cfg = '{
     ram_cfg: '{
+                test:   ast_ram_1p_cfg.test,
                 cfg_en: ast_ram_1p_cfg.marg_en,
                 cfg:    ast_ram_1p_cfg.marg
               },
     rf_cfg:  '{
+                test:   ast_rf_cfg.test,
                 cfg_en: ast_rf_cfg.marg_en,
                 cfg:    ast_rf_cfg.marg
               }
@@ -580,10 +544,12 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_ram_2p_pkg::ram_2p_cfg_t spi_ram_2p_cfg;
   assign spi_ram_2p_cfg = '{
     a_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_a,
                    cfg_en: ast_ram_2p_lcfg.marg_en_a,
                    cfg:    ast_ram_2p_lcfg.marg_a
                  },
     b_ram_lcfg: '{
+                   test:   ast_ram_2p_lcfg.test_b,
                    cfg_en: ast_ram_2p_lcfg.marg_en_b,
                    cfg:    ast_ram_2p_lcfg.marg_b
                  },
@@ -592,6 +558,7 @@ module chip_${top["name"]}_${target["name"]} #(
 
   prim_rom_pkg::rom_cfg_t rom_cfg;
   assign rom_cfg = '{
+    test: ast_rom_cfg.test,
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
   };
@@ -779,7 +746,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .alert_rsp_i           ( ast_alert_rsp  ),
     .alert_req_o           ( ast_alert_req  ),
     // dft
-    .dft_strap_test_i      ( dft_strap_test   ),
     .lc_dft_en_i           ( lc_dft_en        ),
     .fla_obs_i             ( '0 ),
     .usb_obs_i             ( '0 ),
@@ -1234,8 +1200,6 @@ module chip_${top["name"]}_${target["name"]} #(
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),
     .ast_lc_hw_debug_en_o              (                            ),
-    .dft_strap_test_o                  ( dft_strap_test             ),
-    .dft_hold_tap_sel_i                ( '0                         ),
     .scan_rst_ni                       ( scan_rst_n                 ),
     .scan_en_i                         ( scan_en                    ),
     .scanmode_i                        ( scanmode                   ),
@@ -1244,6 +1208,14 @@ module chip_${top["name"]}_${target["name"]} #(
     .fpga_info_i                       ( '0                         )
   );
 % endif
+
+logic unused_signals;
+assign unused_signals = ^{pwrmgr_boot_status.clk_status,
+                          pwrmgr_boot_status.cpu_fetch_en,
+                          pwrmgr_boot_status.lc_done,
+                          pwrmgr_boot_status.otp_done,
+                          pwrmgr_boot_status.rom_ctrl_status,
+                          pwrmgr_boot_status.strap_sampled};
 
 ###################################################################
 ## FPGA shared                                                   ##
