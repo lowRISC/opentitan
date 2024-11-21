@@ -14,6 +14,7 @@ cc_library(
     srcs = ["imm_rom_ext.c"],
     hdrs = ["imm_rom_ext.h"],
     deps = [
+        ":imm_rom_ext_epmp",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -31,6 +32,22 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
+    ],
+)
+
+cc_library(
+    name = "imm_rom_ext_epmp",
+    srcs = ["imm_rom_ext_epmp.c"],
+    hdrs = ["imm_rom_ext_epmp.h"],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
