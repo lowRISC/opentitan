@@ -1,5 +1,9 @@
 # Registers
 
+The RoT shall define three registers and drive the debug policy bus from that.
+These registers are updated by the RoT FW and are distributed by the debug policy bus to all consumers, e.g., HW TAPs in the system.
+Depending on the configured debug category, a consumer might accept the debug command or not (if it is not part of the selected debug category).
+
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/soc_dbg_ctrl/data/soc_dbg_ctrl.hjson -->
 ## Summary
 
