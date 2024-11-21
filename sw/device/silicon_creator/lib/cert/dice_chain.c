@@ -248,9 +248,12 @@ static rom_error_t dice_chain_push_cert(const char *name, const uint8_t *cert,
 
   // Encode the certificate to the tail buffer.
   size_t cert_page_left = dice_chain_get_tail_size();
-  RETURN_IF_ERROR(
-      perso_tlv_cert_obj_build(name, kPersoObjectTypeX509Cert, cert, cert_size,
-                               dice_chain_get_tail_buffer(), &cert_page_left));
+  perso_tlv_object_type_t cert_type =
+      kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
+                                                    : kPersoObjectTypeCwtCert;
+  RETURN_IF_ERROR(perso_tlv_cert_obj_build(name, cert_type, cert, cert_size,
+                                           dice_chain_get_tail_buffer(),
+                                           &cert_page_left));
 
   // Move the offset to the new tail.
   RETURN_IF_ERROR(perso_tlv_get_cert_obj(dice_chain_get_tail_buffer(),
