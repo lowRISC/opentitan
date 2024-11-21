@@ -1,0 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_darjeeling_pinmux
+  param_values:
+  {
+    n_wkup_detect: 8
+    wkup_cnt_width: 8
+    n_mio_pads: 12
+    n_mio_periph_in: 4
+    n_mio_periph_out: 5
+    n_dio_pads: 73
+    n_dio_periph_in: 58
+    n_dio_periph_out: 57
+    enable_usb_wakeup: false
+    enable_strap_sampling: false
+    topname: darjeeling
+  }
+}
