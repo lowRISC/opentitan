@@ -425,16 +425,18 @@ fn provision_certificates(
 
     // Validate the certificate endorsements with OpenSSL.
     // TODO(lowRISC/opentitan:#24281): Add CWT verifier
-    log::info!("Validating DICE certificate chain with OpenSSL ...");
-    validate_cert_chain(dice_ca_cert.to_str().unwrap(), &dice_cert_chain)?;
-    log::info!("Success.");
-    log::info!("Validating SKU-specific certificates with OpenSSL ...");
+    if !dice_cert_chain.is_empty() {
+        log::info!("Validating DICE certificate chain with OpenSSL ...");
+        validate_cert_chain(dice_ca_cert.to_str().unwrap(), &dice_cert_chain)?;
+        log::info!("Success.");
+    }
     if !sku_specific_certs.is_empty() {
+        log::info!("Validating SKU-specific certificates with OpenSSL ...");
         for sku_specific_cert in sku_specific_certs.iter() {
             validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
         }
+        log::info!("Success.");
     }
-    log::info!("Success.");
 
     Ok(())
 }
