@@ -20,6 +20,8 @@ rust_library(
         "src/commands/object/destroy.rs",
         "src/commands/object/list.rs",
         "src/commands/object/mod.rs",
+        "src/commands/object/read.rs",
+        "src/commands/object/write.rs",
         "src/commands/object/show.rs",
         "src/commands/object/update.rs",
         "src/commands/rsa/decrypt.rs",
