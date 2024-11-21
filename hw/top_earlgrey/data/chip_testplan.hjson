@@ -50,6 +50,7 @@
     "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_alert_handler_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rv_dm_testplan.hjson"
+    "hw/top_earlgrey/data/ip/chip_rv_core_ibex_testplan.hjson",
   ]
 
   testpoints: [
