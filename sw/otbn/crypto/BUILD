@@ -118,25 +118,14 @@ otbn_library(
 )
 
 otbn_binary(
-    name = "p256_ecdh",
+    name = "run_p256",
     srcs = [
-        "p256_ecdh.s",
+        "run_p256.s",
     ],
     deps = [
         ":p256_base",
         ":p256_isoncurve",
         ":p256_shared_key",
-    ],
-)
-
-otbn_binary(
-    name = "p256_ecdsa",
-    srcs = [
-        "p256_ecdsa.s",
-    ],
-    deps = [
-        ":p256_base",
-        ":p256_isoncurve",
         ":p256_sign",
         ":p256_verify",
     ],
