@@ -410,19 +410,23 @@
       desc: '''Verify that the USB device is able to save and restore arbitrary permutations
             of the Data Toggle flags on both the IN and OUT sides.
 
-            - With the USB device powered but not connected (pull up not enabled),
-              set the IN and OUT Data Toggle flags for all endpoints to known state.
+            - With the USB device powered and recently connected (pull up enabled),
+              wait until the link comes out of reset. Do NOT enable any endpoints because
+              USB traffic will interfere with testing of the Data Toggle bits.
+            - Set the IN and OUT Data Toggle flags for all endpoints to a known state.
             - Verify that the IN and OUT Data Toggle flags may be read back correctly.
+            - Check that each Data Toggle bit may be set and reset independently.
             - This functionality is required when Resuming from Deep Sleep.
             - Note that this test does not exercise any low power states or Suspend/Resume.
-            - NOTE: This test should be SV4 and requires prod-only RTL changes.
+            - Note: This test requires the RTL changes for the production part; it will not
+              pass on ES.
             '''
       features: ["USBDEV.POWER.TOGGLE_RESTORE"]
-      stage: V3
+      stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_usbdev_toggle_restore"]
+      bazel: ["//sw/device/tests:usbdev_toggle_restore_test"]
     }
   ]
 }
