@@ -95,9 +95,9 @@ offline_presigning_artifacts(
     name = "presigning",
     testonly = True,
     srcs = [
-        ":rom_ext_prod_slot_a",
-        ":rom_ext_prod_slot_b",
-        ":rom_ext_prod_slot_virtual",
+        ":rom_ext_{}_prod_slot_{}".format(variation, slot)
+        for variation in ROM_EXT_VARIATIONS.keys()
+        for slot in SLOTS
     ],
     ecdsa_key = {
         "//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0",
