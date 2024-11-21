@@ -714,6 +714,14 @@ impl Target for HyperdebugSpiTarget {
         Ok(self.max_sizes)
     }
 
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        Ok(format!(
+            "raiden_debug_spi:serial={},target={}",
+            self.inner.usb_device.borrow().get_serial_number(),
+            self.target_idx
+        ))
+    }
+
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut idx: usize = 0;
         self.select_my_spi_bus()?;
