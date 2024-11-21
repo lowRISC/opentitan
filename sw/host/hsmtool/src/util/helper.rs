@@ -17,8 +17,12 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::escape::as_hex;
 
 /// Constructs a search template given an `id` or `label`.
-pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribute>> {
-    let mut attr = AttributeMap::default();
+pub fn search_spec_ex(
+    id: Option<&str>,
+    label: Option<&str>,
+    attr: Option<&AttributeMap>,
+) -> Result<Vec<Attribute>> {
+    let mut attr = attr.map_or(Default::default(), |s| s.clone());
     if let Some(id) = id {
         attr.insert(AttributeType::Id, AttrData::Str(id.into()));
     }
@@ -29,6 +33,10 @@ pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribut
         return Err(HsmError::NoSearchCriteria.into());
     }
     attr.to_vec()
+}
+
+pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribute>> {
+    search_spec_ex(id, label, None)
 }
 
 /// Returns `true` if one or more objects specified by `id` or `label` exist.
