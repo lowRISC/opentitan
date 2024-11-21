@@ -85,7 +85,7 @@ class i2c_monitor extends dv_base_monitor #(
     reset_state();
   endtask : wait_for_reset_and_drop_item
 
-  virtual function reset_state();
+  virtual function void reset_state();
     num_dut_tran = 0;
     mon_dut_item.clear_all();
   endfunction
