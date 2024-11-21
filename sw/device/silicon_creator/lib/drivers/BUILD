@@ -108,7 +108,6 @@ cc_library(
     srcs = ["ast.c"],
     hdrs = ["ast.h"],
     deps = [
-        ":flash_ctrl",
         ":lifecycle",
         ":otp",
         "//hw/top:ast_c_regs",
