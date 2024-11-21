@@ -37,6 +37,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_out_init(
   CborOutInit(buf, buf_size, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add a "map" header along with the elements count to a CborOut structure.
  *
@@ -50,6 +51,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_map_init(
   CborWriteMap(num_pairs, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add a "array" header along with the elements count to a CborOut structure.
  *
@@ -63,6 +65,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_array_init(
   CborWriteArray(num_elements, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add a "tstr" to a CborOut structure
  *
@@ -76,6 +79,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_string(
   CborWriteTstr(str, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add a "bstr" to a CborOut structure
  *
@@ -109,6 +113,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_pair_uint_uint(
   CborWriteUint(value, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add 2 elements, "int" and "uint", to a CborOut structure
  *
@@ -124,6 +129,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_pair_int_uint(
   CborWriteUint(value, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add 2 elements, "uint" and "int", to a CborOut structure
  *
@@ -139,6 +145,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_pair_uint_int(
   CborWriteInt(value, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add 2 elements, "int" and "bstr", to a CborOut structure
  *
@@ -156,6 +163,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_pair_int_bytes(
   CborWriteBstr(value_size, value, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add 2 elements, "uint" and "tstr", to a CborOut structure
  *
@@ -171,6 +179,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_pair_uint_tstr(
   CborWriteTstr(value, p);
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add 2 elements, "int" and "tstr", to a CborOut structure
  *
@@ -210,6 +219,7 @@ static inline size_t cbor_calc_arg_size(uint64_t value) {
     return 8;
   };
 }
+
 /**
  * Calculate how much space is needed in the header for a "signed interger" type
  * of CBOR argument.
@@ -224,7 +234,6 @@ static inline size_t cbor_calc_int_size(int64_t value) {
   return cbor_calc_arg_size((uint64_t)value);
 }
 
-// Add a bstr/tstr header with size, and rewind the cursor
 /**
  * Add a "bstr" header along with the payload size, and rewind the cursor of
  * CborOut structure.
@@ -241,6 +250,7 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_bstr_header(
   p->cursor -= bstr_size;
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 /**
  * Add a "tstr" header along with the payload size, and rewind the cursor of
  * CborOut structure.
@@ -275,4 +285,5 @@ OT_WARN_UNUSED_RESULT static inline rom_error_t cbor_write_raw_bytes(
   p->cursor += raw_size;
   CBOR_CHECK_OVERFLOWED_AND_RETURN(p);
 }
+
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_CBOR_H_
