@@ -86,8 +86,8 @@ class chip_sw_rom_e2e_jtag_inject_vseq extends chip_sw_base_vseq;
     // The dm package only has definitions for the first CFG and ADDR CSRs.
     // This test uses the ibex_pkg definitions, and thus, we check that the
     // offset values are the same for each respective index 0.
-    `DV_CHECK_EQ(dm::CSR_PMPCFG0, ibex_pkg::CSR_PMPCFG0);
-    `DV_CHECK_EQ(dm::CSR_PMPADDR0, ibex_pkg::CSR_PMPADDR0);
+    `DV_CHECK_EQ(dm::CSR_PMPCFG0, {ibex_pkg::CSR_PMPCFG0});
+    `DV_CHECK_EQ(dm::CSR_PMPADDR0, {ibex_pkg::CSR_PMPADDR0});
 
     // NAPOT LX-R for PMP2   (ROM)
     // TOR   LXWR for PMP1-0 (SRAM)
