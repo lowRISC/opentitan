@@ -11,8 +11,9 @@ py_test(
     name = "device_id_test",
     srcs = ["device_id_test.py"],
     data = [
-        "//sw/device/silicon_creator/manuf/keys/fake:cert_endorsement_key.sk.der",
-        "//sw/device/silicon_creator/manuf/keys/fake:fake_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
         "//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
     ],
     deps = [
