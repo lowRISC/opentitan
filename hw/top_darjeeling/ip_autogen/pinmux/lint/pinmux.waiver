@@ -1,0 +1,32 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for pinmux
+
+waive -rules NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdata.*} \
+      -comment "Upper bits of reg_wdata are not read"
+
+waive -rules HIER_NET_NOT_READ -location {pinmux_reg_top.sv} -regexp {.*reg_wdata.*} \
+      -comment "Upper bits of reg_wdata are not read"
+
+waive -rules VAR_INDEX_RANGE -location {pinmux.sv} -regexp {.*maximum value.*} \
+      -comment "Indexed arrays may not be fully populated."
+
+waive -rules CLOCK_MUX -location {pinmux.sv} -regexp {Clock '(in_padring_i\[38\]|mio_in_i\[38\]|jtag_req.tck)' reaches a multiplexer here, used as a clock 'tck_i' at dmi_jtag_tap.sv} \
+      -comment "The 'mio_in_i[TckPadIdx]' input signal is connected to 'jtag_req.tck' which eventually feeds into the JTAG Selection Mux."
+
+waive -rules CLOCK_DRIVER -location {pinmux.sv} -regexp {'mio_attr\[28\].pull_select' is driven here, and used as a clock} \
+      -comment "'MioPadIoc6' at index 28 may also serve as an external clock input. The 'pull_select' signal impacts the actual value obtained from the pad simulation model."
+
+waive -rules CLOCK_USE -location {pinmux.sv} -regexp {'hw2reg.mio_pad_attr\[28\].pull_select.d' is connected to 'pinmux_reg_top' port 'hw2reg.mio_pad_attr\[28\].pull_select.d', and used as a clock} \
+      -comment "'MioPadIoc6' at index 28 may also serve as an external clock input. The 'pull_select' signal impacts the actual value obtained from the pad simulation model."
+
+waive -rules CLOCK_USE -location {pinmux.sv} -regexp {'(dio_wkup_mux\[12\]|dio_wkup_mux\[13\]|mio_wkup_mux\[40\])' is used for some other purpose, and as clock} \
+      -comment "The wakeup detectors can be configured to observe any MIO / DIO pins. 'DioSpiDeviceSck' (index 12) is the spi_device clock, 'DioSpiDeviceCsb' (index 13) is the spi_device chip select (used as a clock for detecting toggles inside spi_device), and 'Dft0PadIdx' (index 40) controls the first TAP strap and thus the TAP selection mux driving the JTAG clocks."
+
+waive -rules CLOCK_MUX -location {pinmux.sv} -regexp {Clock 'dio_in_i\[12\]' reaches a multiplexer here, used as a clock 'clk_i'} \
+      -comment "This mux is required to filter designated scan clock inputs (e.g. 'DioSpiDeviceSck' at index 12) from wakeup detector inputs"
+
+waive -rules RESET_ONLY -location {pinmux.sv} -regexp {'mio_pad_attr_q\[0\]' is asynchronously reset but has no other assignments in this block} \
+      -comment "This error can safely be ignored: The signal is obviously driven further down in the very same block, changing the TargetCfg.tap_strap0_idx value to a non-zero value (which it actually is in the Earlgrey top level) makes the error go away."
