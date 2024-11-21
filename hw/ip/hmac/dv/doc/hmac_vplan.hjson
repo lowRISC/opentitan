@@ -1,0 +1,2748 @@
+[
+  {
+    Depth: "0"
+    Name: hmac
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: dut_name
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac
+  }
+  {
+    Depth: "1"
+    Name: technical_specification
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/index.html
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification
+  }
+  {
+    Depth: "2"
+    Name: overview
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview
+  }
+  {
+    Depth: "3"
+    Name: comportability
+    Reference: req_hmac_0001
+    Coverage_Result: ""
+    Description: This module conforms to the comportability doc/contributing/hw/comportability/README.md
+    Metric_Type: inspection
+    Item: ""
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/comportability
+  }
+  {
+    Depth: "3"
+    Name: features
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features
+  }
+  {
+    Depth: "4"
+    Name: mode_sha2_hmac
+    Reference: req_hmac_0002
+    Coverage_Result: ""
+    Description: Two modes: SHA-2 | HMAC based on SHA-2
+    Metric_Type: functional
+    Item: rd_digest_during_hmac_en_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features/mode_sha2_hmac
+  }
+  {
+    Depth: "4"
+    Name: digest_size
+    Reference: req_hmac_0003
+    Coverage_Result: ""
+    Description: Multiple digest sizes supported (for both modes): SHA-2 256/384/512 hashing algorithm
+    Metric_Type: functional
+    Item: cfg_cg.digest_size
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features/digest_size
+  }
+  {
+    Depth: "4"
+    Name: key_length
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: Configurable key length 128/256/384/512/1024-bit secret key for HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features/key_length
+  }
+  {
+    Depth: "4"
+    Name: context_switching
+    Reference: req_hmac_0005
+    Coverage_Result: ""
+    Description: Support for context switching (via saving and restoring) across multiple message streams
+    Metric_Type: functional
+    Item: save_and_restore_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features/context_switching
+  }
+  {
+    Depth: "4"
+    Name: message_fifo_size
+    Reference: req_hmac_0006
+    Coverage_Result: ""
+    Description: 32 x 32-bit message FIFO buffer
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/features/message_fifo_size
+  }
+  {
+    Depth: "3"
+    Name: description
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description
+  }
+  {
+    Depth: "4"
+    Name: sha2_spec
+    Reference: req_hmac_0007
+    Coverage_Result: ""
+    Description: The HMAC module is a SHA-2 hash-based (see: NIST)
+    Metric_Type: testcase, testcase
+    Item: hmac_test_vectors_sha, hmac_test_vectors_hmac
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Test against NIST vectors
+    Tag: hmac/technical_specification/overview/description/sha2_spec
+  }
+  {
+    Depth: "4"
+    Name: sha2_256
+    Reference: req_hmac_0003
+    Coverage_Result: ""
+    Description: It supports SHA-2 256/384/512
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_256
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/sha2_256
+  }
+  {
+    Depth: "4"
+    Name: sha2_384
+    Reference: req_hmac_0003
+    Coverage_Result: ""
+    Description: It supports SHA-2 256/384/512
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_384
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/sha2_384
+  }
+  {
+    Depth: "4"
+    Name: sha2_512
+    Reference: req_hmac_0003
+    Coverage_Result: ""
+    Description: It supports SHA-2 256/384/512
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_512
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/sha2_512
+  }
+  {
+    Depth: "4"
+    Name: key_128
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_128
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/key_128
+  }
+  {
+    Depth: "4"
+    Name: key_256
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_256
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/key_256
+  }
+  {
+    Depth: "4"
+    Name: key_384
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_384
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/key_384
+  }
+  {
+    Depth: "4"
+    Name: key_512
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_512
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/key_512
+  }
+  {
+    Depth: "4"
+    Name: key_2024
+    Reference: req_hmac_0004
+    Coverage_Result: ""
+    Description: It supports 128/256/384/512/1024-bit keys in HMAC mode
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_1024
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/key_2024
+  }
+  {
+    Depth: "4"
+    Name: sha2_x_keys
+    Reference: req_hmac_0003, req_hmac_0004, req_hmac_0014
+    Coverage_Result: ""
+    Description: Test all SHA2 with all the key length that does not exceed the block size of the configured SHA-2 digest size
+    Metric_Type: functional
+    Item: cfg_cg.key_length_x_digest_size
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/sha2_x_keys
+  }
+  {
+    Depth: "4"
+    Name: hmac_done_irq
+    Reference: req_hmac_0008
+    Coverage_Result: ""
+    Description: The `hmac_done` interrupt is raised to report to software that the final digest is available.
+    Metric_Type: assertion, assertion
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: One assertion can be added to the RTL and another one to the SB when hmac_done read is detected
+    Tag: hmac/technical_specification/overview/description/hmac_done_irq
+  }
+  {
+    Depth: "4"
+    Name: sha2_only
+    Reference: req_hmac_0002
+    Coverage_Result: ""
+    Description: The HMAC IP can run in SHA-2 only mode, whose purpose is to check the correctness of the received message. The same digest registers above are used to hold the final hash result. SHA-2 mode does not use the given secret key. It generates the same result with the same message every time.
+    Metric_Type: functional, functional
+    Item: cfg_cg.hmac_dis_x_sha_en, wr_key_during_sha_only_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/sha2_only
+  }
+  {
+    Depth: "4"
+    Name: auto_msg_length
+    Reference: req_hmac_0009
+    Coverage_Result: ""
+    Description: The HMAC IP will calculate the length of the message received between 1 being written to CMD.hash_start and 1 being written to CMD.hash_process.
+    Metric_Type: functional, functional
+    Item: msg_len_cg.msg_len_lower_cross, msg_len_cg.msg_len_upper_cross
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/auto_msg_length
+  }
+  {
+    Depth: "4"
+    Name: wipe_internal_variables
+    Reference: req_hmac_000A
+    Coverage_Result: ""
+    Description: Is able to wipe internal variables such as the secret key, intermediate hash results, digest and the internal message scheduling array.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/wipe_internal_variables
+  }
+  {
+    Depth: "4"
+    Name: wipe_secret
+    Reference: req_hmac_000A
+    Coverage_Result: ""
+    Description: The software can wipe the secret key by writing a 32-bit random value into WIPE_SECRET register. The internal variables and secret key will be reset to the written value.
+    Metric_Type: testcase, assertion
+    Item: hmac_wipe_secret, wipe_secret_a
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/wipe_secret
+  }
+  {
+    Depth: "4"
+    Name: wipe_sha2_384_512_modes
+    Reference: req_hmac_000B
+    Coverage_Result: ""
+    Description: For SHA-2 384/512 modes that operate on 64-bit words, the 32-bit random value is replicated and concatenated to create the 64-bit value.
+    Metric_Type: testcase, assertion
+    Item: hmac_wipe_secret, wipe_secret_64bits_a
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/technical_specification/overview/description/wipe_sha2_384_512_modes
+  }
+  {
+    Depth: "1"
+    Name: theory_of_operation
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation
+  }
+  {
+    Depth: "2"
+    Name: block_diagram
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#block-diagram
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/block_diagram
+  }
+  {
+    Depth: "3"
+    Name: sha2_hash_engine
+    Reference: imp_hmac_0001
+    Coverage_Result: ""
+    Description: The SHA-2 hash engine is a SHA-2 engine primitive instantiated with the multi-mode feature enabled
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check the parameter value
+    Tag: hmac/theory_of_operation/block_diagram/sha2_hash_engine
+  }
+  {
+    Depth: "3"
+    Name: sha2_core_fifo_size
+    Reference: imp_hmac_0002
+    Coverage_Result: ""
+    Description: SHA-2 block contains two time a 8x64-bit size FIFOs (one for the hash and one for the digest)
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check that the 2 FIFOs exist and are the right size
+    Tag: hmac/theory_of_operation/block_diagram/sha2_core_fifo_size
+  }
+  {
+    Depth: "3"
+    Name: sha2_msg_scheduling_fifo
+    Reference: imp_hmac_0003
+    Coverage_Result: ""
+    Description: The message scheduling FIFO is not software accessible but is fed from the 32x32b message FIFO seen in the HMAC block diagram via the HMAC core.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check that the FIFO exists and is the right size
+    Tag: hmac/theory_of_operation/block_diagram/sha2_msg_scheduling_fifo
+  }
+  {
+    Depth: "3"
+    Name: sha2_msg_padding
+    Reference: req_hmac_000C
+    Coverage_Result: ""
+    Description: The message words are padded with the message length appended to fit either the 512-bit or 1024-bit block size (depending on the configured digest size)
+    Metric_Type: functional
+    Item: msg_len_cg.msg_len_lower_cp
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/block_diagram/sha2_msg_padding
+  }
+  {
+    Depth: "3"
+    Name: blk_512_rounds
+    Reference: req_hmac_000D
+    Coverage_Result: ""
+    Description: With the 512-bit block (for SHA-2 256), the compression function runs 64 rounds to calculate the block hash, which is stored in the hash registers above.
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_256
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model as the returned digest is matching
+    Tag: hmac/theory_of_operation/block_diagram/blk_512_rounds
+  }
+  {
+    Depth: "3"
+    Name: blk_512_digest
+    Reference: req_hmac_000D
+    Coverage_Result: ""
+    Description: After 64 rounds are completed, the SHA-2 256 updates the digest registers with the addition of the hash result and the previous digest registers.
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_256
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model as the returned digest is matching
+    Tag: hmac/theory_of_operation/block_diagram/blk_512_digest
+  }
+  {
+    Depth: "3"
+    Name: blk_1024_rounds
+    Reference: req_hmac_000E
+    Coverage_Result: ""
+    Description: With the 1024-bit block (for SHA-2 384/512), the compression function runs 80 rounds instead.
+    Metric_Type: functional, functional
+    Item: cfg_cg.digest_size.sha2_384, cfg_cg.digest_size.sha2_512
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model as the returned digest is matching
+    Tag: hmac/theory_of_operation/block_diagram/blk_1024_rounds
+  }
+  {
+    Depth: "3"
+    Name: blk_1024_digest
+    Reference: req_hmac_000E
+    Coverage_Result: ""
+    Description: SHA-2 384 is a truncated version of SHA-2 512 where the last 128 bits of the final digest output are truncated to reduce the digest size to 384 bits.
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_384
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model as the returned digest is matching
+    Tag: hmac/theory_of_operation/block_diagram/blk_1024_digest
+  }
+  {
+    Depth: "2"
+    Name: design_details
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#design-details
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details
+  }
+  {
+    Depth: "3"
+    Name: sha2_message_feed_and_pad
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#sha-2-message-feed-and-pad
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad
+  }
+  {
+    Depth: "4"
+    Name: wr_msg_fifo
+    Reference: imp_hmac_0004
+    Coverage_Result: ""
+    Description: Any write access to the memory-mapped window MSG_FIFO updates the message FIFO.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/wr_msg_fifo
+  }
+  {
+    Depth: "4"
+    Name: fifo_full_back_pressure
+    Reference: req_hmac_0018
+    Coverage_Result: ""
+    Description: If the FIFO is full, the HMAC block will block any writes leading to back-pressure on the interconnect
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Do writes while the FIFO is full
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/fifo_full_back_pressure
+  }
+  {
+    Depth: "4"
+    Name: fifo_full_status
+    Reference: imp_hmac_0006
+    Coverage_Result: ""
+    Description: The FIFO full is available in STATUS register
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/fifo_full_status
+  }
+  {
+    Depth: "4"
+    Name: endian_swap
+    Reference: req_hmac_002D
+    Coverage_Result: ""
+    Description: When CFG.endian_swap=1, input message is converted from little-endian to big-endian before feeding it to the SHA-2
+    Metric_Type: functional
+    Item: cfg_cg.endian_swap
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/endian_swap
+  }
+  {
+    Depth: "4"
+    Name: digest_swap
+    Reference: req_hmac_002C
+    Coverage_Result: ""
+    Description: When CFG.digest_swap=1, each digest output register is converted to big-endian byte order
+    Metric_Type: functional
+    Item: cfg_cg.digest_swap
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/digest_swap
+  }
+  {
+    Depth: "4"
+    Name: 32bits_words
+    Reference: imp_hmac_0009
+    Coverage_Result: ""
+    Description: Small writes to MSG_FIFO are coalesced into 32-bit words by the packer logic
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Be sure that small writes have been exercised by adding a fcov
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/32bits_words
+  }
+  {
+    Depth: "4"
+    Name: msg_length
+    Reference: req_hmac_0009
+    Coverage_Result: ""
+    Description: The block also counts the number of bytes that are being passed. This computes the received message length.
+    Metric_Type: functional, functional
+    Item:
+      '''
+      msg_len_cg.msg_len_lower_cp,
+      msg_len_cg.msg_len_upper_cp
+      '''
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/msg_length
+  }
+  {
+    Depth: "4"
+    Name: msg_structure
+    Reference: req_hmac_000C
+    Coverage_Result: ""
+    Description: The message must be padded to fill the 512/1024-bit blocks. This is done with an initial **1** bit after the actual message bits, followed by enough **0** padding bits, and then the 64/128-bit message length at the end of the block. The number of **0** padding bits should be enough such that the full block size (512 or 1024 bits) is achieved.
+    Metric_Type: functional
+    Item: msg_len_cg.msg_len_lower_cp
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/sha2_message_feed_and_pad/msg_structure
+  }
+  {
+    Depth: "3"
+    Name: sha2_computation
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#sha-2-computation
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_computation
+  }
+  {
+    Depth: "4"
+    Name: blk_512_word_pad
+    Reference: req_hmac_000D
+    Coverage_Result: ""
+    Description: For SHA-2 256, the SHA-2 engine receives 16x32-bit words from the message FIFO or the HMAC core, which get padded into 16x64-bit words for the SHA-2 engine (upper 32 bits of each data word are all-zero padded)
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_256
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/sha2_computation/blk_512_word_pad
+  }
+  {
+    Depth: "4"
+    Name: blk_512_rounds
+    Reference: req_hmac_000D
+    Coverage_Result: ""
+    Description: And then begin 64 rounds of the hash computation.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Add a check in the SB where this param is used HMAC_MSG_PROCESS_CYCLES_256
+    Tag: hmac/theory_of_operation/design_details/sha2_computation/blk_512_rounds
+  }
+  {
+    Depth: "4"
+    Name: blk_1024_word_pack
+    Reference: req_hmac_000E
+    Coverage_Result: ""
+    Description: Alternatively for SHA-2 384/512, the SHA-2 engine receives 32x32-bit words from message FIFO, which get packed into 16x64-bit words for the SHA-2 engine
+    Metric_Type: functional, functional
+    Item: cfg_cg.digest_size.sha2_384, cfg_cg.digest_size.sha2_512
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/sha2_computation/blk_1024_word_pack
+  }
+  {
+    Depth: "4"
+    Name: blk_1024_rounds
+    Reference: req_hmac_000E
+    Coverage_Result: ""
+    Description: And then begin the 80 compression rounds.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Add a check in the SB where this param is used HMAC_MSG_PROCESS_CYCLES_512
+    Tag: hmac/theory_of_operation/design_details/sha2_computation/blk_1024_rounds
+  }
+  {
+    Depth: "4"
+    Name: sw_access_msg_fifo
+    Reference: req_hmac_000F
+    Coverage_Result: ""
+    Description: During the compression rounds, it doesn't fetch data from the message FIFO. The software can push up to 16 (or 32 for SHA-2 384/512) entries to the FIFO for the next hash computation.
+    Metric_Type: functional
+    Item: wr_msg_during_hash_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/sha2_computation/sw_access_msg_fifo
+  }
+  {
+    Depth: "3"
+    Name: hmac_computation
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#hmac-computation
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/hmac_computation
+  }
+  {
+    Depth: "4"
+    Name: hmac_first_round
+    Reference: req_hmac_0010
+    Coverage_Result: ""
+    Description: The first phase of HMAC calculates the SHA-2 hash of the inner secret key concatenated with the actual message to be authenticated.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en.enabled
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/hmac_first_round
+  }
+  {
+    Depth: "4"
+    Name: inner_secret_key
+    Reference: req_hmac_0011
+    Coverage_Result: ""
+    Description: This inner secret key is created with the 128/256/384/512/1024-bit (hashed) secret key (depending on the configured key length) and `0x00` padding to complete the corresponding block size of the configured digest size. This is XORed with 64 bits 0x36 value.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en_x_key_length
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/inner_secret_key
+  }
+  {
+    Depth: "4"
+    Name: hmac_second_round
+    Reference: req_hmac_0012
+    Coverage_Result: ""
+    Description: The first round digest is fed into the second round in HMAC. The second round computes the hash of the outer secret key concatenated with the first round digest.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en.enabled
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/hmac_second_round
+  }
+  {
+    Depth: "4"
+    Name: outer_secret_key
+    Reference: req_hmac_0013
+    Coverage_Result: ""
+    Description: This outer secret key is created with the 128/256/384/512/1024-bit (hashed) secret key (depending on the configured key length) and `0x00` padding to complete the corresponding block size of the configured digest size. This is XORed with 64 bits 0x5c value.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en_x_key_length
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/outer_secret_key
+  }
+  {
+    Depth: "4"
+    Name: max_key_length
+    Reference: req_hmac_0014
+    Coverage_Result: ""
+    Description: HMAC supports a secret key of length 128/256/384/512/1024-bit, so long as the key length does not exceed the block size of the configured digest.
+    Metric_Type: functional
+    Item: err_code_cg.key_length_higher_blk_size
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/max_key_length
+  }
+  {
+    Depth: "4"
+    Name: key_endianness
+    Reference: req_hmac_002D
+    Coverage_Result: ""
+    Description: The byte order of the key registers is big-endian by default, can be swapped to little endian by setting [`CFG.key_swap`](registers.md#cfg--key_swap) to 1.
+    Metric_Type: functional
+    Item: cfg_cg.endian_swap
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/key_endianness
+  }
+  {
+    Depth: "4"
+    Name: arbitrary_key_length
+    Reference: req_hmac_0016
+    Coverage_Result: ""
+    Description: To support any arbitrary key length, the software should configure the HMAC to the next largest supported key length
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: MVy: it hasn't been verified yet ! (13.11.2024)
+    Tag: hmac/theory_of_operation/design_details/hmac_computation/arbitrary_key_length
+  }
+  {
+    Depth: "3"
+    Name: perf_sha2_hmac_modes
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#performance-in-sha-2-mode-and-hmac-mode
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes
+  }
+  {
+    Depth: "4"
+    Name: wr_msg_fifo_during_hash
+    Reference: req_hmac_0017
+    Coverage_Result: ""
+    Description: The software can feed the next 16 x 32-bit message block during the 48 rounds required by the SHA block to compute the HASH of current message block.
+    Metric_Type: functional
+    Item: wr_msg_during_hash_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes/wr_msg_fifo_during_hash
+  }
+  {
+    Depth: "4"
+    Name: fifo_full_access_blocked
+    Reference: req_hmac_0018
+    Coverage_Result: ""
+    Description: Once the FIFO gets full, the software cannot push more data until the current block is processed.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Do writes while the FIFO is full
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes/fifo_full_access_blocked
+  }
+  {
+    Depth: "4"
+    Name: sha2_256_performance
+    Reference: imp_hmac_000B
+    Coverage_Result: ""
+    Description:
+      '''
+      This version of the IP fetches the next 16 x 32-bit message into the internal message scheduling array only after completing the current block.
+      As such, it takes 80 cycles to complete a block.
+      '''
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes/sha2_256_performance
+  }
+  {
+    Depth: "4"
+    Name: sha2_384_512_performance
+    Reference: imp_hmac_000C
+    Coverage_Result: ""
+    Description:
+      '''
+      For SHA-2 384/512, the algorithm computes 1024 bits of data a time and runs for 80 rounds where the first 16 rounds consume the actual 16 x 64-bit message.
+      It takes 96 cycles to complete a 1024-bit block.
+      '''
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes/sha2_384_512_performance
+  }
+  {
+    Depth: "4"
+    Name: hmac_overhead_performance
+    Reference: imp_hmac_000D
+    Coverage_Result: ""
+    Description:
+      '''
+      If HMAC mode is turned on, it introduces extra latency due to the second round of computing the final hash of the outer key and the result of the first round using the inner key.
+      This adds an extra 240 cycles (80 for the inner key, 80 for the outer key, and 80 for the result of the first round) to complete a HMAC SHA-2 256 digest of a message.
+      '''
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/perf_sha2_hmac_modes/hmac_overhead_performance
+  }
+  {
+    Depth: "3"
+    Name: msg_fifo
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/theory_of_operation.html#msg_fifo
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/theory_of_operation/design_details/msg_fifo
+  }
+  {
+    Depth: "4"
+    Name: msg_fifo_wr
+    Reference: imp_hmac_000E
+    Coverage_Result: ""
+    Description:
+      '''
+      Any writes to the address range go into the single entry point of the `prim_packer`.
+      Then `prim_packer` compacts the data into the word-size if not a word-write then writes to the MSG_FIFO.
+      '''
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Be sure that writting anywhere in the address range has the same impact and for any word size
+    Tag: hmac/theory_of_operation/design_details/msg_fifo/msg_fifo_wr
+  }
+  {
+    Depth: "1"
+    Name: interfaces
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/interfaces.html
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces
+  }
+  {
+    Depth: "2"
+    Name: clock_in
+    Reference: req_hmac_0025
+    Coverage_Result: ""
+    Description: TODO: do we have a clock spec somewhere? We should use a clock agent which is able to emulate the defects that a "real world" clock may have.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Get cov from the agent
+    Tag: hmac/interfaces/clock_in
+  }
+  {
+    Depth: "2"
+    Name: reset
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/reset
+  }
+  {
+    Depth: "3"
+    Name: reset_in
+    Reference: req_hmac_0026
+    Coverage_Result: ""
+    Description: TODO: test random resets via an agent
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Get cov from the agent
+    Tag: hmac/interfaces/reset/reset_in
+  }
+  {
+    Depth: "3"
+    Name: reset_during_hash
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: functional
+    Item: trig_rst_during_hash_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/reset/reset_during_hash
+  }
+  {
+    Depth: "2"
+    Name: tile_link
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Get cov from the agent
+    Tag: hmac/interfaces/tile_link
+  }
+  {
+    Depth: "2"
+    Name: inter_module_signals
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/inter_module_signals
+  }
+  {
+    Depth: "3"
+    Name: idle
+    Reference: req_hmac_0022
+    Coverage_Result: ""
+    Description: Idle should be high when TODO see https://github.com/lowRISC/opentitan/blob/4ec9f5238bf0f21a03164819d8c637a19e30d759/hw/ip/hmac/rtl/hmac.sv#L867
+    Metric_Type: formal, functional
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/inter_module_signals/idle
+  }
+  {
+    Depth: "3"
+    Name: tl_rsp
+    Reference: ""
+    Coverage_Result: ""
+    Description: TODO: how and what should be checked ?
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/inter_module_signals/tl_rsp
+  }
+  {
+    Depth: "2"
+    Name: interrupts
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/interfaces.html#interrupts
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/interrupts
+  }
+  {
+    Depth: "3"
+    Name: hmac_done
+    Reference: req_hmac_0008
+    Coverage_Result: ""
+    Description: An event should be raised when HMAC/SHA-2 has completed.
+    Metric_Type: assertion, assertion
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: One assertion can be added to the RTL and another one to the SB when hmac_done read is detected
+    Tag: hmac/interfaces/interrupts/hmac_done
+  }
+  {
+    Depth: "3"
+    Name: fifo_empty
+    Reference: req_hmac_001A
+    Coverage_Result: ""
+    Description: The HW should indicate the message FIFO empty status on this interrupt line (see corresponding register for details).
+    Metric_Type: functional, functional
+    Item: cip_base_pkg::intr_cg.cp_intr, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Implement a cov to be triggered from the SB when these conditions have been detected
+    Tag: hmac/interfaces/interrupts/fifo_empty
+  }
+  {
+    Depth: "3"
+    Name: hmac_err
+    Reference: req_hmac_0019
+    Coverage_Result: ""
+    Description: An event should be raised when an HMAC error has occured.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Not sure it is modelled correctly and add a cov
+    Tag: hmac/interfaces/interrupts/hmac_err
+  }
+  {
+    Depth: "2"
+    Name: security_alerts
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/interfaces.html#security-alerts
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/security_alerts
+  }
+  {
+    Depth: "3"
+    Name: fatal_fault
+    Reference: req_hmac_0023
+    Coverage_Result: ""
+    Description: This fatal alert should be triggered when a fatal TL-UL bus integrity fault is detected.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/security_alerts/fatal_fault
+  }
+  {
+    Depth: "2"
+    Name: security_countermeasures
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/interfaces.html#security-countermeasures
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: https://opentitan.org/book/doc/contributing/hw/comportability/index.html#security-countermeasures
+    Tag: hmac/interfaces/security_countermeasures
+  }
+  {
+    Depth: "3"
+    Name: bus_integrity
+    Reference: req_hmac_0024
+    Coverage_Result: ""
+    Description: End-to-end bus integrity scheme.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/interfaces/security_countermeasures/bus_integrity
+  }
+  {
+    Depth: "1"
+    Name: registers
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/registers.html
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers
+  }
+  {
+    Depth: "2"
+    Name: general_csr_tests
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/general_csr_tests
+  }
+  {
+    Depth: "3"
+    Name: csr_hw_reset
+    Reference: ""
+    Coverage_Result: ""
+    Description: CSRs should be compliant with the reset value provided in the RAL specification.
+    Metric_Type: testcase
+    Item: csr_hw_reset
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/general_csr_tests/csr_hw_reset
+  }
+  {
+    Depth: "3"
+    Name: csr_read_write
+    Reference: ""
+    Coverage_Result: ""
+    Description: CSRs should be R/W accessible according to their specified access policies.
+    Metric_Type: testcase
+    Item: csr_rw
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/general_csr_tests/csr_read_write
+  }
+  {
+    Depth: "3"
+    Name: csr_bit_bash
+    Reference: ""
+    Coverage_Result: ""
+    Description: There should be no aliasing within the fields / bits of a CSR.
+    Metric_Type: testcase
+    Item: csr_bit_bash
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/general_csr_tests/csr_bit_bash
+  }
+  {
+    Depth: "3"
+    Name: csr_aliasing
+    Reference: ""
+    Coverage_Result: ""
+    Description: There should be no aliasing across the address bits within the valid CSR space.
+    Metric_Type: testcase
+    Item: csr_aliasing
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/general_csr_tests/csr_aliasing
+  }
+  {
+    Depth: "2"
+    Name: intr_state
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/intr_state
+  }
+  {
+    Depth: "3"
+    Name: hmac_err
+    Reference: req_hmac_0019
+    Coverage_Result: ""
+    Description: When an error occured on the HMAC hmac_err bit should be raised.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Not sure it is modelled correctly and add a cov
+    Tag: hmac/registers/intr_state/hmac_err
+  }
+  {
+    Depth: "3"
+    Name: fifo_empty
+    Reference: req_hmac_001A
+    Coverage_Result: ""
+    Description:
+      '''
+      This interrupt is raised only if the message FIFO is actually writable by software, i.e., if all of the following conditions are met:
+      i) The HMAC block is not running in HMAC mode and performing the second round of computing the final hash of the outer key as well as the result of the first round using the inner key.
+      ii) Software has not yet written the Process or Stop command to finish the hashing operation.
+      For the interrupt to be raised, the message FIFO must also have been full previously.
+      '''
+    Metric_Type: functional, functional
+    Item: cip_base_pkg::intr_cg.cp_intr, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Implement a cov to be triggered from the SB when these conditions have been detected
+    Tag: hmac/registers/intr_state/fifo_empty
+  }
+  {
+    Depth: "3"
+    Name: hmac_done
+    Reference: req_hmac_0008
+    Coverage_Result: ""
+    Description: The hmac_done bit is raised when HMAC/SHA-2 has completed.
+    Metric_Type: assertion, assertion
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: One assertion can be added to the RTL and another one to the SB when hmac_done read is detected
+    Tag: hmac/registers/intr_state/hmac_done
+  }
+  {
+    Depth: "2"
+    Name: intr_enable
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/intr_enable
+  }
+  {
+    Depth: "3"
+    Name: intr_enable
+    Reference: req_hmac_001C
+    Coverage_Result: ""
+    Description: Physical output interrupts should follow the intr_state register when the corresponding bits are enabled in intr_enable register.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/intr_enable/intr_enable
+  }
+  {
+    Depth: "2"
+    Name: intr_test
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/intr_test
+  }
+  {
+    Depth: "3"
+    Name: intr_test
+    Reference: req_hmac_001D
+    Coverage_Result: ""
+    Description: In order to test interrupts at physical output level and at register level, a register should be provided to force each field individually.
+    Metric_Type: functional, functional
+    Item: TODO, cip_base_pkg::intr_test_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/intr_test/intr_test
+  }
+  {
+    Depth: "2"
+    Name: alert_test
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/alert_test
+  }
+  {
+    Depth: "3"
+    Name: alert_test
+    Reference: req_hmac_001E
+    Coverage_Result: ""
+    Description: In order to test alerts, a register should be provided to force each field individually.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/alert_test/alert_test
+  }
+  {
+    Depth: "2"
+    Name: cfg
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/registers.html#cfg
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg
+  }
+  {
+    Depth: "3"
+    Name: cfg_update
+    Reference: req_hmac_0038
+    Coverage_Result: ""
+    Description: The register is updated when the engine is in Idle. If the software updates the register while the engine computes the hash, the updated value is discarded.
+    Metric_Type: functional
+    Item: wr_config_during_hash_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/cfg_update
+  }
+  {
+    Depth: "3"
+    Name: cfg_cross
+    Reference: ""
+    Coverage_Result: ""
+    Description: All the configuration combinations should be supported
+    Metric_Type: functional
+    Item: cfg_cg.cfg_cross
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/cfg_cross
+  }
+  {
+    Depth: "3"
+    Name: key_length
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_length
+  }
+  {
+    Depth: "4"
+    Name: one_hot
+    Reference: req_hmac_0027
+    Coverage_Result: ""
+    Description: One-hot encoded field.
+    Metric_Type: functional
+    Item: cfg_cg.key_length.key_invalid
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Means that non one-hot values should also be tested to be sure it doesn't break anything, in that case in should fall in key_none.
+    Tag: hmac/registers/cfg/key_length/one_hot
+  }
+  {
+    Depth: "4"
+    Name: arbitrary_key_length
+    Reference: req_hmac_0016
+    Coverage_Result: ""
+    Description: The HMAC can be programmed with the following key lengths: 128-bit, 256-bit, 384-bit, 512-bit and 1024-bit. But the HMAC supports any arbitrary key length: the software should configure the HMAC with the next largest supported key length and concatenate zeros to reach the programmed key length.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_length/arbitrary_key_length
+  }
+  {
+    Depth: "4"
+    Name: key_length_x_hmac_en
+    Reference: imp_hmac_0008
+    Coverage_Result: ""
+    Description: The value of this register is irrelevant when only SHA-2 (not keyed HMAC) is configured.
+    Metric_Type: functional
+    Item: wr_key_during_sha_only_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_length/key_length_x_hmac_en
+  }
+  {
+    Depth: "4"
+    Name: invalid_cfg
+    Reference: req_hmac_0020
+    Coverage_Result: ""
+    Description: However, for HMAC mode (`hmac_en == 1`), when HMAC is triggered to start while KEY_LENGTH holds `Key_None` or KEY_LENGTH holds `Key_1024` for DIGEST_SIZE = `SHA2_256`, starting is blocked and an error is signalled to SW.
+    Metric_Type: functional, functional, functional
+    Item: cfg_cg.hmac_en_x_key_none, cfg_cg.key_x_digest_mismatch, err_code_cg.hmac_errors.invalid_config
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_length/invalid_cfg
+  }
+  {
+    Depth: "4"
+    Name: key_none
+    Reference: req_hmac_0021
+    Coverage_Result: ""
+    Description: Unsupported/invalid values and all-zero values are mapped to Key_None.
+    Metric_Type: functional, functional
+    Item: cfg_cg.key_length.key_none, cfg_cg.key_length.key_invalid
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_length/key_none
+  }
+  {
+    Depth: "3"
+    Name: digest_size
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/digest_size
+  }
+  {
+    Depth: "4"
+    Name: one_hot
+    Reference: req_hmac_0028
+    Coverage_Result: ""
+    Description: One-hot encoded field.
+    Metric_Type: functional
+    Item: cfg_cg.digest_size.sha2_invalid
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Means that non one-hot values should also be tested to be sure it doesn't break anything, in that case in should fall in sha2_none.
+    Tag: hmac/registers/cfg/digest_size/one_hot
+  }
+  {
+    Depth: "4"
+    Name: digest_size_x_hmac_en
+    Reference: imp_hmac_0007
+    Coverage_Result: ""
+    Description: Select digest size for either HMAC or SHA-2.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en_x_digest_size
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/digest_size/digest_size_x_hmac_en
+  }
+  {
+    Depth: "4"
+    Name: invalid_cfg
+    Reference: req_hmac_002A
+    Coverage_Result: ""
+    Description: Unsupported/invalid values and all-zero values are mapped to SHA2_None.
+    Metric_Type: functional, functional
+    Item: cfg_cg.digest_size.sha2_none, cfg_cg.digest_size.sha2_invalid
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/digest_size/invalid_cfg
+  }
+  {
+    Depth: "3"
+    Name: key_swap
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_swap
+  }
+  {
+    Depth: "4"
+    Name: key_swap
+    Reference: req_hmac_002B
+    Coverage_Result: ""
+    Description: If 1 the endianness of each KEY_* register is swapped. Default value (value 0) is big endian representation of the KEY_* CSRs.
+    Metric_Type: functional
+    Item: cfg_cg.key_swap
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/key_swap/key_swap
+  }
+  {
+    Depth: "3"
+    Name: digest_swap
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/digest_swap
+  }
+  {
+    Depth: "4"
+    Name: digest_swap
+    Reference: req_hmac_002C
+    Coverage_Result: ""
+    Description: If 1 the value in each digest output register is converted to big-endian byte order.
+    Metric_Type: functional
+    Item: cfg_cg.digest_swap
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/digest_swap/digest_swap
+  }
+  {
+    Depth: "3"
+    Name: endian_swap
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/endian_swap
+  }
+  {
+    Depth: "4"
+    Name: endian_swap
+    Reference: req_hmac_002D
+    Coverage_Result: ""
+    Description: If 0, each value will be added to the message in little-endian byte order. The value is written to MSG_FIFO same to the SW writes. If 1, then each individual multi-byte value, regardless of its alignment, written to MSG_FIFO will be added to the message in big-endian byte order.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/endian_swap/endian_swap
+  }
+  {
+    Depth: "4"
+    Name: endian_swap_no_impact
+    Reference: req_hmac_002F
+    Coverage_Result: ""
+    Description: A message written to MSG_FIFO one byte at a time will not be affected by this setting.
+    Metric_Type: functional
+    Item: TODO
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/endian_swap/endian_swap_no_impact
+  }
+  {
+    Depth: "3"
+    Name: sha_en
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/sha_en
+  }
+  {
+    Depth: "4"
+    Name: sha_en
+    Reference: ""
+    Coverage_Result: ""
+    Description: SHA core could be disabled.
+    Metric_Type: functional
+    Item: cfg_cg.sha_en
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/sha_en/sha_en
+  }
+  {
+    Depth: "4"
+    Name: sha_disabled_allows_config
+    Reference: req_hmac_0030
+    Coverage_Result: ""
+    Description: SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check regsiters which are supposed to be write protected when sha_en=0
+    Tag: hmac/registers/cfg/sha_en/sha_disabled_allows_config
+  }
+  {
+    Depth: "4"
+    Name: sha_disabled_digest
+    Reference: req_hmac_0031
+    Coverage_Result: ""
+    Description: When the SHA-2 engine is disabled the digest is cleared, and the digest can be written to from SW.
+    Metric_Type: assertion, functional
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check that digest is cleared when SHA is disabled and be sure that the digest can be written only when SHA is disabled
+    Tag: hmac/registers/cfg/sha_en/sha_disabled_digest
+  }
+  {
+    Depth: "3"
+    Name: hmac_en
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/hmac_en
+  }
+  {
+    Depth: "4"
+    Name: hmac_en
+    Reference: req_hmac_0002
+    Coverage_Result: ""
+    Description: HMAC datapath enable.
+    Metric_Type: functional
+    Item: cfg_cg.hmac_en
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cfg/hmac_en/hmac_en
+  }
+  {
+    Depth: "4"
+    Name: hmac_hash_start
+    Reference: imp_hmac_000F
+    Coverage_Result: ""
+    Description: If this bit is 1, HMAC operates when `hash_start` toggles.
+    Metric_Type: assertion
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Check that FSM is moving to a certain state only once this signal has been triggered
+    Tag: hmac/registers/cfg/hmac_en/hmac_hash_start
+  }
+  {
+    Depth: "2"
+    Name: cmd
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/registers.html#cmd
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cmd
+  }
+  {
+    Depth: "3"
+    Name: hash_continue
+    Reference: imp_hmac_0010
+    Coverage_Result: ""
+    Description: When 1 is written to this field, SHA-2 or HMAC will continue hashing based on the current hash in the digest registers and the message length
+    Metric_Type: functional
+    Item: save_and_restore_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cmd/hash_continue
+  }
+  {
+    Depth: "3"
+    Name: hash_stop
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cmd/hash_stop
+  }
+  {
+    Depth: "4"
+    Name: hmac_done_irq
+    Reference: req_hmac_0008
+    Coverage_Result: ""
+    Description: When 1 is written to this field, SHA-2 or HMAC will afterwards set the hmac_done interrupt as soon as the current block has been hashed.
+    Metric_Type: assertion, assertion
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: One assertion can be added to the RTL and another one to the SB when hmac_done read is detected
+    Tag: hmac/registers/cmd/hash_stop/hmac_done_irq
+  }
+  {
+    Depth: "4"
+    Name: digest_avail
+    Reference: imp_hmac_0011
+    Coverage_Result: ""
+    Description: The hash can then be read from the registers DIGEST_0 to DIGEST_15.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Add something to be sure that all the digest registers are accessed while checking against the expected
+    Tag: hmac/registers/cmd/hash_stop/digest_avail
+  }
+  {
+    Depth: "3"
+    Name: hash_process
+    Reference: imp_hmac_0012
+    Coverage_Result: ""
+    Description: If 1 is written to this field, SHA-2 or HMAC calculates the digest or signing based on currently received message.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/cmd/hash_process
+  }
+  {
+    Depth: "2"
+    Name: status
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/status
+  }
+  {
+    Depth: "3"
+    Name: hmac_idle
+    Reference: req_hmac_0033
+    Coverage_Result: ""
+    Description: HMAC idle status.
+    Metric_Type: functional
+    Item: status_cg.TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: TODO: all of these means that it has been detected from the DUT register but not actually verified ! -> status_cg.sta_hmac_idle
+    Tag: hmac/registers/status/hmac_idle
+  }
+  {
+    Depth: "3"
+    Name: fifo_empty
+    Reference: req_hmac_0034
+    Coverage_Result: ""
+    Description: FIFO empty.
+    Metric_Type: functional
+    Item: status_cg.TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: TODO: all of these means that it has been detected from the DUT register but not actually verified ! -> status_cg.fifo_empty_cross
+    Tag: hmac/registers/status/fifo_empty
+  }
+  {
+    Depth: "3"
+    Name: fifo_full
+    Reference: req_hmac_0035
+    Coverage_Result: ""
+    Description: FIFO full.
+    Metric_Type: functional
+    Item: status_cg.TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: TODO: all of these means that it has been detected from the DUT register but not actually verified ! -> status_cg.fifo_full_cross
+    Tag: hmac/registers/status/fifo_full
+  }
+  {
+    Depth: "3"
+    Name: fifo_depth
+    Reference: req_hmac_0036
+    Coverage_Result: ""
+    Description: FIFO entry count.
+    Metric_Type: functional
+    Item: status_cg.TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: TODO: all of these means that it has been detected from the DUT register but not actually verified ! -> status_cg.fifo_depth_cross
+    Tag: hmac/registers/status/fifo_depth
+  }
+  {
+    Depth: "3"
+    Name: fifo_depth_size
+    Reference: req_hmac_0006
+    Coverage_Result: ""
+    Description: FIFO depth register field should be 6 bits width as the message FIFO has a depth of 32.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/status/fifo_depth_size
+  }
+  {
+    Depth: "2"
+    Name: err_code
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/err_code
+  }
+  {
+    Depth: "3"
+    Name: err_code
+    Reference: req_hmac_0037
+    Coverage_Result: ""
+    Description: "If an error interrupt occurs, this register has information of error cause. "
+    Metric_Type: functional
+    Item: err_code_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/err_code/err_code
+  }
+  {
+    Depth: "2"
+    Name: wipe_secret
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/wipe_secret
+  }
+  {
+    Depth: "3"
+    Name: wipe_internal_variables
+    Reference: req_hmac_000A
+    Coverage_Result: ""
+    Description: If CPU writes a value into the register, the value is used to clear the internal variables such as the secret key, internal state machine, or hash value. The clear secret operation overwrites the internal variables with the provided 32-bit value. For SHA-2 384/512 that work with 64-bit words, the 32-bit value is duplicated and concatenated to generate the 64-bit value.
+    Metric_Type: testcase, formal
+    Item: wipe_secret, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/wipe_secret/wipe_internal_variables
+  }
+  {
+    Depth: "2"
+    Name: key
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/key
+  }
+  {
+    Depth: "3"
+    Name: key_order
+    Reference: imp_hmac_0013
+    Coverage_Result: ""
+    Description: Order of the secret key is: key[1023:0] = {KEY0, KEY1, KEY2, ... , KEY31};
+    Metric_Type: functional
+    Item: cfg_cg.hmac_swap_x_key_length
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Covered by the C model as the returned digest is matching
+    Tag: hmac/registers/key/key_order
+  }
+  {
+    Depth: "3"
+    Name: key_update
+    Reference: req_hmac_0039
+    Coverage_Result: ""
+    Description: The registers are allowed to be updated only when the engine is in Idle state. If the engine computes the hash, it discards any attempts to update the secret keys and report an error.
+    Metric_Type: functional, functional
+    Item: wr_key_during_hash_cg, err_code_cg.hmac_errors.update_secret_key_in_process
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/key/key_update
+  }
+  {
+    Depth: "2"
+    Name: digest
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/digest
+  }
+  {
+    Depth: "3"
+    Name: key_write_only
+    Reference: req_hmac_003A
+    Coverage_Result: ""
+    Description: The key register should be only write accessible.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/digest/key_write_only
+  }
+  {
+    Depth: "3"
+    Name: digest_order
+    Reference: imp_hmac_000A
+    Coverage_Result: ""
+    Description: Order of the 512-bit digest[511:0] = {DIGEST0, DIGEST1, DIGEST2, … , DIGEST15}. For SHA-2 256 order of the 256-bit digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, DIGEST3, DIGEST4, DIGEST5, DIGEST6, DIGEST7} and {DIGEST8 - DIGEST15} are irrelevant and should not be read out. For SHA-2 384, {DIGEST12-DIGEST15} are truncated; they are irrelevant and should not be read out.
+    Metric_Type: functional
+    Item: cfg_cg.digest_size
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/digest/digest_order
+  }
+  {
+    Depth: "3"
+    Name: digest_clear_and_access
+    Reference: req_hmac_0031
+    Coverage_Result: ""
+    Description: The digest should be cleared when CFG.sha_en transitions from 1 to 0. When CFG.sha_en is 0, these registers can be written to by software.
+    Metric_Type: assertion, functional
+    Item: TODO, TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Add wr_digest_during_sha_en_cg with true and false + an assertion to be sure that the digest is cleared in that case
+    Tag: hmac/registers/digest/digest_clear_and_access
+  }
+  {
+    Depth: "2"
+    Name: msg_length
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/msg_length
+  }
+  {
+    Depth: "3"
+    Name: msg_length_split
+    Reference: imp_hmac_0014
+    Coverage_Result: ""
+    Description: For SHA-2 256 computations, message length is 64-bit {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}. For SHA-2 384/512 message length is extended to 128-bit in line with [nist-fips-180-4] where the upper 64 bits get zero-padded: {32’b0, 32’b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
+    Metric_Type: formal
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/msg_length/msg_length_split
+  }
+  {
+    Depth: "3"
+    Name: msg_length_access
+    Reference: req_hmac_0031
+    Coverage_Result: ""
+    Description: When `CFG.sha_en` is 0, this register can be written by software.
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Add wr_msg_length_during_sha_en_cg with true and false
+    Tag: hmac/registers/msg_length/msg_length_access
+  }
+  {
+    Depth: "2"
+    Name: msg_fifo
+    Reference: ""
+    Coverage_Result: ""
+    Description: ""
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/registers/msg_fifo
+  }
+  {
+    Depth: "3"
+    Name: msg_fifo
+    Reference: imp_hmac_0015
+    Coverage_Result: ""
+    Description: Message FIFO. Any write to this window will be appended to the FIFO. Only the lower [1:0] bits of the address matter to writes within the window (for correctly dealing with non 32-bit writes).
+    Metric_Type: functional
+    Item: TODO
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: Weird write accesses should be tested to be sure that we are able to correctly deal with non 32-bit writes and also to be sure that only the lower 2 bits are used within this range.
+    Tag: hmac/registers/msg_fifo/msg_fifo
+  }
+  {
+    Depth: "1"
+    Name: programmers_guide
+    Reference: ""
+    Coverage_Result: ""
+    Description: https://opentitan.org/book/hw/ip/hmac/doc/programmers_guide.html
+    Metric_Type: section_title
+    Item: ""
+    Owner: ""
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/programmers_guide
+  }
+  {
+    Depth: "2"
+    Name: sar_registers
+    Reference: req_hmac_0005
+    Coverage_Result: ""
+    Description: The context that needs to be saved and restored is in the following registers: CFG, DIGEST_*, and MSG_LENGTH_*.
+    Metric_Type: functional
+    Item: save_and_restore_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/programmers_guide/sar_registers
+  }
+  {
+    Depth: "2"
+    Name: error_codes
+    Reference: imp_hmac_0016
+    Coverage_Result: ""
+    Description: When HMAC errors are triggered, the IP reports the error via INTR_STATE.hmac_err. The details of the error type is stored in ERR_CODE.
+    Metric_Type: functional
+    Item: err_code_cg
+    Owner: Martin
+    Priority: ""
+    Milestone: ""
+    Weight: ""
+    Goal: ""
+    Issue: ""
+    Comment: ""
+    Tag: hmac/programmers_guide/error_codes
+  }
+]
