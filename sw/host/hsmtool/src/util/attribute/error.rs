@@ -16,4 +16,6 @@ pub enum AttributeError {
     UnknownAttribute(Attribute),
     #[error("Unknown attribute type: {0:?}")]
     UnknownAttributeType(AttributeType),
+    #[error("Attribute not found: {0:?}")]
+    AttributeNotFound(AttributeType),
 }

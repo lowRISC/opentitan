@@ -55,6 +55,7 @@ impl Dispatch for Generate {
             success: true,
             id: AttrData::Str(key.hash.expect("key hash")),
             label: AttrData::Str(key.alias),
+            value: None,
             error: None,
         }))
     }
