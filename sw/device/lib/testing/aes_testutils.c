@@ -16,8 +16,9 @@
 #include "sw/device/lib/testing/csrng_testutils.h"
 
 #include "csrng_regs.h"  // Generated
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #endif
+
+#include "devicetables.h"
 
 // `extern` declarations to give the inline functions in the
 // corresponding header a link location.
@@ -93,10 +94,10 @@ const uint32_t kEdnSeedMaterialReseed[kEdnSeedMaterialLen] = {
     0xec2504be, 0xb00fb68c, 0xf37e0a7f, 0x88172eec, 0x4e4b5f58, 0xfec120c0};
 
 status_t aes_testutils_masking_prng_zero_output_seed(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
+  dif_csrng_t csrng;
+  dif_edn_t edn0;
+  TRY(dif_csrng_init_from_dt(&kDtCsrng[0], &csrng));
+  TRY(dif_edn_init_from_dt(&kDtEdn[0], &edn0));
 
   // Shutdown EDN0 and CSRNG
   TRY(dif_edn_stop(&edn0));
@@ -152,8 +153,8 @@ status_t aes_testutils_masking_prng_zero_output_seed(void) {
 }
 
 status_t aes_testutils_csrng_kat(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
+  dif_csrng_t csrng;
+  TRY(dif_csrng_init_from_dt(&kDtCsrng[0], &csrng));
 
   // Instantiate CSRNG with seed material suitable for switching the AES masking
   // off.
