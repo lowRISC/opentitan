@@ -23,7 +23,10 @@ use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
-use util_lib::{hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec};
+use util_lib::{
+    encrypt_token, hex_string_to_u32_arrayvec, hex_string_to_u8_arrayvec, load_rsa_public_key,
+    random_token,
+};
 
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
@@ -44,7 +47,7 @@ pub struct ManufFtProvisioningDataInput {
 
     /// RMA unlock token; a 128-bit hex string.
     #[arg(long)]
-    pub rma_unlock_token: String,
+    pub rma_unlock_token: Option<String>,
 
     /// LC state to transition to from TEST_UNLOCKED*.
     #[arg(long, value_parser = DifLcCtrlState::parse_lc_state_str)]
@@ -69,6 +72,10 @@ pub struct ManufFtProvisioningDataInput {
     /// Security version the Owner image to be loaded onto the device.
     #[arg(long, default_value = "0")]
     pub owner_security_version: u32,
+
+    /// Token Encryption public key (RSA) DER file path.
+    #[arg(long)]
+    token_encrypt_key_der_file: PathBuf,
 }
 
 #[derive(Debug, Parser)]
@@ -116,8 +123,18 @@ fn main() -> Result<()> {
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_unlock_token.as_str())?;
     let _test_exit_token =
         hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.test_exit_token.as_str())?;
-    let rma_unlock_token =
-        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.rma_unlock_token.as_str())?;
+    let rma_unlock_token = if let Some(token) = &opts.provisioning_data.rma_unlock_token {
+        hex_string_to_u32_arrayvec::<4>(token.as_str())?
+    } else {
+        random_token::<4>()?
+    };
+    let token_encrypt_key =
+        load_rsa_public_key(&opts.provisioning_data.token_encrypt_key_der_file)?;
+    let encrypted_rma_unlock_token = encrypt_token(&token_encrypt_key, &rma_unlock_token)?;
+    log::info!(
+        "Encrypted rma_unlock_token = {}",
+        hex::encode(&encrypted_rma_unlock_token)
+    );
 
     // Parse and prepare individualization ujson data payload.
     let _ft_individualize_data_in = ManufFtIndividualizeData {
