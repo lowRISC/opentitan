@@ -92,7 +92,6 @@ def main(args_in):
     )
     parser.add_argument(
         "--rma-unlock-token",
-        required=True,
         type=parse_hexstring_to_int,
         help="Raw RMA token to inject into OTP SECRET2 partition.",
     )

@@ -45,3 +45,22 @@ $ openssl x509 -req -in ca.csr -signkey sk.pem -out ca.pem -days 3650 \
 # Examine the generated certificate:
 $ openssl x509 -in ca.pem -text
 ```
+
+# Generating the RMA unlock token encryption keypair with OpenSSL
+
+The RMA unlock token encryption keypair is an RSA-3072 key used to encrypt the
+RMA unlock token generated during provisioning.
+
+The fake keys (used for testing) in this subdirectory were generated with `openssl`.
+
+```
+### Generate the RSA keypair:
+$ openssl genrsa -out rma_unlock_enc_rsa3072.pem 3072
+
+### Extract the public key to a separate file:
+$ openssl rsa -in rma_unlock_enc_rsa3072.pem -pubout -out rma_unlock_enc_rsa3072.pub.pem
+
+### Convert the PEM files to DER files:
+$ openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072..der
+$ openssl rsa -pubin -in rma_unlock_enc_rsa3072.pub.pem -outform der -out rma_unlock_enc_rsa3072.pub.der
+```

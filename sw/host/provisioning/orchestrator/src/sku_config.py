@@ -24,6 +24,7 @@ class SkuConfig:
     target_lc_state: str  # valid: must be in ["dev", "prod", "prod_end"]
     dice_ca: OrderedDict  # valid: see CaConfig
     ext_ca: OrderedDict  # valid: see CaConfig
+    token_encrypt_key: str
 
     def __post_init__(self):
         # Load CA configs.
