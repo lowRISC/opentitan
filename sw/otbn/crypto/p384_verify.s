@@ -384,7 +384,7 @@ p384_verify:
     addi      x12, x26, 0
     jal       x1, store_proj
 
-    /* Increment counter. */
+    /* increment counter */
     addi     x15, x15, 1
 
   /* load domain parameter p (order of finite field)

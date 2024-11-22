@@ -51,9 +51,8 @@ cc_library(
         ":keyblob",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/impl/ecc:ecdh_p384",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p384",
         "//sw/device/lib/crypto/impl/ecc:p256",
+        "//sw/device/lib/crypto/impl/ecc:p384",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
