@@ -35,7 +35,7 @@ static const otcrypto_ecc_curve_t kCurveP256 = {
 
 static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -63,14 +63,14 @@ status_t sign_then_verify_test(void) {
   // Allocate space for a public key.
   uint32_t pk[kP256PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsa,
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
       .key_length = sizeof(pk),
       .key = pk,
   };
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  TRY(otcrypto_ecdsa_keygen(&kCurveP256, &private_key, &public_key));
+  TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t message = {

@@ -334,7 +334,7 @@ All ECC operations may be run [asynchronously](#asynchronous-operations) through
 ### Supported Curves
 
 Elliptic curves of the short Weierstrass form, Montgomery form, and twisted Edward form are supported.
-- For short Weierstrass form three predefined named curves are supported (NIST P-256, NIST P-384 and brainpool 256) along with support for user-defined generic curves.
+- For short Weierstrass form, NIST P-256 and P-384 are supported.
 - For the Montgomery form, only X25519 is supported.
 - For twisted Edwards form only Ed25519 is supported.
 
@@ -367,7 +367,8 @@ The two curves are birationally equivalent, in mathematical terms, so it is poss
 
 For ECDSA, the cryptography library supports keypair generation, signing, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify }}
 
@@ -376,13 +377,13 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 For ECDH (elliptic-curve Diffie-Hellman) key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh }}
 
 #### Ed25519
 
 For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
-There is **no need to specify curve parameters for Ed25519**, since it operates on a specific curve already.
 
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign }}
@@ -400,8 +401,10 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### ECDSA
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify_async_start }}
@@ -409,8 +412,8 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### ECDH
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_finalize }}
 
