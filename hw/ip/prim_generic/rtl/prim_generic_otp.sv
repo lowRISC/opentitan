@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_generic_otp
+module prim_otp
   import prim_otp_pkg::*;
 #(
   // Native OTP word size. This determines the size_i granule.
@@ -442,4 +442,4 @@ module prim_generic_otp
       |-> cmd_i inside {Read, ReadRaw, Write, WriteRaw})
 
 
-endmodule : prim_generic_otp
+endmodule : prim_otp

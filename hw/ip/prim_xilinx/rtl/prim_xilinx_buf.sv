@@ -4,7 +4,7 @@
 
 // Prevent Vivado from performing optimizations on/across this module.
 (* DONT_TOUCH = "yes" *)
-module prim_xilinx_buf #(
+module prim_buf #(
   parameter int Width = 1
 ) (
   input [Width-1:0] in_i,

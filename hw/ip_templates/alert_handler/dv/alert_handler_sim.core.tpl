@@ -12,18 +12,10 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_tb:0.1")}
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_cov:0.1")}
       - ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva:0.1")}
     file_type: systemVerilogSource
-
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: ${module_instance_name}
-      ip_hjson: ../data/${module_instance_name}.hjson
 
 targets:
   sim: &sim_target
@@ -31,8 +23,6 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-    generate:
-      - ral
     default_tool: vcs
 
   lint:
