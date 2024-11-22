@@ -47,6 +47,7 @@ allowed_suffixes=(
     hh
 
     # Signature files are binary files.
+    ecdsa_sig
     rsa_sig
     spx_sig
 )
