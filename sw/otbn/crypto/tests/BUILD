@@ -456,6 +456,7 @@ otbn_sim_test(
     srcs = [
         "p384_ecdsa_verify_test.s",
     ],
+    dexp = "p384_ecdsa_verify_test.dexp",
     exp = "p384_ecdsa_verify_test.exp",
     deps = [
         "//sw/otbn/crypto:p384_base",

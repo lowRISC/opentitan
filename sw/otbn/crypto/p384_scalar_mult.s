@@ -10,9 +10,9 @@
 /**
  * Externally callable wrapper for P-384 scalar point multiplication
  *
- * Calculates R = k*P = k*(x_p, y_p)
+ * Calculates R = d*P = d*(x_p, y_p)
  *         where R, P are valid P-384 curve points in affine coordinates,
- *         k is a 384-bit scalar.
+ *         d is a 384-bit scalar.
  *         The x coordinate of R is arithmetically masked.
  * Returns the masked x coordinate of R and the corresponding mask.
  *
@@ -21,8 +21,8 @@
  *
  * @param[in]   dmem[x]: affine x-coordinate in dmem
  * @param[in]   dmem[y]: affine y-coordinate in dmem
- * @param[in]  dmem[k0]: 1st scalar share k0 in dmem
- * @param[in]  dmem[k1]: 2nd scalar share k1 in dmem
+ * @param[in]  dmem[d0]: 1st scalar share d0 in dmem
+ * @param[in]  dmem[d1]: 2nd scalar share d1 in dmem
  * @param[out]  dmem[x]: masked x coordinate of R
  * @param[out]  dmem[y]: corresponding mask
  *
@@ -54,11 +54,11 @@ p384_scalar_mult:
   /* set dmem pointer to point to y-coordinate */
   la       x21, y
 
-  /* set dmem pointer to point to 1st scalar share k0 */
-  la       x17, k0
+  /* set dmem pointer to point to 1st scalar share d0 */
+  la       x17, d0
 
-  /* set dmem pointer to point to 2nd scalar share k1 */
-  la       x19, k1
+  /* set dmem pointer to point to 2nd scalar share d1 */
+  la       x19, d1
 
   /* load domain parameter p (modulus)
      [w13, w12] = p = dmem[p384_p] */
@@ -178,15 +178,15 @@ p384_scalar_mult:
 .balign 32
 
 /* 1st scalar share d0 */
-.globl k0
-.weak k0
-k0:
+.globl d0
+.weak d0
+d0:
   .zero 64
 
 /* 2nd scalar share d1 */
-.globl k1
-.weak k1
-k1:
+.globl d1
+.weak d1
+d1:
   .zero 64
 
 /* x-coordinate */
