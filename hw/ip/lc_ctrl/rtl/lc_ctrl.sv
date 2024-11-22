@@ -168,6 +168,13 @@ module lc_ctrl
   if (UseDmiInterface) begin : gen_dmi_tlul_ports
     assign tap_dmi_tl_h2d = dmi_tl_i;
     assign dmi_tl_o       = tap_dmi_tl_d2h;
+
+    // Tie-off other port
+    assign tap_tl_h2d = '0;
+    assign tap_tl_d2h = '0;
+    assign jtag_o     = '0;
+    logic unused_signal;
+    assign unused_signal = ^{jtag_i, tap_tl_h2d, tap_tl_d2h};
   end else begin : gen_tap_tlul_ports
     assign tap_dmi_tl_h2d = tap_tl_h2d;
     assign tap_tl_d2h     = tap_dmi_tl_d2h;
