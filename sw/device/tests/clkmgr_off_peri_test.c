@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_pwrmgr.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
+#include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_spi_host.h"
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/dif/dif_usbdev.h"
@@ -35,9 +36,17 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 typedef struct peri_context {
-  void (*csr_access)(void);  // The function causing a timeout.
-  uint32_t address;          // The address causing a timeout.
+  const char *peripheral_name;  // The name of the peripheral tested.
+  void (*csr_access)(void);     // The function causing a timeout.
+  uint32_t crash_function;      // The address of the function that will crash.
+  uint32_t address;             // The address causing a timeout.
 } peri_context_t;
+
+/**
+ * The maximum offset past the entry point of the function that causes
+ * the cpu to hang.
+ */
+enum { kPcSpread = 8 * 4 };
 
 static dif_aon_timer_t aon_timer;
 static dif_spi_host_t spi_host0;
@@ -45,57 +54,35 @@ static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
-static void set_hung_address(dif_clkmgr_gateable_clock_t clock,
-                             uint32_t value) {
-  CHECK_STATUS_OK(ret_sram_testutils_scratch_write(clock, 1, &value));
-  LOG_INFO("The expected hung address for clock %d is 0x%x", clock, value);
-}
-
 static void uart0_csr_access(void) {
-  dif_toggle_t state;
-  CHECK_DIF_OK(dif_uart_irq_set_enabled(&uart0, kDifUartIrqTxWatermark,
-                                        kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_uart_irq_get_enabled(&uart0, kDifUartIrqTxWatermark, &state));
-  CHECK(state == kDifToggleEnabled);
+  dif_uart_irq_state_snapshot_t snapshot;
+  CHECK_DIF_OK(dif_uart_irq_get_state(&uart0, &snapshot));
 }
 
 static void spi_host0_csr_access(void) {
-  dif_toggle_t state;
-  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, kDifSpiHostIrqSpiEvent,
-                                            kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_spi_host_irq_get_enabled(&spi_host0, kDifSpiHostIrqSpiEvent, &state));
-  CHECK(state == kDifToggleEnabled);
+  dif_spi_host_irq_state_snapshot_t snapshot;
+  CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
 }
 
 static void spi_host1_csr_access(void) {
-  dif_toggle_t state;
-  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host1, kDifSpiHostIrqSpiEvent,
-                                            kDifToggleEnabled));
-  CHECK_DIF_OK(
-      dif_spi_host_irq_get_enabled(&spi_host1, kDifSpiHostIrqSpiEvent, &state));
-  CHECK(state == kDifToggleEnabled);
+  CHECK_DIF_OK(dif_spi_host_output_set_enabled(&spi_host1, true));
 }
 
 static void usbdev_csr_access(void) {
-  CHECK_DIF_OK(dif_usbdev_irq_set_enabled(&usbdev, kDifUsbdevIrqPowered,
-                                          kDifToggleEnabled));
-  dif_toggle_t state;
-  CHECK_DIF_OK(
-      dif_usbdev_irq_get_enabled(&usbdev, kDifUsbdevIrqPowered, &state));
-  CHECK(state == kDifToggleEnabled);
+  dif_usbdev_irq_state_snapshot_t snapshot;
+  CHECK_DIF_OK(dif_usbdev_irq_get_state(&usbdev, &snapshot));
 }
 
 peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
-    {uart0_csr_access,
-     TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_ENABLE_REG_OFFSET},
-    {spi_host1_csr_access,
-     TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
-    {spi_host0_csr_access,
-     TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_ENABLE_REG_OFFSET},
-    {usbdev_csr_access,
-     TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_ENABLE_REG_OFFSET}};
+    {"uart0", uart0_csr_access, (uint32_t)&dif_uart_irq_get_state,
+     TOP_EARLGREY_UART0_BASE_ADDR + UART_INTR_STATE_REG_OFFSET},
+    {"spi_host1", spi_host1_csr_access,
+     (uint32_t)&dif_spi_host_output_set_enabled,
+     TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_CONTROL_REG_OFFSET},
+    {"spi_host0", spi_host0_csr_access, (uint32_t)&dif_spi_host_irq_get_state,
+     TOP_EARLGREY_SPI_HOST0_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET},
+    {"usbdev", usbdev_csr_access, (uint32_t)&dif_usbdev_irq_get_state,
+     TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
 
 /**
  * Test that disabling a 'gateable' unit's clock causes the unit to become
@@ -112,7 +99,8 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   CHECK_DIF_OK(dif_pwrmgr_set_request_sources(pwrmgr, kDifPwrmgrReqTypeReset,
                                               kDifPwrmgrResetRequestSourceTwo,
                                               kDifToggleEnabled));
-  LOG_INFO("Testing peripheral clock %d", clock);
+  LOG_INFO("Testing peripheral clock %d, with unit %s", clock,
+           peri_context[clock].peripheral_name);
 
   // Bite after enough time has elapsed past the hung csr access.
   uint32_t bite_us = (kDeviceType == kDeviceSimDV) ? 400 : 800;
@@ -125,8 +113,6 @@ static void test_gateable_clocks_off(const dif_clkmgr_t *clkmgr,
   (*peri_context[clock].csr_access)();
   LOG_INFO("CSR access was okay before disabling the clock");
 
-  // Save the expected hung address to check against cpu_info's LAST_DATA_ADDR.
-  set_hung_address(clock, peri_context[clock].address);
   // Set bite timer.
   CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(&aon_timer, UINT32_MAX,
                                                       bite_cycles, false));
@@ -185,7 +171,6 @@ bool test_main(void) {
     }
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
     CHECK_STATUS_OK(ret_sram_testutils_counter_get(0, &value));
-    LOG_INFO("Next clock to test %d", value);
 
     test_gateable_clocks_off(&clkmgr, &pwrmgr, clock);
 
@@ -200,27 +185,29 @@ bool test_main(void) {
 
     size_t actual_size;
     CHECK_DIF_OK(dif_rstmgr_cpu_info_get_size(&rstmgr, &actual_size));
-    // Verify the cpu crash dump.
-    dif_rstmgr_cpu_info_dump_segment_t cpu_dump[DIF_RSTMGR_CPU_INFO_MAX_SIZE];
+    dif_rv_core_ibex_crash_dump_info_t crash_dump;
+    // The sizes for dif_rstmgr_cpu_info_dump_read are measured in
+    // units of dif_rstmgr_cpu_info_dump_segment_t.
     size_t size_read;
     CHECK_DIF_OK(dif_rstmgr_cpu_info_dump_read(
-        &rstmgr, cpu_dump, DIF_RSTMGR_CPU_INFO_MAX_SIZE, &size_read));
-    CHECK(size_read <= DIF_RSTMGR_CPU_INFO_MAX_SIZE);
+        &rstmgr, (dif_rstmgr_cpu_info_dump_segment_t *)&crash_dump,
+        sizeof(crash_dump) / sizeof(dif_rstmgr_cpu_info_dump_segment_t),
+        &size_read));
     CHECK(size_read == actual_size);
-    LOG_INFO("EXC_ADDR       = 0x%x", cpu_dump[0]);
-    LOG_INFO("EXC_PC         = 0x%x", cpu_dump[1]);
-    LOG_INFO("LAST_DATA ADDR = 0x%x", cpu_dump[2]);
-    LOG_INFO("NEXT_PC        = 0x%x", cpu_dump[3]);
-    LOG_INFO("CURRENT_PC     = 0x%x", cpu_dump[4]);
-    LOG_INFO("PREV_EXC_ADDR  = 0x%x", cpu_dump[5]);
-    LOG_INFO("PREV_EXC_PC    = 0x%x", cpu_dump[6]);
-    LOG_INFO("PREV_VALID     = 0x%x", cpu_dump[7]);
-    uint32_t expected_hung_address;
-    CHECK_STATUS_OK(
-        ret_sram_testutils_scratch_read(clock, 1, &expected_hung_address));
-    LOG_INFO("The expected hung address = 0x%x", expected_hung_address);
-    CHECK(cpu_dump[2] == expected_hung_address, "Unexpected hung address");
+    uint32_t expected_hung_address = peri_context[clock].address;
+    CHECK(crash_dump.fault_state.mdaa == expected_hung_address,
+          "Unexpected hung address for clock %d, via peripheral %s", clock,
+          peri_context[clock].peripheral_name);
+    // Check the fault PC is close enough to the address of the function
+    // that causes the hung access.
+    CHECK(crash_dump.fault_state.mcpc >= peri_context[clock].crash_function &&
+              crash_dump.fault_state.mcpc <=
+                  peri_context[clock].crash_function + kPcSpread,
+          "The crash PC 0x%x is too far from the expected 0x%x",
+          crash_dump.fault_state.mcpc, peri_context[clock].crash_function);
     // Mark this clock as tested.
+    LOG_INFO("Expectations are okay for clock %d, with peripheral %s", clock,
+             peri_context[clock].peripheral_name);
     CHECK_STATUS_OK(ret_sram_testutils_counter_increment(0));
 
     if (clock < kTopEarlgreyGateableClocksLast) {

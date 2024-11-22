@@ -44,10 +44,8 @@
 
             Verify CSR accesses do not complete in units that are off.  Using the watchdog timers,
             turn off a transactional unit's clock, issue a CSR access to that unit, verify a
-            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
-
-            A stretch goal is to check the PC corresponds to the code performing the CSR access
-            (stretch since it could be difficult to maintain this check).
+            watchdog event results, verify the rstmgr crash dump info records the CSR address,
+            and the execution pc is close enough to the address that performs the hung access.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             This tests already run in CW310.
@@ -80,7 +78,8 @@
 
             Verify CSR accesses do not complete in peripherals that are off.  Using the watchdog
             timers, turn off a peripheral's clock, issue a CSR access to that peripheral, verify a
-            watchdog event results, and verify the rstmgr crash dump info records the CSR address.
+            watchdog event results, and verify the rstmgr crash dump info records the CSR address,
+           and the execution pc is close enough to the address that performs the hung access.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             This tests already run in CW310.
