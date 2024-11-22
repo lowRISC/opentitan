@@ -68,7 +68,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
   scan_en: "true",    // Enable `scan_en_i` port
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
-    { protocol: "tlul", direction: "device", name: "prim", hier_path: "u_otp.gen_generic.u_impl_generic.u_reg_top" }
+    { protocol: "tlul", direction: "device", name: "prim", hier_path: "u_otp.u_reg_top" }
   ],
 
   available_output_list: [

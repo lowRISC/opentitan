@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:pad_wrapper"
 description: "Technology-independent pad wrapper implementation (for sim only!)"
+virtual:
+  - lowrisc:prim:pad_wrapper
+
 filesets:
   files_rtl:
     depend:

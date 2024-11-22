@@ -13,6 +13,8 @@ filesets:
       - lowrisc:systems:ast
       - lowrisc:systems:padring
       - lowrisc:systems:scan_role_pkg
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx_ultrascale:all
     files:
       - rtl/clkgen_xil_ultrascale.sv
       - rtl/usr_access_xil7series.sv

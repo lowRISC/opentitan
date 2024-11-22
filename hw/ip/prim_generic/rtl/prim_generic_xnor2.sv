@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_xnor2 #(
+module prim_xnor2 #(
   parameter int Width = 1
 ) (
   input        [Width-1:0] in0_i,

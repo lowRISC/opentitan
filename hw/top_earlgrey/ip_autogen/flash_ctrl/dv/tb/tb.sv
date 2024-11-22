@@ -237,25 +237,24 @@ module tb;
   // For eflash of a specific vendor implementation, set the hierarchy to the memory element
   // correctly when creating these instances in the extended testbench.
   `define FLASH_BANK_HIER(i)                                                            \
-      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
+      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
       u_prim_flash_bank
 
   `define FLASH_DATA_MEM_HIER(i)                                                        \
-      `FLASH_BANK_HIER(i).u_mem.gen_generic.u_impl_generic.mem
+      `FLASH_BANK_HIER(i).u_mem.mem
 
   `define FLASH_DATA_MEM_HIER_STR(i)                                                    \
-      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
-                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.gen_generic.",      \
-                 "u_impl_generic.mem"}, i)
+      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
+                 "gen_prim_flash_banks[%0d].u_prim_flash_bank.u_mem.mem"}, i)
 
   `define FLASH_INFO_MEM_HIER(i, j)                                                     \
-      tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.gen_prim_flash_banks[i].       \
-      u_prim_flash_bank.gen_info_types[j].u_info_mem.gen_generic.u_impl_generic.mem
+      tb.dut.u_eflash.u_flash.gen_prim_flash_banks[i].       \
+      u_prim_flash_bank.gen_info_types[j].u_info_mem.mem
 
   `define FLASH_INFO_MEM_HIER_STR(i, j)                                                 \
-      $sformatf({"tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic.",                 \
+      $sformatf({"tb.dut.u_eflash.u_flash.",                 \
                  "gen_prim_flash_banks[%0d].u_prim_flash_bank.gen_info_types[%0d].",    \
-                 "u_info_mem.gen_generic.u_impl_generic.mem"}, i, j)
+                 "u_info_mem.mem"}, i, j)
 
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     for (genvar i = 0; i < flash_ctrl_pkg::NumBanks; i++) begin : gen_each_bank

@@ -13,6 +13,8 @@ filesets:
       - lowrisc:systems:ast
       - lowrisc:systems:topgen
       - lowrisc:systems:padring
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx:all
     file_type: systemVerilogSource
 
   files_constraints:
