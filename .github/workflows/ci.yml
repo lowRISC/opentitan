@@ -209,6 +209,8 @@ jobs:
       - uses: actions/checkout@v4
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Run fast Verilator tests
         run: ./ci/scripts/run-verilator-tests.sh
       - name: Publish Bazel test results
