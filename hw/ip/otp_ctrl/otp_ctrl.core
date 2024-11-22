@@ -25,6 +25,8 @@ filesets:
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
+      # TODO: prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
     files:

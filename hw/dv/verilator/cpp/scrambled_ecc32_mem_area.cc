@@ -117,10 +117,8 @@ std::vector<uint8_t> ScrambledEcc32MemArea::GetScrambleNonce() const {
 ScrambledEcc32MemArea::ScrambledEcc32MemArea(const std::string &scope,
                                              uint32_t size, uint32_t width_32,
                                              bool repeat_keystream)
-    : Ecc32MemArea(
-          SVScoped::join_sv_scopes(
-              scope, "u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic"),
-          size, width_32),
+    : Ecc32MemArea(SVScoped::join_sv_scopes(scope, "u_prim_ram_1p_adv.u_mem"),
+                   size, width_32),
       scr_scope_(scope) {
   addr_width_ = vbits(size);
   repeat_keystream_ = repeat_keystream;

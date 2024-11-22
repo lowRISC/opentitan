@@ -2,11 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_handler_env:0.1"
+name: lowrisc:opentitan:top_earlgrey_alert_handler_env:0.1
 description: "ALERT_HANDLER DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:ip:alert_handler_component  # import alert_pkg
       - lowrisc:prim:mubi  # import prim_mubi_pkg
@@ -36,7 +37,17 @@ filesets:
       - seq_lib/alert_handler_alert_accum_saturation_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: alert_handler
+      ip_hjson: ../../data/alert_handler.hjson
+    position: prepend
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral
