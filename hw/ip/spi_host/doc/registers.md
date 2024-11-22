@@ -276,21 +276,33 @@ Command Register
    there is only one command register for controlling all attached SPI devices
 - Offset: `0x20`
 - Reset default: `0x0`
-- Reset mask: `0x3fff`
+- Reset mask: `0x1ffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LEN", "bits": 9, "attr": ["wo"], "rotate": 0}, {"name": "CSAAT", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "SPEED", "bits": 2, "attr": ["wo"], "rotate": -90}, {"name": "DIRECTION", "bits": 2, "attr": ["wo"], "rotate": -90}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+{"reg": [{"name": "CSAAT", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "SPEED", "bits": 2, "attr": ["wo"], "rotate": -90}, {"name": "DIRECTION", "bits": 2, "attr": ["wo"], "rotate": -90}, {"name": "LEN", "bits": 20, "attr": ["wo"], "rotate": 0}, {"bits": 7}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                             |
 |:------:|:------:|:-------:|:---------------------------------|
-| 31:14  |        |         | Reserved                         |
-| 13:12  |   wo   |   0x0   | [DIRECTION](#command--direction) |
-| 11:10  |   wo   |   0x0   | [SPEED](#command--speed)         |
-|   9    |   wo   |   0x0   | [CSAAT](#command--csaat)         |
-|  8:0   |   wo   |   0x0   | [LEN](#command--len)             |
+| 31:25  |        |         | Reserved                         |
+|  24:5  |   wo   |   0x0   | [LEN](#command--len)             |
+|  4:3   |   wo   |   0x0   | [DIRECTION](#command--direction) |
+|  2:1   |   wo   |   0x0   | [SPEED](#command--speed)         |
+|   0    |   wo   |   0x0   | [CSAAT](#command--csaat)         |
+
+### COMMAND . LEN
+Segment Length.
+
+   For read or write segments, this field controls the
+   number of 1-byte bursts to transmit and or receive in
+   this command segment.  The number of cyles required
+   to send or received a byte will depend on [`COMMAND.SPEED.`](#command)
+   For dummy segments, ([`COMMAND.DIRECTION`](#command) == 0), this register
+   controls the number of dummy cycles to issue.
+   The number of bytes (or dummy cycles) in the segment will be
+   equal to [`COMMAND.LEN`](#command) + 1.
 
 ### COMMAND . DIRECTION
 The direction for the following command: "0" = Dummy cycles
@@ -311,18 +323,6 @@ The speed for this command segment: "0" = Standard SPI. "1" = Dual SPI.
    consisting of several separate segments for issuing instructions,
    pausing for dummy cycles, and transmitting or receiving data from
    the device.
-
-### COMMAND . LEN
-Segment Length.
-
-   For read or write segments, this field controls the
-   number of 1-byte bursts to transmit and or receive in
-   this command segment.  The number of cyles required
-   to send or received a byte will depend on [`COMMAND.SPEED.`](#command)
-   For dummy segments, ([`COMMAND.DIRECTION`](#command) == 0), this register
-   controls the number of dummy cycles to issue.
-   The number of bytes (or dummy cycles) in the segment will be
-   equal to [`COMMAND.LEN`](#command) + 1.
 
 ## RXDATA
 SPI Receive Data.
