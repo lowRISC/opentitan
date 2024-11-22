@@ -1209,8 +1209,10 @@ module chip_darjeeling_asic #(
   logic unused_usb_ram_2p_cfg;
   assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
                                    ast_ram_2p_fcfg.marg_a,
+                                   ast_ram_2p_fcfg.test_a,
                                    ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b};
+                                   ast_ram_2p_fcfg.marg_b,
+                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -1577,7 +1579,8 @@ module chip_darjeeling_asic #(
     // No error detection is enabled inside SRAM.
     // Bus ECC is checked at the consumer side.
     .rerror_o (),
-    .cfg_i    (ram_1p_cfg)
+    .cfg_i    (ram_1p_cfg),
+    .alert_o()
   );
 
 
@@ -1600,7 +1603,6 @@ module chip_darjeeling_asic #(
   assign unused_manual_sigs = ^{
     manual_in_otp_ext_volt
   };
-
 
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
