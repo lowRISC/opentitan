@@ -20,7 +20,19 @@ class alert_receiver_driver extends alert_esc_base_driver;
   // interface. We will wait a randomised time (in set_ack_pins) before acknowledging the alert.
   extern task rsp_alert();
 
-  extern task drive_alert_ping(alert_esc_seq_item req);
+  // Drive an alert ping
+  //
+  // This will start by waiting between cfg.ping_delay_min and cfg.ping_delay_max cycles before
+  // sending the ping request. If cfg.use_seq_item_ping_delay is true then the delay is from the
+  // ping_delay argument.
+  //
+  // Once the ping has gone out, we wait for an alert to arrive and then acknowledge it using
+  // set_ack_pins (and passing ack_delay and ack_stable).
+  //
+  // This task can be safely killed on a reset.
+  extern task drive_alert_ping(int unsigned ping_delay,
+                               int unsigned ack_delay,
+                               int unsigned ack_stable);
 
   // Acknowledge an alert.
   //
@@ -88,15 +100,17 @@ task alert_receiver_driver::send_ping();
     `uvm_info(`gfn,
         $sformatf("starting to send receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
         req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
-    fork
-      begin : isolation_fork
-        fork
-          drive_alert_ping(req);
-          wait(under_reset);
-        join_any
-        disable fork;
-      end
-    join
+    if (!req.int_err) begin
+      fork
+        begin : isolation_fork
+          fork
+            drive_alert_ping(req.ping_delay, req.ack_delay, req.ack_stable);
+            wait(under_reset);
+          join_any
+          disable fork;
+        end
+      join
+    end
     `uvm_info(`gfn,
         $sformatf("finished sending receiver item, ping_send=%0b, alert_rsp=%0b, int_fail=%0b",
         req.r_alert_ping_send, req.r_alert_rsp, req.int_err), UVM_HIGH)
@@ -159,48 +173,48 @@ task alert_receiver_driver::rsp_alert();
   end // end forever
 endtask : rsp_alert
 
-task alert_receiver_driver::drive_alert_ping(alert_esc_seq_item req);
+task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
+                                             int unsigned ack_delay,
+                                             int unsigned ack_stable);
   bit          have_sent_ping = 1'b0;
-  int unsigned ping_delay = (cfg.use_seq_item_ping_delay) ? req.ping_delay :
-                             $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
 
-  if (!req.int_err) begin
-    @(cfg.vif.receiver_cb);
-    // Ping fail and differential signal fail scenarios are not implemented now.
-    // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
-    // The current use-case does not test ping fail and differential signal fail scenarios.
-    // These scenarios are check in prim_alert direct sequences.
-    fork
-      begin : isolation_fork
-        fork
-          begin : ping_timeout
-            // Wait ping_delay cycles before we actually send the ping
-            repeat (ping_delay) @(cfg.vif.receiver_cb);
-            // Now send the ping (which the alert sender should respond to)
-            set_ping();
-            have_sent_ping = 1'b1;
-            // Finally, hold the driver for handshake_timeout_cycle cycles to give the alert
-            // sender time to respond to the ping.
-            repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
-          end
-          begin : wait_ping_handshake
-            wait_alert();
-            // If we have sent the ping then the alert we have just seen will be a response to it.
-            // Call the set_ack_pins task to wait a randomised time and then ack the response. If
-            // we haven't sent the ping yet, immediately finish handling the sequence item
-            // instead. Another item will be driven through rsp_alert to respond to the alert
-            // properly.
-            if (have_sent_ping) begin
-              set_ack_pins(req.ack_delay, req.ack_stable);
-            end
-          end
-        join_any
-        disable fork;
-      end
-    join
-  end else begin
-  // Differential signal fail is not implemented.
+  if (!cfg.use_seq_item_ping_delay) begin
+    ping_delay = $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
   end
+
+  @(cfg.vif.receiver_cb);
+  // Ping fail and differential signal fail scenarios are not implemented now.
+  // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
+  // The current use-case does not test ping fail and differential signal fail scenarios.
+  // These scenarios are check in prim_alert direct sequences.
+  fork
+    begin : isolation_fork
+      fork
+        begin : ping_timeout
+          // Wait ping_delay cycles before we actually send the ping
+          repeat (ping_delay) @(cfg.vif.receiver_cb);
+          // Now send the ping (which the alert sender should respond to)
+          set_ping();
+          have_sent_ping = 1'b1;
+          // Finally, hold the driver for handshake_timeout_cycle cycles to give the alert
+          // sender time to respond to the ping.
+          repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
+        end
+        begin : wait_ping_handshake
+          wait_alert();
+          // If we have sent the ping then the alert we have just seen will be a response to it.
+          // Call the set_ack_pins task to wait a randomised time and then ack the response. If
+          // we haven't sent the ping yet, immediately finish handling the sequence item
+          // instead. Another item will be driven through rsp_alert to respond to the alert
+          // properly.
+          if (have_sent_ping) begin
+            set_ack_pins(ack_delay, ack_stable);
+          end
+        end
+      join_any
+      disable fork;
+    end
+  join
 endtask
 
 task alert_receiver_driver::set_ack_pins(int unsigned ack_delay,
