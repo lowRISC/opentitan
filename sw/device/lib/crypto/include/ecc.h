@@ -82,32 +82,39 @@ typedef struct otcrypto_ecc_curve {
 } otcrypto_ecc_curve_t;
 
 /**
- * Performs the key generation for ECDSA operation.
- *
- * Computes private key (d) and public key (Q) keys for ECDSA operation.
+ * Generates a key pair for ECDSA with curve P-256.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
- * keyblob. The caller should indicate the length of the allocated keyblob;
- * this function will return an error if the keyblob length does not match
- * expectations. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle as returned by `otcrypto_hw_backed_key`. For
- * non-hardware-backed keys, the keyblob should be twice the length of the key.
- * The value in the `checksum` field of the blinded key struct will be
- * populated by the key generation function.
+ * keyblob. For a hardware-backed key, use the private key handle returned by
+ * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate ECDSA with
+ * P-256 and the keyblob should be 80 bytes. The value in the `checksum` field
+ * of the blinded key struct will be populated by the key generation function.
  *
- * The `domain_parameter` field of the `elliptic_curve` is required only for a
- * custom curve. For named curves this field is ignored and can be set to
- * `NULL`.
- *
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of the ECDSA key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_keygen(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdsa_p256_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Generates a key pair for ECDSA with curve P-384.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. For a hardware-backed key, use the private key handle returned by
+ * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate ECDSA with
+ * P-384 and the keyblob should be 112 bytes. The value in the `checksum` field
+ * of the blinded key struct will be populated by the key generation function.
+ *
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of the ECDSA key generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -166,32 +173,39 @@ otcrypto_status_t otcrypto_ecdsa_verify(
     hardened_bool_t *verification_result);
 
 /**
- * Performs the key generation for ECDH key agreement.
- *
- * Computes private key (d) and public key (Q) keys for ECDSA operation.
- *
- * The `domain_parameter` field of the `elliptic_curve` is required only for a
- * custom curve. For named curves this field is ignored and can be set to
- * `NULL`.
+ * Generates a key pair for ECDH with curve P-256.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
- * keyblob. The caller should indicate the length of the allocated keyblob;
- * this function will return an error if the keyblob length does not match
- * expectations. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle as returned by `otcrypto_hw_backed_key`. For
- * non-hardware-backed keys, the keyblob should be twice the length of the key.
- * The value in the `checksum` field of the blinded key struct will be
- * populated by the key generation function.
+ * keyblob. For a hardware-backed key, use the private key handle returned by
+ * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate ECDH with
+ * P-256 and the keyblob should be 80 bytes. The value in the `checksum` field
+ * of the blinded key struct will be populated by the key generation function.
  *
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of the ECDH key generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_keygen(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_p256_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Generates a key pair for ECDH with curve P-384.
+ *
+ * The caller should allocate and partially populate the blinded key struct,
+ * including populating the key configuration and allocating space for the
+ * keyblob. For a hardware-backed key, use the private key handle returned by
+ * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate ECDH with
+ * P-384 and the keyblob should be 112 bytes. The value in the `checksum` field
+ * of the blinded key struct will be populated by the key generation function.
+ *
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of the ECDH key generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -312,52 +326,63 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
                                   otcrypto_blinded_key_t *shared_secret);
 
 /**
- * Starts the asynchronous key generation for ECDSA operation.
+ * Starts asynchronous key generation for ECDSA/P-256.
  *
- * Initializes OTBN and begins generating an ECDSA key pair. The caller should
- * set the `config` field of `private_key` with their desired key configuration
- * options. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle such as the kind returned by
- * `otcrypto_hw_backed_key`.
+ * See `otcrypto_ecdsa_p256_keygen` for requirements on input values.
  *
- * The `domain_parameter` field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to `NULL`.
- *
- * Returns `kOtcryptoStatusValueOk` if the operation was successfully
- * started, or`kOtcryptoStatusValueInternalError` if the operation cannot be
- * started.
- *
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous ECDSA keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key);
 
 /**
- * Finalizes the asynchronous key generation for ECDSA operation.
+ * Finalizes asynchronous key generation for ECDSA/P-256.
  *
- * Returns `kOtcryptoStatusValueOk` and copies the private key (d) and public
- * key (Q), if the OTBN status is done, or
- * `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is busy or
- * `kOtcryptoStatusValueInternalError` if there is an error.
+ * See `otcrypto_ecdsa_p256_keygen` for requirements on input values.
  *
- * The caller must ensure that the `elliptic_curve` parameter matches the one
- * that was previously passed to the corresponding `_start` function; a
- * mismatch will cause inconsistencies. Similarly, the private key
- * configuration must match the one originally passed to `_start`.
+ * May block until the operation is complete.
  *
- * @param elliptic_curve Pointer to the elliptic curve that is being used.
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
+ *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDSA keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Starts asynchronous key generation for ECDSA/P-384.
+ *
+ * See `otcrypto_ecdsa_p384_keygen` for requirements on input values.
+ *
+ * @param private_key Destination structure for private key, or key handle.
+ * @return Result of asynchronous ECDSA keygen start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key);
+
+/**
+ * Finalizes asynchronous key generation for ECDSA/P-384.
+ *
+ * See `otcrypto_ecdsa_p384_keygen` for requirements on input values.
+ *
+ * May block until the operation is complete.
+ *
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
+ *
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of asynchronous ECDSA keygen finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
@@ -445,52 +470,63 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
     hardened_bool_t *verification_result);
 
 /**
- * Starts the asynchronous key generation for ECDH operation.
+ * Starts asynchronous key generation for ECDH/P-256.
  *
- * Initializes OTBN and begins generating an ECDH key pair. The caller should
- * set the `config` field of `private_key` with their desired key configuration
- * options. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle such as the kind returned by
- * `otcrypto_hw_backed_key`.
+ * See `otcrypto_ecdh_p256_keygen` for requirements on input values.
  *
- * The `domain_parameter` field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to `NULL`.
- *
- * Returns `kOtcryptoStatusValueOk` if the operation was successfully
- * started, or`kOtcryptoStatusValueInternalError` if the operation cannot be
- * started.
- *
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous ECDH keygen start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_keygen_async_start(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key);
 
 /**
- * Finalizes the asynchronous key generation for ECDSA operation.
+ * Finalizes asynchronous key generation for ECDH/P-256.
  *
- * Returns `kOtcryptoStatusValueOk` and copies the private key (d) and public
- * key (Q), if the OTBN status is done, or
- * `kOtcryptoStatusValueAsyncIncomplete` if the OTBN is busy or
- * `kOtcryptoStatusValueInternalError` if there is an error.
+ * See `otcrypto_ecdh_p256_keygen` for requirements on input values.
  *
- * The caller must ensure that the `elliptic_curve` parameter matches the one
- * that was previously passed to the corresponding `_start` function; a
- * mismatch will cause inconsistencies. Similarly, the private key
- * configuration must match the one originally passed to `_start`.
+ * May block until the operation is complete.
  *
- * @param elliptic_curve Pointer to the elliptic curve that is being used.
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
+ *
  * @param[out] private_key Pointer to the blinded private key (d) struct.
  * @param[out] public_key Pointer to the unblinded public key (Q) struct.
  * @return Result of asynchronous ECDH keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_keygen_async_finalize(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Starts asynchronous key generation for ECDH/P-384.
+ *
+ * See `otcrypto_ecdh_p384_keygen` for requirements on input values.
+ *
+ * @param private_key Destination structure for private key, or key handle.
+ * @return Result of asynchronous ECDH keygen start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_keygen_async_start(
+    const otcrypto_blinded_key_t *private_key);
+
+/**
+ * Finalizes asynchronous key generation for ECDH/P-384.
+ *
+ * See `otcrypto_ecdh_p384_keygen` for requirements on input values.
+ *
+ * May block until the operation is complete.
+ *
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
+ *
+ * @param[out] private_key Pointer to the blinded private key (d) struct.
+ * @param[out] public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of asynchronous ECDH keygen finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
