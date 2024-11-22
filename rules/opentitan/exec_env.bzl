@@ -319,7 +319,7 @@ def update_file_attr(name, attr, provider, data_files, param, action_param = Non
     elif DefaultInfo in attr:
         file = attr[DefaultInfo].files.to_list()
         if len(file) > 1:
-            fail("Expected to find exactly one file in", attr)
+            fail("Expected to find exactly one file in", attr, ", but got", file)
         _update(name, file[0], data_files, param, action_param)
     else:
         fail("No file providers in", attr)
