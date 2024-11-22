@@ -28,6 +28,12 @@ py_library(
 )
 
 py_library(
+    name = "db",
+    srcs = ["db.py"],
+    imports = ["."],
+)
+
+py_library(
     name = "sku_config",
     srcs = ["sku_config.py"],
     data = [
