@@ -7,7 +7,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/ecc/p384_curve_point_valid.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -21,7 +20,8 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, y);     // The public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
                          d0);  // The private key scalar d (share 0).
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh,
-                         d1);  // The private key scalar d (share 1).
+                         d1);             // The private key scalar d (share 1).
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdh, ok);  // Status code.
 
 static const otbn_app_t kOtbnAppEcdh = OTBN_APP_T_INIT(p384_ecdh);
 static const otbn_addr_t kOtbnVarEcdhMode = OTBN_ADDR_T_INIT(p384_ecdh, mode);
@@ -29,6 +29,7 @@ static const otbn_addr_t kOtbnVarEcdhX = OTBN_ADDR_T_INIT(p384_ecdh, x);
 static const otbn_addr_t kOtbnVarEcdhY = OTBN_ADDR_T_INIT(p384_ecdh, y);
 static const otbn_addr_t kOtbnVarEcdhD0 = OTBN_ADDR_T_INIT(p384_ecdh, d0);
 static const otbn_addr_t kOtbnVarEcdhD1 = OTBN_ADDR_T_INIT(p384_ecdh, d1);
+static const otbn_addr_t kOtbnVarEcdhOk = OTBN_ADDR_T_INIT(p384_ecdh, ok);
 
 enum {
   /*
@@ -88,10 +89,6 @@ status_t ecdh_p384_keypair_finalize(p384_masked_scalar_t *private_key,
 
 status_t ecdh_p384_shared_key_start(const p384_masked_scalar_t *private_key,
                                     const p384_point_t *public_key) {
-  // Check if public key is valid
-  HARDENED_TRY(p384_curve_point_validate_start(public_key));
-  HARDENED_TRY(p384_curve_point_validate_finalize());
-
   // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
@@ -116,6 +113,15 @@ status_t ecdh_p384_shared_key_start(const p384_masked_scalar_t *private_key,
 status_t ecdh_p384_shared_key_finalize(ecdh_p384_shared_key_t *shared_key) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the status code out of DMEM (false if basic checks on the validity of
+  // the public key failed).
+  uint32_t ok;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarEcdhOk, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read the shares of the key from OTBN dmem (at vars x and y).
   HARDENED_TRY(
@@ -156,10 +162,6 @@ status_t ecdh_p384_sideload_keypair_finalize(p384_point_t *public_key) {
 }
 
 status_t ecdh_p384_sideload_shared_key_start(const p384_point_t *public_key) {
-  // Check if public key is valid
-  HARDENED_TRY(p384_curve_point_validate_start(public_key));
-  HARDENED_TRY(p384_curve_point_validate_finalize());
-
   // Load the ECDH/P-384 app. Fails if OTBN is non-idle.
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdh));
 
