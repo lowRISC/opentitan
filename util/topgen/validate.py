@@ -69,7 +69,8 @@ top_optional = {
     'num_cores': ['pn', "number of computing units"],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"]
+    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
+    'unmanaged_resets': ['l', 'List of unmanaged external resets']
 }
 
 top_added = {}
@@ -640,12 +641,15 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
     unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())
+    unmanaged_reset_nets = [net for reset in top.get('unmanaged_resets', [])
+                            for net in reset.values()]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['name'].lower()
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets)
+        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets,
+                                unmanaged_reset_nets)
         error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
                                 unmanaged_clock_srcs)
 
@@ -658,7 +662,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         xbarcfg_name = xbarcfg['name'].lower()
         log.info("Checking clock/resets for xbar %s" % xbarcfg_name)
         error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                reset_nets, "xbar")
+                                reset_nets, unmanaged_reset_nets, "xbar")
         error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
                                 clock_srcs, unmanaged_clock_srcs, "xbar")
 
@@ -673,7 +677,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 # For each defined reset connection in top*.hjson, there exists a defined port at the destination
 # and defined reset net
 # There are the same number of defined connections as there are ports
-def validate_reset(top, inst, reset_nets, prefix=""):
+def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
     # Gather inst port list
     error = 0
 
@@ -739,7 +743,7 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 
     missing_net = [
         net['name'] for net in top['reset_connections'].values()
-        if net['name'] not in reset_nets
+        if net['name'] not in reset_nets + unmanaged_reset_nets
     ]
 
     if missing_net:
