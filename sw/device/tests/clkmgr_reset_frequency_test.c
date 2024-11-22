@@ -25,10 +25,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * measurements it checks that some errors are found, then a reset is triggered,
  * and it checks the measurements should be disabled, and no errors should be
  * reported.
- *
- * Notice the test overrides the hardware behavior so it comes out with
- * calibrated USB clock, otherwise the USB clock frequency will be incorrect.
- * USB calibration should be a separate test, and may be vendor-specific.
  */
 enum {
   kWaitForCSRPolling = 1,  // 1us
