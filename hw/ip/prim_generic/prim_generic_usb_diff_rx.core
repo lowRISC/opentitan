@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:usb_diff_rx"
 description: "Generic differential USB receiver for emulation purposes"
+virtual:
+  - lowrisc:prim:usb_diff_rx
+
 filesets:
   files_rtl:
     files:
