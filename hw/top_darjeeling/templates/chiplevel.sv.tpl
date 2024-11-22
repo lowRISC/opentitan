@@ -932,7 +932,12 @@ module chip_${top["name"]}_${target["name"]} #(
     .intg_error_o(),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
-    .rerror_i    ('0)
+    .rerror_i    ('0),
+    .compound_txn_in_progress_o(),
+    .readback_en_i(1'b0),
+    .readback_error_o(),
+    .wr_collision_i(1'b0),
+    .write_pending_i(1'b0)
   );
 
   prim_ram_1p_adv #(
