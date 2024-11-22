@@ -6,7 +6,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
+module prim_ram_1p import prim_ram_1p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask

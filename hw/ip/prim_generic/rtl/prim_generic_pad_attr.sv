@@ -5,7 +5,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_pad_attr
+module prim_pad_attr
   import prim_pad_wrapper_pkg::*;
 #(
   parameter pad_type_e PadType = BidirStd // currently ignored in the generic model
@@ -68,4 +68,4 @@ module prim_generic_pad_attr
         assert_static_in_generate_config_not_available();
   end
 
-endmodule : prim_generic_pad_attr
+endmodule : prim_pad_attr
