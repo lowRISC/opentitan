@@ -231,7 +231,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
 
       logic unused_rdback;
 
-      assign unused_rdback = ^{rdback_check_d, rdback_data_exp_d, rdback_data_exp_intg_d};
+      assign unused_rdback = ^{rdback_check_d, rdback_data_exp_d, rdback_data_exp_intg_d,
+                               rdback_en_d};
     end
 
     // state machine handling
