@@ -298,6 +298,7 @@ otbn_sim_test(
         "p256_ecdsa_verify_test.s",
     ],
     exp = "p256_ecdsa_verify_test.exp",
+    dexp = "p256_ecdsa_verify_test.dexp",
     deps = [
         "//sw/otbn/crypto:p256_base",
         "//sw/otbn/crypto:p256_isoncurve",

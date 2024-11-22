@@ -6,6 +6,15 @@
  *   test.
  */
 
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`. The truthy value is XORed with
+ * 384, i.e. the expected loop counter from verify's scalar mult.
+ */
+.equ HARDENED_BOOL_TRUE_XOR_COUNTER, 0x6b9
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
  .section .text
 
 /**
@@ -100,6 +109,7 @@ store_proj:
  * @param[in]  dmem[msg]: message to be verified in dmem
  * @param[in]    dmem[x]: x-coordinate of public key in dmem
  * @param[in]    dmem[y]: y-coordinate of public key in dmem
+ * @param[out] dmem[ok]:  whether the signature passed basic checks (32 bits)
  * @param[out] dmem[x_r]: verification result: reduced affine x1-coordinate
  *
  * Scratchpad memory layout:
@@ -115,7 +125,7 @@ store_proj:
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
- * clobbered registers: x2 to x5, x10, x11, x12, x22 to 28, w0 to w31
+ * clobbered registers: x2 to x5, x10, x11, x12, x15, x22 to 28, w0 to w31
  * clobbered flag groups: FG0
  */
 .globl p384_verify
@@ -155,19 +165,19 @@ p384_verify:
   bn.lid    x2++, 0(x7)
   bn.lid    x2++, 32(x7)
 
-  /* goto 'fail' if [w30,w29] == [w31, w31] <=> s == 0 */
+  /* Fail if [w30,w29] == [w31, w31] <=> s == 0 */
   bn.cmp    w31, w29
   bn.cmpb   w31, w30
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p384_invalid_input
 
-  /* goto 'fail' if [w30,w29] >= [w12,w13] <=> s >= n */
+  /* Fail if [w30,w29] >= [w12,w13] <=> s >= n */
   bn.cmp    w29, w12
   bn.cmpb   w30, w13
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p384_invalid_input
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
      no need to compute the high part):
@@ -194,19 +204,19 @@ p384_verify:
   bn.lid    x2++, 0(x6)
   bn.lid    x2++, 32(x6)
 
-  /* goto 'fail' if [w11, w10] == [w31, w31] <=> r == 0 */
+  /* Fail if [w11, w10] == [w31, w31] <=> r == 0 */
   bn.cmp    w31, w10
   bn.cmpb   w31, w11
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p384_invalid_input
 
-  /* goto 'fail' if [w11,w10] >= [w12,w13] <=> r >= n */
+  /* Fail if [w11,w10] >= [w12,w13] <=> r >= n */
   bn.cmp    w10, w12
   bn.cmpb   w11, w13
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
-  beq       x2, x0, fail
+  beq       x2, x0, p384_invalid_input
 
   /* u2 = [w3,w2] <= [w17,w16] <= r*s^-1 mod n
         = [w11,w10]*[w17,w16] mod [w13,w12] */
@@ -292,6 +302,9 @@ p384_verify:
 
   la        x26, scratchpad
 
+  /* Initialize loop counter to 0. */
+  addi      x15, x0, 0
+
   /* main loop with decreasing index i (i=383 downto 0) */
   loopi     384, 35
 
@@ -370,7 +383,9 @@ p384_verify:
     jal       x1, proj_add_p384
     addi      x12, x26, 0
     jal       x1, store_proj
-    nop
+
+    /* Increment counter. */
+    addi     x15, x15, 1
 
   /* load domain parameter p (order of finite field)
      [w13, w12] <= p = dmem[p384_p] */
@@ -405,20 +420,18 @@ p384_verify:
   bn.sel    w4, w16, w4, C
   bn.sel    w5, w17, w5, C
 
+  /* If we got here the basic validity checks passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE_XOR_COUNTER
+  xor      x3, x3, x15
+  sw       x3, 0(x2)
+
   /* store affine x-coordinate in dmem: dmem[x_r] <= x1 = [w5,w4] */
   li        x2, 4
   bn.sid    x2++, 0(x8)
   bn.sid    x2++, 32(x8)
 
   ret
-
-/**
- * Failure cases jump here.
- */
-fail:
-  unimp
-  unimp
-  unimp
 
 
 /* scratchpad memory */
