@@ -104,7 +104,7 @@ All common types and methods defined at the package level can be found in
     rand spi_mode_e mode;
     rand spi_dir_e  direction;
     rand bit        csaat;
-    rand bit [8:0]  len;
+    rand bit [19:0] len;
   } spi_host_command_t;
 
   typedef struct packed {
