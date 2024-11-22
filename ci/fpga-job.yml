@@ -43,8 +43,7 @@ jobs:
   dependsOn:
     - ${{ parameters.bitstream }}
     - sw_build
-  #condition: succeeded( ${{ parameters.bitstream }}, 'sw_build' )
-  condition: and(in(dependencies.${{ parameters.bitstream }}.result, 'Succeeded', 'SucceededWithIssues'), succeeded('sw_build'))
+  condition: and(in(dependencies.${{ parameters.bitstream }}.result, 'Succeeded', 'SucceededWithIssues'), succeeded('sw_build'), succeeded('fpga_jobs_check_run'))
   steps:
   - template: ./checkout-template.yml
   - template: ./install-package-dependencies.yml

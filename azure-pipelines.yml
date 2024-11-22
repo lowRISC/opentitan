@@ -421,6 +421,10 @@ jobs:
         gcpKeyFile: "gcpkey.json"
         bucketURI: "gs://opentitan-bitstreams/master"
 
+- job: fpga_jobs_check_run
+  displayName: Check if all FPGA jobs should run
+  condition: eq(variables['Build.Reason'], 'PullRequest')
+
 # CW310 FPGA jobs.
 - template: ci/fpga-job.yml
   parameters:
