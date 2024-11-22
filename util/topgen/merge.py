@@ -11,7 +11,7 @@ from typing import Dict, List, Union, Tuple
 
 from topgen import lib, secure_prng
 from .clocks import Clocks
-from .resets import Resets
+from .resets import Resets, UnmanagedResets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 from reggen.validate import check_bool
@@ -592,6 +592,10 @@ def is_unmanaged_clock(top: OrderedDict, clock: str):
     return clock in top['unmanaged_clocks']._asdict()
 
 
+def is_unmanaged_reset(top: OrderedDict, reset: str):
+    return reset in top['unmanaged_resets']
+
+
 def extract_clocks(top: OrderedDict):
     '''Add clock exports to top and connections to endpoints
 
@@ -778,6 +782,7 @@ def amend_resets(top, name_to_block):
        domains.
     """
 
+    top['unmanaged_resets'] = UnmanagedResets(top.get('unmanaged_resets', []))
     top_resets = Resets(top['resets'], top['clocks'])
     rstmgr_name = _find_module_name(top['module'], 'rstmgr')
 
@@ -797,6 +802,8 @@ def amend_resets(top, name_to_block):
         for r in block.clocking.items:
             if r.reset:
                 reset = module['reset_connections'][r.reset]
+                if is_unmanaged_reset(top, reset['name']):
+                    continue
                 top_resets.add_reset_domain(reset['name'], reset['domain'])
 
         # This code is here to ensure if amend_clocks/resets switched order
@@ -896,6 +903,7 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
                 'clock_group': None if unmanaged_clock else clock_group,
                 'clock_connection': clock,
                 'unmanaged_clock': unmanaged_clock,
+                'unmanaged_reset': is_unmanaged_reset(top, reset_name),
                 'reset_connection': primary_reset
             })
             num_lpg += 1

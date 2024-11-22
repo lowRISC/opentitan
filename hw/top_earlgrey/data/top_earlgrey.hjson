@@ -106,6 +106,13 @@
     ],
   },
 
+  // List of unmanaged external resets
+  //
+  // These should be listed as dictionaries that just give their names, in this form:
+  //
+  //    { name: "my_external_reset" }
+  // unmanaged_resets: []
+
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module

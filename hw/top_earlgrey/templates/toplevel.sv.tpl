@@ -8,6 +8,7 @@ import topgen.lib as lib
 from reggen.params import Parameter
 from topgen.clocks import Clocks
 from topgen.resets import Resets
+from topgen.merge import is_unmanaged_reset
 
 num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
                  top['pinmux']['io_counts']['muxed']['inputs']
@@ -129,6 +130,14 @@ module top_${top["name"]} #(
     % for clk in top['unmanaged_clocks']._asdict().values():
   input                        clk_${clk.name}_i,
   input prim_mubi_pkg::mubi4_t cg_${clk.name}_i,
+    % endfor
+  % endif
+  % if len(top['unmanaged_resets']._asdict().values()) > 0:
+
+  // Unmanaged external resets
+    % for rst in top['unmanaged_resets']._asdict().values():
+  input                        ${rst.signal_name},
+  input prim_mubi_pkg::mubi4_t ${rst.rst_en_signal_name},
     % endfor
   % endif
 
@@ -406,7 +415,7 @@ for rst in output_rsts:
     cg_en = 'cg_' + lpg['clock_connection'].split('clk_')[-1]
   else:
     cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
-  rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'])
+  rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
   known_clocks[cg_en] = 0
   known_resets[rst_en] = 0
 %>\
@@ -561,10 +570,16 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .${k} (${v}),
     % endfor
     % for port, reset in m["reset_connections"].items():
-      % if lib.is_shadowed_port(block, port):
-      .${lib.shadow_name(port)} (${lib.get_reset_path(top, reset, True)}),
-      % endif:
-      .${port} (${lib.get_reset_path(top, reset)})${"," if not loop.last else ""}
+<%
+      is_shadowed_port = lib.is_shadowed_port(block, port)
+      unmanaged_reset = is_unmanaged_reset(top, reset['name'])
+      reset_port = lib.get_reset_path(top, reset, False, unmanaged_reset)
+      shadowed_port = lib.get_reset_path(top, reset, True, unmanaged_reset)
+%>\
+    % if is_shadowed_port:
+      .${lib.shadow_name(port)} (${shadowed_port}),
+    % endif
+      .${port} (${reset_port})${"," if not loop.last else ""}
     % endfor
   );
 % endfor

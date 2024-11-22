@@ -9,7 +9,7 @@ from collections import defaultdict, OrderedDict
 from copy import deepcopy
 from mako.template import Template
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import hjson
 from reggen.ip_block import IpBlock
@@ -586,19 +586,27 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
-def get_reset_path(top: object, reset: str, shadow_sel: bool = False):
+def get_reset_path(top: object, reset: Union[str, object], shadow_sel: bool = False,
+                   unmanaged_reset: bool = False):
     """Return the appropriate reset path given name
     """
-    return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
+    if unmanaged_reset:
+        return top['unmanaged_resets'].get(reset['name']).signal_name
+    else:
+        return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
 
 
-def get_reset_lpg_path(top: object, reset: str, shadow_sel: bool = False, domain: bool = None):
+def get_reset_lpg_path(top: object, reset: Union[str, object], shadow_sel: bool = False,
+                       domain: bool = None, unmanaged_reset: bool = False):
     """Return the appropriate LPG reset path given name
     """
-    if domain is not None:
-        return top['resets'].get_lpg_path(reset['name'], domain, shadow_sel)
+    if unmanaged_reset:
+        return top['unmanaged_resets'].get(reset['name']).rst_en_signal_name
     else:
-        return top['resets'].get_lpg_path(reset['name'], reset['domain'], shadow_sel)
+        if domain is not None:
+            return top['resets'].get_lpg_path(reset['name'], domain, shadow_sel)
+        else:
+            return top['resets'].get_lpg_path(reset['name'], reset['domain'], shadow_sel)
 
 
 def get_unused_resets(top):
