@@ -31,6 +31,8 @@ load(
     "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
     "OWNER_SLOTS",
 )
+load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -351,7 +353,7 @@ manifest(d = {
 _FT_PROVISIONING_CMD_ARGS = """
   --elf={sram_ft_individualize}
   --bootstrap={ft_personalize}
-  --second-bootstrap={firmware}
+  --second-bootstrap={bundle}
   --ca-config={ca_config}
 """ + FT_PROVISIONING_INPUTS
 
@@ -362,7 +364,12 @@ _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
         name = "ft_fw_bundle_{}".format(sku),
         testonly = True,
         bins = {
-            ":ft_personalize_{}".format(sku): SLOTS["a"],
+            # Use a pre-compiled perso binary if the SKU defines it,
+            # else use the label of the opentitan_binary for the SKU.
+            config.get(
+                "perso_bin",
+                ":ft_personalize_{}".format(sku),
+            ): SLOTS["a"],
             config["rom_ext"]: SLOTS["b"],
             config["owner_fw"]: OWNER_SLOTS["b"],
         },
@@ -399,14 +406,17 @@ filegroup(
         },
         fpga = fpga_params(
             timeout = "moderate",
-            assemble = "{ft_personalize}@{rom_ext_slot_a} {rom_ext}@{rom_ext_slot_b} {owner_fw}@{owner_slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
-                    ":ft_personalize_{}".format(sku): "ft_personalize",
-                    config["rom_ext"]: "rom_ext",
-                    config["owner_fw"]: "owner_fw",
+                    # Use a pre-compiled perso binary if the SKU defines it,
+                    # else use the label of the opentitan_binary for the SKU.
+                    config.get(
+                        "perso_bin",
+                        ":ft_personalize_{}".format(sku),
+                    ): "ft_personalize",
                     config["ca_config"]: "ca_config",
+                    ":ft_fw_bundle_{}".format(sku): "bundle",
                 },
             changes_otp = True,
             data = config["ca_data"],
@@ -423,14 +433,17 @@ filegroup(
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
         silicon = silicon_params(
-            assemble = "{ft_personalize}@{rom_ext_slot_a} {rom_ext}@{rom_ext_slot_b} {owner_fw}@{owner_slot_b}",
             binaries =
                 {
                     ":sram_ft_individualize_{}".format(config["otp"]): "sram_ft_individualize",
-                    ":ft_personalize_{}".format(sku): "ft_personalize",
-                    config["rom_ext"]: "rom_ext",
-                    config["owner_fw"]: "owner_fw",
+                    # Use a pre-compiled perso binary if the SKU defines it,
+                    # else use the label of the opentitan_binary for the SKU.
+                    config.get(
+                        "perso_bin",
+                        ":ft_personalize_{}".format(sku),
+                    ): "ft_personalize",
                     config["ca_config"]: "ca_config",
+                    ":ft_fw_bundle_{}".format(sku): "bundle",
                 },
             changes_otp = True,
             data = config["ca_data"],
@@ -462,4 +475,45 @@ test_suite(
         ":ft_provision_{}_fpga_cw340_rom_with_fake_keys".format(sku)
         for sku in EARLGREY_SKUS.keys()
     ],
+)
+
+_DISQUALIFIED_FOR_SIGNING = ["emulation"]
+
+[
+    offline_presigning_artifacts(
+        name = "provisioning_{}".format(sku),
+        testonly = True,
+        srcs = [":ft_personalize_{}".format(sku)],
+        ecdsa_key = data["ecdsa_key"],
+        manifest = ":manifest_perso",
+        tags = ["manual"],
+    )
+    for sku, data in EARLGREY_SKUS.items()
+    if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+]
+
+pkg_tar(
+    name = "digests",
+    testonly = True,
+    srcs = [
+        ":provisioning_{}".format(sku)
+        for sku, data in EARLGREY_SKUS.items()
+        if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+    ],
+    mode = "0644",
+    tags = ["manual"],
+)
+
+offline_signature_attach(
+    name = "signed",
+    testonly = True,
+    srcs = [
+        ":provisioning_{}".format(sku)
+        for sku, data in EARLGREY_SKUS.items()
+        if data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+    ],
+    ecdsa_signatures = [
+        "//sw/device/silicon_creator/manuf/base/signatures:ecdsa_signatures",
+    ],
+    tags = ["manual"],
 )
