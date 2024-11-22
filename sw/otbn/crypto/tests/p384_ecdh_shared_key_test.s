@@ -100,9 +100,9 @@ y:
   .word 0x841e4949
   .zero 16
 
-/* 1st scalar share k0 (448-bit) */
-.globl k0
-k0:
+/* 1st scalar share d0 (448-bit) */
+.globl d0
+d0:
   .word 0x5c832a51
   .word 0x3eb17c27
   .word 0x9a0c1b76
@@ -119,9 +119,9 @@ k0:
   .word 0x32f9e2b0
   .zero 8
 
-/* 2nd scalar share k1 (448-bit) */
-.globl k1
-k1:
+/* 2nd scalar share d1 (448-bit) */
+.globl d1
+d1:
   .word 0x33eae098
   .word 0xd31b18d5
   .word 0x507568cd
@@ -138,7 +138,7 @@ k1:
   .word 0x9e5dc598
   .zero 8
 
-/* scalar k = (k0 + k1) mod n (384-bit)*/
+/* scalar d = (d0 + d1) mod n (384-bit)*/
 scalar:
   .word 0xe8791ba3
   .word 0xf549e1f7

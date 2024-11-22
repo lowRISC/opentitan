@@ -3,19 +3,21 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Elliptic-curve Diffie-Hellman (ECDH) on curve P-384.
+ * Entrypoint for P-384 ECDH and ECDSA operations.
  *
  * This binary has the following modes of operation:
- * 1. MODE_KEYGEN_RANDOM: generate a random keypair
- * 2. MODE_SHARED_KEYGEN: compute shared key
- * 3. MODE_KEYGEN_FROM_SEED: generate keypair from a sideloaded seed
- * 4. MODE_SHARED_KEYGEN_FROM_SEED: compute shared key using sideloaded seed
+ * 1. MODE_KEYGEN: generate a new keypair
+ * 2. MODE_SIGN: generate an ECDSA signature using caller-provided secret key
+ * 3. MODE_VERIFY: verify an ECDSA signature
+ * 4. MODE_ECDH: ECDH key exchange using a caller-provided secret key
+ * 5. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
+ * 6. MODE_SIDELOAD_SIGN: generate an ECDSA signature using sideloaded secret key/seed
+ * 7. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
  */
 
  /**
  * Mode magic values generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 \
- *    --avoid-zero -s 3660400884
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 11 --avoid-zero -s 1654842154
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -25,18 +27,24 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_SHARED_KEY, 0x5ec
-.equ MODE_KEYPAIR_RANDOM, 0x3f1
-.equ MODE_KEYPAIR_FROM_SEED, 0x29f
-.equ MODE_SHARED_KEY_FROM_SEED, 0x74b
+.equ MODE_KEYGEN, 0x0e7
+.equ MODE_SIGN, 0x633
+.equ MODE_VERIFY, 0x54d
+.equ MODE_ECDH, 0x3bd
+.equ MODE_SIDELOAD_KEYGEN, 0x4da
+.equ MODE_SIDELOAD_SIGN, 0x786
+.equ MODE_SIDELOAD_ECDH, 0x36a
 
 /**
  * Make the mode constants visible to Ibex.
  */
-.globl MODE_SHARED_KEY
-.globl MODE_KEYPAIR_RANDOM
-.globl MODE_KEYPAIR_FROM_SEED
-.globl MODE_SHARED_KEY_FROM_SEED
+.globl MODE_KEYGEN
+.globl MODE_SIGN
+.globl MODE_VERIFY
+.globl MODE_ECDH
+.globl MODE_SIDELOAD_KEYGEN
+.globl MODE_SIDELOAD_SIGN
+.globl MODE_SIDELOAD_ECDH
 
 /**
  * Hardened boolean values.
@@ -47,27 +55,34 @@
 .equ HARDENED_BOOL_FALSE, 0x1d4
 
 .section .text.start
+.globl start
 start:
-  /* Init all-zero register. */
-  bn.xor    w31, w31, w31
-
   /* Read the mode and tail-call the requested operation. */
-  la        x2, mode
-  lw        x2, 0(x2)
+  la    x2, mode
+  lw    x2, 0(x2)
 
-  addi      x3, x0, MODE_KEYPAIR_RANDOM
-  beq       x2, x3, keypair_random
+  addi  x3, x0, MODE_KEYGEN
+  beq   x2, x3, keypair_random
 
-  addi      x3, x0, MODE_SHARED_KEY
-  beq       x2, x3, shared_key
+  addi  x3, x0, MODE_SIGN
+  beq   x2, x3, ecdsa_sign
 
-  addi      x3, x0, MODE_KEYPAIR_FROM_SEED
-  beq       x2, x3, keypair_from_seed
+  addi  x3, x0, MODE_VERIFY
+  beq   x2, x3, ecdsa_verify
 
-  addi      x3, x0, MODE_SHARED_KEY_FROM_SEED
-  beq       x2, x3, shared_key_from_seed
+  addi  x3, x0, MODE_ECDH
+  beq   x2, x3, shared_key
 
-  /* Unsupported mode; fail. */
+  addi  x3, x0, MODE_SIDELOAD_KEYGEN
+  beq   x2, x3, keypair_from_seed
+
+  addi  x3, x0, MODE_SIDELOAD_SIGN
+  beq   x2, x3, ecdsa_sign_sideloaded
+
+  addi  x3, x0, MODE_SIDELOAD_ECDH
+  beq   x2, x3, shared_key_from_seed
+
+  /* Invalid mode; fail. */
   unimp
   unimp
   unimp
@@ -105,6 +120,79 @@ keypair_random:
   ecall
 
 /**
+ * P-384 ECDSA signature generation.
+ * Generate the secret scalar k from a random seed.
+ *
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[in]   dmem[d0]: 1st private key share d0
+ * @param[in]   dmem[d1]: 2nd private key share d1
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
+ */
+ecdsa_sign:
+  /* Generate a fresh random scalar for signing.
+       dmem[k0] <= first share of k
+       dmem[k1] <= second share of k */
+  jal      x1, p384_generate_k
+
+  /* Generate the signature. */
+  jal      x1, p384_sign
+
+  ecall
+
+/**
+ * P-384 ECDSA side-loaded signature generation.
+ *
+ * Generate a signature using a private key from a
+ * sideloaded seed.
+ *
+ * @param[in]  dmem[msg]: message to be signed in dmem
+ * @param[out]   dmem[r]: r component of signature
+ * @param[out]   dmem[s]: s component of signature
+ */
+ecdsa_sign_sideloaded:
+  /* Load keymgr seeds from WSRs.
+       w20,w21 <= seed0
+       w10,w11 <= seed1 */
+  bn.wsrr   w20, KEY_S0_L
+  bn.wsrr   w21, KEY_S0_H
+  bn.wsrr   w10, KEY_S1_L
+  bn.wsrr   w11, KEY_S1_H
+
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal       x1, p384_key_from_seed
+
+  /* Tail-call signature-generation routine. */
+  jal       x0, ecdsa_sign
+
+/**
+ * P-384 ECDSA signature verification
+ *
+ * The routine computes the x1 coordinate and places it in dmem. x1 will be
+ * reduced (mod n), however, the final comparison has to be performed on the
+ * host side. The signature is valid if x1 == r.
+ * This routine runs in variable time.
+ *
+ * @param[in]  dmem[msg]: message to be verified
+ * @param[in]    dmem[r]: r part of signature
+ * @param[in]    dmem[s]: s part of signature
+ * @param[in]    dmem[x]: x-coordinate of public key
+ * @param[in]    dmem[y]: y-coordinate of public key
+ * @param[out] dmem[x_r]: x1 coordinate to be compared to rs
+ */
+ecdsa_verify:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p384_check_public_key
+
+  /* Verify the signature (compute x1). */
+  jal      x1, p384_verify
+
+  ecall
+
+
+/**
  * Generate a shared key from a secret and public key.
  *
  * Returns the shared key, which is the affine x-coordinate of (d*Q). The
@@ -114,8 +202,8 @@ keypair_random:
  * This routine runs in constant time.
  *
  * @param[in]        w31: all-zero
- * @param[in]   dmem[k0]: 1st private key share d0/k0
- * @param[in]   dmem[k1]: 2nd private key share d1/k0
+ * @param[in]   dmem[d0]: 1st private key share d0
+ * @param[in]   dmem[d1]: 2nd private key share d1
  * @param[in]    dmem[x]: x-coordinate of public key
  * @param[in]    dmem[y]: y-coordinate of public key
  * @param[out]   dmem[x]: x0, first share of shared key.
@@ -254,12 +342,29 @@ shared_key_from_seed:
 mode:
   .zero 4
 
-/* Success code for basic validity checks on the public key and signature.
-   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
+/* Success code for basic validity checks on the public key and signature. */
 .globl ok
 .balign 4
 ok:
   .zero 4
+
+/* Message digest. */
+.globl msg
+.balign 32
+msg:
+  .zero 64
+
+/* Signature R. */
+.globl r
+.balign 32
+r:
+  .zero 64
+
+/* Signature S. */
+.globl s
+.balign 32
+s:
+  .zero 64
 
 /* Public key x-coordinate. */
 .globl x
@@ -273,22 +378,31 @@ x:
 y:
   .zero 64
 
-/* Secret key (d) in two shares: d = (d0 + d1) mod n.
-
-   Note: This is also labeled k0, k1 because the `p384_scalar_mult` algorithm
-   requires k0 and k1 as labels for the scalar; in the case of ECDH, the
-   scalar in `p384_scalar_mult` is always the private key (d). */
-
+/* Private key (d) in two shares: d = (d0 + d1) mod n. */
 .globl d0
-.globl k0
 .balign 32
 d0:
+  .zero 64
+.globl d1
+.balign 32
+d1:
+  .zero 64
+
+/* Verification result x_r (aka x_1). */
+.globl x_r
+.balign 32
+x_r:
+  .zero 64
+
+.section .scratchpad
+
+/* Secret scalar (k) in two shares: k = (k0 + k1) mod n */
+.globl k0
+.balign 32
 k0:
   .zero 64
 
-.globl d1
 .globl k1
 .balign 32
-d1:
 k1:
   .zero 64

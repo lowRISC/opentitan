@@ -365,9 +365,9 @@ otbn_binary(
 )
 
 otbn_binary(
-    name = "p384_ecdh",
+    name = "run_p384",
     srcs = [
-        "p384_ecdh.s",
+        "run_p384.s",
     ],
     deps = [
         ":p384_a2b",
@@ -378,53 +378,9 @@ otbn_binary(
         ":p384_isoncurve",
         ":p384_keygen",
         ":p384_keygen_from_seed",
+        ":p384_modinv",
         ":p384_scalar_mult",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_keygen",
-    srcs = [
-        "p384_ecdsa_keygen.s",
-    ],
-    deps = [
-        ":p384_b2a",
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_keygen",
-        ":p384_keygen_from_seed",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_sign",
-    srcs = [
-        "p384_ecdsa_sign.s",
-    ],
-    deps = [
-        ":p384_b2a",
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_keygen",
-        ":p384_keygen_from_seed",
-        ":p384_modinv",
         ":p384_sign",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_verify",
-    srcs = [
-        "p384_ecdsa_verify.s",
-    ],
-    deps = [
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_isoncurve",
-        ":p384_modinv",
         ":p384_verify",
     ],
 )
