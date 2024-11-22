@@ -1,2 +1,2 @@
-# This test doesn't require expected WDR values,
-# it just needs to complete without fault.
+# "ok" code should be unchanged.
+x2 = 0xffffffff

@@ -15,11 +15,20 @@ p384_curve_point_valid_test:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
-  jal       x1, p384_curve_point_valid
+  jal       x1, p384_check_public_key
+
+  la        x2, ok
+  lw        x2, 0(x2)
 
   ecall
 
 .data
+
+/* Status code. */
+.globl ok
+.balign 4
+ok:
+.word 0xffffffff
 
 /* Curve point x-coordinate. */
 .globl x
