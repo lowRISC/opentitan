@@ -5,7 +5,7 @@
 
 `include "prim_assert.sv"
 
-module prim_xilinx_pad_attr
+module prim_pad_attr
   import prim_pad_wrapper_pkg::*;
 #(
   // This parameter is ignored in this Xilinx variant.
@@ -56,4 +56,4 @@ module prim_xilinx_pad_attr
   end
 
 
-endmodule : prim_xilinx_pad_attr
+endmodule : prim_pad_attr

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_xilinx_clock_buf #(
+module prim_clock_buf #(
   // The following options allow a user to choose the type of buffer
   // associated with this cell.
   // NoFpgaBuf -> No fpga clock buffer is selected, this will be constructed

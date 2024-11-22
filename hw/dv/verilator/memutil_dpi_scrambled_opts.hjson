@@ -24,29 +24,29 @@
   build_modes: [
     {
       name: vcs_memutil_dpi_scrambled_build_opts
-      build_opts: ["-CFLAGS -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
-                   "-CFLAGS -I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
-                   "-CFLAGS -I{build_dir}/src/{secded_enc_src_dir}",
-                   "-CFLAGS -I{build_dir}/src/{scramble_model_dir}",
-                   "-CFLAGS -I{build_dir}/src/{prince_ref_src_dir}",
+      build_opts: ["-CFLAGS -I{build_dir}/fusesoc-work/src/{memutil_dpi_src_dir}/cpp",
+                   "-CFLAGS -I{build_dir}/fusesoc-work/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-CFLAGS -I{build_dir}/fusesoc-work/src/{secded_enc_src_dir}",
+                   "-CFLAGS -I{build_dir}/fusesoc-work/src/{scramble_model_dir}",
+                   "-CFLAGS -I{build_dir}/fusesoc-work/src/{prince_ref_src_dir}",
                    "-lelf"]
     }
 
     {
       name: xcelium_memutil_dpi_scrambled_build_opts
-      build_opts: ["-I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
-                   "-I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
-                   "-I{build_dir}/src/{prince_ref_src_dir}",
-                   "-I{build_dir}/src/{scramble_model_dir}",
+      build_opts: ["-I{build_dir}/fusesoc-work/src/{memutil_dpi_src_dir}/cpp",
+                   "-I{build_dir}/fusesoc-work/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-I{build_dir}/fusesoc-work/src/{prince_ref_src_dir}",
+                   "-I{build_dir}/fusesoc-work/src/{scramble_model_dir}",
                    "-lelf"]
     }
 
     {
       name: dsim_memutil_dpi_scrambled_build_opts
-      build_opts: ["-c-opts -I{build_dir}/src/{memutil_dpi_src_dir}/cpp",
-                   "-c-opts -I{build_dir}/src/{memutil_dpi_scrambled_src_dir}/cpp",
-                   "-c-opts -I{build_dir}/src/{prince_ref_src_dir}",
-                   "-c-opts -I{build_dir}/src/{scramble_model_dir}",
+      build_opts: ["-c-opts -I{build_dir}/fusesoc-work/src/{memutil_dpi_src_dir}/cpp",
+                   "-c-opts -I{build_dir}/fusesoc-work/src/{memutil_dpi_scrambled_src_dir}/cpp",
+                   "-c-opts -I{build_dir}/fusesoc-work/src/{prince_ref_src_dir}",
+                   "-c-opts -I{build_dir}/fusesoc-work/src/{scramble_model_dir}",
                    "-ld-opts -lelf"]
     }
   ]

@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:xor2"
 description: "Xilinx 2-input xor"
+virtual:
+  - lowrisc:prim:xor2
+
 filesets:
   files_rtl:
     files:

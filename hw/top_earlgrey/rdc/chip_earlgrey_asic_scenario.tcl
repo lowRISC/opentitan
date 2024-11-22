@@ -111,7 +111,7 @@ set_reset_scenario { \
 # PWRMGR Reset Cause
 
 # RSTMGR SW Resets
-#set_reset_scenario { {{top_earlgrey.u_rstmgr_aon.u_ndm_sync.u_sync_2.gen_generic.u_impl_generic.q_o[0]} {reset  { @t0 1 } { #10 0}} }} -name Scenario8 -comment "functional reset"
+#set_reset_scenario { {{top_earlgrey.u_rstmgr_aon.u_ndm_sync.u_sync_2.q_o[0]} {reset  { @t0 1 } { #10 0}} }} -name Scenario8 -comment "functional reset"
 set_reset_scenario { \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_0.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \
   {{top_earlgrey.u_rstmgr_aon.u_reg.u_sw_rst_ctrl_n_1.q[0]} {reset  { @t0 1 } { #2 0 } { #10 1}} } \

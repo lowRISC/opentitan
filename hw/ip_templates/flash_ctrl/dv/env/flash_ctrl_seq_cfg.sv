@@ -272,7 +272,7 @@ class flash_ctrl_seq_cfg extends uvm_object;
 
     disable_flash_init = 1'b0;  // Off
 
-    flash_path_str = "tb.dut.u_eflash.u_flash.gen_generic.u_impl_generic";
+    flash_path_str = "tb.dut.u_eflash.u_flash";
 
     // NOTE: Make sure to keep
     // cfg.flash_ctrl_vif.rst_to_pd_time_ns < reset_width_clks_lo * min clock period in ns.

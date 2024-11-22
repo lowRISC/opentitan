@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:rom"
 description: "Technology-independent Read-Only Memory (ROM) implementation"
+virtual:
+  - lowrisc:prim:rom
+
 filesets:
   files_rtl:
     depend:

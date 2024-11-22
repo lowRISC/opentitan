@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_buf #(
+module prim_buf #(
   parameter int Width = 1
 ) (
   input        [Width-1:0] in_i,

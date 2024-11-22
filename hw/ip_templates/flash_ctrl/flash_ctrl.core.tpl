@@ -21,6 +21,8 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
+      # TODO: prim_legacy_pkg is deprecated
+      - lowrisc:prim:prim_legacy_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}

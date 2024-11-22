@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:flop"
 description: "generic flop"
+virtual:
+  - lowrisc:prim:flop
+
 filesets:
   files_rtl:
     files:

@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_rom import prim_rom_pkg::*; #(
+module prim_rom import prim_rom_pkg::*; #(
   parameter  int Width       = 32,
   parameter  int Depth       = 2048, // 8kB default
   parameter      MemInitFile = "", // VMEM file to initialize the memory with

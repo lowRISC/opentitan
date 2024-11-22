@@ -7,7 +7,7 @@
 // The logic assumes that en_i is synchronized (so the instantiation site might need to put a
 // synchronizer before en_i).
 
-module prim_generic_clock_gating #(
+module prim_clock_gating #(
   parameter bit NoFpgaGate = 1'b0, // this parameter has no function in generic
   parameter bit FpgaBufGlobal = 1'b1 // this parameter has no function in generic
 ) (

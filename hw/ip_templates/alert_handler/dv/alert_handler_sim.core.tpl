@@ -12,18 +12,10 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:ralgen
-      - lowrisc:dv:alert_handler_tb
+      - ${instance_vlnv("lowrisc:dv:alert_handler_tb:0.1")}
       - lowrisc:dv:alert_handler_cov
       - ${instance_vlnv("lowrisc:dv:alert_handler_sva:0.1")}
     file_type: systemVerilogSource
-
-generate:
-  ral:
-    generator: ralgen
-    parameters:
-      name: alert_handler
-      ip_hjson: ../data/alert_handler.hjson
 
 targets:
   sim: &sim_target
@@ -31,8 +23,6 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-    generate:
-      - ral
     default_tool: vcs
 
   lint:

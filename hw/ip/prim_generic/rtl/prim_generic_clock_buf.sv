@@ -4,7 +4,7 @@
 
 `include "prim_assert.sv"
 
-module prim_generic_clock_buf #(
+module prim_clock_buf #(
   // Turning off these verilator lints because keeping these parameters makes it consistent with
   // the IP in hw/ip/prim_xilinx/rtl/ .
   /* verilator lint_off UNUSED */
@@ -20,4 +20,4 @@ module prim_generic_clock_buf #(
   assign inv = ~clk_i;
   assign clk_o = ~inv;
 
-endmodule // prim_generic_clock_buf
+endmodule // prim_clock_buf

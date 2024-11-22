@@ -5,7 +5,7 @@
 // Overall flash wrapper
 //
 
-module prim_generic_flash #(
+module prim_flash #(
   parameter int NumBanks       = 2,  // number of banks
   parameter int InfosPerBank   = 1,  // info pages per bank
   parameter int InfoTypes      = 1,  // different info types
@@ -143,4 +143,4 @@ module prim_generic_flash #(
   assign fla_obs_o = '0;
 
 
-endmodule // prim_generic_flash
+endmodule // prim_flash

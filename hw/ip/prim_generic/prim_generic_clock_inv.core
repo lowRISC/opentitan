@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:clock_inv"
 description: "Clock inverter with scanmode bypass mux"
+virtual:
+  - lowrisc:prim:clock_inv
+
 filesets:
   files_rtl:
     depend:

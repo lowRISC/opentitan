@@ -102,7 +102,7 @@ module tb;
   // External differential receiver; USBDEV supports an external differential receiver
   // with USB protocol-compliant robustness against jitter and slew, to produce a clean
   // data signal for sampling into the USBDEV clock domain.
-  prim_generic_usb_diff_rx u_usb_diff_rx (
+  prim_usb_diff_rx u_usb_diff_rx (
     .input_pi           (usb_p),
     .input_ni           (usb_n),
     .input_en_i         (usb_rx_enable),

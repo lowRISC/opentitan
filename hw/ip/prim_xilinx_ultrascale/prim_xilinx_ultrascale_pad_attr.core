@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx_ultrascale:pad_attr"
 description: "Pad attribute WARL module for Xilinx pads"
+virtual:
+  - lowrisc:prim:pad_attr
+
 filesets:
   files_rtl:
     depend:

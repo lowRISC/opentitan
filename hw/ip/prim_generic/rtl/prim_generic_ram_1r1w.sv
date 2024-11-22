@@ -6,7 +6,7 @@
 //   This module is for simulation and small size SRAM.
 //   Implementing ECC should be done inside wrapper not this model.
 `include "prim_assert.sv"
-module prim_generic_ram_1r1w import prim_ram_2p_pkg::*; #(
+module prim_ram_1r1w import prim_ram_2p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
