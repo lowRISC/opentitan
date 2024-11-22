@@ -32,7 +32,7 @@ static const otcrypto_ecc_curve_t kCurveP384 = {
 
 static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -50,15 +50,14 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Allocate space for a public key.
   uint32_t pk[kP384PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsa,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
       .key_length = sizeof(pk),
       .key = pk,
   };
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  CHECK_STATUS_OK(
-      otcrypto_ecdsa_keygen(&kCurveP384, &private_key, &public_key));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg = {
