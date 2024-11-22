@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+// -o hw/top_darjeeling
 
 #ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_H_
 #define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_H_
@@ -1654,6 +1659,20 @@ typedef enum top_darjeeling_hintable_clocks {
   kTopDarjeelingHintableClocksMainOtbn = 3, /**< Clock clk_main_otbn in group trans */
   kTopDarjeelingHintableClocksLast = 3, /**< \internal Last Valid Hintable Clock */
 } top_darjeeling_hintable_clocks_t;
+
+/**
+ * Clock IDs for peripherals to map against properties.
+ */
+typedef enum top_darjeeling_clock_src {
+  kTopDarjeelingClockSrcUnknown = 0, /**< ID representing unknown clock */
+  kTopDarjeelingClockSrcMain = 1, /**< Clock main */
+  kTopDarjeelingClockSrcIo = 2, /**< Clock io */
+  kTopDarjeelingClockSrcUsb = 3, /**< Clock usb */
+  kTopDarjeelingClockSrcAon = 4, /**< Clock aon */
+  kTopDarjeelingClockSrcIoDiv2 = 5, /**< Clock io_div2 */
+  kTopDarjeelingClockSrcIoDiv4 = 6, /**< Clock io_div4 */
+  kTopDarjeelingClockSrcCount = 7, /**< Number of clock IDs */
+} top_darjeeling_clock_src_t;
 
 /**
  * MMIO Region

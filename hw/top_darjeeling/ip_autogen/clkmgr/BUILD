@@ -2,29 +2,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//rules/opentitan:hw.bzl", "opentitan_ip")
+
 package(default_visibility = ["//visibility:public"])
 
-load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-
-autogen_hjson_c_header(
-    name = "clkmgr_c_regs",
-    srcs = [
-        "data/clkmgr.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "clkmgr_rust_regs",
-    srcs = [
-        "data/clkmgr.hjson",
-    ],
-)
-
-filegroup(
-    name = "all_files",
-    srcs = glob(["**"]),
+opentitan_ip(
+    name = "clkmgr",
+    files = glob(["**"]),
+    hjson = "data/clkmgr.hjson",
 )
