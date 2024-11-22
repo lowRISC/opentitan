@@ -536,8 +536,10 @@ module chip_${top["name"]}_${target["name"]} #(
   logic unused_usb_ram_2p_cfg;
   assign unused_usb_ram_2p_cfg = ^{ast_ram_2p_fcfg.marg_en_a,
                                    ast_ram_2p_fcfg.marg_a,
+                                   ast_ram_2p_fcfg.test_a,
                                    ast_ram_2p_fcfg.marg_en_b,
-                                   ast_ram_2p_fcfg.marg_b};
+                                   ast_ram_2p_fcfg.marg_b,
+                                   ast_ram_2p_fcfg.test_b};
 
   // this maps as follows:
   // assign spi_ram_2p_cfg = {10'h000, ram_2p_cfg_i.a_ram_lcfg, ram_2p_cfg_i.b_ram_lcfg};
@@ -961,7 +963,8 @@ module chip_${top["name"]}_${target["name"]} #(
     // No error detection is enabled inside SRAM.
     // Bus ECC is checked at the consumer side.
     .rerror_o (),
-    .cfg_i    (ram_1p_cfg)
+    .cfg_i    (ram_1p_cfg),
+    .alert_o()
   );
 
 ###################################################################
@@ -988,48 +991,6 @@ module chip_${top["name"]}_${target["name"]} #(
   assign unused_manual_sigs = ^{
     manual_in_otp_ext_volt
   };
-
-% if "usbdev" in {module["type"] for module in top["module"]}:
-  ///////////////////////////////
-  // Differential USB Receiver //
-  ///////////////////////////////
-
-  // TODO: generalize this USB mux code and align with other tops.
-
-  // Connect the D+ pad
-  // Note that we use two pads in parallel for the D+ channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDp] = manual_in_usb_p;
-  assign manual_out_usb_p = dio_out[DioUsbdevUsbDp];
-  assign manual_oe_usb_p = dio_oe[DioUsbdevUsbDp];
-  assign manual_attr_usb_p = dio_attr[DioUsbdevUsbDp];
-
-  // Connect the D- pads
-  // Note that we use two pads in parallel for the D- channel to meet electrical specifications.
-  assign dio_in[DioUsbdevUsbDn] = manual_in_usb_n;
-  assign manual_out_usb_n = dio_out[DioUsbdevUsbDn];
-  assign manual_oe_usb_n = dio_oe[DioUsbdevUsbDn];
-  assign manual_attr_usb_n = dio_attr[DioUsbdevUsbDn];
-
-  logic usb_rx_d;
-
-  // Pullups and differential receiver enable
-  logic usb_dp_pullup_en, usb_dn_pullup_en;
-  logic usb_rx_enable;
-
-  prim_usb_diff_rx #(
-    .CalibW(ast_pkg::UsbCalibWidth)
-  ) u_prim_usb_diff_rx (
-    .input_pi          ( USB_P                 ),
-    .input_ni          ( USB_N                 ),
-    .input_en_i        ( usb_rx_enable         ),
-    .core_pok_h_i      ( ast_pwst_h.aon_pok    ),
-    .pullup_p_en_i     ( usb_dp_pullup_en      ),
-    .pullup_n_en_i     ( usb_dn_pullup_en      ),
-    .calibration_i     ( usb_io_pu_cal         ),
-    .usb_diff_rx_obs_o ( usb_diff_rx_obs       ),
-    .input_o           ( usb_rx_d              )
-  );
-% endif
 
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumFatalExternalAlerts-1:0] soc_fatal_alert_req;
   soc_proxy_pkg::soc_alert_req_t [soc_proxy_pkg::NumRecovExternalAlerts-1:0] soc_recov_alert_req;
