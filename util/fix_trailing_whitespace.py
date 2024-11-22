@@ -22,6 +22,9 @@ REPO_TOP = Path(__file__).resolve().parent.parent
 IGNORED = {
     Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.logs.txt'),
     Path('sw/device/silicon_creator/rom/e2e/presigned_images/rom_e2e_self_hash_sim_dv.rodata.txt'),
+    Path('hw/dv/dpi/usbdpi/expected-gpio0-usb0.txt'),
+    Path('LICENSES/Apache-2.0.txt'),
+    Path('LICENSES/GPL-2.0-only.txt'),
 }
 
 
