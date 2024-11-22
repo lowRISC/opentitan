@@ -6226,8 +6226,6 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        # FIXME broken in sival ROM_EXT, change this line when fixed. See #21706.
-        tags = ["broken"],
         test_cmd = " ".join([
             "--bootstrap=\"{firmware}\"",
             "--firmware-elf=\"{firmware:elf}\"",

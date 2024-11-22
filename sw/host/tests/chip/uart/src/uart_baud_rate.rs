@@ -85,6 +85,12 @@ fn main() -> Result<()> {
         );
     }
 
+    // Reset baud rate to the default.
+    // HyperDebug doesn't seem to clear this properly between tests.
+    let uart = transport.uart("dut")?;
+    uart.set_baudrate(115200)?;
+    uart.clear_rx_buffer()?;
+
     Ok(())
 }
 
