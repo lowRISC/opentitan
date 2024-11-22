@@ -115,7 +115,6 @@ module ast #(
   output ast_pkg::ast_alert_req_t alert_req_o, // Alerts Output
 
   // dft interface
-  input pinmux_pkg::dft_strap_test_req_t dft_strap_test_i,  // DFT Straps
   input lc_ctrl_pkg::lc_tx_t lc_dft_en_i,     // DFT enable (secure bus)
   input [8-1:0] fla_obs_i,                    // FLASH Observe Bus
   input [8-1:0] otp_obs_i,                    // OTP Observe Bus
@@ -1039,8 +1038,6 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         main_env_iso_en_i,
                         rst_vcmpp_aon_n,
                         padmux2ast_i[Pad2AstInWidth-1:0],
-                        dft_strap_test_i.valid,
-                        dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],
                         fla_obs_i[8-1:0],
                         otp_obs_i[8-1:0],
