@@ -4852,7 +4852,13 @@
       {
         EnMasking: "1"
         NumAppIntf: 4
-        AppCfg: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgRomCtrl}"
+        AppCfg:
+          '''
+          '{kmac_pkg::AppCfgKeyMgr,
+                  kmac_pkg::AppCfgLcCtrl,
+                  kmac_pkg::AppCfgRomCtrl,
+                  kmac_pkg::AppCfgRomCtrl}
+          '''
       }
       clock_srcs:
       {
@@ -4956,7 +4962,13 @@
             '''
           type: kmac_pkg::app_config_t
           unpacked_dimensions: "[KmacNumAppIntf]"
-          default: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl, kmac_pkg::AppCfgRomCtrl}"
+          default:
+            '''
+            '{kmac_pkg::AppCfgKeyMgr,
+                    kmac_pkg::AppCfgLcCtrl,
+                    kmac_pkg::AppCfgRomCtrl,
+                    kmac_pkg::AppCfgRomCtrl}
+            '''
           local: "false"
           expose: "true"
           name_top: KmacAppCfg
