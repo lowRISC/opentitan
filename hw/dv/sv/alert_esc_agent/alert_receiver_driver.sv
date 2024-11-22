@@ -21,7 +21,24 @@ class alert_receiver_driver extends alert_esc_base_driver;
   extern task rsp_alert();
 
   extern task drive_alert_ping(alert_esc_seq_item req);
-  extern task set_ack_pins(alert_esc_seq_item req);
+
+  // Acknowledge an alert.
+  //
+  // The ack will come after a delay which is normally randomised in the range [cfg.ack_delay_min,
+  // cfg.ack_delay_max] cycles. If cfg.use_seq_item_ack_delay is true then the delay is from the
+  // ack_delay argument.
+  //
+  // Similarly, the ack stays in place for a time that is normally randomised in the range
+  // [cfg.ack_stable_min, cfg.ack_stable_max]. If cfg.use_seq_item_ack_stable is true then the ack
+  // stays stable for the number of cycles in the ack_stable argument.
+  //
+  // Both of these times will be truncated if cfg.fast_rcvr is true. In that case, they will be
+  // cfg.ack_delay_min, cfg.ack_stable_min respectively.
+  //
+  // This task can be safely killed on a reset.
+  extern task set_ack_pins(int unsigned ack_delay,
+                           int unsigned ack_stable);
+
   extern task set_ack();
   extern task reset_ack();
   extern task set_ping();
@@ -122,7 +139,7 @@ task alert_receiver_driver::rsp_alert();
       fork
         begin : isolation_fork_2
           fork
-            set_ack_pins(req);
+            set_ack_pins(req.ack_delay, req.ack_stable);
             wait(under_reset);
           join_any
           disable fork;
@@ -174,7 +191,7 @@ task alert_receiver_driver::drive_alert_ping(alert_esc_seq_item req);
             // instead. Another item will be driven through rsp_alert to respond to the alert
             // properly.
             if (have_sent_ping) begin
-              set_ack_pins(req);
+              set_ack_pins(req.ack_delay, req.ack_stable);
             end
           end
         join_any
@@ -186,38 +203,38 @@ task alert_receiver_driver::drive_alert_ping(alert_esc_seq_item req);
   end
 endtask
 
-task alert_receiver_driver::set_ack_pins(alert_esc_seq_item req);
-  int unsigned ack_delay = (cfg.use_seq_item_ack_delay) ? req.ack_delay :
-                            $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
-  int unsigned ack_stable = (cfg.use_seq_item_ack_stable) ? req.ack_stable :
-                             $urandom_range(cfg.ack_stable_max, cfg.ack_stable_min);
+task alert_receiver_driver::set_ack_pins(int unsigned ack_delay,
+                                         int unsigned ack_stable);
+  if (!cfg.use_seq_item_ack_delay) begin
+    ack_delay = $urandom_range(cfg.ack_delay_max, cfg.ack_delay_min);
+  end
+  if (!cfg.use_seq_item_ack_stable) begin
+    ack_stable = $urandom_range(cfg.ack_stable_max, cfg.ack_stable_min);
+  end
+
   if (cfg.fast_rcvr) begin
     ack_delay = cfg.ack_delay_min;
     ack_stable = cfg.ack_stable_min;
   end
 
-  if (!req.int_err) begin
-    @(cfg.vif.receiver_cb);
-    repeat (ack_delay) @(cfg.vif.receiver_cb);
-    set_ack();
-    fork
-      begin : isolation_fork
-        fork
-          begin : ack_timeout
-            repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
-          end
-          begin : wait_ack_handshake
-            while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b0) @(cfg.vif.receiver_cb);
-            repeat (ack_stable) @(cfg.vif.receiver_cb);
-            reset_ack();
-          end
-        join_any
-        disable fork;
-      end : isolation_fork
-    join
-  end else begin
-  // Differential signal fail is not implemented.
-  end
+  @(cfg.vif.receiver_cb);
+  repeat (ack_delay) @(cfg.vif.receiver_cb);
+  set_ack();
+  fork
+    begin : isolation_fork
+      fork
+        begin : ack_timeout
+          repeat (cfg.handshake_timeout_cycle) @(cfg.vif.sender_cb);
+        end
+        begin : wait_ack_handshake
+          while (cfg.vif.receiver_cb.alert_tx.alert_p !== 1'b0) @(cfg.vif.receiver_cb);
+          repeat (ack_stable) @(cfg.vif.receiver_cb);
+          reset_ack();
+        end
+      join_any
+      disable fork;
+    end : isolation_fork
+  join
 endtask : set_ack_pins
 
 task alert_receiver_driver::set_ack();
