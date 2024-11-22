@@ -365,17 +365,6 @@ otbn_binary(
 )
 
 otbn_binary(
-    name = "p384_curve_point_valid",
-    srcs = [
-        "p384_curve_point_valid.s",
-    ],
-    deps = [
-        ":p384_base",
-        ":p384_isoncurve",
-    ],
-)
-
-otbn_binary(
     name = "p384_ecdh",
     srcs = [
         "p384_ecdh.s",
@@ -386,6 +375,7 @@ otbn_binary(
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
+        ":p384_isoncurve",
         ":p384_keygen",
         ":p384_keygen_from_seed",
         ":p384_scalar_mult",
@@ -433,6 +423,7 @@ otbn_binary(
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
+        ":p384_isoncurve",
         ":p384_modinv",
         ":p384_verify",
     ],

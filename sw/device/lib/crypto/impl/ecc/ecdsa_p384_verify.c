@@ -7,7 +7,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
-#include "sw/device/lib/crypto/impl/ecc/p384_curve_point_valid.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -20,9 +19,10 @@ OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, y);  // Public key y-coordinate.
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
                          x_r);  // result of verify (x1 coordinate)
 OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify,
-                         msg);                   // hash message to sign/verify
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, r);  // r part of signature
-OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, s);  // s part of signature
+                         msg);                    // hash message to sign/verify
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, r);   // r part of signature
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, s);   // s part of signature
+OTBN_DECLARE_SYMBOL_ADDR(p384_ecdsa_verify, ok);  // Status code.
 
 static const otbn_app_t kOtbnAppEcdsaVerify =
     OTBN_APP_T_INIT(p384_ecdsa_verify);
@@ -38,14 +38,12 @@ static const otbn_addr_t kOtbnVarEcdsaS =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, s);
 static const otbn_addr_t kOtbnVarEcdsaRnd =
     OTBN_ADDR_T_INIT(p384_ecdsa_verify, x_r);
+static const otbn_addr_t kOtbnVarEcdsaOk =
+    OTBN_ADDR_T_INIT(p384_ecdsa_verify, ok);
 
 status_t ecdsa_p384_verify_start(const ecdsa_p384_signature_t *signature,
                                  const uint32_t digest[kP384ScalarWords],
                                  const p384_point_t *public_key) {
-  // Check if public key is valid
-  HARDENED_TRY(p384_curve_point_validate_start(public_key));
-  HARDENED_TRY(p384_curve_point_validate_finalize());
-
   // Load the ECDSA/P-384 app
   HARDENED_TRY(otbn_load_app(kOtbnAppEcdsaVerify));
 
@@ -72,6 +70,15 @@ status_t ecdsa_p384_verify_finalize(const ecdsa_p384_signature_t *signature,
                                     hardened_bool_t *result) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Read the status code out of DMEM (false if basic checks on the validity of
+  // the signature and public key failed).
+  uint32_t ok;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarEcdsaOk, &ok));
+  if (launder32(ok) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
 
   // Read x_r (recovered R) out of OTBN dmem.
   uint32_t x_r[kP384ScalarWords];

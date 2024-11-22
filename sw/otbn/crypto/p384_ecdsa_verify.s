@@ -39,18 +39,24 @@ start:
  * @param[in]    dmem[x]: x-coordinate of public key
  * @param[in]    dmem[y]: y-coordinate of public key
  * @param[out] dmem[x_r]: x1 coordinate to be compared to rs
- *
- * !!! Attention !!! - before signature verification p384_curve_point_valid
- * binary has to be executed to check if the provided public key is valid.
- *
  */
 ecdsa_verify:
+  /* Call curve point validation function */
+  jal       x1, p384_check_public_key
+
   /* Verify the signature (compute x1). */
   jal      x1, p384_verify
 
   ecall
 
 .bss
+
+/* Success code for basic validity checks on the public key and signature.
+   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
+.balign 4
+.globl ok
+ok:
+  .zero 4
 
 /* result of verify (x1 coordinate) */
 .globl x_r
