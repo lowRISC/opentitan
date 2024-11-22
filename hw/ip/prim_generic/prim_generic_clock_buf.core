@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:clock_buf"
 description: "clock buffer"
+virtual:
+  - lowrisc:prim:clock_buf
+
 filesets:
   files_rtl:
     files:

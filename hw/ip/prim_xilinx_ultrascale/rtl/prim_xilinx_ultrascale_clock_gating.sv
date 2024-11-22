@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module prim_xilinx_ultrascale_clock_gating #(
+module prim_clock_gating #(
   parameter bit NoFpgaGate = 1'b0,
   parameter bit FpgaBufGlobal = 1'b1 // No function in Ultrascale
 ) (

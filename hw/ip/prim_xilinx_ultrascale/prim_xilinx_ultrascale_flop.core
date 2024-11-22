@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx_ultrascale:flop"
 description: "Xilinx flop"
+virtual:
+  - lowrisc:prim:flop
+
 filesets:
   files_rtl:
     files:

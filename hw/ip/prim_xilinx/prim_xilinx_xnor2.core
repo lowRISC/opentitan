@@ -5,6 +5,9 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:xnor2"
 description: "Xilinx 2-input xnor"
+virtual:
+  - lowrisc:prim:xnor2
+
 filesets:
   files_rtl:
     files:
