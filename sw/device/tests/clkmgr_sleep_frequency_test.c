@@ -28,10 +28,6 @@ OTTF_DEFINE_TEST_CONFIG();
  * After 100 measurements, test kicks in regular sleep with IO and USB
  * clocks turned off. Once the chip wakes up the measurements should be
  * enabled, but no errors should be found even for stopped clocks.
- *
- * Notice the test overrides the hardware behavior so it comes out with
- * calibrated USB clock, otherwise the USB clock frequency will be incorrect.
- * USB calibration should be a separate test, and may be vendor-specific.
  */
 enum {
   kWaitForCSRPollingMicros = 1,
