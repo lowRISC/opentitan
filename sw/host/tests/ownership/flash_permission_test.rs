@@ -127,7 +127,7 @@ fn flash_info_check(info: &[FlashRegion<'_>], unlocked: bool) -> Result<()> {
             FlashRegion("info", 1, 0, 3, "RD-xx-xx-SC-EC-xx", "LK") // owner config 1
         },
         FlashRegion("info", 1, 0, 4, "uu-uu-uu-uu-uu-uu", "LK"), // creator reserved
-        FlashRegion("info", 1, 0, 5, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
+        FlashRegion("info", 1, 0, 5, "RD-WR-ER-xx-xx-HE", "UN"), // owner reserved
         FlashRegion("info", 1, 0, 6, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
         FlashRegion("info", 1, 0, 7, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
         FlashRegion("info", 1, 0, 8, "xx-xx-xx-xx-xx-xx", "UN"), // owner reserved
