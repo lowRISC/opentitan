@@ -231,10 +231,10 @@ module spi_host_reg_top (
   logic [31:0] csid_qs;
   logic [31:0] csid_wd;
   logic command_we;
-  logic [8:0] command_len_wd;
   logic command_csaat_wd;
   logic [1:0] command_speed_wd;
   logic [1:0] command_direction_wd;
+  logic [19:0] command_len_wd;
   logic error_enable_we;
   logic error_enable_cmdbusy_qs;
   logic error_enable_cmdbusy_wd;
@@ -1184,23 +1184,7 @@ module spi_host_reg_top (
   logic command_qe;
   logic [3:0] command_flds_we;
   assign command_qe = &command_flds_we;
-  //   F[len]: 8:0
-  prim_subreg_ext #(
-    .DW    (9)
-  ) u_command_len (
-    .re     (1'b0),
-    .we     (command_we),
-    .wd     (command_len_wd),
-    .d      ('0),
-    .qre    (),
-    .qe     (command_flds_we[0]),
-    .q      (reg2hw.command.len.q),
-    .ds     (),
-    .qs     ()
-  );
-  assign reg2hw.command.len.qe = command_qe;
-
-  //   F[csaat]: 9:9
+  //   F[csaat]: 0:0
   prim_subreg_ext #(
     .DW    (1)
   ) u_command_csaat (
@@ -1209,14 +1193,14 @@ module spi_host_reg_top (
     .wd     (command_csaat_wd),
     .d      ('0),
     .qre    (),
-    .qe     (command_flds_we[1]),
+    .qe     (command_flds_we[0]),
     .q      (reg2hw.command.csaat.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.command.csaat.qe = command_qe;
 
-  //   F[speed]: 11:10
+  //   F[speed]: 2:1
   prim_subreg_ext #(
     .DW    (2)
   ) u_command_speed (
@@ -1225,14 +1209,14 @@ module spi_host_reg_top (
     .wd     (command_speed_wd),
     .d      ('0),
     .qre    (),
-    .qe     (command_flds_we[2]),
+    .qe     (command_flds_we[1]),
     .q      (reg2hw.command.speed.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.command.speed.qe = command_qe;
 
-  //   F[direction]: 13:12
+  //   F[direction]: 4:3
   prim_subreg_ext #(
     .DW    (2)
   ) u_command_direction (
@@ -1241,12 +1225,28 @@ module spi_host_reg_top (
     .wd     (command_direction_wd),
     .d      ('0),
     .qre    (),
-    .qe     (command_flds_we[3]),
+    .qe     (command_flds_we[2]),
     .q      (reg2hw.command.direction.q),
     .ds     (),
     .qs     ()
   );
   assign reg2hw.command.direction.qe = command_qe;
+
+  //   F[len]: 24:5
+  prim_subreg_ext #(
+    .DW    (20)
+  ) u_command_len (
+    .re     (1'b0),
+    .we     (command_we),
+    .wd     (command_len_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (command_flds_we[3]),
+    .q      (reg2hw.command.len.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.command.len.qe = command_qe;
 
 
   // R[error_enable]: V(False)
@@ -1799,13 +1799,13 @@ module spi_host_reg_top (
   assign csid_wd = reg_wdata[31:0];
   assign command_we = addr_hit[8] & reg_we & !reg_error;
 
-  assign command_len_wd = reg_wdata[8:0];
+  assign command_csaat_wd = reg_wdata[0];
 
-  assign command_csaat_wd = reg_wdata[9];
+  assign command_speed_wd = reg_wdata[2:1];
 
-  assign command_speed_wd = reg_wdata[11:10];
+  assign command_direction_wd = reg_wdata[4:3];
 
-  assign command_direction_wd = reg_wdata[13:12];
+  assign command_len_wd = reg_wdata[24:5];
   assign error_enable_we = addr_hit[9] & reg_we & !reg_error;
 
   assign error_enable_cmdbusy_wd = reg_wdata[0];
@@ -1924,10 +1924,10 @@ module spi_host_reg_top (
       end
 
       addr_hit[8]: begin
-        reg_rdata_next[8:0] = '0;
-        reg_rdata_next[9] = '0;
-        reg_rdata_next[11:10] = '0;
-        reg_rdata_next[13:12] = '0;
+        reg_rdata_next[0] = '0;
+        reg_rdata_next[2:1] = '0;
+        reg_rdata_next[4:3] = '0;
+        reg_rdata_next[24:5] = '0;
       end
 
       addr_hit[9]: begin
