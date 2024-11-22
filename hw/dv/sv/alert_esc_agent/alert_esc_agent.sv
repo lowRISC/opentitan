@@ -80,6 +80,10 @@ class alert_esc_agent extends dv_base_agent#(
         cfg.vif.clk_rst_async_if.set_freq_mhz($urandom_range(10, 240));
       end
     end
+
+    // Configure the sequencer to take priorities into account. This allows alert responses to be
+    // scheduled over ping requests, which come from a sequence that is started with low priority.
+    if (sequencer != null) sequencer.set_arbitration(UVM_SEQ_ARB_STRICT_FIFO);
   endfunction
 
   // Create automatic response (from monitor) to ping and alert requests.
