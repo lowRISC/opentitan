@@ -86,7 +86,9 @@ Software can let the HMAC IP process multiple message streams in a time-interlea
 Such context switches are possible only at the boundary of complete message blocks (512-bit for SHA-2 256 or 1024-bit for SHA-2 384/512).
 When SW doesn't know each instant at which a full message block is available, it can buffer data in memory until a block is full and only write HMAC's FIFOs once the buffer in memory contains a full message block.
 
+<!-- req_hmac_0005 begin -->
 The context that needs to be saved and restored is in the following registers: [`CFG`](registers.md#cfg), [`DIGEST_*`](registers.md#digest), and [`MSG_LENGTH_*`](registers.md#msg_length_lower).
+<!-- req_hmac_0005 end -->
 
 **Due to an RTL bug, the hardware may not be able to easily recover from a `CMD.hash_stop` command (for more details, refer to [Issue #24767](https://github.com/lowRISC/opentitan/issues/24767)).
 To avoid the hardware from entering this state, a stop-gap software workaround solution should be used (see [PR #24944](https://github.com/lowRISC/opentitan/pull/24944) for details).
@@ -119,9 +121,10 @@ In the case of keyed HMAC, `KEY_0`..`X` registers also need to be restored.
 The final hash for any message stream can be obtained at any time (no need for complete blocks) by setting `CMD.hash_process` and waiting for the `hmac_done` interrupt / status bit (or polling on the `STATUS.hmac_idle` bit) to indicate the ongoing operation has completed, and finally reading the digest from the `DIGEST` registers.
 
 ## Errors
-
+<!-- imp_hmac_0016 begin -->
 When HMAC errors are triggered, the IP reports the error via [`INTR_STATE.hmac_err`](registers.md#intr_state).
 The details of the error type is stored in [`ERR_CODE`](registers.md#err_code).
+<!-- imp_hmac_0016 end -->
 
 Error                        | Value | Description
 -----------------------------|-------|---------------
