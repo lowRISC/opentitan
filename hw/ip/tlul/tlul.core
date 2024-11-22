@@ -16,6 +16,7 @@ filesets:
       - lowrisc:tlul:jtag_dtm
       - lowrisc:tlul:sram2tlul
       - lowrisc:tlul:lc_gate
+      - lowrisc:tlul:request_loopback
 
 targets:
   default:
