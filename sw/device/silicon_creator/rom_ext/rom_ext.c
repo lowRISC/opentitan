@@ -1286,8 +1286,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // Establish our identity.
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_silicon());
-  HARDENED_RETURN_IF_ERROR(
-      dice_chain_attestation_creator(&boot_measurements.rom_ext, self));
 
   // Initialize the boot_log in retention RAM.
   const chip_info_t *rom_chip_info = (const chip_info_t *)_chip_info_start;
@@ -1311,6 +1309,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   if (error != kErrorOk) {
     dbg_printf("ownership_init: %x\r\n", error);
   }
+
+  HARDENED_RETURN_IF_ERROR(
+      dice_chain_attestation_creator(&boot_measurements.rom_ext, self));
 
   // Configure SRAM execution as the owner requested.
   rom_ext_sram_exec(owner_config.sram_exec);
