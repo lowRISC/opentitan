@@ -8,6 +8,14 @@ load("@rules_python//python:defs.bzl", "py_test")
 package(default_visibility = ["//visibility:public"])
 
 py_test(
+    name = "db_test",
+    srcs = ["db_test.py"],
+    deps = [
+        "//sw/host/provisioning/orchestrator/src:db",
+    ],
+)
+
+py_test(
     name = "device_id_test",
     srcs = ["device_id_test.py"],
     data = [
