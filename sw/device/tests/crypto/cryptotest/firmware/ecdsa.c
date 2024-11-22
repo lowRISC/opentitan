@@ -25,7 +25,7 @@ enum {
 
 static const otcrypto_key_config_t kP256PrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -33,7 +33,7 @@ static const otcrypto_key_config_t kP256PrivateKeyConfig = {
 
 static const otcrypto_key_config_t kP384PrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -64,7 +64,7 @@ int set_nist_p256_params(
   memcpy(pub_p256->x, uj_qx.coordinate, uj_qx.coordinate_len);
   memset(pub_p256->y, 0, kP256CoordBytes);
   memcpy(pub_p256->y, uj_qy.coordinate, uj_qy.coordinate_len);
-  public_key->key_mode = kOtcryptoKeyModeEcdsa;
+  public_key->key_mode = kOtcryptoKeyModeEcdsaP256;
   public_key->key_length = sizeof(p256_point_t);
   public_key->key = (uint32_t *)pub_p256;
   *digest_len = kP256ScalarWords;
@@ -117,7 +117,7 @@ int set_nist_p384_params(
   memcpy(pub_p384->x, uj_qx.coordinate, uj_qx.coordinate_len);
   memset(pub_p384->y, 0, kP384CoordBytes);
   memcpy(pub_p384->y, uj_qy.coordinate, uj_qy.coordinate_len);
-  public_key->key_mode = kOtcryptoKeyModeEcdsa;
+  public_key->key_mode = kOtcryptoKeyModeEcdsaP384;
   public_key->key_length = sizeof(p384_point_t);
   public_key->key = (uint32_t *)pub_p384;
   *digest_len = kP384ScalarWords;

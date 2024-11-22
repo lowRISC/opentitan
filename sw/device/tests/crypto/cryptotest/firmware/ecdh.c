@@ -40,7 +40,6 @@ status_t handle_ecdh(ujson_t *uj) {
 
   otcrypto_key_config_t key_config = {
       .version = kOtcryptoLibVersion1,
-      .key_mode = kOtcryptoKeyModeEcdh,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
@@ -54,10 +53,11 @@ status_t handle_ecdh(ujson_t *uj) {
       memcpy(pub_p256.x, uj_qx.coordinate, uj_qx.coordinate_len);
       memset(pub_p256.y, 0, kP256CoordWords * 4);
       memcpy(pub_p256.y, uj_qy.coordinate, uj_qy.coordinate_len);
-      public_key.key_mode = kOtcryptoKeyModeEcdh;
+      public_key.key_mode = kOtcryptoKeyModeEcdhP256;
       public_key.key_length = sizeof(p256_point_t);
       public_key.key = (uint32_t *)&pub_p256;
       key_config.key_length = P256_KEY_BYTES;
+      key_config.key_mode = kOtcryptoKeyModeEcdhP256,
       shared_key_words = P256_KEY_BYTES / sizeof(uint32_t);
       memset(private_key_masked_p256.share0, 0, kP256MaskedScalarShareBytes);
       memcpy(private_key_masked_p256.share0, uj_private_key.d0,
@@ -75,10 +75,11 @@ status_t handle_ecdh(ujson_t *uj) {
       memcpy(pub_p384.x, uj_qx.coordinate, uj_qx.coordinate_len);
       memset(pub_p384.y, 0, kP384CoordWords * 4);
       memcpy(pub_p384.y, uj_qy.coordinate, uj_qy.coordinate_len);
-      public_key.key_mode = kOtcryptoKeyModeEcdh;
+      public_key.key_mode = kOtcryptoKeyModeEcdhP384;
       public_key.key_length = sizeof(p384_point_t);
       public_key.key = (uint32_t *)&pub_p384;
       key_config.key_length = P384_KEY_BYTES;
+      key_config.key_mode = kOtcryptoKeyModeEcdhP384,
       shared_key_words = P384_KEY_BYTES / sizeof(uint32_t);
       memset(private_key_masked_p384.share0, 0, kP384MaskedScalarShareBytes);
       memcpy(private_key_masked_p384.share0, uj_private_key.d0,
