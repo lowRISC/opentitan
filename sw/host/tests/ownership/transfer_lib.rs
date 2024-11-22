@@ -13,7 +13,8 @@ use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams}
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
 use opentitanlib::ownership::{
     ApplicationKeyDomain, CommandTag, FlashFlags, KeyMaterial, OwnerApplicationKey, OwnerBlock,
-    OwnerConfigItem, OwnerFlashConfig, OwnerFlashRegion, OwnerRescueConfig, OwnershipKeyAlg,
+    OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig, OwnerFlashRegion, OwnerInfoPage,
+    OwnerRescueConfig, OwnershipKeyAlg,
 };
 use opentitanlib::rescue::serial::RescueSerial;
 
@@ -238,6 +239,15 @@ where
                     OwnerFlashRegion::new(256, 32, config.rom_ext()),
                     OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
                     OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
+                ],
+                ..Default::default()
+            }));
+        owner
+            .data
+            .push(OwnerConfigItem::FlashInfoConfig(OwnerFlashInfoConfig {
+                config: vec![
+                    // Bank 1, page 5, filesystem-like configuration.
+                    OwnerInfoPage::new(1, 5, config.filesystem()),
                 ],
                 ..Default::default()
             }));
