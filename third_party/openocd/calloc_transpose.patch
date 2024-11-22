@@ -1,0 +1,166 @@
+diff --git a/jimtcl/linenoise.c b/jimtcl/linenoise.c
+index 1c01853..cca2160 100644
+--- a/jimtcl/linenoise.c
++++ b/jimtcl/linenoise.c
+@@ -2153,7 +2153,7 @@ notinserted:
+         return 0;
+     }
+     if (history == NULL) {
+-        history = (char **)calloc(sizeof(char*), history_max_len);
++        history = (char **)calloc(history_max_len, sizeof(char*));
+     }
+ 
+     /* do not insert duplicate lines into history */
+@@ -2186,7 +2186,7 @@ int linenoiseHistorySetMaxLen(int len) {
+     if (history) {
+         int tocopy = history_len;
+ 
+-        newHistory = (char **)calloc(sizeof(char*), len);
++        newHistory = (char **)calloc(len, sizeof(char*));
+ 
+         /* If we can't copy everything, free the elements we'll not use. */
+         if (len < tocopy) {
+diff --git a/src/flash/nor/ambiqmicro.c b/src/flash/nor/ambiqmicro.c
+index 2b458bc..bb89377 100644
+--- a/src/flash/nor/ambiqmicro.c
++++ b/src/flash/nor/ambiqmicro.c
+@@ -124,7 +124,7 @@ FLASH_BANK_COMMAND_HANDLER(ambiqmicro_flash_bank_command)
+ 	if (CMD_ARGC < 6)
+ 		return ERROR_COMMAND_SYNTAX_ERROR;
+ 
+-	ambiqmicro_info = calloc(sizeof(struct ambiqmicro_flash_bank), 1);
++	ambiqmicro_info = calloc(1, sizeof(struct ambiqmicro_flash_bank));
+ 
+ 	bank->driver_priv = ambiqmicro_info;
+ 
+diff --git a/src/flash/nor/kinetis.c b/src/flash/nor/kinetis.c
+index 7137b4a..2de3b91 100644
+--- a/src/flash/nor/kinetis.c
++++ b/src/flash/nor/kinetis.c
+@@ -898,7 +898,7 @@ FLASH_BANK_COMMAND_HANDLER(kinetis_flash_bank_command)
+ 	k_chip = kinetis_get_chip(target);
+ 
+ 	if (!k_chip) {
+-		k_chip = calloc(sizeof(struct kinetis_chip), 1);
++		k_chip = calloc(1, sizeof(struct kinetis_chip));
+ 		if (!k_chip) {
+ 			LOG_ERROR("No memory");
+ 			return ERROR_FAIL;
+@@ -999,7 +999,7 @@ static int kinetis_create_missing_banks(struct kinetis_chip *k_chip)
+ 					 bank_idx - k_chip->num_pflash_blocks);
+ 		}
+ 
+-		bank = calloc(sizeof(struct flash_bank), 1);
++		bank = calloc(1, sizeof(struct flash_bank));
+ 		if (!bank)
+ 			return ERROR_FAIL;
+ 
+diff --git a/src/flash/nor/max32xxx.c b/src/flash/nor/max32xxx.c
+index 51d6ae2..59a14af 100644
+--- a/src/flash/nor/max32xxx.c
++++ b/src/flash/nor/max32xxx.c
+@@ -87,7 +87,7 @@ FLASH_BANK_COMMAND_HANDLER(max32xxx_flash_bank_command)
+ 		return ERROR_FLASH_BANK_INVALID;
+ 	}
+ 
+-	info = calloc(sizeof(struct max32xxx_flash_bank), 1);
++	info = calloc(1, sizeof(struct max32xxx_flash_bank));
+ 	COMMAND_PARSE_NUMBER(uint, CMD_ARGV[2], info->flash_size);
+ 	COMMAND_PARSE_NUMBER(uint, CMD_ARGV[6], info->flc_base);
+ 	COMMAND_PARSE_NUMBER(uint, CMD_ARGV[7], info->sector_size);
+diff --git a/src/flash/nor/msp432.c b/src/flash/nor/msp432.c
+index d9b9695..cad7c6e 100644
+--- a/src/flash/nor/msp432.c
++++ b/src/flash/nor/msp432.c
+@@ -937,7 +937,7 @@ static int msp432_probe(struct flash_bank *bank)
+ 
+ 	if (is_main && MSP432P4 == msp432_bank->family_type) {
+ 		/* Create the info flash bank needed by MSP432P4 variants */
+-		struct flash_bank *info = calloc(sizeof(struct flash_bank), 1);
++		struct flash_bank *info = calloc(1, sizeof(struct flash_bank));
+ 		if (!info)
+ 			return ERROR_FAIL;
+ 
+diff --git a/src/flash/nor/stellaris.c b/src/flash/nor/stellaris.c
+index 3a78952..8c582b2 100644
+--- a/src/flash/nor/stellaris.c
++++ b/src/flash/nor/stellaris.c
+@@ -453,7 +453,7 @@ FLASH_BANK_COMMAND_HANDLER(stellaris_flash_bank_command)
+ 	if (CMD_ARGC < 6)
+ 		return ERROR_COMMAND_SYNTAX_ERROR;
+ 
+-	stellaris_info = calloc(sizeof(struct stellaris_flash_bank), 1);
++	stellaris_info = calloc(1, sizeof(struct stellaris_flash_bank));
+ 	bank->base = 0x0;
+ 	bank->driver_priv = stellaris_info;
+ 
+diff --git a/src/flash/nor/stm32f2x.c b/src/flash/nor/stm32f2x.c
+index 36b7a0d..99bd994 100644
+--- a/src/flash/nor/stm32f2x.c
++++ b/src/flash/nor/stm32f2x.c
+@@ -1018,7 +1018,7 @@ static int stm32x_probe(struct flash_bank *bank)
+ 		assert(num_sectors > 0);
+ 
+ 		bank->num_sectors = num_sectors;
+-		bank->sectors = calloc(sizeof(struct flash_sector), num_sectors);
++		bank->sectors = calloc(num_sectors, sizeof(struct flash_sector));
+ 
+ 		if (stm32x_otp_is_f7(bank))
+ 			bank->size = STM32F7_OTP_SIZE;
+diff --git a/src/jtag/drivers/ulink.c b/src/jtag/drivers/ulink.c
+index fd29f12..e70780c 100644
+--- a/src/jtag/drivers/ulink.c
++++ b/src/jtag/drivers/ulink.c
+@@ -1473,7 +1473,7 @@ static int ulink_queue_scan(struct ulink *device, struct jtag_command *cmd)
+ 
+ 	/* Allocate TDO buffer if required */
+ 	if ((type == SCAN_IN) || (type == SCAN_IO)) {
+-		tdo_buffer_start = calloc(sizeof(uint8_t), scan_size_bytes);
++		tdo_buffer_start = calloc(scan_size_bytes, sizeof(uint8_t));
+ 
+ 		if (!tdo_buffer_start)
+ 			return ERROR_FAIL;
+diff --git a/src/target/arc_jtag.c b/src/target/arc_jtag.c
+index ddb4f62..a186709 100644
+--- a/src/target/arc_jtag.c
++++ b/src/target/arc_jtag.c
+@@ -298,7 +298,7 @@ static int arc_jtag_read_registers(struct arc_jtag *jtag_info, uint32_t type,
+ 			ARC_JTAG_READ_FROM_CORE_REG : ARC_JTAG_READ_FROM_AUX_REG);
+ 	arc_jtag_enque_set_transaction(jtag_info, transaction, TAP_DRPAUSE);
+ 
+-	uint8_t *data_buf = calloc(sizeof(uint8_t), count * 4);
++	uint8_t *data_buf = calloc(count * 4, sizeof(uint8_t));
+ 
+ 	arc_jtag_enque_register_rw(jtag_info, addr, data_buf, NULL, count);
+ 
+@@ -498,7 +498,7 @@ int arc_jtag_read_memory(struct arc_jtag *jtag_info, uint32_t addr,
+ 	if (!count)
+ 		return ERROR_OK;
+ 
+-	data_buf = calloc(sizeof(uint8_t), count * 4);
++	data_buf = calloc(count * 4, sizeof(uint8_t));
+ 	arc_jtag_enque_reset_transaction(jtag_info);
+ 
+ 	/* We are reading from memory. */
+diff --git a/src/target/nds32.c b/src/target/nds32.c
+index bd30976..9fb13d6 100644
+--- a/src/target/nds32.c
++++ b/src/target/nds32.c
+@@ -381,7 +381,7 @@ static const struct reg_arch_type nds32_reg_access_type_64 = {
+ static struct reg_cache *nds32_build_reg_cache(struct target *target,
+ 		struct nds32 *nds32)
+ {
+-	struct reg_cache *cache = calloc(sizeof(struct reg_cache), 1);
++	struct reg_cache *cache = calloc(1, sizeof(struct reg_cache));
+ 	struct reg *reg_list = calloc(TOTAL_REG_NUM, sizeof(struct reg));
+ 	struct nds32_reg *reg_arch_info = calloc(TOTAL_REG_NUM, sizeof(struct nds32_reg));
+ 	int i;
+@@ -409,7 +409,7 @@ static struct reg_cache *nds32_build_reg_cache(struct target *target,
+ 		reg_list[i].size = nds32_reg_size(i);
+ 		reg_list[i].arch_info = &reg_arch_info[i];
+ 
+-		reg_list[i].reg_data_type = calloc(sizeof(struct reg_data_type), 1);
++		reg_list[i].reg_data_type = calloc(1, sizeof(struct reg_data_type));
+ 
+ 		if (reg_arch_info[i].num >= FD0 && reg_arch_info[i].num <= FD31) {
+ 			reg_list[i].value = reg_arch_info[i].value;
