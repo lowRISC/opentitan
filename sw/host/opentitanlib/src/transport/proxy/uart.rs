@@ -94,6 +94,13 @@ impl Uart for ProxyUart {
         }
     }
 
+    fn get_device_path(&self) -> Result<String> {
+        match self.execute_command(UartRequest::GetDevicePath)? {
+            UartResponse::GetDevicePath { path } => Ok(path),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
