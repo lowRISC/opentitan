@@ -94,6 +94,10 @@ impl Uart for HyperdebugUart {
         self.serial_port.set_flow_control(flow_control)
     }
 
+    fn get_device_path(&self) -> Result<String> {
+        self.serial_port.get_device_path()
+    }
+
     fn read(&self, buf: &mut [u8]) -> Result<usize> {
         self.serial_port.read(buf)
     }

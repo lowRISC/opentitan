@@ -178,6 +178,7 @@ pub enum UartRequest {
     },
     SetBreak(bool),
     SetParity(Parity),
+    GetDevicePath,
     Read {
         timeout_millis: Option<u32>,
         len: u32,
@@ -195,6 +196,7 @@ pub enum UartResponse {
     SetBaudrate,
     SetBreak,
     SetParity,
+    GetDevicePath { path: String },
     Read { data: Vec<u8> },
     Write,
     SupportsNonblockingRead { has_support: bool },

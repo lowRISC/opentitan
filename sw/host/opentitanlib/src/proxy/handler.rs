@@ -265,6 +265,10 @@ impl<'a> TransportCommandHandler<'a> {
                         instance.set_parity(*parity)?;
                         Ok(Response::Uart(UartResponse::SetParity))
                     }
+                    UartRequest::GetDevicePath => {
+                        let path = instance.get_device_path()?;
+                        Ok(Response::Uart(UartResponse::GetDevicePath { path }))
+                    }
                     UartRequest::Read {
                         timeout_millis,
                         len,

@@ -73,6 +73,12 @@ pub trait Uart {
         Ok(())
     }
 
+    /// Returns `"/dev/ttyUSBn"` or similar OS device path usable by external programs for
+    /// directly accessing the serial port.
+    fn get_device_path(&self) -> Result<String> {
+        Err(TransportError::UnsupportedOperation.into())
+    }
+
     /// Reads UART receive data into `buf`, returning the number of bytes read.
     /// This function _may_ block.
     fn read(&self, buf: &mut [u8]) -> Result<usize>;
