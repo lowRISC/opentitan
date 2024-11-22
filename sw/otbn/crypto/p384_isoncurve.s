@@ -6,6 +6,14 @@
  *   test.
  */
 
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
  .section .text
 
 /**
@@ -140,8 +148,8 @@ p384_isoncurve:
  * clobbered registers: x2, x3, x20 to x23, w0 to w17
  * clobbered flag groups: FG0
  */
- .globl p384_curve_point_valid
-p384_curve_point_valid:
+ .globl p384_check_public_key
+p384_check_public_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
