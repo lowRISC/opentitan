@@ -206,7 +206,7 @@ cc_library(
     srcs = ["dice_chain.c"],
     hdrs = ["dice_chain.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:entropy",
