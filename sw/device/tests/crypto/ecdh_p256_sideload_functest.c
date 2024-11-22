@@ -50,7 +50,7 @@ static const uint32_t kPrivateKeyBSalt[7] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
 // Configuration for the private key.
 static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdh,
+    .key_mode = kOtcryptoKeyModeEcdhP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolTrue,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -90,23 +90,23 @@ status_t key_exchange_test(void) {
   uint32_t pkA[kP256PublicKeyWords] = {0};
   uint32_t pkB[kP256PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_keyA = {
-      .key_mode = kOtcryptoKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(pkA),
       .key = pkA,
   };
   otcrypto_unblinded_key_t public_keyB = {
-      .key_mode = kOtcryptoKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(pkB),
       .key = pkB,
   };
 
   // Generate a keypair.
   LOG_INFO("Generating keypair A...");
-  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyA, &public_keyA));
+  TRY(otcrypto_ecdh_p256_keygen(&private_keyA, &public_keyA));
 
   // Generate a second keypair.
   LOG_INFO("Generating keypair B...");
-  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyB, &public_keyB));
+  TRY(otcrypto_ecdh_p256_keygen(&private_keyB, &public_keyB));
 
   // Sanity check; public keys should be different from each other.
   CHECK_ARRAYS_NE(pkA, pkB, ARRAYSIZE(pkA));

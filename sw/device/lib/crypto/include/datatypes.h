@@ -243,14 +243,18 @@ typedef enum otcrypto_rsa_key_mode {
  * Values are hardened.
  */
 typedef enum otcrypto_ecc_key_mode {
-  // Mode ECDSA.
-  kOtcryptoEccKeyModeEcdsa = 0x4e5,
-  // Mode ECDH.
-  kOtcryptoEccKeyModeEcdh = 0x6bb,
+  // Mode ECDSA/P-256.
+  kOtcryptoEccKeyModeEcdsaP256 = 0x31e,
+  // Mode ECDSA/P-384.
+  kOtcryptoEccKeyModeEcdsaP384 = 0x695,
+  // Mode ECDH/P-256.
+  kOtcryptoEccKeyModeEcdhP256 = 0x5fc,
+  // Mode ECDH/P-384.
+  kOtcryptoEccKeyModeEcdhP384 = 0x1c7,
   // Mode Ed25519.
-  kOtcryptoEccKeyModeEd25519 = 0xd32,
+  kOtcryptoEccKeyModeEd25519 = 0x663,
   // Mode X25519.
-  kOtcryptoEccKeyModeX25519 = 0x276,
+  kOtcryptoEccKeyModeX25519 = 0x0bb,
 } otcrypto_ecc_key_mode_t;
 
 /**
@@ -318,10 +322,18 @@ typedef enum otcrypto_key_mode {
   // Key is intended for RSA encryption RSAES-OAEP mode.
   kOtcryptoKeyModeRsaEncryptOaep =
       kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
-  // Key is intended for ECDSA mode.
-  kOtcryptoKeyModeEcdsa = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsa,
-  // Key is intended for ECDH mode.
-  kOtcryptoKeyModeEcdh = kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdh,
+  // Key is intended for ECDSA with P-256.
+  kOtcryptoKeyModeEcdsaP256 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP256,
+  // Key is intended for ECDSA with P-384.
+  kOtcryptoKeyModeEcdsaP384 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP384,
+  // Key is intended for ECDH with P-256.
+  kOtcryptoKeyModeEcdhP256 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP256,
+  // Key is intended for ECDH with P-384.
+  kOtcryptoKeyModeEcdhP384 =
+      kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdhP384,
   // Key is intended for Ed25519 mode.
   kOtcryptoKeyModeEd25519 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEd25519,
