@@ -499,6 +499,8 @@ opentitan_test = rv_rule(
 
 def _opentitan_binary_assemble_impl(ctx):
     assembled_bins = []
+    result = []
+    ot_bin_env_info = {}
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
     for env in ctx.attr.exec_env:
         exec_env_name = env[ExecEnvInfo].exec_env
@@ -511,10 +513,12 @@ def _opentitan_binary_assemble_impl(ctx):
                 fail("Only flash binaries can be assembled.")
             input_bins.append(binary[exec_env_provider].default)
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
-        assembled_bins.append(
-            assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool),
-        )
-    return [DefaultInfo(files = depset(assembled_bins))]
+        img = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+        result.append(exec_env_provider(default = img, kind = "flash"))
+        assembled_bins.append(img)
+        ot_bin_env_info[exec_env_provider] = env
+    result.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
+    return result + [DefaultInfo(files = depset(assembled_bins))]
 
 opentitan_binary_assemble = rule(
     implementation = _opentitan_binary_assemble_impl,
@@ -530,4 +534,40 @@ opentitan_binary_assemble = rule(
         ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
+)
+
+def _exec_env_filegroup(ctx):
+    files = {v: k for k, v in ctx.attr.files.items()}
+    exec_env = {v: k for k, v in ctx.attr.exec_env.items()}
+
+    fset = {k: 1 for k in files.keys()}
+    eset = {k: 1 for k in exec_env.keys()}
+
+    if fset != eset:
+        fail("The set of files and exec_envs must be matched: files =", fset.keys(), ", exec_env =", eset.keys())
+
+    result = []
+    for k in files.keys():
+        provider = exec_env[k][ExecEnvInfo].provider
+        f = files[k].files.to_list()
+        if len(f) != 1:
+            fail("files[{}] must supply exactly one file".format(k))
+        result.append(provider(default = f[0], kind = ctx.attr.kind))
+    return result
+
+exec_env_filegroup = rule(
+    implementation = _exec_env_filegroup,
+    attrs = {
+        "files": attr.label_keyed_string_dict(
+            allow_files = True,
+            mandatory = True,
+            doc = "Dictionary of files to exec_envs.",
+        ),
+        "exec_env": attr.label_keyed_string_dict(
+            providers = [ExecEnvInfo],
+            mandatory = True,
+            doc = "Dictionary of execution environments for this target.",
+        ),
+        "kind": attr.string(default = "flash", doc = "The kind of binary"),
+    },
 )
