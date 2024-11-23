@@ -34,7 +34,7 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 
 static manuf_ft_individualize_data_t in_data;
-static uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
+static uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
 static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 
 /**
@@ -58,15 +58,16 @@ static status_t peripheral_handles_init(void) {
 static status_t print_flash_info_0_data_to_console(void) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldDeviceId.page,
-      kFlashInfoFieldDeviceId.bank, kFlashInfoFieldDeviceId.partition,
+      &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
+      kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
       kFlashInfoPage0Permissions, &byte_address));
 
-  LOG_INFO("Device ID:");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldDeviceId,
-                                  device_id, kHwCfgDeviceIdSizeIn32BitWords));
+  LOG_INFO("CP Device ID:");
+  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldCpDeviceId,
+                                  cp_device_id,
+                                  kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%08x", device_id[i]);
+    LOG_INFO("0x%08x", cp_device_id[i]);
   }
 
   LOG_INFO("AST Calibration Values:");

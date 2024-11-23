@@ -8,7 +8,7 @@ use anyhow::Result;
 use clap::Parser;
 use zerocopy::IntoBytes;
 
-use cp_lib::{reset_and_lock, run_sram_cp_provision, ManufCpProvisioningDataInput};
+use cp_lib::{reset_and_lock, run_sram_cp_provision, CpResponse, ManufCpProvisioningDataInput};
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
@@ -45,8 +45,6 @@ fn main() -> Result<()> {
     let spi_console_device = SpiConsoleDevice::new(&*spi)?;
 
     let provisioning_data = ManufCpProvisioningData {
-        device_id: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?,
-        manuf_state: hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.manuf_state.as_str())?,
         wafer_auth_secret: hex_string_to_u32_arrayvec::<8>(
             opts.provisioning_data.wafer_auth_secret.as_str(),
         )?,
@@ -59,6 +57,8 @@ fn main() -> Result<()> {
                 .as_bytes(),
         )?,
     };
+
+    let mut response = CpResponse::default();
 
     // Only run CP provisioning if requested in any of the TestUnlocked states, except the last
     // state (TestUnlocked7), as this state requires special handling of the wafer authentication
@@ -84,6 +84,7 @@ fn main() -> Result<()> {
                 &opts.sram_program,
                 &provisioning_data,
                 &spi_console_device,
+                &mut response,
                 opts.timeout,
             )?;
             // Only perform lock if we are in TEST_UNLOCKED0, otherwise we are running from a later
@@ -102,6 +103,9 @@ fn main() -> Result<()> {
             log::info!("Skipping executing the SRAM CP provisioning binary.");
         }
     };
+
+    let doc = serde_json::to_string(&response)?;
+    println!("CHIP_PROBE_DATA: {doc}");
 
     Ok(())
 }

@@ -94,7 +94,7 @@ bool test_main(void) {
           &flash_ctrl_state, byte_address,
           kFlashInfoFieldWaferAuthSecret.partition, kExpectedWaferAuthSecret,
           kDifFlashCtrlPartitionTypeInfo,
-          kFlashInfoWaferAuthSecretSizeIn32BitWords));
+          kFlashInfoFieldWaferAuthSecretSizeIn32BitWords));
       LOG_INFO("Enabling ROM execution to enable bootstrap after reset.");
       CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
           &otp_ctrl, &flash_ctrl_state));

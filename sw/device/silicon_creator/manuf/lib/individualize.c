@@ -85,42 +85,42 @@ status_t manuf_individualize_device_hw_cfg(
     // Configure flash info page permissions in case we started from a cold
     // boot. Note: device_id and manuf_state are on the same flash info page.
     TRY(flash_ctrl_testutils_info_region_setup_properties(
-        flash_state, kFlashInfoFieldDeviceId.page, kFlashInfoFieldDeviceId.bank,
-        kFlashInfoFieldDeviceId.partition, flash_info_page_0_permissions,
+        flash_state, kFlashInfoFieldCpDeviceId.page,
+        kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
+        flash_info_page_0_permissions,
         /*offset=*/NULL));
 
     // Configure DeviceID
-    uint32_t device_id_from_flash[kHwCfgDeviceIdSizeIn32BitWords];
-    uint32_t empty_device_id[kHwCfgDeviceIdSizeIn32BitWords] = {0};
-    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldDeviceId,
-                                    device_id_from_flash,
-                                    kHwCfgDeviceIdSizeIn32BitWords));
-    bool flash_device_id_empty = true;
-    for (size_t i = 0;
-         flash_device_id_empty && i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-      flash_device_id_empty &= device_id_from_flash[i] == 0;
+    uint32_t cp_device_id_from_flash[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
+    uint32_t empty_cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
+        0};
+    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
+                                    cp_device_id_from_flash,
+                                    kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
+    bool flash_cp_device_id_empty = true;
+    for (size_t i = 0; flash_cp_device_id_empty &&
+                       i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords;
+         ++i) {
+      flash_cp_device_id_empty &= cp_device_id_from_flash[i] == 0;
     }
 
-    // If the device ID read from flash is non-empty, then it must match the
-    // device ID provided. If the device ID read from flash is empty, we check
-    // to ensure the device ID provided is also not empty. An empty (all zero)
-    // device ID will prevent the keymgr from advancing.
-    if (!flash_device_id_empty) {
-      TRY_CHECK_ARRAYS_EQ(device_id_from_flash, device_id,
-                          kHwCfgDeviceIdSizeIn32BitWords);
+    // If the CP device ID read from flash is non-empty, then it must match the
+    // first 128-bits of device ID provided. If the device ID read from flash is
+    // empty, we check to ensure the device ID provided is also not empty. An
+    // empty (all zero) device ID will prevent the keymgr from advancing.
+    if (!flash_cp_device_id_empty) {
+      TRY_CHECK_ARRAYS_EQ(cp_device_id_from_flash, device_id,
+                          kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
     } else {
-      TRY_CHECK_ARRAYS_NE(device_id, empty_device_id,
-                          kHwCfgDeviceIdSizeIn32BitWords);
+      TRY_CHECK_ARRAYS_NE(device_id, empty_cp_device_id,
+                          kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
     }
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                        kHwCfgDeviceIdOffset, device_id,
                                        kHwCfgDeviceIdSizeIn32BitWords));
 
-    // Configure ManufState
-    uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords];
-    TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldManufState,
-                                    manuf_state,
-                                    kHwCfgManufStateSizeIn32BitWords));
+    // Configure ManufState as all 0s. It is unused.
+    uint32_t manuf_state[kHwCfgManufStateSizeIn32BitWords] = {0};
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                        kHwCfgManufStateOffset, manuf_state,
                                        kHwCfgManufStateSizeIn32BitWords));

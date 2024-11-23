@@ -72,7 +72,6 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
-        "//sw/device/silicon_creator/manuf/data/ast:fake",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
         "//sw/device/silicon_creator/manuf/lib:individualize",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
@@ -169,7 +168,7 @@ opentitan_test(
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
-        """ + CP_PROVISIONING_INPUTS,
+        """,
         test_harness = "//sw/host/tests/manuf/cp_provision_functest",
     ),
 )
