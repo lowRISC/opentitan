@@ -87,7 +87,6 @@ impl OpenOcd {
         cmd.arg("-c")
             .arg("tcl_port 0; telnet_port disabled; gdb_port disabled; noinit;");
 
-        log::info!("CWD: {:?}", std::env::current_dir());
         log::info!("Spawning OpenOCD: {cmd:?}");
 
         cmd.stdin(Stdio::null())
