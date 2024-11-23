@@ -21,20 +21,57 @@ typedef struct flash_info_field {
 
 enum {
   /**
-   * AST Calibration Data Size - Bank 0, Page 0
+   * Lot Name Data Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldLotNameStartOffset = 80,
+  kFlashInfoFieldLotNameSizeIn32BitWords = 1,
+
+  /**
+   * Wafer Number Data Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldWaferNumberStartOffset = 88,
+  kFlashInfoFieldWaferNumberSizeIn32BitWords = 1,
+
+  /**
+   * Wafer X Coord Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldWaferXCoordStartOffset = 96,
+  kFlashInfoFieldWaferXCoordSizeIn32BitWords = 1,
+
+  /**
+   * Wafer Y Coord Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldWaferYCoordStartOffset = 104,
+  kFlashInfoFieldWaferYCoordSizeIn32BitWords = 1,
+
+  /**
+   * Process Data Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldProcessDataStartOffset = 112,
+  kFlashInfoFieldProcessDataSizeIn32BitWords = 2,
+
+  /**
+   * AST Calibration Data Start / Size - Bank 0, Page 0
    *
    * Number of AST calibration words that will be stored in flash / OTP.
    */
+  kFlashInfoFieldAstCalibrationDataStartOffset = 128,
   kFlashInfoAstCalibrationDataSizeInBytes =
       AST_REGAL_REG_OFFSET + sizeof(uint32_t),
   kFlashInfoAstCalibrationDataSizeIn32BitWords =
       kFlashInfoAstCalibrationDataSizeInBytes / sizeof(uint32_t),
 
+  /**
+   * CP Device ID Start / Size - Bank 0, Page 0
+   */
+  kFlashInfoFieldCpDeviceIdStartOffset = 384,
+  kFlashInfoFieldCpDeviceIdSizeIn32BitWords = 4,
+
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
-  kFlashInfoKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
+  kFlashInfoFieldKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),
 
   // Wafer Authentication Secret - Bank 0, Page 3
-  kFlashInfoWaferAuthSecretSizeIn32BitWords = 32 / sizeof(uint32_t),
+  kFlashInfoFieldWaferAuthSecretSizeIn32BitWords = 32 / sizeof(uint32_t),
 
   // Attestation key gen seed indices
   kFlashInfoFieldUdsKeySeedIdx = 0,
@@ -43,13 +80,25 @@ enum {
   kFlashInfoFieldTpmEkKeySeedIdx = 3,
 };
 
-extern const flash_info_field_t kFlashInfoFieldDeviceId;
-extern const flash_info_field_t kFlashInfoFieldManufState;
+// Info Page 0 fields.
+extern const flash_info_field_t kFlashInfoFieldLotName;
+extern const flash_info_field_t kFlashInfoFieldWaferNumber;
+extern const flash_info_field_t kFlashInfoFieldWaferXCoord;
+extern const flash_info_field_t kFlashInfoFieldWaferYCoord;
+extern const flash_info_field_t kFlashInfoFieldProcessData;
 extern const flash_info_field_t kFlashInfoFieldAstCalibrationData;
-extern const flash_info_field_t kFlashInfoFieldCharacterizationData;
+extern const flash_info_field_t kFlashInfoFieldCpDeviceId;
+
+// Info Page 1 fields.
 extern const flash_info_field_t kFlashInfoFieldCreatorSeed;
+
+// Info Page 2 fields.
 extern const flash_info_field_t kFlashInfoFieldOwnerSeed;
+
+// Info Page 3 fields.
 extern const flash_info_field_t kFlashInfoFieldWaferAuthSecret;
+
+// Info Page 4 fields.
 extern const flash_info_field_t kFlashInfoFieldUdsAttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldCdi0AttestationKeySeed;
 extern const flash_info_field_t kFlashInfoFieldCdi1AttestationKeySeed;

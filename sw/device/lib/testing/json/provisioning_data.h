@@ -14,18 +14,41 @@ extern "C" {
 #define MODULE_ID MAKE_MODULE_ID('j', 'p', 'd')
 
 /**
- * Provisioning data imported onto the device in CP.
+ * Provisioning data imported onto the device during CP.
  */
 // clang-format off
 #define STRUCT_MANUF_CP_PROVISIONING_DATA(field, string) \
-    field(device_id, uint32_t, 8) \
-    field(manuf_state, uint32_t, 8) \
     field(wafer_auth_secret, uint32_t, 8) \
     field(test_unlock_token_hash, uint64_t, 2) \
     field(test_exit_token_hash, uint64_t, 2)
 UJSON_SERDE_STRUCT(ManufCpProvisioningData, \
                    manuf_cp_provisioning_data_t, \
                    STRUCT_MANUF_CP_PROVISIONING_DATA);
+// clang-format on
+
+/**
+ * Provisioning data exported off the device during CP.
+ */
+// clang-format off
+#define STRUCT_MANUF_CP_PROVISIONING_DATA_OUT(field, string) \
+    field(cp_device_id, uint32_t, 4)
+UJSON_SERDE_STRUCT(ManufCpProvisioningDataOut, \
+                   manuf_cp_provisioning_data_out_t, \
+                   STRUCT_MANUF_CP_PROVISIONING_DATA_OUT);
+// clang-format on
+
+/**
+ * Test factory data imported onto the device prior to CP initialize stage.
+ */
+// clang-format off
+#define STRUCT_MANUF_CP_TEST_DATA(field, string) \
+    field(lot_name, uint32_t) \
+    field(wafer_number, uint32_t) \
+    field(wafer_x_coord, uint32_t) \
+    field(wafer_y_coord, uint32_t)
+UJSON_SERDE_STRUCT(ManufCpTestData, \
+                   manuf_cp_test_data_t, \
+                   STRUCT_MANUF_CP_TEST_DATA);
 // clang-format on
 
 /**
