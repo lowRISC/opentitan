@@ -12,11 +12,11 @@ use cryptoki::types::AuthPin;
 use serde::de::{Deserialize, Deserializer};
 
 use crate::error::HsmError;
-use acorn::Acorn;
+use acorn::{Acorn, SpxInterface};
 
 pub struct Module {
     pub pkcs11: Pkcs11,
-    pub acorn: Option<Acorn>,
+    pub acorn: Option<Box<dyn SpxInterface>>,
     pub token: Option<String>,
 }
 
@@ -25,6 +25,7 @@ impl Module {
         let pkcs11 = Pkcs11::new(module)?;
         pkcs11.initialize(CInitializeArgs::OsThreads)?;
         let acorn = acorn.map(Acorn::new).transpose()?;
+        let acorn = acorn.map(|a| a as Box<dyn SpxInterface>);
         Ok(Module {
             pkcs11,
             acorn,

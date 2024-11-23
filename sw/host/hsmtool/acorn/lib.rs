@@ -3,4 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod acorn;
-pub use acorn::{Acorn, GenerateFlags};
+mod spx;
+pub use acorn::Acorn;
+pub use spx::{GenerateFlags, KeyEntry, KeyInfo, SpxInterface};

@@ -24,8 +24,7 @@ pub struct Key {
 
 #[derive(Default, Debug, Serialize)]
 pub struct ListResult {
-    host_version: String,
-    see_version: String,
+    version: String,
     objects: Vec<Key>,
 }
 
@@ -41,8 +40,7 @@ impl Dispatch for List {
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let mut result = Box::new(ListResult {
-            host_version: acorn.get_version()?,
-            see_version: acorn.get_see_version()?,
+            version: acorn.get_version()?,
             ..Default::default()
         });
         let keys = acorn.list_keys()?;
