@@ -10,7 +10,7 @@ use log::LevelFilter;
 use std::path::PathBuf;
 
 use hsmtool::commands::{print_command, print_result, Commands, Dispatch, Format};
-use hsmtool::module::{self, Module};
+use hsmtool::module::{self, Module, SpxModule};
 use hsmtool::profile::Profile;
 use hsmtool::util::attribute::AttributeMap;
 
@@ -47,9 +47,8 @@ struct Args {
     #[arg(long, env = "HSMTOOL_MODULE")]
     module: String,
 
-    /// Path to the `acorn` shared library.
-    #[arg(long, env = "HSMTOOL_ACORN")]
-    acorn: Option<String>,
+    #[arg(long, env = "HSMTOOL_SPX_MODULE", help=SpxModule::HELP)]
+    spx_module: Option<SpxModule>,
 
     /// HSM Token to use.
     #[arg(short, long, env = "HSMTOOL_TOKEN")]
@@ -85,7 +84,7 @@ fn main() -> Result<()> {
         .transpose()?;
 
     // Initialize the HSM module interface.
-    let mut hsm = Module::initialize(&args.module, args.acorn.as_deref()).context(
+    let mut hsm = Module::initialize(&args.module).context(
         "Loading the PKCS11 module usually depends on several environent variables.  Check HSMTOOL_MODULE, SOFTHSM2_CONF or your HSM's documentation.")?;
 
     // Initialize the list of all valid attribute types early.  Disable logging
@@ -99,18 +98,19 @@ fn main() -> Result<()> {
         return print_command(args.format, args.color, args.command.leaf());
     }
 
-    let session = if let Some(profile) = &args.profile {
+    if let Some(profile) = &args.profile {
         let profiles = Profile::load(&args.profiles)?;
         let profile = profiles
             .get(profile)
             .ok_or_else(|| anyhow!("Profile {profile:?} not found."))?;
-        Some(hsm.connect(&profile.token, Some(profile.user), profile.pin.as_deref())?)
+        hsm.connect(&profile.token, Some(profile.user), profile.pin.as_deref())?;
     } else if let Some(token) = &args.token {
-        Some(hsm.connect(token, args.user, args.pin.as_deref())?)
-    } else {
-        None
-    };
+        hsm.connect(token, args.user, args.pin.as_deref())?;
+    }
+    if let Some(spx_module) = &args.spx_module {
+        hsm.initialize_spx(spx_module)?;
+    }
 
-    let result = args.command.run(&(), &hsm, session.as_ref());
+    let result = args.command.run(&(), &hsm, hsm.get_session());
     print_result(args.format, args.color, args.quiet, result)
 }

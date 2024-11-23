@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 pub mod attribute;
+pub mod ef;
 pub mod escape;
 pub mod helper;
 pub mod key;
