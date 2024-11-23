@@ -84,7 +84,7 @@ impl Dispatch for Commands {
     }
 }
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, Annotate)]
 pub struct BasicResult {
     success: bool,
     #[serde(skip_serializing_if = "AttrData::is_none")]
@@ -92,8 +92,10 @@ pub struct BasicResult {
     #[serde(skip_serializing_if = "AttrData::is_none")]
     label: AttrData,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[annotate(format = block)]
     value: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    #[annotate(format = block)]
     error: Option<String>,
 }
 

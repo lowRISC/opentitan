@@ -64,6 +64,7 @@ rust_library(
         "@crate_index//:serde",
         "@crate_index//:strum",
         "@crate_index//:thiserror",
+        "@crate_index//:zeroize",
     ],
 )
 
