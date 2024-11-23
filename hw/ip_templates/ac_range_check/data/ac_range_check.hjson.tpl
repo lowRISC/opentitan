@@ -24,6 +24,12 @@
       type:    "int",
       default: "${num_ranges}",
     },
+    { name:    "DenyCountWidth",
+      desc:    "Witdth of the deny counter",
+      type:    "int",
+      default: "8",
+      local:   "true"
+    },
   ],
   inter_signal_list: [
     { name:    "range_check_overwrite"
