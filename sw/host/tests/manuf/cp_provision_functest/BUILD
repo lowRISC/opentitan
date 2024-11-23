@@ -20,6 +20,7 @@ rust_binary(
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:rand",
+        "@crate_index//:serde_json",
         "@crate_index//:zerocopy",
     ],
 )

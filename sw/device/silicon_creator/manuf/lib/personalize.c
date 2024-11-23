@@ -110,7 +110,7 @@ static status_t flash_keymgr_secret_seed_write(
   TRY(entropy_csrng_instantiate(/*disable_trng_input=*/kHardenedBoolFalse,
                                 /*seed_material=*/NULL));
 
-  uint32_t seed[kFlashInfoKeySeedSizeIn32BitWords];
+  uint32_t seed[kFlashInfoFieldKeySeedSizeIn32BitWords];
   TRY(entropy_csrng_generate(/*seed_material=*/NULL, seed, len,
                              /*fips_check*/ kHardenedBoolTrue));
   TRY(entropy_csrng_uninstantiate());
@@ -123,7 +123,7 @@ static status_t flash_keymgr_secret_seed_write(
       flash_state, address, field.partition, seed,
       kDifFlashCtrlPartitionTypeInfo, len));
 
-  uint32_t seed_result[kFlashInfoKeySeedSizeIn32BitWords];
+  uint32_t seed_result[kFlashInfoFieldKeySeedSizeIn32BitWords];
   TRY(flash_ctrl_testutils_read(flash_state, address, field.partition,
                                 seed_result, kDifFlashCtrlPartitionTypeInfo,
                                 len,
@@ -224,12 +224,12 @@ status_t manuf_personalize_device_secrets(
   // Provision secret Creator / Owner key seeds in flash.
   // Provision CreatorSeed into target flash info page.
   TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldCreatorSeed,
-                                     kFlashInfoKeySeedSizeIn32BitWords));
+                                     kFlashInfoFieldKeySeedSizeIn32BitWords));
   // Provision preliminary OwnerSeed into target flash info page (with
   // expectation that SiliconOwner will rotate this value during ownership
   // transfer).
   TRY(flash_keymgr_secret_seed_write(flash_state, kFlashInfoFieldOwnerSeed,
-                                     kFlashInfoKeySeedSizeIn32BitWords));
+                                     kFlashInfoFieldKeySeedSizeIn32BitWords));
 
   // Provision the OTP SECRET2 partition.
   TRY(otp_partition_secret2_configure(otp_ctrl, rma_unlock_token_hash));

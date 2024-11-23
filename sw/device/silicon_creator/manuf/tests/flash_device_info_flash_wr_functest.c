@@ -47,9 +47,8 @@ bool test_main(void) {
     case kDifLcCtrlStateProdEnd:
       LOG_INFO("Reading the isolated flash partition.");
       uint32_t byte_address = 0;
-      uint32_t
-          actual_wafer_auth_secret[kFlashInfoWaferAuthSecretSizeIn32BitWords] =
-              {0};
+      uint32_t actual_wafer_auth_secret
+          [kFlashInfoFieldWaferAuthSecretSizeIn32BitWords] = {0};
       CHECK_STATUS_OK(flash_ctrl_testutils_info_region_setup(
           &flash_ctrl_state, kFlashInfoFieldWaferAuthSecret.page,
           kFlashInfoFieldWaferAuthSecret.bank,
@@ -58,10 +57,10 @@ bool test_main(void) {
           &flash_ctrl_state, byte_address,
           kFlashInfoFieldWaferAuthSecret.partition, actual_wafer_auth_secret,
           kDifFlashCtrlPartitionTypeInfo,
-          kFlashInfoWaferAuthSecretSizeIn32BitWords,
+          kFlashInfoFieldWaferAuthSecretSizeIn32BitWords,
           /*delay_micros=*/0));
       CHECK_ARRAYS_EQ(actual_wafer_auth_secret, kExpectedWaferAuthSecret,
-                      kFlashInfoWaferAuthSecretSizeIn32BitWords);
+                      kFlashInfoFieldWaferAuthSecretSizeIn32BitWords);
       LOG_INFO("Done.");
       break;
     default:
