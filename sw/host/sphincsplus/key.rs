@@ -4,6 +4,7 @@
 
 use crate::{DecodeKey, EncodeKey, SphincsPlus, SpxError};
 use pem_rfc7468::LineEnding;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
@@ -31,7 +32,7 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
-#[derive(Default, Debug, Clone, Copy, EnumString, Display)]
+#[derive(Default, Debug, Clone, Copy, EnumString, Display, Serialize, Deserialize)]
 #[strum(ascii_case_insensitive)]
 pub enum SpxDomain {
     None,
