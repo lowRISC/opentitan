@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use crate::with_unknown;
 
 with_unknown! {
-    pub enum DifLcCtrlState: u32 {
+    pub enum DifLcCtrlState: u32 [default = Self::StateInvalid] {
         Raw = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateRaw ,
         TestUnlocked0 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestUnlocked0 ,
         TestLocked0 = bindgen::dif::dif_lc_ctrl_state_kDifLcCtrlStateTestLocked0 ,
