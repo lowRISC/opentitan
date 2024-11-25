@@ -130,15 +130,46 @@ endtask // set_param
 
 function dc_blink_t pwm_base_vseq::rand_pwm_duty_cycle();
   dc_blink_t value;
-  value.A = $urandom_range(1, int'(MAX_16));
-  value.B = $urandom_range(1, int'(MAX_16));
+  int max_A = MAX_16, max_B = MAX_16;
+
+  // 90% of the time, clamp A and B to be less than 100. This is unrealistic for the real chip
+  // (which is running at several megahertz) but makes us hit the limits in a reasonable time in
+  // simulation.
+  if ($urandom_range(9) != 0) begin
+    max_A = 100;
+    max_B = 100;
+  end
+
+  value.A = $urandom_range(1, max_A);
+  value.B = $urandom_range(1, max_B);
   return value;
 endfunction
 
 function dc_blink_t pwm_base_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
   dc_blink_t blink;
-  blink.B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
-  blink.A = $urandom_range(1, int'(MAX_16) - blink.B);
+  int max_A = MAX_16, max_B = MAX_16;
+
+  // As with rand_pwm_duty_cycle, we clamp A and B to be small most of the time (so that we can see
+  // the blink operation in a reasonable simulation time).
+  if ($urandom_range(9) != 0) begin
+    max_A = 100;
+    max_B = 100;
+  end
+
+  // Make sure that BLINK.B + DUTY_CYCLE.A fits in 16 bits.
+  if (max_B > MAX_16 - duty_cycle.A) begin
+    max_B = MAX_16 - duty_cycle.A;
+  end
+
+  blink.B = $urandom_range(1, max_B);
+
+  // Make sure that BLINK.A + BLINK.B also fits in 16 bits.
+  if (max_A > MAX_16 - blink.B) begin
+    max_A = MAX_16 - blink.B;
+  end
+
+  blink.A = $urandom_range(1, max_A);
+
   return blink;
 endfunction
 
