@@ -22,6 +22,8 @@ concurrency:
 
 env:
   VIVADO_VERSION: "2021.1"
+  # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  TOOLCHAIN_VERSION: 20220210-1
 
 jobs:
   quick_lint:
@@ -178,6 +180,55 @@ jobs:
           suggest_fixes: 'false'
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
+
+  otbn_standalone_tests:
+    name: Run OTBN smoke Test
+    needs: quick_lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Install toolchain
+        run: |
+          TOOLCHAIN_PATH=/tools/riscv
+          sudo util/get-toolchain.py \
+            --install-dir="$TOOLCHAIN_PATH" \
+            --release-version="$TOOLCHAIN_VERSION" \
+            --update
+          echo "$TOOLCHAIN_PATH/bin" >> $GITHUB_PATH
+      - name: Display environment
+        run: |
+          python3 --version
+          fusesoc --version
+          verilator --version
+      - name: OTBN ISS test
+        run: make -C hw/ip/otbn/dv/otbnsim test
+      - name: OBTN smoke test
+        run: ./hw/ip/otbn/dv/smoke/run_smoke.sh
+      - name: Assemble & link code snippets
+        run: make -C hw/ip/otbn/util asm-check
+
+  otbn_crypto_tests:
+    name: Run OTBN crypto tests
+    needs: quick_lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute tests
+        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
 
   verilator_englishbreakfast:
     name: Verilated English Breakfast
