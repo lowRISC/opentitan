@@ -231,6 +231,8 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Local Parameters
+  // local parameters for lc_ctrl
+  localparam int LcCtrlNumRmaAckSigs = 2;
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
@@ -1513,7 +1515,8 @@ module top_earlgrey #(
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
-    .IdcodeValue(LcCtrlIdcodeValue)
+    .IdcodeValue(LcCtrlIdcodeValue),
+    .NumRmaAckSigs(LcCtrlNumRmaAckSigs)
   ) u_lc_ctrl (
       // [16]: fatal_prog_error
       // [17]: fatal_state_error

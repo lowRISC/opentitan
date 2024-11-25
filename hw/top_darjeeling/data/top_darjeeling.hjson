@@ -338,7 +338,9 @@
         ProductId: "16'h 4000", // Darjeeling
         RevisionId: "8'h 01",   // First tapeout
         // Use TL-UL based DMI
-        UseDmiInterface: "1"
+        UseDmiInterface: "1",
+        // Only use 1 RMI interface
+        NumRmaAckSigs: "1"
       },
     },
     { name: "alert_handler",
@@ -984,6 +986,8 @@
                    DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
                    DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
                    PipeLine: "0"
+                   NEscalationSeverities: "alert_handler_reg_pkg::N_ESC_SEV",
+                   WidthPingCounter: "alert_handler_reg_pkg::PING_CNT_DW"
                   },
       clock_srcs: {
         clk_i: "main",

@@ -215,7 +215,8 @@
       desc: "Number of Flash RMA wiping response signals",
       type: "int",
       default: "2",
-      local: "true"
+      local: "true",
+      expose: "true"
     },
   ]
 
