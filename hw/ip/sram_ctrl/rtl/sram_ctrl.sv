@@ -497,6 +497,7 @@ module sram_ctrl
     .wmask_o                    (tlul_wmask),
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o               (bus_integ_error[1]),
+    .user_rsvd_o                (),
     .rdata_i                    (sram_rdata),
     .rvalid_i                   (sram_rvalid),
     .rerror_i                   ('0),

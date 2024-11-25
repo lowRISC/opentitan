@@ -81,6 +81,7 @@ module spi_host_window (
     .wdata_o(tx_data_o),
     .wmask_o(bit_mask),
     .intg_error_o(),
+    .user_rsvd_o(),
     .rdata_i('0),
     .rvalid_i('0),
     .rerror_i('0),
