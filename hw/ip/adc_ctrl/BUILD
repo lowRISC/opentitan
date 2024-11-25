@@ -6,8 +6,14 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]) + [
+        "//hw/ip/adc_ctrl/data:all_files",
+    ],
+)
+
 opentitan_ip(
     name = "adc_ctrl",
-    files = glob(["**"]),
     hjson = "//hw/ip/adc_ctrl/data:hjson",
 )

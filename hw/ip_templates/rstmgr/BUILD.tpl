@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "rstmgr",
-    files = glob(["**"]),
     hjson = "data/rstmgr.hjson",
 )

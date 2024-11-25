@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "pwrmgr",
-    files = glob(["**"]),
     hjson = "data/pwrmgr.hjson",
 )

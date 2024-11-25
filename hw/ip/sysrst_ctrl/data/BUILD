@@ -5,6 +5,11 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
+    name = "all_files",
+    srcs = glob(["**"]),
+)
+
+filegroup(
     name = "hjson",
     srcs = ["sysrst_ctrl.hjson"],
 )

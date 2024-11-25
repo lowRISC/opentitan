@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "alert_handler",
-    files = glob(["**"]),
     hjson = "data/alert_handler.hjson",
 )

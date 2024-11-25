@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "flash_ctrl",
-    files = glob(["**"]),
     hjson = "data/flash_ctrl.hjson",
 )
