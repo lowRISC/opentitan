@@ -46,8 +46,8 @@ fpga_cw310(
 )
 
 opentitan_test(
-    name = "spi_host_macronix_flash_test",
-    srcs = ["spi_host_macronix_flash_test.c"],
+    name = "spi_host_macronix1Gb_flash_test",
+    srcs = ["spi_host_macronix1Gb_flash_test.c"],
     exec_env = dicts.add(
         dicts.omit(
             EARLGREY_TEST_ENVS,
@@ -71,6 +71,36 @@ opentitan_test(
     ),
     silicon = silicon_params(
         tags = [
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:spi_host_flash_test_impl",
+    ],
+)
+
+opentitan_test(
+    name = "spi_host_macronix128Mb_flash_test",
+    srcs = ["spi_host_macronix128Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    fpga = fpga_params(
+        tags = [
+            "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
