@@ -5060,6 +5060,7 @@ _RV_DM_TEST_CONFIGURATIONS = [
         name = "rv_dm_csr_rw_{}".format(test_cfg["name"]),
         srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
@@ -5102,6 +5103,7 @@ test_suite(
         name = "rv_dm_mem_access_{}".format(test_cfg["name"]),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
@@ -5136,6 +5138,7 @@ test_suite(
         name = "rv_dm_jtag_{}".format(lc_state),
         srcs = ["example_test_from_flash.c"],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
         },
         fpga = fpga_params(
@@ -5281,6 +5284,7 @@ test_suite(
         exec_env = dicts.add(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS if lc_state == "prod" else {},
             {
+                "//hw/top_earlgrey:fpga_cw310_sival": None,
                 "//hw/top_earlgrey:fpga_cw340_sival": None,
             },
         ),
