@@ -1548,6 +1548,7 @@ module chip_darjeeling_asic #(
     .wdata_o     (sram_wdata),
     .wmask_o     (sram_wmask),
     .intg_error_o(),
+    .user_rsvd_o (),
     .rdata_i     (sram_rdata),
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0),
