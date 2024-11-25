@@ -16,19 +16,12 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   // If true, this stops the clock in "low power" mode
   rand bit low_power;
 
-  // Make sure to enable blink if the heartbeat is enabled
-  extern constraint htbt_implies_blink_c;
-
   // Model low power mode 10% of the time.
   extern constraint low_power_c;
 
   extern function new (string name="");
   extern virtual task body();
 endclass
-
-constraint pwm_rand_output_vseq::htbt_implies_blink_c {
-  rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
-}
 
 constraint pwm_rand_output_vseq::low_power_c {
   low_power dist {1'b1:/1, 1'b0:/9};
