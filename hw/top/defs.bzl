@@ -43,3 +43,21 @@ OPENTITAN_ALL_IPS = [
     "uart",
     "usbdev",
 ]
+
+def opentitan_require_top(top_name):
+    """
+    Use this macro in the `target_compatible_with` attribute of
+    a rule to express the requirement that this target should only
+    be considered for a particular top.
+
+    Example:
+    cc_library(
+      name = "bla",
+      ...
+      target_compatible_with = opentitan_require_top("earlgrey"),
+    )
+    """
+    return select({
+        "//hw/top:is_{}".format(top_name): [],
+        "//conditions:default": ["@platforms//:incompatible"],
+    })

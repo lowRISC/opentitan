@@ -8,5 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_autogen_isr_testutils(
     name = "isr_testutils",
-    top = "//hw/top",
+    top = "//hw/top:top_desc",
 )

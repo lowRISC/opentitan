@@ -35,7 +35,7 @@ string_list_flag(
 fusesoc_build(
     name = "verilator_real",
     srcs = [
-        "//hw/top",
+        "//hw/top:top_desc",
     ],
     cores = [
         "//:cores",
