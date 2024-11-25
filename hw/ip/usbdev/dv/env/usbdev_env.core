@@ -102,6 +102,7 @@ generate:
     parameters:
       name: usbdev
       ip_hjson: ../../data/usbdev.hjson
+    position: prepend
 
 targets:
   default:
