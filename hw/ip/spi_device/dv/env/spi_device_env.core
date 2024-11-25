@@ -51,6 +51,7 @@ generate:
     parameters:
       name: spi_device
       ip_hjson: ../../data/spi_device.hjson
+    position: prepend
 
 targets:
   default:
