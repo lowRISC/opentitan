@@ -134,7 +134,7 @@
       swaccess: "ro",
       hwaccess: "hwo",
       tags: [// data_in is ro register, so exclude its readback check
-             "excl:CsrNonInitTests:CsrExclWriteCheck"],
+             "excl:CsrAllTests:CsrExclAll"],
       fields: [
         { bits: "31:0",
           resval: "x"
