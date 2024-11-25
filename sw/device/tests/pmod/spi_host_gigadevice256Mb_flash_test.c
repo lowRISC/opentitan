@@ -26,7 +26,7 @@ static_assert(__BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__,
 
 OTTF_DEFINE_TEST_CONFIG();
 
-static void init_test(dif_spi_host_t *spi_host) {
+static void init_test(dif_spi_host_t *spi_host, dif_pinmux_index_t csb_pin) {
   dif_pinmux_t pinmux;
   mmio_region_t base_addr =
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
@@ -47,7 +47,6 @@ static void init_test(dif_spi_host_t *spi_host) {
       CHECK(false, "Device not supported %u", kDeviceType);
       break;
   }
-  dif_pinmux_index_t csb_pin = kTopEarlgreyPinmuxMioOutIoc11;
   CHECK_STATUS_OK(
       spi_host1_pinmux_connect_to_bob(&pinmux, csb_pin, platform_id));
 
@@ -68,33 +67,44 @@ static void init_test(dif_spi_host_t *spi_host) {
 }
 
 bool test_main(void) {
-  dif_spi_host_t spi_host;
-
-  init_test(&spi_host);
   enum GigadeviceVendorSpecific {
-    kManufactureId = 0xC8,
+    kManufacturerId = 0xC8,
     kPageQuadProgramOpcode = 0x32,
   };
 
-  status_t result = OK_STATUS();
-  EXECUTE_TEST(result, test_software_reset, &spi_host);
-  EXECUTE_TEST(result, test_read_sfdp, &spi_host);
-  EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufactureId);
-  EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
-  EXECUTE_TEST(result, test_page_program, &spi_host);
-  if (is_4_bytes_address_mode_supported()) {
-    EXECUTE_TEST(result, test_4bytes_address, &spi_host);
-  }
-  EXECUTE_TEST(result, test_fast_read, &spi_host);
-  EXECUTE_TEST(result, test_dual_read, &spi_host);
-  EXECUTE_TEST(result, test_quad_read, &spi_host);
+  // Chip select pins for the different 256Mb GigaDevice SPI Flashes available
+  // via PMOD
+  dif_pinmux_index_t csb_pins[] = {
+      kTopEarlgreyPinmuxMioOutIoc11,
+      kTopEarlgreyPinmuxMioOutIoa6,
+  };
 
-  // The Gigadevice flash `4PP` opcode operates in 1-1-4 mode.
-  EXECUTE_TEST(result, test_page_program_quad, &spi_host,
-               kPageQuadProgramOpcode, kTransactionWidthMode114);
-  EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
-  EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
+  status_t result = OK_STATUS();
+  for (size_t i = 0; i < ARRAYSIZE(csb_pins); ++i) {
+    LOG_INFO("Testing flash device %u", (uint32_t)(i + 1));
+    dif_spi_host_t spi_host;
+
+    init_test(&spi_host, csb_pins[i]);
+
+    EXECUTE_TEST(result, test_software_reset, &spi_host);
+    EXECUTE_TEST(result, test_read_sfdp, &spi_host);
+    EXECUTE_TEST(result, test_sector_erase, &spi_host);
+    EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufacturerId);
+    EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
+    EXECUTE_TEST(result, test_page_program, &spi_host);
+    if (is_4_bytes_address_mode_supported()) {
+      EXECUTE_TEST(result, test_4bytes_address, &spi_host);
+    }
+    EXECUTE_TEST(result, test_fast_read, &spi_host);
+    EXECUTE_TEST(result, test_dual_read, &spi_host);
+    EXECUTE_TEST(result, test_quad_read, &spi_host);
+
+    // The Gigadevice flash `4PP` opcode operates in 1-1-4 mode.
+    EXECUTE_TEST(result, test_page_program_quad, &spi_host,
+                 kPageQuadProgramOpcode, kTransactionWidthMode114);
+    EXECUTE_TEST(result, test_erase_32k_block, &spi_host);
+    EXECUTE_TEST(result, test_erase_64k_block, &spi_host);
+  }
 
   return status_ok(result);
 }
