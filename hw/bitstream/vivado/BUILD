@@ -31,6 +31,8 @@ _CW340_TESTROM_PATH = _CW310_TESTROM_PATH
 
 _OTP_RMA_PATH = "{}/$(location {})".format(_PREFIX, _OTP_RMA)
 
+_FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
+
 # Note: all of the targets are tagged with "manual" to prevent them from being
 # matched by bazel wildcards like "//...".  In order to build the bitstream,
 # you need to ask for it directly or by dependency via another rule, such as
@@ -50,9 +52,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310", "lowrisc_systems_chip_earlgrey_cw310_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310"],
     tags = ["manual"],
@@ -91,9 +93,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw310_hyperdebug", "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
     tags = ["manual"],
@@ -132,9 +134,9 @@ fusesoc_build(
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
     ],
     output_groups = {
-        "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
-        "mmi": ["synth-vivado/memories.mmi"],
-        "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
+        "bitstream": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.bit")],
+        "mmi": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "memories.mmi")],
+        "logs": [_FPGA_PATH_TMPL.format("chip_earlgrey_cw340", "lowrisc_systems_chip_earlgrey_cw340_0.1.runs/")],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
     tags = ["manual"],
