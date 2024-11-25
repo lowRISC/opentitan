@@ -137,8 +137,8 @@ endfunction
 
 function dc_blink_t pwm_base_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
   dc_blink_t blink;
-  blink.B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
-  blink.A = $urandom_range(1, int'(MAX_16) - blink.B);
+  blink.B = $urandom_range(0, int'(MAX_16));
+  blink.A = $urandom_range(0, int'(MAX_16));
   return blink;
 endfunction
 
