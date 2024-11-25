@@ -46,6 +46,7 @@ generate:
     parameters:
       name: sram_ctrl
       ip_hjson: ../../data/sram_ctrl.hjson
+    position: prepend
 
 targets:
   default:

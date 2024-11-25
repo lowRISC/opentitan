@@ -24,6 +24,7 @@ generate:
     parameters:
       name: alert_handler
       ip_hjson: ../data/alert_handler.hjson
+    position: prepend
 
 targets:
   sim: &sim_target

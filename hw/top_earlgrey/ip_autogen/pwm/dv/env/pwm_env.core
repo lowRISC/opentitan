@@ -36,6 +36,7 @@ generate:
     parameters:
       name: pwm
       ip_hjson: ../../data/pwm.hjson
+    position: prepend
 
 targets:
   default:
