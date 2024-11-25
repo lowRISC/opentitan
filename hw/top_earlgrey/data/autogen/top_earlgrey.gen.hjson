@@ -2048,6 +2048,15 @@
           expose: "true"
           name_top: LcCtrlIdcodeValue
         }
+        {
+          name: NumRmaAckSigs
+          desc: Number of Flash RMA wiping response signals
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: LcCtrlNumRmaAckSigs
+        }
       ]
       inter_signal_list:
       [

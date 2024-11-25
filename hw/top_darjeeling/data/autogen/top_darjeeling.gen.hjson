@@ -1426,6 +1426,7 @@
         ProductId: 16'h 4000
         RevisionId: 8'h 01
         UseDmiInterface: "1"
+        NumRmaAckSigs: "1"
       }
       clock_connections:
       {
@@ -1562,6 +1563,15 @@
           local: "false"
           expose: "true"
           name_top: LcCtrlIdcodeValue
+        }
+        {
+          name: NumRmaAckSigs
+          desc: Number of Flash RMA wiping response signals
+          type: int
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: LcCtrlNumRmaAckSigs
         }
       ]
       inter_signal_list:
@@ -8470,6 +8480,24 @@
           name_top: RndCnstRvCoreIbexIbexNonceDefault
           default: 0xa1254b2276bec9fc
           randwidth: 64
+        }
+        {
+          name: NEscalationSeverities
+          desc: Number of escalation severities
+          type: int unsigned
+          default: "4"
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexNEscalationSeverities
+        }
+        {
+          name: WidthPingCounter
+          desc: Width of the ping counter
+          type: int unsigned
+          default: "16"
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexWidthPingCounter
         }
         {
           name: PMPEnable
@@ -15386,6 +15414,7 @@
       }
     }
   ]
+  incoming_alert: {}
   exported_clks: {}
   wakeups:
   [
@@ -16311,6 +16340,7 @@
     mbx_pcie1
     rv_core_ibex
   ]
+  outgoing_alert_module: {}
   alert:
   [
     {
@@ -17205,6 +17235,7 @@
       lpg_idx: 11
     }
   ]
+  outgoing_alert: {}
   unmanaged_resets: {}
   exported_rsts: {}
   alert_lpgs:
@@ -17682,6 +17713,7 @@
       }
     }
   ]
+  outgoing_alert_lpgs: {}
   inter_signal:
   {
     signals:

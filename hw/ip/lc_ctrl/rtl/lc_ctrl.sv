@@ -21,6 +21,7 @@ module lc_ctrl
    // Idcode value for the JTAG.
   parameter logic [31:0] IdcodeValue     = 32'h00000001,
   parameter bit          UseDmiInterface = 1'b0,
+  parameter int unsigned NumRmaAckSigs   = 2,
   // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid      = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked = LcKeymgrDivWidth'(1),
@@ -737,6 +738,7 @@ module lc_ctrl
   ////////////
 
   lc_ctrl_fsm #(
+    .NumRmaAckSigs                 ( NumRmaAckSigs                  ),
     .RndCnstLcKeymgrDivInvalid     ( RndCnstLcKeymgrDivInvalid      ),
     .RndCnstLcKeymgrDivTestUnlocked( RndCnstLcKeymgrDivTestUnlocked ),
     .RndCnstLcKeymgrDivDev         ( RndCnstLcKeymgrDivDev          ),

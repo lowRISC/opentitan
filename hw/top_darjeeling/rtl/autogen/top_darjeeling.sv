@@ -274,6 +274,11 @@ module top_darjeeling #(
   import top_darjeeling_rnd_cnst_pkg::*;
 
   // Local Parameters
+  // local parameters for lc_ctrl
+  localparam int LcCtrlNumRmaAckSigs = 1;
+  // local parameters for rv_core_ibex
+  localparam int unsigned RvCoreIbexNEscalationSeverities = 4;
+  localparam int unsigned RvCoreIbexWidthPingCounter = 16;
 
   // Signals
   logic [3:0] mio_p2d;
@@ -838,6 +843,7 @@ module top_darjeeling #(
   assign lpg_cg_en[18] = clkmgr_aon_cg_en.main_otbn;
   assign lpg_rst_en[18] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
 
+
 // tie-off unused connections
 //VCS coverage off
 // pragma coverage off
@@ -1180,7 +1186,8 @@ module top_darjeeling #(
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
-    .IdcodeValue(LcCtrlIdcodeValue)
+    .IdcodeValue(LcCtrlIdcodeValue),
+    .NumRmaAckSigs(LcCtrlNumRmaAckSigs)
   ) u_lc_ctrl (
       // [10]: fatal_prog_error
       // [11]: fatal_state_error
@@ -2420,6 +2427,8 @@ module top_darjeeling #(
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
+    .NEscalationSeverities(RvCoreIbexNEscalationSeverities),
+    .WidthPingCounter(RvCoreIbexWidthPingCounter),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),
