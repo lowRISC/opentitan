@@ -33,7 +33,7 @@ endfunction
 
 function dc_blink_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
   dc_blink_t ret;
-  int low_delta = $urandom_range(1, 100), high_delta = $urandom_range(1, 100);
+  int low_delta = $urandom_range(0, 100), high_delta = $urandom_range(0, 100);
   bit a_lt_b = $urandom_range(0, 1);
 
   ret.A = a_lt_b ? low_delta : MAX_16 - high_delta;
