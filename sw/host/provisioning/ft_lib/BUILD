@@ -10,7 +10,10 @@ package(default_visibility = ["//visibility:public"])
 [
     rust_library(
         name = "ft_lib_{}".format(sku),
-        srcs = ["src/lib.rs"],
+        srcs = [
+            "src/lib.rs",
+            "src/response.rs",
+        ],
         crate_name = "ft_lib",
         deps = [
             "//sw/host/opentitanlib",
@@ -24,6 +27,7 @@ package(default_visibility = ["//visibility:public"])
             "@crate_index//:arrayvec",
             "@crate_index//:clap",
             "@crate_index//:hex",
+            "@crate_index//:indexmap",
             "@crate_index//:log",
             "@crate_index//:serde",
             "@crate_index//:serde_json",
