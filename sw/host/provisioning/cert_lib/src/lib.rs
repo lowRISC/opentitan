@@ -8,12 +8,13 @@ use std::path::PathBuf;
 use std::process::Command;
 
 use anyhow::{bail, Context, Result};
+use base64ct::{Base64, Encoding};
 use elliptic_curve::SecretKey;
 use num_bigint_dig::BigUint;
 use openssl::ecdsa::EcdsaSig;
 use p256::ecdsa::SigningKey;
 use p256::NistP256;
-use serde::Deserialize;
+use serde::{Deserialize, Serialize, Serializer};
 
 use opentitanlib::crypto::sha256::sha256;
 use opentitanlib::util::tmpfilename;
@@ -219,15 +220,21 @@ fn write_cert_to_temp_pem_file(der_cert_bytes: &[u8], base_filename: &str) -> Re
     Ok(binding_pem)
 }
 
+fn serialize_certificate<S: Serializer>(cert: &Vec<u8>, serializer: S) -> Result<S::Ok, S::Error> {
+    let s = Base64::encode_string(cert.as_slice());
+    serializer.serialize_str(&s)
+}
+
 /// Container for an endorsed certificate.
 ///
 /// This is used to pass a collection of endorsed certificates, along with metadata,
 /// to various functions that check the certificates validate properly with third-party
 /// tools.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Serialize)]
 pub struct EndorsedCert {
     pub format: CertFormat,
     pub name: String,
+    #[serde(serialize_with = "serialize_certificate")]
     pub bytes: Vec<u8>,
     pub ignore_critical: bool,
 }
