@@ -71,7 +71,7 @@ test_suite(
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
         "//sw/device/tests/pmod:i2c_host_eeprom_test",
-        "//sw/device/tests/pmod:spi_host_macronix_flash_test",
+        "//sw/device/tests/pmod:spi_host_macronix1Gb_flash_test",
     ],
 )
 
