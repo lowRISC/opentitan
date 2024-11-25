@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "rv_plic",
-    files = glob(["**"]),
     hjson = "data/rv_plic.hjson",
 )

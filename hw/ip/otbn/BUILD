@@ -15,6 +15,5 @@ filegroup(
 
 opentitan_ip(
     name = "otbn",
-    files = glob(["**"]),
     hjson = "//hw/ip/otbn/data:hjson",
 )

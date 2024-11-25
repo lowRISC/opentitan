@@ -5,8 +5,13 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "hjson",
-    srcs = ["lc_ctrl.hjson"],
+    name = "all_files",
+    srcs = glob(["**"]),
 )
 
 exports_files(glob(["**"]))
+
+filegroup(
+    name = "hjson",
+    srcs = ["lc_ctrl.hjson"],
+)

@@ -10,7 +10,7 @@ default_params = {
     'tops': ["hw/top_earlgrey"],
     'no_regs': False,
     'hjson': '<DEFAULT>',
-    'keep_all_files': False,
+    'keep_all_files': True,
 }
 
 ips = {
@@ -26,10 +26,9 @@ ips = {
     "hw/ip/keymgr": {},
     "hw/ip/kmac": {},
     "hw/ip/lc_ctrl": {},
-    "hw/ip/otbn": {'keep_all_files': True},
+    "hw/ip/otbn": {},
     "hw/ip/otp_ctrl": {},
     "hw/ip/pattgen": {},
-    "hw/ip/prim": {'no_regs': True, 'hjson': None},
     "hw/ip/pwm": {},
     "hw/ip/rom_ctrl": {},
     "hw/ip/rv_core_ibex": {},
@@ -39,15 +38,11 @@ ips = {
     "hw/ip/spi_host": {},
     "hw/ip/sram_ctrl": {},
     "hw/ip/sysrst_ctrl": {},
-    "hw/ip/tlul": {'no_regs': True, 'hjson': None},
     "hw/ip/uart": {},
     "hw/ip/usbdev": {},
     # top_earlgrey
     'hw/top_earlgrey/ip/ast': {},
     'hw/top_earlgrey/ip/sensor_ctrl': {},
-    "hw/top_earlgrey/ip/xbar": {'no_regs': True, 'hjson': None},
-    "hw/top_earlgrey/ip/xbar_main": {'no_regs': True, 'hjson': None},
-    "hw/top_earlgrey/ip/xbar_peri": {'no_regs': True, 'hjson': None},
 }
 
 project_root = Path(__file__).parents[1].resolve()
@@ -69,7 +64,7 @@ for (ip_dir, params) in ips.items():
     if params['keep_all_files']:
         options.append('--keep-all-files')
     subprocess.run(
-        [project_root / "util" / "rewrite_hw.py", "-v", "-g", "--root", project_root] +
+        [project_root / "util" / "rewrite_hw.py", "-v", "--root", project_root] +
         options + [ip_dir],
         check=True,
     )

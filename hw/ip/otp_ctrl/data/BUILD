@@ -54,8 +54,8 @@ string_flag(
 # this BUILD file.
 
 filegroup(
-    name = "hjson",
-    srcs = ["otp_ctrl.hjson"],
+    name = "all_files",
+    srcs = glob(["**"]),
 )
 
 exports_files([
@@ -602,4 +602,9 @@ pkg_files(
 otp_json(
     name = "otp_json_baseline",
     seed = "85452983286950371191603618368782861611109037138182535346147818831008789508651",
+)
+
+filegroup(
+    name = "hjson",
+    srcs = ["otp_ctrl.hjson"],
 )

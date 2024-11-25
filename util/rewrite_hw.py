@@ -156,15 +156,7 @@ def main():
     ip_build = ip_build[:all_files_idx] + [
         'opentitan_ip(\n',
         '    name = "{}",\n'.format(ip_name),
-        '    hjson = "{}",\n'.format(hjson_bazel_target)
-        if hjson_bazel_target is not None else '',
-        '    files = glob(["**"])',
-        ' + [\n' if ip_name == 'prim' else '',
-        '        "//hw/ip/prim_generic:all_files",\n' if ip_name == 'prim' else '',
-        '        "//hw/ip/prim_xilinx:all_files",\n' if ip_name == 'prim' else '',
-        '        "//hw/ip/prim_xilinx_ultrascale:all_files",\n' if ip_name == 'prim' else '',
-        '    ]' if ip_name == 'prim' else '',
-        ',\n',
+        '    hjson = "{}",\n'.format(hjson_bazel_target),
         ')\n'
     ] + ip_build[all_files_idx:]
     # Write back.

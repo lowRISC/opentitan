@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "pinmux",
-    files = glob(["**"]),
     hjson = "data/pinmux.hjson",
 )

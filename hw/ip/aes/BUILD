@@ -6,10 +6,11 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
 package(default_visibility = ["//visibility:public"])
 
-opentitan_ip(
-    name = "aes",
-    files = glob(["**"]),
-    hjson = "//hw/ip/aes/data:hjson",
+filegroup(
+    name = "all_files",
+    srcs = glob(["**"]) + [
+        "//hw/ip/aes/data:all_files",
+    ],
 )
 
 cc_library(
@@ -18,4 +19,9 @@ cc_library(
         "model/aes.h",
         "model/aes_modes.h",
     ],
+)
+
+opentitan_ip(
+    name = "aes",
+    hjson = "//hw/ip/aes/data:hjson",
 )

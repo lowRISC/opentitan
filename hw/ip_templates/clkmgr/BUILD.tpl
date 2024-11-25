@@ -8,6 +8,5 @@ package(default_visibility = ["//visibility:public"])
 
 opentitan_ip(
     name = "clkmgr",
-    files = glob(["**"]),
     hjson = "data/clkmgr.hjson",
 )
