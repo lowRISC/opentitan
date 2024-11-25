@@ -49,6 +49,7 @@ generate:
     parameters:
       name: dma
       ip_hjson: ../../data/dma.hjson
+    position: prepend
 
 targets:
   default:

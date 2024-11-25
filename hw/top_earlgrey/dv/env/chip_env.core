@@ -172,6 +172,7 @@ generate:
     parameters:
       name: chip
       top_hjson: ../../data/top_earlgrey.hjson
+    position: prepend
 
 targets:
   default:

@@ -33,6 +33,7 @@ generate:
     parameters:
       name: ac_range_check
       ip_hjson: ../../data/ac_range_check.hjson
+    position: prepend
 
 targets:
   default:

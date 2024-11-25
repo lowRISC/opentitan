@@ -43,6 +43,7 @@ generate:
     parameters:
       name: sysrst_ctrl
       ip_hjson: ../../data/sysrst_ctrl.hjson
+    position: prepend
 
 targets:
   default:

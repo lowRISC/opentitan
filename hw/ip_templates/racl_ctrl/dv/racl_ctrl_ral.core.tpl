@@ -17,6 +17,7 @@ generate:
     parameters:
       name: racl_ctrl
       ip_hjson: ../data/${module_instance_name}.hjson
+    position: prepend
 
 targets:
   default:

@@ -38,6 +38,7 @@ generate:
     parameters:
       name: gpio
       ip_hjson: ../../data/gpio.hjson
+    position: prepend
 
 targets:
   default:

@@ -146,6 +146,7 @@ generate:
     parameters:
       name: chip
       top_hjson: ../../data/top_darjeeling.hjson
+    position: prepend
 
 targets:
   default:
