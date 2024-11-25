@@ -56,16 +56,6 @@ for pad in target["pinout"]["add_pads"]:
   amended_pad.update({"idx" : k})
   dedicated_pads.append(pad)
   k += 1
-
-num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
-
-max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
-max_sigwidth = len("{}".format(max_sigwidth))
-
-cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
-
-unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
-
 %>\
 
 % if target["name"] != "asic":
