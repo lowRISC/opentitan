@@ -1,15 +1,14 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-${gen_comment}
 <%
 from topgen.lib import Name
 
-parts = otp_mmap.config["partitions"]
-digest_parts = [part for part in parts if
+digest_parts = [part for part in partitions if
                 part["hw_digest"] == "true" or part["sw_digest"] == "true"]
-read_locked_csr_parts = [part for part in parts if part["read_lock"] == "CSR"]
-secret_parts = [part for part in parts if part["secret"] == "true"]
+read_locked_csr_parts = [part for part in partitions
+                         if part["read_lock"] == "CSR"]
+secret_parts = [part for part in partitions if part["secret"] == "true"]
 %>\
 #ifndef OPENTITAN_SW_DEVICE_LIB_DIF_DIF_OTP_CTRL_H_
 #define OPENTITAN_SW_DEVICE_LIB_DIF_DIF_OTP_CTRL_H_
@@ -37,7 +36,7 @@ extern "C" {
  * A partition within OTP memory.
  */
 typedef enum dif_otp_ctrl_partition {
-% for part in parts:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   short_desc = part["desc"].split(".")[0].strip().replace("\n", " ")
@@ -103,7 +102,7 @@ typedef enum dif_otp_ctrl_status_code {
   //
   // Note furthermore that these enum variants are intended as bit indices, so
   // their values should not be randomized.
-% for part in parts:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()

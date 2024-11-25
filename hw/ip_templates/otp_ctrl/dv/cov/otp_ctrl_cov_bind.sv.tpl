@@ -4,7 +4,6 @@
 //
 // Binds OTP_CTRL functional coverage interaface to the top level OTP_CTRL module.
 //
-${gen_comment}
 <%
 from topgen.lib import Name
 
@@ -68,13 +67,13 @@ module otp_ctrl_cov_bind;
   );
 
   // Mubi internal coverage for buffered and unbuffered partitions.
-% for part in otp_mmap.config["partitions"][:-1]:
+% for part in partitions[:-1]:
 <% part_name = Name.from_snake_case(part["name"]) %>\
   `PART_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
 % endfor
 
   // Mubi internal coverage for DAI interface access
-% for part in otp_mmap.config["partitions"][:-1]:
+% for part in partitions[:-1]:
 <% part_name = Name.from_snake_case(part["name"]) %>\
   `DAI_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
 % endfor

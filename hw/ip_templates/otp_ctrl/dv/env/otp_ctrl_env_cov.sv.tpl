@@ -10,17 +10,16 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+parts_without_lc = [part for part in partitions if
                     part["variant"] in ["Buffered", "Unbuffered"]]
 
-unbuffered_parts = [part for part in otp_mmap.config["partitions"] if
+unbuffered_parts = [part for part in partitions if
                     part["variant"] == "Unbuffered"]
 
 unbuffered_parts_with_digest = [part for part in unbuffered_parts if
                                 (part["sw_digest"] or part["hw_digest"])]
 
-buffered_parts = [part for part in otp_mmap.config["partitions"] if
-                  part["variant"] == "Buffered"]
+buffered_parts = [part for part in partitions if part["variant"] == "Buffered"]
 
 buffered_nonsecret_parts_with_digest = [part for part in buffered_parts if
                                         (part["sw_digest"] or part["hw_digest"]) and
@@ -30,7 +29,7 @@ buffered_secret_parts_with_digest = [part for part in buffered_parts if
                                      (part["sw_digest"] or part["hw_digest"]) and
                                      part["secret"]]
 ## Partitions + LCI + DAI
-num_err_code = len(otp_mmap.config["partitions"]) + 2
+num_err_code = len(partitions) + 2
 %>\
 class otp_ctrl_unbuf_err_code_cg_wrap;
   // Unbuffered partition can use TLUL interface to read out but cannot write, thus error_code does
@@ -234,7 +233,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       illegal_bins illegal_err = default;
     }
     partition: coverpoint part_idx {
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
 <% part_name = Name.from_snake_case(part["name"]) %>\
       bins ${part["name"].lower()} = {${part_name.as_camel_case()}Idx};
 % endfor
@@ -334,7 +333,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   function void collect_err_code_cov(int part_idx, bit [TL_DW-1:0] val,
                                      int access_part_idx = DaiIdx);
     case (part_idx)
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
 <% part_name = Name.from_snake_case(part["name"]) %>\
       Otp${part_name.as_camel_case()}ErrIdx: begin
   % if part in unbuffered_parts:

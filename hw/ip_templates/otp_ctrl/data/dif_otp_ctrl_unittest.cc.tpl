@@ -1,17 +1,16 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-${gen_comment}
 <%
 from topgen.lib import Name
 
-parts = otp_mmap.config["partitions"]
-digest_parts = [part for part in parts if
+digest_parts = [part for part in partitions if
                 part["hw_digest"] or part["sw_digest"]]
-hw_digest_parts = [part for part in parts if part["hw_digest"]]
-sw_digest_parts = [part for part in parts if part["sw_digest"]]
-read_locked_csr_parts = [part for part in parts if part["read_lock"] == "CSR"]
-secret_parts = [part for part in parts if part["secret"]]
+hw_digest_parts = [part for part in partitions if part["hw_digest"]]
+sw_digest_parts = [part for part in partitions if part["sw_digest"]]
+read_locked_csr_parts = [part for part in partitions
+                         if part["read_lock"] == "CSR"]
+secret_parts = [part for part in partitions if part["secret"]]
 %>\
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 
@@ -231,7 +230,7 @@ TEST_F(ReadLockTest, Lock) {
 
 TEST_F(ReadLockTest, NotLockablePartitions) {
   bool flag;
-% for part in [p for p in parts if p not in read_locked_csr_parts]:
+% for part in [p for p in partitions if p not in read_locked_csr_parts]:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
@@ -296,9 +295,9 @@ TEST_F(StatusTest, Errors) {
                 });
 
 <%
-  hw_cfg0_error_index = [i for i, p in enumerate(parts)
+  hw_cfg0_error_index = [i for i, p in enumerate(partitions)
                          if p["name"] == "HW_CFG0"][0]
-  lci_error_index = len(parts) + 1
+  lci_error_index = len(partitions) + 1
 %>\
   EXPECT_READ32(OTP_CTRL_ERR_CODE_${hw_cfg0_error_index}_REG_OFFSET,
                 {{OTP_CTRL_ERR_CODE_0_ERR_CODE_0_OFFSET,
@@ -347,7 +346,7 @@ TEST_P(RelativeAddress, RelativeAddress) {
 INSTANTIATE_TEST_SUITE_P(
     AllPartitions, RelativeAddress,
     testing::Values(
-% for part in parts:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
@@ -712,7 +711,7 @@ TEST_P(GetDigest, NullArgs) {
 INSTANTIATE_TEST_SUITE_P(
     AllDigests, GetDigest,
     testing::Values(
-% for part in parts:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()

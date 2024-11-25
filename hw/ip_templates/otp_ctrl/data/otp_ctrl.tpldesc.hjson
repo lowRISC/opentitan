@@ -17,7 +17,12 @@
     }
     {
       name: "otp"
-      desc: "Size parameters"
+      desc: """Size parameters
+            The following derived parameters are generated prior to rendering:
+            - "size" = depth * width
+            - "addr_width" = ceil(log2(depth))
+            - "byte_addr_width" = ceil(log2(size))
+            """
       type: "object"
       default: {
         "width": "2"  // bytes

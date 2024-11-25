@@ -5,17 +5,16 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-unbuf_parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+unbuf_parts_with_digest = [part for part in partitions if
                            part["variant"] == "Unbuffered" and
                            (part["sw_digest"] or part["hw_digest"])]
-parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+parts_with_digest = [part for part in partitions if
                      (part["sw_digest"] or part["hw_digest"])]
-read_locked_csr_parts = [part for part in otp_mmap.config["partitions"] if
+read_locked_csr_parts = [part for part in partitions if
                          part["read_lock"] == "CSR"]
-write_locked_digest_parts = [part for part in otp_mmap.config["partitions"] if
+write_locked_digest_parts = [part for part in partitions if
                              part["write_lock"] == "Digest"]
-secret_parts = [part for part in otp_mmap.config["partitions"] if
-                part["secret"]]
+secret_parts = [part for part in partitions if part["secret"]]
 %>\
 class otp_ctrl_base_vseq extends cip_base_vseq #(
     .RAL_T               (otp_ctrl_core_reg_block),

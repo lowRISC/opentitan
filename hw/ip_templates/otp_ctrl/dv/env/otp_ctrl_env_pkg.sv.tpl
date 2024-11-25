@@ -5,9 +5,9 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+parts_without_lc = [part for part in partitions if
                     part["variant"] in ["Buffered", "Unbuffered"]]
-otp_size_as_hex_text =  f'{(2 ** otp_mmap.config["otp"]["byte_addr_width"]):x}'
+otp_size_as_hex_text =  f'{(2 ** otp["byte_addr_width"]):x}'
 %>\
 package otp_ctrl_env_pkg;
   // dep packages
@@ -110,7 +110,7 @@ package otp_ctrl_env_pkg;
   } otp_intr_e;
 
   typedef enum bit [5:0] {
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()

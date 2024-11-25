@@ -5,16 +5,15 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-read_locked_csr_parts = [part for part in otp_mmap.config["partitions"] if
+read_locked_csr_parts = [part for part in partitions if
                          part["read_lock"] == "CSR"]
-write_locked_digest_parts = [part for part in otp_mmap.config["partitions"] if
+write_locked_digest_parts = [part for part in partitions if
                              part["write_lock"] == "Digest"]
-buf_parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+buf_parts_without_lc = [part for part in partitions if
                         part["variant"] == "Buffered"]
-secret_parts = [part for part in otp_mmap.config["partitions"] if
-                part["secret"]]
+secret_parts = [part for part in partitions if part["secret"]]
 ## Partitions + LCI + DAI
-num_err_code = len(otp_mmap.config["partitions"]) + 2
+num_err_code = len(partitions) + 2
 %>\
 class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
   extends cip_base_scoreboard #(
@@ -221,7 +220,7 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             // Otp_keymgr outputs creator and owner keys from secret partitions.
             // Depends on lc_seed_hw_rd_en_i, it will output the real keys or a constant
             exp_keymgr_data = '0;
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()

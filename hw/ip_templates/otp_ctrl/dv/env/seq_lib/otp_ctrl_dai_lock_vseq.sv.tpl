@@ -5,10 +5,10 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+parts_without_lc = [part for part in partitions if
                     part["variant"] in ["Buffered", "Unbuffered"]]
 
-parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+parts_with_digest = [part for part in partitions if
                      (part["sw_digest"] or part["hw_digest"])]
 %>\
 // otp_ctrl_dai_lock_vseq is developed to read/write lock DAI interface by partitions, and request

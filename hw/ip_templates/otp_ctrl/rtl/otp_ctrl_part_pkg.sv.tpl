@@ -4,7 +4,6 @@
 //
 // Package partition metadata.
 //
-${gen_comment}
 <%
 from topgen.lib import Name
 %>\
@@ -18,8 +17,8 @@ package otp_ctrl_part_pkg;
   // Scrambling Constants and Types //
   ////////////////////////////////////
 
-  parameter int NumScrmblKeys = ${len(otp_mmap.config["scrambling"]["keys"])};
-  parameter int NumDigestSets = ${len(otp_mmap.config["scrambling"]["digests"])};
+  parameter int NumScrmblKeys = ${len(scrambling["keys"])};
+  parameter int NumDigestSets = ${len(scrambling["digests"])};
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
   parameter int DigestSetSelWidth = vbits(NumDigestSets);
@@ -37,21 +36,21 @@ package otp_ctrl_part_pkg;
   typedef logic [NumDigestSets-1:0][ScrmblBlockWidth-1:0] digest_iv_array_t;
 
   typedef enum logic [ConstSelWidth-1:0] {
-% for key in otp_mmap.config["scrambling"]["keys"]:
+% for key in scrambling["keys"]:
     ${key["name"]}${"" if loop.last else ","}
 % endfor
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
-% for dig in otp_mmap.config["scrambling"]["digests"]:
+% for dig in scrambling["digests"]:
     ${dig["name"]}${"" if loop.last else ","}
 % endfor
   } digest_sel_e;
 
   // SEC_CM: SECRET.MEM.SCRAMBLE
   parameter key_array_t RndCnstKey = {
-% for key in otp_mmap.config["scrambling"]["keys"][::-1]:
-    ${"{0:}'h{1:0X}".format(otp_mmap.config["scrambling"]["key_size"] * 8, key["value"])}${"" if loop.last else ","}
+% for key in scrambling["keys"][::-1]:
+    ${"{0:}'h{1:0X}".format(scrambling_sizes["key_size"] * 8, key["value"])}${"" if loop.last else ","}
 % endfor
   };
 
@@ -59,14 +58,14 @@ package otp_ctrl_part_pkg;
   // Note: digest set 0 is used for computing the partition digests. Constants at
   // higher indices are used to compute the scrambling keys.
   parameter digest_const_array_t RndCnstDigestConst = {
-% for dig in otp_mmap.config["scrambling"]["digests"][::-1]:
-    ${"{0:}'h{1:0X}".format(otp_mmap.config["scrambling"]["cnst_size"] * 8, dig["cnst_value"])}${"" if loop.last else ","}
+% for dig in scrambling["digests"][::-1]:
+    ${"{0:}'h{1:0X}".format(scrambling_sizes["cnst_size"] * 8, dig["cnst_value"])}${"" if loop.last else ","}
 % endfor
   };
 
   parameter digest_iv_array_t RndCnstDigestIV = {
-% for dig in otp_mmap.config["scrambling"]["digests"][::-1]:
-    ${"{0:}'h{1:0X}".format(otp_mmap.config["scrambling"]["iv_size"] * 8, dig["iv_value"])}${"" if loop.last else ","}
+% for dig in scrambling["digests"][::-1]:
+    ${"{0:}'h{1:0X}".format(scrambling_sizes["iv_size"] * 8, dig["iv_value"])}${"" if loop.last else ","}
 % endfor
   };
 
@@ -119,11 +118,11 @@ package otp_ctrl_part_pkg;
   ////////////////////////
 
   localparam part_info_t PartInfo [NumPart] = '{
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
     // ${part["name"]}
     '{
       variant:          ${part["variant"]},
-      offset:           ${otp_mmap.config["otp"]["byte_addr_width"]}'d${part["offset"]},
+      offset:           ${otp["byte_addr_width"]}'d${part["offset"]},
       size:             ${part["size"]},
       key_sel:          ${part["key_sel"] if part["key_sel"] != "NoKey" else "key_sel_e'('0)"},
       secret:           1'b${"1" if part["secret"] else "0"},
@@ -139,7 +138,7 @@ package otp_ctrl_part_pkg;
   };
 
   typedef enum {
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
     ${Name.from_snake_case(part["name"]).as_camel_case()}Idx,
 % endfor
     // These are not "real partitions", but in terms of implementation it is convenient to
@@ -154,7 +153,7 @@ package otp_ctrl_part_pkg;
   parameter int NumAgents = int'(NumAgentsIdx);
 
   // Breakout types for easier access of individual items.
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
   % if part["bkout_type"]:
   typedef struct packed {<% offset = part['offset'] + part['size'] %>
     % for item in part["items"][::-1]:
@@ -193,7 +192,7 @@ package otp_ctrl_part_pkg;
   typedef struct packed {
     // This reuses the same encoding as the life cycle signals for indicating valid status.
     lc_ctrl_pkg::lc_tx_t valid;
-% for part in otp_mmap.config["partitions"][::-1]:
+% for part in partitions[::-1]:
   % if part["bkout_type"]:
     otp_${part["name"].lower()}_data_t ${part["name"].lower()}_data;
   % endif
@@ -204,13 +203,13 @@ package otp_ctrl_part_pkg;
 <%
   k = 0
   num_bkout = 0
-  for part in otp_mmap.config["partitions"]:
+  for part in partitions:
     if part["bkout_type"]:
       num_bkout += 1
 %>\
   parameter otp_broadcast_t OTP_BROADCAST_DEFAULT = '{
     valid: lc_ctrl_pkg::Off,
-% for part in otp_mmap.config["partitions"][::-1]:
+% for part in partitions[::-1]:
   % if part["bkout_type"]:
     ${part["name"].lower()}_data: OTP_${part["name"].upper()}_DATA_DEFAULT${"" if k == num_bkout-1 else ","}
 <% k+=1 %>\
@@ -218,16 +217,16 @@ package otp_ctrl_part_pkg;
 % endfor
   };
 
-<% offset =  int(otp_mmap.config["partitions"][-1]["offset"]) + int(otp_mmap.config["partitions"][-1]["size"]) %>
+<% offset =  int(partitions[-1]["offset"]) + int(partitions[-1]["size"]) %>
   // OTP invalid partition default for buffered partitions.
   parameter logic [${offset * 8 - 1}:0] PartInvDefault = ${offset * 8}'({
-  % for k, part in enumerate(otp_mmap.config["partitions"][::-1]):
+  % for k, part in enumerate(partitions[::-1]):
     ${int(part["size"])*8}'({
     % for item in part["items"][::-1]:
       % if offset != item['offset'] + item['size']:
       ${"{}'h{:0X}".format((offset - item['size'] - item['offset']) * 8, 0)}, // unallocated space<% offset = item['offset'] + item['size'] %>
       % endif
-      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(otp_mmap.config["partitions"])-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
+      ${"{}'h{:0X}".format(item["size"] * 8, item["inv_default"])}${("\n    })," if k < len(partitions)-1 else "\n    })});") if loop.last else ","}<% offset -= item['size'] %>
     % endfor
   % endfor
 
@@ -241,7 +240,7 @@ package otp_ctrl_part_pkg;
     logic unused_sigs;
     unused_sigs = ^part_digest;
     hw2reg = '0;
-% for k, part in enumerate(otp_mmap.config["partitions"]):
+% for k, part in enumerate(partitions):
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
@@ -262,7 +261,7 @@ package otp_ctrl_part_pkg;
     part_access_pre = {{32'(2*NumPart)}{prim_mubi_pkg::MuBi8False}};
     // Note: these could be made a MuBi CSRs in the future.
     // The main thing that is missing right now is proper support for W0C.
-% for k, part in enumerate(otp_mmap.config["partitions"]):
+% for k, part in enumerate(partitions):
   % if part["read_lock"] == "CSR":
     // ${part["name"]}
     if (!reg2hw.${part["name"].lower()}_read_lock) begin
@@ -281,7 +280,7 @@ package otp_ctrl_part_pkg;
     logic valid, unused;
     unused = 1'b0;
     valid = 1'b1;
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
     // ${part["name"]}
 <%
   part_name = Name.from_snake_case(part["name"])
@@ -310,7 +309,7 @@ package otp_ctrl_part_pkg;
     // interface to the keymgr remains stable. The type contains
     // a superset of all options, so we have to initialize it to '0 here.
     otp_keymgr_key = '0;
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
     // ${part["name"]}
 <%
   part_name = Name.from_snake_case(part["name"])

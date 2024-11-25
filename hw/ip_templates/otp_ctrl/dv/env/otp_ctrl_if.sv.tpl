@@ -4,12 +4,12 @@
 ${gen_comment}
 <%
 from topgen.lib import Name
-unbuf_parts_with_digest = [part for part in otp_mmap.config["partitions"] if
+unbuf_parts_with_digest = [part for part in partitions if
                            part["variant"] == "Unbuffered" and
                            (part["sw_digest"] or part["hw_digest"])]
-parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+parts_without_lc = [part for part in partitions if
                     part["variant"] in ["Buffered", "Unbuffered"]]
-buf_parts_without_lc = [part for part in otp_mmap.config["partitions"] if
+buf_parts_without_lc = [part for part in partitions if
                         part["variant"] == "Buffered"]
 %>\
 // This interface collect the broadcast output data from OTP,

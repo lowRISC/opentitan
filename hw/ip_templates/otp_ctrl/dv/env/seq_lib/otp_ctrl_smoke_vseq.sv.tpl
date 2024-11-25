@@ -32,7 +32,7 @@ class otp_ctrl_smoke_vseq extends otp_ctrl_base_vseq;
   constraint partition_index_c {part_idx inside {[0:LifeCycleIdx-1]};}
 
   constraint dai_wr_legal_addr_c {
-% for part in otp_mmap.config["partitions"]:
+% for part in partitions:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
