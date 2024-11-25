@@ -1,0 +1,102 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: FPGA bitstream build
+on:
+  workflow_call:
+    inputs:
+      top_name:
+        type: string
+      design_suffix:
+        type: string
+      vivado_version:
+        default: "2021.1"
+        type: string
+
+jobs:
+  bitstream:
+    name: Build bitstream
+    runs-on: ubuntu-22.04-bitstream
+    timeout-minutes: 240
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required by get-bitstream-strategy.sh
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+
+      - name: Configure bitstream strategy
+        id: strategy
+        run: |
+          ci/scripts/get-bitstream-strategy.sh "chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}" \
+            ':!/third_party/rust/' \
+            ':!/sw/' \
+            ':!/*.hjson' \
+            ':!/*.tpl' \
+            ':!/site/' \
+            ':!/doc/' \
+            ':!/COMMITTERS' \
+            ':!/CLA' \
+            ':!/*.md' \
+            ':!/.github/' \
+            ':!/hw/**/dv/*' \
+            ':!/hw/dv/'
+
+      - name: Extract cached bitstream
+        if: steps.strategy.outputs.bitstreamStrategy == 'cached'
+        run: |
+          . util/build_consts.sh
+          bazel_package="//hw/bitstream"
+          design_name=chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+          cached_archive="${bazel_package}:${design_name}_cached_archive"
+          ./bazelisk.sh build "${cached_archive}"
+          bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
+          cp -Lv ${bitstream_archive} build-bin.tar
+
+      - name: Build and splice bitstream with Vivado
+        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
+        run: |
+          bazel_package=//hw/bitstream/vivado
+          bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
+          archive_target=${bazel_package}:${{ inputs.top_name }}_${{ inputs.design_suffix }}_archive
+          trap 'get_logs' EXIT
+          get_logs() {
+            design_name=chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+            SUB_PATH="hw/top_${{ inputs.top_name }}/${design_name}"
+            mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+            # This can fail if the build result is from Bazel cache
+            cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+              $(./bazelisk.sh outquery-all ${bitstream_target}) || true
+            bitstream_archive=$(./bazelisk.sh outquery ${archive_target})
+            cp -Lv ${bitstream_archive} build-bin.tar
+          }
+
+          . util/build_consts.sh
+          module load "xilinx/vivado/${{inputs.vivado_version }}"
+          ./bazelisk.sh build ${archive_target}
+
+      - name: Display synthesis & implementation logs
+        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
+        run: |
+          . util/build_consts.sh
+          echo "Synthesis log"
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/build.fpga_${{ inputs.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}_0.1.runs/synth_1/runme.log || true
+
+          echo "Implementation log"
+          cat $OBJ_DIR/hw/top_${{ inputs.top_name }}/build.fpga_${{ inputs.design_suffix }}/synth-vivado/lowrisc_systems_chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}_0.1.runs/impl_1/runme.log || true
+
+      - name: Upload step outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: partial-build-bin-chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}
+          path: build-bin.tar
+
+      - name: Upload artifacts if build failed
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}-build-out
+          path: build-out
