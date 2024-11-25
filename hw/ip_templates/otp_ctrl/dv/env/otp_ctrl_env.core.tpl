@@ -2,8 +2,11 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:otp_ctrl_env:0.1"
+name: ${instance_vlnv("lowrisc:dv:otp_ctrl_env:0.1")}
 description: "OTP_CTRL DV UVM environment"
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl_env
+
 filesets:
   files_dv:
     depend:
