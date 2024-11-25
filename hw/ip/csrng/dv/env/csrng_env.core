@@ -43,6 +43,7 @@ generate:
     parameters:
       name: csrng
       ip_hjson: ../../data/csrng.hjson
+    position: prepend
 
 targets:
   default:

@@ -47,6 +47,7 @@ generate:
     parameters:
       name: spi_host
       ip_hjson: ../../data/spi_host.hjson
+    position: prepend
 
 targets:
   default:
