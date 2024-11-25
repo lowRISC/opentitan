@@ -79,14 +79,14 @@ bool test_main(void) {
    * here.
    */
   enum MicronVendorSpecific {
-    kManufactureId = 0x20,
+    kManufacturerId = 0x20,
   };
 
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, test_software_reset, &spi_host);
   EXECUTE_TEST(result, test_read_sfdp, &spi_host);
   EXECUTE_TEST(result, test_sector_erase, &spi_host);
-  EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufactureId);
+  EXECUTE_TEST(result, test_read_jedec, &spi_host, kManufacturerId);
   EXECUTE_TEST(result, test_enable_quad_mode, &spi_host);
   EXECUTE_TEST(result, test_page_program, &spi_host);
   if (is_4_bytes_address_mode_supported()) {
