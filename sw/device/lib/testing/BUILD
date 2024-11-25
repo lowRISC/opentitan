@@ -38,7 +38,7 @@ cc_library(
     ] + select(
         {
             # FIXME improve this when we have proper platforms
-            "//hw/top:top_earlgrey": [
+            "//hw/top:is_earlgrey": [
                 "//sw/device/lib/dif:flash_ctrl",
                 "//sw/device/lib/dif:keymgr",
                 "//sw/device/lib/dif:usbdev",

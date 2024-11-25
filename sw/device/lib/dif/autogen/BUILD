@@ -11,7 +11,7 @@ package(default_visibility = ["//visibility:public"])
     opentitan_autogen_dif(
         name = ip,
         ip = ip,
-        top = "//hw/top",
+        top = "//hw/top:top_desc",
     )
     for ip in OPENTITAN_ALL_IPS
 ]
