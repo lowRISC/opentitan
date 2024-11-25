@@ -210,6 +210,37 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "spi_host_winbond1Gb_flash_test",
+    srcs = ["spi_host_winbond1Gb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    fpga = fpga_params(
+        tags = [
+            "manual",
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:spi_host_flash_test_impl",
+    ],
+)
+
+opentitan_test(
     name = "i2c_host_accelerometer_test",
     srcs = ["i2c_host_accelerometer_test.c"],
     exec_env = {
