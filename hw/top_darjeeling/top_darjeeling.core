@@ -51,7 +51,7 @@ filesets:
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
-      - lowrisc:systems:sensor_ctrl
+      - lowrisc:systems:top_darjeeling_sensor_ctrl
       - lowrisc:systems:soc_proxy
       - lowrisc:tlul:headers
       - lowrisc:prim:all

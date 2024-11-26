@@ -51,7 +51,7 @@ filesets:
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
-      - lowrisc:systems:sensor_ctrl
+      - lowrisc:systems:top_earlgrey_sensor_ctrl
       - lowrisc:tlul:headers
       - lowrisc:prim:all
       - lowrisc:prim:usb_diff_rx
