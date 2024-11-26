@@ -2,6 +2,21 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+def flatten(list_of_list):
+    """
+    Flatten a list of list. This function will work even if some of the
+    elements are select() that evaluate to a list.
+
+    Example:
+      flatten([[a], [b,c]]) = [a,b,c]
+      flatten([select({"bla": [a], []), [x]]) = [a, x] or [x]
+    """
+    result = []
+    for element in list_of_list:
+        # Note the use of '+' that handles both lists and select.
+        result += element
+    return result
+
 def get_override(obj, item, overrides):
     """Get an item from obj unless it exists in overrides.
 
