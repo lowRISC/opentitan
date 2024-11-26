@@ -230,7 +230,7 @@ manifest(d = {
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(s["slot"]),
         manifest = ":manifest",
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
