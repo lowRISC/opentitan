@@ -45,6 +45,10 @@ typedef struct owner_config {
   const owner_flash_info_config_t *info;
   /** The requested rescue configuration. */
   const owner_rescue_config_t *rescue;
+  /**
+   * The requested Integrator Specific Firmware Binding (ISFB) configuration.
+   */
+  const owner_isfb_config_t *isfb;
 } owner_config_t;
 
 /**
