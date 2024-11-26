@@ -1358,6 +1358,15 @@ def main():
                             helper=c_helper,
                             gencmd=gencmd_bzl)
 
+            # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
+                            path / "data" / "autogen" / "BUILD",
+                            gencmd=gencmd_bzl)
+            # "data_defs.tpl" -> "data/autogen/defs.bzl"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_defs.tpl",
+                            path / "data" / "autogen" / "defs.bzl",
+                            gencmd=gencmd_bzl)
+
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
