@@ -55,10 +55,44 @@ package pwm_env_pkg;
     bit [15:0]   A;
   } dc_blink_t;
 
-  // the index of multi-reg is at the last char of the name
-  function automatic int get_multireg_idx(string name);
-    string s = name.getc(name.len - 1);
-    return s.atoi();
+  // Split a name of the form "foo_bar_123" into a base name ("foo_bar") and an index (123). Returns
+  // 1'b1 if the split is possible (the name ends with an underscore and then some digits).
+  //
+  // If the split is not successful, index is set to 0, base_name is set to full_name and the
+  // function returns 1'b0.
+  function bit split_multireg_name(input string full_name,
+                                   output string base_name,
+                                   output int    index);
+    automatic int underscore_idx = full_name.len() - 1;
+    while (underscore_idx > 0) begin
+      automatic string ch = full_name.getc(underscore_idx);
+
+      if (ch == "_") break;
+
+      // If this isn't a digit, we should fail. Do so by setting the index to zero (so it looks like
+      // we walked past the whole string)
+      if (ch < "0" || "9" < ch) begin
+        underscore_idx = 0;
+        break;
+      end
+
+      underscore_idx--;
+    end
+
+    // If underscore_idx is zero then we either saw a non-digit character or the while loop ran
+    // through the whole string without seeing an underscore. The split was not successful.
+    if (underscore_idx == 0) begin
+      base_name = full_name;
+      index = 0;
+      return 1'b0;
+    end
+
+    // If we get here then the last underscore is at underscore_idx and there is a nonempty base
+    // name before it. Split and convert. Note that atoi returns 0 if the string isn't a number and
+    // we aren't checking for this.
+    base_name = full_name.substr(0, underscore_idx-1);
+    index = full_name.substr(underscore_idx+1, full_name.len() - 1).atoi();
+    return 1'b1;
   endfunction
 
   // package sources
