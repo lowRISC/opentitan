@@ -10,7 +10,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:ip_interfaces:rstmgr_pkg
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:dv:rstmgr_sva_ifs
+      - lowrisc:dv:top_darjeeling_rstmgr_sva_ifs
 
     files:
       - rstmgr_bind.sv
