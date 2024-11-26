@@ -7,7 +7,7 @@ description: "PWRMGR DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:pwrmgr_env
+      - lowrisc:dv:top_earlgrey_pwrmgr_env
     files:
       - pwrmgr_test_pkg.sv
       - pwrmgr_base_test.sv: {is_include_file: true}
