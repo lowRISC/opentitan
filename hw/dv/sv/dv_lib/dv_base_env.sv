@@ -13,6 +13,8 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
   SCOREBOARD_T               scoreboard;
   COV_T                      cov;
 
+  reset_agent                rst_agt;
+
   `uvm_component_new
 
   virtual function void build_phase(uvm_phase phase);
@@ -52,8 +54,10 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
       cfg.clk_rst_vif.set_freq_mhz(cfg.clk_freq_mhz);
     end
 
-
     // create components
+    uvm_config_db #(reset_agent_cfg)::set(this, "*", "cfg", cfg.rst_agt_cfg);
+    rst_agt = reset_agent::type_id::create("rst_agt", this);
+
     if (cfg.en_cov) begin
       cov = COV_T::type_id::create("cov", this);
       cov.cfg = cfg;

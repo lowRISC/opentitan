@@ -11,6 +11,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   bit               run_test_seq = 1'b1;
   string            test_seq_s;
 
+  reset_agent_cfg   rst_agt_cfg;
+
   uint   max_quit_count  = 1;
   uint64 test_timeout_ns = 200_000_000; // 200ms
   uint   drain_time_ns   = 2_000;  // 2us
@@ -34,12 +36,20 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
 
     super.build_phase(phase);
 
-    env = ENV_T::type_id::create("env", this);
     cfg = CFG_T::type_id::create("cfg", this);
     void'($value$plusargs("use_jtag_dmi=%0b", cfg.use_jtag_dmi));
     cfg.initialize();
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
-    uvm_config_db#(CFG_T)::set(this, "env", "cfg", cfg);
+
+    rst_agt_cfg = reset_agent_cfg::type_id::create("rst_agt_cfg", this);
+    config_reset_agent(rst_agt_cfg);
+
+    // Retrieve reset agent interface
+    if (!uvm_config_db#(virtual reset_interface)::get(this, "", "reset_vif", rst_agt_cfg.vif)) begin
+      `uvm_fatal(`gfn, "failed to get reset_interface from uvm_config_db")
+    end
+
+    cfg.rst_agt_cfg = rst_agt_cfg;
 
     // Enable scoreboard (and sub-scoreboard checks) via plusarg.
     void'($value$plusargs("en_scb=%0b", cfg.en_scb));
@@ -59,6 +69,9 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     uvm_top.enable_print_topology = print_topology;
 
     void'($value$plusargs("cdc_instrumentation_enabled=%d", cfg.en_dv_cdc));
+
+    uvm_config_db#(CFG_T)::set(this, "*", "cfg", cfg);
+    env = ENV_T::type_id::create("env", this);
   endfunction : build_phase
 
   virtual function void end_of_elaboration_phase(uvm_phase phase);
@@ -84,6 +97,22 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   // Add message demotes here - hook to use by extended tests
   virtual function void add_message_demotes(dv_report_catcher catcher);
   endfunction
+
+  // Default configuration, can be overwritten if needed
+  virtual function void config_reset_agent(reset_agent_cfg rst_agt_cfg);
+    // Config items from dv_base_agent_cfg
+    rst_agt_cfg.is_active   = 1;
+    rst_agt_cfg.has_driver  = 1;
+    rst_agt_cfg.if_mode     = Device;
+
+    // Config items from reset_agent_cfg
+    rst_agt_cfg.enable_debug_messages = 0;
+    rst_agt_cfg.polarity              = ActiveLow;
+    rst_agt_cfg.assert_is_sync        = 0;
+    rst_agt_cfg.deassert_is_sync      = 1;
+    rst_agt_cfg.ini_assert_delay      = 50;
+    rst_agt_cfg.ini_assert_width      = 100;
+  endfunction : config_reset_agent
 
   virtual task run_seq(string test_seq_s, uvm_phase phase);
     uvm_sequence test_seq = create_seq_by_name(test_seq_s);

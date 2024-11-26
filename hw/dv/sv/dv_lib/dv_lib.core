@@ -13,7 +13,12 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:common_ifs
       - lowrisc:opentitan:bus_params_pkg
+      # - lowrisc:opentitan:dv:dv_base_agent
+      # - lowrisc:opentitan:dv:reset_agent
     files:
+      # - dv_base_agent_pkg.sv
+      # - reset_agent/reset_agent_pkg.sv
+      - reset_agent/reset_interface.sv
       - dv_lib_pkg.sv
 
       - dv_base_agent_cfg.sv: {is_include_file: true}
@@ -23,6 +28,17 @@ filesets:
       - dv_base_driver.sv: {is_include_file: true}
       - dv_base_agent.sv: {is_include_file: true}
       - dv_base_seq.sv: {is_include_file: true}
+
+      - reset_agent/reset_item.svh: {is_include_file: true}
+      - reset_agent/reset_agent_cfg.svh: {is_include_file: true}
+      - reset_agent/reset_agent_cov.svh: {is_include_file: true}
+      - reset_agent/reset_sequencer.svh: {is_include_file: true}
+      - reset_agent/reset_driver.svh: {is_include_file: true}
+      - reset_agent/reset_monitor.svh: {is_include_file: true}
+      - reset_agent/reset_agent.svh: {is_include_file: true}
+      - reset_agent/seq_lib/reset_base_seq.svh: {is_include_file: true}
+      - reset_agent/seq_lib/reset_seq.svh: {is_include_file: true}
+      - reset_agent/seq_lib/reset_seq_lib.sv: {is_include_file: true}
 
       - dv_base_env_cfg.sv: {is_include_file: true}
       - dv_base_env_cov.sv: {is_include_file: true}

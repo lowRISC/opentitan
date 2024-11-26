@@ -55,6 +55,8 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   rand uint clk_freq_mhz;
   rand uint clk_freqs_mhz[string];
 
+  reset_agent_cfg rst_agt_cfg;
+
   constraint clk_freq_mhz_c {
     `DV_COMMON_CLK_CONSTRAINT(clk_freq_mhz)
     foreach (clk_freqs_mhz[i]) {
@@ -70,6 +72,11 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   `uvm_object_utils_end
 
   `uvm_object_new
+
+  function void build_phase(uvm_phase phase);
+    rst_agt_cfg = reset_agent_cfg::type_id::create("rst_agt_cfg");
+  endfunction
+
 
   function void pre_randomize();
     `DV_CHECK_FATAL(is_initialized, "Please invoke initialize() before randomizing this object.")

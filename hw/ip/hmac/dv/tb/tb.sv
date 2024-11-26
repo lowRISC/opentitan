@@ -22,7 +22,8 @@ module tb;
   wire intr_hmac_err;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n());
+  reset_interface reset_if();
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   hmac_if hmac_if(.clk_i(clk), .rst_ni(rst_n));
@@ -51,10 +52,15 @@ module tb;
   assign interrupts[HmacMsgFifoEmpty] = intr_fifo_empty;
   assign interrupts[HmacErr]          = intr_hmac_err;
 
+  // Reset agent
+  assign reset_if.clk_i = clk;              // From the TB to the agent
+  assign rst_n          = reset_if.rst_o;   // From the agent to the TB
+
   initial begin
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual reset_interface)::set(null, "*", "reset_vif", reset_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(virtual hmac_if)::set(null, "*.env", "hmac_vif", hmac_if);
