@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip_interfaces:pinmux
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:fpv:pinmux_common_fpv
+      - lowrisc:fpv:top_darjeeling_pinmux_common_fpv
       - lowrisc:systems:scan_role_pkg
     files:
       - tb/pinmux_tb.sv
