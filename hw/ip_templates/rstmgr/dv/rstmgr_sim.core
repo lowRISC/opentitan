@@ -12,7 +12,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:rstmgr_test
-      - lowrisc:dv:rstmgr_sva
+      - lowrisc:dv:rstmgr_sva # TODO: needs templating
     files:
       - tb.sv
       - cov/rstmgr_cov_bind.sv
