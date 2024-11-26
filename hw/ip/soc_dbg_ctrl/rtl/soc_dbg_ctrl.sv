@@ -33,14 +33,9 @@ module soc_dbg_ctrl
   // Boot information from the pwrmgr
   input  pwrmgr_pkg::pwr_boot_status_t              boot_status_i
 );
-<<<<<<< HEAD:hw/ip/soc_dbg_ctrl/rtl/soc_dbg_ctrl.sv
-  soc_dbg_ctrl_core_reg2hw_t core_reg2hw;
-  soc_dbg_ctrl_core_hw2reg_t core_hw2reg;
-=======
   socdbg_ctrl_core_reg2hw_t core_reg2hw;
   socdbg_ctrl_core_hw2reg_t core_hw2reg;
   socdbg_ctrl_jtag_hw2reg_t jtag_hw2reg;
->>>>>>> 812ff35069 ([hw,socdbg_ctrl,rtl] Make debug policy bus visible to JTAG):hw/ip/socdbg_ctrl/rtl/socdbg_ctrl.sv
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Alert Management
