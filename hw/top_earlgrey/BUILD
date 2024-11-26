@@ -72,7 +72,7 @@ fpga_cw310(
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -253,7 +253,7 @@ fpga_cw305(
         "//sw/device/lib/arch:fpga_cw305",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -286,7 +286,7 @@ fpga_cw340(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -421,7 +421,7 @@ silicon(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
@@ -490,7 +490,7 @@ sim_verilator(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -553,7 +553,7 @@ sim_dv(
     otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
     otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
     otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
 )
 
 sim_dv(
