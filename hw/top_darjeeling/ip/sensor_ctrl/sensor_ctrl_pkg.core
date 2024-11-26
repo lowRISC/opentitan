@@ -11,7 +11,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
       - "fileset_partner ? (partner:systems:top_darjeeling_ast_pkg)"
-      - lowrisc:systems:sensor_ctrl_reg
+      - lowrisc:systems:top_darjeeling_sensor_ctrl_reg
     files:
       - rtl/sensor_ctrl_pkg.sv
     file_type: systemVerilogSource
