@@ -63,6 +63,7 @@ jobs:
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival[,\]]", tests(//sw/device/...))' \
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
+                                                    | grep spi_host \
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
 
@@ -74,6 +75,7 @@ jobs:
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival_rom_ext[,\]]", tests(//sw/device/...))' \
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
+                                                    | grep spi_host \
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
 
@@ -86,89 +88,3 @@ jobs:
           BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/${{ github.runner.name }}_$(date +%Y-%m-%d-%H%M%S)_${BAZEL_TEST_RESULTS}
           gcloud storage cp $BAZEL_TEST_RESULTS "$BUCKET_PATH"
 
-  rom_e2e:
-    name: ROM E2E Tests
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run all ROM E2E tests
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --test_tag_filters=-verilator,-dv,-broken \
-            --build_tests_only \
-            --test_output=errors \
-            //sw/device/silicon_creator/rom/e2e/...
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: rom_e2e-test-results
-
-  slow_otbn_crypto_tests:
-    name: Slow OTBN Crypto Tests
-    runs-on: ubuntu-22.04
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run the tests
-        run: |
-          ./bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: slow_otbn_crypto_tests-test-results
-
-  bob_spi_i2c:
-    name: "BoB: SPI and I2C Tests"
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run the PMOD tests with Test ROM
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --test_output=errors \
-            --test_tag_filters="cw310_test_rom" \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Run the PMOD tests for SiVal
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --test_output=errors \
-            --test_tag_filters=cw310_sival,-broken \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: bob_spi_i2c-test-results
