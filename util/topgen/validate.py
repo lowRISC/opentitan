@@ -71,6 +71,7 @@ top_optional = {
     'num_cores': ['pn', "number of computing units"],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
+    'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
     'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets']
 }
