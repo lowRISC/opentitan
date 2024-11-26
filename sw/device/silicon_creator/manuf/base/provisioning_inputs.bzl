@@ -32,6 +32,7 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
@@ -45,6 +46,7 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_cwt_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
@@ -61,6 +63,7 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     "sival": {
         "otp": "sival",
@@ -76,6 +79,7 @@ EARLGREY_SKUS = {
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
         "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
 } | EXT_EARLGREY_SKUS
 
