@@ -34,8 +34,8 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - "fileset_partner ? (partner:systems:ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:top_earlgrey_ast_pkg)"
+      - "fileset_partner ? (partner:systems:top_earlgrey_ast_pkg)"
     files:
       - chip_common_pkg.sv
       - chip_if.sv

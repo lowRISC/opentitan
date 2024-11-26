@@ -57,8 +57,8 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:mubi
       - lowrisc:systems:top_darjeeling_pkg
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_partner  ? (partner:systems:top_darjeeling_ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
     files:
       - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
       - rtl/autogen/top_darjeeling.sv
