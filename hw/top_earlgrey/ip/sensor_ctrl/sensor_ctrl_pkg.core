@@ -8,7 +8,7 @@ description: "Sensor Control Package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_earlgrey_top_pkg
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
       - "fileset_partner ? (partner:systems:ast_pkg)"
       - lowrisc:systems:sensor_ctrl_reg

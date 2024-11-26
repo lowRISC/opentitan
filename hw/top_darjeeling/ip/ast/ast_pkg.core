@@ -8,7 +8,7 @@ description: "Analog sensor top (AST) wrapper package"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_darjeeling_top_pkg
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/ast_pkg.sv
