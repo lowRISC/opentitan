@@ -7,7 +7,7 @@ description: "ALERT_HANDLER cov bind files"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:alert_handler_component  # import alert_pkg
+      - lowrisc:ip:top_darjeeling_alert_handler_component  # import alert_pkg
       - lowrisc:dv:dv_utils
     files:
       - alert_handler_cov_bind.sv

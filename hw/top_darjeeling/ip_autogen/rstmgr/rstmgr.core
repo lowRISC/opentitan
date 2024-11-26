@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:top_darjeeling_alert_handler_component
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2

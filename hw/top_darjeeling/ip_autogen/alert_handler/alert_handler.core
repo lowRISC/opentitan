@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:top_darjeeling_alert_handler_component
       - lowrisc:opentitan:top_darjeeling_alert_handler_reg:0.1
     file_type: systemVerilogSource
 
