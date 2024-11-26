@@ -8,7 +8,6 @@
 #include <stdint.h>
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
