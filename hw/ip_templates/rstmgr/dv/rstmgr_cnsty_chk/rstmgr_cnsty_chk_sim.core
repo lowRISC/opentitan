@@ -7,7 +7,7 @@ description: "Rstmgr_cnsty_chk DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:rstmgr_cnsty_chk
+      - lowrisc:ip:rstmgr_cnsty_chk # TODO: needs templating
       - lowrisc:dv:sec_cm
     file_type: systemVerilogSource
 
