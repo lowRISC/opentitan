@@ -532,8 +532,35 @@ def generate_racl(topcfg: Dict[str, object], out_path: Path) -> None:
     # Not all tops use RACL
     if 'racl_config' not in topcfg:
         return
-    
+
     topcfg['racl'] = parse_racl_config(topcfg['racl_config'])
+
+    log.info('Generating RACL Control IP with ipgen')
+    topname = topcfg['name']
+
+    for racl_group, policies in topcfg['racl']['policies'].items():
+        params = {
+            "nr_role_bits": 4,
+            "nr_ctn_uid_bits": 8,
+            "nr_policies": len(policies),
+            "policies": policies
+        }
+
+        # If we have more RACL policy groups, uniquify the control IP
+        # if len(topcfg['racl']['policies']) > 1:
+        #     params['module_instance_name'] = f'racl_ctrl_{racl_group}'
+
+        # # Only render the RACL groups that are really instantiated in that top
+        # for m in topcfg['module']:
+        #     if m['name'] == params['module_instance_name']:
+        #         ipgen_render("racl_ctrl", topname, params, out_path)
+        #         break
+        # TODO(#25673): The obove code, would be the correct if ipgen correctly supports rendering
+        # multiple instances and allow topgen to instantiate right now. This support is not yet
+        # implemented properly. Therefore, simply render the first RACL group to the RACL control
+        # IP.
+        ipgen_render("racl_ctrl", topname, params, out_path)
+        break
 
 
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
