@@ -9,6 +9,7 @@ load("@rules_cc//cc:action_names.bzl", "ACTION_NAMES", "C_COMPILE_ACTION_NAME")
 load("@bazel_skylib//lib:shell.bzl", "shell")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("//rules:rv.bzl", "rv_rule")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 
 def _ensure_tag(tags, *tag):
     for t in tag:
@@ -397,6 +398,7 @@ def _modid_check_aspect_impl(target, ctx):
     Verify that a binary (ELF file) does not contain conflicting module IDs
     using opentitantool.
     """
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
     # If the target is //sw/device/lib/base:status, then it has module ID information,
     # this is the root of all the information.
@@ -427,12 +429,12 @@ def _modid_check_aspect_impl(target, ctx):
     # printing anything if the test is successful but by default opentitantool prints
     # unnecessary information that pollutes the output.
     args = ctx.actions.args()
-    args.add_all([ctx.file._validator, generated_file])
+    args.add_all([tc.tools.opentitantool, generated_file])
     args.add_all(target.files)
     ctx.actions.run(
         executable = ctx.executable._modid_check,
         arguments = [args],
-        inputs = depset([ctx.file._validator] + target.files.to_list()),
+        inputs = depset([tc.tools.opentitantool] + target.files.to_list()),
         tools = [],
         outputs = [generated_file],
         progress_message = "Checking module IDs for %{label}",
@@ -450,26 +452,13 @@ modid_check_aspect = aspect(
     # types of dependencies to reach the binaries.
     attr_aspects = ["*"],
     attrs = {
-        # The rules to which we apply the aspect may not depend on opentitantool
-        # so make sure that we depend on it. Make sure that it is built for the
-        # execution platform since this aspect will be applied to targets built
-        # for the OT platform.
-        # NOTE: Make sure this is NOT named _opentitantool. Due to how bazel works
-        # https://github.com/bazelbuild/bazel/issues/18286, private aspect attributes
-        # are merged with the attributes of rule they run on, which can cause inexplicable
-        # errors message.
-        "_validator": attr.label(
-            default = "//sw/host/opentitantool",
-            allow_single_file = True,
-            executable = True,
-            cfg = "exec",
-        ),
         "_modid_check": attr.label(
             default = "//rules/scripts:modid_check",
             executable = True,
             cfg = "exec",
         ),
     },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
 def _rustfmt_impl(ctx, check = False):
