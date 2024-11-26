@@ -111,6 +111,7 @@ module aes_ghash
   input  logic [4:0]                   num_valid_bytes_i,
   input  sp2v_e                        load_hash_subkey_i,
   input  logic                         clear_i,
+  output logic                         first_block_o,
   input  logic                         alert_fatal_i,
   output logic                         alert_o,
 
@@ -470,6 +471,7 @@ module aes_ghash
               ghash_state_sel   = GHASH_STATE_INIT;
               ghash_state_we[0] = SP2V_HIGH;
               ghash_state_we[1] = SP2V_HIGH;
+              first_block_d     = 1'b1;
 
               // We have now all pre-requisites to compute the correction terms for the masked
               // implementation.
@@ -535,7 +537,6 @@ module aes_ghash
         if (&gf_mult_ack) begin
           corr_we       = SP2V_HIGH;
           aes_ghash_ns  = GHASH_IDLE;
-          first_block_d = 1'b1;
         end
       end
 
@@ -557,6 +558,7 @@ module aes_ghash
           ghash_state_sel   = GHASH_STATE_MULT;
           ghash_state_we[0] = SP2V_HIGH;
           ghash_state_we[1] = SP2V_HIGH;
+          first_block_d     = SecMasking               ? first_block_q         : 1'b0;
           aes_ghash_ns      = SecMasking               ? GHASH_MASKED_ADD_CORR :
                               (gcm_phase_i == GCM_TAG) ? GHASH_ADD_S           : GHASH_IDLE;
         end
@@ -633,29 +635,35 @@ module aes_ghash
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, aes_ghash_ns,
       aes_ghash_cs, aes_ghash_e, GHASH_IDLE)
 
-  if (SecMasking) begin : gen_fsm_reg
-    always_ff @(posedge clk_i or negedge rst_ni) begin : fsm_reg
+  always_ff @(posedge clk_i or negedge rst_ni) begin : fsm_reg
+    if (!rst_ni) begin
+      first_block_q <= 1'b0;
+    end else begin
+      first_block_q <= first_block_d;
+    end
+  end
+
+  if (SecMasking) begin : gen_fsm_reg_masked
+    always_ff @(posedge clk_i or negedge rst_ni) begin : fsm_reg_masked
       if (!rst_ni) begin
-        first_block_q <= 1'b0;
-        final_add_q   <= 1'b0;
+        final_add_q <= 1'b0;
       end else begin
-        first_block_q <= first_block_d;
-        final_add_q   <= final_add_d;
+        final_add_q <= final_add_d;
       end
     end
   end else begin : gen_no_fsm_reg
     // Tie-off unused FSM signals.
-    logic unused_first_block_d;
     logic unused_final_add_d;
-    assign first_block_q = 1'b0;
-    assign final_add_q   = 1'b0;
-    assign unused_first_block_d = first_block_d;
-    assign unused_final_add_d   = final_add_d;
+    assign final_add_q = 1'b0;
+    assign unused_final_add_d = final_add_d;
   end
 
   /////////////
   // Outputs //
   /////////////
+
+  // Moving to GCM_SAVE is only allowed after having done the first block.
+  assign first_block_o = first_block_q;
 
   // Covert the output data from the internal data format to the output format.
   always_comb begin : data_out_conversion
