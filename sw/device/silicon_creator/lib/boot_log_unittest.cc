@@ -7,6 +7,7 @@
 #include <cstring>
 
 #include "gtest/gtest.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/mock_hmac.h"

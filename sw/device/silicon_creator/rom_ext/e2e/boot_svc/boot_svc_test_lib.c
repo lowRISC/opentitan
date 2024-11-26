@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"

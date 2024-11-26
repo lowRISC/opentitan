@@ -94,7 +94,6 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
-        ":boot_data",
         ":nonce",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",
@@ -109,6 +108,7 @@ cc_test(
     srcs = ["boot_log_unittest.cc"],
     deps = [
         ":boot_log",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "@googletest//:gtest_main",

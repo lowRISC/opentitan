@@ -21,6 +21,7 @@ cc_library(
     hdrs = ["boot_svc_test_lib.h"],
     deps = [
         "//sw/device/lib/base:status",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",

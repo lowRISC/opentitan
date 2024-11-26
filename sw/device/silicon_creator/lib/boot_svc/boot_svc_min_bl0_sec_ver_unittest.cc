@@ -5,7 +5,6 @@
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_min_bl0_sec_ver.h"
 
 #include "gtest/gtest.h"
-#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/mock_boot_svc_header.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
 

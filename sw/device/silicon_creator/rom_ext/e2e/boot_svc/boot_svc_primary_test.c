@@ -5,6 +5,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_msg.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_next_boot_bl0_slot.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
