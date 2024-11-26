@@ -11,7 +11,7 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:rstmgr_test
+      - lowrisc:dv:rstmgr_test # TODO: needs templating
       - lowrisc:dv:rstmgr_sva # TODO: needs templating
     files:
       - tb.sv

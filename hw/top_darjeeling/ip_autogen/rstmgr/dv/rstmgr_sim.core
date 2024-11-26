@@ -11,7 +11,7 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:rstmgr_test
+      - lowrisc:dv:top_darjeeling_rstmgr_test
       - lowrisc:dv:top_darjeeling_rstmgr_sva
     files:
       - tb.sv
