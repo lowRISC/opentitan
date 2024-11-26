@@ -19,7 +19,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_reg
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:tlul
-      - lowrisc:dv:chip_test
+      - lowrisc:dv:top_earlgrey_chip_test
       - lowrisc:dv:clkmgr_sva
       - lowrisc:dv:pwrmgr_sva
       - lowrisc:dv:rstmgr_sva
