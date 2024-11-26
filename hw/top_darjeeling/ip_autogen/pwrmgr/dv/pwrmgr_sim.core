@@ -10,7 +10,7 @@ filesets:
       - lowrisc:ip_interfaces:pwrmgr
   files_dv:
     depend:
-      - lowrisc:dv:pwrmgr_test
+      - lowrisc:dv:top_darjeeling_pwrmgr_test
       - lowrisc:dv:top_darjeeling_pwrmgr_sva
       - lowrisc:dv:pwrmgr_unit_only_sva
     files:

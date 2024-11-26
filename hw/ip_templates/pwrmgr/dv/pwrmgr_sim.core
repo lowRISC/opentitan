@@ -10,7 +10,7 @@ filesets:
       - lowrisc:ip_interfaces:pwrmgr
   files_dv:
     depend:
-      - lowrisc:dv:pwrmgr_test
+      - lowrisc:dv:pwrmgr_test # TODO: needs templating
       - lowrisc:dv:pwrmgr_sva # TODO: needs templating
       - lowrisc:dv:pwrmgr_unit_only_sva
     files:
