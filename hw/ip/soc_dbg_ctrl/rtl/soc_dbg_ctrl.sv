@@ -21,6 +21,9 @@ module soc_dbg_ctrl
   // Device port
   input   tlul_pkg::tl_h2d_t                        core_tl_i,
   output  tlul_pkg::tl_d2h_t                        core_tl_o,
+  // JTAG interface
+  input  tlul_pkg::tl_h2d_t                         jtag_tl_i,
+  output tlul_pkg::tl_d2h_t                         jtag_tl_o,
   // Debug policy distributed to the SoC
   output soc_dbg_policy_t                           soc_dbg_policy_bus_o,
   // LC Ctrl broadcast signals
@@ -32,12 +35,13 @@ module soc_dbg_ctrl
 );
   soc_dbg_ctrl_core_reg2hw_t core_reg2hw;
   soc_dbg_ctrl_core_hw2reg_t core_hw2reg;
+  soc_dbg_ctrl_jtag_hw2reg_t jtag_hw2reg;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Alert Management
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic core_tl_intg_err;
+  logic core_tl_intg_err, jtag_tl_intg_err;
   logic shadowed_storage_err, shadowed_update_err;
   logic policy_shadowed_storage_err, policy_shadowed_update_err;
   logic [NumAlerts-1:0] alert_test, alert;
@@ -48,7 +52,8 @@ module soc_dbg_ctrl
     core_reg2hw.alert_test.recov_ctrl_update_err.q &
     core_reg2hw.alert_test.recov_ctrl_update_err.qe
   };
-  assign alert[0] = core_tl_intg_err | shadowed_storage_err | policy_shadowed_storage_err;
+  assign alert[0] = core_tl_intg_err | jtag_tl_intg_err | shadowed_storage_err |
+                    policy_shadowed_storage_err;
   assign alert[1] = shadowed_update_err | policy_shadowed_update_err;
 
   localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
@@ -69,7 +74,7 @@ module soc_dbg_ctrl
   end
 
   //////////////////////////////////////////////////////////////////////////////
-  // Register Interface
+  // Register Interface for Core and JTAG side
   //////////////////////////////////////////////////////////////////////////////
 
   // SEC_CM: BUS.INTEGRITY
@@ -85,6 +90,16 @@ module soc_dbg_ctrl
     .shadowed_storage_err_o ( shadowed_storage_err ),
     .shadowed_update_err_o  ( shadowed_update_err  ),
     .intg_err_o             ( core_tl_intg_err     )
+  );
+
+  soc_dbg_ctrl_jtag_reg_top u_jtag_reg (
+    .clk_i,
+    .rst_ni,
+    .tl_i       (jtag_tl_i),
+    .tl_o       (jtag_tl_o),
+    .hw2reg     (jtag_hw2reg),
+    // SEC_CM: BUS.INTEGRITY
+    .intg_err_o (jtag_tl_intg_err)
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -202,12 +217,20 @@ module soc_dbg_ctrl
   // Distribute debug policy to the SoC
   assign soc_dbg_policy_bus_o = soc_dbg_policy_q;
   // Allow SW to trace the actual debug policy that is either determined by hardware or software
+  // Either for the ROT
   assign core_hw2reg.trace_debug_policy_category.de                = 1'b1;
   assign core_hw2reg.trace_debug_policy_category.d                 = soc_dbg_policy_q.category;
   assign core_hw2reg.trace_debug_policy_valid_relocked.valid.de    = 1'b1;
   assign core_hw2reg.trace_debug_policy_valid_relocked.valid.d     = soc_dbg_policy_q.valid;
   assign core_hw2reg.trace_debug_policy_valid_relocked.relocked.de = 1'b1;
   assign core_hw2reg.trace_debug_policy_valid_relocked.relocked.d  = soc_dbg_policy_q.relocked;
+  // Or via JTAG
+  assign jtag_hw2reg.jtag_trace_debug_policy_category.de                = 1'b1;
+  assign jtag_hw2reg.jtag_trace_debug_policy_category.d                 = soc_dbg_policy_q.category;
+  assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.valid.de    = 1'b1;
+  assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.valid.d     = soc_dbg_policy_q.valid;
+  assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.de = 1'b1;
+  assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.d  = soc_dbg_policy_q.relocked;
 
   logic unused_signals;
   assign unused_signals = ^{boot_status_i.clk_status,
@@ -226,5 +249,6 @@ module soc_dbg_ctrl
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
 
 endmodule
