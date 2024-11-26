@@ -10,7 +10,7 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:mubi
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:dv:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:top_darjeeling_clkmgr_pwrmgr_sva_if
     files:
       - clkmgr_aon_cg_en_sva_if.sv
       - clkmgr_cg_en_sva_if.sv

@@ -10,7 +10,7 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:dv:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:clkmgr_pwrmgr_sva_if # TODO: needs templating
       - lowrisc:dv:pwrmgr_rstmgr_sva_if # TODO: needs templating
     files:
       - pwrmgr_bind.sv
