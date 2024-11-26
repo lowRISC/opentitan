@@ -10,7 +10,7 @@
 `define DATA_LENGTH 64
 `define NUM_REQUESTS 1982
 
-`define REQUESTS shim_request_t requests[`NUM_REQUESTS] = '{                                        \
+`define REQUESTS bus_request_t requests[`NUM_REQUESTS] = '{                                         \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-128 Encryption                                                  **/                   \

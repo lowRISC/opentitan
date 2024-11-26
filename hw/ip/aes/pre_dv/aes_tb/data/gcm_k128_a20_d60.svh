@@ -10,7 +10,7 @@
 `define DATA_LENGTH 60
 `define NUM_REQUESTS 370
 
-`define REQUESTS shim_request_t requests[`NUM_REQUESTS] = '{                                        \
+`define REQUESTS bus_request_t requests[`NUM_REQUESTS] = '{                                         \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-GCM-128 Encryption                                                  **/                   \
