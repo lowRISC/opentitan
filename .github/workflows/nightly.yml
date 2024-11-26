@@ -24,8 +24,7 @@ jobs:
     runs-on: [ubuntu-22.04-fpga, cw310]
 
     env:
-      GS_PATH: gs://opentitan-test-results
-      BAZEL_TEST_RESULTS: test_results.xml
+      GS_PATH: opentitan-test-results
 
     steps:
       - uses: actions/checkout@v4
@@ -143,11 +142,12 @@ jobs:
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
 
-      - name: Publish bazel test results
-        if: success() || failure()
+      - name: Compute bucket destination
+        id: bucket_destination
+        if: ${{ !cancelled() }}
         run: |
-          # Bazel produce one xml for each test. So we merge them together.
-          find -L bazel-out -name "test.xml" | xargs merge-junit -o "$BAZEL_TEST_RESULTS"
+          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
+          echo "BUCKET_PATH=$BUCKET_PATH" >> $GITHUB_OUTPUT
 
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
