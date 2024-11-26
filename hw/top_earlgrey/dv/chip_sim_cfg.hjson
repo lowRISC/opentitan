@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:chip_sim:0.1
+  fusesoc_core: lowrisc:dv:top_earlgrey_chip_sim:0.1
 
   // Testplan hjson file, excluding the connectivity tests.
   testplan: "{proj_root}/hw/top_earlgrey/data/chip_testplan.hjson:-conn:-no_dv"
