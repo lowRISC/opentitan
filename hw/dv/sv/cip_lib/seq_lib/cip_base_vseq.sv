@@ -716,22 +716,19 @@ class cip_base_vseq #(
   // override this task from {block}_common_vseq if needed
   virtual task rand_reset_eor_clean_up();
   endtask
-
   // Run the given sequence together with a TL errors vseq. Suddenly inject a reset after at most
   // reset_delay_bound cycles. When we come out of reset, check all CSR values to ensure they are
   // the documented reset values.
   virtual task run_seq_with_rand_reset_vseq(uvm_sequence seq,
                                             int          num_times,
-                                            uint         reset_delay_bound);    
+                                            uint         reset_delay_bound);
     `DV_CHECK_FATAL(seq != null)
     `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq for sequence %s",
                                seq.get_full_name()), UVM_MEDIUM)
-
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
       bit vseq_done = 1'b0;
-
       `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq iteration %0d/%0d",
                                 i, num_times), UVM_LOW)
       // Arbitration: requests at highest priority granted in FIFO order, so that we can predict
@@ -786,9 +783,8 @@ class cip_base_vseq #(
                 do_read_and_check_all_csrs = 1'b1;
                 ongoing_reset = 1'b0;
               end
-            end 
+            end
           join_any
-
           // If vseq_done is false then we have issued a reset (the second process in the fork) but
           // the vseq that we were racing against hasn't noticed the reset and stopped. Killing that
           // process will cause confusing errors (because there will be some sequence that's waiting
@@ -800,7 +796,6 @@ class cip_base_vseq #(
           // understandable way here.
           //if (cfg.can_reset_with_csr_accesses) `DV_CHECK_FATAL(vseq_done)
           wait(vseq_done)
-
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)

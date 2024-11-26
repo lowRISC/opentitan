@@ -45,16 +45,16 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
           // drive gpio_vif after setting all output enables to 0's
 
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break;          
+          if (!cfg.clk_rst_vif.rst_n) break;
 
           drive_gpio_in(gpio_i);
 
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break; 
+          if (!cfg.clk_rst_vif.rst_n) break;
           cfg.clk_rst_vif.wait_clks(1);
-          
+
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break; 
+          if (!cfg.clk_rst_vif.rst_n) break;
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end
@@ -64,7 +64,7 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
                                     tr_num), UVM_LOW)
 
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break;                           
+          if (!cfg.clk_rst_vif.rst_n) break;
           // First, stop driving gpio_i
           undrive_gpio_in();
 

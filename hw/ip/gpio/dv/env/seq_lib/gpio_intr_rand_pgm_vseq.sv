@@ -29,7 +29,7 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       cfg.clk_rst_vif.wait_clks(delay);
 
-      
+
       randcase
         // drive new gpio data in
         1: begin : drive_gpio_data_in
@@ -38,19 +38,19 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
           bit [NUM_GPIOS-1:0] data_in;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           `uvm_info(msg_id, "drive random value on gpio_i", UVM_HIGH)
-          
+
           //Skip if a reset is on going...
           if (!cfg.clk_rst_vif.rst_n) break;
-          
+
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
 
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break; 
+          if (!cfg.clk_rst_vif.rst_n) break;
           cfg.clk_rst_vif.wait_clks(1);
 
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break; 
+          if (!cfg.clk_rst_vif.rst_n) break;
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end

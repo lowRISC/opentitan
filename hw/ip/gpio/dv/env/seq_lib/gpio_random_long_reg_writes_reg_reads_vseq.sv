@@ -14,7 +14,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
   `uvm_object_new
 
   task body();
-    
+
     // gpio pins_if pins_o value to drive
     bit [NUM_GPIOS-1:0] gpio_i;
     // gpio pins_if pins_oe value to drive
@@ -37,7 +37,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
       //Skip if a reset is on going...
       if (!cfg.clk_rst_vif.rst_n) return;
       cfg.clk_rst_vif.wait_clks(delay);
-      
+
       randcase
         // drive new gpio data in
         1: begin
@@ -48,9 +48,9 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
           if (!cfg.clk_rst_vif.rst_n) break;
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
-          
+
           //Skip if a reset is on going...
-          if (!cfg.clk_rst_vif.rst_n) break; 
+          if (!cfg.clk_rst_vif.rst_n) break;
           // Wait for one clock cycle for us to read data_in reg reliably
           cfg.clk_rst_vif.wait_clks(1);
         end
