@@ -27,9 +27,9 @@ filesets:
       - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:ip_interfaces:clkmgr_pkg
       - lowrisc:ip_interfaces:rstmgr_pkg
+      - lowrisc:systems:top_earlgrey_ast_pkg
     files:
       - rtl/ast_reg_pkg.sv
-      - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
       - rtl/ast.sv
       - rtl/ast_reg_top.sv
