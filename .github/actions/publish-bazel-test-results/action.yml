@@ -30,6 +30,11 @@ runs:
           echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
         fi
 
+    - name: Add hostname to testsuites
+      shell: bash
+      run: |
+        xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" "${{ inputs.merged-results }}"
+
     - name: Upload report as artifact
       if: inputs.artifact-name != ''
       uses: actions/upload-artifact@v4
