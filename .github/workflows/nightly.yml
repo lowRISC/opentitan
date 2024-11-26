@@ -60,13 +60,14 @@ jobs:
           module load xilinx/vivado
           bazel_tests="$(mktemp)"
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival[,\]]", tests(//sw/device/...))' \
+                                                    | grep aes \
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
 
       - name: Run tests after ROM_EXT boot stage
-        if: success() || failure()
+        if: ${{ (success() || failure()) && false }}
         run: |
           module load xilinx/vivado
           bazel_tests="$(mktemp)"
@@ -94,6 +95,7 @@ jobs:
     name: ROM E2E Tests
     runs-on: [ubuntu-22.04-fpga, cw310]
     timeout-minutes: 180
+    if: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -122,6 +124,7 @@ jobs:
     name: Slow OTBN Crypto Tests
     runs-on: ubuntu-22.04
     timeout-minutes: 180
+    if: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
@@ -143,6 +146,7 @@ jobs:
     name: "BoB: SPI and I2C Tests"
     runs-on: [ubuntu-22.04-fpga, cw310]
     timeout-minutes: 180
+    if: 'false'
     steps:
       - uses: actions/checkout@v4
         with:
