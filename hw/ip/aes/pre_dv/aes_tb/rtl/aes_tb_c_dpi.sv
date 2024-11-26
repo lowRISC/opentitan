@@ -7,9 +7,9 @@
 // bits of data and tag become visible at the module's output ports in the next clock cycle. The
 // flopped data and tag can be rotated by 32 positions to the right to make other bits visible.
 
-module aes_tlul_shim_tb_c_dpi
+module aes_tb_c_dpi
   import aes_pkg::*;
-  import aes_tlul_shim_tb_pkg::*;
+  import aes_tb_pkg::*;
   import aes_model_dpi_pkg::*;
 #(
     parameter int ADLength = 0,

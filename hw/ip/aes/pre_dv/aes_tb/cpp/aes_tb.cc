@@ -6,30 +6,29 @@
 #include <iostream>
 #include <signal.h>
 
-#include "Vaes_tlul_shim_tb.h"
+#include "Vaes_tb.h"
 #include "sim_ctrl_extension.h"
 #include "verilated_toplevel.h"
 #include "verilator_sim_ctrl.h"
 
-class AesTlulShimTb : public SimCtrlExtension {
+class AesTb : public SimCtrlExtension {
   using SimCtrlExtension::SimCtrlExtension;
 
  public:
-  AesTlulShimTb(aes_tlul_shim_tb *top);
+  AesTb(aes_tb *top);
 
   void OnClock(unsigned long sim_time);
 
  private:
-  aes_tlul_shim_tb *top_;
+  aes_tb *top_;
 };
 
 // Constructor:
 // - Set up top_ ptr
-AesTlulShimTb::AesTlulShimTb(aes_tlul_shim_tb *top)
-    : SimCtrlExtension{}, top_(top) {}
+AesTb::AesTb(aes_tb *top) : SimCtrlExtension{}, top_(top) {}
 
 // Function called once every clock cycle from SimCtrl
-void AesTlulShimTb::OnClock(unsigned long sim_time) {
+void AesTb::OnClock(unsigned long sim_time) {
   if (top_->test_done_o) {
     VerilatorSimCtrl::GetInstance().RequestStop(top_->test_passed_o);
   }
@@ -39,7 +38,7 @@ int main(int argc, char **argv) {
   int ret_code;
 
   // Init verilog instance
-  aes_tlul_shim_tb top;
+  aes_tb top;
 
   // Init sim
   VerilatorSimCtrl &simctrl = VerilatorSimCtrl::GetInstance();
@@ -47,10 +46,10 @@ int main(int argc, char **argv) {
                  VerilatorSimCtrlFlags::ResetPolarityNegative);
 
   // Create and register VerilatorSimCtrl extension
-  AesTlulShimTb aes_tlul_shim_tb(&top);
-  simctrl.RegisterExtension(&aes_tlul_shim_tb);
+  AesTb aes_tb(&top);
+  simctrl.RegisterExtension(&aes_tb);
 
-  std::cout << "Simulation of AES TLUL Shim" << std::endl
+  std::cout << "Simulation of AES Testbench" << std::endl
             << "=============================" << std::endl
             << std::endl;
 
