@@ -52,14 +52,7 @@ def rv_compliance_test(name, arch):
         verilator = verilator_params(
             timeout = "long",
         ),
-        # TODO(#22871): Remove "broken" tag once the tests are fixed.
-        broken = fpga_params(tags = ["broken"]),
-        exec_env = dicts.add(
-            EARLGREY_TEST_ENVS,
-            {
-                "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-            },
-        ),
+        exec_env = EARLGREY_TEST_ENVS,
         linkopts = ["-Wl,--no-relax"],
         deps = [
             "//sw/device/lib/testing/test_framework:ottf_main",
