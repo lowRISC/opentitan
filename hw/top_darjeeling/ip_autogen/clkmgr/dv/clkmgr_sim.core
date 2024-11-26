@@ -12,7 +12,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:top_darjeeling_clkmgr_test
-      - lowrisc:dv:clkmgr_sva
+      - lowrisc:dv:top_darjeeling_clkmgr_sva
     files:
       - tb.sv
       - cov/clkmgr_cov_bind.sv

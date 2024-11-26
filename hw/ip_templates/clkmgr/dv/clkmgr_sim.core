@@ -12,7 +12,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:clkmgr_test # TODO: needs templating
-      - lowrisc:dv:clkmgr_sva
+      - lowrisc:dv:clkmgr_sva # TODO: needs templating
     files:
       - tb.sv
       - cov/clkmgr_cov_bind.sv

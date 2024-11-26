@@ -23,7 +23,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:tlul
       - lowrisc:dv:top_earlgrey_chip_test
-      - lowrisc:dv:clkmgr_sva
+      - lowrisc:dv:top_earlgrey_clkmgr_sva
       - lowrisc:dv:top_earlgrey_pwrmgr_sva
       - lowrisc:dv:rstmgr_sva
       - lowrisc:dv:top_earlgrey_sva
