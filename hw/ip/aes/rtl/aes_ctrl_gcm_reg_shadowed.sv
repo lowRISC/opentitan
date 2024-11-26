@@ -25,6 +25,7 @@ module aes_ctrl_gcm_reg_shadowed
   // Main control
   output logic       qe_o, // software wants to write
   input  logic       we_i, // hardware grants software write
+  input  logic       first_block_i,
   output gcm_phase_e gcm_phase_o,
   output logic [4:0] num_valid_bytes_o,
 
@@ -81,16 +82,16 @@ module aes_ctrl_gcm_reg_shadowed
         end
 
         GCM_AAD: begin
-          gcm_phase = gcm_phase == GCM_INIT ||
-                      gcm_phase == GCM_TEXT ||
-                      gcm_phase == GCM_SAVE ||
-                      gcm_phase == GCM_TAG  ? gcm_phase : gcm_phase_o;
+          gcm_phase = gcm_phase == GCM_INIT                   ||
+                      gcm_phase == GCM_TEXT                   ||
+                      gcm_phase == GCM_SAVE && !first_block_i ||
+                      gcm_phase == GCM_TAG                    ? gcm_phase : gcm_phase_o;
         end
 
         GCM_TEXT: begin
-          gcm_phase = gcm_phase == GCM_INIT ||
-                      gcm_phase == GCM_SAVE ||
-                      gcm_phase == GCM_TAG  ? gcm_phase : gcm_phase_o;
+          gcm_phase = gcm_phase == GCM_INIT                   ||
+                      gcm_phase == GCM_SAVE && !first_block_i ||
+                      gcm_phase == GCM_TAG                    ? gcm_phase : gcm_phase_o;
         end
 
         GCM_SAVE: begin

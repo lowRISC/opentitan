@@ -190,6 +190,7 @@ module aes_core
   sp2v_e                                      ghash_out_valid;
   sp2v_e                                      ghash_out_ready;
   sp2v_e                                      ghash_load_hash_subkey;
+  logic                                       ghash_first_block;
   logic                                       ghash_alert;
 
   // Pseudo-random data for clearing purposes
@@ -603,6 +604,7 @@ module aes_core
       .num_valid_bytes_i   ( num_valid_bytes_q      ),
       .load_hash_subkey_i  ( ghash_load_hash_subkey ),
       .clear_i             ( ghash_clear            ),
+      .first_block_o       ( ghash_first_block      ),
       .alert_fatal_i       ( alert_fatal_o          ),
       .alert_o             ( ghash_alert            ),
 
@@ -623,10 +625,11 @@ module aes_core
 
   end else begin : gen_no_ghash
     // GHASH isn't there and thus generates no back pressure / alerts / output to be muxed.
-    assign ghash_in_ready  = SP2V_HIGH;
-    assign ghash_out_valid = SP2V_HIGH;
-    assign ghash_alert     = 1'b0;
-    assign data_out_d      = data_out;
+    assign ghash_in_ready    = SP2V_HIGH;
+    assign ghash_out_valid   = SP2V_HIGH;
+    assign ghash_first_block = 1'b0;
+    assign ghash_alert       = 1'b0;
+    assign data_out_d        = data_out;
 
     // Tie-off unused signals.
     sp2v_e         unused_ghash_in_valid;
@@ -681,6 +684,7 @@ module aes_core
     .rst_shadowed_ni    ( rst_shadowed_ni          ),
     .qe_o               ( ctrl_gcm_qe              ),
     .we_i               ( ctrl_gcm_we              ),
+    .first_block_i      ( ghash_first_block        ),
     .gcm_phase_o        ( gcm_phase_q              ),
     .num_valid_bytes_o  ( num_valid_bytes_q        ),
     .err_update_o       ( ctrl_gcm_reg_err_update  ),
