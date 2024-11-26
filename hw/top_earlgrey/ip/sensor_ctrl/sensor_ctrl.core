@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:edge_detector
       - lowrisc:prim:mubi
       - lowrisc:prim:pad_wrapper_pkg
-      - lowrisc:systems:sensor_ctrl_pkg
+      - lowrisc:systems:top_earlgrey_sensor_ctrl_pkg
     files:
       - rtl/sensor_ctrl.sv
     file_type: systemVerilogSource
