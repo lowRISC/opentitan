@@ -522,11 +522,12 @@ pub fn run_ft_personalize(
     Ok(())
 }
 
-pub fn check_rom_ext_boot_up(
+pub fn check_slot_b_boot_up(
     transport: &TransportWrapper,
     init: &InitializeTest,
     timeout: Duration,
     response: &mut PersonalizeResponse,
+    owner_fw_success_string: Option<String>,
 ) -> Result<()> {
     transport.reset_target(init.bootstrap.options.reset_delay, true)?;
     let uart_console = transport.uart("console")?;
@@ -539,26 +540,39 @@ pub fn check_rom_ext_boot_up(
             .map(|s| s.as_str())
             .unwrap_or("unknown"),
     );
-
-    // Timeout for waiting for a potential error message indicating invalid UDS certificate.
-    // This value is tested on fpga cw340 and could be potentially fine-tuned.
-    const UDS_CERT_INVALID_TIMEOUT: Duration = Duration::from_millis(200);
-
     let t0 = Instant::now();
-    let result = UartConsole::wait_for(
-        &*uart_console,
-        r".*UDS certificate not valid.",
-        UDS_CERT_INVALID_TIMEOUT,
-    );
+
+    // Timeout for waiting for a potential error message indicating invalid UDS
+    // certificate or for the Owner firmware successful startup.
+    //
+    // These values were tested on fpga cw340 and could be potentially fine-tuned.
+    let slot_b_startup_timeout: Duration =
+        Duration::from_millis(if owner_fw_success_string.is_none() {
+            200
+        } else {
+            1500
+        });
+
     response.stats.log_elapsed_time("rom_ext-done", t0);
+    let rom_ext_failure_msg = r"Invalid UDS certificate detected!";
+    let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
+        format!(r"({}|{})", rom_ext_failure_msg, owner_anchor)
+    } else {
+        rom_ext_failure_msg.to_string()
+    };
+
+    let result =
+        UartConsole::wait_for(&*uart_console, anchor_text.as_str(), slot_b_startup_timeout);
 
     match result {
-        Ok(_captures) => {
-            // Error message found.
-            bail!("Invalid UDS certificate detected!");
+        Ok(captures) => {
+            if captures[0] == *rom_ext_failure_msg {
+                // Error message found.
+                bail!("Invalid UDS certificate detected!");
+            }
         }
         Err(e) => {
-            if e.to_string().contains("Timed Out") {
+            if owner_fw_success_string.is_none() && e.to_string().contains("Timed Out") {
                 // Error message not found after timeout. This is the expected behavior.
             } else {
                 // An unexpected error occurred while waiting for the console output.
