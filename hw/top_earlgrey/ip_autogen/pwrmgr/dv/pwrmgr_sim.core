@@ -11,7 +11,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:pwrmgr_test
-      - lowrisc:dv:pwrmgr_sva
+      - lowrisc:dv:top_earlgrey_pwrmgr_sva
       - lowrisc:dv:pwrmgr_unit_only_sva
     files:
       - tb.sv
