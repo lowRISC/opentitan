@@ -177,11 +177,9 @@ cc_library(
 opentitan_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         },
     ),
