@@ -11,6 +11,7 @@ package soc_dbg_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 5;
+  parameter int JtagAw = 3;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -114,6 +115,50 @@ package soc_dbg_ctrl_reg_pkg;
     4'b 0001, // index[3] SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED
     4'b 0001, // index[4] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_CATEGORY
     4'b 0001  // index[5] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED
+  };
+
+  ///////////////////////////////////////////////
+  // Typedefs for registers for jtag interface //
+  ///////////////////////////////////////////////
+
+  typedef struct packed {
+    logic [6:0]  d;
+    logic        de;
+  } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } valid;
+    struct packed {
+      logic [3:0]  d;
+      logic        de;
+    } relocked;
+  } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
+
+  // HW -> register type for jtag interface
+  typedef struct packed {
+    soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t
+        jtag_trace_debug_policy_category; // [17:10]
+    soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t
+        jtag_trace_debug_policy_valid_relocked; // [9:0]
+  } soc_dbg_ctrl_jtag_hw2reg_t;
+
+  // Register offsets for jtag interface
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 3'h 0;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 3'h 4;
+
+  // Register index for jtag interface
+  typedef enum int {
+    SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY,
+    SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
+  } soc_dbg_ctrl_jtag_id_e;
+
+  // Register width information to check illegal writes for jtag interface
+  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [2] = '{
+    4'b 0001, // index[0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY
+    4'b 0001  // index[1] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
   };
 
 endpackage

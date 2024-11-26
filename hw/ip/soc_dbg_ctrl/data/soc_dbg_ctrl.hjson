@@ -31,6 +31,7 @@
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
+    { protocol: "tlul", direction: "device", name: "jtag" }
   ]
 
   alert_list: [
@@ -177,6 +178,45 @@
         ]
       }
       { name: "TRACE_DEBUG_POLICY_VALID_RELOCKED"
+        desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "7:4"
+            mubi: true
+            resval: false
+            name: "relocked"
+            desc: '''
+                  The relocked state determined by hardware or software.
+                  '''
+          }
+          { bits: "3:0"
+            mubi: true
+            resval: false
+            name: "valid"
+            desc: '''
+                  The valid state determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+    ]
+    jtag: [
+      { name: "JTAG_TRACE_DEBUG_POLICY_CATEGORY"
+        desc: "Trace register to observe the debug category that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "6:0"
+            resval: "0x0"
+            name: "category"
+            desc: '''
+                  The debug policy determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name: "JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED"
         desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
         swaccess: "ro"
         hwaccess: "hwo"

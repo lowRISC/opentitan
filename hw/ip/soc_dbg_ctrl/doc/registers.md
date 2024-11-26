@@ -5,7 +5,7 @@ These registers are updated by the RoT FW and are distributed by the debug polic
 Depending on the configured debug category, a consumer might accept the debug command or not (if it is not part of the selected debug category).
 
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/soc_dbg_ctrl/data/soc_dbg_ctrl.hjson -->
-## Summary
+## Summary of the **`core`** interface's registers
 
 | Name                                                                                   | Offset   |   Length | Description                                                                                              |
 |:---------------------------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------------|
@@ -106,6 +106,48 @@ Trace register to observe the debug category that is either determined by hardwa
 ## TRACE_DEBUG_POLICY_VALID_RELOCKED
 Trace register to observe the valid or relocked state that is either determined by hardware or software.
 - Offset: `0x14`
+- Reset default: `0x99`
+- Reset mask: `0xff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "valid", "bits": 4, "attr": ["ro"], "rotate": 0}, {"name": "relocked", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description                                            |
+|:------:|:------:|:-------:|:---------|:-------------------------------------------------------|
+|  31:8  |        |         |          | Reserved                                               |
+|  7:4   |   ro   |   0x9   | relocked | The relocked state determined by hardware or software. |
+|  3:0   |   ro   |   0x9   | valid    | The valid state determined by hardware or software.    |
+
+## Summary of the **`jtag`** interface's registers
+
+| Name                                                                                             | Offset   |   Length | Description                                                                                              |
+|:-------------------------------------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------------|
+| soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_CATEGORY`](#jtag_trace_debug_policy_category)             | 0x0      |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
+| soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED`](#jtag_trace_debug_policy_valid_relocked) | 0x4      |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
+
+## JTAG_TRACE_DEBUG_POLICY_CATEGORY
+Trace register to observe the debug category that is either determined by hardware or software.
+- Offset: `0x0`
+- Reset default: `0x0`
+- Reset mask: `0x7f`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "category", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description                                          |
+|:------:|:------:|:-------:|:---------|:-----------------------------------------------------|
+|  31:7  |        |         |          | Reserved                                             |
+|  6:0   |   ro   |   0x0   | category | The debug policy determined by hardware or software. |
+
+## JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
+Trace register to observe the valid or relocked state that is either determined by hardware or software.
+- Offset: `0x4`
 - Reset default: `0x99`
 - Reset mask: `0xff`
 
