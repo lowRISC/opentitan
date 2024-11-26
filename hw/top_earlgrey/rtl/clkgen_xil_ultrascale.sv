@@ -8,11 +8,13 @@ module clkgen_xil_ultrascale # (
 ) (
   input  clk_i,
   input  rst_ni,
+  input  srst_ni,
   output clk_main_o,
   output clk_io_o,
   output clk_48MHz_o,
   output clk_aon_o,
-  output rst_no
+  output rst_no,
+  output fpga_eos_o
 );
   logic locked_pll;
   logic io_clk_buf;
@@ -27,6 +29,21 @@ module clkgen_xil_ultrascale # (
   logic clk_48_unbuf;
   logic clk_aon_buf;
   logic clk_aon_unbuf;
+
+  STARTUPE2 u_startup_block (
+    .CFGCLK(),
+    .CFGMCLK(),
+    .EOS(fpga_eos_o),
+    .PREQ(),
+    .CLK(1'b0),
+    .GSR(1'b0),
+    .GTS(1'b0),
+    .KEYCLEARB(1'b1),
+    .PACK(1'b0),
+    .USRCCLKO(1'b0),
+    .USRCCLKTS(1'b0),
+    .USRDONETS(1'b0)
+  );
 
   MMCME2_ADV #(
     .BANDWIDTH            ("OPTIMIZED"),
@@ -135,5 +152,5 @@ module clkgen_xil_ultrascale # (
   assign clk_aon_o = clk_aon_buf;
 
   // reset
-  assign rst_no = locked_pll & rst_ni;
+  assign rst_no = locked_pll & rst_ni & srst_ni;
 endmodule

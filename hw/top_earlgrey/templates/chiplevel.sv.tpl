@@ -699,6 +699,7 @@ module chip_${top["name"]}_${target["name"]} #(
   assign pad2ast = '0;
 
   logic clk_main, clk_usb_48mhz, clk_aon, rst_n, srst_n;
+  logic fpga_eos;
   clkgen_xil7series # (
     .AddClkBuf(0)
   ) clkgen (
@@ -708,7 +709,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_main_o(clk_main),
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
-    .rst_no(rst_n)
+    .rst_no(rst_n),
+    .fpga_eos_o(fpga_eos)
   );
 
   logic [31:0] fpga_info;
@@ -729,17 +731,19 @@ module chip_${top["name"]}_${target["name"]} #(
   assign ext_clk = '0;
   assign pad2ast = '0;
 
-  logic clk_main, clk_io, clk_usb_48mhz, clk_aon, rst_n;
+  logic clk_main, clk_io, clk_usb_48mhz, clk_aon, rst_n, srst_n;
   clkgen_xil_ultrascale # (
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
     .rst_ni(manual_in_por_n),
+    .srst_ni(srst_n),
     .clk_main_o(clk_main),
     .clk_io_o(clk_io),
     .clk_48MHz_o(clk_usb_48mhz),
     .clk_aon_o(clk_aon),
-    .rst_no(rst_n)
+    .rst_no(rst_n),
+    .fpga_eos_o(fpga_eos)
   );
 
   logic [31:0] fpga_info;
@@ -991,16 +995,12 @@ module chip_${top["name"]}_${target["name"]} #(
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
-% if target["name"] != "asic":
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-% else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .I2c0InputDelayCycles(1),
     .I2c1InputDelayCycles(1),
     .I2c2InputDelayCycles(1),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrlDisableScrambling(SecRomCtrlDisableScrambling)
-% endif
   ) top_${top["name"]} (
     // ast connections
     .por_n_i                      ( por_n                      ),
@@ -1104,6 +1104,9 @@ module chip_${top["name"]}_${target["name"]} #(
   // PLL for FPGA //
   //////////////////
 
+  // Internally-generated POR from debug sources.
+  logic fpga_internal_por_n;
+
   assign manual_attr_io_clk = '0;
   assign manual_out_io_clk = 1'b0;
   assign manual_oe_io_clk = 1'b0;
@@ -1115,7 +1118,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_por_button_n = 1'b0;
   assign manual_oe_por_button_n = 1'b0;
 
-  assign srst_n = manual_in_por_button_n;
+  assign srst_n = manual_in_por_button_n & fpga_internal_por_n;
+  % elif target["name"] == "cw340":
+  assign srst_n = fpga_internal_por_n;
   % endif
 
   % if target["name"] == "cw305":
@@ -1123,6 +1128,74 @@ module chip_${top["name"]}_${target["name"]} #(
   //       exist for this target
   assign otp_obs_o = '0;
   % endif
+
+  // These pad attributes are controlled through sensor_ctrl.  Update the description of
+  // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
+  // Note that the FPGA doesn't have any of these pads, and we commandeer these signals to
+  // add some intrusive debug functionality to the FPGA, including the ability to trigger
+  // a full POR from software.
+  prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr;
+  prim_pad_wrapper_pkg::pad_attr_t       manual_attr_cc1;
+  prim_pad_wrapper_pkg::pad_attr_t       manual_attr_cc2;
+  prim_pad_wrapper_pkg::pad_attr_t       manual_attr_flash_test_mode0;
+  prim_pad_wrapper_pkg::pad_attr_t       manual_attr_flash_test_mode1;
+  assign manual_attr_cc1 = sensor_ctrl_manual_pad_attr[0];
+  assign manual_attr_cc2 = sensor_ctrl_manual_pad_attr[1];
+  assign manual_attr_flash_test_mode0 = sensor_ctrl_manual_pad_attr[2];
+  assign manual_attr_flash_test_mode1 = sensor_ctrl_manual_pad_attr[3];
+
+  logic fpga_harness_rst_n;
+  prim_rst_sync #(
+    .ActiveHigh(1'b1),
+    .SkipScan(1'b1)
+  ) u_fpga_por_sync (
+    .clk_i(clk_aon),
+    .d_i(fpga_eos),
+    .q_o(fpga_harness_rst_n),
+    .scan_rst_ni(1'b1),
+    .scanmode_i('0)
+  );
+
+  logic fpga_por_trigger;
+  prim_edge_detector u_internal_por_detector (
+    .clk_i(clk_aon),
+    .rst_ni(fpga_harness_rst_n),
+    .d_i(manual_attr_flash_test_mode0.pull_en),
+    .q_sync_o(),
+    .q_posedge_pulse_o(fpga_por_trigger),
+    .q_negedge_pulse_o()
+  );
+
+  logic fpga_por_request_n;
+  always_ff @ (posedge clk_aon or negedge fpga_harness_rst_n) begin
+    if (!fpga_harness_rst_n) begin
+      fpga_por_request_n <= 1'b0;
+    end else begin
+      if (fpga_por_trigger) begin
+        fpga_por_request_n <= 1'b0;
+      end else begin
+        fpga_por_request_n <= 1'b1;
+      end
+    end
+  end
+
+  prim_filter_ctr #(
+    .CntWidth(15)    // Target 100 ms @ 200 kHz
+  ) u_internal_por_extender (
+    .clk_i(clk_aon),
+    .rst_ni(fpga_por_request_n),
+    .enable_i(1'b1),
+    .filter_i(1'b1),
+    .thresh_i(15'd20000),
+    .filter_o(fpga_internal_por_n)
+  );
+
+  logic unused_manual_sigs;
+  assign unused_manual_sigs = ^{
+    manual_attr_cc1,
+    manual_attr_cc2,
+    manual_attr_flash_test_mode1
+  };
 
   //////////////////////
   // Top-level design //
@@ -1257,6 +1330,7 @@ module chip_${top["name"]}_${target["name"]} #(
     // Pad attributes
     .mio_attr_o      ( mio_attr      ),
     .dio_attr_o      ( dio_attr      ),
+    .sensor_ctrl_manual_pad_attr_o( sensor_ctrl_manual_pad_attr),
 
     // Memory attributes
     .ram_1p_cfg_i    ( '0 ),
