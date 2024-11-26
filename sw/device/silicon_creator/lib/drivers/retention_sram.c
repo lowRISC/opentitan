@@ -6,23 +6,13 @@
 
 #include <assert.h>
 
+#include "dt/dt_sram_ctrl.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sram_ctrl_regs.h"  // Generated.
 
-enum {
-  /**
-   * Base address of retention SRAM control registers.
-   */
-  kBase = TOP_EARLGREY_SRAM_CTRL_RET_AON_REGS_BASE_ADDR,
-};
-
-static_assert(kRetentionSramBase == TOP_EARLGREY_RAM_RET_AON_BASE_ADDR,
-              "Unexpected retention SRAM base address.");
-static_assert(sizeof(retention_sram_t) == TOP_EARLGREY_RAM_RET_AON_SIZE_BYTES,
-              "Unexpected retention SRAM size.");
+static const dt_sram_ctrl_t kSramCtrlDt = kDtSramCtrlRetAon;
 
 void retention_sram_clear(void) {
   memset(retention_sram_get(), 0, sizeof(retention_sram_t));
@@ -30,11 +20,13 @@ void retention_sram_clear(void) {
 
 void retention_sram_init(void) {
   uint32_t reg = bitfield_bit32_write(0, SRAM_CTRL_CTRL_INIT_BIT, true);
-  abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, reg);
+  uint32_t base = dt_sram_ctrl_primary_reg_block(kSramCtrlDt);
+  abs_mmio_write32(base + SRAM_CTRL_CTRL_REG_OFFSET, reg);
 }
 
 void retention_sram_readback_enable(uint32_t en) {
-  abs_mmio_write32(kBase + SRAM_CTRL_READBACK_REG_OFFSET, en);
+  uint32_t base = dt_sram_ctrl_primary_reg_block(kSramCtrlDt);
+  abs_mmio_write32(base + SRAM_CTRL_READBACK_REG_OFFSET, en);
 }
 
 void retention_sram_scramble(void) {
@@ -43,7 +35,8 @@ void retention_sram_scramble(void) {
   uint32_t ctrl = 0;
   ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true);
   ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_INIT_BIT, true);
-  abs_mmio_write32(kBase + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
+  uint32_t base = dt_sram_ctrl_primary_reg_block(kSramCtrlDt);
+  abs_mmio_write32(base + SRAM_CTRL_CTRL_REG_OFFSET, ctrl);
 }
 
 rom_error_t retention_sram_check_version(void) {
