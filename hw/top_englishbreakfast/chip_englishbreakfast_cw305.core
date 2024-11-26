@@ -9,7 +9,7 @@ filesets:
   files_rtl_cw305:
     depend:
       - lowrisc:systems:top_englishbreakfast:0.1
-      - lowrisc:systems:ast
+      - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:topgen
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:prim:prim_legacy_pkg
