@@ -35,13 +35,20 @@
       reset:     "rst_peri_ni",
       pipeline:  false
     }
+    { name:      "soc_dbg_ctrl.jtag",
+      type:      "device",
+      clock:     "clk_peri_i",
+      reset:     "rst_peri_ni",
+      pipeline:  false
+    }
   ],
 
   connections: {
     dbg: [
       "rv_dm.dbg",
       "mbx_jtag.soc",
-      "lc_ctrl.dmi"
+      "lc_ctrl.dmi",
+      "soc_dbg_ctrl.jtag"
     ],
   },
 }
