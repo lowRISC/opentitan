@@ -25,22 +25,35 @@ dif_result_t dif_alert_handler_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_alert_handler_init_from_dt(
+    const dt_alert_handler_t *dt, dif_alert_handler_t *alert_handler) {
+  if (alert_handler == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  alert_handler->base_addr = mmio_region_from_addr(
+      dt_alert_handler_reg_block(dt, kDtAlertHandlerRegBlockDefault));
+
+  return kDifOk;
+}
+
 /**
  * Get the corresponding interrupt register bit offset of the IRQ.
  */
 static bool alert_handler_get_irq_bit_index(dif_alert_handler_irq_t irq,
                                             bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifAlertHandlerIrqClassa:
+    case kDtAlertHandlerIrqClassa:
       *index_out = ALERT_HANDLER_INTR_COMMON_CLASSA_BIT;
       break;
-    case kDifAlertHandlerIrqClassb:
+    case kDtAlertHandlerIrqClassb:
       *index_out = ALERT_HANDLER_INTR_COMMON_CLASSB_BIT;
       break;
-    case kDifAlertHandlerIrqClassc:
+    case kDtAlertHandlerIrqClassc:
       *index_out = ALERT_HANDLER_INTR_COMMON_CLASSC_BIT;
       break;
-    case kDifAlertHandlerIrqClassd:
+    case kDtAlertHandlerIrqClassd:
       *index_out = ALERT_HANDLER_INTR_COMMON_CLASSD_BIT;
       break;
     default:
@@ -61,8 +74,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_get_type(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
     dif_irq_type_t *type) {
-  if (alert_handler == NULL || type == NULL ||
-      irq == kDifAlertHandlerIrqClassd + 1) {
+  if (alert_handler == NULL || type == NULL || irq == kDtAlertHandlerIrqCount) {
     return kDifBadArg;
   }
 

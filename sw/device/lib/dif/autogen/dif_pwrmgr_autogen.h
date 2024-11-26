@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_pwrmgr.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,25 @@ typedef struct dif_pwrmgr {
  * @param base_addr The MMIO base address of the pwrmgr peripheral.
  * @param[out] pwrmgr Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_init(mmio_region_t base_addr, dif_pwrmgr_t *pwrmgr);
+
+/**
+ * Creates a new handle for a(n) pwrmgr peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] pwrmgr Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pwrmgr_init_from_dt(const dt_pwrmgr_t *dt,
+                                     dif_pwrmgr_t *pwrmgr);
 
 /**
  * A pwrmgr alert type.
@@ -73,13 +90,21 @@ dif_result_t dif_pwrmgr_alert_force(const dif_pwrmgr_t *pwrmgr,
 
 /**
  * A pwrmgr interrupt request type.
+ *
+ * DEPRECATED Use `dt_pwrmgr_irq_t` instead.
+ * This enumeration exists solely for the transition to
+ * dt-based interrupt numbers and will be removed in the future.
+ *
+ * The following are defines to keep the types consistent with DT.
  */
-typedef enum dif_pwrmgr_irq {
-  /**
-   * Wake from low power state. See wake info for more details
-   */
-  kDifPwrmgrIrqWakeup = 0,
-} dif_pwrmgr_irq_t;
+/**
+ * Wake from low power state. See wake info for more details
+ */
+#define kDifPwrmgrIrqWakeup kDtPwrmgrIrqWakeup
+
+// DEPRECATED This typedef exists solely for the transition to
+// dt-based interrupt numbers and will be removed in the future.
+typedef dt_pwrmgr_irq_t dif_pwrmgr_irq_t;
 
 /**
  * A snapshot of the state of the interrupts for this IP.
@@ -99,8 +124,7 @@ typedef uint32_t dif_pwrmgr_irq_state_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_get_type(const dif_pwrmgr_t *pwrmgr,
-                                     dif_pwrmgr_irq_t irq,
-                                     dif_irq_type_t *type);
+                                     dif_pwrmgr_irq_t, dif_irq_type_t *type);
 
 /**
  * Returns the state of all interrupts (i.e., pending or not) for this IP.
@@ -123,7 +147,7 @@ dif_result_t dif_pwrmgr_irq_get_state(
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_is_pending(const dif_pwrmgr_t *pwrmgr,
-                                       dif_pwrmgr_irq_t irq, bool *is_pending);
+                                       dif_pwrmgr_irq_t, bool *is_pending);
 
 /**
  * Acknowledges all interrupts that were pending at the time of the state
@@ -157,7 +181,7 @@ dif_result_t dif_pwrmgr_irq_acknowledge_all(const dif_pwrmgr_t *pwrmgr);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_acknowledge(const dif_pwrmgr_t *pwrmgr,
-                                        dif_pwrmgr_irq_t irq);
+                                        dif_pwrmgr_irq_t);
 
 /**
  * Forces a particular interrupt, causing it to be serviced as if hardware had
@@ -169,8 +193,8 @@ dif_result_t dif_pwrmgr_irq_acknowledge(const dif_pwrmgr_t *pwrmgr,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr,
-                                  dif_pwrmgr_irq_t irq, const bool val);
+dif_result_t dif_pwrmgr_irq_force(const dif_pwrmgr_t *pwrmgr, dif_pwrmgr_irq_t,
+                                  const bool val);
 
 /**
  * A snapshot of the enablement state of the interrupts for this IP.
@@ -191,8 +215,7 @@ typedef uint32_t dif_pwrmgr_irq_enable_snapshot_t;
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_get_enabled(const dif_pwrmgr_t *pwrmgr,
-                                        dif_pwrmgr_irq_t irq,
-                                        dif_toggle_t *state);
+                                        dif_pwrmgr_irq_t, dif_toggle_t *state);
 
 /**
  * Sets whether a particular interrupt is currently enabled or disabled.
@@ -204,8 +227,7 @@ dif_result_t dif_pwrmgr_irq_get_enabled(const dif_pwrmgr_t *pwrmgr,
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_set_enabled(const dif_pwrmgr_t *pwrmgr,
-                                        dif_pwrmgr_irq_t irq,
-                                        dif_toggle_t state);
+                                        dif_pwrmgr_irq_t, dif_toggle_t state);
 
 /**
  * Disables all interrupts, optionally snapshotting all enable states for later

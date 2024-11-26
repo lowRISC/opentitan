@@ -24,6 +24,19 @@ dif_result_t dif_usbdev_init(mmio_region_t base_addr, dif_usbdev_t *usbdev) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_usbdev_init_from_dt(const dt_usbdev_t *dt,
+                                     dif_usbdev_t *usbdev) {
+  if (usbdev == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  usbdev->base_addr =
+      mmio_region_from_addr(dt_usbdev_reg_block(dt, kDtUsbdevRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_usbdev_alert_force(const dif_usbdev_t *usbdev,
                                     dif_usbdev_alert_t alert) {
   if (usbdev == NULL) {
@@ -52,58 +65,58 @@ dif_result_t dif_usbdev_alert_force(const dif_usbdev_t *usbdev,
 static bool usbdev_get_irq_bit_index(dif_usbdev_irq_t irq,
                                      bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifUsbdevIrqPktReceived:
+    case kDtUsbdevIrqPktReceived:
       *index_out = USBDEV_INTR_COMMON_PKT_RECEIVED_BIT;
       break;
-    case kDifUsbdevIrqPktSent:
+    case kDtUsbdevIrqPktSent:
       *index_out = USBDEV_INTR_COMMON_PKT_SENT_BIT;
       break;
-    case kDifUsbdevIrqDisconnected:
+    case kDtUsbdevIrqDisconnected:
       *index_out = USBDEV_INTR_COMMON_DISCONNECTED_BIT;
       break;
-    case kDifUsbdevIrqHostLost:
+    case kDtUsbdevIrqHostLost:
       *index_out = USBDEV_INTR_COMMON_HOST_LOST_BIT;
       break;
-    case kDifUsbdevIrqLinkReset:
+    case kDtUsbdevIrqLinkReset:
       *index_out = USBDEV_INTR_COMMON_LINK_RESET_BIT;
       break;
-    case kDifUsbdevIrqLinkSuspend:
+    case kDtUsbdevIrqLinkSuspend:
       *index_out = USBDEV_INTR_COMMON_LINK_SUSPEND_BIT;
       break;
-    case kDifUsbdevIrqLinkResume:
+    case kDtUsbdevIrqLinkResume:
       *index_out = USBDEV_INTR_COMMON_LINK_RESUME_BIT;
       break;
-    case kDifUsbdevIrqAvOutEmpty:
+    case kDtUsbdevIrqAvOutEmpty:
       *index_out = USBDEV_INTR_COMMON_AV_OUT_EMPTY_BIT;
       break;
-    case kDifUsbdevIrqRxFull:
+    case kDtUsbdevIrqRxFull:
       *index_out = USBDEV_INTR_COMMON_RX_FULL_BIT;
       break;
-    case kDifUsbdevIrqAvOverflow:
+    case kDtUsbdevIrqAvOverflow:
       *index_out = USBDEV_INTR_COMMON_AV_OVERFLOW_BIT;
       break;
-    case kDifUsbdevIrqLinkInErr:
+    case kDtUsbdevIrqLinkInErr:
       *index_out = USBDEV_INTR_COMMON_LINK_IN_ERR_BIT;
       break;
-    case kDifUsbdevIrqRxCrcErr:
+    case kDtUsbdevIrqRxCrcErr:
       *index_out = USBDEV_INTR_COMMON_RX_CRC_ERR_BIT;
       break;
-    case kDifUsbdevIrqRxPidErr:
+    case kDtUsbdevIrqRxPidErr:
       *index_out = USBDEV_INTR_COMMON_RX_PID_ERR_BIT;
       break;
-    case kDifUsbdevIrqRxBitstuffErr:
+    case kDtUsbdevIrqRxBitstuffErr:
       *index_out = USBDEV_INTR_COMMON_RX_BITSTUFF_ERR_BIT;
       break;
-    case kDifUsbdevIrqFrame:
+    case kDtUsbdevIrqFrame:
       *index_out = USBDEV_INTR_COMMON_FRAME_BIT;
       break;
-    case kDifUsbdevIrqPowered:
+    case kDtUsbdevIrqPowered:
       *index_out = USBDEV_INTR_COMMON_POWERED_BIT;
       break;
-    case kDifUsbdevIrqLinkOutErr:
+    case kDtUsbdevIrqLinkOutErr:
       *index_out = USBDEV_INTR_COMMON_LINK_OUT_ERR_BIT;
       break;
-    case kDifUsbdevIrqAvSetupEmpty:
+    case kDtUsbdevIrqAvSetupEmpty:
       *index_out = USBDEV_INTR_COMMON_AV_SETUP_EMPTY_BIT;
       break;
     default:
@@ -125,7 +138,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_irq_get_type(const dif_usbdev_t *usbdev,
                                      dif_usbdev_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (usbdev == NULL || type == NULL || irq == kDifUsbdevIrqAvSetupEmpty + 1) {
+  if (usbdev == NULL || type == NULL || irq == kDtUsbdevIrqCount) {
     return kDifBadArg;
   }
 

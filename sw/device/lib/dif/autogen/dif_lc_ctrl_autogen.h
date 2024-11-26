@@ -16,6 +16,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt_lc_ctrl.h"  // Generated.
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -44,9 +45,25 @@ typedef struct dif_lc_ctrl {
  * @param base_addr The MMIO base address of the lc_ctrl peripheral.
  * @param[out] lc_ctrl Out param for the initialized handle.
  * @return The result of the operation.
+ *
+ * DEPRECATED This function exists solely for the transition to
+ * dt-based DIFs and will be removed in the future.
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_lc_ctrl_init(mmio_region_t base_addr, dif_lc_ctrl_t *lc_ctrl);
+
+/**
+ * Creates a new handle for a(n) lc_ctrl peripheral.
+ *
+ * This function does not actuate the hardware.
+ *
+ * @param dt The devicetable description of the device.
+ * @param[out] lc_ctrl Out param for the initialized handle.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_lc_ctrl_init_from_dt(const dt_lc_ctrl_t *dt,
+                                      dif_lc_ctrl_t *lc_ctrl);
 
 /**
  * A lc_ctrl alert type.

@@ -24,6 +24,18 @@ dif_result_t dif_mbx_init(mmio_region_t base_addr, dif_mbx_t *mbx) {
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_mbx_init_from_dt(const dt_mbx_t *dt, dif_mbx_t *mbx) {
+  if (mbx == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  mbx->base_addr =
+      mmio_region_from_addr(dt_mbx_reg_block(dt, kDtMbxRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_mbx_alert_force(const dif_mbx_t *mbx, dif_mbx_alert_t alert) {
   if (mbx == NULL) {
     return kDifBadArg;
@@ -54,13 +66,13 @@ dif_result_t dif_mbx_alert_force(const dif_mbx_t *mbx, dif_mbx_alert_t alert) {
 static bool mbx_get_irq_bit_index(dif_mbx_irq_t irq,
                                   bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifMbxIrqMbxReady:
+    case kDtMbxIrqMbxReady:
       *index_out = MBX_INTR_COMMON_MBX_READY_BIT;
       break;
-    case kDifMbxIrqMbxAbort:
+    case kDtMbxIrqMbxAbort:
       *index_out = MBX_INTR_COMMON_MBX_ABORT_BIT;
       break;
-    case kDifMbxIrqMbxError:
+    case kDtMbxIrqMbxError:
       *index_out = MBX_INTR_COMMON_MBX_ERROR_BIT;
       break;
     default:
@@ -79,7 +91,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_mbx_irq_get_type(const dif_mbx_t *mbx, dif_mbx_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (mbx == NULL || type == NULL || irq == kDifMbxIrqMbxError + 1) {
+  if (mbx == NULL || type == NULL || irq == kDtMbxIrqCount) {
     return kDifBadArg;
   }
 

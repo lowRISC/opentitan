@@ -31,6 +31,19 @@ dif_result_t dif_rv_timer_init(mmio_region_t base_addr,
   return kDifOk;
 }
 
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_rv_timer_init_from_dt(const dt_rv_timer_t *dt,
+                                       dif_rv_timer_t *rv_timer) {
+  if (rv_timer == NULL || dt == NULL) {
+    return kDifBadArg;
+  }
+
+  rv_timer->base_addr = mmio_region_from_addr(
+      dt_rv_timer_reg_block(dt, kDtRvTimerRegBlockDefault));
+
+  return kDifOk;
+}
+
 dif_result_t dif_rv_timer_alert_force(const dif_rv_timer_t *rv_timer,
                                       dif_rv_timer_alert_t alert) {
   if (rv_timer == NULL) {
@@ -104,7 +117,7 @@ static bool rv_timer_get_irq_reg_offset(dif_rv_timer_intr_reg_t intr_reg,
 static bool rv_timer_get_irq_bit_index(dif_rv_timer_irq_t irq,
                                        bitfield_bit32_index_t *index_out) {
   switch (irq) {
-    case kDifRvTimerIrqTimerExpiredHart0Timer0:
+    case kDtRvTimerIrqTimerExpiredHart0Timer0:
       *index_out = RV_TIMER_INTR_STATE0_IS_0_BIT;
       break;
     default:
@@ -122,8 +135,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_timer_irq_get_type(const dif_rv_timer_t *rv_timer,
                                        dif_rv_timer_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (rv_timer == NULL || type == NULL ||
-      irq == kDifRvTimerIrqTimerExpiredHart0Timer0 + 1) {
+  if (rv_timer == NULL || type == NULL || irq == kDtRvTimerIrqCount) {
     return kDifBadArg;
   }
 
