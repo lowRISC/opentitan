@@ -10,7 +10,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip_interfaces:rstmgr
-      - lowrisc:dv:pwrmgr_rstmgr_sva_if
+      - lowrisc:dv:top_earlgrey_pwrmgr_rstmgr_sva_if
 
     files:
       - rstmgr_attrs_sva_if.sv
