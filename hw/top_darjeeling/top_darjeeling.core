@@ -32,7 +32,7 @@ filesets:
       - lowrisc:prim:ram_1p_scr
       - lowrisc:ip:sram_ctrl
       - lowrisc:ip:keymgr_dpe
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_darjeeling_top_pkg
       - lowrisc:constants:top_darjeeling_jtag_id_pkg
       - lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg
       - lowrisc:ip:otp_ctrl
@@ -53,14 +53,14 @@ filesets:
       - lowrisc:ip:sysrst_ctrl
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:soc_dbg_ctrl
-      - lowrisc:systems:sensor_ctrl
+      - lowrisc:systems:top_darjeeling_sensor_ctrl
       - lowrisc:systems:soc_proxy
       - lowrisc:tlul:headers
       - lowrisc:prim:all
       - lowrisc:prim:mubi
       - lowrisc:systems:top_darjeeling_pkg
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - "fileset_partner  ? (partner:systems:top_darjeeling_ast_pkg)"
+      - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
     files:
       - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
       - rtl/autogen/top_darjeeling.sv

@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:alert_handler_component
+      - lowrisc:ip:top_darjeeling_alert_handler_component
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
@@ -21,7 +21,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:opentitan:top_darjeeling_rstmgr_pkg:0.1
       - lowrisc:opentitan:top_darjeeling_rstmgr_reg:0.1
-      - lowrisc:ip:rstmgr_cnsty_chk
+      - lowrisc:ip:top_darjeeling_rstmgr_cnsty_chk
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv

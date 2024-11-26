@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwrmgr_sva:0.1"
+name: "lowrisc:dv:top_darjeeling_pwrmgr_sva:0.1"
 description: "PWRMGR assertion modules and bind file."
 filesets:
   files_dv:
@@ -10,8 +10,8 @@ filesets:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:dv:clkmgr_pwrmgr_sva_if
-      - lowrisc:dv:pwrmgr_rstmgr_sva_if
+      - lowrisc:dv:top_darjeeling_clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:top_darjeeling_pwrmgr_rstmgr_sva_if
     files:
       - pwrmgr_bind.sv
       - pwrmgr_clock_enables_sva_if.sv

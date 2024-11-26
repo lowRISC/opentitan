@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_sim:0.1"
+name: "lowrisc:dv:top_earlgrey_rstmgr_sim:0.1"
 description: "RSTMGR DV sim target"
 filesets:
   files_rtl:
@@ -11,8 +11,8 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:rstmgr_test
-      - lowrisc:dv:rstmgr_sva
+      - lowrisc:dv:top_earlgrey_rstmgr_test
+      - lowrisc:dv:top_earlgrey_rstmgr_sva
     files:
       - tb.sv
       - cov/rstmgr_cov_bind.sv

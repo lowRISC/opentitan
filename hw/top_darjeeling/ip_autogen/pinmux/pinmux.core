@@ -23,7 +23,7 @@ filesets:
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:usbdev
       - lowrisc:opentitan:top_darjeeling_pinmux_reg:0.1
-      - lowrisc:ip_interfaces:pinmux_pkg
+      - lowrisc:ip:top_darjeeling_pinmux_pkg
     files:
       - rtl/pinmux_wkup.sv
       - rtl/pinmux_jtag_buf.sv
