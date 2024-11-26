@@ -21,6 +21,7 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
 from mako import exceptions
 from mako.template import Template
+from raclgen.lib import DEFAULT_RACL_CONFIG, parse_racl_config
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
@@ -526,6 +527,15 @@ def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
     ipgen_render("ac_range_check", topname, params, out_path)
 
 
+# Generate RACL collateral
+def generate_racl(topcfg: Dict[str, object], out_path: Path) -> None:
+    # Not all tops use RACL
+    if 'racl_config' not in topcfg:
+        return
+    
+    topcfg['racl'] = parse_racl_config(topcfg['racl_config'])
+
+
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
                       top_name: str, alt_hjson_path: str) -> None:
     log.info("Generating top only modules")
@@ -865,6 +875,9 @@ def _process_top(
 
     # Generate ac_range_check
     generate_ac_range_check(completecfg, out_path)
+
+    # Generate RACL collateral
+    generate_racl(completecfg, out_path)
 
     # Generate top only modules
     # These modules are not ipgen, but are not in hw/ip
@@ -1248,6 +1261,12 @@ def main():
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
                         out_path / f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
                         gencmd=gencmd)
+
+        racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
+        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+                        out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
+                        gencmd=gencmd,
+                        racl_config=racl_config)
 
         # Since SW does not use FuseSoC and instead expects those files always
         # to be in hw/top_{topname}/sw/autogen, we currently create these files
