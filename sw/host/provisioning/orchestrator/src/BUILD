@@ -65,11 +65,10 @@ py_library(
     ],
 )
 
-py_binary(
-    name = "orchestrator",
+filegroup(
+    name = "data_dependencies",
     testonly = True,
-    srcs = ["orchestrator.py"],
-    data = [
+    srcs = [
         "//hw/bitstream/universal:splice",
         "//sw/device/silicon_creator/manuf/base:ft_personalize_all",
         "//sw/device/silicon_creator/manuf/base:sram_cp_provision",
@@ -80,10 +79,18 @@ py_binary(
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
         "//sw/host/provisioning/cp",
         "//sw/host/provisioning/ft:ft_all",
+        "//sw/host/provisioning/orchestrator/configs/skus:sku_all",
         "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
         "//third_party/openocd:jtag_olimex_cfg",
         "//third_party/openocd:openocd_bin",
     ],
+)
+
+py_binary(
+    name = "orchestrator",
+    testonly = True,
+    srcs = ["orchestrator.py"],
+    data = [":data_dependencies"],
     imports = ["."],
     deps = [
         ":device_id",
@@ -92,4 +99,11 @@ py_binary(
         ":util",
         requirement("hjson"),
     ],
+)
+
+filegroup(
+    name = "orchestrator.zip",
+    testonly = True,
+    srcs = [":orchestrator"],
+    output_group = "python_zip_file",
 )
