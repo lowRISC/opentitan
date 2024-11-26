@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:clkmgr_test:0.1"
+name: "lowrisc:dv:top_darjeeling_clkmgr_test:0.1"
 description: "CLKMGR DV UVM test"
 filesets:
   files_dv:
