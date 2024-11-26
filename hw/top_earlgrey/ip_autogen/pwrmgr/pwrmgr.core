@@ -12,7 +12,7 @@ filesets:
     depend:
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1
       - lowrisc:opentitan:top_earlgrey_pwrmgr_reg:0.1
-      - lowrisc:ip:pwrmgr_component
+      - lowrisc:ip:top_earlgrey_pwrmgr_component
     file_type: systemVerilogSource
 
   files_verilator_waiver:
