@@ -14,7 +14,7 @@ use p256::NistP256;
 
 use cert_lib::{CaConfig, CaKey, CaKeyType};
 use ft_lib::{
-    check_rom_ext_boot_up, run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
+    check_slot_b_boot_up, run_ft_personalize, run_sram_ft_individualize, test_exit, test_unlock,
 };
 use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -104,6 +104,10 @@ struct Opts {
     /// Name of the SPI interface to connect to the OTTF console.
     #[arg(long, default_value = "BOOTSTRAP")]
     console_spi: String,
+
+    /// Owner's firmware string indicating successful start up.
+    #[arg(long)]
+    owner_success_text: Option<String>,
 }
 
 fn main() -> Result<()> {
@@ -267,7 +271,12 @@ fn main() -> Result<()> {
         opts.timeout,
     )?;
 
-    check_rom_ext_boot_up(&transport, &opts.init, opts.timeout)?;
+    check_slot_b_boot_up(
+        &transport,
+        &opts.init,
+        opts.timeout,
+        opts.owner_success_text,
+    )?;
     log::info!("Provisioning Done");
 
     Ok(())

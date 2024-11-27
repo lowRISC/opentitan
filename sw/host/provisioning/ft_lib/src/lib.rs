@@ -472,10 +472,11 @@ pub fn run_ft_personalize(
     Ok(())
 }
 
-pub fn check_rom_ext_boot_up(
+pub fn check_slot_b_boot_up(
     transport: &TransportWrapper,
     init: &InitializeTest,
     timeout: Duration,
+    owner_fw_success_string: Option<String>,
 ) -> Result<()> {
     transport.reset_target(init.bootstrap.options.reset_delay, true)?;
     let uart_console = transport.uart("console")?;
@@ -484,23 +485,36 @@ pub fn check_rom_ext_boot_up(
     // The following regex recognizes both forms:
     let _ = UartConsole::wait_for(&*uart_console, r"ROM_EXT[: ].*\r\n", timeout)?;
 
-    // Timeout for waiting for a potential error message indicating invalid UDS certificate.
-    // This value is tested on fpga cw340 and could be potentially fine-tuned.
-    const UDS_CERT_INVALID_TIMEOUT: Duration = Duration::from_millis(200);
+    // Timeout for waiting for a potential error message indicating invalid UDS
+    // certificate or for the Owner firmware successful startup.
+    //
+    // These values were tested on fpga cw340 and could be potentially fine-tuned.
+    let slot_b_startup_timeout: Duration =
+        Duration::from_millis(if owner_fw_success_string.is_none() {
+            200
+        } else {
+            1500
+        });
 
-    let result = UartConsole::wait_for(
-        &*uart_console,
-        r".*UDS certificate not valid.",
-        UDS_CERT_INVALID_TIMEOUT,
-    );
+    let fw_failure_anchor = r"Invalid UDS certificate detected!";
+    let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
+        format!(r"({}|{})", fw_failure_anchor, owner_anchor)
+    } else {
+        fw_failure_anchor.to_string()
+    };
+
+    let result =
+        UartConsole::wait_for(&*uart_console, anchor_text.as_str(), slot_b_startup_timeout);
 
     match result {
-        Ok(_captures) => {
-            // Error message found.
-            bail!("Invalid UDS certificate detected!");
+        Ok(captures) => {
+            if captures[0] == *fw_failure_anchor {
+                // Error message found.
+                bail!("Invalid UDS certificate detected!");
+            }
         }
         Err(e) => {
-            if e.to_string().contains("Timed Out") {
+            if owner_fw_success_string.is_none() && e.to_string().contains("Timed Out") {
                 // Error message not found after timeout. This is the expected behavior.
             } else {
                 // An unexpected error occurred while waiting for the console output.
