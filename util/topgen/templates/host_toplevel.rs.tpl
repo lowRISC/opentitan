@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+<%
+import topgen.lib as lib
+
+has_pinmux = lib.find_module(top['module'], 'pinmux')
+%>\
 
 // This file was generated automatically.
 // Please do not modify content of this file directly.
@@ -10,6 +15,7 @@
 #![allow(dead_code)]
 
 use crate::with_unknown;
+% if has_pinmux:
 
 with_unknown! {
 ${helper.pinmux_peripheral_in.render_host()}
@@ -35,3 +41,4 @@ pub mod ujson_alias {
     pub type pinmux_mio_out_t = ${helper.pinmux_mio_out.short_name.as_rust_type()};
     pub type pinmux_outsel_t = ${helper.pinmux_outsel.short_name.as_rust_type()};
 }
+% endif

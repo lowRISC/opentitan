@@ -842,7 +842,8 @@ def _process_top(
     generate_outgoing_alerts(completecfg, out_path)
 
     # Generate Pinmux
-    generate_pinmux(completecfg, out_path)
+    if lib.find_module(completecfg['module'], 'pinmux'):
+        generate_pinmux(completecfg, out_path)
 
     # Generate Pwrmgr if there is an instance
     if lib.find_module(completecfg['module'], 'pwrmgr'):

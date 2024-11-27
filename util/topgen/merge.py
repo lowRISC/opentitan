@@ -1349,9 +1349,10 @@ def merge_top(topcfg: OrderedDict,
     # Combine the alert (should be processed prior to xbar)
     amend_alert(topcfg, name_to_block)
 
-    # Creates input/output list in the pinmux
-    log.info("Processing PINMUX")
-    amend_pinmux_io(topcfg, name_to_block)
+    if lib.find_module(topcfg['module'], 'pinmux'):
+        # Creates input/output list in the pinmux
+        log.info("Processing PINMUX")
+        amend_pinmux_io(topcfg, name_to_block)
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:
