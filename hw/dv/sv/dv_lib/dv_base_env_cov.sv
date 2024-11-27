@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_cov_reset)
+
 class bit_toggle_cg_wrap;
 
   // Covergroup: bit_toggle_cg
@@ -36,6 +38,15 @@ class dv_base_env_cov #(type CFG_T = dv_base_env_cfg) extends uvm_component;
 
   CFG_T cfg;
 
-  `uvm_component_new
+  uvm_analysis_imp_cov_reset #(reset_item, dv_base_env_cov#(CFG_T)) reset_tr_imp;
+
+  function new (string name="", uvm_component parent=null);
+    super.new(name, parent);
+    reset_tr_imp = new ("reset_tr_imp", this);
+  endfunction : new
+
+  virtual function void write_cov_reset(reset_item reset_tr);
+    // Overwrite this function if required
+  endfunction : write_cov_reset
 
 endclass

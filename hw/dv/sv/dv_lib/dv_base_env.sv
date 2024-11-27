@@ -75,4 +75,15 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
     scoreboard.cov = cov;
   endfunction
 
+  function void connect_phase(uvm_phase phase);
+    super.connect_phase(phase);
+    if (cfg.en_cov) begin
+      rst_agt.reset_tr_ap.connect(cov.reset_tr_imp);
+    end
+    if (cfg.is_active) begin
+      rst_agt.reset_st_ap.connect(virtual_sequencer.reset_st_imp);
+    end
+    rst_agt.reset_st_ap.connect(scoreboard.reset_st_imp);
+  endfunction : connect_phase
+
 endclass

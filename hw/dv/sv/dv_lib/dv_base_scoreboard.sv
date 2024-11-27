@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_scb_reset)
+
 class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
                            type CFG_T = dv_base_env_cfg,
                            type COV_T = dv_base_env_cov) extends uvm_component;
@@ -14,7 +16,12 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   bit obj_raised      = 1'b0;
   bit under_pre_abort = 1'b0;
 
-  `uvm_component_new
+  uvm_analysis_imp_scb_reset #(reset_state_e, dv_base_scoreboard#(RAL_T,CFG_T, COV_T)) reset_st_imp;
+
+  function new (string name="", uvm_component parent=null);
+    super.new(name, parent);
+    reset_st_imp = new ("reset_st_imp", this);
+  endfunction : new
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -24,28 +31,15 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
   virtual task run_phase(uvm_phase phase);
     super.run_phase(phase);
     fork
-      monitor_reset();
       sample_resets();
     join_none
   endtask
 
-  virtual task monitor_reset();
-    forever begin
-      if (!cfg.clk_rst_vif.rst_n) begin
-        `uvm_info(`gfn, "reset occurred", UVM_HIGH)
-        cfg.reset_asserted();
-        @(posedge cfg.clk_rst_vif.rst_n);
-        reset();
-        cfg.reset_deasserted();
-        csr_utils_pkg::clear_outstanding_access();
-        `uvm_info(`gfn, "out of reset", UVM_HIGH)
-      end
-      else begin
-        // wait for a change to rst_n
-        @(cfg.clk_rst_vif.rst_n);
-      end
+  virtual function void write_scb_reset(reset_state_e reset_st);
+    if (reset_st == ResetAsserted) begin
+      reset();
     end
-  endtask
+  endfunction : write_scb_reset
 
   virtual task sample_resets();
     // Do nothing, actual coverage collection is under extended classes.
