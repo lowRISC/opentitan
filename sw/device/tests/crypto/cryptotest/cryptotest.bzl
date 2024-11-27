@@ -19,9 +19,31 @@ load(
 # - silicon
 CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
 }
+
+FIRMWARE_DEPS = [
+    "//sw/device/tests/crypto/cryptotest/firmware:aes",
+    "//sw/device/tests/crypto/cryptotest/firmware:drbg",
+    "//sw/device/tests/crypto/cryptotest/firmware:ecdh",
+    "//sw/device/tests/crypto/cryptotest/firmware:ecdsa",
+    "//sw/device/tests/crypto/cryptotest/firmware:hash",
+    "//sw/device/tests/crypto/cryptotest/firmware:hmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:kmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:sphincsplus",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/crypto/cryptotest/json:commands",
+]
 
 def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci = False):
     """A macro for defining a CryptoTest test case.
@@ -36,9 +58,9 @@ def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci =
     tags = ["skip_in_nightly_ci"] if skip_in_nightly_ci else []
     opentitan_test(
         name = name,
+        srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
         fpga = fpga_params(
             timeout = "long",
-            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
             data = test_vectors,
             tags = tags,
             test_cmd = """
@@ -48,7 +70,6 @@ def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci =
         ),
         fpga_cw340 = fpga_params(
             timeout = "long",
-            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw340_test_rom": "firmware"},
             tags = tags,
             data = test_vectors,
             test_cmd = """
@@ -59,7 +80,6 @@ def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci =
         exec_env = CRYPTOTEST_EXEC_ENVS,
         silicon = silicon_params(
             timeout = "eternal",
-            binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
             tags = tags,
             data = test_vectors,
             test_cmd = """
@@ -67,4 +87,5 @@ def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci =
             """ + test_args,
             test_harness = test_harness,
         ),
+        deps = FIRMWARE_DEPS,
     )

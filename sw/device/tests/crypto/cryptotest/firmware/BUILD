@@ -178,22 +178,17 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-[
-    opentitan_binary(
-        name = "firmware_{}".format(exec_env),
-        testonly = True,
-        srcs = [":firmware.c"],
-        exec_env = [
-            "//hw/top_earlgrey:{}".format(exec_env),
-        ],
-        deps = FIRMWARE_DEPS,
-    )
-    for exec_env in [
-        "fpga_cw310_test_rom",
-        "fpga_cw340_test_rom",
-        "silicon_owner_sival_rom_ext",
-    ]
-]
+opentitan_binary(
+    name = "firmware",
+    testonly = True,
+    srcs = [":firmware.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    deps = FIRMWARE_DEPS,
+)
 
 opentitan_test(
     name = "chip_pen_test",
