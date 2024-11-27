@@ -121,6 +121,9 @@ waive -rules RESET_MUX -location {spi_device.sv} \
 waive -rules RESET_MUX -location {spid_status.sv} \
       -regexp {Asynchronous reset 'status_fifo_rst_n' is driven by a multiplexer here, used as a reset 'rst_wr_ni'} \
       -comment "Scan reset mux, but need to have asynchronous reset"
+waive -rules RESET_USE -location {spid_dpram.sv} \
+      -regexp {'(rst_sys_ni|rst_spi_ni)' is connected to 'prim_ram_1r1w_async_adv' port 'rst_a_ni', and used as an asynchronous reset or set} \
+      -comment "The generic implementation of the underlying prim does not use rst_a_ni and ties off this input."
 
 # clock inverter and muxes
 waive -rules CLOCK_MUX -location {spi_device.sv} -regexp {Clock 'sck_n' is driven by a multiplexer here, used as a clock 'clk_i'} \
