@@ -3,6 +3,9 @@
 // SPDX-License-Identifier: Apache-2.0
 <%
 import textwrap
+import topgen.lib as lib
+
+has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -20,7 +23,9 @@ ${helper.file_header.render()}
 //! - PLIC Interrupt ID Names and Source Mappings
 //! - Alert ID Names and Source Mappings
 //! - Pinmux Pin/Select Names
+% if has_pwrmgr:
 //! - Power Manager Wakeups
+% endif
 
 use core::convert::TryFrom;
 
@@ -134,15 +139,19 @@ ${helper.direct_pads.render(gen_cast=True)}
 
 /// Muxed Pad Selects
 ${helper.muxed_pads.render(gen_cast=True)}
+% if has_pwrmgr:
 
 /// Power Manager Wakeup Signals
 ${helper.pwrmgr_wakeups.render()}
+% endif
 
 /// Reset Manager Software Controlled Resets
 ${helper.rstmgr_sw_rsts.render()}
+% if has_pwrmgr:
 
 /// Power Manager Reset Request Signals
 ${helper.pwrmgr_reset_requests.render()}
+% endif
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.
 ///

@@ -844,8 +844,9 @@ def _process_top(
     # Generate Pinmux
     generate_pinmux(completecfg, out_path)
 
-    # Generate Pwrmgr
-    generate_pwrmgr(completecfg, out_path)
+    # Generate Pwrmgr if there is an instance
+    if lib.find_module(completecfg['module'], 'pwrmgr'):
+        generate_pwrmgr(completecfg, out_path)
 
     # Generate rstmgr
     generate_rstmgr(completecfg, out_path)
