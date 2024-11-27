@@ -1,0 +1,15 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_ram_1r1w_async_adv
+
+waive -rules {HIER_BRANCH_NOT_READ} -location {prim_ram_1r1w_async_adv.sv} -regexp {Net 'rst_a_ni' is not read from} \
+      -comment "rst_a_ni is only used in assertions in certain configurations."
+
+waive -rules {INPUT_NOT_READ} -location {prim_ram_1r1w_async_adv.sv} -regexp {Input port 'rst_a_ni' is not read from, instance} \
+      -comment "rst_a_ni is only used in assertions in certain configurations."
+
+waive -rules {RESET_USE} -location {prim_ram_1r1w_async_adv.sv}
+      -regexp {'rst_b_ni' is connected to 'prim_ram_1r1w' port 'rst_b_ni', and used as an asynchronous reset} \
+      -comment "The generic implementation of the underlying prim does not use rst_b_ni and ties off this input."
