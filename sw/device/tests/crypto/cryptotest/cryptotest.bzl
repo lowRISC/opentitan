@@ -21,7 +21,7 @@ CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
 }
 
-def cryptotest(name, test_vectors, test_args, test_harness):
+def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci = False):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -29,13 +29,16 @@ def cryptotest(name, test_vectors, test_args, test_harness):
         test_vectors: the test vectors to use.
         test_args: additional arguments to pass to the test.
         test_harness: the test harness to use.
+        skip_in_nightly_ci: indicate if the test should be run in the nightly CI.
     """
+    tags = ["skip_in_nightly_ci"] if skip_in_nightly_ci else []
     opentitan_test(
         name = name,
         fpga = fpga_params(
             timeout = "long",
             binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_fpga_cw310_test_rom": "firmware"},
             data = test_vectors,
+            tags = tags,
             test_cmd = """
                 --bootstrap={firmware}
             """ + test_args,
@@ -45,6 +48,7 @@ def cryptotest(name, test_vectors, test_args, test_harness):
         silicon = silicon_params(
             timeout = "eternal",
             binaries = {"//sw/device/tests/crypto/cryptotest/firmware:firmware_silicon_owner_sival_rom_ext": "firmware"},
+            tags = tags,
             data = test_vectors,
             test_cmd = """
                 --bootstrap={firmware}
