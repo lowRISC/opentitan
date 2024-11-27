@@ -27,7 +27,7 @@ struct jtagdpi_ctx {
 /**
  * Reset the JTAG signals to a "dongle unplugged" state
  */
-static void reset_jtag_signals(struct jtagdpi_ctx *ctx) {
+static void reset_jtag_signals(struct jtagdpi_ctx *ctx, bool assert_srst) {
   assert(ctx);
 
   ctx->tck = 0;
@@ -37,8 +37,8 @@ static void reset_jtag_signals(struct jtagdpi_ctx *ctx) {
   // trst_n is pulled down (reset active) by default
   ctx->trst_n = 0;
 
-  // srst_n is pulled up (reset not active) by default
-  ctx->srst_n = 1;
+  // srst_n default is determined by assert_srst
+  ctx->srst_n = assert_srst ? 0 : 1;
 }
 
 /**
@@ -104,7 +104,8 @@ static void update_jtag_signals(struct jtagdpi_ctx *ctx) {
   }
 }
 
-void *jtagdpi_create(const char *display_name, int listen_port) {
+void *jtagdpi_create(const char *display_name, int listen_port,
+                     int assert_srst) {
   struct jtagdpi_ctx *ctx =
       (struct jtagdpi_ctx *)calloc(1, sizeof(struct jtagdpi_ctx));
   assert(ctx);
@@ -112,7 +113,7 @@ void *jtagdpi_create(const char *display_name, int listen_port) {
   // Create socket
   ctx->sock = tcp_server_create(display_name, listen_port);
 
-  reset_jtag_signals(ctx);
+  reset_jtag_signals(ctx, assert_srst != 0);
 
   printf(
       "\n"

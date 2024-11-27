@@ -18,7 +18,8 @@ module jtagdpi #(
 );
 
   import "DPI-C"
-  function chandle jtagdpi_create(input string name, input int listen_port);
+  function chandle jtagdpi_create(input string name, input int listen_port,
+                                  input int assert_srst);
 
   import "DPI-C"
   function void jtagdpi_tick(input chandle ctx, output bit tck, output bit tms,
@@ -31,13 +32,17 @@ module jtagdpi #(
   chandle ctx;
 
   initial begin
-    int port;
+    int port, assert_srst;
 
     // The listening socket port can be customized at runtime
     port = ListenPort;
     void'($value$plusargs("jtagdpi_port=%0d", port));
 
-    ctx = jtagdpi_create(Name, port);
+    // The functional reset can optionally start out asserted
+    assert_srst = 0;
+    void'($value$plusargs("jtagdpi_assert_srst=%0d", assert_srst));
+
+    ctx = jtagdpi_create(Name, port, assert_srst);
   end
 
   final begin
