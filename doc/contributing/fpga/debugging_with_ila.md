@@ -24,12 +24,12 @@ In a nutshell, we will take the following steps:
 
 ## Requirements
 
-This guide was written for OpenTitan on a [NewAE CW310 board](./get_a_board.md#chipwhisperer-cw310) with a Kintex 7 FPGA on it.
+This guide was written for OpenTitan on a [NewAE CW310 board](./get_a_board.md#chipwhisperer-cw310) with a Kintex 7 or a [NewAE CW340 board](./get_a_board.md#chipwhisperer-cw340-opentitan-kit-recommended) with a Kintex UltraScale FPGA on it.
 You further need to have Xilinx Vivado installed; see [Install Vivado](../../getting_started/install_vivado/README.md) for the currently supported version and installation instructions.
 Finally, you need a connection to the JTAG port of the FPGA.
 This guide was written using [Xilinx's Platform Cable USB II](https://www.xilinx.com/products/boards-and-kits/hw-usb-ii-g.html), although the first generation Platform Cable USB or the SmartLynq Data Cable may also work.
 
-[Set up the FPGA board](../../getting_started/setup_fpga.md) and connect the JTAG plug of Platform Cable USB II to J18 on the CW310 and its USB plug to your workstation where Vivado is installed.
+[Set up the FPGA board](../../getting_started/setup_fpga.md) and connect the JTAG plug of Platform Cable USB II to J18 on the CW310 or to J2 on the CW340 and its USB plug to your workstation where Vivado is installed.
 Make sure that the [drivers for Platform Cable USB II are installed](https://support.xilinx.com/s/article/59128?language=en_US) on that workstation.
 
 
@@ -155,8 +155,9 @@ Copy that command from the Vivado GUI, open `hw/top_earlgrey/util/vivado_hook_sy
 Add the following two commands *before* the command that configures the ILA:
 ```tcl
 # Save the current 'in-memory' project as actual project.  This is required for some of the commands
-# below, such as `get_fileset`.
-save_project_as -force lowrisc_systems_chip_earlgrey_cw310_0.1
+# below, such as `get_fileset`. Replace `<cw310/cw340>` with either `cw310` or `cw340`, depending on
+# the board you are using.
+save_project_as -force lowrisc_systems_chip_earlgrey_<cw310/cw340>_0.1
 
 # Create ILA IP core.
 set ila_xci_path [ create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_0 ]
@@ -181,8 +182,9 @@ Again, replace `ila_0` with the module name of your ILA if necessary.
 As a complete example for the ILA instantiated above, the end of `hw/top_earlgrey/util/vivado_hook_synth_design_pre.tcl` now could look as follows:
 ```tcl
 # Save the current 'in-memory' project as actual project.  This is required for some of the commands
-# below, such as `get_fileset`.
-save_project_as -force lowrisc_systems_chip_earlgrey_cw310_0.1
+# below, such as `get_fileset`. Replace `<cw310/cw340>` with either `cw310` or `cw340`, depending on
+# the board you are using.
+save_project_as -force lowrisc_systems_chip_earlgrey_<cw310/cw340>_0.1
 
 # Create ILA IP core.
 set ila_xci_path [ create_ip -name ila -vendor xilinx.com -library ip -version 6.2 -module_name ila_0 ]
@@ -215,11 +217,15 @@ The commands in this file get executed at the end of initialization of Vivado's 
 As we synthesize the ILA out of context (OOC), we need to load those synthesis results separately before running Earlgrey's implementation.
 Append the following two commands to do this:
 ```tcl
-# Load synthesized ILA from checkpoint.
-add_files ../../lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/ila_0_synth_1/ila_0.dcp
+# Load synthesized ILA from checkpoint. Replace `<cw310/cw340>` with either `cw310` or `cw340`,
+# depending on the board you are using.
+add_files ../../lowrisc_systems_chip_earlgrey_<cw310/cw340>_0.1.runs/synth_1/lowrisc_systems_chip_earlgrey_<cw310/cw340>_0.1.runs/ila_0_synth_1/ila_0.dcp
 
 # Link design (again) as otherwise the ILA would remain a black box for implementation.
-link_design -top chip_earlgrey_cw310 -part xc7k410tfbg676-1
+# Replace `<cw310/cw340>` with either `cw310` or `cw340`, depending on the board you are
+# using. For the part, replace `<xc7k410tfbg676-1/xcku095-ffva1156-1-c>` with
+# `xc7k410tfbg676-1` for a cw310 or with `xcku095-ffva1156-1-c` for a cw340 board.
+link_design -top chip_earlgrey_<cw310/cw340> -part <xc7k410tfbg676-1/xcku095-ffva1156-1-c>
 ```
 Again, change the `ila_0` module name and/or repeat the first command as required for your setup.
 
@@ -230,39 +236,8 @@ So you can ignore this warning, but it's worth keeping in mind *if* you should s
 
 ## Building and splicing bitstreams that include an ILA
 
-With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as `bazel build //hw/bitstream:rom --define bitstream=vivado`.
-While synthesis, implementation, and bitstream generation runs (which can easily take 2 h), keep an eye on the logs.
-Especially during RTL elaboration, which happens very early, check the logs for any unexpected warnings.
-The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado/build.fpga_cw310/synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/synth_1/runme.log`.
-
-Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
-Append `/build.fpga_cw310/synth-vivado` to that path.
-In the resulting directory, you should find `otp.mmi`, `rom.mmi`, and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
-We will next copy those files into a local bitstream cache that Bazel can use.
-
-If you don't have a local bitstream cache yet, create one as follows:
-Firstly, choose a local directory to store the cache and assign its path to the `BAZEL_BITSTREAMS_CACHE` environment variable.
-For example:
-```sh
-export BAZEL_BITSTREAMS_CACHE=$HOME/local-bitstreams-cache
-```
-Secondly, create a `cache` directory in that directory:
-```sh
-mkdir -p $BAZEL_BITSTREAMS_CACHE/cache
-```
-
-Create a directory with the name of the Git hash for which you have built the bitstream under `$BAZEL_BITSTREAMS_CACHE/cache/` (e.g,. `$BAZEL_BITSTREAMS_CACHE/cache/2e5a31b7d80b6eb97e114b2ca8f9e132ec7c83a6`).
-(You can find the relevant Git hash with `git log`, for example.
-If you have not committed the changes to implement the ILA yet, we recommend doing so at least locally.)
-Copy `otp.mmi` and `rom.mmi` to that directory.
-Copy `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` also to that directory, then rename the copy to `lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
-
-Now instruct Bazel to use a bitstream from the local cache by setting an `--offline` argument in the `BITSTREAM` environment variable; for example:
-```sh
-export BITSTREAM="--offline 2e5a31b7d80b6eb97e114b2ca8f9e132ec7c83a6"
-```
-Then invoke `bazel build //hw/bitstream:rom_otp_test_unlocked0` to splice the desired ROM and OTP image into the bitstream with an ILA.
-The resulting bitstream can be located with `./bazelisk.sh outquery-all //hw/bitstream:rom_otp_test_unlocked0`.
+With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as following the [corresponding guide](../../getting_started/setup_fpga.md#build-an-fpga-bitstream).
+The generated and spliced bitstream will include the defined ILAs.
 
 
 ## Programming the FPGA, controlling the ILA, and running a test
@@ -275,7 +250,7 @@ Otherwise, select the only targets and click *Next* and *Finish* to connect to t
 
 Click *Program device*.
 As *Bitstream file*, select the file identified at the end of the previous section.
-As *Debug probes file*, navigate to the `synth-vivado` directory identified in the previous section, then go to `lowrisc_systems_chip_earlgrey_cw310_0.1.runs/impl_1` and select `debug_nets.ltx`.
+As *Debug probes file*, navigate to the `synth-vivado` directory identified in the previous section, then go to `lowrisc_systems_chip_earlgrey_<cw310/cw340>_0.1.runs/impl_1` and select `debug_nets.ltx`.
 Click *Program* and wait for programming to complete.
 
 You should now see a window with one tab per ILA.
@@ -287,35 +262,8 @@ The right bottom window also has two tabs; the first defines the trigger conditi
 Configure each ILA according to your needs and hit the 'play' button in the *Status* tab to arm its trigger.
 
 Last but not least, you need to run a test in which the FPGA does not get reprogrammed (otherwise the ILA or at least its configuration is lost).
-To this end, make two modifications to prevent tests from loading a bitstream:
-```diff
-diff --git a/rules/opentitan_test.bzl b/rules/opentitan_test.bzl
---- a/rules/opentitan_test.bzl
-+++ b/rules/opentitan_test.bzl
-@@ -197,7 +197,6 @@ def cw310_params(
-         tags = _BASE_PARAMS["tags"],
-         test_runner = _BASE_PARAMS["test_runner"],
-         test_cmds = [
--            "--exec=\"fpga load-bitstream --rom-kind={rom_kind} $(location {bitstream})\"",
-             "--exec=\"bootstrap --clear-uart=true $(location {flash})\"",
-             "--exec=\"console --exit-success={exit_success} --exit-failure={exit_failure}\"",
-             "{clear_bitstream}",
-diff --git a/sw/host/opentitanlib/src/test_utils/init.rs b/sw/host/opentitanlib/src/test_utils/init.rs
---- a/sw/host/opentitanlib/src/test_utils/init.rs
-+++ b/sw/host/opentitanlib/src/test_utils/init.rs
-@@ -138,9 +138,6 @@ impl InitializeTest {
-         // Create the UART first to initialize the desired parameters.
-         let _uart = self.bootstrap.options.uart_params.create(&transport)?;
+To this end, follow [this guide](../../getting_started/setup_fpga.md#configuring-bazel-to-skip-loading-a-bitstream) to prevent tests from loading a bitstream.
 
--        // Load a bitstream.
--        Self::print_result("load_bitstream", self.load_bitstream.init(&transport))?;
--
-         // Bootstrap an rv32 test program.
-         Self::print_result("bootstrap", self.bootstrap.init(&transport))?;
-         Ok(transport)
-```
-
-Finally, run the test by invoking `opentitantool` or `bazel` as you would usually.
-The ILA should trigger during the test and display waves.
+After staring the test, the ILA should trigger and display waves.
 If that does not happen, revise the trigger conditions.
 You could also click the 'fast forward' button while the test is running to trigger the ILA immediately and see the waves captured at that time; this is particularly useful in combination with precise capture conditions.
