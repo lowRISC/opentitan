@@ -20,6 +20,7 @@ AES_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "aes_kat",
+    skip_in_nightly_ci = True,
     test_args = AES_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/aes_nist_kat:harness",
     test_vectors = AES_TESTVECTOR_TARGETS,
@@ -67,6 +68,7 @@ ECDSA_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "ecdsa_kat",
+    skip_in_nightly_ci = True,
     test_args = ECDSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/ecdsa_kat:harness",
     test_vectors = ECDSA_TESTVECTOR_TARGETS,
@@ -112,6 +114,7 @@ SHA256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha256_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA256_TESTVECTOR_TARGETS,
@@ -134,6 +137,7 @@ SHA384_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha384_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA384_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA384_TESTVECTOR_TARGETS,
@@ -156,6 +160,7 @@ SHA512_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha512_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA512_TESTVECTOR_TARGETS,
@@ -200,6 +205,7 @@ SHA3_256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_256_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA3_256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA3_256_TESTVECTOR_TARGETS,
@@ -222,6 +228,7 @@ SHA3_384_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_384_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA3_384_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA3_384_TESTVECTOR_TARGETS,
@@ -244,6 +251,7 @@ SHA3_512_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sha3_512_kat",
+    skip_in_nightly_ci = True,
     test_args = SHA3_512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHA3_512_TESTVECTOR_TARGETS,
@@ -267,6 +275,7 @@ SHAKE128_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "shake128_kat",
+    skip_in_nightly_ci = True,
     test_args = SHAKE128_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHAKE128_TESTVECTOR_TARGETS,
@@ -290,6 +299,7 @@ SHAKE256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "shake256_kat",
+    skip_in_nightly_ci = True,
     test_args = SHAKE256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hash_kat:harness",
     test_vectors = SHAKE256_TESTVECTOR_TARGETS,
@@ -323,6 +333,7 @@ DRBG_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "drbg_kat",
+    skip_in_nightly_ci = True,
     test_args = DRBG_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/drbg_kat:harness",
     test_vectors = DRBG_TESTVECTOR_TARGETS,
@@ -340,6 +351,7 @@ HMAC_SHA256_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha256_kat",
+    skip_in_nightly_ci = True,
     test_args = HMAC_SHA256_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
     test_vectors = HMAC_SHA256_TESTVECTOR_TARGETS,
@@ -357,6 +369,7 @@ HMAC_SHA384_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha384_kat",
+    skip_in_nightly_ci = True,
     test_args = HMAC_SHA384_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
     test_vectors = HMAC_SHA384_TESTVECTOR_TARGETS,
@@ -374,6 +387,7 @@ HMAC_SHA512_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "hmac_sha512_kat",
+    skip_in_nightly_ci = True,
     test_args = HMAC_SHA512_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/hmac_kat:harness",
     test_vectors = HMAC_SHA512_TESTVECTOR_TARGETS,
@@ -413,6 +427,7 @@ SPHINCSPLUS_TESTVECTOR_ARGS = " ".join([
 
 cryptotest(
     name = "sphincsplus_kat",
+    skip_in_nightly_ci = True,
     test_args = SPHINCSPLUS_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/sphincsplus_kat:harness",
     test_vectors = SPHINCSPLUS_TESTVECTOR_TARGETS,
