@@ -829,14 +829,14 @@ def num_rom_ctrl(modules):
     return num
 
 
-def is_lc_ctrl(modules):
-    '''Return true if lc_ctrl exists in the design
+def find_module(modules, type):
+    '''Returns the first module of a given type
     '''
     for m in modules:
-        if m['type'] == 'lc_ctrl':
-            return True
+        if m['type'] == type:
+            return m
 
-    return False
+    return None
 
 
 def get_addr_space(top, addr_space_name):
@@ -876,9 +876,11 @@ class TopGen:
         self._init_alert_mapping()
         self._init_pinmux_mapping()
         self._init_pad_mapping()
-        self._init_pwrmgr_wakeups()
+        # Only generate pwrmgr mappings if there is a pwrmgr
+        if find_module(self.top['module'], 'pwrmgr'):
+            self._init_pwrmgr_wakeups()
+            self._init_pwrmgr_reset_requests()
         self._init_rstmgr_sw_rsts()
-        self._init_pwrmgr_reset_requests()
         self._init_clkmgr_clocks()
         self._init_subranges()
 

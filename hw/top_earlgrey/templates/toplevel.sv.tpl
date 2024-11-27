@@ -376,7 +376,7 @@ module top_${top["name"]} #(
 
   ## Not all top levels have a lifecycle controller.
   ## For those that do not, always enable ibex.
-% if not lib.is_lc_ctrl(top["module"]):
+% if not lib.find_module(top["module"], 'lc_ctrl'):
   assign rv_core_ibex_lc_cpu_en = lc_ctrl_pkg::On;
 % endif
 

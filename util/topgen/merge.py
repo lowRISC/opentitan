@@ -1055,9 +1055,6 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
 
 
 def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
-
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-
     if "wakeups" not in topcfg or topcfg["wakeups"] == "":
         topcfg["wakeups"] = []
 
@@ -1073,22 +1070,21 @@ def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
                 'module': m["name"]
             })
 
-    # add wakeup signals to pwrmgr connections
-    signal_names = [
-        f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
-    ]
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+    if pwrmgr_name:
+        # add wakeup signals to pwrmgr connections if there is one
+        signal_names = [
+            f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
+        ]
 
-    topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
-    log.info("Intermodule signals: {}".format(
-        topcfg["inter_module"]["connect"]))
+        topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
+        log.info("Intermodule signals: {}".format(
+            topcfg["inter_module"]["connect"]))
 
 
 # Handle reset requests from modules
 def amend_reset_request(topcfg: OrderedDict,
                         name_to_block: Dict[str, IpBlock]):
-
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = {}
         topcfg["reset_requests"]["peripheral"] = []
@@ -1129,15 +1125,17 @@ def amend_reset_request(topcfg: OrderedDict,
                 'desc': signal.desc
             })
 
-    # add reset requests to pwrmgr connections
-    signal_names = [
-        "{}.{}".format(s["module"].lower(), s["name"].lower())
-        for s in topcfg["reset_requests"]["peripheral"]
-    ]
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+    if pwrmgr_name:
+        # add reset requests to pwrmgr connections if there is one
+        signal_names = [
+            "{}.{}".format(s["module"].lower(), s["name"].lower())
+            for s in topcfg["reset_requests"]["peripheral"]
+        ]
 
-    topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
-    log.info("Intermodule signals: {}".format(
-        topcfg["inter_module"]["connect"]))
+        topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
+        log.info("Intermodule signals: {}".format(
+            topcfg["inter_module"]["connect"]))
 
 
 def append_io_signal(temp: Dict, sig_inst: Dict) -> None:
