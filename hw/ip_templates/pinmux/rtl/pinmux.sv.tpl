@@ -492,6 +492,11 @@ module pinmux
     assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
   end
 
+  if (AlignedMuxSize > 2**$clog2(NMioPads + 2)) begin : gen_align_unused
+    logic unused_mio_mux_signals;
+    assign unused_mio_mux_signals = ^{mio_mux[AlignedMuxSize-1:2**$clog2(NMioPads + 2)]};
+  end
+
   //////////////////////
   // MIO Output Muxes //
   //////////////////////
@@ -612,6 +617,16 @@ module pinmux
   // the mio_mux array above, where positions 0 and 1 select constant 0 and
   // 1, respectively.
   assign mio_wkup_mux = AlignedMuxSize'({mio_wkup_no_scan, 1'b1, 1'b0});
+
+  if (AlignedMuxSize > 2**$clog2(NMioPads + 2)) begin : gen_align_mio_mux_unused
+    logic unused_mio_wkup_mux_signals;
+    assign unused_mio_wkup_mux_signals = ^{mio_wkup_mux[AlignedMuxSize-1:2**$clog2(NMioPads + 2)]};
+  end
+
+  if (AlignedMuxSize > 2**$clog2(NMioPads + 2)) begin : gen_align_dio_muxunused
+    logic unused_dio_wkup_mux_signals;
+    assign unused_dio_wkup_mux_signals = ^{dio_wkup_mux[AlignedMuxSize-1:2**$clog2(NMioPads + 2)]};
+  end
 
   logic [NWkupDetect-1:0] aon_wkup_req;
   for (genvar k = 0; k < NWkupDetect; k++) begin : gen_wkup_detect
