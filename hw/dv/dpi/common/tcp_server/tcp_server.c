@@ -326,7 +326,10 @@ static void *server_create(void *ctx_void) {
   if (rv != 0) {
     fprintf(stderr, "%s: Unable to create TCP server on port %d\n",
             ctx->display_name, ctx->listen_port);
-    goto err_cleanup_return;
+    // Failing to create the listening socket is treated as a fatal
+    // error. If the creation of this socket is not important, it
+    // should not even be attempted.
+    exit(1);
   }
 
   // Initialise fd_set
