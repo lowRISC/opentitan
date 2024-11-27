@@ -19,7 +19,7 @@ endclass : reset_seq
 
 
 constraint reset_seq::assert_delay_c {
-  soft assert_delay inside {[0:1_000]};
+  soft assert_delay inside {[10:1_000]};
 }
 
 constraint reset_seq::assert_width_c {

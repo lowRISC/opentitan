@@ -14,8 +14,6 @@ class reset_monitor extends dv_base_monitor #(
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent = null);
-  extern task reset_phase(uvm_phase phase);
-  extern virtual task run_phase(uvm_phase phase);
 
   // Parent methods
   extern protected task collect_trans();
@@ -27,15 +25,6 @@ function reset_monitor::new(string name, uvm_component parent = null);
   reset_item_ap = new("reset_item_ap", this);
   reset_state_ap = new("reset_state_ap", this);
 endfunction : new
-
-task reset_monitor::reset_phase(uvm_phase phase);
-  collect_trans();
-endtask : reset_phase
-
-task reset_monitor::run_phase(uvm_phase phase);
-  // Requires to be overwritten and should remain empty for this particular agent as collect_trans
-  // has already been called from the reset_phase
-endtask : run_phase
 
 task reset_monitor::collect_trans();
   int cnt_assert_delay;

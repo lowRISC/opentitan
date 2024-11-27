@@ -5,10 +5,6 @@
 class reset_agent_cov extends dv_base_agent_cov #(reset_agent_cfg);
   `uvm_component_utils(reset_agent_cov)
 
-  // Class should extends uvm_subscriber #(reset_item), not sure what to do here
-  // Option 1: class reset_agent_cov extends uvm_subscriber #(reset_item);
-  // Option 2: declare the following and extend dv_base_agent_cov
-  // typedef uvm_subscriber #(reset_item) this_type;
   uvm_analysis_imp #(reset_item, reset_agent_cov) analysis_imp;
 
   int unsigned reset_cnt;   // Number of resets generated
@@ -48,7 +44,8 @@ class reset_agent_cov extends dv_base_agent_cov #(reset_agent_cfg);
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent = null);
-  extern function void write(reset_item t);
+  // extern function void build_phase(uvm_phase phase);
+  extern function void write(reset_item tr);
 endclass : reset_agent_cov
 
 
@@ -62,10 +59,10 @@ function reset_agent_cov::new(string name, uvm_component parent = null);
 endfunction : new
 
 // This method is called from the monitor when broadcasting the transaction
-function void reset_agent_cov::write(reset_item t);
+function void reset_agent_cov::write(reset_item tr);
   reset_cnt++;
-  assert_delay  = t.assert_delay;
-  assert_width  = t.assert_width;
+  assert_delay  = tr.assert_delay;
+  assert_width  = tr.assert_width;
 
   cg_assert_lengths.sample();
   cg_reset_cfg.sample();

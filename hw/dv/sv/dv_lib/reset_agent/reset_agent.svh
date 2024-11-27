@@ -24,6 +24,8 @@ endclass : reset_agent
 
 function reset_agent::new(string name, uvm_component parent = null);
   super.new(name, parent);
+  reset_tr_ap = new("reset_tr_ap", this);
+  reset_st_ap = new("reset_st_ap", this);
 endfunction : new
 
 function void reset_agent::build_phase(uvm_phase phase);
@@ -31,9 +33,6 @@ function void reset_agent::build_phase(uvm_phase phase);
   if (cfg.vif == null) begin
     `uvm_fatal(`gfn, "failed to get vif from uvm_config_db")
   end
-
-  reset_tr_ap = new("reset_tr_ap", this);
-  reset_st_ap = new("reset_st_ap", this);
 endfunction : build_phase
 
 function void reset_agent::connect_phase(uvm_phase phase);
@@ -43,9 +42,10 @@ function void reset_agent::connect_phase(uvm_phase phase);
     driver.seq_item_port.connect(sequencer.seq_item_export);
   end
 
-  // Connect the monitor port
-  reset_tr_ap = monitor.reset_item_ap;
-  reset_st_ap = monitor.reset_state_ap;
+  // Connect the analysis ports from the monitor to the agent to simplify further usage
+  // while instanciating this agent.
+  monitor.reset_item_ap.connect(reset_tr_ap);
+  monitor.reset_state_ap.connect(reset_st_ap);
 
   // Connect the coverage collector port to the monitor
   if (cfg.en_cov) begin
