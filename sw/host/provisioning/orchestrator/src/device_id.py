@@ -7,7 +7,7 @@ import struct
 from dataclasses import dataclass
 
 from sku_config import SkuConfig
-from util import bytes_to_int, format_hex
+import util
 
 _RESERVED_WORD = 0
 
@@ -61,6 +61,21 @@ class DeviceIdentificationNumber:
         din |= self.year
         return din
 
+    @staticmethod
+    def from_int(din: int) -> "DeviceIdentificationNumber":
+        year = din & 0xF
+        week = (din >> 4) & 0xFF
+        lot = (din >> 12) & 0xFFF
+        wafer = (din >> 24) & 0xFF
+        wafer_x_coord = (din >> 32) & 0xFFF
+        wafer_y_coord = (din >> 44) & 0xFFF
+        return DeviceIdentificationNumber(year=year,
+                                          week=week,
+                                          lot=lot,
+                                          wafer=wafer,
+                                          wafer_x_coord=wafer_x_coord,
+                                          wafer_y_coord=wafer_y_coord)
+
 
 class DeviceId():
     """An OpenTitan device ID.
@@ -89,7 +104,7 @@ class DeviceId():
         # - 16 bits Product ID
         self.si_creator_id = sku_config.si_creator_id
         self.product_id = sku_config.product_id
-        self._hw_origin = bytes_to_int(
+        self._hw_origin = util.bytes_to_int(
             struct.pack("<HH", self.si_creator_id, self.product_id))
 
         # Build Device Identification Number with:
@@ -102,13 +117,14 @@ class DeviceId():
         self.din = din
 
         # Build base unique ID.
-        self._base_uid = bytes_to_int(
+        self._base_uid = util.bytes_to_int(
             struct.pack("<IQI", self._hw_origin, self.din.to_int(), 0))
 
         # Build SKU specific field.
         self.package_id = sku_config.package_id
-        self.sku_id = bytes_to_int(self._sku.upper()[:4].encode("utf-8")[::-1])
-        self._sku_specific = bytes_to_int(
+        self.sku_id = util.bytes_to_int(
+            self._sku.upper()[:4].encode("utf-8")[::-1])
+        self._sku_specific = util.bytes_to_int(
             struct.pack(
                 "<HHIQ",
                 self.package_id,
@@ -120,9 +136,63 @@ class DeviceId():
         # Build full device ID.
         self.device_id = (self._sku_specific << 128) | self._base_uid
 
+    def update_base_id(self, other: "DeviceId") -> None:
+        """Updates the base unique ID with another DeviceId object.
+
+        Updates the base_id with another DeviceId object's base_id as well as
+        the HW origin, SiliconCreator ID, and Product ID.
+
+        Args:
+            other: The other DeviceId object to update with.
+        """
+        self.si_creator_id = other.si_creator_id
+        self.product_id = other.product_id
+        self._hw_origin = other._hw_origin
+
+        self.din = other.din
+        self._base_uid = other._base_uid
+        self.device_id = (self._sku_specific << 128) | self._base_uid
+
+    @staticmethod
+    def from_hexstr(hexstr: str) -> "DeviceId":
+        """Creates a DeviceId object from a hex string."""
+        cp_device_id = util.parse_hexstring_to_int(hexstr)
+        return DeviceId.from_int(cp_device_id)
+
+    @staticmethod
+    def from_int(device_id: int) -> "DeviceId":
+        """Creates a DeviceId object from an int."""
+        # Extract SKU specific field.
+        sku_specific = device_id >> 128
+        package_id = sku_specific & 0xFFFF
+        sku_id = (sku_specific >> 32) & 0xFFFFFFFF
+
+        # Extract base unique ID.
+        mask = (1 << 128) - 1
+        base_uid = device_id & mask
+        # Extract HW origin.
+        hw_origin = base_uid & 0xFFFFFFFFFF
+        si_creator_id = hw_origin & 0xFFFF
+        product_id = (hw_origin >> 16) & 0xFFFF
+
+        # Extract SKU config.
+        sku_config = SkuConfig.from_ids(product_id, si_creator_id, package_id)
+
+        try:
+            sku_name = struct.pack('>I', sku_id).decode('ascii')
+        except UnicodeDecodeError:
+            sku_name = "Unknown"
+        sku_config.name = sku_name
+
+        # Extract DIN.
+        mask_din = (1 << 64) - 1
+        din = DeviceIdentificationNumber.from_int((base_uid >> 32) & mask_din)
+
+        return DeviceId(sku_config, din)
+
     def to_hexstr(self) -> str:
         """Returns the device ID as a hex string."""
-        return format_hex(self.device_id, width=64)
+        return util.format_hex(self.device_id, width=64)
 
     def to_int(self) -> int:
         """Returns the device ID as an int."""
@@ -131,9 +201,9 @@ class DeviceId():
     def pretty_print(self):
         print("> Device ID:       {}".format(self))
         print("SiliconCreator ID: {} ({})".format(
-            format_hex(self.si_creator_id, width=4), self._si_creator))
+            util.format_hex(self.si_creator_id, width=4), self._si_creator))
         print("Product ID:        {} ({})".format(
-            format_hex(self.product_id, width=4), self._product))
+            util.format_hex(self.product_id, width=4), self._product))
         print("DIN Year:          {}".format(self.din.year))
         print("DIN Week:          {}".format(self.din.week))
         print("DIN Lot:           {}".format(self.din.lot))
@@ -142,7 +212,7 @@ class DeviceId():
         print("DIN Wafer Y Coord: {}".format(self.din.wafer_y_coord))
         print("Reserved:          {}".format(hex(0)))
         print("SKU ID:            {} ({})".format(
-            format_hex(self.sku_id),
+            util.format_hex(self.sku_id),
             self.sku_id.to_bytes(length=4, byteorder="big").decode("utf-8")))
         print("Package ID:        {} ({})".format(self.package_id,
                                                   self._package))

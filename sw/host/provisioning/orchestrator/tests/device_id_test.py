@@ -147,6 +147,21 @@ class TestDeviceId(unittest.TestCase):
     def test_pretty_print(self):
         self.device_id.pretty_print()
 
+    def test_from_hexstr(self):
+        # Simulate getting a different base ID from CP stage.
+        din = DeviceIdentificationNumber(year=5,
+                                         week=12,
+                                         lot=398,
+                                         wafer=12,
+                                         wafer_x_coord=200,
+                                         wafer_y_coord=100)
+        expected = DeviceId(sku_config=self.sku_config, din=din)
+        hexstr = expected.to_hexstr()
+        cp_device_id = DeviceId.from_hexstr(hexstr)
+
+        self.device_id.update_base_id(cp_device_id)
+        self.assertEqual(expected.to_int(), self.device_id.to_int())
+
 
 if __name__ == '__main__':
     unittest.main()
