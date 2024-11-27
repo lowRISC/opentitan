@@ -31,7 +31,13 @@ module jtagdpi #(
   chandle ctx;
 
   initial begin
-    ctx = jtagdpi_create(Name, ListenPort);
+    int port;
+
+    // The listening socket port can be customized at runtime
+    port = ListenPort;
+    void'($value$plusargs("jtagdpi_port=%0d", port));
+
+    ctx = jtagdpi_create(Name, port);
   end
 
   final begin
