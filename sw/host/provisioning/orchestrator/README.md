@@ -32,7 +32,6 @@ bazel run \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token=<token as a hexstring> \
     --test-exit-token=<token as a hexstring> \
-    --rma-unlock-token=<token as a hexstring> \
     --non-interactive
 ```
 
