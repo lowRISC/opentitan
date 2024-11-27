@@ -44,7 +44,6 @@ class OtDut():
     device_id: DeviceId
     test_unlock_token: str
     test_exit_token: str
-    rma_unlock_token: str
     fpga: str
     require_confirmation: bool = True
 
@@ -86,10 +85,8 @@ class OtDut():
         --logging=info \
         {host_flags} \
         --elf={device_elf} \
-        --device-id="{self.device_id}" \
         --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
         --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
-        --manuf-state="{_ZERO_256BIT_HEXSTR}" \
         --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
         """
 
@@ -173,8 +170,6 @@ class OtDut():
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
-            if self.rma_unlock_token is not None:
-                cmd += f'--rma-unlock-token="{format_hex(self.rma_unlock_token, width=32)}" \\\n'
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")
