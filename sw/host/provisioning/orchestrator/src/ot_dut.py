@@ -5,6 +5,7 @@
 import json
 import logging
 import os
+import re
 import tempfile
 from dataclasses import dataclass
 
@@ -49,11 +50,8 @@ class OtDut():
     fpga: str
     require_confirmation: bool = True
 
-    def __post_init__(self):
-        self.log_dir = f"{self.logs_root_dir}/{str(self.device_id)[2:]}"
-        self._make_log_dir()
-
     def _make_log_dir(self) -> None:
+        self.log_dir = f"{self.logs_root_dir}/{str(self.device_id)[2:]}"
         if self.require_confirmation and os.path.exists(self.log_dir):
             logging.warning(
                 f"Log file {self.log_dir} already exists. Continue to overwrite."
@@ -102,21 +100,54 @@ class OtDut():
         --wafer-auth-secret="{_ZERO_256BIT_HEXSTR}" \
         """
 
-        # TODO: capture DIN portion of device ID and update device ID.
-
         # Get user confirmation before running command.
         logging.info(f"Running command: {cmd}")
         if self.require_confirmation:
             confirm()
 
         # Run provisioning flow and collect logs.
-        res = run(cmd, f"{self.log_dir}/cp_out.log.txt",
-                  f"{self.log_dir}/cp_err.log.txt")
-        if res.returncode != 0:
-            logging.warning(f"CP failed with exit code: {res.returncode}.")
-            confirm()
-        else:
-            logging.info("CP completed successfully.")
+        with tempfile.TemporaryDirectory() as tmpdir:
+            stdout_logfile = f"{tmpdir}/cp_out.log.txt"
+            stderr_logfile = f"{tmpdir}/cp_err.log.txt"
+            res = run(cmd, stdout_logfile, stderr_logfile)
+
+            if res.returncode != 0:
+                logging.warning(f"CP failed with exit code: {res.returncode}.")
+                confirm()
+
+            with open(stdout_logfile, "r") as f:
+                log_data = f.read()
+
+            pattern = r'CHIP_PROBE_DATA:\s*({.*?})'
+            match = re.search(pattern, log_data)
+            if match:
+                json_string = match.group(1)
+                try:
+                    chip_probe_data = json.loads(json_string)
+                    logging.info(f"CHIP_PROBE_DATA: {chip_probe_data}")
+                except json.JSONDecodeError as e:
+                    logging.error(f"Failed to parse CHIP_PROBE_DATA: {e}")
+                    confirm()
+            else:
+                logging.error("CHIP_PROBE_DATA not found.")
+                confirm()
+
+            if "cp_device_id" not in chip_probe_data:
+                logging.error("cp_device_id found in CHIP_PROBE_DATA.")
+                confirm()
+
+            logging.info(
+                f"Updating device ID to: {chip_probe_data['cp_device_id']}")
+            cp_device_id = self.device_id.from_hexstr(
+                chip_probe_data["cp_device_id"])
+            self.device_id.update_base_id(cp_device_id)
+
+            self._make_log_dir()
+            os.rename(stdout_logfile, f"{self.log_dir}/cp_out.log.txt")
+            os.rename(stderr_logfile, f"{self.log_dir}/cp_err.log.txt")
+
+        logging.info(f"CP logs saved to {self.log_dir}.")
+        logging.info("CP completed successfully.")
 
     def run_ft(self) -> None:
         """Runs the FT provisioning flow on the target DUT."""
