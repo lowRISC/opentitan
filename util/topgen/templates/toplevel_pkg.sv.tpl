@@ -4,6 +4,9 @@
 ${gencmd}
 <%
 import topgen.lib as lib
+import topgen.lib as lib
+
+has_pinmux = lib.find_module(top['module'], 'pinmux')
 %>\
 package top_${top["name"]}_pkg;
 % for (inst_name, if_name), region in helper.devices():
@@ -107,6 +110,7 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_count").as_camel_case()}
   } alert_id_e;
+% if has_pinmux:
 
   // Enumeration of IO power domains.
   // Only used in ASIC target.
@@ -179,6 +183,7 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
+% endif
 
 <%
     instances = sorted(set(inst for (inst, _), __ in helper.devices()))

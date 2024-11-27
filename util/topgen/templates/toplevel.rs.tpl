@@ -6,6 +6,7 @@ import textwrap
 import topgen.lib as lib
 
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
+has_pinmux = lib.find_module(top['module'], 'pinmux')
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -22,7 +23,9 @@ ${helper.file_header.render()}
 //! - Device Memory Information (for Peripherals and Memory)
 //! - PLIC Interrupt ID Names and Source Mappings
 //! - Alert ID Names and Source Mappings
+% if has_pinmux:
 //! - Pinmux Pin/Select Names
+% endif
 % if has_pwrmgr:
 //! - Power Manager Wakeups
 % endif
@@ -111,6 +114,7 @@ ${helper.plic_mapping.render_definition()}
 /// This array is a mapping from `${helper.alert_alerts.short_name.as_rust_type()}` to
 /// `${helper.alert_sources.short_name.as_rust_type()}`.
 ${helper.alert_mapping.render_definition()}
+% if has_pinmux:
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}
 //  0 and 1 are tied to value 0 and 1
@@ -139,6 +143,7 @@ ${helper.direct_pads.render(gen_cast=True)}
 
 /// Muxed Pad Selects
 ${helper.muxed_pads.render(gen_cast=True)}
+% endif
 % if has_pwrmgr:
 
 /// Power Manager Wakeup Signals

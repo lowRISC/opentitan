@@ -874,8 +874,10 @@ class TopGen:
         self._init_plic_targets()
         self._init_plic_mapping()
         self._init_alert_mapping()
-        self._init_pinmux_mapping()
-        self._init_pad_mapping()
+        # Only generate pinmux and pad mappings if there is a pinmux
+        if find_module(self.top['module'], 'pinmux'):
+            self._init_pinmux_mapping()
+            self._init_pad_mapping()
         # Only generate pwrmgr mappings if there is a pwrmgr
         if find_module(self.top['module'], 'pwrmgr'):
             self._init_pwrmgr_wakeups()
