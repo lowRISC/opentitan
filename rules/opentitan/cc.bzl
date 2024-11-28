@@ -325,6 +325,10 @@ common_binary_attrs = {
         executable = True,
         cfg = "exec",
     ),
+    "rom_scramble_mode": attr.string(
+        doc = "ROM scrambling mode.",
+        default = "base-rom",
+    ),
     "immutable_rom_ext_enabled": attr.bool(
         doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
         default = False,
