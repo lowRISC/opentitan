@@ -9,8 +9,8 @@
 
 module aes_tb_c_dpi
   import aes_pkg::*;
-  import aes_tb_pkg::*;
   import aes_model_dpi_pkg::*;
+  import aes_tb_pkg::*;
 #(
     parameter int ADLength = 0,
     parameter int DataLength = 16

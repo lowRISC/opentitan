@@ -3,9 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module aes_tb_reqs
-  import aes_pkg::*;
-  import aes_reg_pkg::*;
-  import tlul_pkg::*;
   import aes_tb_pkg::*;
 (
   input logic clk_i,

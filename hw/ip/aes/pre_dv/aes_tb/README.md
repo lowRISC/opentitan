@@ -1,9 +1,9 @@
-# TLUL/Shim Verilator Testbench
+# AES Verilator Testbench
 
 This directory contains the Verilator testbench for the AES IP block.
 Out of the box, the testbench contains test vectors for most of the salient use cases, nonetheless extending the testbench with further tests is straightforward as detailed below.
 By default, communication with the IP happens over the TLUL bus.
-If a TLUL/shim adapter is available, messages can optionally be relayed by the shim.
+If a TLUL/Valid-Hold adapter is available, messages can optionally be relayed by the adapter.
 
 ## Current Test Vectors
 
@@ -53,6 +53,7 @@ To execute the obtained Verilator binary and with trace generation, run:
 - rtl/aes\_tb.sv: contains the testbench logic
 - rtl/tlul\_delayer.sv: contains an optional delayer module to artificially induce random delays in the TLUL bus.
 - rtl/tlul\_adapter_tb_reqs.sv: is an adapter than converts generic read/write requests into TLUL requests.
+- rtl/vh\_regs.sv: dummy placeholder module for a Valid-Hold register file.
 - rtl/aes\_tb_reqs.sv: contains requests (stimuli) that are fed to the testbench.
 - rtl/aes\_tb_pkg.sv: contains common parameters and functions.
 - data/*: contains test vector files.

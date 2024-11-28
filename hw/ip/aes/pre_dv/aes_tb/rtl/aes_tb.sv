@@ -19,7 +19,7 @@ module aes_tb
   localparam bit          EnableDataIntgGen      = 1,
   localparam bit          EnableRspDataIntgCheck = 1,
   localparam bit          DelayerEnable          = 0,
-  localparam bit          ShimEnable             = 1
+  localparam bit          ValidHoldEnable        = 1
  ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -101,56 +101,102 @@ module aes_tb
   end
 
   aes_tb_reqs u_aes_tb_reqs (
-    .clk_i         ( clk_i    ),
-    .rst_ni        ( rst_ni   ),
-    .pop_req_i     ( bus_pop  ),
-    .req_o         ( bus_req  ),
-    .done_o        ( bus_done )
+    .clk_i     ( clk_i    ),
+    .rst_ni    ( rst_ni   ),
+    .pop_req_i ( bus_pop  ),
+    .req_o     ( bus_req  ),
+    .done_o    ( bus_done )
   );
 
   // Every request that is not a `c_dpi_load` counts as a valid bus access.
   logic bus_en;
   assign bus_en = ~bus_req.c_dpi_load;
 
-  // The shim converts inputs from the valid-hold protocol into TLUL requests.
-  if (ShimEnable) begin : gen_tlul_adapter_shim
-    tlul_adapter_shim #(
+  // The Valid-Hold adapter converts inputs from the valid-hold protocol into TLUL requests.
+  if (ValidHoldEnable) begin : gen_tlul_adapter_vh
+
+    logic                       int_dv;
+    logic [top_pkg::TL_AW-1:0]  int_addr;
+    logic                       int_write;
+    logic [top_pkg::TL_DW-1:0]  int_wdata;
+    logic [top_pkg::TL_DBW-1:0] int_wstrb;
+    logic [2:0]                 int_size;
+    logic                       int_hld;
+    logic [top_pkg::TL_DW-1:0]  int_rdata;
+    logic                       int_error;
+    logic                       int_last;
+    logic [31:0]                int_user;
+    logic [top_pkg::TL_AIW-1:0] int_id;
+
+    tlul_adapter_vh #(
       .EnableDataIntgGen      ( EnableDataIntgGen      ),
       .EnableRspDataIntgCheck ( EnableRspDataIntgCheck )
-    ) u_tlul_adapter_shim (
-      .clk_i   ( clk_i                  ),
-      .rst_ni  ( rst_ni                 ),
-      .tl_i    ( tl_d2h_delayed         ),
-      .tl_o    ( tl_h2d                 ),
-      .dv_i    ( bus_en                 ),
-      .addr_i  ( bus_req.addr           ),
-      .write_i ( bus_req.write          ),
-      .wdata_i ( bus_req.wdata          ),
-      .wstrb_i ( 4'b1111                ),
-      .size_i  ( 3'b010                 ),
-      .hld_o   ( bus_wait               ),
-      .rdata_o ( bus_rdata              ),
-      .error_o ( bus_error              ),
-      .last_i  ( 1'b0                   ),
-      .user_i  ( 32'(TL_A_USER_DEFAULT) ),
-      .id_i    ( '0                     )
+    ) u_tlul_adapter_vh (
+      .clk_i        ( clk_i                  ),
+      .rst_ni       ( rst_ni                 ),
+      .tl_i         ( tl_d2h_delayed         ),
+      .tl_o         ( tl_h2d                 ),
+      // Valid-Hold to TLUL
+      .dv_i         ( bus_en                 ),
+      .addr_i       ( bus_req.addr           ),
+      .write_i      ( bus_req.write          ),
+      .wdata_i      ( bus_req.wdata          ),
+      .wstrb_i      ( 4'b1111                ),
+      .size_i       ( 3'b010                 ),
+      .hld_o        ( bus_wait               ),
+      .rdata_o      ( bus_rdata              ),
+      .error_o      ( bus_error              ),
+      .last_i       ( 1'b0                   ),
+      .user_i       ( 32'(TL_A_USER_DEFAULT) ),
+      .id_i         ( '0                     ),
+      // Valid-Hold to internal register
+      .int_dv_o     ( int_dv                 ),
+      .int_addr_o   ( int_addr               ),
+      .int_write_o  ( int_write              ),
+      .int_wdata_o  ( int_wdata              ),
+      .int_wstrb_o  ( int_wstrb              ),
+      .int_size_o   ( int_size               ),
+      .int_hld_i    ( int_hld                ),
+      .int_rdata_i  ( int_rdata              ),
+      .int_error_i  ( int_error              ),
+      .int_last_o   ( int_last               ),
+      .int_user_o   ( int_user               ),
+      .int_id_o     ( int_id                 )
     );
+
+    vh_regs u_vh_regs (
+      .clk_i   ( clk_i     ),
+      .rst_ni  ( rst_ni    ),
+      .dv_i    ( int_dv    ),
+      .addr_i  ( int_addr  ),
+      .write_i ( int_write ),
+      .wdata_i ( int_wdata ),
+      .wstrb_i ( int_wstrb ),
+      .size_i  ( int_size  ),
+      .hld_o   ( int_hld   ),
+      .rdata_o ( int_rdata ),
+      .error_o ( int_error ),
+      .last_i  ( int_last  ),
+      .user_i  ( int_user  ),
+      .id_i    ( int_id    )
+    );
+
   end else begin : gen_tlul_adapter
     tlul_adapter_tb_reqs #(
       .EnableDataIntgGen      ( EnableDataIntgGen      ),
       .EnableRspDataIntgCheck ( EnableRspDataIntgCheck )
     ) u_tlul_adapter_tb_reqs (
-      .clk_i        ( clk_i          ),
-      .rst_ni       ( rst_ni         ),
-      .tl_i         ( tl_d2h_delayed ),
-      .tl_o         ( tl_h2d         ),
-      .en_i    ( bus_en        ),
-      .wait_o  ( bus_wait      ),
-      .addr_i  ( bus_req.addr  ),
-      .write_i ( bus_req.write ),
-      .wdata_i ( bus_req.wdata ),
-      .rdata_o ( bus_rdata     ),
-      .error_o ( bus_error     )
+      .clk_i   ( clk_i          ),
+      .rst_ni  ( rst_ni         ),
+      .tl_i    ( tl_d2h_delayed ),
+      .tl_o    ( tl_h2d         ),
+      .en_i    ( bus_en         ),
+      .wait_o  ( bus_wait       ),
+      .addr_i  ( bus_req.addr   ),
+      .write_i ( bus_req.write  ),
+      .wdata_i ( bus_req.wdata  ),
+      .rdata_o ( bus_rdata      ),
+      .error_o ( bus_error      )
     );
   end
 
@@ -228,7 +274,7 @@ module aes_tb
     end
   end
 
-  logic [31:0] data_mask;
+  logic [31:0]   data_mask;
   assign data_mask = data_cntr_q >= 4 ? 32'hffff_ffff :
                      data_cntr_q == 3 ? 32'h00ff_ffff :
                      data_cntr_q == 2 ? 32'h0000_ffff :

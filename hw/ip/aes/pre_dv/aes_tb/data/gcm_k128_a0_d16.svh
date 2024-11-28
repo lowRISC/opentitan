@@ -131,7 +131,7 @@
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
                                                                                                     \
-  /* Read Caliptra-specific register */                                                             \
-  read_caliptra(CALIPTRA_NAME_0_OFFSET),                                                            \
-  read_caliptra(CALIPTRA_VERSION_0_OFFSET)                                                          \
+  /* Read VH-specific register */                                                                   \
+  read_vh(VH_NAME_0_OFFSET),                                                                        \
+  read_vh(VH_VERSION_0_OFFSET)                                                                      \
 };
