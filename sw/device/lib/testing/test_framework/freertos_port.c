@@ -2,19 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_rv_timer.h"
+#include "external/freertos/include/FreeRTOS.h"
+#include "external/freertos/include/task.h"
+#include "external/freertos/portable/GCC/RISC-V/portmacro.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
-
-// TODO: make this toplevel agnostic.
-#include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/task.h"
-#include "external/freertos/portable/GCC/RISC-V/portmacro.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
 // NOTE: some of the function names below do NOT, and cannot, conform to the
 // style guide, since they are specific implementations of FreeRTOS defined
@@ -35,7 +32,7 @@ OT_SET_BSS_SECTION(".freertos.heap", uint8_t ucHeap[configTOTAL_HEAP_SIZE];)
 #if configUSE_PREEMPTION
 
 static dif_rv_timer_t timer;
-static const uint32_t kTimerHartId = (uint32_t)kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kTimerHartId = (uint32_t)0;
 static const uint32_t kTimerComparatorId = 0;
 static const uint64_t kTimerDeadline =
     100;  // Counter must reach 100 for an IRQ to be triggered.
@@ -59,8 +56,7 @@ void vPortSetupTimerInterrupt(void) {
   LOG_INFO("Configuring timer interrupt ...");
 
   // Initialize and reset the timer.
-  CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_init_from_dt(kDtRvTimer, &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   // Compute and set tick parameters (i.e., step, prescale, etc.).
