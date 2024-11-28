@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
-load("//rules/opentitan:hw.bzl", "select_top", "select_top_lib")
+load("//rules/opentitan:hw.bzl", "select_top", "select_top_ld", "select_top_lib")
 load("//rules/opentitan:util.bzl", "flatten")
 load(
     "//rules:autogen.bzl",
@@ -67,6 +67,24 @@ alias(
     name = "top_lib",
     actual = select({
         "is_{}".format(top): ":top_{}_lib".format(top)
+        for top in ALL_TOP_NAMES
+    }),
+)
+
+[
+    select_top_ld(
+        name = "top_{}_ld".format(top),
+        all_tops = ALL_TOPS,
+        top = top,
+    )
+    for top in ALL_TOP_NAMES
+]
+
+# Point to the right top library.
+alias(
+    name = "top_ld",
+    actual = select({
+        "is_{}".format(top): ":top_{}_ld".format(top)
         for top in ALL_TOP_NAMES
     }),
 )
