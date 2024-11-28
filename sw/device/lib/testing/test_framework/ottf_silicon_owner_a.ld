@@ -10,16 +10,15 @@
  * This linker script generates a binary to run BL0 tests.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE @@TOP_MEMORY_LD@@
+INCLUDE @@OTTF_LD_ALIAS@@
 
 /**
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the BL0 boot stage in slot A.
  */
 /* TODO(#9045): Move ROM_EXT size to a common location. */
-_ottf_size = (LENGTH(eflash) / 2) - 0x10000;
-_ottf_start_address = ORIGIN(eflash) + 0x10000;
+_ottf_size = (LENGTH(ottf_flash) / 2) - 0x10000;
+_ottf_start_address = ORIGIN(ottf_flash) + 0x10000;
 
-REGION_ALIAS("ottf_flash", eflash);
-
-INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld
+INCLUDE @@OTTF_LD_COMMON@@
