@@ -6,12 +6,17 @@
 
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#ifdef OT_IS_ENGLISH_BREAKFAST
+#if defined(OT_IS_ENGLISH_BREAKFAST)
 #include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast.h"
 #define EFLASH_SIZE_BYES TOP_ENGLISHBREAKFAST_EFLASH_SIZE_BYTES
-#else
+#elif defined(OPENTITAN_IS_EARLGREY)
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #define EFLASH_SIZE_BYES TOP_EARLGREY_EFLASH_SIZE_BYTES
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#define EFLASH_SIZE_BYES TOP_DARJEELING_RAM_MAIN_SIZE_BYTES
+#else
+#error unsupported top
 #endif
 
 static_assert(CHIP_ROM_EXT_SIZE_MIN >= CHIP_MANIFEST_SIZE,
