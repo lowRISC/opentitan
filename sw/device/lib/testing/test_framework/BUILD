@@ -432,7 +432,7 @@ cc_library(
         ":check",
         ":freertos_config",
         ":ottf_start",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/dif:rv_timer",
         "//sw/device/lib/dif:uart",
         "//sw/device/lib/runtime:hart",
