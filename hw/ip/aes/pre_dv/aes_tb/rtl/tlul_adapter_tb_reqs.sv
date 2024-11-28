@@ -51,9 +51,9 @@ module tlul_adapter_tb_reqs
     end
   end
 
-  // Only make a new request (through `a_valid`) to the device when none are
-  // pending. If the integrity checks are enabled, the `a_user` fields will be
-  // set by the corresponding module (see `tlul_cmd_intg_gen`).
+  // Only make a new request (through `a_valid`) to the device when none are pending. If the
+  // integrity checks are enabled, the `a_user` fields will be set by the corresponding module
+  // (see `tlul_cmd_intg_gen`).
   tlul_pkg::tl_h2d_t tl_o_pre;
   assign tl_o_pre = '{
     a_valid: en_i & ~pending_q,

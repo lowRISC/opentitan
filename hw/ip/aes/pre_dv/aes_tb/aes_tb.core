@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:aes
       - lowrisc:dv:aes_model_dpi
-      - lowrisc:tlul:adapter_shim
+      - lowrisc:tlul:adapter_vh
     files:
       - data/gcm_k128_a20_d60.svh : {is_include_file : true}
       - data/gcm_k128_a20_d64.svh : {is_include_file : true}
@@ -19,6 +19,7 @@ filesets:
       - rtl/aes_tb_pkg.sv
       - rtl/aes_tb_reqs.sv
       - rtl/aes_tb_c_dpi.sv
+      - rtl/vh_regs.sv
       - rtl/tlul_delayer.sv
       - rtl/tlul_adapter_tb_reqs.sv
       - rtl/aes_tb.sv

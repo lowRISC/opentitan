@@ -30,11 +30,11 @@ package aes_tb_pkg;
   parameter int AES_TRIGGER_DATA_OUT_CLEAR_OFFSET       = 2;
   parameter int AES_TRIGGER_PRNG_RESEED_OFFSET          = 3;
 
-  // Caliptra register offsets
-  parameter logic [11:0] CALIPTRA_NAME_0_OFFSET    = 12'h100;
-  parameter logic [11:0] CALIPTRA_NAME_1_OFFSET    = 12'h104;
-  parameter logic [11:0] CALIPTRA_VERSION_0_OFFSET = 12'h108;
-  parameter logic [11:0] CALIPTRA_VERSION_1_OFFSET = 12'h10c;
+  // Valid-Hold register offsets
+  parameter logic [11:0] VH_NAME_0_OFFSET    = 12'h100;
+  parameter logic [11:0] VH_NAME_1_OFFSET    = 12'h104;
+  parameter logic [11:0] VH_VERSION_0_OFFSET = 12'h108;
+  parameter logic [11:0] VH_VERSION_1_OFFSET = 12'h10c;
 
   `include `REQUESTS_FILE
 
@@ -53,14 +53,14 @@ package aes_tb_pkg;
     logic [127:0] tag; // Only used in the GCM decryption case.
    } c_dpi_input_t;
 
-  // Grouping of all signals required for a TLUL/shim read/write request and to instrument the
+  // Grouping of all signals required for a TLUL/VH read/write request and to instrument the
   // `c_dpi` API.
   typedef struct packed {
     logic write;
     logic [top_pkg::TL_AW-1:0] addr;
     logic [top_pkg::TL_DW-1:0] wdata;
 
-    // Internal signal: The request is a `c_dpi` invocation instead of a TLUL/shim request.
+    // Internal signal: The request is a `c_dpi` invocation instead of a TLUL/VH request.
     logic c_dpi_load;
 
     // Internal signal: To mask read request responses, e.g., to check whether a certain bit is set.
@@ -70,7 +70,7 @@ package aes_tb_pkg;
     c_dpi_input_t c_dpi_input;
   } bus_request_t;
 
-  // write_request returns a filled out `bus_request_t` struct for a TLUL/shim write request.
+  // write_request returns a filled out `bus_request_t` struct for a TLUL/VH write request.
   function automatic bus_request_t write_request (logic [7:0] addr,
                                                   logic [top_pkg::TL_DW-1:0] wdata);
     bus_request_t req = '{
@@ -84,7 +84,7 @@ package aes_tb_pkg;
     return req;
   endfunction
 
-  // read_request returns a filled out `bus_request_t` struct for a TLUL/shim read request.
+  // read_request returns a filled out `bus_request_t` struct for a TLUL/VH read request.
   function automatic bus_request_t read_request (logic [7:0] addr,
                                                  logic [top_pkg::TL_DW-1:0] mask = '0);
     bus_request_t req = '{
@@ -98,10 +98,10 @@ package aes_tb_pkg;
     return req;
   endfunction
 
-  // read_caliptra returns a filled out `bus_request_t` struct for an internal Caliptra register.
-  // This is only useful if a TLUL-to-Shim adapter is configured otherwise the request will result
-  // in a zero-value being returned by the register file.
-  function automatic bus_request_t read_caliptra (logic [11:0] addr);
+  // read_vh returns a filled out `bus_request_t` struct for an internal register. This is only
+  // useful if a TLUL-to-VH adapter is configured otherwise the request will result in a zero-value
+  // being returned by the register file.
+  function automatic bus_request_t read_vh (logic [11:0] addr);
     bus_request_t req = '{
       c_dpi_load: 1'b0,
       write: 1'b0,

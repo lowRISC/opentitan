@@ -3600,7 +3600,7 @@
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
   read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
-  /* Read Caliptra-specific register */                                                             \
-  read_caliptra(CALIPTRA_NAME_0_OFFSET),                                                            \
-  read_caliptra(CALIPTRA_VERSION_0_OFFSET)                                                          \
+  /* Read VH-specific register */                                                                   \
+  read_vh(VH_NAME_0_OFFSET),                                                                        \
+  read_vh(VH_VERSION_0_OFFSET)                                                                      \
 };
