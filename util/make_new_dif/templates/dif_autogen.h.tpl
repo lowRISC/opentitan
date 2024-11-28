@@ -49,6 +49,10 @@ typedef struct dif_${ip.name_snake} {
    * The base address for the ${ip.name_snake} hardware registers.
    */
   mmio_region_t base_addr;
+  /**
+   * Pointer to the corresponding device table. Can be NULL.
+   */
+  const dt_${ip.name_snake}_t *dt;
 } dif_${ip.name_snake}_t;
 
 /**

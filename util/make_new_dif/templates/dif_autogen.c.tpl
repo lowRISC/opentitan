@@ -64,6 +64,7 @@ dif_result_t dif_${ip.name_snake}_init(
   }
 
   ${ip.name_snake}->base_addr = base_addr;
+  ${ip.name_snake}->dt = NULL;
 
   return kDifOk;
 }
@@ -77,6 +78,7 @@ dif_result_t dif_${ip.name_snake}_init_from_dt(
   }
 
   ${ip.name_snake}->base_addr = mmio_region_from_addr(dt_${ip.name_snake}_reg_block(dt, kDt${ip.name_camel}RegBlockDefault));
+  ${ip.name_snake}->dt = dt;
 
   return kDifOk;
 }
