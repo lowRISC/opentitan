@@ -41,7 +41,6 @@ fpga_cw310(
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
     rom_mmi = "//hw/bitstream:rom_mmi",
-    tags = ["cw310_sival_rom_ext"],
     visibility = ["//visibility:private"],
 )
 
@@ -65,6 +64,7 @@ opentitan_test(
     ),
     fpga = fpga_params(
         tags = [
+            "cw310_sival_rom_ext",
             "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
