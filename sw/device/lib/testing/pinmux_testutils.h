@@ -44,8 +44,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux);
 /**
  * Maps the chip IOs to the GPIO peripheral in input and output directions.
  */
-extern const dif_pinmux_index_t kPinmuxTestutilsGpioInselPins[kDifGpioNumPins];
-extern const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins];
+extern const dt_pad_index_t kPinmuxTestutilsGpioPads[kDifGpioNumPins];
 
 /**
  * Returns the mask of testable GPIO pins.

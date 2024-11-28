@@ -1895,6 +1895,7 @@ opentitan_test(
     ),
     silicon = silicon_params(tags = ["broken"]),
     deps = [
+        "//hw/top:devicetables",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/testing:pinmux_testutils",
