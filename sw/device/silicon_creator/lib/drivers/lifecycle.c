@@ -7,17 +7,17 @@
 #include <assert.h>
 #include <stdint.h>
 
+#include "devicetables.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "lc_ctrl_regs.h"
 
-enum {
-  kBase = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR,
-};
+static inline uint32_t lc_ctrl_base(void) {
+  return dt_lc_ctrl_reg_block(&kDtLcCtrl[0], kDtLcCtrlRegBlockRegs);
+}
 
 lifecycle_state_t lifecycle_state_get(void) {
   uint32_t raw_state = lifecycle_raw_state_get();
@@ -67,7 +67,7 @@ lifecycle_state_t lifecycle_state_get(void) {
 
 uint32_t lifecycle_raw_state_get(void) {
   uint32_t value = bitfield_field32_read(
-      sec_mmio_read32(kBase + LC_CTRL_LC_STATE_REG_OFFSET),
+      sec_mmio_read32(lc_ctrl_base() + LC_CTRL_LC_STATE_REG_OFFSET),
       LC_CTRL_LC_STATE_STATE_FIELD);
   return value;
 }
@@ -82,15 +82,17 @@ void lifecycle_device_id_get(lifecycle_device_id_t *device_id) {
          launder32(r) < kLifecycleDeviceIdNumWords;
        ++i, --r) {
     device_id->device_id[i] = sec_mmio_read32(
-        kBase + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
+        lc_ctrl_base() + LC_CTRL_DEVICE_ID_0_REG_OFFSET + i * sizeof(uint32_t));
   }
   HARDENED_CHECK_EQ(i, kLifecycleDeviceIdNumWords);
   HARDENED_CHECK_EQ(r, SIZE_MAX);
 }
 
 void lifecycle_hw_rev_get(lifecycle_hw_rev_t *hw_rev) {
-  uint32_t reg0 = sec_mmio_read32(kBase + LC_CTRL_HW_REVISION0_REG_OFFSET);
-  uint32_t reg1 = sec_mmio_read32(kBase + LC_CTRL_HW_REVISION1_REG_OFFSET);
+  uint32_t reg0 =
+      sec_mmio_read32(lc_ctrl_base() + LC_CTRL_HW_REVISION0_REG_OFFSET);
+  uint32_t reg1 =
+      sec_mmio_read32(lc_ctrl_base() + LC_CTRL_HW_REVISION1_REG_OFFSET);
   *hw_rev = (lifecycle_hw_rev_t){
       .silicon_creator_id = (uint16_t)bitfield_field32_read(
           reg0, LC_CTRL_HW_REVISION0_SILICON_CREATOR_ID_FIELD),
