@@ -26,6 +26,7 @@ ${top_name.upper()} = opentitan_top(
     name = "${top_name}",
     hjson = "//hw/top_${top_name}/data/autogen:top_${top_name}.gen.hjson",
     top_lib = "//hw/top_${top_name}/sw/autogen:top_${top_name}",
+    top_ld = "//hw/top_${top_name}/sw/autogen:top_${top_name}_memory",
     ips = [
 % for ip in all_ips.keys():
         ${ip.upper()},

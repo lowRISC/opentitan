@@ -48,6 +48,7 @@ EARLGREY = opentitan_top(
     name = "earlgrey",
     hjson = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+    top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ips = [
         ADC_CTRL,
         AES,
