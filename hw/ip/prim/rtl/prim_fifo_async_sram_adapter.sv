@@ -267,7 +267,6 @@ module prim_fifo_async_sram_adapter #(
   //    - r_rptr_inc: Can request more
   //    - !r_rptr_inc: Can't request
   always_comb begin : r_sram_req
-    r_sram_req_o = 1'b 0;
     // Karnough Map (!empty): sram_req
     // {sram_rv, rfifo_ack} | 00 | 01          | 11 | 10
     // ----------------------------------------------------------
