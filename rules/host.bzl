@@ -23,6 +23,9 @@ def _host_tools_transition_impl(settings, attr):
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
+        # WARNING This is a horrible hack: when we transition to host, we pretend
+        # that this is earlgrey so opentitantool can compile...
+        "//hw/top": "earlgrey",
     }
     return ret
 
@@ -39,5 +42,6 @@ host_tools_transition = transition(
         "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",
+        "//hw/top",
     ],
 )
