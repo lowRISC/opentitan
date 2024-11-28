@@ -4,10 +4,22 @@
 
 #include "sw/device/lib/testing/spi_device_testutils.h"
 
+#include "devicetables.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
 #define MODULE_ID MAKE_MODULE_ID('s', 'd', 't')
+
+/*
+ * The SPI device pins for which `spi_device_testutils_configure_pad_attrs()`
+ * configures the pad attributes.
+ */
+static const dt_pad_index_t spi_device_direct_pads[4] = {
+    kDtPadSpiDeviceSd3,  // sio[3]
+    kDtPadSpiDeviceSd2,  // sio[2]
+    kDtPadSpiDeviceSd1,  // sio[1]
+    kDtPadSpiDeviceSd0   // sio[0]
+};
 
 status_t spi_device_testutils_configure_passthrough(
     dif_spi_device_handle_t *spi_device, uint32_t filters,
@@ -331,8 +343,8 @@ status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux) {
   dif_pinmux_pad_attr_t in_attr = {.slew_rate = 1, .drive_strength = 3};
   dif_result_t res;
   for (uint32_t i = 0; i <= ARRAYSIZE(spi_device_direct_pads); ++i) {
-    res = dif_pinmux_pad_write_attrs(pinmux, spi_device_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
+    dt_pad_t pad = kDtPad[spi_device_direct_pads[i]];
+    res = dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr);
     if (res == kDifError) {
       // Some target platforms may not support the specified value for slew rate
       // and drive strength. If that's the case, use the values actually
@@ -348,8 +360,7 @@ status_t spi_device_testutils_configure_pad_attrs(dif_pinmux_t *pinmux) {
             "strength");
         in_attr.drive_strength = out_attr.drive_strength;
       }
-      TRY(dif_pinmux_pad_write_attrs(pinmux, spi_device_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr));
+      TRY(dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr));
       // Note: fallthrough with the modified `in_attr` so that the same
       // attributes are used for all pads.
     }
