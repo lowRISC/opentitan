@@ -400,7 +400,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:lc_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:devicetables",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -422,7 +422,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":lifecycle"),
         "//hw/top:lc_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
