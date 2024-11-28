@@ -5,6 +5,8 @@
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load("//rules/opentitan:defs.bzl", "opentitan_test")
 
+package(default_visibility = ["//visibility:public"])
+
 opentitan_test(
     name = "i2c_host_tx_rx_test",
     srcs = ["i2c_host_tx_rx_test.c"],
