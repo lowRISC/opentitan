@@ -522,6 +522,16 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_MBX_PCIE1_CORE_SIZE_BYTES = 32'h80;
 
   /**
+   * Peripheral base address for core device on soc_dbg_ctrl in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR = 32'h30160000;
+
+  /**
+   * Peripheral size in bytes for core device on soc_dbg_ctrl in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_DBG_CTRL_CORE_SIZE_BYTES = 32'h20;
+
+  /**
    * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR = 32'h211F0000;
@@ -645,7 +655,8 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralMbxJtag = 38,
     TopDarjeelingAlertPeripheralMbxPcie0 = 39,
     TopDarjeelingAlertPeripheralMbxPcie1 = 40,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 41,
+    TopDarjeelingAlertPeripheralSocDbgCtrl = 41,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 42,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -746,10 +757,12 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdMbxPcie0RecovFault = 92,
     TopDarjeelingAlertIdMbxPcie1FatalFault = 93,
     TopDarjeelingAlertIdMbxPcie1RecovFault = 94,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 95,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 96,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 97,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 98,
+    TopDarjeelingAlertIdSocDbgCtrlFatalFault = 95,
+    TopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 96,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 97,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 98,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 99,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 100,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 
@@ -1004,6 +1017,7 @@ package top_darjeeling_pkg;
     PeripheralRvPlic,
     PeripheralRvTimer,
     PeripheralSensorCtrl,
+    PeripheralSocDbgCtrl,
     PeripheralSocProxy,
     PeripheralSpiDevice,
     PeripheralSpiHost0,

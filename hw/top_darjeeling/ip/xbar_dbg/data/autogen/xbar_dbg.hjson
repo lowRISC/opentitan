@@ -37,5 +37,11 @@
       act:    "req"
       package: "tlul_pkg"
     }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_soc_dbg_ctrl__jtag"
+      act:    "req"
+      package: "tlul_pkg"
+    }
   ]
 }

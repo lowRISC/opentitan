@@ -100,6 +100,7 @@ tl_if sram_ctrl_ret_aon__regs_tl_if(clk_io_div4, rst_n);
 tl_if sram_ctrl_ret_aon__ram_tl_if(clk_io_div4, rst_n);
 tl_if aon_timer_aon_tl_if(clk_io_div4, rst_n);
 tl_if ast_tl_if(clk_io_div4, rst_n);
+tl_if soc_dbg_ctrl__core_tl_if(clk_io_div4, rst_n);
 tl_if mbx0__soc_tl_if(clk_main, rst_n);
 tl_if mbx1__soc_tl_if(clk_main, rst_n);
 tl_if mbx2__soc_tl_if(clk_main, rst_n);
@@ -112,6 +113,7 @@ tl_if mbx_pcie1__soc_tl_if(clk_main, rst_n);
 tl_if rv_dm__dbg_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
 tl_if lc_ctrl__dmi_tl_if(clk_io_div4, rst_n);
+tl_if soc_dbg_ctrl__jtag_tl_if(clk_io_div4, rst_n);
 
 initial begin
   wait (xbar_mode !== 1'bx);
@@ -211,6 +213,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_ret_aon__ram, sram_ctrl_ret_aon, ram_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(aon_timer_aon, aon_timer_aon, tl)
     `DRIVE_CHIP_TL_EXT_DEVICE_IF(ast, ast, tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(soc_dbg_ctrl__core, soc_dbg_ctrl, core_tl)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx0__soc, mbx0, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx1__soc, mbx1, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx2__soc, mbx2, soc_tl_d)
@@ -223,6 +226,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__dbg, rv_dm, dbg_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__dmi, lc_ctrl, dmi_tl)
+    `DRIVE_CHIP_TL_DEVICE_IF(soc_dbg_ctrl__jtag, soc_dbg_ctrl, jtag_tl)
 `endif
 
     // And this can consume time, so they go at the end of this block.

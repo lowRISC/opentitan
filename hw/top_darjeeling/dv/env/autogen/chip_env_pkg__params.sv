@@ -100,10 +100,12 @@ parameter string LIST_OF_ALERTS[] = {
   "mbx_pcie0_recov_fault",
   "mbx_pcie1_fatal_fault",
   "mbx_pcie1_recov_fault",
+  "soc_dbg_ctrl_fatal_fault",
+  "soc_dbg_ctrl_recov_ctrl_update_err",
   "rv_core_ibex_fatal_sw_err",
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 99;
+parameter uint NUM_ALERTS = 101;
