@@ -19,6 +19,14 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
+cc_library(
+    name = "boot_data_header",
+    hdrs = ["boot_data.h"],
+    deps = [
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+    ],
+)
+
 dual_cc_library(
     name = "boot_data",
     srcs = dual_inputs(
@@ -27,7 +35,6 @@ dual_cc_library(
     ),
     hdrs = dual_inputs(
         host = ["mock_boot_data.h"],
-        shared = ["boot_data.h"],
     ),
     deps = dual_inputs(
         device = [
@@ -43,6 +50,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            ":boot_data_header",
             ":error",
             ":nonce",
             "//sw/device/lib/base:macros",
@@ -94,8 +102,8 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
-        ":boot_data",
-        ":nonce",
+        ":boot_data_header",
+        ":nonce_header",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:error",
@@ -452,10 +460,17 @@ cc_library(
 )
 
 cc_library(
+    name = "nonce_header",
+    hdrs = ["nonce.h"],
+)
+
+cc_library(
     name = "nonce",
     srcs = ["nonce.c"],
-    hdrs = ["nonce.h"],
-    deps = ["//sw/device/silicon_creator/lib/drivers:rnd"],
+    deps = [
+        ":nonce_header",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+    ],
 )
 
 cc_library(

@@ -6,7 +6,6 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_BOOT_DATA_H_
 
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -158,9 +157,6 @@ enum {
 };
 static_assert(kBootDataInvalidEntry != kBootDataValidEntry,
               "Invalidation values cannot be equal.");
-static_assert(kBootDataValidEntry ==
-                  ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
-              "kBootDataValidEntry words must be kFlashCtrlErasedWord");
 
 /**
  * Constants referring to EFLASH slots A and B.
