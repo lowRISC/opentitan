@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_gpio.h"
@@ -11,11 +12,16 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
+static const dt_gpio_t *kGpioDt = &kDtGpio[0];
 OTTF_DEFINE_TEST_CONFIG();
+
+// Assume that the pins in dt_gpio_pin_t are numbered 0, 1, and so on.
+static_assert(kDtGpioPinGpio0 == 0, "kDtGpioPinGpio0 is expected to be 0");
+static_assert(kDtGpioPinGpio1 == 1, "kDtGpioPinGpio1 is expected to be 1");
+static_assert(kDtGpioPinCount == kDifGpioNumPins,
+              "kDtGpioPinCount does not match kDifGpioNumPins");
 
 /**
  * A known pattern written to GPIOs.
@@ -57,21 +63,19 @@ static void test_gpio_write(uint32_t write_val, uint32_t compare_mask) {
  */
 bool test_main(void) {
   uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(&kDtPinmux[0], &pinmux));
   // Assign GPIOs in the pinmux
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     if (gpio_mask & (1u << i)) {
-      dif_pinmux_index_t mio = kPinmuxTestutilsGpioMioOutPins[i];
-      dif_pinmux_index_t gpio_out = kTopEarlgreyPinmuxOutselGpioGpio0 + i;
-      CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, mio, gpio_out));
-      mio = kPinmuxTestutilsGpioInselPins[i];
-      dif_pinmux_index_t gpio_in = kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i;
-      CHECK_DIF_OK(dif_pinmux_input_select(&pinmux, gpio_in, mio));
+      dt_pad_t pad = kDtPad[kPinmuxTestutilsGpioPads[i]];
+      // Assume that the pins in dt_gpio_pin_t are numbered 0, 1, and so on.
+      dt_gpio_pin_t gpio_pin = (dt_gpio_pin_t)i;
+      dt_pin_t pin = dt_gpio_pin(kGpioDt, gpio_pin);
+      CHECK_DIF_OK(dif_pinmux_mio_select_output(&pinmux, pad, pin));
+      CHECK_DIF_OK(dif_pinmux_mio_select_input(&pinmux, pin, pad));
     }
   }
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, gpio_mask));
 
   for (uint8_t i = 0; i < ARRAYSIZE(kGpioVals); ++i) {
