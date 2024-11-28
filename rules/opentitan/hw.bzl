@@ -17,7 +17,7 @@ def opentitan_ip(name, hjson):
         hjson = hjson,
     )
 
-def opentitan_top(name, hjson, top_lib, ips):
+def opentitan_top(name, hjson, top_lib, top_ld, ips):
     """
     Return a structure describing a top.
 
@@ -32,6 +32,7 @@ def opentitan_top(name, hjson, top_lib, ips):
         name = name,
         hjson = hjson,
         top_lib = top_lib,
+        top_ld = top_ld,
         ips = ips,
     )
 
