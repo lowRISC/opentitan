@@ -337,7 +337,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rv_core_ibex_testutils",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:rv_core_ibex",
