@@ -21,3 +21,8 @@ waive -rules USE_BEFORE_DECL -location {prim_fifo_async_sram_adapter.sv} -msg {'
       -comment "dec2gray is a function defined towards the end of the file."
 waive -rules USE_BEFORE_DECL -location {prim_fifo_async_sram_adapter.sv} -msg {'gray2dec' is referenced before its declaration at prim_fifo_async_sram_adapter.sv} \
       -comment "gray2dec is a function defined towards the end of the file."
+
+# Avoid warnings about overly long macro prototypes (caused by long default values of arguments)
+waive -rules {LINE_LENGTH} -location {prim_fifo_assert.svh}  \
+      -msg {Line length of} \
+      -comment "Some macros cannot be line-wrapped, as some tools do not support that."

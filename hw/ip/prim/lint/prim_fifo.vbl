@@ -1,0 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+
+# waive long line violations in assertions
+waive --rule=line-length --location="prim_fifo_assert.svh"

@@ -61,6 +61,9 @@
   `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(NAME_, \
     REG_TOP_HIER_.u_prim_reg_we_check.u_prim_onehot_check, ALERT_, GATE_, MAX_CYCLES_)
 
+`define ASSERT_PRIM_FIFO_SYNC_SINGLETON_ERROR_TRIGGER_ALERT(NAME, HIER_, ALERT_, GATE_ = 0, MAX_CYCLES_ = `_SEC_CM_ALERT_MAX_CYC) \
+  `ASSERT_ERROR_TRIGGER_ALERT(NAME_, HIER_, ALERT_, GATE_, MAX_CYCLES_, err_o)
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Assertions for CMs that trigger some other form of error
