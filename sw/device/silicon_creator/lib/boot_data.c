@@ -19,6 +19,9 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otp_ctrl_regs.h"
 
+static_assert(kBootDataValidEntry ==
+                  ((uint64_t)kFlashCtrlErasedWord << 32 | kFlashCtrlErasedWord),
+              "kBootDataValidEntry words must be kFlashCtrlErasedWord");
 static_assert(kBootDataEntriesPerPage ==
                   FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(boot_data_t),
               "Number of boot data entries per page is incorrect");
