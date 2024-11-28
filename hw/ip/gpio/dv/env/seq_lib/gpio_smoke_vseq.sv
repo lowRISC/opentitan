@@ -38,8 +38,6 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_i)
       `uvm_info(msg_id, $sformatf("gpio_i = %0h", gpio_i), UVM_LOW)
 
-      //Skip if a reset is on going...
-      if (!cfg.clk_rst_vif.rst_n) return;
 
       cfg.gpio_vif.drive(gpio_i);
 `ifdef GPIO_ASYNC_ON
@@ -51,12 +49,10 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
 `endif
 
-      //Skip if a reset is on going...
+      //Skip if a reset is ongoing...
       if (!cfg.clk_rst_vif.rst_n) return;
       cfg.clk_rst_vif.wait_clks(delay);
 
-      //Skip if a reset is on going...
-      if (!cfg.clk_rst_vif.rst_n) return;
       // Reading data_in will trigger a check inside scoreboard
       csr_rd(.ptr(ral.data_in), .value(csr_rd_val));
       `uvm_info(msg_id, {$sformatf("reading data_in after %0d clock cycles ", delay),
@@ -73,7 +69,7 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       string msg_id = {`gfn, $sformatf(" Transaction-%0d: ", tr_num)};
 
 
-      //Skip if a reset is on going...
+      //Skip if a reset is ongoing...
       if (!cfg.clk_rst_vif.rst_n) return;
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_o)
@@ -83,19 +79,12 @@ class gpio_smoke_vseq extends gpio_base_vseq;
       ral.direct_out.set(gpio_o);
       ral.direct_oe.set(gpio_oe);
 
-      //Skip if a reset is on going...
-      if (!cfg.clk_rst_vif.rst_n) return;
-
       csr_update(.csr(ral.direct_out));
-
-      //Skip if a reset is on going...
-      if (!cfg.clk_rst_vif.rst_n) return;
-
       csr_update(.csr(ral.direct_oe));
       // Wait at least one clock cycle
       `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
 
-      //Skip if a reset is on going...
+      //Skip if a reset is ongoing...
       if (!cfg.clk_rst_vif.rst_n) return;
       cfg.clk_rst_vif.wait_clks(delay);
       `uvm_info(msg_id, $sformatf("waiting for %0d clock cycles", delay), UVM_LOW)

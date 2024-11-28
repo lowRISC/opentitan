@@ -22,7 +22,7 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
 
-      //Skip if a reset is on going...
+      //Skip if a reset is ongoing...
       if (!cfg.clk_rst_vif.rst_n) return;
       // Insert some random delay
       cfg.clk_rst_vif.wait_clks(delay);
@@ -40,12 +40,12 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           // drive gpio_vif after setting all output enables to 0's
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
           drive_gpio_in(gpio_i);
           cfg.clk_rst_vif.wait_clks(1);
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
 
           // read data_in register
@@ -56,26 +56,26 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
           `uvm_info(`gfn, $sformatf("Transaction-%0d: program a random gpio register", tr_num),
                     UVM_HIGH)
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
           // First, stop driving gpio_i
           undrive_gpio_in();
           // Randomize csr value
           `DV_CHECK_STD_RANDOMIZE_FATAL(csr_val)
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
 
           randcase
             1: begin
 
-              //Skip if a reset is on going...
+              //Skip if a reset is ongoing...
               if (!cfg.clk_rst_vif.rst_n) break;
               // Add single clock cycle delay to avoid update and predict at
               // the same time due to weak pull-up after undrive_gpio_in()
               cfg.clk_rst_vif.wait_clks(1);
 
-              //Skip if a reset is on going...
+              //Skip if a reset is ongoing...
               if (!cfg.clk_rst_vif.rst_n) break;
               // DATA_IN register is RO, but writing random value to it
               // should have no impact on gpio functionality
@@ -93,7 +93,7 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
         1: begin : read_any_gpio_data_reg
           `uvm_info(`gfn, $sformatf("Transaction-%0d: read random register)", tr_num), UVM_LOW)
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
 
           randcase

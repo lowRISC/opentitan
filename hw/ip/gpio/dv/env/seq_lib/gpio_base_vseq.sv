@@ -12,7 +12,6 @@ class gpio_base_vseq extends cip_base_vseq #(
   // Delay between consecutive transactions
   rand uint delay;
   bit  do_init_reset = 1;
-
   constraint delay_c {
     delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
   }

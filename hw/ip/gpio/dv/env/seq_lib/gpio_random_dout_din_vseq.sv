@@ -28,7 +28,7 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_LOW)
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
 
-      //Skip if a reset is on going...
+      //Skip if a reset is ongoing...
       if (!cfg.clk_rst_vif.rst_n) return;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       cfg.clk_rst_vif.wait_clks(delay);
@@ -44,16 +44,16 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           // drive gpio_vif after setting all output enables to 0's
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
 
           drive_gpio_in(gpio_i);
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
           cfg.clk_rst_vif.wait_clks(1);
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
@@ -63,12 +63,12 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
           `uvm_info(`gfn, $sformatf("Transaction-%0d: program register(s) to random value(s)",
                                     tr_num), UVM_LOW)
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
           // First, stop driving gpio_i
           undrive_gpio_in();
 
-          //Skip if a reset is on going...
+          //Skip if a reset is ongoing...
           if (!cfg.clk_rst_vif.rst_n) break;
 
           if ($urandom_range(0, 1)) begin

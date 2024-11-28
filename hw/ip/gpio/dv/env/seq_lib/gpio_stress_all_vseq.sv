@@ -40,8 +40,6 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
 
       `uvm_info(`gfn, $sformatf("End of sequence %0s with seq_idx = %0d", gpio_vseq.get_name(),
           seq_idx), UVM_HIGH)
-
-
     end
   endtask : body
 endclass
