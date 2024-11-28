@@ -586,6 +586,16 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
+def get_clock_lpg_path(top: object, clk_name: str, unmanaged_clock: bool = False):
+    """Return the appropriate LPG clock path given name
+    """
+    if unmanaged_clock:
+        return top['unmanaged_clocks'].get_clock_by_signal_name(clk_name).cg_en_signal
+    else:
+        clk_name = clk_name.split('clk_')[-1]
+        return top['clocks'].hier_paths['lpg'] + clk_name
+
+
 def get_reset_path(top: object, reset: Union[str, object], shadow_sel: bool = False,
                    unmanaged_reset: bool = False):
     """Return the appropriate reset path given name
