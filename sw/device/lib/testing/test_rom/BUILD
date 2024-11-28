@@ -168,6 +168,11 @@ cc_library(
         "test_rom.c",
         "test_rom_start.S",
     ],
+    local_defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":target_test_rom_lib",
@@ -176,8 +181,6 @@ cc_library(
         "//hw/top:clkmgr_c_regs",
         "//hw/top:csrng_c_regs",
         "//hw/top:edn_c_regs",
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top:sensor_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
@@ -188,7 +191,6 @@ cc_library(
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:pinmux",
@@ -198,14 +200,25 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-    ],
+    ] + opentitan_if_ip(
+        "entropy_src",
+        ["//hw/top:entropy_src_c_regs"],
+        [],
+    ) + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            "//hw/top:flash_ctrl_c_regs",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+        ],
+        [],
+    ),
 )
 
 opentitan_test(
