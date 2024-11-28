@@ -13,6 +13,7 @@ load(
     "verilator_params",
 )
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
@@ -81,9 +82,17 @@ cc_library(
     ],
 )
 
+OTTF_REGION_ALIAS = opentitan_select_top(
+    {
+        "darjeeling": {"@@OTTF_REGION_ALIAS@@": "ctn"},
+    },
+    {"@@OTTF_REGION_ALIAS@@": "eflash"},
+)
+
 ld_library(
     name = "ottf_ld_common",
     includes = ["ottf_common.ld"],
+    substitutions = OTTF_REGION_ALIAS,
     deps = [
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
@@ -91,56 +100,80 @@ ld_library(
 )
 
 ld_library(
+    name = "ottf_ld_region_alias",
+    includes = ["ottf_region_alias.ld"],
+    substitutions = OTTF_REGION_ALIAS,
+)
+
+COMMON_LINKER_SUBST = {
+    "@@TOP_MEMORY_LD@@": "$(location //hw/top:top_ld)",
+    "@@OTTF_LD_ALIAS@@": "$(location :ottf_ld_region_alias)",
+    "@@OTTF_LD_COMMON@@": "$(location :ottf_ld_common)",
+}
+
+ld_library(
     name = "ottf_ld_silicon_creator_slot_a",
     script = "ottf_silicon_creator_a.ld",
+    substitutions = COMMON_LINKER_SUBST,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
 ld_library(
     name = "ottf_ld_silicon_creator_slot_b",
     script = "ottf_silicon_creator_b.ld",
+    substitutions = COMMON_LINKER_SUBST,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
 ld_library(
     name = "ottf_ld_silicon_creator_slot_virtual",
     script = "ottf_silicon_creator_virtual.ld",
+    substitutions = COMMON_LINKER_SUBST | OTTF_REGION_ALIAS,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
 ld_library(
     name = "ottf_ld_silicon_owner_slot_a",
     script = "ottf_silicon_owner_a.ld",
+    substitutions = COMMON_LINKER_SUBST,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
 ld_library(
     name = "ottf_ld_silicon_owner_slot_b",
     script = "ottf_silicon_owner_b.ld",
+    substitutions = COMMON_LINKER_SUBST,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
 ld_library(
     name = "ottf_ld_silicon_owner_slot_virtual",
     script = "ottf_silicon_owner_virtual.ld",
+    substitutions = COMMON_LINKER_SUBST | OTTF_REGION_ALIAS,
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        ":ottf_ld_region_alias",
+        "//hw/top:top_ld",
     ],
 )
 
