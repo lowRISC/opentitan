@@ -531,9 +531,9 @@ cc_library(
     srcs = ["retention_sram.c"],
     hdrs = ["retention_sram.h"],
     deps = [
+        "//hw/top:devicetables",
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
-        "//hw/top:devicetables",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

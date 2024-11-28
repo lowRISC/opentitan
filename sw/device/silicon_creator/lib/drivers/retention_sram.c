@@ -6,11 +6,11 @@
 
 #include <assert.h>
 
+#include "devicetables.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/memory.h"
 
 #include "sram_ctrl_regs.h"  // Generated.
-#include "devicetables.h"
 
 static const dt_sram_ctrl_t *kSramCtrlDt = &kDtSramCtrl[kDtIndexSramCtrlRetAon];
 
