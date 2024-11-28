@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -18,8 +19,22 @@ package(default_visibility = ["//visibility:public"])
 ld_library(
     name = "linker_script",
     script = "test_rom.ld",
+    substitutions = {
+        "@@TOP_MEMORY_LD@@": "$(location //hw/top:top_ld)",
+    } | opentitan_select_top(
+        {
+            "darjeeling": {
+                "@@TEST_ROM_REGION@@": "rom0",
+                "@@TEST_CODE_REGION@@": "ctn",
+            },
+        },
+        {
+            "@@TEST_ROM_REGION@@": "rom",
+            "@@TEST_CODE_REGION@@": "eflash",
+        },
+    ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
         "//sw/device:info_sections",
         "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
