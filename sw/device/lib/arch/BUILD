@@ -88,8 +88,8 @@ cc_library(
     deps = [
         ":device",
         "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top:top_lib",
         "//hw/top:uart_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
 
