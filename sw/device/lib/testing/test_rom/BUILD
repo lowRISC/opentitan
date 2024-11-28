@@ -42,13 +42,17 @@ ld_library(
 
 opentitan_binary(
     name = "test_rom",
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw310",
-        "//hw/top_earlgrey:fpga_cw305",
-        "//hw/top_earlgrey:fpga_cw340",
-        "//hw/top_earlgrey:sim_dv_base",
-        "//hw/top_earlgrey:sim_verilator_base",
-    ],
+    exec_env = ["//hw:sim_dv_base"] + opentitan_select_top(
+        {
+            "earlgrey": [
+                "//hw/top_earlgrey:fpga_cw310",
+                "//hw/top_earlgrey:fpga_cw305",
+                "//hw/top_earlgrey:fpga_cw340",
+                "//hw/top_earlgrey:sim_verilator_base",
+            ],
+        },
+        [],
+    ),
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
@@ -116,12 +120,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "darjeeling_test_rom_lib",
+    srcs = [
+        "darjeeling_fake_driver_funcs.c",
+    ],
+    deps = [
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 alias(
     name = "target_test_rom_lib",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
-        "//conditions:default": ":earl_grey_test_rom_lib",
-    }),
+    actual = opentitan_select_top(
+        {
+            "darjeeling": ":darjeeling_test_rom_lib",
+            # "english_breakfast": ":english_breakfast_test_rom_lib",
+        },
+        ":earl_grey_test_rom_lib",
+    ),
     visibility = ["//visibility:private"],
 )
 
