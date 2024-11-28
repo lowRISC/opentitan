@@ -15,6 +15,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"lc_ctrl__dmi", '{
         '{32'h00020000, 32'h00020fff}
+    }},
+    '{"soc_dbg_ctrl__jtag", '{
+        '{32'h00002300, 32'h00002307}
 }}};
 
   // List of Xbar hosts
@@ -22,5 +25,6 @@ tl_host_t xbar_hosts[$] = '{
     '{"dbg", 0, '{
         "rv_dm__dbg",
         "mbx_jtag__soc",
-        "lc_ctrl__dmi"}}
+        "lc_ctrl__dmi",
+        "soc_dbg_ctrl__jtag"}}
 };

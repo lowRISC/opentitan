@@ -44,6 +44,7 @@
       rv_dm.dbg
       mbx_jtag.soc
       lc_ctrl.dmi
+      soc_dbg_ctrl.jtag
     ]
   }
   nodes:
@@ -118,6 +119,27 @@
             soc_dbg: 0x20000
           }
           size_byte: 0x1000
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: soc_dbg_ctrl.jtag
+      type: device
+      clock: clk_peri_i
+      reset: rst_peri_ni
+      pipeline: false
+      inst_type: soc_dbg_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_dbg: 0x2300
+          }
+          size_byte: 0x8
         }
       ]
       xbar: false
