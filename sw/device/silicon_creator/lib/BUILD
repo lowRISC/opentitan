@@ -94,7 +94,7 @@ cc_library(
     srcs = ["boot_log.c"],
     hdrs = ["boot_log.h"],
     deps = [
-        ":nonce",
+        ":nonce_header",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib:error",
@@ -276,7 +276,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -459,10 +459,17 @@ cc_library(
 )
 
 cc_library(
+    name = "nonce_header",
+    hdrs = ["nonce.h"],
+)
+
+cc_library(
     name = "nonce",
     srcs = ["nonce.c"],
-    hdrs = ["nonce.h"],
-    deps = ["//sw/device/silicon_creator/lib/drivers:rnd"],
+    deps = [
+        ":nonce_header",
+        "//sw/device/silicon_creator/lib/drivers:rnd",
+    ],
 )
 
 cc_library(
