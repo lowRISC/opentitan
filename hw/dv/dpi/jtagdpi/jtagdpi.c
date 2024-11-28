@@ -176,14 +176,12 @@ void jtagdpi_close(void *ctx_void) {
 void jtagdpi_tick(void *ctx_void, svBit *tck, svBit *tms, svBit *tdi,
                   svBit *trst_n, svBit *srst_n, const svBit tdo) {
   struct jtagdpi_ctx *ctx = (struct jtagdpi_ctx *)ctx_void;
-
-  ctx->tdo = tdo;
-
-  // TODO: Evaluate moving this functionality into a separate thread
-  if (ctx) {
-    update_jtag_signals(ctx);
+  if (!ctx) {
+    return;
   }
 
+  ctx->tdo = tdo;
+  update_jtag_signals(ctx);
   *tdi = ctx->tdi;
   *tms = ctx->tms;
   *tck = ctx->tck;
