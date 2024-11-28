@@ -364,6 +364,22 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pinmux_mio_select_output(const dif_pinmux_t *pinmux,
                                           dt_pad_t pad, dt_pin_t pin);
 
+/** Convert a `dt_pad_t` into a pair (`dif_pinmux_index_t`,
+ * `dif_pinmux_pad_kind_t`) that can be used for pad control functions
+ * (`dif_pinmux_pad_*` functions).
+ *
+ * This function is there to handle legacy calls to various pad functions.
+ *
+ * @param pad A pad.
+ * @param index_out[out] The index of this pad.
+ * @param type_out[out] The type of pad.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_pad_from_dt_pad(dt_pad_t pad,
+                                        dif_pinmux_index_t *index_out,
+                                        dif_pinmux_pad_kind_t *type_out);
+
 /**
  * Writes attributes for a pad.
  *
@@ -399,6 +415,18 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
                                         dif_pinmux_pad_kind_t type,
                                         dif_pinmux_pad_attr_t attrs_in,
                                         dif_pinmux_pad_attr_t *attrs_out);
+
+/**
+ * Write attributes for a pad.
+ *
+ * See `dif_pinmux_pad_write_attrs` except that the pad is represented by
+ * a `dt_pad_t` instead of a pair (index,type).
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_pinmux_pad_write_attrs_dt(const dif_pinmux_t *pinmux,
+                                           dt_pad_t pad,
+                                           dif_pinmux_pad_attr_t attrs_in,
+                                           dif_pinmux_pad_attr_t *attrs_out);
 
 /**
  * Get attributes for a pad.

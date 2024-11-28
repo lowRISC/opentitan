@@ -48,11 +48,21 @@ static bool dif_pinmux_get_sleep_status_bit(dif_pinmux_pad_kind_t kind,
   switch (kind) {
     case kDifPinmuxPadKindMio:
       num_pads = PINMUX_PARAM_N_MIO_PADS;
+      // Only platforms with few MIOs, there is a single register with no index.
+#ifdef PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET
       reg_base = PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
+#else
+      reg_base = PINMUX_MIO_PAD_SLEEP_STATUS_REG_OFFSET;
+#endif
       break;
     case kDifPinmuxPadKindDio:
       num_pads = PINMUX_PARAM_N_DIO_PADS;
+      // Only platforms with few DIOs, there is a single register with no index.
+#ifdef PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET
+      reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
+#else
       reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET;
+#endif
       break;
     default:
       return false;
@@ -332,6 +342,39 @@ dif_result_t dif_pinmux_pad_write_attrs(const dif_pinmux_t *pinmux,
     return kDifError;
   }
   return kDifOk;
+}
+
+dif_result_t dif_pinmux_pad_from_dt_pad(dt_pad_t pad,
+                                        dif_pinmux_index_t *index_out,
+                                        dif_pinmux_pad_kind_t *type_out) {
+  if (index_out == NULL || type_out == NULL) {
+    return kDifBadArg;
+  }
+  switch (dt_pad_type(pad)) {
+    case kDtPadTypeMio:
+      *type_out = kDifPinmuxPadKindMio;
+      *index_out = dt_pad_mio_pad(pad);
+      return kDifOk;
+    case kDtPadTypeDio:
+      *type_out = kDifPinmuxPadKindDio;
+      *index_out = dt_pad_dio_pad(pad);
+      return kDifOk;
+    default:
+      return kDifBadArg;
+  }
+}
+
+dif_result_t dif_pinmux_pad_write_attrs_dt(const dif_pinmux_t *pinmux,
+                                           dt_pad_t pad,
+                                           dif_pinmux_pad_attr_t attrs_in,
+                                           dif_pinmux_pad_attr_t *attrs_out) {
+  dif_pinmux_index_t index;
+  dif_pinmux_pad_kind_t type;
+  dif_result_t res = dif_pinmux_pad_from_dt_pad(pad, &index, &type);
+  if (res == kDifOk) {
+    res = dif_pinmux_pad_write_attrs(pinmux, index, type, attrs_in, attrs_out);
+  }
+  return res;
 }
 
 dif_result_t dif_pinmux_pad_get_attrs(const dif_pinmux_t *pinmux,
