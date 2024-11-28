@@ -173,10 +173,11 @@
             stage: V3
             si_stage: SV2
             lc_states: ["PROD"]
-            tests: []
+            tests: ["chip_sw_keymgr_derive_attestation"]
             bazel: [
               // Covers all points in the test except for the software binding registers.
               "//sw/device/silicon_creator/lib:otbn_boot_services_functest",
+              "//sw/device/tests:keymgr_derive_attestation_test",
             ]
     }
     {
@@ -200,8 +201,8 @@
             stage: V3
             si_stage: SV3
             lc_states: ["PROD"]
-            tests: []
-            bazel: []
+            tests: ["chip_sw_keymgr_derive_sealing"]
+            bazel: ["//sw/device/tests:keymgr_derive_sealing_test"]
     }
   ]
 }
