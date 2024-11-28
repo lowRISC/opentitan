@@ -5,7 +5,23 @@
 """Rules for declaring linker scripts and linker script fragments."""
 
 def _ld_library_impl(ctx):
-    files = [] + ctx.files.includes
+    substitutions = {
+        key: ctx.expand_location(subst)
+        for (key, subst) in ctx.attr.substitutions.items()
+    }
+
+    def get_file(f):
+        if ctx.attr.substitutions == {}:
+            return f
+        fout = ctx.actions.declare_file(ctx.label.name + "_" + f.basename)
+        ctx.actions.expand_template(
+            template = f,
+            output = fout,
+            substitutions = substitutions,
+        )
+        return fout
+
+    files = [get_file(f) for f in ctx.files.includes]
     user_link_flags = []
 
     # Disable non-volatile scratch region and counters if building for english
@@ -21,12 +37,15 @@ def _ld_library_impl(ctx):
         ]
 
     if ctx.file.script:
-        files += ctx.files.script
+        files.append(get_file(ctx.file.script))
         user_link_flags += [
-            "-Wl,-T,{}".format(ctx.file.script.path),
+            "-Wl,-T,{}".format(files[-1].path),
         ]
 
     return [
+        DefaultInfo(
+            files = depset(files),
+        ),
         cc_common.merge_cc_infos(
             direct_cc_infos = [CcInfo(
                 linking_context = cc_common.create_linking_context(
@@ -57,6 +76,10 @@ ld_library = rule(
     alignment for segments and not to include the headers in the first segment
     (this is the -nmagic option of GNU ld). See https://reviews.llvm.org/D61201
     for more details.
+
+    If the substitution dictionary is not empty, the content of the file will
+    be expanded using bazel's `actions.expand_template`. If some substitutions
+    refer to label not present in `deps`, they need to be added to `subst_deps`.
     """,
     attrs = {
         "script": attr.label(allow_single_file = True),
@@ -71,5 +94,7 @@ ld_library = rule(
         "non_page_aligned_segments": attr.bool(
             default = False,
         ),
+        "substitutions": attr.string_dict(),
+        "subst_deps": attr.label_list(),
     },
 )
