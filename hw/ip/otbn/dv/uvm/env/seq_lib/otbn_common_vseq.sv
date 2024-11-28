@@ -10,34 +10,6 @@ class otbn_common_vseq extends otbn_base_vseq;
   }
   `uvm_object_new
 
-  // Write rubbish to the storage backing memory for a prim_fifo_sync
-  function void splat_fifo_storage(string fifo_path, int unsigned depth);
-    for (int unsigned i = 0; i < depth; i++) begin
-      string storage_path = $sformatf("%0s.gen_normal_fifo.storage[%0d]", fifo_path, i);
-      bit [31:0] value;
-      randcase
-        1: value = 0;
-        1: value = '1;
-        1: value = $urandom;
-      endcase
-      `DV_CHECK_FATAL(uvm_hdl_deposit(storage_path, value))
-    end
-  endfunction
-
-  task dut_init(string reset_kind = "HARD");
-    // Zero the contents of the DMEM/IMEM request fifos if we're about to do fault injection on
-    // their counters. This avoids a problem where we generate a spurious request when the FIFO was
-    // actually empty and lots of signals in the design become X. This includes OTBN's status signal
-    // and we would never get to the "LOCKED" status because we're stuck at X. Zeroing the backing
-    // memory avoids that problem.
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_dmem.u_reqfifo", 1);
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_dmem.u_sramreqfifo", 1);
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_imem.u_reqfifo", 1);
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_imem.u_sramreqfifo", 1);
-
-    super.dut_init(reset_kind);
-  endtask
-
   virtual task body();
     enable_base_alert_checks = 1'b1;
 

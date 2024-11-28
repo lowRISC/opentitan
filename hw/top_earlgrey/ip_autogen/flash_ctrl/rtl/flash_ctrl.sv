@@ -7,6 +7,7 @@
 //
 
 `include "prim_assert.sv"
+`include "prim_fifo_assert.svh"
 
 module flash_ctrl
   import flash_ctrl_pkg::*;  import flash_ctrl_reg_pkg::*;
@@ -1441,27 +1442,17 @@ module flash_ctrl
    `define PHY u_eflash.gen_flash_cores[i]
    `define PHY_CORE `PHY.u_core
    for (genvar i=0; i<NumBanks; i++) begin : gen_phy_cnt_errs
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoWPtr_A,
-       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr, alert_tx_o[1])
+     `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(PhyRspFifo,
+                                                  `PHY.u_host_rsp_fifo,
+                                                  alert_tx_o[1])
 
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRspFifoRPtr_A,
-       `PHY.u_host_rsp_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr, alert_tx_o[1])
+     `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdRspFifo,
+                                                 `PHY_CORE.u_rd.u_rsp_order_fifo,
+                                                 alert_tx_o[1])
 
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoWPtr_A,
-       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-       alert_tx_o[1])
-
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdRspFifoRPtr_A,
-       `PHY_CORE.u_rd.u_rsp_order_fifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-       alert_tx_o[1])
-
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoWPtr_A,
-       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-       alert_tx_o[1])
-
-     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(PhyRdDataFifoRPtr_A,
-       `PHY_CORE.u_rd.u_rd_storage.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-       alert_tx_o[1])
+     `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(PhyRdDataFifo,
+                                                 `PHY_CORE.u_rd.u_rd_storage,
+                                                 alert_tx_o[1])
 
      // Outstanding count error is merged into host_gnt_err instead of being an
      // individual count error.
@@ -1471,53 +1462,29 @@ module flash_ctrl
    `endif
 
   // Alert assertions for redundant counters.
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdRspFifoWptrCheck_A,
-      u_to_rd_fifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
+                                               u_to_rd_fifo.u_rspfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdRspFifoRptrCheck_A,
-      u_to_rd_fifo.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdSramReqFifo,
+                                               u_to_rd_fifo.u_sramreqfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdSramReqFifoWptrCheck_A,
-      u_to_rd_fifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdReqFifo,
+                                               u_to_rd_fifo.u_reqfifo,
+                                               alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdSramReqFifoRptrCheck_A,
-      u_to_rd_fifo.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashRspFifo,
+                                              u_tl_adapter_eflash.u_rspfifo,
+                                              alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdReqFifoWptrCheck_A,
-      u_to_rd_fifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashSramReqFifo,
+                                              u_tl_adapter_eflash.u_sramreqfifo,
+                                              alert_tx_o[1])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RdReqFifoRptrCheck_A,
-      u_to_rd_fifo.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashRspFifoWptrCheck_A,
-      u_tl_adapter_eflash.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashRspFifoRptrCheck_A,
-      u_tl_adapter_eflash.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashSramReqFifoWptrCheck_A,
-      u_tl_adapter_eflash.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashSramReqFifoRptrCheck_A,
-      u_tl_adapter_eflash.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashReqFifoWptrCheck_A,
-      u_tl_adapter_eflash.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[1])
-
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(EflashReqFifoRptrCheck_A,
-      u_tl_adapter_eflash.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[1])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashReqFifo,
+                                              u_tl_adapter_eflash.u_reqfifo,
+                                              alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_core, alert_tx_o[1])

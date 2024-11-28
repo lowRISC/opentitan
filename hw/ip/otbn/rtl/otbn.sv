@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 `include "prim_assert.sv"
+`include "prim_fifo_assert.svh"
 
 /**
  * OpenTitan Big Number Accelerator (OTBN)
@@ -1434,41 +1435,23 @@ module otbn
       u_otbn_core.u_otbn_rf_bignum.gen_rf_bignum_ff.u_otbn_rf_bignum_inner.u_prim_onehot_check,
       alert_tx_o[AlertFatal])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemRspFifoWptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemRspFifoRptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemSramReqFifoWptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemSramReqFifoRptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemReqFifoWptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DmemReqFifoRptrCheck_A,
-      u_tlul_adapter_sram_dmem.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemRspFifo,
+                                               u_tlul_adapter_sram_dmem.u_rspfifo,
+                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemSramReqFifo,
+                                               u_tlul_adapter_sram_dmem.u_sramreqfifo,
+                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(DmemReqFifo,
+                                               u_tlul_adapter_sram_dmem.u_reqfifo,
+                                               alert_tx_o[AlertFatal])
 
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemRspFifoWptrCheck_A,
-      u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemRspFifoRptrCheck_A,
-      u_tlul_adapter_sram_imem.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemSramReqFifoWptrCheck_A,
-      u_tlul_adapter_sram_imem.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemSramReqFifoRptrCheck_A,
-      u_tlul_adapter_sram_imem.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemReqFifoWptrCheck_A,
-      u_tlul_adapter_sram_imem.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
-      alert_tx_o[AlertFatal])
-  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ImemReqFifoRptrCheck_A,
-      u_tlul_adapter_sram_imem.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
-      alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemRspFifo,
+                                               u_tlul_adapter_sram_imem.u_rspfifo,
+                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemSramReqFifo,
+                                               u_tlul_adapter_sram_imem.u_sramreqfifo,
+                                               alert_tx_o[AlertFatal])
+  `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(ImemReqFifo,
+                                               u_tlul_adapter_sram_imem.u_reqfifo,
+                                               alert_tx_o[AlertFatal])
 endmodule
