@@ -127,8 +127,8 @@ module top_${top["name"]} #(
 
   // Unmanaged external clocks
     % for clk in top['unmanaged_clocks']._asdict().values():
-  input                        clk_${clk.name}_i,
-  input prim_mubi_pkg::mubi4_t cg_${clk.name}_i,
+  input                        ${clk.signal_name},
+  input prim_mubi_pkg::mubi4_t ${clk.cg_en_signal},
     % endfor
   % endif
   % if len(top['unmanaged_resets']._asdict().values()) > 0:
@@ -377,7 +377,7 @@ assert isinstance(clocks, Clocks)
 typed_clocks = clocks.typed_clocks()
 known_clocks = {}
 for clk in typed_clocks.all_clocks():
-  known_clocks.update({top['clocks'].hier_paths['lpg'] + clk.split('clk_')[-1]: 1})
+  known_clocks.update({lib.get_clock_lpg_path(top, clk): 1})
 
 # get all known resets and add them to a dict
 # this is used to generate the tie-off assignments further below
@@ -401,10 +401,7 @@ for rst in output_rsts:
 % for k, lpg in enumerate(top['alert_lpgs']):
   // ${lpg['name']}
 <%
-  if lpg['unmanaged_clock']:
-    cg_en = 'cg_' + lpg['clock_connection'].split('clk_')[-1]
-  else:
-    cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
+  cg_en = lib.get_clock_lpg_path(top, lpg['clock_connection'], lpg['unmanaged_clock'])
   rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
   known_clocks[cg_en] = 0
   known_resets[rst_en] = 0
@@ -418,7 +415,7 @@ for rst in output_rsts:
   % for k, lpg in enumerate(lpgs):
   // ${lpg['name']}
 <%
-    cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
+    cg_en = lib.get_clock_lpg_path(top, lpg['clock_connection'], lpg['unmanaged_clock'])
     rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
     known_clocks[cg_en] = 0
     known_resets[rst_en] = 0
