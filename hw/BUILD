@@ -5,12 +5,15 @@
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 
+package(default_visibility = ["//visibility:public"])
+
 # This configuration exposes fusesoc's "verilator_options" option to the
 # command line. This is intended to allow CI to specifically build a single
 # -threaded Verilated model to suit it's resource constraints.
 # By default, the Verilated model should be built to
 # run with 4 threads.
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 string_list_flag(
     name = "verilator_options",
@@ -19,6 +22,25 @@ string_list_flag(
         "4",
     ],
 )
+
+# HACK
+# This alias points to the correct sim_dv execution environment based on the top.
+[
+    alias(
+        name = env,
+        actual = opentitan_select_top(
+            {
+                "earlgrey": "//hw/top_earlgrey:{}".format(env),
+                "darjeeling": "//hw/top_darjeeling:{}".format(env),
+            },
+            "//invalid/top",
+        ),
+    )
+    for env in [
+        "sim_dv_base",
+        "sim_dv",
+    ]
+]
 
 # This configuration exposes fusesoc's "make_options" to enable parallel
 # compilation of the verilated model. Compilation takes about 30m of cpu time
