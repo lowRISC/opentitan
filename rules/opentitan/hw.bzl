@@ -125,3 +125,16 @@ def select_top_lib(name, all_tops, top):
         name = name,
         actual = libs[0],
     )
+
+def select_top_ld(name, all_tops, top):
+    """
+    Create an alias to the top library.
+    """
+    libs = [_top.top_ld for _top in all_tops if _top.name == top]
+    if len(libs) == 0:
+        fail("not top found with name {}".format(top))
+
+    native.alias(
+        name = name,
+        actual = libs[0],
+    )
