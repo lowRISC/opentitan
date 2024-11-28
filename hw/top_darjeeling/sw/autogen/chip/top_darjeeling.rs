@@ -735,6 +735,20 @@ pub const MBX_PCIE1_CORE_BASE_ADDR: usize = 0x22040100;
 /// `MBX_PCIE1_CORE_BASE_ADDR + MBX_PCIE1_CORE_SIZE_BYTES`.
 pub const MBX_PCIE1_CORE_SIZE_BYTES: usize = 0x80;
 
+/// Peripheral base address for core device on soc_dbg_ctrl in top darjeeling.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const SOC_DBG_CTRL_CORE_BASE_ADDR: usize = 0x30160000;
+
+/// Peripheral size for core device on soc_dbg_ctrl in top darjeeling.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #SOC_DBG_CTRL_CORE_BASE_ADDR and
+/// `SOC_DBG_CTRL_CORE_BASE_ADDR + SOC_DBG_CTRL_CORE_SIZE_BYTES`.
+pub const SOC_DBG_CTRL_CORE_SIZE_BYTES: usize = 0x20;
+
 /// Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -1494,8 +1508,10 @@ pub enum AlertPeripheral {
     MbxPcie0 = 39,
     /// mbx_pcie1
     MbxPcie1 = 40,
+    /// soc_dbg_ctrl
+    SocDbgCtrl = 41,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -1695,14 +1711,18 @@ pub enum AlertId {
     MbxPcie1FatalFault = 93,
     /// mbx_pcie1_recov_fault
     MbxPcie1RecovFault = 94,
+    /// soc_dbg_ctrl_fatal_fault
+    SocDbgCtrlFatalFault = 95,
+    /// soc_dbg_ctrl_recov_ctrl_update_err
+    SocDbgCtrlRecovCtrlUpdateErr = 96,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 95,
+    RvCoreIbexFatalSwErr = 97,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 96,
+    RvCoreIbexRecovSwErr = 98,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 97,
+    RvCoreIbexFatalHwErr = 99,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 98,
+    RvCoreIbexRecovHwErr = 100,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -1804,10 +1824,12 @@ impl TryFrom<u32> for AlertId {
             92 => Ok(Self::MbxPcie0RecovFault),
             93 => Ok(Self::MbxPcie1FatalFault),
             94 => Ok(Self::MbxPcie1RecovFault),
-            95 => Ok(Self::RvCoreIbexFatalSwErr),
-            96 => Ok(Self::RvCoreIbexRecovSwErr),
-            97 => Ok(Self::RvCoreIbexFatalHwErr),
-            98 => Ok(Self::RvCoreIbexRecovHwErr),
+            95 => Ok(Self::SocDbgCtrlFatalFault),
+            96 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
+            97 => Ok(Self::RvCoreIbexFatalSwErr),
+            98 => Ok(Self::RvCoreIbexRecovSwErr),
+            99 => Ok(Self::RvCoreIbexFatalHwErr),
+            100 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2144,7 +2166,7 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 160] = [
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 101] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2335,6 +2357,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
     AlertPeripheral::MbxPcie1,
     // MbxPcie1RecovFault -> AlertPeripheral::MbxPcie1
     AlertPeripheral::MbxPcie1,
+    // SocDbgCtrlFatalFault -> AlertPeripheral::SocDbgCtrl
+    AlertPeripheral::SocDbgCtrl,
+    // SocDbgCtrlRecovCtrlUpdateErr -> AlertPeripheral::SocDbgCtrl
+    AlertPeripheral::SocDbgCtrl,
     // RvCoreIbexFatalSwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> AlertPeripheral::RvCoreIbex

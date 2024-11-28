@@ -25,6 +25,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_SRAM_CTRL_RET_AON__RAM  = 32'h 30600000;
   localparam logic [31:0] ADDR_SPACE_AON_TIMER_AON           = 32'h 30470000;
   localparam logic [31:0] ADDR_SPACE_AST                     = 32'h 30480000;
+  localparam logic [31:0] ADDR_SPACE_SOC_DBG_CTRL__CORE      = 32'h 30160000;
 
   localparam logic [31:0] ADDR_MASK_UART0                   = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_I2C0                    = 32'h 0000007f;
@@ -45,9 +46,10 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET_AON__RAM  = 32'h 00000fff;
   localparam logic [31:0] ADDR_MASK_AON_TIMER_AON           = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_AST                     = 32'h 000003ff;
+  localparam logic [31:0] ADDR_MASK_SOC_DBG_CTRL__CORE      = 32'h 0000001f;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 19;
+  localparam int N_DEVICE = 20;
 
   typedef enum int {
     TlUart0 = 0,
@@ -68,7 +70,8 @@ package tl_peri_pkg;
     TlSramCtrlRetAonRegs = 15,
     TlSramCtrlRetAonRam = 16,
     TlAonTimerAon = 17,
-    TlAst = 18
+    TlAst = 18,
+    TlSocDbgCtrlCore = 19
   } tl_device_e;
 
   typedef enum int {

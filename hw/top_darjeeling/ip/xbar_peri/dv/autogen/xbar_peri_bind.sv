@@ -128,5 +128,11 @@ module xbar_peri_bind;
     .h2d    (tl_ast_o),
     .d2h    (tl_ast_i)
   );
+  bind xbar_peri tlul_assert #(.EndpointType("Host")) tlul_assert_device_soc_dbg_ctrl__core (
+    .clk_i  (clk_peri_i),
+    .rst_ni (rst_peri_ni),
+    .h2d    (tl_soc_dbg_ctrl__core_o),
+    .d2h    (tl_soc_dbg_ctrl__core_i)
+  );
 `endif
 endmodule
