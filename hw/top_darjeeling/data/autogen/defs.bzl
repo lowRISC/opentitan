@@ -44,6 +44,7 @@ DARJEELING = opentitan_top(
     name = "darjeeling",
     hjson = "//hw/top_darjeeling/data/autogen:top_darjeeling.gen.hjson",
     top_lib = "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+    top_ld = "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ips = [
         AES,
         ALERT_HANDLER,
