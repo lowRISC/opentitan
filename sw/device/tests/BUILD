@@ -5059,7 +5059,7 @@ test_suite(
 [
     opentitan_test(
         name = "rv_dm_mem_access_{}".format(test_cfg["name"]),
-        srcs = ["example_test_from_flash.c"],
+        srcs = ["rv_dm_delayed_enable.c"],
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
@@ -5068,14 +5068,24 @@ test_suite(
             timeout = "moderate",
             needs_jtag = True,
             otp = test_cfg["otp"],
+            rv_dm_delayed_en = test_cfg["rv_dm_delayed_en"],
             tags = [
                 "lc_{}".format(test_cfg["lc_state"]),
-            ] + (["broken"] if "delayed_enabled" in test_cfg["name"] else []),
-            test_cmd = " --rom={rom:binary}",
+            ],
+            test_cmd = """
+                --rom={rom:binary}
+                --bootstrap="{firmware}"
+                {rv_dm_delayed_en}
+            """,
             test_harness = "//sw/host/tests/chip/rv_dm:mem_access",
         ),
         deps = [
+            "//sw/device/lib/base:multibits",
+            "//sw/device/lib/dif:lc_ctrl",
+            "//sw/device/lib/dif:rv_dm",
+            "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
+            "//sw/device/lib/testing:lc_ctrl_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
