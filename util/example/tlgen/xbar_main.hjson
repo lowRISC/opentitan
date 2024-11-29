@@ -40,7 +40,6 @@
       reset: "rst_jtag_ni",
 
       xbar: false
-      pipeline_byp: false
     },
     { name:  "rom",
       type:  "device",
