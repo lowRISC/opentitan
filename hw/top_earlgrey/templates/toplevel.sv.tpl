@@ -661,7 +661,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${v}),
   % endfor
   % for port, reset in xbar["reset_connections"].items():
-    .${port} (${lib.get_reset_path(top, reset)}),
+    .${port} (${lib.get_reset_path(top, reset, False, is_unmanaged_reset(top, reset['name']))}),
   % endfor
 
   ## Inter-module signal

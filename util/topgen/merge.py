@@ -825,6 +825,8 @@ def amend_resets(top, name_to_block):
     # unless otherwise stated, xbars always fall into the default power domain.
     for xbar in top["xbar"]:
         for reset in xbar['reset_connections'].values():
+            if is_unmanaged_reset(top, reset['name']):
+                continue
             top_resets.add_reset_domain(reset['name'], top['power']['default'])
 
     # add entry to top level json
