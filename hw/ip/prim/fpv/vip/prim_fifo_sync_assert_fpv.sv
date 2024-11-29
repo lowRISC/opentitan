@@ -26,7 +26,8 @@ module prim_fifo_sync_assert_fpv #(
   input              rready_i,
   input [Width-1:0]  rdata_o,
   input              full_o,
-  input [DepthW-1:0] depth_o
+  input [DepthW-1:0] depth_o,
+  input              err_o
 );
 
   /////////////////
@@ -220,5 +221,9 @@ module prim_fifo_sync_assert_fpv #(
   `ASSERT(WreadyNoSpaceBkwd_A, 1 |=> !wready_o -> depth_o == Depth)
   // elements ready to be read
   `ASSERT(RvalidNoElemskBkwd_A, !rvalid_o |-> depth_o == 0)
+
+  // The err_o signal should never go high. This isn't supposed to be triggerable without fault
+  // injection (which isn't modelled in FPV so the output should be constant zero).
+  `ASSERT(NoErrSignal_A, !err_o)
 
 endmodule : prim_fifo_sync_assert_fpv
