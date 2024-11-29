@@ -7,6 +7,7 @@ import topgen.lib as lib
 
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
+has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -90,6 +91,7 @@ ${helper.plic_interrupts.render(gen_cast=True)}
 /// Enumeration used to determine which set of IE, CC, threshold registers to
 /// access for a given interrupt target.
 ${helper.plic_targets.render()}
+% if has_alert_handler:
 
 /// Alert Handler Source Peripheral.
 ///
@@ -102,18 +104,21 @@ ${helper.alert_sources.render()}
 /// Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
 /// the same peripheral are guaranteed to be consecutive.
 ${helper.alert_alerts.render(gen_cast=True)}
+% endif
 
 /// PLIC Interrupt Source to Peripheral Map
 ///
 /// This array is a mapping from `${helper.plic_interrupts.short_name.as_rust_type()}` to
 /// `${helper.plic_sources.short_name.as_rust_type()}`.
 ${helper.plic_mapping.render_definition()}
+% if has_alert_handler:
 
 /// Alert Handler Alert Source to Peripheral Map
 ///
 /// This array is a mapping from `${helper.alert_alerts.short_name.as_rust_type()}` to
 /// `${helper.alert_sources.short_name.as_rust_type()}`.
 ${helper.alert_mapping.render_definition()}
+% endif
 % if has_pinmux:
 
 // PERIPH_INSEL ranges from 0 to NUM_MIO_PADS + 2 -1}

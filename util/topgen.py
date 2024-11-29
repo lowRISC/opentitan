@@ -832,11 +832,13 @@ def _process_top(
     # generating the Alert Handler
     create_alert_lpgs(topcfg, name_to_block)
 
-    # Generate Alert Handler
+    # Generate Alert Handler if there is an instance
     if not args.xbar_only:
-        generate_alert_handler(completecfg, out_path)
-        if args.alert_handler_only:
-            sys.exit()
+        if lib.find_module(completecfg['module'], 'alert_handler') or \
+           completecfg['name'] == 'englishbreakfast':
+            generate_alert_handler(completecfg, out_path)
+            if args.alert_handler_only:
+                sys.exit()
 
     # Generate outgoing alerts
     generate_outgoing_alerts(completecfg, out_path)
@@ -1319,9 +1321,17 @@ def main():
 
         # Auto-generate tests in "sw/device/tests/autogen" area.
         gencmd = warnhdr + GENCMD.format(top_name=top_name)
-        for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
+        for fname in ["plic_all_irqs_test.c", "BUILD"]:
             outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
             render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+                            outfile,
+                            helper=c_helper,
+                            gencmd=gencmd)
+
+        # Render alert tests only if there is really an alert handler
+        if lib.find_module(completecfg['module'], 'alert_handler'):
+            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / "alert_test.c"
+            render_template(TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
                             outfile,
                             helper=c_helper,
                             gencmd=gencmd)
