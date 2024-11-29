@@ -30,7 +30,7 @@
       type:    "uni",
       act:     "req",
       package: "prim_mubi_pkg",
-      struct:  "mubi4",
+      struct:  "mubi8",
       width:   "1"
       desc:    "Overwrites all ranges and let all requests pass through."
     },

@@ -116,7 +116,7 @@ When the lock is active, the base, mask/limit, and permission settings of the ra
 ## Bypass Mode
 
 The system shall support a bypass mode controlled via a bypass_wire signal.
-The bypass_signal shall be driven by a 4-bit encoded multi-bit encoded signal in the ROT-controlled register space.
+The bypass_signal shall be driven by a 8-bit encoded multi-bit encoded signal in the ROT-controlled register space.
 A single bypass_signal shall manage access override for all source AC range registers within the system.
 
 When the bypass_wire is asserted, the range register logic shall allow access for all transactions, overriding any existing configuration settings.

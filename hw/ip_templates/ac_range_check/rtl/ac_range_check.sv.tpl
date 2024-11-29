@@ -16,7 +16,7 @@ module ${module_instance_name}
   // Access range check interrupts
   output logic                                      intr_deny_cnt_reached_o,
   // Inter module signals
-  input prim_mubi_pkg::mubi4_t                      range_check_overwrite_i,
+  input prim_mubi_pkg::mubi8_t                      range_check_overwrite_i,
   // Incoming TLUL interface
   input  tlul_pkg::tl_h2d_t                         ctn_tl_h2d_i,
   output tlul_pkg::tl_d2h_t                         ctn_tl_d2h_o,
