@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use std::path::PathBuf;
+use std::time::Duration;
 
 use anyhow::{ensure, Result};
 use clap::Parser;
@@ -12,6 +13,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::jtag::JtagTap;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::uart::console::UartConsole;
 use opentitanlib::util::parse_int::ParseInt;
 
 use bindgen::dif;
@@ -26,9 +28,16 @@ struct Opts {
     #[arg(long)]
     rom: PathBuf,
 
+    #[arg(long)]
+    rv_dm_delayed_enable: bool,
+
     /// Seed for random number generator.
     #[arg(long, value_parser = u64::from_str)]
     seed: Option<u64>,
+
+    /// Console receive timeout.
+    #[arg(long, value_parser = humantime::parse_duration, default_value = "100s")]
+    timeout: Duration,
 }
 
 const NUM_ACCESSES_PER_REGION: usize = 32;
@@ -41,11 +50,19 @@ fn test_mem_access(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     log::info!("Random number generator seed is {:x}", seed);
     let mut rng = rand_chacha::ChaCha12Rng::seed_from_u64(seed);
 
-    // Avoid watchdog timeout by entering bootstrap mode.
-    transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
-
     transport.pin_strapping("PINMUX_TAP_RISCV")?.apply()?;
     transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    let uart = &*transport.uart("console")?;
+    uart.set_flow_control(true)?;
+
+    log::info!("rv_dm_delayed_enable: {}", opts.rv_dm_delayed_enable);
+    if opts.rv_dm_delayed_enable {
+        UartConsole::wait_for(uart, r"DEBUG_MODE_ENABLED", opts.timeout)?;
+    } else {
+        // Avoid watchdog timeout by entering bootstrap mode.
+        transport.pin_strapping("ROM_BOOTSTRAP")?.apply()?;
+        transport.reset_target(opts.init.bootstrap.options.reset_delay, true)?;
+    }
 
     let jtag = &mut *opts
         .init
