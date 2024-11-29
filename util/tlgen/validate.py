@@ -330,7 +330,16 @@ def validate(obj: Dict[Any, Any]) -> Optional[Xbar]:
                        reset=reset)
 
         if isinstance(node, Host):
-            node.addr_spaces = {nodeobj["addr_space"]}
+            node.addr_spaces = set()
+            addr_space = nodeobj.get('addr_space')
+            if addr_space is None:
+                raise ValueError(f"Node {node.name} has type "
+                                 f"'host' but no addr_space")
+            else:
+                # This should have been checked because of the 's' typing
+                # defined by the node dictionary
+                assert isinstance(addr_space, str)
+                node.addr_spaces.add(addr_space)
 
         if isinstance(node, Device):
             node.xbar = nodeobj["xbar"]
