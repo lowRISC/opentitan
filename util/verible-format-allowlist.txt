@@ -153,8 +153,6 @@ hw/ip/prim_xilinx/rtl/prim_xilinx_flop.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_flop_en.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_pad_attr.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_xor2.sv
-hw/ip/pwm/dv/cov/pwm_cov_bind.sv
-hw/ip/pwm/dv/cov/pwm_cov_if.sv
 hw/ip/pwm/dv/env/pwm_env_cov.sv
 hw/ip/pwm/dv/env/pwm_env_pkg.sv
 hw/ip/pwm/dv/env/pwm_virtual_sequencer.sv
