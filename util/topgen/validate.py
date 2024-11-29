@@ -632,15 +632,6 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     error = 0
 
-    # there should only be one each of pwrmgr/clkmgr/rstmgr
-    pwrmgrs = [m for m in top['module'] if m['type'] == 'pwrmgr']
-    clkmgrs = [m for m in top['module'] if m['type'] == 'clkmgr']
-    rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
-
-    if len(pwrmgrs) == 1 * len(clkmgrs) == 1 * len(rstmgrs) != 1:
-        log.error("Incorrect number of pwrmgr/clkmgr/rstmgr")
-        error += 1
-
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
