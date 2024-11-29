@@ -3,10 +3,15 @@
 // SPDX-License-Identifier: Apache-2.0
 <%
 import textwrap
+
+if helper.addr_space == helper.default_addr_space:
+    header_suffix = top["name"].upper()
+else:
+    header_suffix = "_".join([top["name"], helper.addr_space]).upper()
 %>\
 
-#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
-#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
+#define ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
 
 /**
  * @file
@@ -96,4 +101,4 @@ import textwrap
 
 #endif  // __ASSEMBLER__
 
-#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
