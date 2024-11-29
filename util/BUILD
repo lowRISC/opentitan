@@ -23,26 +23,29 @@ py_binary(
 py_binary(
     name = "rom_chip_info",
     srcs = ["rom_chip_info.py"],
+    imports = ["."],
+    deps = [":version_file"],
 )
 
 py_test(
     name = "rom_chip_info_test",
-    srcs = [
-        "rom_chip_info.py",
-        "rom_chip_info_test.py",
-    ],
+    srcs = ["rom_chip_info_test.py"],
+    deps = [":rom_chip_info"],
 )
 
 py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
+    imports = ["."],
     deps = [
         "//util/reggen:countermeasure",
+        "//util/reggen:gen_cfg_md",
         "//util/reggen:gen_cheader",
         "//util/reggen:gen_dv",
         "//util/reggen:gen_fpv",
         "//util/reggen:gen_html",
         "//util/reggen:gen_json",
+        "//util/reggen:gen_md",
         "//util/reggen:gen_rtl",
         "//util/reggen:gen_rust",
         "//util/reggen:gen_sec_cm_testplan",
@@ -54,12 +57,16 @@ py_binary(
     ],
 )
 
+py_library(
+    name = "generate_compilation_db",
+    srcs = ["generate_compilation_db.py"],
+    imports = ["."],
+)
+
 py_test(
     name = "generate_compilation_db_test",
-    srcs = [
-        "generate_compilation_db.py",
-        "generate_compilation_db_test.py",
-    ],
+    srcs = ["generate_compilation_db_test.py"],
+    deps = [":generate_compilation_db"],
 )
 
 py_binary(

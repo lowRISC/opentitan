@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_binary(
     name = "otbn_as",
     srcs = ["otbn_as.py"],
+    imports = ["."],
     deps = [
         "//hw/ip/otbn/util/shared:bit_ranges",
         "//hw/ip/otbn/util/shared:encoding",
@@ -64,6 +65,7 @@ py_binary(
     srcs = ["otbn_sim_test.py"],
     deps = [
         "//hw/ip/otbn/util/shared:check",
+        "//hw/ip/otbn/util/shared:dmem_dump",
         "//hw/ip/otbn/util/shared:mem_layout",
         "//hw/ip/otbn/util/shared:reg_dump",
         requirement("pyelftools"),

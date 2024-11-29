@@ -10,16 +10,15 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "cryptotest_util",
     srcs = ["cryptotest_util.py"],
+    imports = ["."],
     visibility = ["//visibility:private"],
 )
 
 py_test(
     name = "cryptotest_util_test",
-    srcs = [
-        "cryptotest_util.py",
-        "cryptotest_util_test.py",
-    ],
+    srcs = ["cryptotest_util_test.py"],
     visibility = ["//visibility:private"],
+    deps = [":cryptotest_util"],
 )
 
 py_binary(

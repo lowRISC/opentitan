@@ -12,4 +12,5 @@ py_test(
         "bazel_query.py",
         "bazel_query_test.py",
     ],
+    imports = ["."],
 )
