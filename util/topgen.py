@@ -711,7 +711,9 @@ def _process_top(
     topcfg["clocks"] = Clocks(topcfg["clocks"])
     topcfg['unmanaged_clocks'] = UnmanagedClocks(topcfg['unmanaged_clocks'])
     extract_clocks(topcfg)
-    generate_clkmgr(topcfg, out_path)
+    # Generate clkmgr if there is an instance
+    if lib.find_module(topcfg['module'], 'clkmgr'):
+        generate_clkmgr(topcfg, out_path)
 
     # It may require two passes to check if the module is needed.
     # TODO: first run of topgen will fail due to the absence of rv_plic.
@@ -803,7 +805,9 @@ def _process_top(
                 where = 'alias file at {}'.format(alias)
                 name_to_block[alias_target].alias_from_raw(False, raw, where)
 
-    connect_clocks(topcfg, name_to_block)
+    # Only create clkmgr connections if there is an instance
+    if lib.find_module(topcfg['module'], 'clkmgr'):
+        connect_clocks(topcfg, name_to_block)
 
     # Read the crossbars under the top directory
     xbar_objs = get_hjsonobj_xbars(hjson_dir)

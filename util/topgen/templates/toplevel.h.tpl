@@ -8,6 +8,7 @@ import topgen.lib as lib
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
+has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 %>\
 
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
@@ -209,6 +210,7 @@ ${helper.rstmgr_sw_rsts.render()}
  */
 ${helper.pwrmgr_reset_requests.render()}
 % endif
+% if has_clkmgr:
 
 /**
  * Clock Manager Software-Controlled ("Gated") Clocks.
@@ -224,8 +226,9 @@ ${helper.clkmgr_gateable_clocks.render()}
  * but the clock manager is in control of whether the clock actually is stopped.
  */
 ${helper.clkmgr_hintable_clocks.render()}
-
+% endif
 % for (subspace_name, description, subspace_range) in helper.subranges:
+
 /**
  * ${subspace_name.upper()} Region
  *

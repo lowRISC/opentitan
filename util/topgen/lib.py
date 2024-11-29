@@ -887,7 +887,9 @@ class TopGen:
             self._init_pwrmgr_wakeups()
             self._init_pwrmgr_reset_requests()
         self._init_rstmgr_sw_rsts()
-        self._init_clkmgr_clocks()
+        # Only generate clkmgr mappings if there is a clkmgr
+        if find_module(self.top['module'], 'clkmgr'):
+            self._init_clkmgr_clocks()
         self._init_subranges()
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
