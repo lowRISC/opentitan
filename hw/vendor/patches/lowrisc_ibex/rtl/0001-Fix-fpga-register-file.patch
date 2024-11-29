@@ -1,0 +1,23 @@
+diff --git a/ibex_register_file_fpga.sv b/ibex_register_file_fpga.sv
+index 7a0ae34b15..73e0afab2f 100644
+--- a/ibex_register_file_fpga.sv
++++ b/ibex_register_file_fpga.sv
+@@ -147,14 +147,14 @@ module ibex_register_file_fpga #(
+       .out_o (mem_o_b)
+     );
+ 
+-    assign rdata_a_o = (raddr_a_i == '0) ? '0 : mem_o_a;
+-    assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem_o_b;
++    assign rdata_a_o = (raddr_a_i == '0) ? WordZeroVal : mem_o_a;
++    assign rdata_b_o = (raddr_b_i == '0) ? WordZeroVal : mem_o_b;
+   end else begin : gen_no_rdata_mux_check
+     // async_read a
+-    assign rdata_a_o = (raddr_a_i == '0) ? '0 : mem[raddr_a_i];
++    assign rdata_a_o = (raddr_a_i == '0) ? WordZeroVal : mem[raddr_a_i];
+ 
+     // async_read b
+-    assign rdata_b_o = (raddr_b_i == '0) ? '0 : mem[raddr_b_i];
++    assign rdata_b_o = (raddr_b_i == '0) ? WordZeroVal : mem[raddr_b_i];
+   end
+ 
+   // we select
