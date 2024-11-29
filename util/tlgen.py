@@ -26,12 +26,11 @@ def main():
                         '-d',
                         action='store_true',
                         help='Generate self HTML document in stdout')
-    parser.add_argument(
-        '--outdir',
-        '-o',
-        help=
-        "Target directory. tlgen needs 'rtl/' and 'dv/' directory under the target dir"
-    )
+    parser.add_argument('--outdir',
+                        '-o',
+                        help=("Target directory. tlgen needs 'rtl/' and 'dv/' "
+                              "directory under the target dir"),
+                        required=True)
     parser.add_argument('--ip-path',
                         default="",
                         help='''
@@ -52,12 +51,14 @@ def main():
         return
 
     # Check if topcfg defined
-    if not args.topcfg or not args.outdir:
+    if not args.topcfg:
         log.error("--topcfg option is mandatory to generate codes.")
+        sys.exit(1)
 
     # Check if outdir exists. If not, show error and exit
-    if not Path(args.outdir).is_dir():
+    if not (args.outdir and Path(args.outdir).is_dir()):
         log.error("'--outdir' should point to writable directory")
+        sys.exit(1)
 
     # Load contents of top_cfg
     # Skip this part and use internal structure at this time
