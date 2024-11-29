@@ -8,6 +8,6 @@ def python_deps():
     py_repositories()
     python_register_toolchains(
         name = "python3",
-        python_version = "3.9",
+        python_version = "3.12",
         ignore_root_user_error = True,
     )

@@ -6,7 +6,7 @@
 name = "opentitan"
 version = "0.0.0"
 description = "Open-source hardware root-of-trust"
-requires-python = ">=3.8"
+requires-python = ">=3.12"
 
 dependencies = [
   # Dependency management
