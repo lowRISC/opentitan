@@ -9,6 +9,7 @@ has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
+has_rstmgr = lib.find_module(top['module'], 'rstmgr')
 %>\
 
 #ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
@@ -198,11 +199,13 @@ ${helper.muxed_pads.render()}
  */
 ${helper.pwrmgr_wakeups.render()}
 % endif
+% if has_rstmgr:
 
 /**
  * Reset Manager Software Controlled Resets
  */
 ${helper.rstmgr_sw_rsts.render()}
+% endif
 % if has_pwrmgr:
 
 /**

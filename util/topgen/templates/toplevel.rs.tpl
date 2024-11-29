@@ -9,6 +9,7 @@ has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
+has_rstmgr = lib.find_module(top['module'], 'rstmgr')
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -155,9 +156,11 @@ ${helper.muxed_pads.render(gen_cast=True)}
 /// Power Manager Wakeup Signals
 ${helper.pwrmgr_wakeups.render()}
 % endif
+% if has_rstmgr:
 
 /// Reset Manager Software Controlled Resets
 ${helper.rstmgr_sw_rsts.render()}
+% endif
 % if has_pwrmgr:
 
 /// Power Manager Reset Request Signals

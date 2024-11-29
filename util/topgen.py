@@ -855,8 +855,9 @@ def _process_top(
     if lib.find_module(completecfg['module'], 'pwrmgr'):
         generate_pwrmgr(completecfg, out_path)
 
-    # Generate rstmgr
-    generate_rstmgr(completecfg, out_path)
+    # Generate rstmgr if there is an instance
+    if lib.find_module(completecfg['module'], 'rstmgr'):
+        generate_rstmgr(completecfg, out_path)
 
     # Generate ac_range_check
     generate_ac_range_check(completecfg, out_path)
