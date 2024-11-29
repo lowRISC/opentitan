@@ -39,6 +39,18 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
       // processes at the same level from the base classes
       fork begin : isolation_fork
         fork
+          begin : reset_signals_thread
+            // TODO MVy: reset_signals should probably be a function. This should also be changed
+            // in all the child classes. Meanwhile, spawn an unblocking thread. Instead of doing this
+            // in the future we'll be able to only call this reset_signals function, which will be
+            // implemented by all the extended drivers to actually act on the interface level as
+            // required. It would be great to uniformise this as some drivers are doing to in different
+            // ways, via different tasks/functions: invalidate_signals, do_reset_signals, do_reset...
+            // Additionnally, each drivers should drop the reset management tasks: reset_thread,
+            // reset_signals...
+            reset_signals();
+            wait(0);  // Wait indefinitely to ensure the fork will end because of a reset detection
+          end
           begin : main_thread
             get_and_drive();
             wait(0);  // Wait indefinitely to ensure the fork will end because of a reset detection
@@ -58,20 +70,8 @@ class dv_base_driver #(type ITEM_T     = uvm_sequence_item,
   // to this component via a UVM analysis import.
   virtual function void write_drv_reset(reset_state_e reset_st);
     if (reset_st == ResetAsserted) begin
+      // TODO MVy: use under_reset or cfg.in_reset ?
       under_reset = 1;
-      // TODO MVy: reset_signals should probably be a function. This should also be changed
-      // in all the child classes. Meanwhile, spawn an unblocking thread. Instead of doing this
-      // in the future we'll be able to only call this reset_signals function, which will be
-      // implemented by all the extended drivers to actually act on the interface level as
-      // required. It would be great to uniformise this as some drivers are doing to in different
-      // ways, via different tasks/functions: invalidate_signals, do_reset_signals, do_reset...
-      // Additionnally, each drivers should drop the reset management tasks: reset_thread,
-      // reset_signals...
-
-      // TODO, this is temporary, in the future directly call reset_signals without the fork around
-      fork
-        reset_signals();
-      join_none
     end else begin
       under_reset = 0;
     end
