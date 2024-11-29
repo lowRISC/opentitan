@@ -83,12 +83,27 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
   endfunction : end_of_elaboration_phase
 
   virtual task run_phase(uvm_phase phase);
+    reset_seq rst_seq;
+
     void'($value$plusargs("drain_time_ns=%0d", drain_time_ns));
     phase.phase_done.set_drain_time(this, (drain_time_ns * 1ns));
     void'($value$plusargs("poll_for_stop=%0b", poll_for_stop));
     void'($value$plusargs("poll_for_stop_interval_ns=%0d", poll_for_stop_interval_ns));
     if (poll_for_stop) dv_utils_pkg::poll_for_stop(.interval_ns(poll_for_stop_interval_ns));
     void'($value$plusargs("UVM_TEST_SEQ=%0s", test_seq_s));
+
+    // TODO MVy: to be removed, only to test reset on the fly roughly somewhere during the main sequence
+    rst_seq = reset_seq::type_id::create("rst_seq");
+    fork
+      begin
+        #100us;
+        if (!rst_seq.randomize()) begin
+          `uvm_fatal(`gfn, "Failed to randomize transaction !")
+        end
+        rst_seq.start(env.rst_agt.sequencer);
+      end
+    join_none
+
     if (run_test_seq) begin
       run_seq(test_seq_s, phase);
     end
@@ -103,10 +118,12 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     // Config items from dv_base_agent_cfg
     rst_agt_cfg.is_active   = 1;
     rst_agt_cfg.has_driver  = 1;
+    rst_agt_cfg.en_monitor  = 1;
     rst_agt_cfg.if_mode     = Device;
+    rst_agt_cfg.has_reset   = 0;      // It doesn't require this as it is managing it itself
 
     // Config items from reset_agent_cfg
-    rst_agt_cfg.enable_debug_messages = 0;
+    rst_agt_cfg.enable_debug_messages = 1;  // TODO MVy: tmp
     rst_agt_cfg.polarity              = ActiveLow;
     rst_agt_cfg.assert_is_sync        = 0;
     rst_agt_cfg.deassert_is_sync      = 1;
