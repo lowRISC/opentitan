@@ -255,6 +255,20 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "rom_state",
+    srcs = ["rom_state.c"],
+    hdrs = ["rom_state.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
+    ],
+    alwayslink = True,
+)
+
 opentitan_test(
     name = "rom_epmp_test",
     srcs = [
