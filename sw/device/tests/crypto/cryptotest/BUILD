@@ -33,11 +33,10 @@ ECDSA_TESTVECTOR_TARGETS = [
         "p256_sha512",
         "p256_sha3_256",
         "p256_sha3_512",
-        # TODO uncomment when cryptolib supports ECDSA with P-384
-        # "p384_sha384",
-        # "p384_sha512",
-        # "p384_sha3_384",
-        # "p384_sha3_512",
+        "p384_sha384",
+        "p384_sha512",
+        "p384_sha3_384",
+        "p384_sha3_512",
     ]
 ] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_ecdsa_fips_186_4_sig_ver_json",
@@ -51,13 +50,10 @@ ECDSA_TESTVECTOR_TARGETS = [
         "p256_sha3_256",
         "p256_sha3_384",
         "p256_sha3_512",
-        # TODO uncomment when cryptolib supports ECDSA with P-384
-        # "p384_sha256",
-        # "p384_sha384",
-        # "p384_sha512",
-        # "p384_sha3_256",
-        # "p384_sha3_384",
-        # "p384_sha3_512",
+        "p384_sha384",
+        "p384_sha512",
+        "p384_sha3_384",
+        "p384_sha3_512",
     ]
 ]
 
@@ -78,8 +74,7 @@ ECDH_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_ecdh_{}".format(mode)
     for mode in [
         "p256",
-        # TODO uncomment when ECDH supports P-384
-        # "p384",
+        "p384",
     ]
 ] + [
     "//sw/host/cryptotest/testvectors/data:nist_cavp_ecdh_sp_800_56a_json",
