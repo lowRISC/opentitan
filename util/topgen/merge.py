@@ -638,7 +638,7 @@ def extract_clocks(top: OrderedDict):
 
             if is_unmanaged_clock(top, src_name):
                 # Unmanaged clocks have a simpler connection without clock groups
-                clock_connections[port] = top['unmanaged_clocks']._asdict()[clk].signal_name
+                clock_connections[port] = top['unmanaged_clocks']._asdict()[src_name].signal_name
             else:
                 group = clocks.groups[group_name]
 
