@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Use this UVM macro as we may need to implement multiple uvm_analysis_imp, which means
+// implemneting multiple write methods which is not possible with the same name.
 `uvm_analysis_imp_decl(_cov_reset)
 
 class bit_toggle_cg_wrap;
@@ -45,6 +47,9 @@ class dv_base_env_cov #(type CFG_T = dv_base_env_cfg) extends uvm_component;
     reset_tr_imp = new ("reset_tr_imp", this);
   endfunction : new
 
+  // This function will be executed each time the reset monitor will detect a reset activity. As
+  // the monitor will broadcast this activity on a UVM TLM port uvm_analysis_port which is connected
+  // to this component via a UVM analysis import.
   virtual function void write_cov_reset(reset_item reset_tr);
     // Overwrite this function if required
   endfunction : write_cov_reset

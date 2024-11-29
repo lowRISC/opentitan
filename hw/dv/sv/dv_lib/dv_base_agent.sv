@@ -19,6 +19,10 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
   SEQUENCER_T sequencer;
   MONITOR_T   monitor;
 
+  // Analysis port only to forward the reset state to the sub-components to let them implement
+  // their own write method from the uvm_analysis_imp according to their needs.
+  uvm_analysis_export #(reset_state_e) reset_st_exp;
+
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
@@ -28,6 +32,10 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
       `uvm_fatal(`gfn, $sformatf("failed to get %s from uvm_config_db", cfg.get_type_name()))
     end
     `uvm_info(`gfn, $sformatf("\n%0s", cfg.sprint()), UVM_HIGH)
+
+    if (cfg.has_reset) begin
+      reset_st_exp = new("reset_st_exp", this);
+    end
 
     // create components
     if (cfg.en_cov) begin
@@ -56,6 +64,19 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     if (cfg.is_active && cfg.has_driver) begin
       driver.seq_item_port.connect(sequencer.seq_item_export);
     end
+    // Manage connections to the reset analysis port
+    if (cfg.has_reset) begin
+      // To the driver
+      if (cfg.has_driver) begin
+        reset_st_exp.connect(driver.reset_st_imp);
+      end
+      // To the sequencer
+      if (cfg.is_active) begin
+        reset_st_exp.connect(sequencer.reset_st_imp);
+      end
+      // To the monitor
+      reset_st_exp.connect(monitor.reset_st_imp);
+    end
     if (cfg.has_req_fifo) begin
       monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
     end
@@ -64,4 +85,12 @@ class dv_base_agent #(type CFG_T            = dv_base_agent_cfg,
     end
   endfunction
 
+  virtual function void end_of_elaboration_phase(uvm_phase phase);
+    super.end_of_elaboration_phase(phase);
+    // Check if this agent reset state port has been connected, this info is only valid from
+    // the end_of_elaboration phase. Do this check only if has_reset.
+    if (cfg.has_reset && (reset_st_exp.size() < 1)) begin
+      `uvm_fatal(`gfn, "Reset analysis port hasn't been connected to any reset agent")
+    end
+  endfunction : end_of_elaboration_phase
 endclass
