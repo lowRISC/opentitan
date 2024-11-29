@@ -16,7 +16,7 @@ from reggen.ip_block import IpBlock
 from reggen.interrupt import IntrType
 
 from .c import TopGenC
-from .lib import Name
+from .lib import find_module, Name
 
 
 class TestPeripheral:
@@ -64,7 +64,10 @@ class TopGenCTest(TopGenC):
         super().__init__(top_info, name_to_block)
 
         self.irq_peripherals = self._get_irq_peripherals()
-        self.alert_peripherals = self._get_alert_peripherals()
+        # Only generate alert_handler and mappings if there is an alert_handler
+        if find_module(self.top['module'], 'alert_handler') or \
+           self.top['name'] == 'englishbreakfast':
+            self.alert_peripherals = self._get_alert_peripherals()
 
     def _get_irq_peripherals(self):
         irq_peripherals = []
