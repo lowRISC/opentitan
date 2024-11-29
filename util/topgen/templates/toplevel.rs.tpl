@@ -8,6 +8,7 @@ import topgen.lib as lib
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
+has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -162,6 +163,7 @@ ${helper.rstmgr_sw_rsts.render()}
 /// Power Manager Reset Request Signals
 ${helper.pwrmgr_reset_requests.render()}
 % endif
+% if has_clkmgr:
 
 /// Clock Manager Software-Controlled ("Gated") Clocks.
 ///
@@ -173,8 +175,9 @@ ${helper.clkmgr_gateable_clocks.render()}
 /// The Software has partial control over these clocks. It can ask them to stop,
 /// but the clock manager is in control of whether the clock actually is stopped.
 ${helper.clkmgr_hintable_clocks.render()}
-
+% endif
 % for (subspace_name, description, subspace_range) in helper.subranges:
+
 /// ${subspace_name.upper()} Region
 ///
 % for l in textwrap.wrap(description, 76, break_long_words=False):
