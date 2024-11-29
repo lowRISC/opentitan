@@ -41,7 +41,6 @@ fpga_cw310(
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
     rom_mmi = "//hw/bitstream:rom_mmi",
-    tags = ["cw310_sival_rom_ext"],
     visibility = ["//visibility:private"],
 )
 
@@ -60,7 +59,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             # Custom execution environment must be used for SiVal ROM EXT
             # to ensure that all the PMOD pins are available.
-            ":fpga_cw310_sival_rom_ext_no_hyper": None,
+            ":fpga_cw310_sival_rom_ext_no_hyper": "sival_rom_ext_no_hyper",
         },
     ),
     fpga = fpga_params(
@@ -71,6 +70,13 @@ opentitan_test(
     ),
     silicon = silicon_params(
         tags = [
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    sival_rom_ext_no_hyper = fpga_params(
+        tags = [
+            "cw310_sival_rom_ext",
+            "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
