@@ -29,6 +29,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -47,6 +48,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -65,6 +67,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -83,6 +86,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -101,6 +105,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -123,6 +128,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -141,6 +147,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -159,6 +166,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -177,6 +185,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -195,6 +204,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 
@@ -213,6 +223,7 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
+    .full_o,
     .depth_o
   );
 

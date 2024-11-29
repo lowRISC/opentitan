@@ -31,6 +31,7 @@ module prim_fifo_sync_tb #(
   output              rvalid_o[NumDuts],
   input               rready_i[NumDuts],
   output [Width-1:0]  rdata_o [NumDuts],
+  output              full_o  [NumDuts],
   output [DepthW-1:0] depth_o [NumDuts]
 );
 
@@ -55,6 +56,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[0]),
     .rready_i(rready_i[0]),
     .rdata_o(rdata_o[0]),
+    .full_o(full_o[0]),
     .depth_o(depth_o[0][0])
   );
 
@@ -72,6 +74,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[1]),
     .rready_i(rready_i[1]),
     .rdata_o(rdata_o[1]),
+    .full_o(full_o[1]),
     .depth_o(depth_o[1][2:0])
   );
 
@@ -89,6 +92,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[2]),
     .rready_i(rready_i[2]),
     .rdata_o(rdata_o[2]),
+    .full_o(full_o[2]),
     .depth_o(depth_o[2][3:0])
   );
 
@@ -106,6 +110,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[3]),
     .rready_i(rready_i[3]),
     .rdata_o(rdata_o[3]),
+    .full_o(full_o[3]),
     .depth_o(depth_o[3][3:0])
   );
 
@@ -123,6 +128,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[4]),
     .rready_i(rready_i[4]),
     .rdata_o(rdata_o[4]),
+    .full_o(full_o[4]),
     .depth_o(depth_o[4][4:0])
   );
 
@@ -145,6 +151,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[5]),
     .rready_i(rready_i[5]),
     .rdata_o(rdata_o[5]),
+    .full_o(full_o[5]),
     .depth_o(depth_o[5][0])
   );
 
@@ -162,6 +169,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[6]),
     .rready_i(rready_i[6]),
     .rdata_o(rdata_o[6]),
+    .full_o(full_o[6]),
     .depth_o(depth_o[6][0])
   );
 
@@ -179,6 +187,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[7]),
     .rready_i(rready_i[7]),
     .rdata_o(rdata_o[7]),
+    .full_o(full_o[7]),
     .depth_o(depth_o[7][2:0])
   );
 
@@ -196,6 +205,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[8]),
     .rready_i(rready_i[8]),
     .rdata_o(rdata_o[8]),
+    .full_o(full_o[8]),
     .depth_o(depth_o[8][3:0])
   );
 
@@ -213,6 +223,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[9]),
     .rready_i(rready_i[9]),
     .rdata_o(rdata_o[9]),
+    .full_o(full_o[9]),
     .depth_o(depth_o[9][3:0])
   );
 
@@ -230,6 +241,7 @@ module prim_fifo_sync_tb #(
     .rvalid_o(rvalid_o[10]),
     .rready_i(rready_i[10]),
     .rdata_o(rdata_o[10]),
+    .full_o(full_o[10]),
     .depth_o(depth_o[10][4:0])
   );
 

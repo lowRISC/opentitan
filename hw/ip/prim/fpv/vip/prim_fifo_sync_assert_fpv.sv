@@ -16,15 +16,16 @@ module prim_fifo_sync_assert_fpv #(
   localparam int unsigned DepthWNorm = $clog2(Depth+1),
   localparam int unsigned DepthW = (DepthWNorm == 0) ? 1 : DepthWNorm
 ) (
-  input  clk_i,
-  input  rst_ni,
-  input  clr_i,
-  input  wvalid_i,
-  input  wready_o,
-  input [Width-1:0] wdata_i,
-  input  rvalid_o,
-  input  rready_i,
-  input [Width-1:0] rdata_o,
+  input              clk_i,
+  input              rst_ni,
+  input              clr_i,
+  input              wvalid_i,
+  input              wready_o,
+  input [Width-1:0]  wdata_i,
+  input              rvalid_o,
+  input              rready_i,
+  input [Width-1:0]  rdata_o,
+  input              full_o,
   input [DepthW-1:0] depth_o
 );
 
@@ -135,6 +136,9 @@ module prim_fifo_sync_assert_fpv #(
   ////////////////////////
   // Forward Assertions //
   ////////////////////////
+
+  // The full_o port should be high iff the depth is maximal.
+  `ASSERT(FullIffFullDepth_A, (depth_o == Depth) <-> (full_o))
 
   // assert depth of FIFO
   `ASSERT(Depth_A, depth_o <= Depth)
