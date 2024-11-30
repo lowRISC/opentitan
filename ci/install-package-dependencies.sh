@@ -81,7 +81,13 @@ xargs sudo $APT_CMD install -y <"$ci_reqs"
 # appropriate bin directory to the PATH
 export PATH=$HOME/.local/bin:$PATH
 
+sudo python3 -m pip uninstall fusesoc -y
 python3 -m pip install --user -r python-requirements.txt --require-hashes
+
+ls $HOME/.local/bin
+
+$HOME/.local/bin/fusesoc --version
+fusesoc --version
 
 # Install Verible
 lsb_sr="$(lsb_release -sr)"

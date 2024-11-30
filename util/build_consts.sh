@@ -47,3 +47,12 @@ export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 export BIN_DIR
 export PYTHONPATH="${REPO_TOP}"
+
+
+echo "$PATH"
+export PATH=$HOME/.local/bin:$PATH
+
+ls $HOME/.local/bin
+
+$HOME/.local/bin/fusesoc --version
+fusesoc --version
