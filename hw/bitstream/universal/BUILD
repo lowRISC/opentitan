@@ -29,8 +29,8 @@ label_flag(
 universal_splice(
     name = "splice",
     testonly = True,
-    # When the src bitstream, rom_mmi and otp_mmi fields are empty,
-    # the rule will use values from the exec_env.
+    # When the src bitstream and mmi fields are empty, the rule will use values
+    # from the exec_env.
     exec_env = ":env",
     otp = ":otp",
     rom = ":rom",

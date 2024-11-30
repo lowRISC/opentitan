@@ -1,5 +1,5 @@
 {
-  "schema_version": 3,
+  "schema_version": 2,
   "designs": {
     "chip_earlgrey_cw310": {
       "build_id": "aabbcc",
@@ -8,12 +8,14 @@
         "build_target": "//hw/bitstream/vivado:fpga_cw310"
       },
       "memory_map_info": {
-        "file": "memories.mmi",
-        "build_target": "//hw/bitstream/vivado:fpga_cw310",
-        "memories": [
-          "otp",
-          "rom"
-        ]
+        "otp": {
+          "file": "otp.mmi",
+          "build_target": "//hw/bitstream/vivado:fpga_cw310"
+        },
+        "rom": {
+          "file": "rom.mmi",
+          "build_target": "//hw/bitstream/vivado:fpga_cw310"
+        }
       }
     },
     "chip_earlgrey_cw310_hyperdebug": {
@@ -23,12 +25,14 @@
         "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug"
       },
       "memory_map_info": {
-        "file": "chip_earlgrey_cw310_hyperdebug/memories.mmi",
-        "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-        "memories": [
-          "otp",
-          "rom"
-        ]
+        "otp": {
+          "file": "chip_earlgrey_cw310_hyperdebug/otp.mmi",
+          "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug"
+        },
+        "rom": {
+          "file": "chip_earlgrey_cw310_hyperdebug/rom.mmi",
+          "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug"
+        }
       }
     }
   }
