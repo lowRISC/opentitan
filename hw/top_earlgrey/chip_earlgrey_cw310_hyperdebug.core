@@ -25,6 +25,7 @@ filesets:
       # same as lowrisc:systems:chip_earlgrey_cw310.
       - data/pins_cw310_hyperdebug.xdc
       - data/placement.xdc
+      - data/synth.xdc
     file_type: xdc
 
   files_tcl:

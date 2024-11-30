@@ -22,6 +22,7 @@ filesets:
     files:
       - data/clocks_cw341.xdc
       - data/pins_cw341.xdc
+      - data/synth.xdc
     file_type: xdc
 
   files_tcl:

@@ -201,6 +201,43 @@ dict set memInfo otp mem_type_regex $mem_type_regex
 dict set memInfo otp fake_word_width 0
 dict set memInfo otp addr_end_multiplier 16
 
+# The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata.
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[0].u_info_mem*"] " "]
+dict set memInfo flash0_info0 brams $flash_info_brams
+dict set memInfo flash0_info0 mem_type_regex $mem_type_regex
+dict set memInfo flash0_info0 fake_word_width 0
+dict set memInfo flash0_info0 addr_end_multiplier 1
+
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[1].u_info_mem*"] " "]
+dict set memInfo flash0_info1 brams $flash_info_brams
+dict set memInfo flash0_info1 mem_type_regex $mem_type_regex
+dict set memInfo flash0_info1 fake_word_width 0
+dict set memInfo flash0_info1 addr_end_multiplier 1
+
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[2].u_info_mem*"] " "]
+dict set memInfo flash0_info2 brams $flash_info_brams
+dict set memInfo flash0_info2 mem_type_regex $mem_type_regex
+dict set memInfo flash0_info2 fake_word_width 0
+dict set memInfo flash0_info2 addr_end_multiplier 1
+
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[0].u_info_mem*"] " "]
+dict set memInfo flash1_info0 brams $flash_info_brams
+dict set memInfo flash1_info0 mem_type_regex $mem_type_regex
+dict set memInfo flash1_info0 fake_word_width 0
+dict set memInfo flash1_info0 addr_end_multiplier 1
+
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[1].u_info_mem*"] " "]
+dict set memInfo flash1_info1 brams $flash_info_brams
+dict set memInfo flash1_info1 mem_type_regex $mem_type_regex
+dict set memInfo flash1_info1 fake_word_width 0
+dict set memInfo flash1_info1 addr_end_multiplier 1
+
+set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[2].u_info_mem*"] " "]
+dict set memInfo flash1_info2 brams $flash_info_brams
+dict set memInfo flash1_info2 mem_type_regex $mem_type_regex
+dict set memInfo flash1_info2 fake_word_width 0
+dict set memInfo flash1_info2 addr_end_multiplier 1
+
 generate_mmi "memories.mmi" $memInfo 1
 
 # For debugging purposes, dump the INIT_XX strings for ROM and OTP.
