@@ -63,7 +63,8 @@ BOOT_POLICY_VALID_CASES = [
         name = "bitstream_boot_policy_valid_{}".format(lc_state),
         src = "//hw/bitstream:mask_rom",
         data = ":otp_img_boot_policy_valid_{}".format(lc_state),
-        meminfo = "//hw/bitstream:otp_mmi",
+        instance = "otp",
+        meminfo = "//hw/bitstream:cw310_mmi",
         update_usr_access = True,
     )
     for lc_state, _ in get_lc_items()

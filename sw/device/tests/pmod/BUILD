@@ -33,14 +33,13 @@ fpga_cw310(
     base = "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
     # Override the hyperdebug bitstream, interface, and OTP & ROM MMIs.
     base_bitstream = "//hw/bitstream:bitstream",
-    otp_mmi = "//hw/bitstream:otp_mmi",
+    mmi = "//hw/bitstream:cw310_mmi",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom_mmi = "//hw/bitstream:rom_mmi",
     visibility = ["//visibility:private"],
 )
 

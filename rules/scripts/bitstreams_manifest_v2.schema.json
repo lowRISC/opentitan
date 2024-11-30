@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/rules/scripts/bitstreams_manifest.schema.json",
-  "title": "Bitstreams Cache Manifest v3",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/rules/scripts/bitstreams_manifest_v2.schema.json",
+  "title": "Bitstreams Cache Manifest v2",
   "description":
       "A manifest of bitstreams in a cache entry, informing what is there and how to reproduce",
   "type": "object",
@@ -9,8 +9,8 @@
     "schema_version": {
       "description": "Version number of this manifest's schema",
       "type": "number",
-      "minimum": 3,
-      "maximum": 3
+      "minimum": 2,
+      "maximum": 2
     },
     "designs": {
       "description": "Map of designs to their files and metadata objects",
@@ -51,14 +51,6 @@
         "build_target": {
           "description": "Build target that generated the output",
           "type": "string"
-        },
-        "memories": {
-          "description": "Memory names or keys supported by the file",
-          "type": "array",
-          "items": {
-            "description": "Identifier for a memory in the MMI file",
-            "type": "string"
-          }
         }
       },
       "required": [
@@ -74,7 +66,11 @@
           "type": "string"
         },
         "bitstream": { "$ref": "#/$defs/bitstream_info" },
-        "memory_map_info": { "$ref": "#/$defs/memory_map_info" }
+        "memory_map_info": {
+          "description": "Map of name or key identifying the associated memory to file describing contents",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/memory_map_info" }
+        }
       },
       "required": [
         "bitstream"

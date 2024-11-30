@@ -45,7 +45,7 @@ def _bitstream_splice_impl(ctx):
     updatemem_args.add("--meminfo", ctx.file.meminfo)
     updatemem_args.add("--data", update)
     updatemem_args.add("--bit", tmpsrc)
-    updatemem_args.add("--proc", "dummy")
+    updatemem_args.add("--proc", ctx.attr.instance)
     updatemem_args.add("--out", spliced)
     if ctx.attr.debug:
         updatemem_args.add("--debug")
@@ -105,6 +105,7 @@ bitstream_splice_ = rule(
         "meminfo": attr.label(allow_single_file = True, doc = "Memory layout info file (an .mmi file)"),
         "src": attr.label(allow_single_file = True, doc = "The bitstream to splice"),
         "data": attr.label(allow_single_file = True, doc = "The memory image to splice into the bitstream"),
+        "instance": attr.string(mandatory = True, doc = "The instance ID for the memory to splice into the bitstream"),
         "swap_nybbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
         "update_usr_access": attr.bool(default = False, doc = "Update the USR_ACCESS value of the bitstream, breaks hermeticity"),

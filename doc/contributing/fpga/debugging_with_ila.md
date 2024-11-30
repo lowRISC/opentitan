@@ -237,7 +237,7 @@ The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bit
 
 Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
 Append `/build.fpga_cw310/synth-vivado` to that path.
-In the resulting directory, you should find `otp.mmi`, `rom.mmi`, and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
+In the resulting directory, you should find `memories.mmi`, and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 We will next copy those files into a local bitstream cache that Bazel can use.
 
 If you don't have a local bitstream cache yet, create one as follows:
@@ -254,7 +254,7 @@ mkdir -p $BAZEL_BITSTREAMS_CACHE/cache
 Create a directory with the name of the Git hash for which you have built the bitstream under `$BAZEL_BITSTREAMS_CACHE/cache/` (e.g,. `$BAZEL_BITSTREAMS_CACHE/cache/2e5a31b7d80b6eb97e114b2ca8f9e132ec7c83a6`).
 (You can find the relevant Git hash with `git log`, for example.
 If you have not committed the changes to implement the ILA yet, we recommend doing so at least locally.)
-Copy `otp.mmi` and `rom.mmi` to that directory.
+Copy `memories.mmi` to that directory.
 Copy `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` also to that directory, then rename the copy to `lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig`.
 
 Now instruct Bazel to use a bitstream from the local cache by setting an `--offline` argument in the `BITSTREAM` environment variable; for example:
