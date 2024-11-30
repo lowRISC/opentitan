@@ -217,6 +217,22 @@
       randtype:  "data"
     },
 
+    { name:    "NEscalationSeverities"
+      type:    "int unsigned"
+      default: "4"
+      desc:    "Number of escalation severities"
+      local:   "true"
+      expose:  "true"
+    },
+
+    { name:    "WidthPingCounter"
+      type:    "int unsigned"
+      default: "16"
+      desc:    "Width of the ping counter"
+      local:   "true"
+      expose:  "true"
+    },
+
     { name:    "PMPEnable"
       type:    "bit"
       default: "1'b0"

@@ -231,6 +231,9 @@ module top_earlgrey #(
   import top_earlgrey_rnd_cnst_pkg::*;
 
   // Local Parameters
+  // local parameters for rv_core_ibex
+  localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
+  localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -2634,6 +2637,8 @@ module top_earlgrey #(
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
+    .NEscalationSeverities(RvCoreIbexNEscalationSeverities),
+    .WidthPingCounter(RvCoreIbexWidthPingCounter),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),

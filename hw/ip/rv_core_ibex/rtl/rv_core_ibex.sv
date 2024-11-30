@@ -42,7 +42,9 @@ module rv_core_ibex
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
       ibex_pkg::RndCnstIbexKeyDefault,
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
-      ibex_pkg::RndCnstIbexNonceDefault
+      ibex_pkg::RndCnstIbexNonceDefault,
+  parameter int unsigned            NEscalationSeverities = 4,
+  parameter int unsigned            WidthPingCounter = 16
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -231,8 +233,8 @@ module rv_core_ibex
   // protocol into single ended signal.
   logic esc_irq_nm;
   prim_esc_receiver #(
-    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
-    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+    .N_ESC_SEV   (NEscalationSeverities),
+    .PING_CNT_DW (WidthPingCounter)
   ) u_prim_esc_receiver (
     .clk_i     ( clk_esc_i  ),
     .rst_ni    ( rst_esc_ni ),
