@@ -106,8 +106,8 @@ if [[ ! -f "${TARGET_PATH}" ]]; then
   exit 1
 fi
 
-if [[ ! -f "${FPGA_BIN_DIR}/rom.mmi" ]]; then
-  echo "Unable to find ${FPGA_BIN_DIR}/rom.mmi." >&2
+if [[ ! -f "${FPGA_BIN_DIR}/memories.mmi" ]]; then
+  echo "Unable to find ${FPGA_BIN_DIR}/memories.mmi." >&2
   exit 1
 fi
 
@@ -128,9 +128,9 @@ hw/ip/rom_ctrl/util/gen_vivado_mem_image.py \
 # the implemented design in Vivado and then inspecting the cell properties of
 # the corresponding BRAM cells. This information is very useful when debugging
 # the splicing flow.
-updatemem -force --meminfo "${FPGA_BIN_DIR}/rom.mmi" \
+updatemem -force --meminfo "${FPGA_BIN_DIR}/meomries.mmi" \
   --data "${TARGET}.updatemem.mem" \
-  --bit "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit"  --proc dummy \
+  --bit "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.bit"  --proc rom \
   --out "${FPGA_BIN_DIR}/${FPGA_BIT_NAME}.splice.bit" \
   --debug
 

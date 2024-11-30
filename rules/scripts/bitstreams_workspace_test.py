@@ -8,6 +8,24 @@ import unittest.mock
 
 from bitstreams_workspace import BitstreamCache
 
+MOCK_MANIFEST = """{
+   "schema_version": 3,
+   "designs": {
+       "chip_earlgrey_cw310": {
+           "build_id": "abcd",
+           "bitstream": {
+               "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit",
+               "build_target": "//hw/bitstream/vivado:fpga_cw310"
+           },
+           "memory_map_info": {
+               "file": "memories.mmi",
+               "build_target": "//hw/bitstream/vivado:fpga_cw310",
+               "memories": ["otp", "rom"]
+           }
+       }
+   }
+}"""
+
 
 class TestBitstreamCache(unittest.TestCase):
 
@@ -17,13 +35,12 @@ class TestBitstreamCache(unittest.TestCase):
         BitstreamCache.MakeWithDefaults()
 
     def test_get_from_cache(self):
-        BITSTREAM_ORIG = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig'
-        BITSTREAM_SPLICE = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit.splice'
+        MOCK_BITSTREAM = 'lowrisc_systems_chip_earlgrey_cw310_0.1.bit'
 
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
             ('cache/abcd', [],
-             [BITSTREAM_ORIG, BITSTREAM_SPLICE, 'rom.mmi', 'otp.mmi']),
+             [MOCK_BITSTREAM, 'manifest.json', 'memories.mmi']),
         ]
         os.walk = unittest.mock.MagicMock(name='os.walk',
                                           return_value=MOCKED_OS_WALK_RETURN)
@@ -34,31 +51,30 @@ class TestBitstreamCache(unittest.TestCase):
                                offline=True)
         cache.InitRepository = unittest.mock.MagicMock(name='method')
 
-        (cached_files, manifest_path) = cache.GetFromCache('abcd')
+        m = unittest.mock.mock_open(read_data=MOCK_MANIFEST)
+        with unittest.mock.patch('bitstreams_workspace.open', m):
+            (manifest, manifest_path) = cache.GetFromCache('abcd')
+        m.assert_called_once_with('cache/abcd/manifest.json', 'r')
 
         # This is more of an implementation detail, but it verifies that we hit
         # the mocked `os.walk` function as expected.
         os.walk.assert_called_once_with('cache/abcd')
 
+        self.maxDiff = None
         self.assertEqual(
-            dict(cached_files), {
-                "schema_version": 2,
+            manifest, {
+                "schema_version": 3,
                 "designs": {
                     "chip_earlgrey_cw310": {
                         "build_id": "abcd",
                         "bitstream": {
-                            "file": BITSTREAM_ORIG,
+                            "file": MOCK_BITSTREAM,
                             "build_target": "//hw/bitstream/vivado:fpga_cw310",
                         },
                         "memory_map_info": {
-                            "otp": {
-                                "file": "otp.mmi",
-                                "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                            },
-                            "rom": {
-                                "file": "rom.mmi",
-                                "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                            },
+                            "file": "memories.mmi",
+                            "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                            "memories": ["otp", "rom"],
                         },
                     },
                 },
@@ -73,7 +89,7 @@ class TestBitstreamCache(unittest.TestCase):
         MOCKED_OS_WALK_RETURN = [
             # os.walk() yields tuples of the form (root, dir, files).
             ('cache/abcd', [],
-             [BITSTREAM_ORIG, BITSTREAM_SPLICE, 'rom.mmi', 'otp.mmi']),
+             [BITSTREAM_ORIG, BITSTREAM_SPLICE, 'manifest.json', 'memories.mmi']),
         ]
         os.walk = unittest.mock.MagicMock(name='os.walk',
                                           return_value=MOCKED_OS_WALK_RETURN)
@@ -86,10 +102,25 @@ class TestBitstreamCache(unittest.TestCase):
                                '/tmp/cache/opentitan-bitstreams',
                                'latest.txt',
                                offline=True)
-        cache.InitRepository = unittest.mock.MagicMock(name='method')
-        cache._WriteSubstituteManifest = unittest.mock.MagicMock(name='method')
-
-        bazel_string = cache._ConstructBazelString('BUILD.mock', 'abcd')
+        manifest = {
+            "schema_version": 3,
+            "designs": {
+                "chip_earlgrey_cw310": {
+                    "build_id": "abcd",
+                    "bitstream": {
+                        "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                    },
+                    "memory_map_info": {
+                        "file": "memories.mmi",
+                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
+                        "memories": ["otp", "rom"],
+                    },
+                },
+            },
+        }
+        manifest_path = "cache/abcd/substitute_manifest.json"
+        bazel_string = cache._ConstructBazelString('BUILD.mock', 'abcd', manifest, manifest_path)
         self.maxDiff = None
         self.assertEqual(
             bazel_string, '''# This file was autogenerated. Do not edit!
@@ -106,13 +137,8 @@ filegroup(
 )
 
 filegroup(
-    name = "chip_earlgrey_cw310_otp_mmi",
-    srcs = ["cache/abcd/otp.mmi"],
-)
-
-filegroup(
-    name = "chip_earlgrey_cw310_rom_mmi",
-    srcs = ["cache/abcd/rom.mmi"],
+    name = "chip_earlgrey_cw310_mmi",
+    srcs = ["cache/abcd/memories.mmi"],
 )
 
 filegroup(
@@ -126,13 +152,8 @@ alias(
 )
 
 alias(
-    name = "chip_earlgrey_cw310_hyperdebug_rom_mmi",
-    actual = "@//hw/bitstream/vivado:rom_mmi_hyp",
-)
-
-alias(
-    name = "chip_earlgrey_cw310_hyperdebug_otp_mmi",
-    actual = "@//hw/bitstream/vivado:otp_mmi_hyp",
+    name = "chip_earlgrey_cw310_hyperdebug_mmi",
+    actual = "@//hw/bitstream/vivado:cw310_hyperdebug_mmi",
 )
 
 alias(
@@ -141,19 +162,10 @@ alias(
 )
 
 alias(
-    name = "chip_earlgrey_cw340_rom_mmi",
-    actual = "@//hw/bitstream/vivado:fpga_cw340_rom_mmi",
-)
-
-alias(
-    name = "chip_earlgrey_cw340_otp_mmi",
-    actual = "@//hw/bitstream/vivado:fpga_cw340_otp_mmi",
+    name = "chip_earlgrey_cw340_mmi",
+    actual = "@//hw/bitstream/vivado:cw340_mmi",
 )
 ''')
-
-        # This is more of an implementation detail, but it verifies that we hit
-        # the mocked `os.walk` function as expected.
-        os.walk.assert_called_once_with('cache/abcd')
 
 
 class TestFetchAvailableBitstreams(unittest.TestCase):

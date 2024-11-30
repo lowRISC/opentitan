@@ -70,25 +70,13 @@ filegroup(
 )
 
 filegroup(
-    name = "rom_mmi",
+    name = "cw310_mmi",
     testonly = True,
     srcs = select({
         "bitstream_skip": ["//hw/bitstream/universal:none"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:rom_mmi"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_rom_mmi"],
-    }),
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "otp_mmi",
-    testonly = True,
-    srcs = select({
-        "bitstream_skip": ["//hw/bitstream/universal:none"],
-        "bitstream_vivado": ["//hw/bitstream/vivado:otp_mmi"],
-        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_otp_mmi"],
+        "bitstream_vivado": ["//hw/bitstream/vivado:cw310_mmi"],
+        "bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw310_mmi"],
     }),
     tags = ["manual"],
 )
@@ -99,7 +87,8 @@ bitstream_splice(
     testonly = True,
     src = ":bitstream",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem",
-    meminfo = ":rom_mmi",
+    instance = "rom",
+    meminfo = ":cw310_mmi",
     tags = ["manual"],
     update_usr_access = True,
 )
@@ -109,7 +98,8 @@ bitstream_splice(
     testonly = True,
     src = ":bitstream",
     data = "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_scr_vmem",
-    meminfo = ":rom_mmi",
+    instance = "rom",
+    meminfo = ":cw310_mmi",
     tags = ["manual"],
     update_usr_access = True,
 )
@@ -121,7 +111,8 @@ bitstream_splice(
         testonly = True,
         src = ":mask_rom",
         data = img_target,
-        meminfo = ":otp_mmi",
+        instance = "otp",
+        meminfo = ":cw310_mmi",
         tags = ["manual"],
         update_usr_access = True,
     )
@@ -133,8 +124,7 @@ bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_cached_fragment",
     srcs = [
         "@bitstreams//:chip_earlgrey_cw310_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_otp_mmi",
-        "@bitstreams//:chip_earlgrey_cw310_rom_mmi",
+        "@bitstreams//:chip_earlgrey_cw310_mmi",
     ],
     design = "chip_earlgrey_cw310",
     manifest = "@bitstreams//:manifest",
@@ -155,8 +145,7 @@ bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
     srcs = [
         "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi",
-        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_rom_mmi",
+        "@bitstreams//:chip_earlgrey_cw310_hyperdebug_mmi",
     ],
     design = "chip_earlgrey_cw310_hyperdebug",
     manifest = "@bitstreams//:manifest",
@@ -177,8 +166,7 @@ bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw340_cached_fragment",
     srcs = [
         "@bitstreams//:chip_earlgrey_cw340_bitstream",
-        "@bitstreams//:chip_earlgrey_cw340_otp_mmi",
-        "@bitstreams//:chip_earlgrey_cw340_rom_mmi",
+        "@bitstreams//:chip_earlgrey_cw340_mmi",
     ],
     design = "chip_earlgrey_cw340",
     manifest = "@bitstreams//:manifest",
