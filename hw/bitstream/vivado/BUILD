@@ -52,8 +52,7 @@ fusesoc_build(
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.bit"],
-        "rom_mmi": ["synth-vivado/rom.mmi"],
-        "otp_mmi": ["synth-vivado/otp.mmi"],
+        "mmi": ["synth-vivado/memories.mmi"],
         "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310"],
@@ -70,18 +69,10 @@ filegroup(
 )
 
 filegroup(
-    name = "rom_mmi",
+    name = "cw310_mmi",
     testonly = True,
     srcs = [":fpga_cw310"],
-    output_group = "rom_mmi",
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "otp_mmi",
-    testonly = True,
-    srcs = [":fpga_cw310"],
-    output_group = "otp_mmi",
+    output_group = "mmi",
     tags = ["manual"],
 )
 
@@ -102,8 +93,7 @@ fusesoc_build(
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit"],
-        "rom_mmi": ["synth-vivado/rom.mmi"],
-        "otp_mmi": ["synth-vivado/otp.mmi"],
+        "mmi": ["synth-vivado/memories.mmi"],
         "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw310_hyperdebug"],
@@ -120,18 +110,10 @@ filegroup(
 )
 
 filegroup(
-    name = "rom_mmi_hyp",
+    name = "cw310_hyperdebug_mmi",
     testonly = True,
     srcs = [":fpga_cw310_hyperdebug"],
-    output_group = "rom_mmi",
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "otp_mmi_hyp",
-    testonly = True,
-    srcs = [":fpga_cw310_hyperdebug"],
-    output_group = "otp_mmi",
+    output_group = "mmi",
     tags = ["manual"],
 )
 
@@ -152,8 +134,7 @@ fusesoc_build(
     ],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.bit"],
-        "rom_mmi": ["synth-vivado/rom.mmi"],
-        "otp_mmi": ["synth-vivado/otp.mmi"],
+        "mmi": ["synth-vivado/memories.mmi"],
         "logs": ["synth-vivado/lowrisc_systems_chip_earlgrey_cw340_0.1.runs/"],
     },
     systems = ["lowrisc:systems:chip_earlgrey_cw340"],
@@ -170,18 +151,10 @@ filegroup(
 )
 
 filegroup(
-    name = "fpga_cw340_rom_mmi",
+    name = "cw340_mmi",
     testonly = True,
     srcs = [":fpga_cw340"],
-    output_group = "rom_mmi",
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "fpga_cw340_otp_mmi",
-    testonly = True,
-    srcs = [":fpga_cw340"],
-    output_group = "otp_mmi",
+    output_group = "mmi",
     tags = ["manual"],
 )
 
@@ -192,10 +165,11 @@ bitstream_manifest_fragment(
     srcs = [":fpga_cw310"],
     bitstream = "bitstream",
     design = "chip_earlgrey_cw310",
-    memory_maps = {
-        "rom_mmi": "rom",
-        "otp_mmi": "otp",
-    },
+    memories = [
+        "rom",
+        "otp",
+    ],
+    memory_map_file = ":cw310_mmi",
     tags = ["manual"],
 )
 
@@ -215,10 +189,11 @@ bitstream_manifest_fragment(
     srcs = [":fpga_cw310_hyperdebug"],
     bitstream = "bitstream",
     design = "chip_earlgrey_cw310_hyperdebug",
-    memory_maps = {
-        "rom_mmi": "rom",
-        "otp_mmi": "otp",
-    },
+    memories = [
+        "rom",
+        "otp",
+    ],
+    memory_map_file = ":cw310_hyperdebug_mmi",
     tags = ["manual"],
 )
 
@@ -238,10 +213,11 @@ bitstream_manifest_fragment(
     srcs = [":fpga_cw340"],
     bitstream = "bitstream",
     design = "chip_earlgrey_cw340",
-    memory_maps = {
-        "rom_mmi": "rom",
-        "otp_mmi": "otp",
-    },
+    memories = [
+        "rom",
+        "otp",
+    ],
+    memory_map_file = ":cw340_mmi",
     tags = ["manual"],
 )
 
@@ -260,9 +236,8 @@ pkg_files(
     name = "standard",
     testonly = True,
     srcs = [
+        ":cw310_mmi",
         ":fpga_cw310_test_rom",
-        ":otp_mmi",
-        ":rom_mmi",
     ],
     prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],
@@ -272,9 +247,8 @@ pkg_files(
     name = "hyperdebug",
     testonly = True,
     srcs = [
+        ":cw310_hyperdebug_mmi",
         ":fpga_cw310_test_rom_hyp",
-        ":otp_mmi_hyp",
-        ":rom_mmi_hyp",
     ],
     prefix = "earlgrey/fpga_cw310/hyperdebug",
     tags = ["manual"],
