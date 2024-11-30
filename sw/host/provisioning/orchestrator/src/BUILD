@@ -31,6 +31,9 @@ py_library(
     name = "db",
     srcs = ["db.py"],
     imports = ["."],
+    deps = [
+        ":ot_dut",
+    ],
 )
 
 py_library(

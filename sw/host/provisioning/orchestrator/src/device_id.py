@@ -97,7 +97,7 @@ class DeviceId():
         self._product = sku_config.product
         self._si_creator = sku_config.si_creator
         self._package = sku_config.package
-        self._sku = sku_config.name
+        self.sku = sku_config.name
 
         # Build HW origin with:
         # - 16 bits SiliconCreator ID
@@ -123,8 +123,8 @@ class DeviceId():
         # Build SKU specific field.
         self.package_id = sku_config.package_id
         self.sku_id = util.bytes_to_int(
-            self._sku.upper()[:4].encode("utf-8")[::-1])
-        self._sku_specific = util.bytes_to_int(
+            self.sku.upper()[:4].encode("utf-8")[::-1])
+        self.sku_specific = util.bytes_to_int(
             struct.pack(
                 "<HHIQ",
                 self.package_id,
@@ -134,7 +134,7 @@ class DeviceId():
             ))
 
         # Build full device ID.
-        self.device_id = (self._sku_specific << 128) | self._base_uid
+        self.device_id = (self.sku_specific << 128) | self._base_uid
 
     def update_base_id(self, other: "DeviceId") -> None:
         """Updates the base unique ID with another DeviceId object.
@@ -151,7 +151,7 @@ class DeviceId():
 
         self.din = other.din
         self._base_uid = other._base_uid
-        self.device_id = (self._sku_specific << 128) | self._base_uid
+        self.device_id = (self.sku_specific << 128) | self._base_uid
 
     @staticmethod
     def from_hexstr(hexstr: str) -> "DeviceId":

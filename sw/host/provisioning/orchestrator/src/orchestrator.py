@@ -9,9 +9,11 @@ import os
 import shlex
 import subprocess
 import sys
+from pathlib import Path
 
 import hjson
 
+import db
 from device_id import DeviceId, DeviceIdentificationNumber
 from ot_dut import OtDut
 from sku_config import SkuConfig
@@ -144,6 +146,10 @@ def main(args_in):
                                  capture_output=True,
                                  text=True).stdout.strip()
 
+    db_path = Path(args.log_dir) / db.DEFAULT_DB_FILENAME
+    db_handle = db.DB(db.DBConfig(db_path=db_path))
+    db.DeviceRecord.create_table(db_handle)
+
     # Run all provisioning flows.
     get_user_confirmation(sku_config, device_id, commit_hash, args)
     dut = OtDut(logs_root_dir=args.log_dir,
@@ -155,7 +161,10 @@ def main(args_in):
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     dut.run_ft()
-    # TODO: Extract provisioning data from logs and commit to DB.
+
+    device_record = db.DeviceRecord.from_dut(dut)
+    device_record.upsert(db_handle)
+    logging.info(f"Added DeviceRecord to database: {device_record}")
 
 
 if __name__ == "__main__":
