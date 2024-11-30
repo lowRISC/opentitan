@@ -9,6 +9,8 @@ import re
 import tempfile
 from dataclasses import dataclass
 
+import hjson
+
 from device_id import DeviceId
 from sku_config import SkuConfig
 from util import confirm, format_hex, run
@@ -58,6 +60,32 @@ class OtDut():
             )
             confirm()
         os.makedirs(self.log_dir, exist_ok=True)
+
+    def _extract_json_data(self, key: str, log_file: str) -> dict:
+        """Extracts and logs JSON data from a log file.
+
+        Args:
+            key: The key to search for in the log file.
+            log_file: The log file to search in.
+        Retuns:
+            The extracted JSON data.
+        """
+        with open(log_file, "r") as f:
+            log_data = f.read()
+
+        pattern = key + r':\s*({.*})'
+        match = re.search(pattern, log_data)
+        if match:
+            json_string = match.group(1)
+            try:
+                json_data = hjson.loads(json_string)
+            except hjson.HjsonDecodeError as e:
+                logging.error(f"Failed to parse {key}: {e}")
+                confirm()
+        else:
+            logging.error(f"{key} not found.")
+            confirm()
+        return json_data
 
     def _base_dev_dir(self) -> str:
         return _BASE_DEV_DIR
@@ -115,23 +143,8 @@ class OtDut():
                 logging.warning(f"CP failed with exit code: {res.returncode}.")
                 confirm()
 
-            with open(stdout_logfile, "r") as f:
-                log_data = f.read()
-
-            pattern = r'CHIP_PROBE_DATA:\s*({.*?})'
-            match = re.search(pattern, log_data)
-            if match:
-                json_string = match.group(1)
-                try:
-                    chip_probe_data = json.loads(json_string)
-                    logging.info(f"CHIP_PROBE_DATA: {chip_probe_data}")
-                except json.JSONDecodeError as e:
-                    logging.error(f"Failed to parse CHIP_PROBE_DATA: {e}")
-                    confirm()
-            else:
-                logging.error("CHIP_PROBE_DATA not found.")
-                confirm()
-
+            chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
+                                                      stdout_logfile)
             if "cp_device_id" not in chip_probe_data:
                 logging.error("cp_device_id found in CHIP_PROBE_DATA.")
                 confirm()
@@ -146,6 +159,7 @@ class OtDut():
             os.rename(stdout_logfile, f"{self.log_dir}/cp_out.log.txt")
             os.rename(stderr_logfile, f"{self.log_dir}/cp_err.log.txt")
 
+        self.cp_data = chip_probe_data
         logging.info(f"CP logs saved to {self.log_dir}.")
         logging.info("CP completed successfully.")
 
@@ -233,10 +247,13 @@ class OtDut():
                 confirm()
 
             # Run provisioning flow and collect logs.
-            res = run(cmd, f"{self.log_dir}/ft_out.log.txt",
-                      f"{self.log_dir}/ft_err.log.txt")
+            stdout_logfile = f"{self.log_dir}/ft_out.log.txt"
+            stderr_logfile = f"{self.log_dir}/ft_err.log.txt"
+            res = run(cmd, stdout_logfile, stderr_logfile)
             if res.returncode != 0:
                 logging.warning(f"FT failed with exit code: {res.returncode}.")
                 confirm()
-            else:
-                logging.info("FT completed successfully.")
+
+            self.ft_data = self._extract_json_data("PROVISIONING_DATA",
+                                                   stdout_logfile)
+            logging.info("FT completed successfully.")

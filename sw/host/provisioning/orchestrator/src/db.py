@@ -4,7 +4,13 @@
 """Module for interacting with a SQLite database."""
 
 import sqlite3
+import datetime
+import json
 from dataclasses import dataclass
+
+import ot_dut
+
+DEFAULT_DB_FILENAME = "provisioning.sqlite"
 
 
 @dataclass
@@ -42,13 +48,12 @@ class DeviceRecord(object):
     device_id: str
     sku: str
     provisioning_state: str
-    provisioning_log: str
     timestamp: int
     rma_unlock_token: str
     dice_uds: str
-    dice_cdi0: str
-    dice_cdi1: str
-    sku_specific_data: str
+    cp_json: str
+    ft_json: str
+    last_update: int
 
     @staticmethod
     def schema_list():
@@ -119,26 +124,53 @@ class DeviceRecord(object):
         records = c.fetchall()
         return [DeviceRecord(*record) for record in records]
 
+    @staticmethod
+    def from_dut(dut: ot_dut.OtDut) -> 'DeviceRecord':
+        """Creates a DeviceRecord object from a DUT object.
+
+        Args:
+            dut: The DUT object.
+        Returns:
+            A DeviceRecord object.
+        """
+        dice_uds = ""
+        if "UDS" in dut.ft_data["certs"]:
+            dice_uds = dut.ft_data["certs"]["UDS"]["bytes"]
+        return DeviceRecord(
+            device_id=dut.device_id.to_hexstr(),
+            sku=str(dut.device_id.sku),
+            provisioning_state=dut.ft_data["lc_state"]["mission_mode"],
+            timestamp=0,
+            rma_unlock_token=str(dut.ft_data["rma_unlock_token"]),
+            dice_uds=str(dice_uds),
+            cp_json=json.dumps(dut.cp_data),
+            ft_json=json.dumps(dut.ft_data),
+            last_update=0,
+        )
+
     def insert(self, db: DB):
         """Inserts the record into the database.
 
         Args:
             db: The database object.
         """
+
+        self.timestamp = int(datetime.datetime.now().timestamp())
+        self.last_update = int(datetime.datetime.now().timestamp())
+
         c = db.try_cursor()
         c.execute(
-            f"INSERT INTO {DeviceRecord.table_name()} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+            f"INSERT INTO {DeviceRecord.table_name()} VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
             (
                 self.device_id,
                 self.sku,
                 self.provisioning_state,
-                self.provisioning_log,
                 self.timestamp,
                 self.rma_unlock_token,
                 self.dice_uds,
-                self.dice_cdi0,
-                self.dice_cdi1,
-                self.sku_specific_data,
+                self.cp_json,
+                self.ft_json,
+                self.last_update,
             ))
         db.commit()
 
@@ -148,6 +180,8 @@ class DeviceRecord(object):
         Args:
             db: The database object.
         """
+        self.last_update = int(datetime.datetime.now().timestamp())
+
         c = db.try_cursor()
         keys = DeviceRecord.__annotations__.keys()
         update_params = [
