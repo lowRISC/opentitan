@@ -153,9 +153,14 @@ BitstreamManifestFragmentInfo = provider(
     },
 )
 
-def _bitstream_generate_manifest_fragment(design, srcs, bitstream, memory_maps):
+def _bitstream_generate_manifest_fragment(
+        design,
+        srcs,
+        bitstream,
+        memory_map_file,
+        memories):
     fragment = {
-        "schema_version": 2,
+        "schema_version": 3,
         "designs": {},
     }
     metadata = {}
@@ -176,19 +181,14 @@ def _bitstream_generate_manifest_fragment(design, srcs, bitstream, memory_maps):
             }
             deps.append(bitstream_outputs[0])
 
-        memory_map_info = {}
-        for output_group, mem_id in memory_maps.items():
-            if output_group in output_groups:
-                memory_files = output_groups[output_group].to_list()
-                if len(memory_files) != 1:
-                    fail("Too many memory map outputs for output group")
-                file_path = "/".join([design, memory_files[0].basename])
-                memory_map_info[mem_id] = {
-                    "file": file_path,
-                    "build_target": str(src.label),
-                }
-                deps.append(memory_files[0])
-        metadata["memory_map_info"] = memory_map_info
+    file_path = "/".join([design, memory_map_file.basename])
+    memory_map_info = {
+        "file": file_path,
+        "build_target": str(src.label),
+        "memories": memories,
+    }
+    deps.append(memory_map_file)
+    metadata["memory_map_info"] = memory_map_info
     fragment["designs"][design] = metadata
     return (fragment, deps)
 
@@ -199,7 +199,8 @@ def _bitstream_manifest_fragment_impl(ctx):
         ctx.attr.design,
         ctx.attr.srcs,
         ctx.attr.bitstream,
-        ctx.attr.memory_maps,
+        ctx.file.memory_map_file,
+        ctx.attr.memories,
     )
     for dep in deps:
         file_path = "/".join([ctx.attr.name, ctx.attr.design, dep.basename])
@@ -243,9 +244,12 @@ bitstream_manifest_fragment = rule(
             doc = "The output group for the programmable bitstream file.",
             mandatory = True,
         ),
-        "memory_maps": attr.string_dict(
-            doc = """A map from memory map files' output groups to their memory
-IDs (e.g. rom, otp, etc.)""",
+        "memories": attr.string_list(
+            doc = """List of memory names supported by the memory map file.""",
+        ),
+        "memory_map_file": attr.label(
+            doc = """A file containing the memory map info of the design.""",
+            allow_single_file = True,
         ),
     },
 )
