@@ -67,7 +67,7 @@ package top_${top["name"]}_pkg;
   // Number of LPGs for outgoing alert group ${alert_group}
   parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};
   
-  // Enumeration of ${alert_group} outgoing alerts
+  // Enumeration of ${alert_group} outgoing alert modules
   typedef enum int unsigned {
 % for mod in alert_modules:
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
@@ -82,6 +82,13 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_id_count").as_camel_case()}
   } ${"outgoing_alert_" + alert_group + "_id_e"};
+
+  // Enumeration of ${alert_group} outgoing alerts AsyncOn configuration
+  parameter logic [NOutgoingAlerts${alert_group.capitalize()}-1:0] AsyncOnOutgoingAlert${alert_group.capitalize()} = {
+  % for alert in list(reversed(top["outgoing_alert"][alert_group])):
+    1'b${alert['async']}${"" if loop.last else ","}
+  % endfor
+  };
 % endfor
 % for alert_group, alerts in top["incoming_alert"].items():
 
