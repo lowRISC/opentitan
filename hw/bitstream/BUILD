@@ -131,6 +131,7 @@ bitstream_splice(
 # Create manifest fragments for all the cached bitstreams
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_cached_fragment",
+    testonly = True,
     srcs = [
         "@bitstreams//:chip_earlgrey_cw310_bitstream",
         "@bitstreams//:chip_earlgrey_cw310_otp_mmi",
@@ -153,6 +154,7 @@ pkg_tar(
 
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw310_hyperdebug_cached_fragment",
+    testonly = True,
     srcs = [
         "@bitstreams//:chip_earlgrey_cw310_hyperdebug_bitstream",
         "@bitstreams//:chip_earlgrey_cw310_hyperdebug_otp_mmi",
@@ -175,6 +177,7 @@ pkg_tar(
 
 bitstream_fragment_from_manifest(
     name = "chip_earlgrey_cw340_cached_fragment",
+    testonly = True,
     srcs = [
         "@bitstreams//:chip_earlgrey_cw340_bitstream",
         "@bitstreams//:chip_earlgrey_cw340_otp_mmi",
