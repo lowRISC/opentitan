@@ -33,13 +33,12 @@ class TestDeviceRecord(unittest.TestCase):
         return db.DeviceRecord(device_id=random_string_build(),
                                sku=random_string_build(),
                                provisioning_state=random_string_build(),
-                               provisioning_log=random_string_build(),
-                               timestamp=0,
+                               timestamp=-1,
                                rma_unlock_token=random_string_build(),
                                dice_uds=random_string_build(),
-                               dice_cdi0=random_string_build(),
-                               dice_cdi1=random_string_build(),
-                               sku_specific_data=random_string_build())
+                               cp_json=random_string_build(),
+                               ft_json=random_string_build(),
+                               last_update=-1)
 
     def test_insert_and_query(self):
         device_record = self._random_device_record()
@@ -55,6 +54,7 @@ class TestDeviceRecord(unittest.TestCase):
         device_record.update(self.db)
         got_device_record = db.DeviceRecord.query(self.db,
                                                   device_record.device_id)
+        device_record.last_update = got_device_record.last_update
         self.assertEqual(device_record, got_device_record)
 
     def test_upsert(self):
@@ -68,6 +68,8 @@ class TestDeviceRecord(unittest.TestCase):
         device_record.upsert(self.db)
         got_device_record = db.DeviceRecord.query(self.db,
                                                   device_record.device_id)
+
+        device_record.last_update = got_device_record.last_update
         self.assertEqual(device_record, got_device_record)
 
     def test_query_all(self):
