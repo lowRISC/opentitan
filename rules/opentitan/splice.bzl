@@ -35,7 +35,7 @@ def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
     )
     return update
 
-def vivado_updatemem(ctx, name, src, mmi, update, debug = False):
+def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
     spliced = ctx.actions.declare_file("{}.bit".format(name))
 
     # Vivado's `updatemem` only accepts bitstream filenames that end with `.bit`.
@@ -52,7 +52,7 @@ def vivado_updatemem(ctx, name, src, mmi, update, debug = False):
     args.add("--meminfo", mmi)
     args.add("--data", update)
     args.add("--bit", src)
-    args.add("--proc", "dummy")
+    args.add("--proc", instance)
     args.add("--out", spliced)
 
     ctx.actions.run(
@@ -129,7 +129,8 @@ def _bitstream_splice_impl(ctx):
             ctx = ctx,
             name = "{}-rom".format(ctx.label.name),
             src = src,
-            mmi = get_fallback(ctx, "file.rom_mmi", exec_env),
+            instance = "rom",
+            mmi = get_fallback(ctx, "file.mmi", exec_env),
             update = mem,
             debug = ctx.attr.debug,
         )
@@ -151,7 +152,8 @@ def _bitstream_splice_impl(ctx):
             ctx = ctx,
             name = "{}-otp".format(ctx.label.name),
             src = src,
-            mmi = get_fallback(ctx, "file.otp_mmi", exec_env),
+            instance = "otp",
+            mmi = get_fallback(ctx, "file.mmi", exec_env),
             update = mem,
             debug = ctx.attr.debug,
         )
@@ -169,9 +171,8 @@ bitstream_splice_ = rule(
     attrs = {
         "src": attr.label(allow_single_file = True, doc = "The bitstream to splice"),
         "otp": attr.label(allow_single_file = True, doc = "The OTP image to splice into the bitstream"),
-        "otp_mmi": attr.label(allow_single_file = True, doc = "The OTP meminfo file"),
+        "mmi": attr.label(allow_single_file = True, doc = "The meminfo file"),
         "rom": attr.label(doc = "The ROM image to splice into the bitstream"),
-        "rom_mmi": attr.label(allow_single_file = True, doc = "The ROM meminfo file"),
         "exec_env": attr.label(providers = [[ExecEnvInfo], [DefaultInfo]], mandatory = True, doc = "The exec_env to splice for"),
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),

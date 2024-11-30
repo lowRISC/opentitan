@@ -18,10 +18,9 @@ _FIELDS = {
     "spx_key": ("attr.spx_key", False),
     "manifest": ("file.manifest", False),
     "rom": ("attr.rom", False),
-    "rom_mmi": ("file.rom_mmi", False),
     "rom_ext": ("attr.rom_ext", False),
     "otp": ("file.otp", False),
-    "otp_mmi": ("file.otp_mmi", False),
+    "mmi": ("file.mmi", False),
     "base_bitstream": ("file.base_bitstream", False),
     "args": ("attr.args", False),
     "test_cmd": ("attr.test_cmd", False),
@@ -147,11 +146,6 @@ def exec_env_common_attrs(**kwargs):
             allow_files = True,
             doc = "ROM image to use in this environment",
         ),
-        "rom_mmi": attr.label(
-            default = kwargs.get("rom_mmi"),
-            allow_single_file = True,
-            doc = "Memory layout description for ROM splicing",
-        ),
         "rom_ext": attr.label(
             default = kwargs.get("rom_ext"),
             allow_files = True,
@@ -162,10 +156,10 @@ def exec_env_common_attrs(**kwargs):
             allow_single_file = True,
             doc = "OTP image to use in this environment",
         ),
-        "otp_mmi": attr.label(
-            default = kwargs.get("otp_mmi"),
+        "mmi": attr.label(
+            default = kwargs.get("mmi"),
             allow_single_file = True,
-            doc = "Memory layout description for OTP splicing",
+            doc = "Memory layout description for splicing",
         ),
         "base_bitstream": attr.label(
             default = kwargs.get("base_bitstream"),
