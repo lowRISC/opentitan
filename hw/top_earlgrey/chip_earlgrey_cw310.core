@@ -23,6 +23,7 @@ filesets:
       - data/clocks.xdc
       - data/pins_cw310.xdc
       - data/placement.xdc
+      - data/synth.xdc
     file_type: xdc
 
   files_tcl:
