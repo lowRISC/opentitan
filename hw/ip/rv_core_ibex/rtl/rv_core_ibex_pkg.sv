@@ -21,4 +21,14 @@ package rv_core_ibex_pkg;
     ibex_pkg::crash_dump_t current;
   } cpu_crash_dump_t;
 
+  // processor to pwrmgr
+  typedef struct packed {
+    logic core_sleeping;
+  } cpu_pwrmgr_t;
+
+  // default value (for dangling ports)
+  parameter cpu_pwrmgr_t CPU_PWRMGR_DEFAULT = '{
+    core_sleeping: 1'b0
+  };
+
 endpackage // rv_core_ibex_pkg

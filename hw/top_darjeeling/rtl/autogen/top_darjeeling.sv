@@ -530,7 +530,7 @@ module top_darjeeling #(
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
-  pwrmgr_pkg::pwr_cpu_t       rv_core_ibex_pwrmgr;
+  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
@@ -837,6 +837,7 @@ module top_darjeeling #(
   // otbn_trans_lc_0
   assign lpg_cg_en[18] = clkmgr_aon_cg_en.main_otbn;
   assign lpg_rst_en[18] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
+
 
 // tie-off unused connections
 //VCS coverage off

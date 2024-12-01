@@ -90,7 +90,7 @@ module rv_core_ibex
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
-  output pwrmgr_pkg::pwr_cpu_t pwrmgr_o,
+  output cpu_pwrmgr_t pwrmgr_o,
 
   // dft bypass
   input scan_rst_ni,
