@@ -28,7 +28,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | crash_dump     | rv_core_ibex_pkg::cpu_crash_dump | uni     | req   |       1 |               |
 | lc_cpu_en      | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 |               |
 | pwrmgr_cpu_en  | lc_ctrl_pkg::lc_tx               | uni     | rcv   |       1 |               |
-| pwrmgr         | pwrmgr_pkg::pwr_cpu              | uni     | req   |       1 |               |
+| pwrmgr         | rv_core_ibex_pkg::cpu_pwrmgr     | uni     | req   |       1 |               |
 | nmi_wdog       | logic                            | uni     | rcv   |       1 |               |
 | edn            | edn_pkg::edn                     | req_rsp | req   |       1 |               |
 | icache_otp_key | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   |       1 |               |
@@ -100,7 +100,7 @@ Signal               | Direction        | Type                                  
 `cfg_tl_d_o `        | `output`         | `tlul_pkg::tl_d2h_t`                   | Outgoing configuration bus response.
 `lc_cpu_en_i`        | `input`          | `lc_ctrl_pkg::lc_tx_t`                 | CPU enable signal from life cycle controller.
 `pwrmgr_cpu_en_i`    | `input`          | `lc_ctrl_pkg::lc_tx_t`                 | CPU enable signal from power manager.
-`pwrmgr_o`           | `output`         | `pwrmgr_pkg::pwr_cpu_t`                | Low-power CPU status to power manager.
+`pwrmgr_o`           | `output`         | `pwrmgr_pkg::cpu_pwrmgr_t`             | Low-power CPU status to power manager.
 `edn_i`              | `input`          | `edn_pkg::edn_rsp_t`                   | Incoming entropy response from entropy distribution network.
 `edn_o`              | `output`         | `edn_pkg::edn_req_t`                   | Outgoing entropy request to entropy distribution network.
 `icache_otp_key_i`   | `input`          | `otp_ctrl_pkg::sram_otp_key_rsp_t`     | Incoming scrambling key response from OTP to icache.

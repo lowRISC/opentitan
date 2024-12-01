@@ -10,7 +10,6 @@ filesets:
       - lowrisc:ibex:ibex_top
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all

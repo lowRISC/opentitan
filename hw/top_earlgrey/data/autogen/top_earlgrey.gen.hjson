@@ -3276,8 +3276,8 @@
         }
         {
           name: pwr_cpu
-          struct: pwr_cpu
-          package: pwrmgr_pkg
+          struct: cpu_pwrmgr
+          package: rv_core_ibex_pkg
           type: uni
           act: rcv
           width: 1
@@ -8769,8 +8769,8 @@
         }
         {
           name: pwrmgr
-          struct: pwr_cpu
-          package: pwrmgr_pkg
+          struct: cpu_pwrmgr
+          package: rv_core_ibex_pkg
           type: uni
           act: req
           width: 1
@@ -18532,8 +18532,8 @@
       }
       {
         name: pwr_cpu
-        struct: pwr_cpu
-        package: pwrmgr_pkg
+        struct: cpu_pwrmgr
+        package: rv_core_ibex_pkg
         type: uni
         act: rcv
         width: 1
@@ -21421,8 +21421,8 @@
       }
       {
         name: pwrmgr
-        struct: pwr_cpu
-        package: pwrmgr_pkg
+        struct: cpu_pwrmgr
+        package: rv_core_ibex_pkg
         type: uni
         act: req
         width: 1
@@ -23960,15 +23960,15 @@
         default: rv_core_ibex_pkg::CPU_CRASH_DUMP_DEFAULT
       }
       {
-        package: pwrmgr_pkg
-        struct: pwr_cpu
+        package: rv_core_ibex_pkg
+        struct: cpu_pwrmgr
         signame: rv_core_ibex_pwrmgr
         width: 1
         type: uni
         end_idx: -1
         act: req
         suffix: ""
-        default: pwrmgr_pkg::PWR_CPU_DEFAULT
+        default: rv_core_ibex_pkg::CPU_PWRMGR_DEFAULT
       }
       {
         package: spi_device_pkg

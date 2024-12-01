@@ -145,11 +145,6 @@ package pwrmgr_pkg;
     flash_idle: 1'b1
   };
 
-  // processor to pwrmgr
-  typedef struct packed {
-    logic core_sleeping;
-  } pwr_cpu_t;
-
   // cpu reset requests and status
   typedef struct packed {
     logic ndmreset_req;
@@ -170,11 +165,6 @@ package pwrmgr_pkg;
   // default value for pwrmgr_ast_rsp_t (for dangling ports)
   parameter pwrmgr_cpu_t PWRMGR_CPU_DEFAULT = '{
     ndmreset_req: '0
-  };
-
-  // default value (for dangling ports)
-  parameter pwr_cpu_t PWR_CPU_DEFAULT = '{
-    core_sleeping: 1'b0
   };
 
   // default value (for dangling ports)

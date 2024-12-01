@@ -153,11 +153,11 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "pwr_cpu",
+    { struct:  "cpu_pwrmgr",
       type:    "uni",
       name:    "pwrmgr",
       act:     "req",
-      package: "pwrmgr_pkg",
+      package: "rv_core_ibex_pkg",
     },
 
     { struct:  "logic",
