@@ -2,15 +2,16 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:clkmgr_env:0.1"
+name: ${instance_vlnv("lowrisc:dv:clkmgr_env:0.1")}
 description: "CLKMGR DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip_interfaces:clkmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
+      - ${instance_vlnv("lowrisc:ip:clkmgr_pkg")}
+      - ${top_pkg_vlnv}
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv

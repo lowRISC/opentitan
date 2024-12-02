@@ -98,7 +98,7 @@ The controls can also be individual to each peripheral.
 
 ## Wait-for-Interrupt (wfi) Gating
 
-Wait-for-interrupt clock gating refers to the mechanism of using a processor’s sleep indication to actively gate off module clocks.
+Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
 Of the groups enumerated, only transactional, infrastructural and peripheral groups can be influenced by `wfi`.
 
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.

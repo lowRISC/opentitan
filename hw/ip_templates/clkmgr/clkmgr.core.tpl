@@ -4,14 +4,12 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:clkmgr:0.1")}
 description: "Top specific clock manager "
-virtual:
-  - lowrisc:ip_interfaces:clkmgr
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:buf
