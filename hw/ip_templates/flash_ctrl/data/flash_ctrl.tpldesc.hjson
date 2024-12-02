@@ -87,5 +87,17 @@
       type: "int"
       default: "1048576"
     }
+    {
+      name: "pwrmgr_vlnv_prefix"
+      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr_pkg used by this clkmgr"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
+    }
   ]
 }

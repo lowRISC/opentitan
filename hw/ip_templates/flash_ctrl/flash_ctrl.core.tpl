@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
 description: "Flash Controller"
-virtual:
-  - lowrisc:ip_interfaces:flash_ctrl
 
 filesets:
   files_rtl:
@@ -24,6 +22,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
+      - ${top_pkg_vlnv}
       - lowrisc:ip:jtag_pkg
     files:
       - rtl/flash_ctrl.sv

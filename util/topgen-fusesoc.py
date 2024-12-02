@@ -118,7 +118,7 @@ def main():
                     'lowrisc:prim:util',
                     'lowrisc:ip:lc_ctrl_pkg',
                     f'lowrisc:opentitan:{topname}_clkmgr_pkg',
-                    'lowrisc:ip_interfaces:flash_ctrl_pkg',
+                    f'lowrisc:opentitan:{topname}_flash_ctrl_pkg',
                     f'lowrisc:opentitan:{topname}_pwrmgr_pkg',
                     'lowrisc:ip_interfaces:rstmgr_pkg',
                     'lowrisc:prim:clock_mux2',
