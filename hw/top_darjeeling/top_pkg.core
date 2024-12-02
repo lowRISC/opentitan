@@ -6,8 +6,11 @@ CAPI=2:
 # XXX: This name is currently required as global identifier until we have
 # support for "interfaces" or a similar concept.
 # Tracked in https://github.com/olofk/fusesoc/issues/235
-name: "lowrisc:constants:top_pkg"
+name: "lowrisc:constants:top_darjeeling_top_pkg"
 description: "Toplevel-wide constants for Darjeeling"
+virtual:
+  - lowrisc:constants:top_pkg
+
 filesets:
   files_rtl:
     depend:

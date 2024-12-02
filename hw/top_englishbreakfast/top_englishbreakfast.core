@@ -8,7 +8,7 @@ filesets:
   files_rtl_generic:
     depend:
       - lowrisc:systems:topgen
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_earlgrey_top_pkg
       - lowrisc:tlul:headers
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
