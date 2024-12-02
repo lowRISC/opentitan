@@ -65,7 +65,7 @@ package top_${top["name"]}_pkg;
 % for alert_group, alert_modules in top["outgoing_alert_module"].items():
   
   // Number of ${alert_group} outgoing alerts
-  parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(alert_modules)};
+  parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(top['outgoing_alert'][alert_group])};
 
   // Number of LPGs for outgoing alert group ${alert_group}
   parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};
