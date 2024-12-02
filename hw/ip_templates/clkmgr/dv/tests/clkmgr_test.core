@@ -7,7 +7,7 @@ description: "CLKMGR DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:clkmgr_env
+      - lowrisc:dv:clkmgr_env # TODO: needs templating
     files:
       - clkmgr_test_pkg.sv
       - clkmgr_base_test.sv: {is_include_file: true}
