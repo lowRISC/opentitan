@@ -119,7 +119,7 @@ def main():
                     'lowrisc:ip:lc_ctrl_pkg',
                     'lowrisc:ip_interfaces:clkmgr_pkg',
                     'lowrisc:ip_interfaces:flash_ctrl_pkg',
-                    'lowrisc:ip_interfaces:pwrmgr_pkg',
+                    f'lowrisc:opentitan:{topname}_pwrmgr_pkg',
                     'lowrisc:ip_interfaces:rstmgr_pkg',
                     'lowrisc:prim:clock_mux2',
                     # clkmgr

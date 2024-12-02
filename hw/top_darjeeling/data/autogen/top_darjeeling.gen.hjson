@@ -2384,7 +2384,28 @@
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: EscNumSeverities
+          desc: Number of escalation severities
+          type: int
+          default: "4"
+          local: "false"
+          expose: "false"
+          name_top: PwrmgrAonEscNumSeverities
+        }
+        {
+          name: EscPingCountWidth
+          desc: Width of ping count for the escalation receiver
+          type: int
+          default: "16"
+          local: "false"
+          expose: "false"
+          name_top: PwrmgrAonEscPingCountWidth
+        }
+      ]
       inter_signal_list:
       [
         {

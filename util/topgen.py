@@ -431,7 +431,8 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "rst_reqs": top["reset_requests"],
         "NumRstReqs": n_rstreqs,
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
-        "NumRomInputs": n_rom_ctrl
+        "NumRomInputs": n_rom_ctrl,
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)

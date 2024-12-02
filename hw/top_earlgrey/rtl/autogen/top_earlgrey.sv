@@ -1765,7 +1765,9 @@ module top_earlgrey #(
       .rst_aon_ni (rstmgr_aon_resets.rst_usb_aon_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[22:22]),
+    .EscNumSeverities(4),
+    .EscPingCountWidth(16)
   ) u_pwrmgr_aon (
 
       // Interrupt
