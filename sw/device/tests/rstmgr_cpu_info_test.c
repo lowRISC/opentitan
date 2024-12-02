@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -15,8 +16,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -184,14 +183,10 @@ bool test_main(void) {
   dif_rv_core_ibex_t ibex;
 
   // Initialize Handles.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &ibex));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(&kDtRstmgr[0], &rstmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(&kDtAonTimer[0], &aon_timer));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(&kDtPwrmgr[0], &pwrmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(&kDtRvCoreIbex[0], &ibex));
 
   switch (rstmgr_testutils_reason_get()) {
     case kDifRstmgrResetInfoPor:  // The first power-up.

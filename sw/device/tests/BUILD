@@ -3397,7 +3397,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
