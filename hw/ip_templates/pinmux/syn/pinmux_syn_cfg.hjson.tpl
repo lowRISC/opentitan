@@ -6,7 +6,7 @@
   name: pinmux
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip_interfaces:pinmux:0.1
+  fusesoc_core: ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
 
   import_cfgs: [// Project wide common synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_syn_cfg.hjson"],

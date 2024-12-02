@@ -15,6 +15,8 @@
     n_dio_periph_out: 14
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
+    scan_role_pkg_vlnv: lowrisc:systems:top_earlgrey_scan_role_pkg
     topname: earlgrey
   }
 }
