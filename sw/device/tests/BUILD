@@ -4703,6 +4703,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
+        "//hw/top:devicetables",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
