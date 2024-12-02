@@ -1,11 +1,11 @@
-# Theory of Operation
+<%text># Theory of Operation</%text>
 
 The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
 The reset controller is closely related to the [power controller](../../pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
 
 ![Reset Topology](../doc/reset_topology.svg)
 
-## Reset Topology
+<%text>## Reset Topology</%text>
 
 The topology can be summarized as follows:
 
@@ -86,7 +86,7 @@ The reset topology also contains additional properties:
     *   In a production system, `TRSTn` only needs to be released for RMA transitions and nothing else.
 .
 
-## Reset Manager
+<%text>## Reset Manager</%text>
 
 The reset manager handles the reset of the core domain, and also holds relevant reset information in CSR registers, such as:
 
@@ -104,14 +104,14 @@ These requests primarily come from the following sources:
 *  Escalation reset requests such as those from `alert_handler` or `pwrmgr` itself.
 *  Direct software request for reset.
 
-### Shadow Resets
+<%text>### Shadow Resets</%text>
 
 OpenTitan supports the shadow configuration registers.
 These are registers stored in two constantly checking copies to ensure the values are not maliciously or accidentally disturbed.
 For these components, the reset manager outputs a shadow reset dedicated to resetting only the shadow storage.
 This reset separation ensures that a targetted attack on the reset line cannot easily defeat shadow registers.
 
-### Reset Consistency Checks
+<%text>### Reset Consistency Checks</%text>
 
 The reset manager implements reset consistency checks to ensure that triggered resets are supposed to happen and not due to some fault in the system.
 Every leaf reset in the system has an associated consistency checker.
@@ -134,20 +134,22 @@ The reset manager then checks as follows:
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
-### Reset Indications for Alert Handler
+% if with_alert_handler:
+<%text>### Reset Indications for Alert Handler</%text>
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
 For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
+% endif
 
-## Design Details
+<%text>## Design Details</%text>
 
 The reset manager generates the resets required by the system by synchronizing reset tree components to appropriate output clocks.
 As a result, a particular reset tree (for example `rst_lc_n`) may have multiple outputs depending on the clock domains of its consumers.
 
 Each reset tree is discussed in detail below.
 
-## POR Reset Tree
+<%text>## POR Reset Tree</%text>
 
 The POR reset tree, `rst_por_n`, is the root reset of the entire device.
 If this reset ever asserts, everything in the design is reset.
@@ -163,7 +165,7 @@ The stretch parameters are design time configurations.
 *   Both functions are expected to operate on slow, always available KHz clocks.
 
 
-## Life Cycle Reset Tree
+<%text>## Life Cycle Reset Tree</%text>
 
 Life cycle reset, `rst_lc_n` asserts under the following conditions:
 *  Whenever `rst_por_n` asserts.
@@ -172,7 +174,7 @@ Life cycle reset, `rst_lc_n` asserts under the following conditions:
 The `rst_lc_n` tree contains both always-on and non-always-on versions.
 How many non-always-on versions is dependent on how many power domains are supported by the system.
 
-## System Reset Tree
+<%text>## System Reset Tree</%text>
 
 System reset, `rst_sys_n` , assertion depends on life cycle state.
 
@@ -187,7 +189,7 @@ During these states, when `ndmreset_req` is issued, all logic except the debug m
 The `rst_sys_n` tree contains both always-on and non-always-on versions.
 How many non-always-on versions is dependent on how many power domains are supported by the system.
 
-## Output Leaf Resets
+<%text>## Output Leaf Resets</%text>
 
 The reset trees discussed above are not directly output to the system for consumption.
 Instead, the output leaf resets are synchronized versions of the various root resets.
@@ -195,7 +197,7 @@ How many leaf resets there are and to which clock is decided by the system and t
 
 Assuming a leaf output has N power domains and M clock domains, it potentially means one reset tree may output NxM outputs to satisfy all the reset scenario combinations.
 
-## Power Domains and Reset Trees
+<%text>## Power Domains and Reset Trees</%text>
 
 It is alluded above that reset trees may contain both always-on and non-always-on versions.
 This distinction is required to support power manager's various low power states.
@@ -205,7 +207,7 @@ For example, assume a system with two power domains - `Domain A` is always-on, a
 When `Domain B` is powered off, all of `Domain B`'s resets, from `rst_lc_n`, `rst_sys_n` to `rst_module_n` are asserted.
 However, the corresponding resets for `Domain A` are left untouched because it has not been powered off.
 
-## Software Controlled Resets
+<%text>## Software Controlled Resets</%text>
 
 Certain leaf resets can be directly controlled by software.
 Due to security considerations, most leaf resets cannot be controlled, only a few blocks are given exceptions.
@@ -222,7 +224,7 @@ In general, the following rules apply:
 *   If a module contains sensor functions for security, it cannot be software resettable.
 *   If a module controls life cycle or related function, it cannot be software resettable.
 
-## Summary
+<%text>## Summary</%text>
 
 The following table summarizes the different reset requests and which part of each reset tree, along with what power domain is affected.
 
@@ -237,7 +239,7 @@ SW low power entry                | wait-for-interrupt deep sleep entry         
 SW controlled reset request       | `rstmgr` SW_RST_CTRL_N                                        |                |                 |                 | all domains
 
 
-## Reset Information
+<%text>## Reset Information</%text>
 
 The reset information register is a reflection of the reset state from the perspective of the system.
 In OpenTitan, since there is only 1 host, it is thus from the perspective of the processor.
@@ -280,7 +282,7 @@ Even though four reset causes are labeled as warm boot, their effects on the sys
 
 This behavioral difference may be important to software, as it implies the configuration of the system may need to be different.
 
-## Crash Dump Information
+<%text>## Crash Dump Information</%text>
 
 The reset manager manages crash dump information for software debugging across unexpected resets and watchdogs.
 When enabled, the latest alert information and latest CPU information are captured in always-on registers.
@@ -289,7 +291,7 @@ When the software resumes after the reset, it is then able to examine the last C
 
 The enable for such debug capture can be locked such that it never captures.
 
-### Alert Information
+<%text>### Alert Information</%text>
 
 The alert information register contains the value of the alert crash dump prior to a triggered reset.
 Since this information differs in length between system implementation, the alert information register only displays 32-bits at a time.
@@ -299,7 +301,7 @@ To enable alert crash dump capture, set [`ALERT_INFO_CTRL.EN`](registers.md#aler
 Once the system has reset, check [`ALERT_INFO_ATTR.CNT_AVAIL`](registers.md#alert_info_attr) for how many reads need to be done.
 Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segment, and then read the output from [`ALERT_INFO`](registers.md#alert_info).
 
-### CPU Information
+<%text>### CPU Information</%text>
 
 The CPU information register contains the value of the CPU state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.

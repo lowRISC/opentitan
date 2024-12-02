@@ -120,7 +120,7 @@ def main():
                     f'lowrisc:opentitan:{topname}_clkmgr_pkg',
                     f'lowrisc:opentitan:{topname}_flash_ctrl_pkg',
                     f'lowrisc:opentitan:{topname}_pwrmgr_pkg',
-                    'lowrisc:ip_interfaces:rstmgr_pkg',
+                    f'lowrisc:opentitan:{topname}_rstmgr_pkg',
                     'lowrisc:prim:clock_mux2',
                     # clkmgr
                     'lowrisc:prim:all',

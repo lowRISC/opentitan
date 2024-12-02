@@ -480,6 +480,17 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"]["peripheral"])
 
+    # Will connect to alert_handler
+    with_alert_handler = lib.find_module(topcfg['module'], 'alert_handler') is not None
+    if with_alert_handler:
+        alert_handler_vlnv_prefix = f"top_{topname}_"
+    elif topname == "englishbreakfast":
+        # TODO: Clean templates to not require alert_handler. English Breakfast
+        # does not have one, so it uses types and constants from Earl Grey.
+        alert_handler_vlnv_prefix = "top_earlgrey_"
+    else:
+        alert_handler_vlnv_prefix = ""
+
     params = {
         "clks": clks,
         "reqs": topcfg["reset_requests"],
@@ -490,6 +501,10 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": topcfg["exported_rsts"],
+        "alert_handler_vlnv_prefix": alert_handler_vlnv_prefix,
+        "with_alert_handler": with_alert_handler,
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("rstmgr", topname, params, out_path)

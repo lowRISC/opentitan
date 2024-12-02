@@ -4,13 +4,13 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:rstmgr:0.1")}
 description: "Reset manager RTL"
-virtual:
-  - lowrisc:ip_interfaces:rstmgr
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:alert_handler_pkg
+% if len(alert_handler_vlnv_prefix) > 0:
+      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg", alert_handler_vlnv_prefix)}
+% endif
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
@@ -21,7 +21,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - ${instance_vlnv("lowrisc:ip:rstmgr_pkg:0.1")}
       - ${instance_vlnv("lowrisc:ip:rstmgr_reg:0.1")}
-      - lowrisc:ip:rstmgr_cnsty_chk
+      - ${instance_vlnv("lowrisc:ip:rstmgr_cnsty_chk:0.1")}
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
