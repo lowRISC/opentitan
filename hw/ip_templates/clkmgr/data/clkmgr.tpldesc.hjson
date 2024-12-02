@@ -16,10 +16,10 @@
       default: {
         io: {
           name: "io"
-	  aon:  "False"
-	  freq: "96000000"
-	  ref:  "false"
-	}
+          aon:  "False"
+          freq: "96000000"
+          ref:  "false"
+        }
       }
     }
     {
@@ -29,12 +29,12 @@
       default: {
         main: {
           name: "io_div4"
-	  aon:  "False"
-	  freq: "24000000"
-	  ref:  "false"
-	  div:  "4"
-	  src:  "io"
-	}
+          aon:  "False"
+          freq: "24000000"
+          ref:  "false"
+          div:  "4"
+          src:  "io"
+        }
       }
     }
     {
@@ -43,12 +43,12 @@
       type: "object"
       default: {
         hint_clks: {
-	  name: "clk_main_aes"
-	  signal: {
-	    src_name: "main"
-	    endpoint_ip: "aes"
-	  }
-	}
+          name: "clk_main_aes"
+          signal: {
+            src_name: "main"
+            endpoint_ip: "aes"
+          }
+        }
       }
     }
     {
@@ -73,11 +73,11 @@
       type: "object"
       default: {
         intf: {
-	  ep: [
-	    "clk1"
-	    "clk2"
-	  ]
-	}
+          ep: [
+            "clk1"
+            "clk2"
+          ]
+        }
       }
     }
     {
@@ -85,6 +85,24 @@
       desc: "The count of clock groups, as in 'ast', 'infra', 'secure', etc."
       type: "int"
       default: "2"
+    }
+    {
+      name: "with_alert_handler"
+      desc: "Generate outputs for a clkmgr that would connect to an alert handler"
+      type: "bool"
+      default: "1"
+    }
+    {
+      name: "pwrmgr_vlnv_prefix"
+      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr_pkg used by this clkmgr"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
     }
   ]
 }

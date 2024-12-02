@@ -1,4 +1,4 @@
-# Theory of Operation
+<%text># Theory of Operation</%text>
 
 Clock management in OpenTitan is divided into groups.
 Each group has specific attributes and controls whether software is allowed to influence individual clocks during the active power state.
@@ -29,7 +29,7 @@ The table shows the group name, the modules that belong to each group, and wheth
 * 2 - Transactional clock group's wait-for-interrupt control is only a hint.
 * 3 - May require additional complexity to handle multi-host (non-wait-for-interrupt) scenarios
 
-## Power-up Clock Group
+<%text>## Power-up Clock Group</%text>
 
 The group refers to modules responsible for power up, such as power, reset and clock managers.
 Large portions of these modules operate to release clocks and resets for the rest of the design, thus cannot operate on gated versions of the clocks themselves.
@@ -37,7 +37,7 @@ They are the only group running clocks directly from the source.
 All follow groups are derived after root clock gating.
 See [block diagram](#block-diagram) for more details.
 
-## Transactional Clock Group
+<%text>## Transactional Clock Group</%text>
 
 This group refers to the collection of modules that are transactional by nature (example: `Hmac` / `Aes` / `Kmac`).
 This means these modules perform specific tasks (for example encrypt, decrypt or hashing).
@@ -58,7 +58,7 @@ Wait-for-interrupt based control is already a software hint, it can thus be appl
 For modules in this group, each module can be individually influenced, and thus each has its own dedicated clock gating logic.
 The added benefit of allowing software control in this group is to save power, as some transactional modules can be both power and area hungry.
 
-## Infrastructure Clock Group
+<%text>## Infrastructure Clock Group</%text>
 
 This group refers to the collection of modules that support infrastructure functions.
 
@@ -71,7 +71,7 @@ For this group, there is no reason to allow software control over the clocks, as
 Wait-for-interrupt controls however can be used, as long as there is a way to break the processor out of wait-for-interrupt and handle other bus hosts, while also separating the functional portions from bus access.
 See Wait-for-interrupt clock gating for more details.
 
-## Security Clock Group
+<%text>## Security Clock Group</%text>
 
 The security clock group is made up of security modules that either have background functions (entropy, alert manager, sensors) or perform critical security functions where disabling clocks could have unexpected side effects (life cycle, otp, pinmux, plic).
 
@@ -81,14 +81,14 @@ The clocks are always running as long as the source is on.
 This group is not functionally identical to the power-up group.
 The power-up group is run on clocks directly from the clock source, while the security group is derived after root clock gating.
 
-## Timer Clock Group
+<%text>## Timer Clock Group</%text>
 
 The timer clock group is composed of modules that track time for various purposes.
 As influencing time can change the perspective of software and potentially reveal security vulnerabilities, the clock state for these modules cannot be directly or indirectly influenced by software.
 
 Functionally, this group is identical to the security group.
 
-## Peripheral Clock Group
+<%text>## Peripheral Clock Group</%text>
 
 The peripheral clock group is composed of I/O peripherals modules.
 By their nature, I/O peripherals are both transactional and most of the time not security critical - so long as proper care is taken to sandbox peripherals from the system.
@@ -96,20 +96,20 @@ By their nature, I/O peripherals are both transactional and most of the time not
 These modules can be both directly and indirectly controlled by software.
 The controls can also be individual to each peripheral.
 
-## Wait-for-Interrupt (wfi) Gating
+<%text>## Wait-for-Interrupt (wfi) Gating</%text>
 
-Wait-for-interrupt clock gating refers to the mechanism of using a processor’s sleep indication to actively gate off module clocks.
+Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
 Of the groups enumerated, only transactional, infrastructural and peripheral groups can be influenced by `wfi`.
 
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
 The interaction with each clock group is briefly described below.
 
-### Transactional Clock Group
+<%text>### Transactional Clock Group</%text>
 
 While `wfi` gating can be applied to this group, the modules in this category are already expected to be turned off and on by software depending on usage.
 Specifically, these modules are already completely managed by software when not in use, thus may not see significant benefit from `wfi` gating.
 
-### Peripheral Clock Group
+<%text>### Peripheral Clock Group</%text>
 
 Since peripherals, especially those in device mode, are often operated in an interrupt driven way, the peripheral's core operating clock frequently must stay alive even if the processor is asleep.
 This implies that in order for peripherals to completely support `wfi` clock gating, they must be split between functional clocks and bus clocks.
@@ -119,7 +119,7 @@ In this scenario, it is important to ensure the functional clocks are responsibl
 
 This division may only be beneficial for peripherals where register and local fabric size is large relative to the functional component.
 
-### Infrastructural Clock Group
+<%text>### Infrastructural Clock Group</%text>
 
 This clock group matches `wfi` functionality well.
 Most infrastructural components such as fabric, gaskets and memories, have no need to be clocked when the processor is idle.
@@ -133,13 +133,13 @@ The bus requests themselves thus become dynamic clock request signals to help en
 
 There is thus a moderate design and high verification cost to supporting `wfi` gating for the infrastructural group.
 
-## Block Diagram
+<%text>## Block Diagram</%text>
 
 The following is a high level block diagram of the clock manager.
 
 ![Clock Manager Block Diagram](clkmgr_block_diagram.svg)
 
-### Reset Domains
+<%text>### Reset Domains</%text>
 
 Since the function of the clock manager is tied closely into the power-up behavior of the device, the reset domain selection must also be purposefully done.
 To ensure that default clocks are available for the [power manager to release resets and initialize memories](../../pwrmgr/README.md#fast-clock-domain-fsm), the clock dividers inside the clock manager directly use `por` (power-on-reset) derived resets.
@@ -156,15 +156,17 @@ For a detailed breakdown between `por` and `life cycle` resets, please see the [
 The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
 ![Clock Manager Block Diagram](clkmgr_rst_domain.svg)
 
-### Clock Gated Indications for Alert Handler
+% if with_alert_handler:
+<%text>### Clock Gated Indications for Alert Handler</%text>
 
 The alert handler needs to know the status of the various clock domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the clock manager outputs a 4bit MuBi signal for each clock domain that indicates whether its clock is active.
 For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
+% endif
 
-## Design Details
+<%text>## Design Details</%text>
 
-### Root Clock Gating and Interface with Power Manager
+<%text>### Root Clock Gating and Interface with Power Manager</%text>
 
 All clock groups except the power-up group run from gated source clocks.
 The source clocks are gated off during low power states as controlled by the power manager.
@@ -177,7 +179,7 @@ This means even if a particular clock is turned on by the clock manager (for exa
 This makes it software's responsibility to ensure low power entry requests (which can only be initiated by software) do not conflict with any ongoing activities controlled by software.
 For example, software should ensure that Aes / Otbn activities have completed before initializing a low power entry process.
 
-### Clock Division
+<%text>### Clock Division</%text>
 
 Not all peripherals run at the full IO clock speed, hence the IO clock is divided down by 2x and 4x in normal operation.
 This division ratio can be modified to 1x and 2x when switching to an external clock, since the external clock may be slower than the internal clock source.
@@ -188,14 +190,14 @@ Further, the clock dividers are hardwired and have no software control, this is 
 
 Note that for debug purposes, `ast` can also request a change in the clock division ratio via a dedicated hardware interface (`div_step_down_req_i`).
 
-### Wait-for-Interrupt Support
+<%text>### Wait-for-Interrupt Support</%text>
 
 Given the marginal benefits and the increased complexity of `wfi` support, the first version of this design does not support `wfi` gating.
 All `wfi CG` modules in the block diagram are thus drawn with dashed lines to indicate it can be theoretically supported but currently not implemented.
 
 It may be added for future more complex systems where there is a need to tightly control infrastructural power consumption as a result from clocks.
 
-### External Clock Switch Support
+<%text>### External Clock Switch Support</%text>
 
 Clock manager supports the ability to request root clocks switch to an external clock.
 There are two occasions where this is required:
@@ -203,7 +205,7 @@ There are two occasions where this is required:
 -  Software request for external clocks during normal functional mode.
 
 
-#### Life Cycle Requested External Clock
+<%text>#### Life Cycle Requested External Clock</%text>
 
 The life cycle controller only requests the io clock input to be switched.
 When the life cycle controller requests external clock, a request signal `lc_clk_byp_req_i` is sent from `lc_ctrl` to `clkmgr`.
@@ -214,7 +216,7 @@ Note that this division factor change is done since the external clock is expect
 I.e. this division factor change keeps the nominal frequencies of the div_2 and div_4 clocks stable at 48Mhz and 24MHz, respectively.
 See [Clock Frequency Summary](#clock-frequency-summary) for more details.
 
-#### Software Requested External Clocks
+<%text>#### Software Requested External Clocks</%text>
 
 Unlike the life cycle controller, a software request for external clocks switches all clock sources to an external source.
 Software request for external clocks is not always valid.
@@ -238,7 +240,7 @@ Note, software external clock switch support is meant to be a debug / evaluation
 This is because if the clock frequency suddenly changes, the thresholds used for timeout / measurement checks will no longer apply.
 There is currently no support in hardware to dynamically synchronize a threshold change to the expected frequency.
 
-#### Clock Frequency Summary
+<%text>#### Clock Frequency Summary</%text>
 
 The table below summarises the valid modes and the settings required.
 
@@ -263,7 +265,7 @@ This table also assumes that high speed external clock is 96MHz, while low speed
 As can be seen from the table, the external clock switch scheme prioritizes the stability of the divided clocks, while allowing the undivided clocks to slow down.
 
 
-### Clock Frequency / Time-out Measurements
+<%text>### Clock Frequency / Time-out Measurements</%text>
 
 Clock manager can continuously measure root clock frequencies to see if any of the root clocks have deviated from the expected frequency.
 This feature can be enabled through the various measurement control registers such as [`IO_MEASURE_CTRL`](registers.md#io_measure_ctrl).

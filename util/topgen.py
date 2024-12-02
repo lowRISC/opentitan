@@ -380,6 +380,10 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         ty: {nm: {"src_name": sig.src.name, "endpoint_ip": sig.endpoints[0][0]}
              for nm, sig in mp.items() if isinstance(sig, ClockSignal)}
         for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)})
+
+    # Will connect to alert_handler
+    with_alert_handler = lib.find_module(topcfg['module'], 'alert_handler') is not None
+
     params = {
         "src_clks": OrderedDict({
             name: vars(obj) for name, obj in clocks.srcs.items()}),
@@ -390,7 +394,11 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "hint_names": hint_names,
         "parent_child_clks": typed_clocks.parent_child_clks,
         "exported_clks": topcfg["exported_clks"],
-        "number_of_clock_groups": len(clocks.groups)
+        "number_of_clock_groups": len(clocks.groups),
+        "with_alert_handler": with_alert_handler,
+        # TODO: Register VLNVs and look this up instead of hard-coding.
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("clkmgr", topname, params, out_path)
