@@ -11,8 +11,12 @@ package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "main_lib",
-    srcs = ["imm_rom_ext.c"],
+    srcs = [
+        "hello_world_start.S",
+        "imm_rom_ext.c",
+    ],
     hdrs = ["imm_rom_ext.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":imm_rom_ext_epmp",
         "//hw/top:flash_ctrl_c_regs",
@@ -49,6 +53,27 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
+)
+
+opentitan_binary(
+    name = "main_binaries",
+    # TODO(#24368): Support multiple executing environments. Currently all
+    # environments derive the same binary so only one environment is kept here,
+    # but we need to support multiple executing environments and make sure
+    # ROM_EXT targets choose the matched environment when linking IMM_ROM_EXT.
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340",
+    ],
+    linker_script = ":ld_hello_world",
+    deps = [
+        ":main_lib",
+        "//sw/device/lib/crt",
+    ],
+)
+
+imm_rom_ext_section(
+    name = "main_section",
+    srcs = [":main_binaries"],
 )
 
 ld_library(
