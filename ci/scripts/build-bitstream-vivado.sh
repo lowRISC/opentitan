@@ -102,8 +102,11 @@ fusesoc --verbose --cores-root=. \
   --BootRomInitFile="$BOOTROM_VMEM" \
   $OTP_ARG
 
-BITSTREAM_FNAME="lowrisc_systems_chip_${FLAVOUR}_${TARGET}_0.1.bit"
-BITSTREAM_PATH="$OBJ_DIR/hw/synth-vivado/$BITSTREAM_FNAME"
+
+VLNV_PATH="lowrisc_systems_chip_${FLAVOUR}_${TARGET}_0.1"
+
+BITSTREAM_FNAME="${VLNV_PATH}.bit"
+BITSTREAM_PATH="$OBJ_DIR/hw/${VLNV_PATH}/synth-vivado/${BITSTREAM_FNAME}"
 cp "$BITSTREAM_PATH" "$TOPLEVEL_BIN_DIR"
 
 cp "$OBJ_DIR/hw/synth-vivado/memories.mmi" "$TOPLEVEL_BIN_DIR"
