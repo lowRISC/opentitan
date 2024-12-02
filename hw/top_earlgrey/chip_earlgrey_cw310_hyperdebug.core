@@ -10,7 +10,7 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast
-      - lowrisc:systems:padring
+      - lowrisc:systems:top_earlgrey_padring
       - lowrisc:systems:scan_role_pkg
       - lowrisc:prim:prim_legacy_pkg
       - lowrisc:prim_xilinx:all
