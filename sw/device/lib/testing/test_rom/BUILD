@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -112,6 +112,7 @@ cc_library(
 
 cc_library(
     name = "earl_grey_test_rom_lib",
+    target_compatible_with = opentitan_require_top("earlgrey"),
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
@@ -125,6 +126,7 @@ cc_library(
     srcs = [
         "darjeeling_fake_driver_funcs.c",
     ],
+    target_compatible_with = opentitan_require_top("darjeeling"),
     deps = [
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
