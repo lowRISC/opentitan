@@ -2247,6 +2247,8 @@ _KMAC_APP_ROM_LIST = [
     ("//sw/device/lib/testing/test_rom:test_rom_sim_verilator_hashfile", "sim_verilator"),
     ("//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_hashfile", "fpga_cw310_test_rom"),
     ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile", "fpga_cw310_rom_with_fake_keys"),
+    ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile", "fpga_cw310_sival"),
+    ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile", "fpga_cw340_sival"),
     ("//sw/device/lib/testing/test_rom:test_rom_sim_dv_hashfile", "sim_dv"),
 ]
 
