@@ -12,7 +12,7 @@ filesets:
       - lowrisc:ibex:ibex_tracer
       - lowrisc:prim:clock_div
       - lowrisc:systems:ast
-      - lowrisc:systems:scan_role_pkg
+      - lowrisc:systems:top_earlgrey_scan_role_pkg
       - lowrisc:prim:prim_legacy_pkg
       - lowrisc:prim_generic:all
 

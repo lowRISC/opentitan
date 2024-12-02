@@ -11,7 +11,7 @@ filesets:
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast
       - lowrisc:systems:top_earlgrey_padring
-      - lowrisc:systems:scan_role_pkg
+      - lowrisc:systems:top_earlgrey_scan_role_pkg
       - lowrisc:prim:prim_legacy_pkg
       - lowrisc:prim_xilinx_ultrascale:all
     files:
