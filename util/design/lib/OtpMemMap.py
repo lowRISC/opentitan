@@ -208,7 +208,8 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
 
     # Make sure partition size is aligned.
     if part["size"] % SCRAMBLE_BLOCK_WIDTH:
-        raise RuntimeError("Partition size must be 64bit aligned")
+        raise RuntimeError(
+            f"Partition size must be {SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
 
 def _validate_item(item: Dict, buffered: bool, secret: bool):
@@ -296,8 +297,8 @@ def _validate_mmap(config: Dict) -> Dict:
         part['offset'] = offset
         if check_int(part['offset']) % SCRAMBLE_BLOCK_WIDTH:
             raise RuntimeError(
-                "Partition {} offset must be 64bit aligned".format(
-                    part['name']))
+                f"Partition {part['name']} offset must be "
+                f"{SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
         log.info("Partition {} at offset {} size {}".format(
             part["name"], part["offset"], part["size"]))
