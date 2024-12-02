@@ -2,38 +2,38 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:pinmux_fpv:0.1"
-description: "pinmux FPV target"
+name: ${instance_vlnv("lowrisc:dv:pwrmgr_unit_only_sva:0.1")}
+description: "PWRMGR assertion interfaces not suitable for chip level bind file."
 filesets:
+  files_dv:
+    depend:
+      - lowrisc:tlul:headers
+      - lowrisc:fpv:csr_assert_gen
+      - ${instance_vlnv("lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1")}
+
+    files:
+      - pwrmgr_unit_only_bind.sv
+    file_type: systemVerilogSource
+
   files_formal:
     depend:
-      - lowrisc:prim:all
-      - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:pinmux
-      - lowrisc:fpv:csr_assert_gen
-      - lowrisc:fpv:pinmux_common_fpv
-      - lowrisc:systems:scan_role_pkg
-    files:
-      - tb/pinmux_tb.sv
-    file_type: systemVerilogSource
+      - lowrisc:ip_interfaces:pwrmgr
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../data/pinmux.hjson
+      spec: ../../data/pwrmgr.hjson
 
 targets:
   default: &default_target
-    default_tool: icarus
     filesets:
-      - files_formal
+      - files_dv
     generate:
       - csr_assert_gen
-    toplevel: pinmux_tb
-
   formal:
     <<: *default_target
-
-  lint:
-    <<: *default_target
+    filesets:
+      - files_formal
+      - files_dv
+    toplevel: pwrmgr

@@ -14,7 +14,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip_interfaces:pinmux
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:fpv:pinmux_common_fpv
+      - ${instance_vlnv("lowrisc:fpv:pinmux_common_fpv:0.1")}
       - lowrisc:systems:top_${topname}_pkg
       - lowrisc:systems:scan_role_pkg
     files:

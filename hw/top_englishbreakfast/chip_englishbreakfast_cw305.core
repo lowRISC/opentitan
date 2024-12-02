@@ -10,9 +10,9 @@ filesets:
     depend:
       - lowrisc:prim_xilinx:prim_xilinx_default_pkg
       - lowrisc:systems:top_englishbreakfast:0.1
-      - lowrisc:systems:ast
+      - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:topgen
-      - lowrisc:systems:padring
+      - lowrisc:systems:top_earlgrey_padring
     file_type: systemVerilogSource
 
   files_constraints:

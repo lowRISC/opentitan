@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:fpv:pinmux_fpv:0.1"
+name: "lowrisc:fpv:top_earlgrey_pinmux_fpv:0.1"
 description: "pinmux FPV target"
 filesets:
   files_formal:
@@ -11,7 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip_interfaces:pinmux
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:fpv:pinmux_common_fpv
+      - lowrisc:fpv:top_earlgrey_pinmux_common_fpv
       - lowrisc:systems:scan_role_pkg
     files:
       - tb/pinmux_tb.sv

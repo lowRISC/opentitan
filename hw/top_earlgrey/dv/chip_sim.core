@@ -2,8 +2,11 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:chip_sim:0.1"
+name: "lowrisc:dv:top_earlgrey_chip_sim:0.1"
 description: "Earlgrey chip DV sim target"
+virtual:
+  - lowrisc:dv:chip_sim
+
 filesets:
   files_rtl:
     depend:
@@ -19,10 +22,10 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_reg
       - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
       - lowrisc:ip:tlul
-      - lowrisc:dv:chip_test
-      - lowrisc:dv:clkmgr_sva
-      - lowrisc:dv:pwrmgr_sva
-      - lowrisc:dv:rstmgr_sva
+      - lowrisc:dv:top_earlgrey_chip_test
+      - lowrisc:dv:top_earlgrey_clkmgr_sva
+      - lowrisc:dv:top_earlgrey_pwrmgr_sva
+      - lowrisc:dv:top_earlgrey_rstmgr_sva
       - lowrisc:dv:top_earlgrey_sva
       - lowrisc:dv:top_earlgrey_xbar_main_bind
       - lowrisc:dv:top_earlgrey_xbar_peri_bind

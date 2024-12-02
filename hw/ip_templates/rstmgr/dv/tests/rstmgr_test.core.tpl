@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:pwrmgr_test:0.1"
-description: "PWRMGR DV UVM test"
+name: ${instance_vlnv("lowrisc:dv:rstmgr_test:0.1")}
+description: "RSTMGR DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:dv:pwrmgr_env
+      - ${instance_vlnv("lowrisc:dv:rstmgr_env:0.1")}
     files:
-      - pwrmgr_test_pkg.sv
-      - pwrmgr_base_test.sv: {is_include_file: true}
+      - rstmgr_test_pkg.sv
+      - rstmgr_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:

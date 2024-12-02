@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:alert_handler_component
+      - ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
@@ -21,7 +21,7 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - ${instance_vlnv("lowrisc:ip:rstmgr_pkg:0.1")}
       - ${instance_vlnv("lowrisc:ip:rstmgr_reg:0.1")}
-      - lowrisc:ip:rstmgr_cnsty_chk
+      - ${instance_vlnv("lowrisc:ip:rstmgr_cnsty_chk:0.1")}
     files:
       - rtl/rstmgr_ctrl.sv
       - rtl/rstmgr_por.sv
