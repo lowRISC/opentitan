@@ -543,6 +543,10 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
+    alert_handler_vlnv_prefix: top_darjeeling_
+    with_alert_handler: true
+    pwrmgr_vlnv_prefix: top_darjeeling_
+    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
   }
 }

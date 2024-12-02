@@ -10,10 +10,9 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:alert_handler_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - ${instance_vlnv("lowrisc:ip:rstmgr_reg")}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
     files:
+      - rtl/rstmgr_reg_pkg.sv
       - rtl/rstmgr_pkg.sv
     file_type: systemVerilogSource
 

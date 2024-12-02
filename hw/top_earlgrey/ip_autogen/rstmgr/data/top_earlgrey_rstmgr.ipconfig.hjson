@@ -690,6 +690,10 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
+    alert_handler_vlnv_prefix: top_earlgrey_
+    with_alert_handler: true
+    pwrmgr_vlnv_prefix: top_earlgrey_
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }
