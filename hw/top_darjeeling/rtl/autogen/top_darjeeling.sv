@@ -1356,7 +1356,9 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_spi_host0_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14:14])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[14:14]),
+    .EscNumSeverities(4),
+    .EscPingCountWidth(16)
   ) u_pwrmgr_aon (
 
       // Interrupt

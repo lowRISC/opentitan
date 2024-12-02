@@ -376,6 +376,20 @@
       default: "1",
       local: "true"
     },
+    {
+      name: "EscNumSeverities"
+      desc: "Number of escalation severities"
+      type: "int"
+      default: "4"
+      local: "false"
+    },
+    {
+      name: "EscPingCountWidth"
+      desc: "Width of ping count for the escalation receiver"
+      type: "int"
+      default: "16"
+      local: "false"
+    },
 
     { name: "ResetMainPwrIdx",
       desc: "Reset req idx for MainPwr",

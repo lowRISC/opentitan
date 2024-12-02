@@ -4,17 +4,14 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:pwrmgr_reg:0.1")}
 description: "Power manager registers"
-virtual:
-  - lowrisc:ip_interfaces:pwrmgr_reg
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
     files:
-      - rtl/pwrmgr_reg_pkg.sv
       - rtl/pwrmgr_reg_top.sv
     file_type: systemVerilogSource
 

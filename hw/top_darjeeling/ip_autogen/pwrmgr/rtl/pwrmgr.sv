@@ -11,7 +11,9 @@ module pwrmgr
   import pwrmgr_pkg::*;
   import pwrmgr_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter int unsigned EscNumSeverities = 4,
+  parameter int unsigned EscPingCountWidth = 16
 ) (
   // Clocks and resets
   input clk_slow_i,
@@ -134,8 +136,8 @@ module pwrmgr
 
   logic esc_rst_req_d, esc_rst_req_q;
   prim_esc_receiver #(
-    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
-    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+    .N_ESC_SEV   (EscNumSeverities),
+    .PING_CNT_DW (EscPingCountWidth)
   ) u_esc_rx (
     .clk_i(clk_esc),
     .rst_ni(rst_esc_n),
