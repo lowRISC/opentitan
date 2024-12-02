@@ -69,5 +69,17 @@
       type: "bool"
       default: "1"
     }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this pinmux"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
+    }
+    {
+      name: "scan_role_pkg_vlnv"
+      desc: "Provides the VLNV for the scan_role_pkg used by this pinmux"
+      type: "string"
+      default: "lowrisc:systems:scan_role_pkg"
+    }
   ]
 }
