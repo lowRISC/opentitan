@@ -188,3 +188,8 @@ hyperdebug_repos()
 register_toolchains(
     "//rules/opentitan:localtools",
 )
+
+local_repository(
+    name = "outoftree",
+    path = "..",
+)
