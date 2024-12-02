@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_edn.h"
@@ -13,7 +14,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
 
 // Initialize OTTF.
@@ -46,9 +46,7 @@ bool test_main(void) {
 
   // Initialize Ibex.
   dif_rv_core_ibex_t rv_core_ibex;
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &rv_core_ibex));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(&kDtRvCoreIbex[0], &rv_core_ibex));
 
   uint32_t data_reads_count = kRandomDataReads;
   if (kDeviceType == kDeviceSilicon) {
