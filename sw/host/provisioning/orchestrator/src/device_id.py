@@ -6,8 +6,8 @@
 import struct
 from dataclasses import dataclass
 
-from sku_config import SkuConfig
 import util
+from sku_config import SkuConfig
 
 _RESERVED_WORD = 0
 
@@ -63,12 +63,12 @@ class DeviceIdentificationNumber:
 
     @staticmethod
     def from_int(din: int) -> "DeviceIdentificationNumber":
-        year = din & 0xF
-        week = (din >> 4) & 0xFF
-        lot = (din >> 12) & 0xFFF
-        wafer = (din >> 24) & 0xFF
-        wafer_x_coord = (din >> 32) & 0xFFF
-        wafer_y_coord = (din >> 44) & 0xFFF
+        year = util.read_int_as_decimal_str(din & 0xF)
+        week = util.read_int_as_decimal_str((din >> 4) & 0xFF)
+        lot = util.read_int_as_decimal_str((din >> 12) & 0xFFF)
+        wafer = util.read_int_as_decimal_str((din >> 24) & 0xFF)
+        wafer_x_coord = util.read_int_as_decimal_str((din >> 32) & 0xFFF)
+        wafer_y_coord = util.read_int_as_decimal_str((din >> 44) & 0xFFF)
         return DeviceIdentificationNumber(year=year,
                                           week=week,
                                           lot=lot,
