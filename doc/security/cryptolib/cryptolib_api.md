@@ -369,8 +369,10 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_verify }}
 
 #### ECDH
 
@@ -405,10 +407,12 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify_async_finalize }}
 
 #### ECDH
 
