@@ -25,6 +25,15 @@ def format_hex(n, width=8):
     return format(n, f"#0{width + 2}x")  # + 2 to account for 0x chars
 
 
+def read_int_as_decimal_str(x: int) -> int:
+    """Interpret a number by reading its hexadecimal representation as a decimal number.
+
+    For example, `70` in hex is `0x46` and should be read as the decimal value 46.
+    This encoding is a manufacturing equipment constraint.
+    """
+    return int(hex(x)[2:])
+
+
 def confirm():
     """Get user confirmation to continue."""
     confirm = input("Type confirm to continue: ")
