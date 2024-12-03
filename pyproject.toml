@@ -76,7 +76,7 @@ dependencies = [
   "tockloader==1.13",
 
   # Development version with OT-specific changes
-  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
+  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.6.zip",
 
   # Development version with OT-specific changes
   "edalize@https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip",
