@@ -133,9 +133,6 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 #### Elliptic curve data structures
 
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_eddsa_sign_mode }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_domain }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve_type }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve }}
 
 #### Hash data structures
 
@@ -381,7 +378,8 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256 }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384 }}
 
 #### Ed25519
 
@@ -418,8 +416,10 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_async_finalize }}
 
 #### Ed25519
 

@@ -31,57 +31,6 @@ typedef enum otcrypto_eddsa_sign_mode {
 } otcrypto_eddsa_sign_mode_t;
 
 /**
- * Struct for domain parameters of a custom Weierstrass curve.
- */
-typedef struct otcrypto_ecc_domain {
-  // Prime P (modulus of coordinate finite field).
-  otcrypto_const_byte_buf_t p;
-  // Coefficient a.
-  otcrypto_const_byte_buf_t a;
-  // Coefficient b.
-  otcrypto_const_byte_buf_t b;
-  // q (order of G).
-  otcrypto_const_byte_buf_t q;
-  // Value of x coordinate of G (basepoint). Same length as p.
-  const uint32_t *gx;
-  // Value of y coordinate of G (basepoint). Same length as p.
-  const uint32_t *gy;
-  // Cofactor of the curve.
-  const uint32_t cofactor;
-  // Checksum value of the parameters.
-  uint32_t checksum;
-} otcrypto_ecc_domain_t;
-
-/**
- * Enum to define the type of elliptic curve used for the operation.
- *
- * Values are hardened.
- */
-typedef enum otcrypto_ecc_curve_type {
-  // Generic Weierstrass curve, with custom domain parameters.
-  kOtcryptoEccCurveTypeCustom = 0xbf7,
-  // Named Weierstrass curve - NIST P256.
-  kOtcryptoEccCurveTypeNistP256 = 0xec8,
-  // Named Weierstrass curve - NIST P384.
-  kOtcryptoEccCurveTypeNistP384 = 0x1bc,
-  // Named Weierstrass curve - Brainpool P256r1.
-  kEccCurveTypeBrainpoolP256R1 = 0xc1e,
-} otcrypto_ecc_curve_type_t;
-
-/**
- * Struct for ECC curve used for ECDSA / ECDH operation.
- *
- * Values are hardened.
- */
-typedef struct otcrypto_ecc_curve {
-  // Type of the Weierstrass curve, custom curve or named curve.
-  otcrypto_ecc_curve_type_t curve_type;
-  // Domain parameters for a custom Weierstrass curve. May be NULL for a named
-  // curve.
-  const otcrypto_ecc_domain_t *const domain_parameter;
-} otcrypto_ecc_curve_t;
-
-/**
  * Generates a key pair for ECDSA with curve P-256.
  *
  * The caller should allocate and partially populate the blinded key struct,
@@ -248,23 +197,30 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
- * Performs Elliptic Curve Diffie Hellman shared secret generation.
- *
- * The `domain_parameter` field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to `NULL`.
+ * Elliptic Curve Diffie Hellman shared secret generation with curve P-256.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
  * @return Result of ECDH shared secret generation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh(const otcrypto_blinded_key_t *private_key,
-                                const otcrypto_unblinded_key_t *public_key,
-                                const otcrypto_ecc_curve_t *elliptic_curve,
-                                otcrypto_blinded_key_t *shared_secret);
+otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret);
+
+/**
+ * Elliptic Curve Diffie Hellman shared secret generation with curve P-384.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @return Result of ECDH shared secret generation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret);
 
 /**
  * Generates a new Ed25519 key pair.
@@ -605,43 +561,59 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
- * Starts the asynchronous Elliptic Curve Diffie Hellman shared
- * secret generation.
+ * Starts asynchronous shared secret generation for ECDH/P-256.
  *
- * The `domain_parameter` field of the `elliptic_curve` is required
- * only for a custom curve. For named curves this field is ignored
- * and can be set to `NULL`.
+ * See `otcrypto_ecdh_p256` for requirements on input values.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDH start operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_async_start(
+otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_ecc_curve_t *elliptic_curve);
+    const otcrypto_unblinded_key_t *public_key);
 
 /**
- * Finalizes the asynchronous Elliptic Curve Diffie Hellman shared
- * secret generation.
+ * Finalizes asynchronous shared secret generation for ECDH/P-256.
  *
- * Returns `kOtcryptoStatusValueOk` and copies `shared_secret` if the OTBN
- * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN
- * is busy or `kOtcryptoStatusValueInternalError` if there is an error.
+ * See `otcrypto_ecdh_p256` for requirements on input values.
  *
- * The caller must ensure that the `elliptic_curve` parameter matches the one
- * that was previously passed to the corresponding `_start` function; a
- * mismatch will cause inconsistencies.
+ * May block until the operation is complete.
  *
- * @param elliptic_curve Pointer to the elliptic curve that is being used.
  * @param[out] shared_secret Pointer to generated blinded shared key struct.
  * @return Result of async ECDH finalize operation.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdh_async_finalize(
-    const otcrypto_ecc_curve_t *elliptic_curve,
+otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
+    otcrypto_blinded_key_t *shared_secret);
+
+/**
+ * Starts asynchronous shared secret generation for ECDH/P-384.
+ *
+ * See `otcrypto_ecdh_p384` for requirements on input values.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @return Result of async ECDH start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key);
+
+/**
+ * Finalizes asynchronous shared secret generation for ECDH/P-384.
+ *
+ * See `otcrypto_ecdh_p384` for requirements on input values.
+ *
+ * May block until the operation is complete.
+ *
+ * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @return Result of async ECDH finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
 
 /**
