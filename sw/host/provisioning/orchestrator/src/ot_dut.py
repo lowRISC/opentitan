@@ -6,6 +6,7 @@ import json
 import logging
 import os
 import re
+import shutil
 import tempfile
 from dataclasses import dataclass
 
@@ -156,8 +157,8 @@ class OtDut():
             self.device_id.update_base_id(cp_device_id)
 
             self._make_log_dir()
-            os.rename(stdout_logfile, f"{self.log_dir}/cp_out.log.txt")
-            os.rename(stderr_logfile, f"{self.log_dir}/cp_err.log.txt")
+            shutil.move(stdout_logfile, f"{self.log_dir}/cp_out.log.txt")
+            shutil.move(stderr_logfile, f"{self.log_dir}/cp_err.log.txt")
 
         self.cp_data = chip_probe_data
         logging.info(f"CP logs saved to {self.log_dir}.")
