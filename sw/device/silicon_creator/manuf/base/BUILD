@@ -428,7 +428,7 @@ filegroup(
             tags = [
                 "lc_test_locked0",
                 "manuf",
-            ],
+            ] + ["manual"] if config.get("offline", False) else [],
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
@@ -464,12 +464,32 @@ test_suite(
     tags = ["manual"],
     tests = [
         ":ft_provision_{}_fpga_cw310_rom_with_fake_keys".format(sku)
+        for sku, config in EARLGREY_SKUS.items()
+        if not config.get("offline", False)
+    ],
+)
+
+test_suite(
+    name = "ft_provision_including_offline_cw310",
+    tags = ["manual"],
+    tests = [
+        ":ft_provision_{}_fpga_cw310_rom_with_fake_keys".format(sku)
         for sku in EARLGREY_SKUS.keys()
     ],
 )
 
 test_suite(
     name = "ft_provision_cw340",
+    tags = ["manual"],
+    tests = [
+        ":ft_provision_{}_fpga_cw340_rom_with_fake_keys".format(sku)
+        for sku, config in EARLGREY_SKUS.items()
+        if not config.get("offline", False)
+    ],
+)
+
+test_suite(
+    name = "ft_provision_including_offline_cw340",
     tags = ["manual"],
     tests = [
         ":ft_provision_{}_fpga_cw340_rom_with_fake_keys".format(sku)
