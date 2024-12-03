@@ -8,7 +8,7 @@ use std::iter::Peekable;
 use std::ops::Mul;
 use std::time::Duration;
 
-use crate::io::gpio::BitbangEntry;
+use crate::io::gpio::{BitbangEntry, DacBangEntry};
 
 #[derive(Debug, Eq, PartialEq)]
 enum Token<'a> {
@@ -17,6 +17,7 @@ enum Token<'a> {
     Quoted(&'a str),
 
     Await,
+    Linear,
 
     LParen,
     RParen,
@@ -60,6 +61,7 @@ fn get_token<'a>(
         };
         match &input[token_start..token_end] {
             "await" => Ok(Some(Token::Await)),
+            "linear" => Ok(Some(Token::Linear)),
             other => Ok(Some(Token::Alphabetic(other))),
         }
     } else if first_char == '\'' {
@@ -130,6 +132,49 @@ pub fn parse_clock_frequency(input: &str) -> Result<Duration> {
         }),
         _ => bail!("Parse error"),
     }
+}
+
+pub fn parse_delay(num: &str, time_unit: &str, clock: Duration) -> Result<u32> {
+    if time_unit == "ticks" {
+        let Ok(ticks) = num.parse::<u32>() else {
+            bail!("Delay must use integer number of ticks, try increasing clock frequency");
+        };
+        ensure!(
+            ticks > 0,
+            "Zero length delay requested: {} {}",
+            num,
+            time_unit
+        );
+        return Ok(ticks);
+    }
+
+    // Attempt parsing an expression such as "17 ms", and calculate how many ticks at the given
+    // clock frequency best approximates the requested delay.
+    let duration = match time_unit {
+        "us" => num.parse::<f64>().unwrap() / 1000000.0,
+        "ms" => num.parse::<f64>().unwrap() / 1000.0,
+        "s" => num.parse::<f64>().unwrap(),
+        unit => bail!("Unrecognized time unit: '{}'", unit),
+    };
+    ensure!(
+        duration > 0.0,
+        "Zero length delay requested: {} {}",
+        num,
+        time_unit
+    );
+    let duration_in_ticks = duration / clock.as_secs_f64();
+    ensure!(
+        duration_in_ticks <= u32::MAX as f64,
+        "Requested delay exceeds range, try lower clock frequency",
+    );
+    let closest_ticks = duration_in_ticks.round() as u32;
+    let actual_duration = clock.mul(closest_ticks);
+    let ratio = actual_duration.as_secs_f64() / duration;
+    ensure!(
+        (0.99..=1.00).contains(&ratio),
+        "Requested delay cannot be approximated to within 1%, try increasing clock frequency",
+    );
+    Ok(closest_ticks)
 }
 
 /// This function parses the main string argument to `opentitantool gpio bit-bang`, producing a
@@ -265,27 +310,7 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
                 result.push(BitbangEntry::Await { mask, pattern });
             }
             [Token::Numeric(num), Token::Alphabetic(time_unit), rest @ ..] => {
-                let ticks = if *time_unit == "ticks" {
-                    num.parse::<u32>().unwrap()
-                } else {
-                    let duration = match *time_unit {
-                        "us" => num.parse::<f64>().unwrap() / 1000000.0,
-                        "ms" => num.parse::<f64>().unwrap() / 1000.0,
-                        "s" => num.parse::<f64>().unwrap(),
-                        unit => bail!("Unrecognized time unit: '{}'", unit),
-                    };
-                    let closest_ticks = (duration / clock.as_secs_f64()).round() as u32; // TODO overflow
-                    let actual_duration = clock.mul(closest_ticks);
-                    let _ = actual_duration; //TODO Verify precision to 1%
-                    closest_ticks
-                };
-                ensure!(
-                    ticks > 0,
-                    "Zero length delay requested: {} {}",
-                    num,
-                    time_unit
-                );
-                result.push(BitbangEntry::Delay(ticks));
+                result.push(BitbangEntry::Delay(parse_delay(num, time_unit, clock)?));
                 tokens = rest;
             }
             [Token::Numeric(bits), rest @ ..] => {
@@ -317,6 +342,108 @@ pub fn parse_sequence<'a, 'wr, 'rd>(
     }
 
     Ok((result.into(), token_map))
+}
+
+/// This function parses the main string argument to `opentitantool gpio dac-bang`, producing a
+/// list of `DacBangEntry` corresponding to the parsed instructions.  The slices in the entries
+/// will refer to the "accumulator vector" provided by the caller, which this function will clear
+/// out and resize according to need.
+pub fn parse_dac_sequence<'a, 'wr>(
+    input: &'a str,
+    num_pins: usize,
+    clock: Duration,
+    accumulator: &'wr mut Vec<f32>,
+) -> Result<Box<[DacBangEntry<'wr>]>> {
+    ensure!(
+        num_pins > 0,
+        "Must specify at least one analog pin for dac-banging"
+    );
+    let all_tokens = get_all_tokens(input)?;
+
+    // First pass, check how many data bytes are needed.
+    let mut needed_entries = 0usize;
+    let mut run_start = 0usize;
+    let mut run_lengths: Vec<usize> = Vec::new();
+    let mut tokens: &[Token] = &all_tokens;
+    loop {
+        match tokens {
+            [Token::Numeric(_), Token::Alphabetic(_), rest @ ..]
+            | [Token::Linear, Token::LParen, Token::Numeric(_), Token::Alphabetic(_), Token::RParen, rest @ ..] =>
+            {
+                if needed_entries > run_start {
+                    let run_length = needed_entries - run_start;
+                    ensure!(
+                        run_length % num_pins == 0,
+                        "Unexpected number of samples {}, should be multiple of the number of pins {}",
+                        run_length,
+                        num_pins,
+                    );
+                    run_lengths.push(run_length);
+                }
+                run_start = needed_entries;
+                tokens = rest;
+            }
+            [Token::Numeric(_), rest @ ..] => {
+                needed_entries += 1;
+                tokens = rest;
+            }
+            [] => break,
+            _ => bail!("Parse error"),
+        }
+    }
+    if needed_entries > run_start {
+        let run_length = needed_entries - run_start;
+        ensure!(
+            run_length % num_pins == 0,
+            "Unexpected number of samples {}, should be multiple of the number of pins {}",
+            run_length,
+            num_pins,
+        );
+        run_lengths.push(run_length);
+    }
+    accumulator.clear();
+    accumulator.resize(needed_entries, 0.0);
+    let mut slice_wr: &'wr mut [f32] = accumulator;
+    let mut run_lengths: &[usize] = &run_lengths;
+
+    // Second pass, create `DacBangEntry` instances referring to data in the accumulator.
+    let mut result = Vec::new();
+    let mut tokens: &[Token] = &all_tokens;
+    loop {
+        match tokens {
+            [Token::Numeric(num), Token::Alphabetic(time_unit), rest @ ..] => {
+                result.push(DacBangEntry::Delay(parse_delay(num, time_unit, clock)?));
+                tokens = rest;
+            }
+            [Token::Linear, Token::LParen, Token::Numeric(num), Token::Alphabetic(time_unit), Token::RParen, rest @ ..] =>
+            {
+                result.push(DacBangEntry::Linear(parse_delay(num, time_unit, clock)?));
+                tokens = rest;
+            }
+            [Token::Numeric(_), ..] => {
+                let samples = run_lengths[0];
+                let (left_wr, right_wr) = slice_wr.split_at_mut(samples);
+
+                for i in 0..samples {
+                    match tokens[i] {
+                        Token::Numeric(voltage) => {
+                            left_wr[i] = voltage.parse::<f32>()?;
+                        }
+                        _ => bail!("Parse error"),
+                    }
+                }
+
+                result.push(DacBangEntry::Write(left_wr));
+                slice_wr = right_wr;
+                tokens = &tokens[samples..];
+                run_lengths = &run_lengths[1..];
+            }
+            [] => break,
+            _ => bail!("Parse error"),
+        }
+    }
+
+    Ok(result.into())
 }
 
 #[cfg(test)]
@@ -378,6 +505,19 @@ mod tests {
                 Token::Numeric("100"),
                 Token::Alphabetic("us"),
                 Token::Numeric("11"),
+            ],
+        );
+        assert_eq!(
+            // Analog voltage output example, using "linear(...)" for interpolation.
+            get_all_tokens("1.0 linear(1ms) 0.0").unwrap(),
+            [
+                Token::Numeric("1.0"),
+                Token::Linear,
+                Token::LParen,
+                Token::Numeric("1"),
+                Token::Alphabetic("ms"),
+                Token::RParen,
+                Token::Numeric("0.0"),
             ],
         );
     }
