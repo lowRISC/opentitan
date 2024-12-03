@@ -1,0 +1,13 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+workspace(name = "rom_hooks")
+
+# This is a sample workspace to demonstrate how to write custom ROM hooks.
+# This bazel repository is not stand-alone project: it must be connected into
+# the main OpenTitan repository by way of the `rom_hooks_setup` call in
+# OpenTitan's WORKSPACE file.
+
+# See this repository's README.md and BUILD.bazel files to understand how to
+# write rules for custom ROM hooks.
