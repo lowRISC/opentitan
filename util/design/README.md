@@ -1,11 +1,9 @@
 # Design-related Tooling Scripts
 
-## Life Cycle and OTP Tools
-
-### OTP Memory Map Translation Script
+## OTP Memory Map Translation Script
 
 The `gen-otp-mmap.py` script is used to translate the OTP memory map definition Hjson file into documentation and SV package collateral.
-The memory map definition file for top_earlgrey is currently located at `hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson`.
+The memory map definition file for top_earlgrey is currently located at `hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson`.
 
 The script can either be invoked via the makefile
 ```console
@@ -24,7 +22,7 @@ $ ./util/design/gen-otp-mmap.py
 The seed value used for generating OTP-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
-### Life Cycle State Encoding Generator
+## Life Cycle State Encoding Generator
 
 The `gen-lc-state-enc.py` script is used to generate the redundant life cycle state encoding and print the constants and type definitions into the life cycle state package.
 The life cycle definition file for top_earlgrey is currently located at `hw/ip/lc_ctrl/data/lc_ctrl_state.hjson`.
@@ -46,10 +44,80 @@ $ ./util/design/gen-lc-state-enc.py
 The seed value used for generating life-cycle-state-related random netlist constants can optionally be overridden with the `--seed` switch when calling the script directly.
 Otherwise that seed value is taken from the Hjson file, or generated on-the-fly if the Hjson file does not contain a seed.
 
-### OTP Preload Image Generator
+## OTP Preload Image Generator
 
 The OTP preload image generation tool builds on top of the memory map and life cycle state generation Python classes in order to transform a memory image configuration into a memory hexfile that can be used for OTP preloading in simulation and FPGA emulation runs.
 The generated hexfile is compatible with the Verilog `$readmemh` command.
+
+OTP image configurations are defined using hjson objects. Currently there are
+two ways to build images:
+
+1. Pre-built OTP image overlays defined in hjson. These is the approach
+   currently used in most DV test cases.
+2. Dynamically built OTP image overlays defined in [Bazel](#bazel). This is the
+   approach currently used in FPGA and Silicon Validation (SiVal) targets.
+
+### Bazel
+
+#### OTP HJSON Map
+
+OTP image overlays are first defined using the `otp_json` Bazel rule. The
+following example shows the definition of a `SECRET2` partition configuration:
+
+```python
+otp_json(
+    name = "otp_json_secret2_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET2",
+            items = {
+                "RMA_TOKEN": "<random>",
+                "CREATOR_ROOT_KEY_SHARE0": "<random>",
+                "CREATOR_ROOT_KEY_SHARE1": "<random>",
+            },
+            lock = False,
+        ),
+    ],
+)
+```
+
+See `//rules/otp.bzl` for additional documentation on additional parameters
+available in the `otp_json` rule.
+
+#### OTP Image
+
+An OTP image is a collection of OTP JSON files used to create an OTP image.
+An OTP can have multiple `otp_json` dependencies. Each dependency has the
+ability of override the values of the previous dependency, so the order in
+which these are listed is important.
+
+```python
+# Represents a device in DEV state with the SECRET0 and SECRET1 partitions in
+# locked state. SECRET2 partition is unlocked.
+otp_image(
+    name = "img_dev_individualized",
+    src = ":otp_json_dev",
+    overlays = [
+        ":otp_json_secret0",
+        ":otp_json_secret1",
+    ] + STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS,
+)
+```
+
+In this example, the `src` attribute points to the baseline OTP JSON
+configuration, and the list of overlay dependencies are applied in order
+of precedence in the `overlays` attribute.
+
+The `STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS` definition imported from
+`//rules:otp.bzl` declares a list of `otp_json` targets that are used
+as overlays. There are other list of predefined overlays that are used
+throughout the code base.
+
+### FPGA Integration
+
+See [FPGA bitstreams](../../hw/bitstream/README.md) documentation for more details.
+
+### DV Flow
 
 The OTP memory image configuration file is basically an Hjson file that lists the names and corresponding values of items defined in the OTP memory map definition.
 Further, since the life cycle state is stored in OTP, the image generator script also supports generating the correct life cycle state encodings.
@@ -99,14 +167,14 @@ The following snippet shows a memory image configuration that puts the device in
 }
 ```
 
-Common example configuration files that can be used for simulation and emulation are checked in under `hw/ip/otp_ctrl/data`, e.g. `hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson` which provisions all buffered partitions and puts the device into the `DEV` life cycle.
+Common example configuration files that can be used for simulation and emulation are checked in under `hw/top_earlgrey/data/otp`, e.g. `hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson` which provisions all buffered partitions and puts the device into the `DEV` life cycle.
 
 Note that the preload image generator script automatically scrambles secret partitions, computes digests of locked partitions using the PRESENT cipher, and computes the OTP ECC bits.
 
 The OTP preload image generator expects at least one main image configuration file to be specified with the `--img-cfg` switch, for example:
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson \
+$ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
                                --out otp-img.mem
 ```
 
@@ -152,7 +220,7 @@ For example, this can be used to patch in additional software configuration data
 The generator script call would then look as follows:
 ```console
 $ cd ${PROJ_ROOT}
-$ ./util/design/gen-otp-img.py --img-cfg hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson \
+$ ./util/design/gen-otp-img.py --img-cfg hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson \
                                --add-cfg otp_ctrl_img_sw_cfg.hjson \
                                --out otp-img.mem
 ```

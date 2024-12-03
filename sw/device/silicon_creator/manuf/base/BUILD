@@ -136,7 +136,7 @@ opentitan_test(
         binaries = {":sram_cp_provision": "sram_cp_provision"},
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_empty",
+        otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_test_unlocked0_manuf_empty",
         tags = ["manuf"],
         test_cmd = _CP_PROVISIONING_CMD_ARGS,
         test_harness = _CP_PROVISIONING_HARNESS,
@@ -164,7 +164,7 @@ opentitan_test(
         },
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
@@ -397,7 +397,7 @@ filegroup(
             changes_otp = True,
             data = config["ca_data"],
             needs_jtag = True,
-            otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_locked0_manuf_initialized",
+            otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_test_locked0_manuf_initialized",
             owner_slot_b = OWNER_SLOTS["b"],
             rom_ext_slot_a = SLOTS["a"],
             rom_ext_slot_b = SLOTS["b"],

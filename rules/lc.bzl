@@ -55,7 +55,7 @@ lc_raw_unlock_token = rule(
             doc = "Life-cycle state definition file in Hjson format.",
         ),
         "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
+            default = "//util/design/data:lc_seed",
             doc = "Configuration override seed used to randomize LC netlist constants.",
         ),
         "_tool": attr.label(

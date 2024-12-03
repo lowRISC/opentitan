@@ -31,7 +31,7 @@ otp_json(
 
 otp_image(
     name = "otp_img_secret2_locked_rma",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [
         ":otp_json_secret2_locked",
     ],
