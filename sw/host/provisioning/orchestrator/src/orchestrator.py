@@ -114,6 +114,11 @@ def main(args_in):
         default="logs",
         help="Root directory to store log files under.",
     )
+    parser.add_argument(
+        "--cp-only",
+        action="store_true",
+        help="If set, only run CP stage (skips FT and database write).",
+    )
     args = parser.parse_args(args_in)
 
     # All relative paths are relative to the runfiles directory.
@@ -160,11 +165,14 @@ def main(args_in):
                 fpga=args.fpga,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
-    dut.run_ft()
+    if not args.cp_only:
+        dut.run_ft()
 
-    device_record = db.DeviceRecord.from_dut(dut)
-    device_record.upsert(db_handle)
-    logging.info(f"Added DeviceRecord to database: {device_record}")
+        device_record = db.DeviceRecord.from_dut(dut)
+        device_record.upsert(db_handle)
+        logging.info(f"Added DeviceRecord to database: {device_record}")
+    else:
+        logging.info("FT skipped since --cp-only was provided")
 
 
 if __name__ == "__main__":
