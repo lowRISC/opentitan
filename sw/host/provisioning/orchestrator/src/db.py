@@ -10,8 +10,6 @@ from dataclasses import dataclass
 
 import ot_dut
 
-DEFAULT_DB_FILENAME = "provisioning.sqlite"
-
 
 @dataclass
 class DBConfig(object):
