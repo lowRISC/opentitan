@@ -8,7 +8,6 @@ use std::collections::VecDeque;
 use std::time::Duration;
 
 use crate::io::console::ConsoleDevice;
-use crate::io::eeprom::AddressMode;
 use crate::io::spi::Target;
 use crate::spiflash::flash::SpiFlash;
 
@@ -30,10 +29,9 @@ impl<'a> SpiConsoleDevice<'a> {
     const SPI_BOOT_MAGIC_PATTERN: u32 = 0xcafeb002;
 
     pub fn new(spi: &'a dyn Target) -> Result<Self> {
-        let mut flash = SpiFlash {
+        let flash = SpiFlash {
             ..Default::default()
         };
-        flash.set_address_mode(spi, AddressMode::Mode3b)?;
         Ok(Self {
             spi,
             flash,
