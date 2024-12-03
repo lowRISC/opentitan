@@ -33,17 +33,18 @@ $ openssl ec -in sk.pem -text -noout
 
 To generate a Root CA certificate using the earlier generated private EC key,
 you can use the CSR (Certificate Signing Request) configuration file checked in
-to this directory (`ca.conf`) as in input to the following OpenSSL commands:
+to this repo (`dice_ca.conf` or `ext_ca.conf`) as in input to the following
+OpenSSL commands:
 ```sh
 # Generate the CSR:
-$ openssl req -new -key sk.pem -out ca.csr -config ca.conf
+$ openssl req -new -key sk.pem -out dice_ca.csr -config ../dice_ca.conf
 
 # Generate the X.509 certificate in PEM format:
-$ openssl x509 -req -in ca.csr -signkey sk.pem -out ca.pem -days 3650 \
-    -extfile ca.conf -extensions v3_ca
+$ openssl x509 -req -in dice_ca.csr -signkey sk.pem -out dice_ca.pem \
+    -days 3650 -extfile ../dice_ca.conf -extensions v3_ca
 
 # Examine the generated certificate:
-$ openssl x509 -in ca.pem -text
+$ openssl x509 -in dice_ca.pem -text
 ```
 
 # Generating the RMA unlock token encryption keypair with OpenSSL

@@ -2,26 +2,25 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# OpenTitan SIVAL SKU configuration.
-
 {
   name: "sival",
   product: "earlgrey_a1",
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
-  # TODO: update with real CA and RMA token keys.
   dice_ca: {
-    certificate: "sw/device/silicon_creator/manuf/keys/fake/dice_ca.pem",
-    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
-    key_type: "Raw",
-    key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+    certificate: "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
+    key: "sv00-earlgrey-a1-ca-dice-0",
+    key_type: "Token",
+    key_id: "0x0"
   }
+  // There are no certs provisioned in the extension portion of the firmware, so
+  // we use the same CA as the DICE CA.
   ext_ca: {
-    certificate: "sw/device/silicon_creator/manuf/keys/fake/ext_ca.pem",
-    key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
-    key_type: "Raw",
-    key_id: "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112"
+    certificate: "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
+    key: "sv00-earlgrey-a1-ca-dice-0",
+    key_type: "Token",
+    key_id: "0x0"
   }
   token_encrypt_key: "sw/device/silicon_creator/manuf/keys/fake/rma_unlock_enc_rsa3072.pub.der"
 }
