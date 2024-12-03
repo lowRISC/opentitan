@@ -9,7 +9,6 @@ use clap::Parser;
 use zerocopy::AsBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, CpResponse, ManufCpProvisioningDataInput};
-use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc::read_lc_state;
@@ -31,18 +30,12 @@ struct Opts {
     /// Console receive timeout.
     #[arg(long, value_parser = humantime::parse_duration, default_value = "600s")]
     timeout: Duration,
-
-    /// Name of the SPI interface to connect to the OTTF console.
-    #[arg(long, default_value = "BOOTSTRAP")]
-    console_spi: String,
 }
 
 fn main() -> Result<()> {
     let opts = Opts::parse();
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
-    let spi = transport.spi(&opts.console_spi)?;
-    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
 
     let provisioning_data = ManufCpProvisioningData {
         wafer_auth_secret: hex_string_to_u32_arrayvec::<8>(
@@ -83,7 +76,6 @@ fn main() -> Result<()> {
                 opts.init.bootstrap.options.reset_delay,
                 &opts.sram_program,
                 &provisioning_data,
-                &spi_console_device,
                 &mut response,
                 opts.timeout,
             )?;
