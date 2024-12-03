@@ -160,6 +160,12 @@ use_repo(
     "secure_manufacturer_test_hooks",
 )
 
+bazel_dep(name = "rom_hooks", version = "")
+local_path_override(
+    module_name = "rom_hooks",
+    path = "./sw/device/silicon_creator/rom/hooks",
+)
+
 register_toolchains("//rules/opentitan:localtools")
 
 register_toolchains("//toolchain:cc_toolchain_opentitan")
