@@ -369,7 +369,7 @@ otp_image_consts = rule(
         ),
         "c_template": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/otp_ctrl/data:otp_ctrl_img.c.tpl",
+            default = "//util/design/data:otp_ctrl_img.c.tpl",
             doc = "OTP image header template.",
         ),
         "verbose": attr.bool(
