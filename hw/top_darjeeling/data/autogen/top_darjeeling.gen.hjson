@@ -8387,6 +8387,8 @@
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
         PipeLine: "0"
+        NEscalationSeverities: alert_handler_reg_pkg::N_ESC_SEV
+        WidthPingCounter: alert_handler_reg_pkg::PING_CNT_DW
       }
       clock_srcs:
       {
@@ -8485,7 +8487,7 @@
           name: NEscalationSeverities
           desc: Number of escalation severities
           type: int unsigned
-          default: "4"
+          default: alert_handler_reg_pkg::N_ESC_SEV
           local: "true"
           expose: "true"
           name_top: RvCoreIbexNEscalationSeverities
@@ -8494,7 +8496,7 @@
           name: WidthPingCounter
           desc: Width of the ping counter
           type: int unsigned
-          default: "16"
+          default: alert_handler_reg_pkg::PING_CNT_DW
           local: "true"
           expose: "true"
           name_top: RvCoreIbexWidthPingCounter
