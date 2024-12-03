@@ -112,6 +112,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
+      bazel: ["//sw/device/tests/aes_interrupt_encryption_test"]
     }
     {
       name: chip_sw_aes_entropy
