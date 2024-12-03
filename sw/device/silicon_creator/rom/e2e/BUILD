@@ -402,7 +402,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data:img_dev",
+        otp = "//hw/top_earlgrey/data/otp:img_dev",
         # TODO(lowRISC/opentitan#13603): Remove this "manual" tag when the
         # bitstream target can fetch pre-spliced bitstream from GCP.
         tags = ["manual"],
