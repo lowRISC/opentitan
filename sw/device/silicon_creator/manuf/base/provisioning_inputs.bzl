@@ -67,8 +67,8 @@ EARLGREY_SKUS = {
     },
     "sival": {
         "otp": "sival",
-        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
+        "ca_config": "//sw/device/silicon_creator/manuf/keys/sival:ca_config.json",
+        "ca_data": ["//sw/device/silicon_creator/manuf/keys/sival:ca_data"],
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -79,7 +79,8 @@ EARLGREY_SKUS = {
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
         "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
-        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
+        "offline": True,
     },
 } | EXT_EARLGREY_SKUS
 
