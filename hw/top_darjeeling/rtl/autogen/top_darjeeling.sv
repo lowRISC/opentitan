@@ -277,8 +277,8 @@ module top_darjeeling #(
   // local parameters for lc_ctrl
   localparam int LcCtrlNumRmaAckSigs = 1;
   // local parameters for rv_core_ibex
-  localparam int unsigned RvCoreIbexNEscalationSeverities = 4;
-  localparam int unsigned RvCoreIbexWidthPingCounter = 16;
+  localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
+  localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
 
   // Signals
   logic [3:0] mio_p2d;
