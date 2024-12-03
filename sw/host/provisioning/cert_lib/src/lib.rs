@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::env;
 use std::fs::{self, OpenOptions};
 use std::io::{Read, Write};
 use std::path::PathBuf;
@@ -137,7 +138,8 @@ fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u
     file.write_all(&tbs)?;
     drop(file);
 
-    let binding_key = String::from("pkcs11:object=") + key_id;
+    let token_pin = env::var("PKCS11_TOKEN_PIN")?;
+    let key_uri = format!("pkcs11:pin-value={};object={}", token_pin, key_id);
     openssl_command(&[
         "dgst",
         "-sha256",
@@ -146,7 +148,7 @@ fn parse_and_endorse_x509_cert_token(tbs: Vec<u8>, key_id: &str) -> Result<Vec<u
         "-keyform",
         "engine",
         "-sign",
-        binding_key.as_str(),
+        key_uri.as_str(),
         "-out",
         sig_filename,
         tbs_filename,

@@ -1,0 +1,14 @@
+{
+  "dice": {
+    "certificate": "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
+    "key_id": "0x5398A4F090F2A95C3D52FC98DEB9F2F9AF042F6E",
+    "key_type": "Token",
+    "key": "sv00-earlgrey-a1-ca-dice-0"
+  },
+  "ext": {
+    "certificate": "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
+    "key_id": "0x5398A4F090F2A95C3D52FC98DEB9F2F9AF042F6E",
+    "key_type": "Token",
+    "key": "sv00-earlgrey-a1-ca-dice-0"
+  }
+}
