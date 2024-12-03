@@ -917,10 +917,10 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       if (main_sm_exp_alert_cond) begin
         if (!fw_ov_insert && !threshold_alert_active && !main_sm_escalates) begin
           if (dut_phase == STARTUP) begin
-            fmt =  "New alert anticpated with >= 2 failing windows." +
-                   "(supercedes count/threshold of %01d/%01d)";
+            fmt = {"New alert anticipated with >= 2 failing windows." ,
+                   "(supersedes count/threshold of %01d/%01d)"};
           end else begin
-            fmt = "New alert anticpated! Fail count (%01d) >= threshold (%01d)";
+            fmt = "New alert anticipated! Fail count (%01d) >= threshold (%01d)";
           end
           threshold_alert_active = 1;
           `DV_CHECK_FATAL(ral.recov_alert_sts.es_main_sm_alert.predict(1'b1));
