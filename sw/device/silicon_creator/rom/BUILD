@@ -90,6 +90,7 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
 
@@ -134,6 +135,7 @@ cc_library(
         ":boot_policy_ptrs",
         ":bootstrap",
         ":rom_epmp",
+        ":rom_state",
         ":sigverify_keys_ecdsa_p256",
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
@@ -176,6 +178,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+        "@rom_hooks",
     ],
 )
 
