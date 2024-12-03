@@ -211,7 +211,7 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
+      tests: ["chip_sw_aes_prng_reseed"]
       bazel: ["//sw/device/tests:aes_prng_reseed_test"]
     }
     {
@@ -267,53 +267,8 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
+      tests: ["chip_sw_aes_force_prng_reseed"]
       bazel: ["//sw/device/tests:aes_force_prng_reseed_test"]
-    }
-    {
-      name: chip_sw_aes_stall_test
-      desc: '''Verify that the AES module's stall bit assertion
-            when multiple input blocks are loaded without reading
-            output data, and resumes encryption once the output data is read.
-
-            Procedure:
-            - Initialize the AES.
-            - Configure the AES encryption operation with the following settings:
-              - Operation: Encrypt
-              - Mode: ECB
-              - Key Length: 128 bits
-              - Key Provider: Software-provided key
-              - Mask Reseeding: Reseed per block
-              - Manual Operation: Auto
-              - Reseed on Key Change: Enabled
-              - Force Masks: Enabled
-            - Generate an AES key and load it for encryption.
-            - Prepare input blocks with random plaintext data.
-            - Load multiple blocks into AES without reading output data to simulate
-              a stall condition.
-              - Verify that `kDifAesStatusStall` is set.
-            - Once the AES is stalled, read the output blocks one by one.
-              - Verify that reading the output clears the stall condition.
-            - Ensure the AES encryption operation completes successfully
-              and that the AES module reaches the idle state at the end of the test.
-
-            Expected Outcome:
-            - AES enters a stall condition when multiple input blocks are loaded without
-              reading output.
-            - Reading the output clears the stall condition, allowing AES to resume
-              encryption.
-            - The test verifies correct handling of the stall condition and that
-              the AES operation completes as expected.
-            '''
-      features: [
-        "AES.MODE.ECB",
-        "AES.STATUS.STALL",
-      ]
-      stage: V3
-      si_stage: SV3
-      lc_states: ["PROD"]
-      tests: []
-      bazel: ["//sw/device/tests:aes_stall_test"]
     }
     {
       name: chip_sw_aes_idle
