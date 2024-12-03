@@ -51,7 +51,7 @@ BOOT_POLICY_VALID_CASES = [
 [
     otp_image(
         name = "otp_img_boot_policy_valid_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()

@@ -57,7 +57,7 @@
     {
       name: sw_test_mode
       sw_images: ["//sw/device/lib/testing/test_rom:test_rom:0",
-                  "//hw/ip/otp_ctrl/data:img_rma:3"]
+                  "//hw/top_earlgrey/data/otp:img_rma:3"]
       run_opts: [
         // The following shell snippet converts the SW images specification to what's
         // needed as a run time switch to Verilator.

@@ -80,7 +80,7 @@ _MANUF_TEST_LOCKED_KEY = None
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
-            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state.lower()),
+            otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = (
                 "" if (
@@ -120,7 +120,7 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
@@ -142,7 +142,7 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
     ),
@@ -160,10 +160,10 @@ opentitan_test(
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
+        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
-            "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
+            "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
         visibility = ["//visibility:public"],
     )
@@ -458,7 +458,7 @@ opentitan_test(
 
 otp_image(
     name = "otp_img_otp_ctrl_functest",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
     visibility = ["//visibility:private"],
 )
 
