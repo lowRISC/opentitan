@@ -40,7 +40,7 @@ status_t handle_ecdh(ujson_t *uj) {
 
   otcrypto_key_config_t key_config = {
       .version = kOtcryptoLibVersion1,
-      .key_mode = kOtcryptoKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
       .hw_backed = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
@@ -54,7 +54,7 @@ status_t handle_ecdh(ujson_t *uj) {
       memcpy(pub_p256.x, uj_qx.coordinate, uj_qx.coordinate_len);
       memset(pub_p256.y, 0, kP256CoordWords * 4);
       memcpy(pub_p256.y, uj_qy.coordinate, uj_qy.coordinate_len);
-      public_key.key_mode = kOtcryptoKeyModeEcdh;
+      public_key.key_mode = kOtcryptoKeyModeEcdhP256;
       public_key.key_length = sizeof(p256_point_t);
       public_key.key = (uint32_t *)&pub_p256;
       key_config.key_length = P256_KEY_BYTES;

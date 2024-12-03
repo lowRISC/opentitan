@@ -25,7 +25,7 @@ enum {
 
 static const otcrypto_key_config_t kP256PrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -64,7 +64,7 @@ int set_nist_p256_params(
   memcpy(pub_p256->x, uj_qx.coordinate, uj_qx.coordinate_len);
   memset(pub_p256->y, 0, kP256CoordBytes);
   memcpy(pub_p256->y, uj_qy.coordinate, uj_qy.coordinate_len);
-  public_key->key_mode = kOtcryptoKeyModeEcdsa;
+  public_key->key_mode = kOtcryptoKeyModeEcdsaP256;
   public_key->key_length = sizeof(p256_point_t);
   public_key->key = (uint32_t *)pub_p256;
   *digest_len = kP256ScalarWords;
@@ -187,7 +187,6 @@ status_t interpret_verify_status(ujson_t *uj, otcrypto_status_t status,
 }
 
 status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
-                   otcrypto_ecc_curve_t elliptic_curve,
                    otcrypto_hash_digest_t message_digest,
                    otcrypto_word32_buf_t signature_mut,
                    cryptotest_ecdsa_signature_t *uj_signature) {
@@ -203,8 +202,8 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
   memcpy(private_key_masked.share1, uj_private_key->d1, kP256ScalarBytes);
   private_key.checksum = integrity_blinded_checksum(&private_key);
 
-  otcrypto_status_t status = otcrypto_ecdsa_sign(
-      &private_key, message_digest, &elliptic_curve, signature_mut);
+  otcrypto_status_t status =
+      otcrypto_ecdsa_p256_sign(&private_key, message_digest, signature_mut);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
   }
@@ -358,8 +357,8 @@ status_t handle_ecdsa(ujson_t *uj) {
     case kCryptotestEcdsaOperationSign: {
       switch (uj_curve) {
         case kCryptotestEcdsaCurveP256: {
-          return p256_sign(uj, &uj_private_key, elliptic_curve, message_digest,
-                           signature_mut, &uj_signature);
+          return p256_sign(uj, &uj_private_key, message_digest, signature_mut,
+                           &uj_signature);
         }
         case kCryptotestEcdsaCurveP384: {
           return p384_sign(uj, &uj_private_key, elliptic_curve, message_digest,

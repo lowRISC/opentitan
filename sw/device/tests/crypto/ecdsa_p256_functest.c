@@ -25,11 +25,6 @@ enum {
 // Message
 static const char kMessage[] = "test message";
 
-static const otcrypto_ecc_curve_t kCurveP256 = {
-    .curve_type = kOtcryptoEccCurveTypeNistP256,
-    .domain_parameter = NULL,
-};
-
 static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
     .key_mode = kOtcryptoKeyModeEcdsaP256,
@@ -77,16 +72,16 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_sign(
-      &private_key, msg_digest, &kCurveP256,
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign(
+      &private_key, msg_digest,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_verify(
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(
       &public_key, msg_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &kCurveP256, verification_result));
+      verification_result));
 
   return OTCRYPTO_OK;
 }
