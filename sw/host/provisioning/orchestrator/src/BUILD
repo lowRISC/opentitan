@@ -96,6 +96,7 @@ py_binary(
     data = [":data_dependencies"],
     imports = ["."],
     deps = [
+        ":db",
         ":device_id",
         ":ot_dut",
         ":sku_config",
