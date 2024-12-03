@@ -13,22 +13,38 @@
 // Include commands
 #include "sw/device/tests/penetrationtests/json/aes_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/commands.h"
+#include "sw/device/tests/penetrationtests/json/crypto_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/edn_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/extclk_sca_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/lc_ctrl_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/otbn_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/otp_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"
+#include "sw/device/tests/penetrationtests/json/rng_fi_commands.h"
+#include "sw/device/tests/penetrationtests/json/rom_fi_commands.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/trigger_sca_commands.h"
 
 // Include handlers
+#include "fi/crypto_fi.h"
 #include "fi/ibex_fi.h"
+#include "fi/lc_ctrl_fi.h"
 #include "fi/otbn_fi.h"
+#include "fi/otp_fi.h"
+#include "fi/rng_fi.h"
+#include "fi/rom_fi.h"
 #include "lib/extclk_sca_fi.h"
 #include "sca/aes_sca.h"
+#include "sca/edn_sca.h"
+#include "sca/hmac_sca.h"
 #include "sca/ibex_sca.h"
 #include "sca/kmac_sca.h"
+#include "sca/otbn_sca.h"
 #include "sca/prng_sca.h"
 #include "sca/sha3_sca.h"
 #include "sca/trigger_sca.h"
@@ -43,8 +59,17 @@ status_t process_cmd(ujson_t *uj) {
       case kPenetrationtestCommandAesSca:
         RESP_ERR(uj, handle_aes_sca(uj));
         break;
+      case kPenetrationtestCommandCryptoFi:
+        RESP_ERR(uj, handle_crypto_fi(uj));
+        break;
+      case kPenetrationtestCommandEdnSca:
+        RESP_ERR(uj, handle_edn_sca(uj));
+        break;
       case kPenetrationtestCommandExtClkScaFi:
         RESP_ERR(uj, handle_extclk_sca_fi(uj));
+        break;
+      case kPenetrationtestCommandHmacSca:
+        RESP_ERR(uj, handle_hmac_sca(uj));
         break;
       case kPenetrationtestCommandIbexFi:
         RESP_ERR(uj, handle_ibex_fi(uj));
@@ -55,11 +80,26 @@ status_t process_cmd(ujson_t *uj) {
       case kPenetrationtestCommandKmacSca:
         RESP_ERR(uj, handle_kmac_sca(uj));
         break;
+      case kPenetrationtestCommandLCCtrlFi:
+        RESP_ERR(uj, handle_lc_ctrl_fi(uj));
+        break;
       case kPenetrationtestCommandOtbnFi:
         RESP_ERR(uj, handle_otbn_fi(uj));
         break;
+      case kPenetrationtestCommandOtpFi:
+        RESP_ERR(uj, handle_otp_fi(uj));
+        break;
+      case kPenetrationtestCommandOtbnSca:
+        RESP_ERR(uj, handle_otbn_sca(uj));
+        break;
       case kPenetrationtestCommandPrngSca:
         RESP_ERR(uj, handle_prng_sca(uj));
+        break;
+      case kPenetrationtestCommandRngFi:
+        RESP_ERR(uj, handle_rng_fi(uj));
+        break;
+      case kPenetrationtestCommandRomFi:
+        RESP_ERR(uj, handle_rom_fi(uj));
         break;
       case kPenetrationtestCommandSha3Sca:
         RESP_ERR(uj, handle_sha3_sca(uj));
@@ -73,7 +113,7 @@ status_t process_cmd(ujson_t *uj) {
     }
   }
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 bool test_main(void) {

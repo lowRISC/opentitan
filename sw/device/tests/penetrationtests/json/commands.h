@@ -13,12 +13,20 @@ extern "C" {
 
 #define COMMAND(_, value) \
     value(_, AesSca) \
+    value(_, CryptoFi) \
+    value(_, EdnSca) \
     value(_, ExtClkScaFi) \
+    value(_, HmacSca) \
     value(_, IbexFi) \
     value(_, IbexSca) \
     value(_, KmacSca) \
+    value(_, LCCtrlFi) \
     value(_, OtbnFi) \
+    value(_, OtbnSca) \
+    value(_, OtpFi) \
     value(_, PrngSca) \
+    value(_, RngFi) \
+    value(_, RomFi) \
     value(_, Sha3Sca) \
     value(_, TriggerSca)
 UJSON_SERDE_ENUM(PenetrationtestCommand, penetrationtest_cmd_t, COMMAND);
