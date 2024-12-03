@@ -79,13 +79,18 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen(
   return otcrypto_ecdh_p384_keygen_async_finalize(private_key, public_key);
 }
 
-otcrypto_status_t otcrypto_ecdh(const otcrypto_blinded_key_t *private_key,
-                                const otcrypto_unblinded_key_t *public_key,
-                                const otcrypto_ecc_curve_t *elliptic_curve,
-                                otcrypto_blinded_key_t *shared_secret) {
-  HARDENED_TRY(
-      otcrypto_ecdh_async_start(private_key, public_key, elliptic_curve));
-  return otcrypto_ecdh_async_finalize(elliptic_curve, shared_secret);
+otcrypto_status_t otcrypto_ecdh_p256(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret) {
+  HARDENED_TRY(otcrypto_ecdh_p256_async_start(private_key, public_key));
+  return otcrypto_ecdh_p256_async_finalize(shared_secret);
+}
+
+otcrypto_status_t otcrypto_ecdh_p384(const otcrypto_blinded_key_t *private_key,
+                                     const otcrypto_unblinded_key_t *public_key,
+                                     otcrypto_blinded_key_t *shared_secret) {
+  HARDENED_TRY(otcrypto_ecdh_p384_async_start(private_key, public_key));
+  return otcrypto_ecdh_p384_async_finalize(shared_secret);
 }
 
 otcrypto_status_t otcrypto_ed25519_keygen(
@@ -841,17 +846,35 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen_async_finalize(
   return internal_p384_keygen_finalize(private_key, public_key);
 }
 
-/**
- * Start an ECDH shared key generation operation for curve P-256.
- *
- * @param private_key Private key for key exchange.
- * @param public_key Public key for key exchange.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_ecdh_p256_start(
+otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || public_key == NULL || public_key->key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the integrity of the keys.
+  if (launder32(integrity_blinded_key_check(private_key)) !=
+          kHardenedBoolTrue ||
+      launder32(integrity_unblinded_key_check(public_key)) !=
+          kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+                    kHardenedBoolTrue);
+
+  // Check the key modes.
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP256 ||
+      launder32(public_key->key_mode) != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP256);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdhP256);
+
+  // Check the key lengths.
   HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
   p256_point_t *pk = (p256_point_t *)public_key->key;
@@ -870,118 +893,23 @@ static status_t internal_ecdh_p256_start(
   return OTCRYPTO_BAD_ARGS;
 }
 
-/**
- * Start an ECDH shared key generation operation for curve P-384.
- *
- * @param private_key Private key for key exchange.
- * @param public_key Public key for key exchange.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_ecdh_p384_start(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key) {
-  HARDENED_TRY(p384_private_key_length_check(private_key));
-  HARDENED_TRY(p384_public_key_length_check(public_key));
-  p384_point_t *pk = (p384_point_t *)public_key->key;
-
-  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(sideload_key_seed(private_key));
-    return p384_sideload_ecdh_start(pk);
-  } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
-    return p384_ecdh_start(sk, pk);
-  }
-
-  // Invalid value for `hw_backed`.
-  return OTCRYPTO_BAD_ARGS;
-}
-
-otcrypto_status_t otcrypto_ecdh_async_start(
-    const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key,
-    const otcrypto_ecc_curve_t *elliptic_curve) {
-  if (private_key == NULL || public_key == NULL || elliptic_curve == NULL ||
-      public_key->key == NULL || private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the integrity of the keys.
-  if (launder32(integrity_blinded_key_check(private_key)) !=
-          kHardenedBoolTrue ||
-      launder32(integrity_unblinded_key_check(public_key)) !=
-          kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
-                    kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
-                    kHardenedBoolTrue);
-
-  // Select the correct ECDH operation and start it.
-  switch (launder32(elliptic_curve->curve_type)) {
-    case kOtcryptoEccCurveTypeNistP256:
-      HARDENED_CHECK_EQ(elliptic_curve->curve_type,
-                        kOtcryptoEccCurveTypeNistP256);
-      if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP256 ||
-          launder32(public_key->key_mode) != kOtcryptoKeyModeEcdhP256) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP256);
-      HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdhP256);
-      HARDENED_TRY(internal_ecdh_p256_start(private_key, public_key));
-      return OTCRYPTO_OK;
-    case kOtcryptoEccCurveTypeNistP384:
-      HARDENED_CHECK_EQ(elliptic_curve->curve_type,
-                        kOtcryptoEccCurveTypeNistP384);
-      if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP384 ||
-          launder32(public_key->key_mode) != kOtcryptoKeyModeEcdhP384) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP384);
-      HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdhP384);
-      HARDENED_TRY(internal_ecdh_p384_start(private_key, public_key));
-      return OTCRYPTO_OK;
-    case kEccCurveTypeBrainpoolP256R1:
-      OT_FALLTHROUGH_INTENDED;
-    case kOtcryptoEccCurveTypeCustom:
-      // TODO: Implement support for other curves.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Should never get here.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
-}
-
-/**
- * Finish an ECDH shared key generation operation for curve P-256.
- *
- * @param[out] shared_secret Resulting shared secret.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_ecdh_p256_finalize(
+otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
+  if (shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Shared keys cannot be sideloaded because they are software-generated.
   if (launder32(shared_secret->config.hw_backed) != kHardenedBoolFalse) {
-    // Shared keys cannot be sideloaded because they are software-generated.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(shared_secret->config.hw_backed, kHardenedBoolFalse);
 
-  if (shared_secret->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
+  // Check shared secret length.
   if (launder32(shared_secret->config.key_length) != kP256CoordBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(shared_secret->config.key_length, kP256CoordBytes);
-
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
@@ -1006,30 +934,70 @@ static status_t internal_ecdh_p256_finalize(
   return keymgr_sideload_clear_otbn();
 }
 
-/**
- * Finish an ECDH shared key generation operation for curve P-384.
- *
- * @param[out] shared_secret Resulting shared secret.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_ecdh_p384_finalize(
+otcrypto_status_t otcrypto_ecdh_p384_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_unblinded_key_t *public_key) {
+  if (private_key == NULL || public_key == NULL || public_key->key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Check the integrity of the keys.
+  if (launder32(integrity_blinded_key_check(private_key)) !=
+          kHardenedBoolTrue ||
+      launder32(integrity_unblinded_key_check(public_key)) !=
+          kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(integrity_blinded_key_check(private_key),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(integrity_unblinded_key_check(public_key),
+                    kHardenedBoolTrue);
+
+  // Check the key modes.
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP384 ||
+      launder32(public_key->key_mode) != kOtcryptoKeyModeEcdhP384) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP384);
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdhP384);
+
+  // Check the key lengths.
+  HARDENED_TRY(p384_private_key_length_check(private_key));
+  HARDENED_TRY(p384_public_key_length_check(public_key));
+  p384_point_t *pk = (p384_point_t *)public_key->key;
+
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    HARDENED_TRY(sideload_key_seed(private_key));
+    return p384_sideload_ecdh_start(pk);
+  } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+    p384_masked_scalar_t *sk = (p384_masked_scalar_t *)private_key->keyblob;
+    return p384_ecdh_start(sk, pk);
+  }
+
+  // Invalid value for `hw_backed`.
+  return OTCRYPTO_BAD_ARGS;
+}
+
+otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
+  if (shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Shared keys cannot be sideloaded because they are software-generated.
   if (launder32(shared_secret->config.hw_backed) != kHardenedBoolFalse) {
-    // Shared keys cannot be sideloaded because they are software-generated.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(shared_secret->config.hw_backed, kHardenedBoolFalse);
 
-  if (shared_secret->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
+  // Check shared secret length.
   if (launder32(shared_secret->config.key_length) != kP384CoordBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(shared_secret->config.key_length, kP384CoordBytes);
-
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
@@ -1051,38 +1019,6 @@ static status_t internal_ecdh_p384_finalize(
   shared_secret->checksum = integrity_blinded_checksum(shared_secret);
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
-}
-
-otcrypto_status_t otcrypto_ecdh_async_finalize(
-    const otcrypto_ecc_curve_t *elliptic_curve,
-    otcrypto_blinded_key_t *shared_secret) {
-  if (shared_secret == NULL || elliptic_curve == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Select the correct ECDH operation and finalize it.
-  switch (launder32(elliptic_curve->curve_type)) {
-    case kOtcryptoEccCurveTypeNistP256:
-      HARDENED_CHECK_EQ(elliptic_curve->curve_type,
-                        kOtcryptoEccCurveTypeNistP256);
-      HARDENED_TRY(internal_ecdh_p256_finalize(shared_secret));
-      break;
-    case kOtcryptoEccCurveTypeNistP384:
-      HARDENED_CHECK_EQ(elliptic_curve->curve_type,
-                        kOtcryptoEccCurveTypeNistP384);
-      HARDENED_TRY(internal_ecdh_p384_finalize(shared_secret));
-      break;
-    case kEccCurveTypeBrainpoolP256R1:
-      OT_FALLTHROUGH_INTENDED;
-    case kOtcryptoEccCurveTypeCustom:
-      // TODO: Implement support for other curves.
-      return OTCRYPTO_NOT_IMPLEMENTED;
-    default:
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Clear the OTBN sideload slot (in case the key was sideloaded).
   return keymgr_sideload_clear_otbn();
 }
 
