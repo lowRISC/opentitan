@@ -16,6 +16,14 @@ label_flag(
     build_setting_default = "//signing/tokens:local",
 )
 
+# The appkey selects the keyset used for signing application (post-ROM_EXT)
+# code.  This should match the keys that are in the ownershp configuration
+# deployed into the chip.
+label_flag(
+    name = "appkey",
+    build_setting_default = "//sw/device/silicon_creator/rom_ext/sival/keys:keyset",
+)
+
 config_setting(
     name = "test_keys",
     flag_values = {
