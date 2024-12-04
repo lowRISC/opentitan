@@ -62,6 +62,6 @@ $ openssl genrsa -out rma_unlock_enc_rsa3072.pem 3072
 $ openssl rsa -in rma_unlock_enc_rsa3072.pem -pubout -out rma_unlock_enc_rsa3072.pub.pem
 
 ### Convert the PEM files to DER files:
-$ openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072..der
+$ openssl rsa -in rma_unlock_enc_rsa3072.pem -outform der -out rma_unlock_enc_rsa3072.der
 $ openssl rsa -pubin -in rma_unlock_enc_rsa3072.pub.pem -outform der -out rma_unlock_enc_rsa3072.pub.der
 ```
