@@ -41,6 +41,8 @@ from topgen.rust import TopGenRust
 from topgen.top import Top
 from topgen.topcfg import CompleteTopCfg
 
+import autogen_tests.gen as autogen_tests
+
 # Common header for generated files
 warnhdr = """//
 // ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
@@ -1294,13 +1296,11 @@ def main():
         gen_top_docs(completecfg, c_helper, out_path)
 
         # Auto-generate tests in "sw/device/tests/autogen" area.
-        gencmd = warnhdr + GENCMD.format(top_name=top_name)
-        for fname in ["plic_all_irqs_test.c", "alert_test.c"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
-            render_template(TOPGEN_TEMPLATE_PATH / ".." / ".." / "autogen_tests" / "templates" / f"{fname}.tpl",
-                            outfile,
-                            helper=c_helper,
-                            gencmd=gencmd)
+        autogen_tests.gen_tests(
+            SRCTREE_TOP / "sw/device/tests/autogen",
+            completecfg,
+            name_to_block
+        )
 
 
 if __name__ == "__main__":
