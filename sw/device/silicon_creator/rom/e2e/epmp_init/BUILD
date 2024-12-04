@@ -33,7 +33,7 @@ package(default_visibility = ["//visibility:public"])
             "//hw/top_earlgrey:sim_verilator": None,
         },
         fpga = fpga_params(
-            otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
+            otp = "//hw/top_earlgrey/data/otp:img_" + lc_state,
             tags = maybe_skip_in_ci(lc_state_val),
         ),
         local_defines = [
@@ -46,7 +46,7 @@ package(default_visibility = ["//visibility:public"])
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         verilator = verilator_params(
             timeout = "eternal",
-            otp = "//hw/ip/otp_ctrl/data:img_" + lc_state,
+            otp = "//hw/top_earlgrey/data/otp:img_" + lc_state,
             rom = "//sw/device/silicon_creator/rom:mask_rom",
         ),
         deps = [

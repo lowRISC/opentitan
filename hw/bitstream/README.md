@@ -35,7 +35,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     fpga = fpga_params(
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_test_unlocked0_manuf_initialized",
+        otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_test_unlocked0_manuf_initialized",
         tags = ["manuf"],
     ),
     exec_env = {
@@ -98,4 +98,4 @@ opentitan_test(
 
 ## Read More
 
-* [OTP Build and Test Infrastructure](../ip/otp_ctrl/data/README.md)
+* [OTP Preload Image Generator](../../util/design/README.md#otp_preload_image_generator)

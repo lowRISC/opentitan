@@ -46,7 +46,7 @@ otp_json_immutable_rom_ext(
 otp_image(
     name = "otp_img_with_nop_imm_romext_enabled",
     testonly = True,
-    src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
         ":otp_json_with_nop_imm_romext_enabled",

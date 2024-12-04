@@ -145,7 +145,7 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
+        otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
         tags = ["manuf"],
     ),
     deps = [
@@ -209,7 +209,7 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
+        otp = "//hw/top_earlgrey/data/otp:img_test_unlocked1",
         tags = ["manuf"],
         test_cmd = """
             --bootstrap={firmware}
@@ -273,7 +273,7 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_individualized",
+        otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_dev_manuf_individualized",
         tags = [
             "lc_dev",
             "manuf",
