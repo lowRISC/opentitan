@@ -83,6 +83,6 @@ rust_library(
     }),
     version = "0.8.0",
     deps = [
-        "@crate_index__zeroize-1.7.0//:zeroize",
+        "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )
