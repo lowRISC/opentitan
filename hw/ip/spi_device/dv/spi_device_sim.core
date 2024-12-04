@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:spi_device_test
       - lowrisc:dv:spi_device_sva
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
