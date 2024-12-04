@@ -61,28 +61,8 @@ cp ${REPO_TOP}/bazel-bin/sw/host/provisioning/orchestrator/src/orchestrator.zip 
 
 export ORCHESTRATOR_ZIP="${ORCHESTRATOR_RUN_DIR}/orchestrator.zip"
 
-# Extract runfile folders from orchestrator package.
-unzip ${ORCHESTRATOR_ZIP} \
-  "runfiles/lowrisc_opentitan/*" \
-  "runfiles/openocd/*" \
-  "runfiles/provisioning_exts/*" \
-  "runfiles/sc_hsm/*"
-
-# All external dependencies are mapped under
-# runfiles/lowrisc_opentitan/external.
-mkdir -p  runfiles/lowrisc_opentitan/external
-
-ln -fs $(pwd)/runfiles/openocd runfiles/lowrisc_opentitan/external
-
-# The following is needed if you are using the provisioning extensions
-# infrastructure.
-PROVISIONING_EXT_RUNFILES=$(pwd)/runfiles/provisioning_exts
-[ -d "${PROVISION_EXT_RUNFILES}" ] &&   \
-  ln -fs "${PROVISIONING_EXT_RUNFILES}" \
-    runfiles/lowrisc_opentitan/external/provisioning_exts
-
 # Run tool. The path to the --sku-config parameter is relative to the
-# runfiles-dir.
+# workspace root.
 export FPGA_TARGET=hyper310
 python3 ${ORCHESTRATOR_ZIP} \
   --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
@@ -90,6 +70,5 @@ python3 ${ORCHESTRATOR_ZIP} \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=${FPGA_TARGET} \
   --non-interactive \
-  --runfiles-dir=$(pwd)/runfiles/lowrisc_opentitan \
-  --db-path=$(pwd)/provisioning.sqlite
+  --db-path=provisioning.sqlite
 ```
