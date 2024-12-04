@@ -21,7 +21,8 @@ bazel run \
     --test-unlock-token="0x11111111_11111111_11111111_11111111" \
     --test-exit-token="0x22222222_22222222_22222222_22222222" \
     --fpga=${FPGA_TARGET} \
-    --non-interactive
+    --non-interactive \
+    --db-path=$(pwd)/provisioning.sqlite
 ```
 
 To run on silicon, run:
@@ -32,7 +33,8 @@ bazel run \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
     --test-unlock-token=<token as a hexstring> \
     --test-exit-token=<token as a hexstring> \
-    --non-interactive
+    --non-interactive \
+    --db-path=$(pwd)/provisioning.sqlite
 ```
 
 ## Running Directly
@@ -88,5 +90,6 @@ python3 ${ORCHESTRATOR_ZIP} \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=${FPGA_TARGET} \
   --non-interactive \
-  --runfiles-dir=$(pwd)/runfiles/lowrisc_opentitan
+  --runfiles-dir=$(pwd)/runfiles/lowrisc_opentitan \
+  --db-path=$(pwd)/provisioning.sqlite
 ```
