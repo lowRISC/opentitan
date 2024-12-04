@@ -407,8 +407,11 @@ silicon(
         "--interface={interface}",
     ],
     design = "earlgrey",
-    # TODO(moidx): Switch to real keys once these have been generated.
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
+        "//conditions:default": {"//signing:appkey": "0"},
+    }),
     exec_env = "silicon_owner_sival_rom_ext",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
     flash_scramble_tool = "//util/design:gen-flash-img",
@@ -427,10 +430,9 @@ silicon(
     },
     # The //conditions:default ROM_EXT needs to be updated to use the following
     # target once available:
-    # //sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_prod_slot_a
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
-        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
     }),
     test_cmd = """
         --exec="transport init"
