@@ -31,11 +31,12 @@ _ZERO_256BIT_HEXSTR = "0x" + "_".join(["00000000"] * 8)
 
 # yapf: disable
 # CP & FT Device Firmware
-_BASE_DEV_DIR          = "sw/device/silicon_creator/manuf/base"  # noqa: E221
-_CP_DEVICE_ELF         = "{base_dir}/sram_cp_provision_{target}.elf"  # noqa: E221
-_FT_INDIVID_DEVICE_ELF = "{base_dir}/sram_ft_individualize_{sku}_{target}.elf"  # noqa: E221
-_FT_PERSO_DEVICE_BIN   = "{base_dir}/ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin"  # noqa: E221, E501
-_FT_FW_BUNDLE_BIN      = "{base_dir}/ft_fw_bundle_{sku}_{target}.img"  # noqa: E221
+_BASE_DEV_DIR           = "sw/device/silicon_creator/manuf/base"  # noqa: E221
+_CP_DEVICE_ELF          = "{base_dir}/sram_cp_provision_{target}.elf"  # noqa: E221
+_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{sku}_{target}.elf"  # noqa: E221
+_FT_PERSO_EMULATION_BIN = "{base_dir}/ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin"  # noqa: E221, E501
+_FT_PERSO_SKU_BIN       = "{base_dir}/binaries/ft_personalize_{sku}_{target}.signed.bin"  # noqa: E221, E501
+_FT_FW_BUNDLE_BIN       = "{base_dir}/ft_fw_bundle_{sku}_{target}.img"  # noqa: E221
 # CP & FT Host Binaries
 _CP_HOST_BIN = "sw/host/provisioning/cp/cp"
 _FT_HOST_BIN = "sw/host/provisioning/ft/ft_{sku}"
@@ -168,11 +169,15 @@ class OtDut():
         """Runs the FT provisioning flow on the target DUT."""
         logging.info("Running FT provisioning ...")
 
-        # Set cmd args and device ELF.
+        # Set cmd args and device binaries.
         host_bin = _FT_HOST_BIN.format(sku=self.sku_config.name)
         host_flags = _BASE_PROVISIONING_FLAGS
         individ_elf = _FT_INDIVID_DEVICE_ELF
-        perso_bin = _FT_PERSO_DEVICE_BIN
+        # Emulation perso bins are signed online with fake keys, and therefore
+        # have different file naming patterns than production SKUs.
+        perso_bin = _FT_PERSO_EMULATION_BIN
+        if self.sku_config.name != "emulation":
+            perso_bin = _FT_PERSO_SKU_BIN
         fw_bundle_bin = _FT_FW_BUNDLE_BIN
         if self.fpga:
             # Set host flags and device binaries for FPGA DUT.
