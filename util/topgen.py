@@ -39,6 +39,7 @@ from topgen.merge import connect_clocks, create_alert_lpgs, extract_clocks
 from topgen.resets import Resets
 from topgen.rust import TopGenRust
 from topgen.top import Top
+from topgen.topcfg import CompleteTopCfg
 
 # Common header for generated files
 warnhdr = """//
@@ -89,6 +90,9 @@ def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
     except TemplateRenderError as e:
         log.error(e.verbose_str())
         sys.exit(1)
+
+    # Remote extra topname
+    params.pop("topname")
 
 
 def generate_top(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
@@ -460,12 +464,6 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
         return
 
     params = vars(flash_mems[0]["memory"]["mem"]["config"])
-    # Additional parameters not provided in the top config.
-    params.update({
-        "metadata_width": 12,
-        "info_types": 3,
-        "infos_per_bank": [10, 1, 2]
-    })
 
     params.pop('base_addrs', None)
     ipgen_render("flash_ctrl", topname, params, out_path)
@@ -822,6 +820,12 @@ def _process_top(
     return completecfg, name_to_block, name_to_hjson
 
 
+def test_topcfg_loader(genhjson_path: Path, completecfg: Dict[str, object]):
+    loaded_cfg = CompleteTopCfg.from_path(genhjson_path)
+
+    CompleteTopCfg.check_equivalent(completecfg, loaded_cfg)
+
+
 def _check_countermeasures(completecfg: Dict[str, object],
                            name_to_block: Dict[str, IpBlock],
                            name_to_hjson: Dict[str, Path]) -> bool:
@@ -1106,6 +1110,10 @@ def main():
     genhjson_path.write_text(genhdr + gencmd +
                              hjson.dumps(completecfg, for_json=True, default=vars) + '\n')
 
+    # We also run a sanity check on the topcfg loader to make sure that it roundtrips
+    # correctly when loading.
+    test_topcfg_loader(genhjson_path, completecfg)
+
     # Generate Rust toplevel definitions
     if not args.no_rust:
         generate_rust(topname, completecfg, name_to_block, out_path.resolve(),
@@ -1287,9 +1295,9 @@ def main():
 
         # Auto-generate tests in "sw/device/tests/autogen" area.
         gencmd = warnhdr + GENCMD.format(top_name=top_name)
-        for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
+        for fname in ["plic_all_irqs_test.c", "alert_test.c"]:
             outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
-            render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+            render_template(TOPGEN_TEMPLATE_PATH / ".." / ".." / "autogen_tests" / "templates" / f"{fname}.tpl",
                             outfile,
                             helper=c_helper,
                             gencmd=gencmd)
