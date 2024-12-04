@@ -14,7 +14,7 @@ import hjson
 
 from device_id import DeviceId
 from sku_config import SkuConfig
-from util import confirm, format_hex, run
+from util import confirm, format_hex, run, resolve_runfile
 
 # FPGA bitstream.
 _FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
@@ -100,27 +100,33 @@ class OtDut():
         host_flags = _BASE_PROVISIONING_FLAGS
         device_elf = _CP_DEVICE_ELF
         print(f"device_elf: {device_elf}")
+
+        openocd_bin = resolve_runfile(_OPENOCD_BIN)
+        openocd_cfg = resolve_runfile(_OPENOCD_ADAPTER_CONFIG)
         if self.fpga:
             # Set host flags and device binary for FPGA DUT.
             host_flags = host_flags.format(target=self.fpga,
-                                           openocd_bin=_OPENOCD_BIN,
-                                           openocd_cfg=_OPENOCD_ADAPTER_CONFIG)
+                                           openocd_bin=openocd_bin,
+                                           openocd_cfg=openocd_cfg)
             host_flags += " --clear-bitstream"
-            host_flags += f" --bitstream={_FPGA_UNIVERSAL_SPLICE_BITSTREAM}"
+            bitstream = resolve_runfile(_FPGA_UNIVERSAL_SPLICE_BITSTREAM)
+            host_flags += f" --bitstream={bitstream}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
         else:
             # Set host flags and device binary for Silicon DUT.
             host_flags = host_flags.format(target="teacup",
-                                           openocd_bin=_OPENOCD_BIN,
-                                           openocd_cfg=_OPENOCD_ADAPTER_CONFIG)
+                                           openocd_bin=openocd_bin,
+                                           openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
             device_elf = device_elf.format(base_dir=self._base_dev_dir(),
                                            target="silicon_creator")
+        device_elf = resolve_runfile(device_elf)
 
         # Assemble CP command.
-        cmd = f"""{_CP_HOST_BIN} \
+        cp_host_bin = resolve_runfile(_CP_HOST_BIN)
+        cmd = f"""{cp_host_bin} \
         --rcfile= \
         --logging=info \
         {host_flags} \
@@ -172,6 +178,9 @@ class OtDut():
 
         # Set cmd args and device binaries.
         host_bin = _FT_HOST_BIN.format(sku=self.sku_config.name)
+        host_bin = resolve_runfile(host_bin)
+        openocd_bin = resolve_runfile(_OPENOCD_BIN)
+        openocd_cfg = resolve_runfile(_OPENOCD_ADAPTER_CONFIG)
         host_flags = _BASE_PROVISIONING_FLAGS
         individ_elf = _FT_INDIVID_DEVICE_ELF
         # Emulation perso bins are signed online with fake keys, and therefore
@@ -185,8 +194,8 @@ class OtDut():
             # No need to load another bitstream, we will take over where CP
             # stage above left off.
             host_flags = host_flags.format(target=self.fpga,
-                                           openocd_bin=_OPENOCD_BIN,
-                                           openocd_cfg=_OPENOCD_ADAPTER_CONFIG)
+                                           openocd_bin=openocd_bin,
+                                           openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
                 base_dir=self._base_dev_dir(),
                 sku=self.sku_config.name,
@@ -202,8 +211,8 @@ class OtDut():
         else:
             # Set host flags and device binaries for Silicon DUT.
             host_flags = host_flags.format(target="teacup",
-                                           openocd_bin=_OPENOCD_BIN,
-                                           openocd_cfg=_OPENOCD_ADAPTER_CONFIG)
+                                           openocd_bin=openocd_bin,
+                                           openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
             individ_elf = individ_elf.format(base_dir=self._base_dev_dir(),
                                              sku=self.sku_config.name,
@@ -214,6 +223,10 @@ class OtDut():
             fw_bundle_bin = fw_bundle_bin.format(base_dir=self._base_dev_dir(),
                                                  sku=self.sku_config.name,
                                                  target="silicon_creator")
+
+        individ_elf = resolve_runfile(individ_elf)
+        perso_bin = resolve_runfile(perso_bin)
+        fw_bundle_bin = resolve_runfile(fw_bundle_bin)
 
         # Write CA configs to a JSON tmpfile.
         ca_config_dict = {
