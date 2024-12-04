@@ -100,6 +100,6 @@ rust_library(
         "@crate_index__rand_core-0.6.4//:rand_core",
         "@crate_index__sec1-0.7.3//:sec1",
         "@crate_index__subtle-2.5.0//:subtle",
-        "@crate_index__zeroize-1.7.0//:zeroize",
+        "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )
