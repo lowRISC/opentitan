@@ -28,6 +28,7 @@ set_property BITSTREAM.CONFIG.USR_ACCESS TIMESTAMP [current_design]
 #       addr_end_multiplier: A coefficient applied to the address space. Influences
 #                            the values of the MMI's <AddressSpace> and
 #                            <AddressRange> tags.
+#       schema:              Either "Processor" or "MemoryArray"
 #   designtask_count:    A number used for logging with `send_msg`.
 proc generate_mmi {filename mem_infos designtask_count} {
     send_msg "${designtask_count}-1" INFO "Dumping MMI to ${filename}"
@@ -50,6 +51,7 @@ proc generate_mmi {filename mem_infos designtask_count} {
 
             # Calculate the overall address space.
             set space 0
+            set width 0
             foreach inst [lsort -dictionary $brams] {
                 set slice_begin [get_property ram_slice_begin [get_cells $inst]]
                 set slice_end [get_property ram_slice_end [get_cells $inst]]
@@ -69,14 +71,22 @@ proc generate_mmi {filename mem_infos designtask_count} {
 
                 # Calculate total number of bits.
                 set space [expr {$space + ($addr_end - $addr_begin + 1) * $slice_width}]
+                set width [expr {$width + $slice_width}]
                 set last_slice_width $slice_width
             }
             set space [expr {($space * $addr_end_multiplier / 8) - 1}]
 
             # Generate the MMI.
-            puts $fileout "  <Processor Endianness=\"Little\" InstPath=\"$id\">"
-            puts $fileout "    <AddressSpace Name=\"dummy_addrspace\" Begin=\"0\" End=\"$space\">"
-            puts $fileout "      <BusBlock>"
+            if { $schema eq "Processor" } {
+                puts $fileout "  <Processor Endianness=\"Little\" InstPath=\"$id\">"
+                puts $fileout "    <AddressSpace Name=\"dummy_addrspace\" Begin=\"0\" End=\"$space\">"
+                puts $fileout "      <BusBlock>"
+            } else {
+                puts $fileout "  <MemoryArray InstPath=\"$id\" MemoryPrimitive=\"auto\" MemoryConfiguration=\"enabled_configuration\">"
+                # Memory type could be retrieved from the RTL_RAM_TYPE property, if desired,
+                # but we hard-code it here for now.
+                puts $fileout "    <MemoryLayout Name=\"$id\" CoreMemory_Width=\"$width\" MemoryType=\"RAM_SP\">"
+            }
 
             foreach inst [lsort -dictionary $brams] {
                 set loc [get_property LOC [get_cells $inst]]
@@ -94,15 +104,36 @@ proc generate_mmi {filename mem_infos designtask_count} {
                 set addr_begin [get_property ram_addr_begin [get_cells $inst]]
                 set addr_end [get_property ram_addr_end [get_cells $inst]]
                 set addr_end [expr {($addr_end + 1) * $addr_end_multiplier - 1}]
-                puts $fileout "        <BitLane MemType=\"$loc_prefix\" Placement=\"$loc_suffix\">"
-                puts $fileout "          <DataWidth MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
-                puts $fileout "          <AddressRange Begin=\"$addr_begin\" End=\"$addr_end\"/>"
-                puts $fileout "          <Parity ON=\"false\" NumBits=\"0\"/>"
-                puts $fileout "        </BitLane>"
+                set bit_layout [get_property "MEM.PORTA.DATA_BIT_LAYOUT" [get_cells $inst]]
+                set read_width_a [get_property "READ_WIDTH_A" [get_cells $inst]]
+                set read_width_b [get_property "READ_WIDTH_B" [get_cells $inst]]
+                set slr_index [get_property "SLR_INDEX" [get_cells $inst]]
+                if {$schema eq "Processor"} {
+                    puts $fileout "        <BitLane MemType=\"$loc_prefix\" Placement=\"$loc_suffix\">"
+                    puts $fileout "          <DataWidth MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
+                    puts $fileout "          <AddressRange Begin=\"$addr_begin\" End=\"$addr_end\"/>"
+                    puts $fileout "          <Parity ON=\"false\" NumBits=\"0\"/>"
+                    puts $fileout "        </BitLane>"
+                } else {
+                    puts $fileout "      <BRAM MemType=\"$loc_prefix\" Placement=\"$loc_suffix\" Read_Width_A=\"$read_width_a\" Read_Width_B=\"$read_width_b\" SLR_INDEX=\"$slr_index\">"
+                    puts $fileout "        <DataWidth_PortA MSB=\"$slice_end\" LSB=\"$slice_begin\"/>"
+                    puts $fileout "        <AddressRange_PortA Begin=\"$addr_begin\" End=\"$addr_end\"/>"
+                    puts $fileout "        <BitLayout_PortA pattern=\"$bit_layout\"/>"
+                    puts $fileout "        <DataWidth_PortB MSB=\"0\" LSB=\"0\"/>"
+                    puts $fileout "        <AddressRange_PortB Begin=\"0\" End=\"0\"/>"
+                    puts $fileout "        <BitLayout_PortB pattern=\"\"/>"
+                    puts $fileout "        <Parity ON=\"false\" NumBits=\"0\"/>"
+                    puts $fileout "      </BRAM>"
+                }
             }
-            puts $fileout "      </BusBlock>"
-            puts $fileout "    </AddressSpace>"
-            puts $fileout "  </Processor>"
+            if {$schema eq "Processor"} {
+                puts $fileout "      </BusBlock>"
+                puts $fileout "    </AddressSpace>"
+                puts $fileout "  </Processor>"
+            } else {
+                puts $fileout "    </MemoryLayout>"
+                puts $fileout "  </MemoryArray>"
+            }
         }
     }
 
@@ -170,6 +201,14 @@ switch ${fpga_family} {
 }
 set mem_type_regex {(RAMB\d+)_(\w+)}
 
+set gen_mem_info {{brams mem_type_regex fake_word_width addr_end_multiplier schema} {
+  dict set mem_info brams $brams
+  dict set mem_info mem_type_regex $mem_type_regex
+  dict set mem_info fake_word_width $fake_word_width
+  dict set mem_info addr_end_multiplier $addr_end_multiplier
+  return [dict set mem_info schema $schema]
+}}
+
 # The scrambled Boot ROM is actually 39 bits wide, but we need to pretend that
 # it's 40 bits, or else we will be unable to encode our ROM data in a MEM file
 # that updatemem will understand.
@@ -185,10 +224,7 @@ set mem_type_regex {(RAMB\d+)_(\w+)}
 # A hack that works is to pretend the data width is actually 40 bits. Updatemem
 # seems to write that extra zero bit into the ether without complaint.
 set rom_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_rom_ctrl*"] " "]
-dict set memInfo rom brams $rom_brams
-dict set memInfo rom mem_type_regex $mem_type_regex
-dict set memInfo rom fake_word_width 40
-dict set memInfo rom addr_end_multiplier 1
+dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Processor"]
 
 # OTP does not require faking the word width, but it has its own quirk. It seems
 # each 22-bit OTP word is followed by 15 zero words. The MMI's <AddressSpace>
@@ -196,47 +232,17 @@ dict set memInfo rom addr_end_multiplier 1
 # that its data input overruns the address space. The workaround is to pretend
 # the address space is 16 times larger than we would normally compute.
 set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_ctrl*"] " "]
-dict set memInfo otp brams $otp_brams
-dict set memInfo otp mem_type_regex $mem_type_regex
-dict set memInfo otp fake_word_width 0
-dict set memInfo otp addr_end_multiplier 16
+dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
 
-# The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata.
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[0].u_info_mem*"] " "]
-dict set memInfo flash0_info0 brams $flash_info_brams
-dict set memInfo flash0_info0 mem_type_regex $mem_type_regex
-dict set memInfo flash0_info0 fake_word_width 0
-dict set memInfo flash0_info0 addr_end_multiplier 1
-
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[1].u_info_mem*"] " "]
-dict set memInfo flash0_info1 brams $flash_info_brams
-dict set memInfo flash0_info1 mem_type_regex $mem_type_regex
-dict set memInfo flash0_info1 fake_word_width 0
-dict set memInfo flash0_info1 addr_end_multiplier 1
-
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[0]*gen_info_types[2].u_info_mem*"] " "]
-dict set memInfo flash0_info2 brams $flash_info_brams
-dict set memInfo flash0_info2 mem_type_regex $mem_type_regex
-dict set memInfo flash0_info2 fake_word_width 0
-dict set memInfo flash0_info2 addr_end_multiplier 1
-
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[0].u_info_mem*"] " "]
-dict set memInfo flash1_info0 brams $flash_info_brams
-dict set memInfo flash1_info0 mem_type_regex $mem_type_regex
-dict set memInfo flash1_info0 fake_word_width 0
-dict set memInfo flash1_info0 addr_end_multiplier 1
-
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[1].u_info_mem*"] " "]
-dict set memInfo flash1_info1 brams $flash_info_brams
-dict set memInfo flash1_info1 mem_type_regex $mem_type_regex
-dict set memInfo flash1_info1 fake_word_width 0
-dict set memInfo flash1_info1 addr_end_multiplier 1
-
-set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[1]*gen_info_types[2].u_info_mem*"] " "]
-dict set memInfo flash1_info2 brams $flash_info_brams
-dict set memInfo flash1_info2 mem_type_regex $mem_type_regex
-dict set memInfo flash1_info2 fake_word_width 0
-dict set memInfo flash1_info2 addr_end_multiplier 1
+# The flash banks have 76-bit wide words. 64 bits are data, and 12 bits are metadata / integrity.
+for {set bank 0} {$bank < 2} {incr bank} {
+  for {set partition 0} {$partition < 3} {incr partition} {
+    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[0].*"] " "]
+    dict set memInfo "flash${bank}_info${partition}_data" [apply $gen_mem_info $flash_info_brams $mem_type_regex 0 1 "MemoryArray"]
+    set flash_info_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_flash_ctrl*gen_prim_flash_banks[${bank}]*gen_info_types[${partition}].u_info_mem*gen_xpm.gen_split[64].*"] " "]
+    dict set memInfo "flash${bank}_info${partition}_intg" [apply $gen_mem_info $flash_info_brams $mem_type_regex 0 1 "MemoryArray"]
+  }
+}
 
 generate_mmi "memories.mmi" $memInfo 1
 

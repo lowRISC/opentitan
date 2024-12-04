@@ -7,6 +7,7 @@ description: "Earl Grey toplevel for the ChipWhisperer CW310 board's hyperdebug 
 filesets:
   files_rtl_cw310:
     depend:
+      - lowrisc:prim_xilinx:earlgrey_xilinx_prim_pkg
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast
@@ -25,7 +26,6 @@ filesets:
       # same as lowrisc:systems:chip_earlgrey_cw310.
       - data/pins_cw310_hyperdebug.xdc
       - data/placement.xdc
-      - data/synth.xdc
     file_type: xdc
 
   files_tcl:

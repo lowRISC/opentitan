@@ -237,7 +237,7 @@ The path to the synthesis log file is usually `bazel-out/k8-fastbuild/bin/hw/bit
 
 Once Vivado has successfully generated a bitstream, locate its directory with `dirname $(./bazelisk.sh outquery-all //hw/bitstream:rom --define bitstream=vivado)` (it will usually be `bazel-out/k8-fastbuild/bin/hw/bitstream/vivado`).
 Append `/build.fpga_cw310/synth-vivado` to that path.
-In the resulting directory, you should find `memories.mmi`, and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
+In the resulting directory, you should find `memories.mmi` and `lowrisc_systems_chip_earlgrey_cw310_0.1.bit`.
 We will next copy those files into a local bitstream cache that Bazel can use.
 
 If you don't have a local bitstream cache yet, create one as follows:
