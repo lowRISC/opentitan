@@ -11,7 +11,7 @@ class aes_wake_up_vseq extends aes_base_vseq;
 
 
   bit [3:0] [31:0]    plain_text       = 128'hDEADBEEFEEDDBBAABAADBEEFDEAFBEAD;
-  logic [255:0]       init_key [2]     = '{256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF, 256'h0};
+  bit [255:0]         init_key [2]     = '{256'h0000111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFF, 256'h0};
   bit [3:0] [31:0]    cypher_text;
   bit [3:0] [31:0]    decrypted_text;
   logic [3:0] [31:0]  read_text;
