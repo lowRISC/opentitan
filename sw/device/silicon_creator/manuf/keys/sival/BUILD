@@ -11,6 +11,7 @@ filegroup(
     srcs = [
         ":ca_config.json",
         ":dice_ca.pem",
+        ":rma_unlock_enc_rsa3072.pub.der",
         "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
     ],
 )
