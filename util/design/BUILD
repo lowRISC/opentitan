@@ -23,11 +23,13 @@ py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],
     deps = [
+        ":prince",
         ":secded_gen",
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_map",
         "//util/design/lib:present",
         requirement("pyfinite"),
+        requirement("hjson"),
     ],
 )
 

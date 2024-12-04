@@ -6,8 +6,6 @@ load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["cshake_hardcoded.hjson"])
-
 # Strip the inner layer of the DRBG repository, which is a zip of zips
 genrule(
     name = "nist_cavp_drbg_sp_800_90a_reseed",
