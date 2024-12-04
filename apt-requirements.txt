@@ -26,6 +26,7 @@ libftdi1-dev
 libncursesw5
 libpcsclite-dev
 libssl-dev
+libtool
 libudev-dev
 libusb-1.0-0
 lrzsz
