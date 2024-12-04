@@ -7,6 +7,7 @@ description: "Earl Grey toplevel for the ChipWhisperer CW340 board"
 filesets:
   files_rtl_cw340:
     depend:
+      - lowrisc:prim_xilinx:earlgrey_xilinx_prim_pkg
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:ast
@@ -22,7 +23,6 @@ filesets:
     files:
       - data/clocks_cw341.xdc
       - data/pins_cw341.xdc
-      - data/synth.xdc
     file_type: xdc
 
   files_tcl:
