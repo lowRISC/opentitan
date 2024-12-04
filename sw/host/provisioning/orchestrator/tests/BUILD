@@ -22,6 +22,7 @@ py_test(
     data = [
         "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
         "//sw/device/silicon_creator/manuf/keys/fake:ext_ca.pem",
+        "//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_enc_rsa3072.pub.der",
         "//sw/device/silicon_creator/manuf/keys/fake:sk.pkcs8.der",
         "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     ],
@@ -29,6 +30,18 @@ py_test(
         requirement("hjson"),
         "//sw/host/provisioning/orchestrator/src:device_id",
         "//sw/host/provisioning/orchestrator/src:sku_config",
+        "//sw/host/provisioning/orchestrator/src:util",
+    ],
+)
+
+py_test(
+    name = "util_test",
+    srcs = ["util_test.py"],
+    data = [
+        "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",
+        "//third_party/openocd:jtag_cmsis_dap_adapter_cfg",
+    ],
+    deps = [
         "//sw/host/provisioning/orchestrator/src:util",
     ],
 )
