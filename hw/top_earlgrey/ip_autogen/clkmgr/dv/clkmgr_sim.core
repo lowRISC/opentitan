@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:clkmgr_test
       - lowrisc:dv:clkmgr_sva
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
       - cov/clkmgr_cov_bind.sv
