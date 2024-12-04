@@ -148,7 +148,7 @@ class OtDut():
             chip_probe_data = self._extract_json_data("CHIP_PROBE_DATA",
                                                       stdout_logfile)
             if "cp_device_id" not in chip_probe_data:
-                logging.error("cp_device_id found in CHIP_PROBE_DATA.")
+                logging.error("cp_device_id not found in CHIP_PROBE_DATA.")
                 confirm()
 
             logging.info(
@@ -156,6 +156,7 @@ class OtDut():
             cp_device_id = self.device_id.from_hexstr(
                 chip_probe_data["cp_device_id"])
             self.device_id.update_base_id(cp_device_id)
+            self.device_id.pretty_print()
 
             self._make_log_dir()
             shutil.move(stdout_logfile, f"{self.log_dir}/cp_out.log.txt")
