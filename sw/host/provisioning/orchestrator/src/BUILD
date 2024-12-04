@@ -54,7 +54,10 @@ py_library(
     name = "util",
     srcs = ["util.py"],
     imports = ["."],
-    deps = [requirement("hjson")],
+    deps = [
+        requirement("hjson"),
+        "@rules_python//python/runfiles",
+    ],
 )
 
 py_library(
