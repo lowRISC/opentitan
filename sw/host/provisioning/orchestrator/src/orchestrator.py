@@ -163,18 +163,19 @@ def main(args_in):
                 fpga=args.fpga,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
-    if not args.cp_only:
-        dut.run_ft()
-
-        db_path = Path(args.db_path)
-        db_handle = db.DB(db.DBConfig(db_path=db_path))
-        db.DeviceRecord.create_table(db_handle)
-
-        device_record = db.DeviceRecord.from_dut(dut)
-        device_record.upsert(db_handle)
-        logging.info(f"Added DeviceRecord to database: {device_record}")
-    else:
+    if args.cp_only:
         logging.info("FT skipped since --cp-only was provided")
+        return
+
+    dut.run_ft()
+
+    db_path = Path(args.db_path)
+    db_handle = db.DB(db.DBConfig(db_path=db_path))
+    db.DeviceRecord.create_table(db_handle)
+
+    device_record = db.DeviceRecord.from_dut(dut)
+    device_record.upsert(db_handle)
+    logging.info(f"Added DeviceRecord to database: {device_record}")
 
 
 if __name__ == "__main__":
