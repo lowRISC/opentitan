@@ -375,6 +375,7 @@ _NORMAL_DEPENDENCIES = {
             "tiny-keccak": "@crate_index__tiny-keccak-2.0.2//:tiny_keccak",
             "typetag": "@crate_index__typetag-0.2.13//:typetag",
             "zerocopy": "@crate_index__zerocopy-0.7.11//:zerocopy",
+            "zeroize": "@crate_index__zeroize-1.8.1//:zeroize",
         },
     },
 }
@@ -3692,10 +3693,10 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__zeroize-1.7.0",
-        sha256 = "525b4ec142c6b68a2d10f01f7bbf6755599ca3f81ea53b8431b7dd348f5fdb2d",
+        name = "crate_index__zeroize-1.8.1",
+        sha256 = "ced3678a2879b30306d323f4542626697a464a97c0a07c9aebf7ebca65cd4dde",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/zeroize/1.7.0/download"],
-        strip_prefix = "zeroize-1.7.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.7.0.bazel"),
+        urls = ["https://static.crates.io/crates/zeroize/1.8.1/download"],
+        strip_prefix = "zeroize-1.8.1",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.zeroize-1.8.1.bazel"),
     )
