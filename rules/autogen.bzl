@@ -394,7 +394,7 @@ def _opentitan_autogen_testutils_gen(ctx):
         outputs = outputs,
         inputs = inputs,
         arguments = arguments,
-        executable = ctx.executable._autogen_testutils,
+        executable = ctx.executable.tool,
     )
 
     return [
@@ -402,6 +402,8 @@ def _opentitan_autogen_testutils_gen(ctx):
         OutputGroupInfo(**groups),
     ]
 
+# This rule can handle both autogen_testutils and autogen_tests because
+# they use exactly the same CLI.
 opentitan_autogen_testutils_gen = rule(
     implementation = _opentitan_autogen_testutils_gen,
     doc = "Generate the tests or testutils file for a top",
@@ -418,7 +420,7 @@ opentitan_autogen_testutils_gen = rule(
             default = [],
             doc = "List of IPs to ignore.",
         ),
-        "_autogen_testutils": attr.label(
+        "tool": attr.label(
             default = "//util:autogen_testutils",
             executable = True,
             cfg = "exec",
@@ -441,6 +443,25 @@ def opentitan_autogen_isr_testutils(name, top, exclude_ips):
     for grp in ["hdr", "src"]:
         native.filegroup(
             name = "{}_{}".format(name, grp),
+            srcs = [":{}_gen".format(name)],
+            output_group = grp,
+        )
+
+# See opentitan_autogen_testutils_gen for documentation of parameters.
+def opentitan_autogen_tests(name, top):
+    opentitan_autogen_testutils_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        output_groups = {
+            "plic_all_irqs_test": ["plic_all_irqs_test.c"],
+            "alert_test": ["alert_test.c"],
+        },
+        tool = "//util:autogen_tests",
+    )
+
+    for grp in ["plic_all_irqs_test", "alert_test"]:
+        native.filegroup(
+            name = "{}_{}_src".format(name, grp),
             srcs = [":{}_gen".format(name)],
             output_group = grp,
         )
