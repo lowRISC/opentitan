@@ -2,19 +2,22 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:otp_ctrl_sim:0.1"
+name: ${instance_vlnv("lowrisc:dv:otp_ctrl_sim:0.1")}
 description: "OTP_CTRL DV sim target"
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl_sim
+
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:otp_ctrl
+      - ${instance_vlnv("lowrisc:ip:otp_ctrl")}
 
   files_dv:
     depend:
       - lowrisc:dv:mem_bkdr_util
-      - lowrisc:dv:otp_ctrl_test
-      - lowrisc:dv:otp_ctrl_sva
-      - lowrisc:dv:otp_ctrl_cov
+      - ${instance_vlnv("lowrisc:dv:otp_ctrl_test")}
+      - ${instance_vlnv("lowrisc:dv:otp_ctrl_sva")}
+      - ${instance_vlnv("lowrisc:dv:otp_ctrl_cov")}
     files:
       - tb.sv
     file_type: systemVerilogSource
