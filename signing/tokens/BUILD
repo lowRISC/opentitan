@@ -15,9 +15,11 @@ signing_tool(
 
 signing_tool(
     name = "nitrokey",
-    data = ["@sc_hsm//:gen_dir"],
+    data = ["@opensc//:gen_dir"],
     env = {
-        "HSMTOOL_MODULE": "$(location @sc_hsm//:gen_dir)/lib/libsc-hsm-pkcs11.so",
+        "LD_LIBRARY_PATH": "$(location @opensc//:gen_dir)/lib",
+        "HSMTOOL_MODULE": "$(location @opensc//:gen_dir)/lib/opensc-pkcs11.so",
+        "HSMTOOL_SPX_MODULE": "pkcs11-ef",
     },
     location = "token",
     tool = "//sw/host/hsmtool",

@@ -1,0 +1,46 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+load("@rules_foreign_cc//foreign_cc:configure.bzl", "configure_make")
+
+package(default_visibility = ["//visibility:public"])
+
+filegroup(
+    name = "all_srcs",
+    srcs = glob(["**"]),
+)
+
+configure_make(
+    name = "opensc",
+    args = ["-j"],
+    autoreconf = True,
+    autoreconf_options = ["-fi"],
+    configure_in_place = True,
+    configure_options = [
+        # Lie about the completions dir so that "make install" won't get
+        # confused about what is already installed on the host.
+        # This doesn't affect the build, as the installation happens in
+        # a bazel-supplied target directory, but it does prevent make from
+        # seeing the system's `/usr/share/bash-completion/completions`
+        # directory and complaining that it will be unable to install there.
+        "--with-completiondir=xxx-completions",
+    ],
+    lib_source = ":all_srcs",
+    out_shared_libs = [
+        # It would be nice to configure this package to build `opensc-pkcs11.so`
+        # as a shared object that statically links `libopensc`, but I don't see
+        # a way to do that via the configure script.  Users of this library
+        # will have to set LD_LIBRARY_PATH appropriately to see the needed
+        # shared libraries (e.g. `//signing/tokens:nitrokey`).
+        "libopensc.so",
+        "libopensc.so.12",
+        "opensc-pkcs11.so",
+    ],
+)
+
+filegroup(
+    name = "gen_dir",
+    srcs = [":opensc"],
+    output_group = "gen_dir",
+)

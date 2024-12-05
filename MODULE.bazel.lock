@@ -304,7 +304,7 @@
     },
     "//third_party/hsm:extensions.bzl%hsm": {
       "general": {
-        "bzlTransitiveDigest": "FyFcI4wP6+KHHK9gvzMYpFgWsKxqvGJgUz6sv4pszCE=",
+        "bzlTransitiveDigest": "5pX3ljj6+sTvWudGOTiZAtEGBrzDSeTSyJZRqXO1oto=",
         "usagesDigest": "c1P0aAtY/p7TafKEYP79mRhKKyk+QwF1K4FgGvXbHQ4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -334,6 +334,16 @@
               "url": "https://github.com/CardContact/sc-hsm-embedded/archive/refs/tags/V2.12.tar.gz",
               "strip_prefix": "sc-hsm-embedded-2.12",
               "sha256": "707fca9df630708e0e59a7d4a8a7a016c56c83a585957f0fd9f806c0762f1944"
+            }
+          },
+          "opensc": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/hsm:BUILD.opensc.bazel",
+              "url": "https://github.com/OpenSC/OpenSC/archive/refs/tags/0.26.0.tar.gz",
+              "strip_prefix": "OpenSC-0.26.0",
+              "sha256": "c692ac7639fa398f7f07b1070ea5358344000d49d08dcb825296d4cec94c6b1f"
             }
           },
           "cloud_kms_hsm": {
