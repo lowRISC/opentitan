@@ -1345,6 +1345,27 @@ cc_test(
 )
 
 cc_library(
+    name = "soc_proxy",
+    srcs = [
+        "//sw/device/lib/dif/autogen:soc_proxy_hdr",
+        "//sw/device/lib/dif/autogen:soc_proxy_src",
+    ],
+    hdrs = [
+        "dif_soc_proxy.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/top:dt_soc_proxy",
+        "//hw/top:soc_proxy_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_library(
     name = "all_difs",
     deps = flatten([
         opentitan_if_ip(
