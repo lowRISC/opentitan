@@ -172,7 +172,6 @@ module hmac
         if (digest_on_blk) begin
           // Once the digest is being computed for the complete message block, wait for the hash to
           // complete.
-          // TODO (issue #21710): handle incomplete message size and check against 512 or 1024
           done_state_d = DoneAwaitHashComplete;
         end
       end
