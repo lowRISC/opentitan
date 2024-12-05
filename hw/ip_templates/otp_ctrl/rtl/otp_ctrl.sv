@@ -893,7 +893,7 @@ end
   // Since this scheme does not have built-in preemtion, it must be ensured that the agents
   // eventually release their locks for this to be fair.
   //
-  // See also https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#block-diagram for details.
+  // See also https://docs.opentitan.org/hw/ip/otp_ctrl/index.html#otp-controller-overview for details.
   typedef struct packed {
     otp_scrmbl_cmd_e             cmd;
     digest_mode_e                mode;
