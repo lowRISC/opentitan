@@ -12,6 +12,7 @@ rust_library(
     srcs = [
         "acorn.rs",
         "lib.rs",
+        "spx.rs",
     ],
     crate_root = "lib.rs",
     deps = [
