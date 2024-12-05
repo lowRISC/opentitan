@@ -154,8 +154,8 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
     // their counters. This avoids a problem where we generate a spurious request when the FIFO was
     // actually empty and lots of signals in the design become X. This will let the fifos error
     // signal stuck at X. Zeroing the backing memory avoids that problem.
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_reqfifo", 2);
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_sramreqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_reqfifo", 1);
+    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_sramreqfifo", 1);
 
   endtask
 
