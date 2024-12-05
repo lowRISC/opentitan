@@ -4,7 +4,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
-from typing import List
+from typing import Dict, List
 
 from autogen_banner import get_autogen_banner
 from make_new_dif.ip import Ip
@@ -15,7 +15,9 @@ from mako.template import Template
 REPO_TOP = Path(__file__).resolve().parent.parent.parent
 
 
-def gen_testutils(outdir: Path, ips_with_difs: List[Ip]) -> List[Path]:
+def gen_testutils(outdir: Path,
+                  completecfg: Dict[str, object],
+                  ips_with_difs: List[Ip]) -> List[Path]:
     """Generate testutils libraries that are rendered from Mako templates.
 
     Args:
@@ -44,10 +46,15 @@ def gen_testutils(outdir: Path, ips_with_difs: List[Ip]) -> List[Path]:
             testutils_template = Template(testutils_template_path.read_text())
             testutils = outdir / testutils_template_path.stem
             testutils.write_text(
-                testutils_template.render(ips_with_difs=ips_with_difs,
-                                          autogen_banner=get_autogen_banner(
-                                              "util/autogen_testutils.py",
-                                              comment=comment_syntax)))
+                testutils_template.render(
+                    ips_with_difs=ips_with_difs,
+                    autogen_banner=get_autogen_banner(
+                        "util/autogen_testutils.py",
+                        comment=comment_syntax
+                    ),
+                    top = completecfg,
+                )
+            )
             testutilses += [testutils]
 
     return testutilses
