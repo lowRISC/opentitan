@@ -430,7 +430,7 @@ filegroup(
             tags = [
                 "lc_test_locked0",
                 "manuf",
-            ] + ["manual"] if config.get("offline", False) else [],
+            ] + (["manual"] if config.get("offline", False) else []),
             test_cmd = _FT_PROVISIONING_CMD_ARGS,
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
