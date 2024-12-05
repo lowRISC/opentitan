@@ -62,6 +62,7 @@ static const bitfield_field32_t kDomainConfigBitfield = {
     .index = PWRMGR_CONTROL_CORE_CLK_EN_BIT,
 };
 
+#ifdef OPENTITAN_IS_EARLGREY
 /**
  * Relevant bits of the WAKEUP_EN and WAKE_INFO registers must start at `0` and
  * be in the same order as `dif_pwrmgr_wakeup_request_source_t` constants.
@@ -87,6 +88,7 @@ static_assert(kDifPwrmgrWakeupRequestSourceFive ==
 static_assert(kDifPwrmgrWakeupRequestSourceSix ==
                   (1u << PWRMGR_PARAM_SENSOR_CTRL_AON_WKUP_REQ_IDX),
               "Layout of WAKE_INFO register changed.");
+#endif
 
 /**
  * Relevant bits of the RESET_EN register must start at `0` and be in the same
