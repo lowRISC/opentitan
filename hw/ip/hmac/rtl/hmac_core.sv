@@ -293,9 +293,9 @@ module hmac_core import prim_sha2_pkg::*; (
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      fifo_wdata_sel_o <= 3'h 0;
+      fifo_wdata_sel_o <= '0;
     end else if (clr_fifo_wdata_sel) begin
-      fifo_wdata_sel_o <= 3'h 0;
+      fifo_wdata_sel_o <= '0;
     end else if (fifo_wsel_o && fifo_wvalid_o) begin
       fifo_wdata_sel_o <= fifo_wdata_sel_o + 1'b1; // increment by 1
     end

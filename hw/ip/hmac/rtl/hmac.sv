@@ -550,7 +550,7 @@ module hmac
       end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
         // reads out first upper 32 bits then lower 32 bits of each digest word
         index = !hmac_fifo_wdata_sel[0];
-        fifo_wdata = '{data: digest[hmac_fifo_wdata_sel >> 1][32*index+:32], mask: '1};
+        fifo_wdata = '{data: digest[hmac_fifo_wdata_sel[3:1]][32*index+:32], mask: '1};
       end
     end
   end
