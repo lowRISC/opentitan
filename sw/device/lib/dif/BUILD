@@ -1,6 +1,9 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_if_ip")
+load("//rules/opentitan:util.bzl", "flatten")
+load("//sw/device/lib/dif:defs.bzl", "IPS_WITHOUT_DIF")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -1340,4 +1343,17 @@ cc_test(
         ":usbdev",
         "@googletest//:gtest_main",
     ],
+)
+
+cc_library(
+    name = "all_difs",
+    deps = flatten([
+        opentitan_if_ip(
+            ip,
+            ["//sw/device/lib/dif:{}".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+        if ip not in IPS_WITHOUT_DIF
+    ]),
 )
