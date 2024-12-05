@@ -15,19 +15,9 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:top_lib",
+        "//sw/device/lib/dif:all_difs",
         "//sw/device/lib/testing/test_framework:check",
-    ] + flatten([
-        opentitan_if_ip(
-            ip,
-            ["//sw/device/lib/dif:{}".format(ip)],
-            [],
-        )
-        for ip in ALL_IP_NAMES
-        if ip not in [
-            "ast",
-            "soc_proxy",
-        ]
-    ]),
+    ],
 )
 
 cc_library(
