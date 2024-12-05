@@ -115,7 +115,7 @@ def main():
         ips.append(Ip(ipname, "AUTOGEN", hjson_file))
 
     # Auto-generate testutils files.
-    gen_testutils(outdir, ips)
+    gen_testutils(outdir, topcfg, ips)
 
 
 if __name__ == "__main__":
