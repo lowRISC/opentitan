@@ -2,8 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:otp_ctrl:1.0"
+name: ${instance_vlnv("lowrisc:ip:otp_ctrl:1.0")}
 description: "OTP Controller"
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl
 
 filesets:
   files_rtl:

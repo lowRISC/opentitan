@@ -2,8 +2,11 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:otp_ctrl_prim_reg_top:1.0"
+name: ${instance_vlnv("lowrisc:ip:otp_ctrl_prim_reg_top:1.0")}
 description: "Generic register top for the OTP wrapper"
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl_prim_reg_top
+
 filesets:
   files_rtl:
     depend:
