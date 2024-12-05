@@ -2,42 +2,23 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:otp_ctrl:1.0"
-description: "OTP Controller"
+name: ${instance_vlnv("lowrisc:ip:otp_ctrl_top_specific_pkg:1.0")}
+description: "OTP Controller Top Specific Packages"
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl_top_specific_pkg
 
 filesets:
   files_rtl:
     depend:
+      - lowrisc:tlul:headers
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip:tlul
-      - lowrisc:prim:all
-      - lowrisc:prim:ram_1p
-      - lowrisc:prim:otp
-      - lowrisc:prim:double_lfsr
-      - lowrisc:prim:count
-      - lowrisc:prim:lc_sender
-      - lowrisc:prim:lc_sync
-      - lowrisc:prim:buf
-      - lowrisc:prim:flop
-      - lowrisc:prim:secded
-      - lowrisc:prim:edn_req
-      - lowrisc:prim:sec_anchor
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip:edn_pkg
-      - lowrisc:prim:sparse_fsm
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
+      - lowrisc:prim:mubi
+
     files:
-      - rtl/otp_ctrl_core_reg_top.sv
-      - rtl/otp_ctrl_ecc_reg.sv
-      - rtl/otp_ctrl_scrmbl.sv
-      - rtl/otp_ctrl_lfsr_timer.sv
-      - rtl/otp_ctrl_part_unbuf.sv
-      - rtl/otp_ctrl_part_buf.sv
-      - rtl/otp_ctrl_dai.sv
-      - rtl/otp_ctrl_kdi.sv
-      - rtl/otp_ctrl_lci.sv
-      - rtl/otp_ctrl.sv
+      - rtl/otp_ctrl_reg_pkg.sv
+      - rtl/otp_ctrl_top_specific_pkg.sv
+      - rtl/otp_ctrl_part_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -46,7 +27,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/otp_ctrl.vlt
+      - lint/otp_ctrl_top_specific_pkg.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -55,7 +36,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/otp_ctrl.waiver
+      - lint/otp_ctrl_top_specific_pkg.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -64,7 +45,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/otp_ctrl.vbl
+      - lint/otp_ctrl_top_specific_pkg.vbl
     file_type: veribleLintWaiver
 
 parameters:
@@ -80,7 +61,7 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: otp_ctrl
+    toplevel: lc_ctrl
 
   lint:
     <<: *default_target
@@ -92,12 +73,3 @@ targets:
         mode: lint-only
         verilator_options:
           - "-Wall"
-
-  syn:
-    <<: *default_target
-    # TODO: set default to DC once
-    # this option is available
-    # olofk/edalize#89
-    default_tool: icarus
-    parameters:
-      - SYNTHESIS=true

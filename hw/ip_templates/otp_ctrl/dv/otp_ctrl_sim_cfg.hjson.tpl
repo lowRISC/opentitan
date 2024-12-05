@@ -15,7 +15,7 @@
   tool: vcs
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:dv:otp_ctrl_sim:0.1
+  fusesoc_core: ${instance_vlnv("lowrisc:dv:otp_ctrl_sim:0.1")}
 
   // Testplan hjson file.
   testplan: "{self_dir}/../data/otp_ctrl_testplan.hjson"
@@ -44,7 +44,7 @@
     // defined in `hw/dv/tools/dvsim/common_modes.hjson` for more details.
     {
       name: build_seed
-      pre_build_cmds: ["cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}"]
+      pre_build_cmds: ["cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed} --topname ${topname}"]
       is_sim_mode: 1
     }
   ]
