@@ -5,5 +5,4 @@
 # This is the list of all IPs that do not have a DIF.
 IPS_WITHOUT_DIF = [
     "ast",
-    "soc_proxy",
 ]
