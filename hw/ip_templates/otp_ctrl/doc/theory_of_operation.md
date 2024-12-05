@@ -5,7 +5,7 @@ The "front-end" contains the logical partitions that feed the hardware and softw
 The "back-end" represents the programming interface used by hardware and software components to stage the upcoming values.
 The diagram below illustrates this behavioral model.
 
-![OTP Controller Block Diagram](../doc/otp_ctrl_behavioral_model.svg)
+![OTP Controller Block Diagram](otp_ctrl_behavioral_model.svg)
 
 Note that the front-end contains both buffered and unbuffered partitions.
 Buffered partitions are sensed once per power cycle and their contents are stored in registers, whereas unbuffered partitions are read on-demand.
@@ -69,7 +69,7 @@ As part of injecting the final firmware, the stock-keeping-unit-specific hardwar
 The life cycle partition is active throughout all stages and hence it is the **ONLY** partition that cannot be locked.
 After the device finishes provisioning and goes into production, it must retain the ability to transition back to RMA in case of unexpected failures.
 
-In order to support this transition, the [life cycle state](../../lc_ctrl/README.md) and counters must always be update-able.
+In order to support this transition, the [life cycle state](../../../../ip/lc_ctrl/README.md) and counters must always be update-able.
 
 ## Locking a Partition
 
@@ -122,7 +122,7 @@ These values are stored in OTP as plaintext.
 
 Secret partitions contain data that are critical to security, for example FLASH scrambling keys, device root secret and unlock tokens.
 These values are stored scrambled in OTP, and are descrambled upon read.
-The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../prim/doc/prim_present.md).
+The currently employed cipher is PRESENT, as it lends itself well to iterative decomposition, and it is a proven lightweight block cipher (see also [PRESENT Scrambling Primitive](../../../../ip/prim/doc/prim_present.md).
 The usage of a block cipher however implies that the secret partitions can only be written in 64bit chunks.
 
 Further, the contents of a particular secret partition are not readable by software once locked (other than the digest which must be always readable); while non-secret partitions are always readable unless read accessibility is explicitly removed by software.
@@ -225,7 +225,7 @@ The functional interface is used to update all partitions except for life cycle.
 As mentioned previously, any updates made during the current power cycle are **NOT** reflected in the buffered partitions until the next reboot.
 
 The life cycle interface is used to update the life cycle state and transition counter only.
-The commands are issued from the [life cycle controller](../../lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
+The commands are issued from the [life cycle controller](../../../../ip/lc_ctrl/README.md), and similarly, successful or failed indications are also sent back to the life cycle controller.
 Similar to the functional interface, the life cycle controller allows only one update per power cycle, and after a requested transition reverts to an inert state until reboot.
 
 For more details on how the software programs the OTP, please refer to the [Programmer's Guide](programmers_guide.md)) further below.
@@ -237,7 +237,7 @@ For more details on how the software programs the OTP, please refer to the [Prog
 
 The following is a high-level block diagram that illustrates everything that has been discussed.
 
-![OTP Controller Block Diagram](../doc/otp_ctrl_blockdiag.svg)
+![OTP Controller Block Diagram](otp_ctrl_blockdiag.svg)
 
 Each of the partitions P0-P7 has its [own controller FSM](#partition-implementations) that interacts with the OTP wrapper and the [scrambling datapath](#scrambling-datapath) to fulfill its tasks.
 The partitions expose the address ranges and access control information to the Direct Access Interface (DAI) in order to block accesses that go to locked address ranges.
@@ -274,7 +274,7 @@ Since the life cycle partition is the only partition that needs live updates in-
 The life cycle state is hence encoded such that incremental updates to the state are always carried out at the granularity of a 16bit word.
 Further, the life cycle transition counter is encoded such that each stroke consumes a full 16bit word for the same reason.
 
-See [life cycle controller documentation](../../lc_ctrl/README.md) for more details on the life cycle encoding.
+See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details on the life cycle encoding.
 
 ### Partition Controllers
 
@@ -284,7 +284,7 @@ The corresponding controller FSMs are explained in more detail below.
 
 #### Unbuffered Partition
 
-![Unbuffered Partition FSM](../doc/otp_ctrl_unbuf_part_fsm.svg)
+![Unbuffered Partition FSM](otp_ctrl_unbuf_part_fsm.svg)
 
 As shown above, the unbuffered partition module has a relatively simple controller FSM that only reads out the digest value of the partition upon initialization, and then basically waits for TL-UL read transactions to its corresponding window in the CSR space.
 
@@ -296,7 +296,7 @@ Note that unrecoverable [OTP errors](#generalized-open-source-interface), ECC fa
 
 #### Buffered Partition
 
-![Buffered Partition FSM](../doc/otp_ctrl_buf_part_fsm.svg)
+![Buffered Partition FSM](otp_ctrl_buf_part_fsm.svg)
 
 The controller FSM of the buffered partition module is more complex than the unbuffered counterpart, since it has to account for scrambling and digest calculation.
 
@@ -318,11 +318,11 @@ In case of a mismatch, the buffered values are gated to their default, and an al
 Note that in case of unrecoverable OTP errors or ECC failures in the buffer registers, the partition controller FSM is moved into a terminal error state, which locks down all access through DAI and clamps the values that are broadcast in hardware to their defaults.
 
 External escalation via the `lc_escalate_en` signal will move the partition controller FSM into the terminal error state as well.
-See [life cycle controller documentation](../../lc_ctrl/README.md) for more details.
+See [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) for more details.
 
 ### Direct Access Interface Control
 
-![Direct Access Interface FSM](../doc/otp_ctrl_dai_fsm.svg)
+![Direct Access Interface FSM](otp_ctrl_dai_fsm.svg)
 
 Upon reset release, the DAI controller first sends an initialization command to the OTP macro.
 Once the OTP macro becomes operational, an initialization request is sent to all partition controllers, which will read out and initialize the corresponding buffer registers.
@@ -337,7 +337,7 @@ Also, the DAI consumes the read and write access information provided by the par
 
 ### Life Cycle Interface Control
 
-![Life Cycle Interface FSM](../doc/otp_ctrl_lci_fsm.svg)
+![Life Cycle Interface FSM](otp_ctrl_lci_fsm.svg)
 
 Upon reset release the LCI FSM waits until the OTP controller has initialized and the LCI gets enabled.
 Once it is in the idle state, life cycle state updates can be initiated via the life cycle interface as [described here](#state-transitions).
@@ -346,7 +346,7 @@ In case of unrecoverable OTP errors, the FSM signals an error to the life cycle 
 
 ### Key Derivation Interface
 
-![Key Derivation Interface FSM](../doc/otp_ctrl_kdi_fsm.svg)
+![Key Derivation Interface FSM](otp_ctrl_kdi_fsm.svg)
 
 Upon reset release the KDI FSM waits until the OTP controller has initialized and the KDI gets enabled.
 Once it is in the idle state, key derivation can be requested via the [flash](#interface-to-flash-scrambler) and [sram](#interface-to-sram-and-otbn-scramblers) interfaces.
@@ -354,9 +354,9 @@ Based on which interface makes the request, the KDI controller will evaluate a v
 
 ### Scrambling Datapath
 
-![OTP Digest Mechanism](../doc/otp_ctrl_digest_mechanism.svg)
+![OTP Digest Mechanism](otp_ctrl_digest_mechanism.svg)
 
-The scrambling datapath is built around an iterative implementation of the [PRESENT lightweight cipher](../../prim/doc/prim_present.md) that performs one round per cycle.
+The scrambling datapath is built around an iterative implementation of the [PRESENT lightweight cipher](../../../../ip/prim/doc/prim_present.md) that performs one round per cycle.
 The datapath contains some additional multiplexing circuitry to enable the DAI, KDI and partition controllers to evaluate different functions with the same datapath.
 The algorithmic steps of these functions are explained in more detail below.
 
@@ -412,7 +412,7 @@ This is behavior illustrated in the example below.
 
 ### Primitive Wrapper and FPGA Emulation
 
-![OTP Wrapper Block Diagram](../doc/otp_ctrl_prim_otp.svg)
+![OTP Wrapper Block Diagram](otp_ctrl_prim_otp.svg)
 
 The OTP IP is wrapped up in a primitive wrapper that exposes a TL-UL interface for testing purposes, and a generalized open-source interface for functional operation (described below).
 Any OTP redundancy mechanism like per-word ECC is assumed to be handled inside the wrapper, which means that the word width exposed as part of the generalized interface is the effective word width.

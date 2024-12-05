@@ -35,7 +35,7 @@ module otp_ctrl_token_const import otp_ctrl_pkg::*; #(
     assign data[j][1]  = RndCnstDigestConst[LcRawDigest];
 
     // Each hash takes four invocations, see diagram c) on
-    // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#scrambling-datapath
+    // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/theory_of_operation.html#scrambling-datapath
     for (genvar k = 0; k < 4; k++) begin : gen_invocations
       logic [ScrmblBlockWidth-1:0] next_state;
 

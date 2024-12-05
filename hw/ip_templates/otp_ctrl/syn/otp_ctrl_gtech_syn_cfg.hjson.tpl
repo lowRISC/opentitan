@@ -6,7 +6,7 @@
   name: otp_ctrl
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip:{name}:0.1
+  fusesoc_core: lowrisc:opentitan:top_${topname}_{name}:0.1
 
   import_cfgs: [// Project wide common GTECH synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]
@@ -18,7 +18,7 @@
     }
     { // Deletes black-boxed hierarchies before writing out the unmapped netlist
       name: post_elab_script
-      value: "{proj_root}/hw/ip/{name}/syn/post_elab_gtech.tcl"
+      value: "{proj_root}/hw/top_${topname}/ip_autogen/{name}/syn/post_elab_gtech.tcl"
     }
   ]
 }
