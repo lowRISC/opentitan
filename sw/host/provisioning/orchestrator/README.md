@@ -63,7 +63,8 @@ export ORCHESTRATOR_ZIP="${ORCHESTRATOR_RUN_DIR}/orchestrator.zip"
 unzip ${ORCHESTRATOR_ZIP} \
   "runfiles/lowrisc_opentitan/*" \
   "runfiles/openocd/*" \
-  "runfiles/provisioning_exts/*"
+  "runfiles/provisioning_exts/*" \
+  "runfiles/sc_hsm/*"
 
 # All external dependencies are mapped under
 # runfiles/lowrisc_opentitan/external.
