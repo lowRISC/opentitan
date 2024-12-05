@@ -3,8 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import logging
+import os
 import shlex
 import subprocess
+
+from python.runfiles import Runfiles
 
 
 def parse_hexstring_to_int(x):
@@ -64,3 +67,36 @@ def run(cmd, stdout_logfile, stderr_logfile):
     out_tee.stdin.close()
     err_tee.stdin.close()
     return res
+
+
+_runfiles = Runfiles.Create()
+
+
+def resolve_runfile(path):
+    """Resolves path to runfile.
+
+    Relative paths specified as external/<repo>/... will be resolved relative to
+    the external repository @<repo>. Otherwise, relative paths will be resolved
+    relative to the main workspace. Absolute paths are returned as-is.
+
+    Raises a ValueError if the path does not exist on the filesystem.
+    """
+
+    # orchestrator.py assumes the "old" style of runfiles tree, where paths to
+    # files within the main workspace do not include the repo name and external
+    # deps prepend external/.
+    #
+    # The old scheme does not work within a zipped py_binary, so this logic is a
+    # hack to fix up the supplied path.
+    #
+    # See https://docs.google.com/document/d/1skNx5o-8k5-YXUAyEETvr39eKoh9fecJbGUquPh5iy8/edit.
+    REPO = "lowrisc_opentitan"
+    if path.startswith("external/"):
+        corrected_path = path[len("external/"):]
+    else:
+        corrected_path = os.path.join(REPO, path)
+
+    resolved = _runfiles.Rlocation(corrected_path)
+    if resolved is None or not os.path.exists(resolved):
+        raise ValueError(f"Could not find runfile: {path}")
+    return resolved
