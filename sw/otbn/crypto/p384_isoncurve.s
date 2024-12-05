@@ -6,6 +6,14 @@
  *   test.
  */
 
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
  .section .text
 
 /**
@@ -128,19 +136,20 @@ p384_isoncurve:
  * y) is the point at infinity. In some other forms such as projective
  * coordinates, we would need to check for this also.
  *
- * This routine raises a software error and halts operation if the curve point
- * is invalid.
+ * This routine sets `ok` to false if the check fails and immediately exits the
+ * program. If the check succeeds, `ok` is unmodified.
  *
- * @param[in]  dmem[x]: affine x-coordinate of input point in dmem
- * @param[in]  dmem[y]: affine y-coordinate of input point in dmem
+ * @param[in]   dmem[x]: affine x-coordinate of input point in dmem
+ * @param[in]   dmem[y]: affine y-coordinate of input point in dmem
+ * @param[out] dmem[ok]: HARDENED_BOOL_FALSE if the check failed
  *
  * Flags: Flags have no meaning beyond the scope of this subroutine.
  *
  * clobbered registers: x2, x3, x20 to x23, w0 to w17
  * clobbered flag groups: FG0
  */
- .globl p384_curve_point_valid
-p384_curve_point_valid:
+ .globl p384_check_public_key
+p384_check_public_key:
   /* Init all-zero register. */
   bn.xor    w31, w31, w31
 
@@ -168,10 +177,11 @@ p384_curve_point_valid:
   bn.sub    w0, w10, w12
   bn.subb   w0, w11, w13
 
-  /* Trigger a fault if FG0.C is false. */
+  /* Fail if FG0.C is false. */
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _x_valid
+  jal       x0, p384_invalid_input
   unimp
 
   _x_valid:
@@ -187,10 +197,11 @@ p384_curve_point_valid:
   bn.sub    w0, w8, w12
   bn.subb   w0, w9, w13
 
-  /* Trigger a fault if FG0.C is false. */
+  /* Fail if FG0.C is false. */
   csrrs     x2, FG0, x0
   andi      x2, x2, 1
   bne       x2, x0, _y_valid
+  jal       x0, p384_invalid_input
   unimp
 
   _y_valid:
@@ -221,11 +232,15 @@ p384_curve_point_valid:
 
   bn.cmp    w0, w31
 
-  /* Trigger a fault if FG0.Z is false. */
+  /* Fail if FG0.Z is false. */
   csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pt_1st_reg_valid
+  jal       x0, p384_invalid_input
+
+  /* Extra unimps in case an attacker tries to skip the jump, since this one is
+     especially critical. */
   unimp
   unimp
   unimp
@@ -234,11 +249,15 @@ p384_curve_point_valid:
 
   bn.cmp    w1, w31
 
-  /* Trigger a fault if FG0.Z is false. */
+  /* Fail if FG0.Z is false. */
   csrrs     x2, FG0, x0
   srli      x2, x2, 3
   andi      x2, x2, 1
   bne       x2, x0, _pt_valid
+  jal       x0, p384_invalid_input
+
+  /* Extra unimps in case an attacker tries to skip the jump, since this one is
+     especially critical. */
   unimp
   unimp
   unimp
@@ -247,7 +266,31 @@ p384_curve_point_valid:
 
   ret
 
+/**
+ * Failure cases for basic validity checks jump here.
+ *
+ * This routine sets `ok` to false if the check fails.
+ *
+ * @param[out] dmem[ok] Set to HARDENED_BOOL_FALSE.
+ */
+.global p384_invalid_input
+p384_invalid_input:
+  /* Set the `ok` code to false. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_FALSE
+  sw       x3, 0(x2)
+
+  /* End the program. */
+  ecall
+
 .data
+
+/* Success code for basic validity checks on the public key and signature.
+   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
+.balign 4
+.weak ok
+ok:
+  .zero 4
 
 /* x-coordinate */
 .globl x

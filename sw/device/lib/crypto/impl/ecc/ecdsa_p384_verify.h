@@ -11,7 +11,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/ecc/p384_common.h"
-#include "sw/device/lib/crypto/impl/ecc/p384_curve_point_valid.h"
 
 #ifdef __cplusplus
 extern "C" {

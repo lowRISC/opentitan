@@ -27,6 +27,13 @@ p384_ecdsa_verify_test:
 
 
 .data
+/* status */
+.globl ok
+.balign 4
+ok:
+.word 0x000000739
+
+.balign 32
 
 /* message */
 .globl msg

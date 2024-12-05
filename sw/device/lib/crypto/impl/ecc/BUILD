@@ -51,7 +51,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p384_common",
-        ":p384_curve_point_valid",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -105,7 +104,6 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":p384_common",
-        ":p384_curve_point_valid",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -120,19 +118,5 @@ cc_library(
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:status",
-    ],
-)
-
-cc_library(
-    name = "p384_curve_point_valid",
-    srcs = ["p384_curve_point_valid.c"],
-    hdrs = ["p384_curve_point_valid.h"],
-    target_compatible_with = [OPENTITAN_CPU],
-    deps = [
-        ":p384_common",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/otbn/crypto:p384_curve_point_valid",
     ],
 )

@@ -7,16 +7,9 @@
  *
  * This binary has the following modes of operation:
  * 1. MODE_KEYGEN_RANDOM: generate a random keypair
- * 2. MODE_SHARED_KEYGEN: compute shared key - !!! Attention !!! - before
- *                        shared key computation p384_curve_point_valid
- *                        binary has to be executed to check if the provided
- *                        public key is valid.
+ * 2. MODE_SHARED_KEYGEN: compute shared key
  * 3. MODE_KEYGEN_FROM_SEED: generate keypair from a sideloaded seed
  * 4. MODE_SHARED_KEYGEN_FROM_SEED: compute shared key using sideloaded seed
- *                                  !!! Attention !!! - before shared key
- *                                  computation p384_curve_point_valid
- *                                  binary has to be executed to check if
- *                                  the provided public key is valid.
  */
 
  /**
@@ -36,6 +29,22 @@
 .equ MODE_KEYPAIR_RANDOM, 0x3f1
 .equ MODE_KEYPAIR_FROM_SEED, 0x29f
 .equ MODE_SHARED_KEY_FROM_SEED, 0x74b
+
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_SHARED_KEY
+.globl MODE_KEYPAIR_RANDOM
+.globl MODE_KEYPAIR_FROM_SEED
+.globl MODE_SHARED_KEY_FROM_SEED
+
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
 
 .section .text.start
 start:
@@ -104,9 +113,6 @@ keypair_random:
  *
  * This routine runs in constant time.
  *
- * !!! Attention !!! - before shared key computation p384_curve_point_valid
- * binary has to be executed to check if the provided public key is valid.
- *
  * @param[in]        w31: all-zero
  * @param[in]   dmem[k0]: 1st private key share d0/k0
  * @param[in]   dmem[k1]: 2nd private key share d1/k0
@@ -119,6 +125,14 @@ keypair_random:
  * clobbered flag groups: FG0
  */
 shared_key:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p384_check_public_key
+
+  /* If we got here the basic validity checks passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
   /* Generate arithmetically masked shared key d*Q.
      dmem[x] <= (d*Q).x - m mod p
      dmem[y] <= m */
@@ -207,9 +221,6 @@ keypair_from_seed:
  *
  * This routine runs in constant time.
  *
- * !!! Attention !!! - before shared key computation p384_curve_point_valid
- * binary has to be executed to check if the provided public key is valid.
- *
  * @param[in]        w31: all-zero
  * @param[out]   dmem[x]: x0, first share of shared key.
  * @param[out]   dmem[y]: x1, second share of shared key.
@@ -241,6 +252,13 @@ shared_key_from_seed:
 .globl mode
 .balign 4
 mode:
+  .zero 4
+
+/* Success code for basic validity checks on the public key and signature.
+   Should be HARDENED_BOOL_TRUE or HARDENED_BOOL_FALSE. */
+.globl ok
+.balign 4
+ok:
   .zero 4
 
 /* Public key x-coordinate. */
