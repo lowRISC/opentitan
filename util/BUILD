@@ -84,6 +84,7 @@ py_binary(
     name = "autogen_testutils",
     srcs = ["autogen_testutils.py"],
     deps = [
+        "//util/autogen_testutils:gen",
         "//util/topgen",
         requirement("mako"),
         requirement("hjson"),
