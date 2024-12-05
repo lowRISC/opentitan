@@ -383,11 +383,12 @@ def _opentitan_autogen_testutils_gen(ctx):
         "--outdir",
         outdir,
     ]
-    for ip in top.ip_hjson.values():
-        if ip == None:
-            continue
+    for (ipname, ip) in top.ip_hjson.items():
         inputs.append(ip)
         arguments.extend(["-i", ip.path])
+
+    for ipname in ctx.attr.exclude_ips:
+        arguments.extend(["-e", ipname])
 
     ctx.actions.run(
         outputs = outputs,
@@ -403,7 +404,7 @@ def _opentitan_autogen_testutils_gen(ctx):
 
 opentitan_autogen_testutils_gen = rule(
     implementation = _opentitan_autogen_testutils_gen,
-    doc = "Generate the DIFs file for an IP",
+    doc = "Generate the tests or testutils file for a top",
     attrs = {
         "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
         "output_groups": attr.string_list_dict(
@@ -412,6 +413,10 @@ opentitan_autogen_testutils_gen = rule(
                 Mappings from output group names to lists of paths contained in
                 that group.
             """,
+        ),
+        "exclude_ips": attr.string_list(
+            default = [],
+            doc = "List of IPs to ignore.",
         ),
         "_autogen_testutils": attr.label(
             default = "//util:autogen_testutils",
@@ -422,10 +427,11 @@ opentitan_autogen_testutils_gen = rule(
 )
 
 # See opentitan_autogen_testutils_gen for documentation of parameters.
-def opentitan_autogen_isr_testutils(name, top):
+def opentitan_autogen_isr_testutils(name, top, exclude_ips):
     opentitan_autogen_testutils_gen(
         name = "{}_gen".format(name),
         top = top,
+        exclude_ips = exclude_ips,
         output_groups = {
             "hdr": ["isr_testutils.h"],
             "src": ["isr_testutils.c"],
