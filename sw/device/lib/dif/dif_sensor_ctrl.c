@@ -86,10 +86,19 @@ dif_result_t dif_sensor_ctrl_set_alert_en(const dif_sensor_ctrl_t *sensor_ctrl,
     return kDifLocked;
   }
 
+#if defined(OPENTITAN_IS_DARJEELING)
+  if (en == kDifToggleDisabled) {
+    return kDifUnavailable;
+  }
+#else /* OPENTITAN_IS_DARJEELING */
+  // Darjeeling does not support enabling/disabling alert.
+  // Ignore requests to enable (since alerts are always enabled) and return
+  // an error if trying to disable them.
   mmio_region_write32(
       sensor_ctrl->base_addr,
       SENSOR_CTRL_ALERT_EN_0_REG_OFFSET + ((ptrdiff_t)event_idx << 2),
       dif_toggle_to_multi_bit_bool4(en));
+#endif
 
   return kDifOk;
 }
