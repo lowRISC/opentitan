@@ -91,6 +91,17 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "autogen_tests",
+    srcs = ["autogen_tests.py"],
+    deps = [
+        "//util/autogen_tests:gen",
+        "//util/topgen",
+        requirement("mako"),
+        requirement("hjson"),
+    ],
+)
+
 py_test(
     name = "generate_compilation_db_test",
     srcs = [
