@@ -6,10 +6,9 @@
 
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/impl/ecc/ecdh_p256.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdh_p384.h"
-#include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
 #include "sw/device/lib/crypto/impl/ecc/ecdsa_p384.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -141,11 +140,11 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_start(
       if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
         HARDENED_TRY(sideload_key_seed(private_key));
-        return ecdsa_p256_sideload_keygen_start();
+        return p256_sideload_keygen_start();
       } else if (launder32(private_key->config.hw_backed) ==
                  kHardenedBoolFalse) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-        return ecdsa_p256_keygen_start();
+        return p256_keygen_start();
       } else {
         return OTCRYPTO_BAD_ARGS;
       }
@@ -326,48 +325,47 @@ static status_t p384_public_key_length_check(
 }
 
 /**
- * Finalize an ECDSA key generation operation for curve P-256.
+ * Finalize a keypair generation operation for curve P-256.
  *
  * This function assumes that space is already allocated for all key material
  * and that the length parameters on the structs are set accordingly, in the
- * same way as for `otcrypto_ecdsa_keygen_async_finalize`.
+ * same way as for `otcrypto_ecdh_keygen_async_finalize` and
+ * `otcrypto_ecdsa_keygen_async_finalize`.
  *
  * @param[out] private_key Private key to populate.
  * @param[out] public_key Public key to populate.
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-static status_t internal_ecdsa_p256_keygen_finalize(
+static status_t internal_p256_keygen_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   // Check the lengths of caller-allocated buffers.
   HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
-
-  // Interpret the key buffer as a P-256 point.
   p256_point_t *pk = (p256_point_t *)public_key->key;
 
+  // Note: The `finalize` operations wipe DMEM after retrieving the keys, so if
+  // an error occurs after this point then the keys would be unrecoverable.
+  // The `finalize` call should be the last potentially error-causing line
+  // before returning to the caller.
+
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
-    // Note: This operation wipes DMEM after retrieving the keys, so if an error
-    // occurs after this point then the keys would be unrecoverable. This should
-    // be the last potentially error-causing line before returning to the
-    // caller.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(ecdsa_p256_sideload_keygen_finalize(pk));
+    HARDENED_TRY(p256_sideload_keygen_finalize(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
-    p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
-    // Note: This operation wipes DMEM after retrieving the keys, so if an error
-    // occurs after this point then the keys would be unrecoverable. This should
-    // be the last potentially error-causing line before returning to the
-    // caller.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    HARDENED_TRY(ecdsa_p256_keygen_finalize(sk, pk));
+    p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
+    HARDENED_TRY(p256_keygen_finalize(sk, pk));
     private_key->checksum = integrity_blinded_checksum(private_key);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Prepare the public key.
   public_key->checksum = integrity_unblinded_checksum(public_key);
-  return OTCRYPTO_OK;
+
+  // Clear the OTBN sideload slot (in case the seed was sideloaded).
+  return keymgr_sideload_clear_otbn();
 }
 
 /**
@@ -437,8 +435,7 @@ otcrypto_status_t otcrypto_ecdsa_keygen_async_finalize(
     case kOtcryptoEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP256);
-      HARDENED_TRY(
-          internal_ecdsa_p256_keygen_finalize(private_key, public_key));
+      HARDENED_TRY(internal_p256_keygen_finalize(private_key, public_key));
       break;
     case kOtcryptoEccCurveTypeNistP384:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
@@ -483,12 +480,12 @@ static status_t internal_ecdsa_p256_sign_start(
     // Start the asynchronous signature-generation routine.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
-    return ecdsa_p256_sign_start(message_digest.data, sk);
+    return p256_ecdsa_sign_start(message_digest.data, sk);
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
     HARDENED_TRY(sideload_key_seed(private_key));
-    return ecdsa_p256_sideload_sign_start(message_digest.data);
+    return p256_ecdsa_sideload_sign_start(message_digest.data);
   }
 
   // Invalid value for private_key->hw_backed.
@@ -587,7 +584,7 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
  * Check the length of a signature buffer for ECDSA with P-256.
  *
  * If this check passes on `signature.len`, it is safe to interpret
- * `signature.data` as `ecdsa_p256_signature_t *`.
+ * `signature.data` as `p256_ecdsa_signature_t *`.
  *
  * @param len Length to check.
  * @return OK if the lengths are correct or BAD_ARGS otherwise.
@@ -595,10 +592,10 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_start(
 OT_WARN_UNUSED_RESULT
 static status_t p256_signature_length_check(size_t len) {
   if (launder32(len) > UINT32_MAX / sizeof(uint32_t) ||
-      launder32(len) * sizeof(uint32_t) != sizeof(ecdsa_p256_signature_t)) {
+      launder32(len) * sizeof(uint32_t) != sizeof(p256_ecdsa_signature_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(len * sizeof(uint32_t), sizeof(ecdsa_p256_signature_t));
+  HARDENED_CHECK_EQ(len * sizeof(uint32_t), sizeof(p256_ecdsa_signature_t));
 
   return OTCRYPTO_OK;
 }
@@ -636,12 +633,12 @@ otcrypto_status_t otcrypto_ecdsa_sign_async_finalize(
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP256);
       HARDENED_TRY(p256_signature_length_check(signature.len));
-      ecdsa_p256_signature_t *sig_p256 =
-          (ecdsa_p256_signature_t *)signature.data;
+      p256_ecdsa_signature_t *sig_p256 =
+          (p256_ecdsa_signature_t *)signature.data;
       // Note: This operation wipes DMEM, so if an error occurs after this
       // point then the signature would be unrecoverable. This should be the
       // last potentially error-causing line before returning to the caller.
-      HARDENED_TRY(ecdsa_p256_sign_finalize(sig_p256));
+      HARDENED_TRY(p256_ecdsa_sign_finalize(sig_p256));
       break;
     case kOtcryptoEccCurveTypeNistP384:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
@@ -692,10 +689,10 @@ static status_t internal_ecdsa_p256_verify_start(
 
   // Check the signature lengths.
   HARDENED_TRY(p256_signature_length_check(signature.len));
-  ecdsa_p256_signature_t *sig = (ecdsa_p256_signature_t *)signature.data;
+  p256_ecdsa_signature_t *sig = (p256_ecdsa_signature_t *)signature.data;
 
   // Start the asynchronous signature-verification routine.
-  return ecdsa_p256_verify_start(sig, message_digest.data, pk);
+  return p256_ecdsa_verify_start(sig, message_digest.data, pk);
 }
 
 /**
@@ -795,9 +792,9 @@ otcrypto_status_t otcrypto_ecdsa_verify_async_finalize(
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP256);
       HARDENED_TRY(p256_signature_length_check(signature.len));
-      ecdsa_p256_signature_t *sig_p256 =
-          (ecdsa_p256_signature_t *)signature.data;
-      return ecdsa_p256_verify_finalize(sig_p256, verification_result);
+      p256_ecdsa_signature_t *sig_p256 =
+          (p256_ecdsa_signature_t *)signature.data;
+      return p256_ecdsa_verify_finalize(sig_p256, verification_result);
     case kOtcryptoEccCurveTypeNistP384:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP384);
@@ -844,10 +841,10 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
       if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
         HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
         HARDENED_TRY(sideload_key_seed(private_key));
-        return ecdh_p256_sideload_keypair_start();
+        return p256_sideload_keygen_start();
       } else if (launder32(private_key->config.hw_backed) ==
                  kHardenedBoolFalse) {
-        return ecdh_p256_keypair_start();
+        return p256_keygen_start();
       }
       return OTCRYPTO_BAD_ARGS;
     case kOtcryptoEccCurveTypeNistP384:
@@ -875,49 +872,6 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_start(
   // Should never get here.
   HARDENED_TRAP();
   return OTCRYPTO_FATAL_ERR;
-}
-
-/**
- * Finalize an ECDH keypair generation operation for curve P-256.
- *
- * This function assumes that space is already allocated for all key material
- * and that the length parameters on the structs are set accordingly, in the
- * same way as for `otcrypto_ecdh_keygen_async_finalize`.
- *
- * @param[out] private_key Private key to populate.
- * @param[out] public_key Public key to populate.
- * @return OK or error.
- */
-OT_WARN_UNUSED_RESULT
-static status_t internal_ecdh_p256_keygen_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  // Check the lengths of caller-allocated buffers.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
-  HARDENED_TRY(p256_public_key_length_check(public_key));
-  p256_point_t *pk = (p256_point_t *)public_key->key;
-
-  // Note: The `finalize` operations wipe DMEM after retrieving the keys, so if
-  // an error occurs after this point then the keys would be unrecoverable.
-  // The `finalize` call should be the last potentially error-causing line
-  // before returning to the caller.
-
-  if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
-    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(ecdh_p256_sideload_keypair_finalize(pk));
-  } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-    p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
-    HARDENED_TRY(ecdh_p256_keypair_finalize(sk, pk));
-    private_key->checksum = integrity_blinded_checksum(private_key);
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Prepare the public key.
-  public_key->checksum = integrity_unblinded_checksum(public_key);
-
-  // Clear the OTBN sideload slot (in case the seed was sideloaded).
-  return keymgr_sideload_clear_otbn();
 }
 
 /**
@@ -985,7 +939,7 @@ otcrypto_status_t otcrypto_ecdh_keygen_async_finalize(
     case kOtcryptoEccCurveTypeNistP256:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
                         kOtcryptoEccCurveTypeNistP256);
-      HARDENED_TRY(internal_ecdh_p256_keygen_finalize(private_key, public_key));
+      HARDENED_TRY(internal_p256_keygen_finalize(private_key, public_key));
       break;
     case kOtcryptoEccCurveTypeNistP384:
       HARDENED_CHECK_EQ(elliptic_curve->curve_type,
@@ -1023,11 +977,11 @@ static status_t internal_ecdh_p256_start(
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
     HARDENED_TRY(sideload_key_seed(private_key));
-    return ecdh_p256_sideload_shared_key_start(pk);
+    return p256_sideload_ecdh_start(pk);
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     p256_masked_scalar_t *sk = (p256_masked_scalar_t *)private_key->keyblob;
-    return ecdh_p256_shared_key_start(sk, pk);
+    return p256_ecdh_start(sk, pk);
   }
 
   // Invalid value for `hw_backed`.
@@ -1153,8 +1107,8 @@ static status_t internal_ecdh_p256_finalize(
   // Note: This operation wipes DMEM after retrieving the keys, so if an error
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
-  ecdh_p256_shared_key_t ss;
-  HARDENED_TRY(ecdh_p256_shared_key_finalize(&ss));
+  p256_ecdh_shared_key_t ss;
+  HARDENED_TRY(p256_ecdh_finalize(&ss));
 
   keyblob_from_shares(ss.share0, ss.share1, shared_secret->config,
                       shared_secret->keyblob);

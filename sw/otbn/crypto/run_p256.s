@@ -3,20 +3,22 @@
 /* SPDX-License-Identifier: Apache-2.0 */
 
 /**
- * Entrypoint for P-256 ECDSA operations.
+ * Entrypoint for P-256 ECDH and ECDSA operations.
  *
  * This binary has the following modes of operation:
  * 1. MODE_KEYGEN: generate a new keypair
- * 2. MODE_SIGN: generate signature using caller-provided secret key
- * 3. MODE_VERIFY: verify a signature
- * 4. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
- * 5. MODE_SIDELOAD_SIGN: generate signature using sideloaded secret key/seed
+ * 2. MODE_SIGN: generate an ECDSA signature using caller-provided secret key
+ * 3. MODE_VERIFY: verify an ECDSA signature
+ * 4. MODE_ECDH: ECDH key exchange using a caller-provided secret key
+ * 5. MODE_SIDELOAD_KEYGEN: generate a keypair from a sideloaded seed
+ * 6. MODE_SIDELOAD_SIGN: generate an ECDSA signature using sideloaded secret key/seed
+ * 7. MODE_SIDELOAD_ECDH: ECDH key exchange using a secret key from a sideloaded seed
  */
 
 /**
  * Mode magic values, generated with
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 5 -n 11 \
- *     --avoid-zero -s 2205231843
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 6 -n 11 \
+ *     --avoid-zero -s 380925547
  *
  * Call the same utility with the same arguments and a higher -m to generate
  * additional value(s) without changing the others or sacrificing mutual HD.
@@ -26,11 +28,32 @@
  * as `li`. If support is added, we could use 32-bit values here instead of
  * 11-bit.
  */
-.equ MODE_KEYGEN, 0x3d4
-.equ MODE_SIGN, 0x15b
-.equ MODE_VERIFY, 0x727
-.equ MODE_SIDELOAD_KEYGEN, 0x5e8
-.equ MODE_SIDELOAD_SIGN, 0x49e
+.equ MODE_KEYGEN, 0x5c5
+.equ MODE_SIGN, 0x31b
+.equ MODE_VERIFY, 0x1f8
+.equ MODE_ECDH, 0x6eb
+.equ MODE_SIDELOAD_KEYGEN, 0x275
+.equ MODE_SIDELOAD_SIGN, 0x45e
+.equ MODE_SIDELOAD_ECDH, 0x72c
+
+/**
+ * Make the mode constants visible to Ibex.
+ */
+.globl MODE_KEYGEN
+.globl MODE_SIGN
+.globl MODE_VERIFY
+.globl MODE_ECDH
+.globl MODE_SIDELOAD_KEYGEN
+.globl MODE_SIDELOAD_SIGN
+.globl MODE_SIDELOAD_ECDH
+
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
 
 .section .text.start
 .globl start
@@ -48,11 +71,17 @@ start:
   addi  x3, x0, MODE_VERIFY
   beq   x2, x3, ecdsa_verify
 
+  addi  x3, x0, MODE_ECDH
+  beq   x2, x3, shared_key
+
   addi  x3, x0, MODE_SIDELOAD_KEYGEN
   beq   x2, x3, sideload_keygen
 
   addi  x3, x0, MODE_SIDELOAD_SIGN
   beq   x2, x3, sideload_ecdsa_sign
+
+  addi  x3, x0, MODE_SIDELOAD_ECDH
+  beq   x2, x3, shared_key_from_seed
 
   /* Invalid mode; fail. */
   unimp
@@ -130,6 +159,44 @@ ecdsa_verify:
   ecall
 
 /**
+ * Generate a shared key from a secret and public key (ECDH).
+ *
+ * Returns the shared key, which is the affine x-coordinate of (d*Q). The
+ * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
+ * x1).
+ *
+ * If `ok` is false, the public key is invalid and the shared key is
+ * meaningless. The value will be either HARDENED_BOOL_TRUE or
+ * HARDENED_BOOL_FALSE.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[in]  dmem[k0]: First share of secret key.
+ * @param[in]  dmem[k1]: Second share of secret key.
+ * @param[in]   dmem[x]: Public key (Q) x-coordinate.
+ * @param[in]   dmem[y]: Public key (Q) y-coordinate.
+ * @param[out] dmem[ok]: Whether the public key is valid.
+ * @param[out]  dmem[x]: x0, first share of shared key.
+ * @param[out]  dmem[y]: x1, second share of shared key.
+ */
+shared_key:
+  /* Validate the public key (ends the program on failure). */
+  jal      x1, p256_check_public_key
+
+  /* If we got here the basic validity checks passed, so set `ok` to true. */
+  la       x2, ok
+  addi     x3, x0, HARDENED_BOOL_TRUE
+  sw       x3, 0(x2)
+
+  /* Generate boolean-masked shared key (d*Q).x.
+       dmem[x] <= x0
+       dmem[y] <= x1 */
+  jal      x1, p256_shared_key
+
+  ecall
+
+/**
  * Generate a keypair from a sideloaded seed.
  *
  * @param[out] dmem[d0]: First share of secret key.
@@ -165,6 +232,35 @@ sideload_ecdsa_sign:
 
   /* Tail-call signature-generation routine. */
   jal      x0, ecdsa_sign
+
+/**
+ * Generate a shared key from a keymgr-derived seed.
+ *
+ * Returns the shared key, which is the affine x-coordinate of (d*Q). The
+ * shared key is expressed in boolean shares x0, x1 such that the key is (x0 ^
+ * x1).
+ *
+ * If `ok` is false, the public key is invalid and the shared key is
+ * meaningless. The value will be either HARDENED_BOOL_TRUE or
+ * HARDENED_BOOL_FALSE.
+ *
+ * This routine runs in constant time.
+ *
+ * @param[in]       w31: all-zero
+ * @param[in]   dmem[x]: Public key (Q) x-coordinate.
+ * @param[in]   dmem[y]: Public key (Q) y-coordinate.
+ * @param[out] dmem[ok]: Whether the public key is valid.
+ * @param[out]  dmem[x]: x0, first share of shared key.
+ * @param[out]  dmem[y]: x1, second share of shared key.
+ */
+shared_key_from_seed:
+  /* Generate secret key d in shares.
+       dmem[d0] <= d0
+       dmem[d1] <= d1 */
+  jal   x1, secret_key_from_seed
+
+  /* Tail-call shared-key generation. */
+  jal      x0, shared_key
 
 /**
  * Generate a secret key from a keymgr-derived seed.

@@ -208,7 +208,7 @@ otbn_consttime_test(
     name = "p256_base_mult_consttime",
     subroutine = "p256_base_mult",
     deps = [
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 
@@ -216,7 +216,7 @@ otbn_consttime_test(
     name = "p256_isoncurve_consttime",
     subroutine = "p256_isoncurve",
     deps = [
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 
@@ -224,7 +224,7 @@ otbn_consttime_test(
     name = "p256_key_from_seed_consttime",
     subroutine = "p256_key_from_seed",
     deps = [
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 
@@ -254,7 +254,7 @@ otbn_consttime_test(
     name = "p256_proj_add_consttime",
     subroutine = "proj_add",
     deps = [
-        "//sw/otbn/crypto:p256_ecdsa",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 
@@ -262,7 +262,7 @@ otbn_consttime_test(
     name = "p256_shared_key_consttime",
     subroutine = "p256_shared_key",
     deps = [
-        "//sw/otbn/crypto:p256_ecdh",
+        "//sw/otbn/crypto:run_p256",
     ],
 )
 
@@ -275,7 +275,7 @@ otbn_consttime_test(
 # otbn_consttime_test(
 #   name = "p256_sign_consttime",
 #   deps = [
-#       "//sw/otbn/crypto:p256_ecdsa"
+#       "//sw/otbn/crypto:run_p256"
 #   ],
 #   subroutine = "p256_sign",
 # )

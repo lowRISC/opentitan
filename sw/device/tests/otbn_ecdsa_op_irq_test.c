@@ -35,37 +35,35 @@
  * </code>
  */
 
-OTBN_DECLARE_APP_SYMBOLS(p256_ecdsa);
+OTBN_DECLARE_APP_SYMBOLS(run_p256);
 
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, mode);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, msg);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, r);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, s);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, y);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d0);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, d1);
-OTBN_DECLARE_SYMBOL_ADDR(p256_ecdsa, x_r);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, mode);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, msg);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, r);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, s);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, x);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, y);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, d0);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, d1);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, x_r);
 
-static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(p256_ecdsa);
+static const otbn_app_t kOtbnAppP256Ecdsa = OTBN_APP_T_INIT(run_p256);
 
-static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(p256_ecdsa, mode);
-static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(p256_ecdsa, msg);
-static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(p256_ecdsa, r);
-static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(p256_ecdsa, s);
-static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(p256_ecdsa, x);
-static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(p256_ecdsa, y);
-static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(p256_ecdsa, d0);
-static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(p256_ecdsa, d1);
-static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(p256_ecdsa, x_r);
+static const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_p256, mode);
+static const otbn_addr_t kOtbnVarMsg = OTBN_ADDR_T_INIT(run_p256, msg);
+static const otbn_addr_t kOtbnVarR = OTBN_ADDR_T_INIT(run_p256, r);
+static const otbn_addr_t kOtbnVarS = OTBN_ADDR_T_INIT(run_p256, s);
+static const otbn_addr_t kOtbnVarX = OTBN_ADDR_T_INIT(run_p256, x);
+static const otbn_addr_t kOtbnVarY = OTBN_ADDR_T_INIT(run_p256, y);
+static const otbn_addr_t kOtbnVarD0 = OTBN_ADDR_T_INIT(run_p256, d0);
+static const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p256, d1);
+static const otbn_addr_t kOtbnVarXR = OTBN_ADDR_T_INIT(run_p256, x_r);
 
-/**
- * Hardened values for different modes (see p256_ecdsa.s).
- */
-enum {
-  kModeSign = 0x15b,
-  kModeVerify = 0x727,
-};
+// Declare mode constants.
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_SIGN);
+OTBN_DECLARE_SYMBOL_ADDR(run_p256, MODE_VERIFY);
+static const uint32_t kModeSign = OTBN_ADDR_T_INIT(run_p256, MODE_SIGN);
+static const uint32_t kModeVerify = OTBN_ADDR_T_INIT(run_p256, MODE_VERIFY);
 
 OTTF_DEFINE_TEST_CONFIG();
 

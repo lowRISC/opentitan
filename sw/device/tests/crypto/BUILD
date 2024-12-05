@@ -579,7 +579,7 @@ opentitan_test(
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],

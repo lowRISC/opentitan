@@ -4,8 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/ecdsa_p256.h"
-#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -33,7 +32,7 @@ int set_nist_p256_params(
     cryptotest_ecdsa_coordinate_t uj_qx, cryptotest_ecdsa_coordinate_t uj_qy,
     cryptotest_ecdsa_signature_t uj_signature,
     otcrypto_ecc_curve_type_t *curve_type, otcrypto_unblinded_key_t *public_key,
-    ecdsa_p256_signature_t *signature_p256, p256_point_t *pub_p256,
+    p256_ecdsa_signature_t *signature_p256, p256_point_t *pub_p256,
     otcrypto_word32_buf_t *signature_mut, size_t *digest_len) {
   *curve_type = kOtcryptoEccCurveTypeNistP256;
   if (uj_qx.coordinate_len > kP256CoordBytes) {
@@ -148,8 +147,8 @@ status_t p256_sign(ujson_t *uj, cryptotest_ecdsa_private_key_t *uj_private_key,
 
   memset(uj_signature->r, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
   memset(uj_signature->s, 0, ECDSA_CMD_MAX_SIGNATURE_SCALAR_BYTES);
-  ecdsa_p256_signature_t *signature_p256 =
-      (ecdsa_p256_signature_t *)signature_mut.data;
+  p256_ecdsa_signature_t *signature_p256 =
+      (p256_ecdsa_signature_t *)signature_mut.data;
   memcpy(uj_signature->r, signature_p256->r, kP256ScalarBytes);
   uj_signature->r_len = kP256ScalarBytes;
   memcpy(uj_signature->s, signature_p256->s, kP256ScalarBytes);
@@ -186,7 +185,7 @@ status_t handle_ecdsa(ujson_t *uj) {
 
   otcrypto_word32_buf_t signature_mut;
   int success;
-  ecdsa_p256_signature_t signature_p256;
+  p256_ecdsa_signature_t signature_p256;
   p256_point_t pub_p256;
   switch (uj_curve) {
     case kCryptotestEcdsaCurveP256:

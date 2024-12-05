@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
