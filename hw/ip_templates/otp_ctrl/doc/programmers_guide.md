@@ -39,7 +39,7 @@ Hence the OTP controller performs a blank check and returns an error if a write 
 
 It should be noted that the locked status of the partition holding the creator root key (i.e., the value of the [`SECRET2_DIGEST_0`](registers.md#secret2_digest)) determines the ID_STATUS of the device, which in turn determines SW accessibility of creator seed material in flash and OTP.
 That means that creator-seed-related collateral needs to be provisioned to Flash **before** the OTP digest lockdown mechanism is triggered, since otherwise accessibility to the corresponding flash region is lost.
-See the [life cycle controller documentation](../../lc_ctrl/README.md#id-state-of-the-device) for more details.
+See the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md#id-state-of-the-device) for more details.
 
 ## Direct Access Interface
 
@@ -181,7 +181,7 @@ For the hardware partitions, hardware calculates this digest and uses it for [ba
 Digest calculation can be triggered via the DAI.
 
 Finally, it should be noted that the RMA_TOKEN and CREATOR_ROOT_KEY_SHARE0 / CREATOR_ROOT_KEY_SHARE1 items can only be programmed when the device is in the DEV, PROD, PROD_END and RMA stages.
-Please consult the [life cycle controller documentation](../../lc_ctrl/README.md) documentation for more information.
+Please consult the [life cycle controller documentation](../../../../ip/lc_ctrl/README.md) documentation for more information.
 
 ## OTP Field Descriptions
 
@@ -226,7 +226,7 @@ This is however rare and should not happen after fabrication testing.
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_otp_ctrl.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_otp_ctrl.h)
 
 # Additional Notes
 

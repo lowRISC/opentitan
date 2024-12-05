@@ -16,8 +16,8 @@ secret_parts = [part for part in parts if part["secret"] == "true"]
 
 /**
  * @file
- * @brief <a href="/hw/ip/otp_ctrl/doc/">OTP Controller</a> Device Interface
- * Functions
+ * @brief <a href="/hw/top_${topname}/ip_autogen/otp_ctrl/doc/">
+ * OTP Controller</a> Device Interface Functions
  */
 
 #include <stdint.h>

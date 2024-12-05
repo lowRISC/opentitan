@@ -60,12 +60,13 @@
 // DigestFinalize: This command encrypts the digest state with the finalization constant selected
 //                 by sel_i in order to form the final digest.
 //
-// References: - https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#design-details
-//             - https://docs.opentitan.org/hw/ip/prim/doc/prim_present/
-//             - https://en.wikipedia.org/wiki/Merkle-Damgard_construction
-//             - https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer
-//             - https://en.wikipedia.org/wiki/PRESENT
-//             - http://www.lightweightcrypto.org/present/present_ches2007.pdf
+// References:
+//  - https://docs.opentitan.org/hw/ip/otp_ctrl/doc/theory_of_operation.html#block-diagram
+//  - https://docs.opentitan.org/hw/ip/prim/doc/prim_present/
+//  - https://en.wikipedia.org/wiki/Merkle-Damgard_construction
+//  - https://en.wikipedia.org/wiki/One-way_compression_function#Davies%E2%80%93Meyer
+//  - https://en.wikipedia.org/wiki/PRESENT
+//  - http://www.lightweightcrypto.org/present/present_ches2007.pdf
 //
 
 `include "prim_flop_macros.sv"
