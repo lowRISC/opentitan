@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  ./util/dvsim/dvsim.py hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# flash_ctrl prim flash recov_alert connectivity
+CONNECTION, RECOV_PRIM_FLASH_ALERT, top_earlgrey.u_flash_ctrl.u_eflash.u_flash, recov_alert_o, top_earlgrey.u_flash_ctrl, alert_srcs[4]
