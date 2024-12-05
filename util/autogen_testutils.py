@@ -48,6 +48,14 @@ def main():
         help="path of an IP hjson file (if not specified, will be guessed by the tool).",
     )
     parser.add_argument(
+        "--exclude",
+        "-e",
+        type=str,
+        action="append",
+        default=[],
+        help="ignore IP when generating the testutils",
+    ),
+    parser.add_argument(
         "--outdir",
         "-o",
         type=Path,
@@ -82,6 +90,8 @@ def main():
     # that can actually generate interrupts.
     ips = []
     for ipname in list({m['type'] for m in topcfg['module']}):
+        if ipname in args.exclude:
+            continue
         # If the IP's hjson path was not provided on the command line, guess
         # its location based on the type and top name.
         if ipname in ip_hjson:
