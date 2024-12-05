@@ -17,14 +17,20 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//rules:autogen.bzl", "opentitan_autogen_tests")
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+opentitan_autogen_tests(
+    name = "autogen",
+    top = "//hw/top:top_desc",
+)
+
 [
     opentitan_test(
         name = "plic_all_irqs_test_{}".format(min),
-        srcs = ["plic_all_irqs_test.c"],
+        srcs = [":autogen_plic_all_irqs_test_src"],
         copts = [
             "-DTEST_MIN_IRQ_PERIPHERAL={}".format(min),
             "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
@@ -49,33 +55,10 @@ package(default_visibility = ["//visibility:public"])
             # often times out in 3600s on 4 cores
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:top_lib",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:mmio",
-            "//sw/device/lib/dif:adc_ctrl",
-            "//sw/device/lib/dif:alert_handler",
-            "//sw/device/lib/dif:aon_timer",
-            "//sw/device/lib/dif:csrng",
-            "//sw/device/lib/dif:edn",
-            "//sw/device/lib/dif:entropy_src",
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/dif:gpio",
-            "//sw/device/lib/dif:hmac",
-            "//sw/device/lib/dif:i2c",
-            "//sw/device/lib/dif:keymgr",
-            "//sw/device/lib/dif:kmac",
-            "//sw/device/lib/dif:otbn",
-            "//sw/device/lib/dif:otp_ctrl",
-            "//sw/device/lib/dif:pattgen",
-            "//sw/device/lib/dif:pwrmgr",
-            "//sw/device/lib/dif:rv_plic",
-            "//sw/device/lib/dif:rv_timer",
-            "//sw/device/lib/dif:sensor_ctrl",
-            "//sw/device/lib/dif:spi_device",
-            "//sw/device/lib/dif:spi_host",
-            "//sw/device/lib/dif:sysrst_ctrl",
-            "//sw/device/lib/dif:uart",
-            "//sw/device/lib/dif:usbdev",
+            "//sw/device/lib/dif:all_difs",
             "//sw/device/lib/runtime:irq",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:rv_plic_testutils",
@@ -96,7 +79,7 @@ test_suite(
 
 opentitan_test(
     name = "alert_test",
-    srcs = ["alert_test.c"],
+    srcs = [":autogen_alert_test_src"],
     # TODO(#22871): Remove "broken" tag once the tests are fixed.
     broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
@@ -110,7 +93,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
