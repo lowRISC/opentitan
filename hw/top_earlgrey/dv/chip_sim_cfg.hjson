@@ -495,7 +495,7 @@
     {
       name: chip_sw_sleep_pin_wake
       uvm_test_seq: chip_sw_sleep_pin_wake_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sleep_pin_wake_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:sleep_pin_wake_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       // Starting the chip in prod LC state frees up all MIOs for this test.
       run_opts: ["+use_otp_image=OtpTypeLcStProd"]
@@ -625,6 +625,14 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1", "+sw_test_timeout_ns=60_000_000"]
       run_timeout_mins: 120
+      reseed: 1
+    }
+    {
+      name: chip_sw_usbdev_toggle_restore
+      uvm_test_seq: chip_sw_usbdev_dpi_vseq
+      sw_images: ["//sw/device/tests:usbdev_toggle_restore_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+uart_idx=0", "+calibrate_usb_clk=1"]
       reseed: 1
     }
     {
@@ -871,6 +879,18 @@
       uvm_test_seq: chip_sw_otp_ctrl_vendor_test_ecc_error_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_ecc_error_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_otp_ctrl_descrambling
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: [
+        "//sw/device/tests:otp_ctrl_descrambling_test:1:new_rules",
+        "//sw/device/tests:otp_ctrl_descrambling_otp_image:4",
+      ]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeCustom",
+      ]
     }
     {
       // Set higher reseed value to reach all kmac_data to lc_ctrl toggle coverage.
@@ -1582,7 +1602,8 @@
     {
       name: chip_sw_kmac_app_rom
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:kmac_app_rom_test:1:new_rules"]
+      // The `sim_dv` prefix is necessary due to how the targets are created, see BUILD file.
+      sw_images: ["//sw/device/tests:kmac_app_rom_test_sim_dv:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -2102,13 +2123,13 @@
     {
       name: chip_sw_power_idle_load
       uvm_test_seq: chip_sw_power_idle_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_idle_load:1:new_rules"]
+      sw_images: ["//sw/device/tests:chip_power_idle_load_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_sw_power_sleep_load
       uvm_test_seq: chip_sw_power_sleep_load_vseq
-      sw_images: ["//sw/device/tests:chip_power_sleep_load:1:new_rules"]
+      sw_images: ["//sw/device/tests:chip_power_sleep_load_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -2209,7 +2230,9 @@
     }
     {
       name: xcelium_ci_0
-      tests: ["chip_plic_all_irqs",
+      tests: ["chip_plic_all_irqs_0",
+              "chip_plic_all_irqs_10",
+              "chip_plic_all_irqs_20",
               "chip_sw_kmac_app_rom",
               "chip_sw_rstmgr_sw_rst",
               "chip_sw_hmac_enc",

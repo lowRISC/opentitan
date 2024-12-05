@@ -143,8 +143,11 @@ status_t otp_ctrl_testutils_dai_write32(const dif_otp_ctrl_t *otp,
   // Software partitions don't have scrambling or ECC enabled, so it is possible
   // to read the value and compare it against the expected value before
   // performing the write.
-  bool check_before_write = (partition == kDifOtpCtrlPartitionCreatorSwCfg ||
-                             partition == kDifOtpCtrlPartitionOwnerSwCfg);
+  bool check_before_write =
+      (partition == kDifOtpCtrlPartitionCreatorSwCfg ||
+       partition == kDifOtpCtrlPartitionOwnerSwCfg ||
+       partition == kDifOtpCtrlPartitionRotCreatorAuthCodesign ||
+       partition == kDifOtpCtrlPartitionRotCreatorAuthState);
   uint32_t stop_address = start_address + (len * sizeof(uint32_t));
   for (uint32_t addr = start_address, i = 0; addr < stop_address;
        addr += sizeof(uint32_t), ++i) {

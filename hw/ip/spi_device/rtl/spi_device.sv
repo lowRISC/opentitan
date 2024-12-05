@@ -1673,6 +1673,7 @@ module spi_device
     .wdata_o                    (sys_sram_l2m[SysSramFwEgress].wdata),
     .wmask_o                    (sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]),  // Not used
     .intg_error_o               (),
+    .user_rsvd_o                (),
     .rdata_i                    (sys_sram_m2l[SysSramFwEgress].rdata),
     .rvalid_i                   (sys_sram_m2l[SysSramFwEgress].rvalid),
     .rerror_i                   (sys_sram_m2l[SysSramFwEgress].rerror),
@@ -1704,6 +1705,7 @@ module spi_device
     .wdata_o                    (sys_sram_l2m[SysSramFwIngress].wdata),
     .wmask_o                    (sys_sram_l2m_fw_wmask[SPI_DEVICE_INGRESS_BUFFER_IDX]),  // Not used
     .intg_error_o               (),
+    .user_rsvd_o                (),
     .rdata_i                    (sys_sram_m2l[SysSramFwIngress].rdata),
     .rvalid_i                   (sys_sram_m2l[SysSramFwIngress].rvalid),
     .rerror_i                   (sys_sram_m2l[SysSramFwIngress].rerror),

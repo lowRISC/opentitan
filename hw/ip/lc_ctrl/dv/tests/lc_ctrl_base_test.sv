@@ -38,7 +38,7 @@ class lc_ctrl_base_test extends cip_base_test #(
     // Demote field busy warning
     msg = {
       "\s*Setting the value of field \".*\" while containing",
-      "\s+register \"lc_ctrl_reg_block.alert_test\" is being accessed"
+      "\s+register \"lc_ctrl_regs_reg_block.alert_test\" is being accessed"
     };
     catcher.add_change_sev("UVM/FLD/SET/BSY", msg, UVM_INFO);
 

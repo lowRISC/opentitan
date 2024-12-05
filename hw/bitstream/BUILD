@@ -200,12 +200,10 @@ pkg_files(
     name = "package",
     testonly = True,
     srcs = [
-        ":rom_with_{}_keys".format(authenticity)
-        for authenticity in KEY_AUTHENTICITY
+        ":mask_rom",
     ] + [
-        ":rom_with_{}_keys_otp_{}".format(authenticity, otp_name)
+        ":mask_rom_otp_{}".format(otp_name)
         for (otp_name, _) in get_otp_images()
-        for authenticity in KEY_AUTHENTICITY
     ],
     prefix = "earlgrey/fpga_cw310/standard",
     tags = ["manual"],

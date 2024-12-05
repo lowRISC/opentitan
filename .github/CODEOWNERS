@@ -57,4 +57,4 @@ COPYING*            @mundaym
 
 # CI and testing
 /ci/                @rswarbrick
-azure-pipelines.yml @rswarbrick
+/.github            @rswarbrick

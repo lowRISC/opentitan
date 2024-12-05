@@ -10,6 +10,19 @@
 #include "sw/device/lib/testing/json/provisioning_data.h"
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 
+enum {
+  /**
+   * Index of the first available page in the `cert_flash_layout` array that
+   * personalization extensions may use.
+   */
+  kCertFlashLayoutExt0Idx = 2,
+  /**
+   * Index of the second available page in the `cert_flash_layout` array that
+   * personalization extensions may use.
+   */
+  kCertFlashLayoutExt1Idx = 3,
+};
+
 /**
  * Parameters passed to personalization extension function invoked before data
  * is sent to the host for endorsement. Not all parameters are necessarily used
@@ -35,11 +48,26 @@ typedef struct personalize_extension_pre_endorse {
    * knows where to place endorsed objects received from the host.
    */
   cert_flash_info_layout_t *cert_flash_layout;
-
   /**
    * Pointer to the flash controller handle necessary for proper flash access.
    */
   dif_flash_ctrl_state_t *flash_ctrl_handle;
+  /**
+   * Pointer to the UDS public key. Personalization extensions may require
+   * accessing it to generate different certificate chains that fit a specific
+   * SKU's requirements.
+   */
+  ecdsa_p256_public_key_t *uds_pubkey;
+  hmac_digest_t *uds_pubkey_id;
+  /**
+   * Pointer to the OTP measurements used to generate the UDS public key.
+   * Personalization extensions may require accessing these to generate
+   * different certificate chains that fit a specific SKU's requirements.
+   */
+  hmac_digest_t *otp_creator_sw_cfg_measurement;
+  hmac_digest_t *otp_owner_sw_cfg_measurement;
+  hmac_digest_t *otp_rot_creator_auth_codesign_measurement;
+  hmac_digest_t *otp_rot_creator_auth_state_measurement;
 } personalize_extension_pre_endorse_t;
 
 /**

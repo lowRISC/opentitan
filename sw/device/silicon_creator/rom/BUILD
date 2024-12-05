@@ -7,8 +7,14 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 load("//rules:files.bzl", "output_groups")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:opentitan_test.bzl", "manual_test")
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "fpga_params", "opentitan_binary", "opentitan_test")
+load(
+    "//rules/opentitan:defs.bzl",
+    "OPENTITAN_CPU",
+    "fpga_params",
+    "opentitan_binary",
+    "opentitan_manual_test",
+    "opentitan_test",
+)
 load("//rules/opentitan:legacy.bzl", "legacy_rom_targets")
 
 package(default_visibility = ["//visibility:public"])
@@ -105,9 +111,9 @@ cc_library(
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -216,6 +222,20 @@ legacy_rom_targets(
     ],
     target = "mask_rom",
 )
+
+[
+    filegroup(
+        name = "mask_rom_{}_hashfile".format(dev),
+        testonly = True,
+        srcs = [":mask_rom"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in [
+        "fpga_cw310",
+        "fpga_cw340",
+        "silicon_creator",
+    ]
+]
 
 cc_library(
     name = "rom_epmp",
@@ -441,7 +461,7 @@ pkg_files(
     prefix = "earlgrey/rom",
 )
 
-manual_test(
+opentitan_manual_test(
     name = "manual_test",
     tags = [
         "manual",

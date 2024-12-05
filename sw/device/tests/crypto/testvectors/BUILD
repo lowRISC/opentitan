@@ -49,9 +49,4 @@ autogen_cryptotest_hjson_external(
 
 exports_files([
     "sha3_224_hardcoded.hjson",
-    "sha3_256_hardcoded.hjson",
-    "sha3_384_hardcoded.hjson",
-    "sha3_512_hardcoded.hjson",
-    "shake128_hardcoded.hjson",
-    "shake256_hardcoded.hjson",
 ])

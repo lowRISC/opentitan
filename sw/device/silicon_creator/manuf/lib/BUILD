@@ -11,7 +11,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
-    "EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS",
+    "EARLGREY_OTP_CFGS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -177,6 +177,7 @@ cc_library(
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/dif:flash_ctrl",
@@ -186,17 +187,17 @@ cc_library(
     ],
 )
 
-# As more SKUs are created with different OTP software configuration partitions,
-# libraries can be added to INDIVIDUALIZE_OTP_SW_CFGS accordingly.
+# As more SKUs are created with different OTP configurations, libraries can be
+# added by updating EARLGREY_OTP_CFGS accordingly.
 [
     cc_library(
-        name = "individualize_sw_cfg_earlgrey_sku_{}".format(otp_sw_cfg),
+        name = "individualize_sw_cfg_{}".format(cfg),
         deps = [
             ":individualize_sw_cfg",
-            "//hw/ip/otp_ctrl/data/earlgrey_skus/{}:otp_sw_cfg".format(otp_sw_cfg),
+            "{}".format(target),
         ],
     )
-    for otp_sw_cfg in EARLGREY_A0_INDIVIDUALIZE_OTP_SW_CFGS
+    for cfg, target in EARLGREY_OTP_CFGS.items()
 ]
 
 opentitan_test(
@@ -217,7 +218,8 @@ opentitan_test(
     ),
     deps = [
         ":flash_info_fields",
-        ":individualize_sw_cfg_earlgrey_sku_sival",
+        # Testing sival SKU only should be sufficient.
+        ":individualize_sw_cfg_sival",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",
@@ -270,7 +272,6 @@ opentitan_test(
     },
     fpga = fpga_params(
         changes_otp = True,
-        data = ["//sw/device/silicon_creator/manuf/keys/fake:rma_unlock_token_export_key.sk_hsm.der"],
         needs_jtag = True,
         otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_dev_manuf_individualized",
         tags = [

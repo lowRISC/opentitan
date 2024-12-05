@@ -10,6 +10,7 @@ from typing import Dict, List, Tuple
 
 from reggen.ip_block import IpBlock
 from reggen.inter_signal import InterSignal
+from reggen.params import Parameter
 from reggen.validate import check_int
 from topgen import lib
 
@@ -641,20 +642,20 @@ def check_intermodule_field(sig: OrderedDict,
                                 name=sig['name']))
             error += 1
     # Check 'width' field
-    width = 1
-    if "width" not in sig:
-        sig["width"] = 1
-    elif not isinstance(sig["width"], int):
-        width, err = check_int(sig["width"], sig["name"])
-        if err:
-            log.error("{prefix} Inter-module {inst}.{sig} 'width' "
-                      "should be int type.".format(prefix=prefix,
-                                                   inst=sig["inst_name"],
-                                                   sig=sig["name"]))
-            error += 1
-        else:
-            # convert to int value
-            sig["width"] = width
+    raw_width = sig.get("width", 1)
+    raw_width_value = raw_width
+    if isinstance(raw_width, Parameter):
+        raw_width_value = raw_width.default
+
+    width, err = check_int(raw_width_value, sig["name"])
+    if err:
+        log.error(f"{prefix} Inter-module {sig['inst_name']}.{sig['name']} 'width' "
+                  "should be int type.")
+        error += 1
+
+    # We leave parameters as they are. If it's an int, use the converted value
+    if not isinstance(raw_width, Parameter):
+        sig["width"] = width
 
     # Add empty string if no explicit default for dangling pins is given.
     # In that case, dangling pins of type struct will be tied to the default
@@ -675,7 +676,9 @@ def find_otherside_modules(topcfg: OrderedDict, m,
     """
     # TODO: handle special cases
     special_inst_names = {
-        ('peri', 'tl_ast'): ('ast', 'tl')
+        ('peri', 'tl_ast'): ('ast', 'tl'),
+        ('dbg', 'tl_dbg'): ('dbg', 'tl'),
+        ('mbx', 'tl_mbx'): ('mbx', 'tl')
     }
     special_result = special_inst_names.get((m, s))
     if special_result is not None:
@@ -819,20 +822,32 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
 
         # Determine if broadcast or one-to-N
         log.debug("Handling inter-sig {} {}".format(req_struct['name'], total_width))
+
+        if isinstance(req_struct["width"], Parameter):
+            param = req_struct["width"]
+            if param.expose:
+                # If it's a top-level exposed parameter, we need to find definition from there
+                module = lib.get_module_by_name(topcfg, req_m)
+                width = int(module['param_decl'].get(param.name, req_struct["width"].default))
+            else:
+                width = int(req_struct["width"].default)
+        else:
+            width = req_struct["width"]
+
         req_struct["end_idx"] = -1
-        if req_struct["width"] > 1 or len(rsps) != 1:
+        if width > 1 or len(rsps) != 1:
             # If req width is same to the every width of rsps ==> broadcast
-            if len(rsps) * [req_struct["width"]] == widths:
+            if len(rsps) * [width] == widths:
                 log.debug("broadcast type")
                 req_struct["top_type"] = "broadcast"
 
             # If req width is same as total width of rsps ==> one-to-N
-            elif req_struct["width"] == total_width:
+            elif width == total_width:
                 log.debug("one-to-N type")
                 req_struct["top_type"] = "one-to-N"
 
             # one-to-N connection is not fully populated
-            elif req_struct["width"] > total_width:
+            elif width > total_width:
                 log.debug("partial one-to-N type")
                 req_struct["top_type"] = "partial-one-to-N"
                 req_struct["end_idx"] = len(rsps)
@@ -948,8 +963,13 @@ def im_netname(sig: OrderedDict,
             # custom default has been specified
             if obj["default"]:
                 return obj["default"]
-            return "{package}::{struct}_DEFAULT".format(
-                package=obj["package"], struct=obj["struct"].upper())
+            if isinstance(sig["width"], Parameter):
+                return "{{{param}{{{package}::{struct}_DEFAULT}}}}".format(
+                    param=sig["width"].name_top, package=obj["package"],
+                    struct=obj["struct"].upper())
+            else:
+                return "{package}::{struct}_DEFAULT".format(
+                    package=obj["package"], struct=obj["struct"].upper())
 
         return ""
 
@@ -1045,6 +1065,7 @@ def get_dangling_im_def(objs: OrderedDict) -> str:
 
     undriven_def = [obj for obj in objs if obj['end_idx'] > 0 and
                     (obj['act'] == 'req' and obj['suffix'] == 'rsp' or
-                     obj['act'] == 'rsp' and obj['suffix'] == 'req')]
+                     obj['act'] == 'rsp' and obj['suffix'] == 'req' or
+                     obj['act'] == 'rcv')]
 
     return unused_def, undriven_def

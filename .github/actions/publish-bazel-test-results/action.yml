@@ -1,0 +1,44 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Publish Bazel test results
+description: Merge Bazel test results and publish the report
+
+inputs:
+  merged-results:
+    description: Path to place merged JUnit report
+    default: test_results.xml
+  artifact-name:
+    description: Name of uploaded artifact. Leave empty to skip upload.
+    default: ''
+
+runs:
+  using: composite
+  steps:
+    # Bazel produce one xml for each test. Merge them together.
+    - name: Merge JUnit reports
+      shell: bash
+      run: |
+        if find -L bazel-out -name "test.xml" | grep -F '' >> /tmp/test-xmls; then
+          cat /tmp/test-xmls | xargs merge-junit -o "${{ inputs.merged-results }}"
+        else
+          # merge-junit doesn't handle 0 inputs.
+          echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
+        fi
+
+    - name: Upload report as artifact
+      if: inputs.artifact-name != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.merged-results }}
+        # In case this is from a re-run
+        overwrite: true
+
+    - name: Publish job summary
+      uses: mikepenz/action-junit-report@ec3a351c13e080dc4fa94c49ab7ad5bf778a9668 # v5
+      with:
+        report_paths: ${{ inputs.merged-results }}
+        annotate_only: true
+        detailed_summary: true

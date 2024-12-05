@@ -12,34 +12,39 @@ module rv_core_ibex
   import rv_core_ibex_pkg::*;
   import rv_core_ibex_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
-  parameter bit                   PMPEnable        = 1'b1,
-  parameter int unsigned          PMPGranularity   = 0,
-  parameter int unsigned          PMPNumRegions    = 16,
-  parameter int unsigned          MHPMCounterNum   = 10,
-  parameter int unsigned          MHPMCounterWidth = 32,
-  parameter bit                   RV32E            = 0,
-  parameter ibex_pkg::rv32m_e     RV32M            = ibex_pkg::RV32MSingleCycle,
-  parameter ibex_pkg::rv32b_e     RV32B            = ibex_pkg::RV32BOTEarlGrey,
-  parameter ibex_pkg::regfile_e   RegFile          = ibex_pkg::RegFileFF,
-  parameter bit                   BranchTargetALU  = 1'b1,
-  parameter bit                   WritebackStage   = 1'b1,
-  parameter bit                   ICache           = 1'b1,
-  parameter bit                   ICacheECC        = 1'b1,
-  parameter bit                   ICacheScramble   = 1'b1,
-  parameter bit                   BranchPredictor  = 1'b0,
-  parameter bit                   DbgTriggerEn     = 1'b1,
-  parameter int unsigned          DbgHwBreakNum    = 4,
-  parameter bit                   SecureIbex       = 1'b1,
-  parameter ibex_pkg::lfsr_seed_t RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
-  parameter ibex_pkg::lfsr_perm_t RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
-  parameter int unsigned          DmHaltAddr       = 32'h1A110800,
-  parameter int unsigned          DmExceptionAddr  = 32'h1A110808,
-  parameter bit                   PipeLine         = 1'b0,
+  parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
+  parameter bit                     PMPEnable        = 1'b1,
+  parameter int unsigned            PMPGranularity   = 0,
+  parameter int unsigned            PMPNumRegions    = 16,
+  parameter int unsigned            MHPMCounterNum   = 10,
+  parameter int unsigned            MHPMCounterWidth = 32,
+  parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[16]    = ibex_pkg::PmpCfgRst,
+  parameter logic [33:0]            PMPRstAddr[16]   = ibex_pkg::PmpAddrRst,
+  parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg    = ibex_pkg::PmpMseccfgRst,
+  parameter bit                     RV32E            = 0,
+  parameter ibex_pkg::rv32m_e       RV32M            = ibex_pkg::RV32MSingleCycle,
+  parameter ibex_pkg::rv32b_e       RV32B            = ibex_pkg::RV32BOTEarlGrey,
+  parameter ibex_pkg::regfile_e     RegFile          = ibex_pkg::RegFileFF,
+  parameter bit                     BranchTargetALU  = 1'b1,
+  parameter bit                     WritebackStage   = 1'b1,
+  parameter bit                     ICache           = 1'b1,
+  parameter bit                     ICacheECC        = 1'b1,
+  parameter bit                     ICacheScramble   = 1'b1,
+  parameter bit                     BranchPredictor  = 1'b0,
+  parameter bit                     DbgTriggerEn     = 1'b1,
+  parameter int unsigned            DbgHwBreakNum    = 4,
+  parameter bit                     SecureIbex       = 1'b1,
+  parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
+  parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned            DmHaltAddr       = 32'h1A110800,
+  parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
+  parameter bit                     PipeLine         = 1'b0,
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
       ibex_pkg::RndCnstIbexKeyDefault,
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
-      ibex_pkg::RndCnstIbexNonceDefault
+      ibex_pkg::RndCnstIbexNonceDefault,
+  parameter int unsigned            NEscalationSeverities = 4,
+  parameter int unsigned            WidthPingCounter = 16
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -87,7 +92,7 @@ module rv_core_ibex
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
-  output pwrmgr_pkg::pwr_cpu_t pwrmgr_o,
+  output cpu_pwrmgr_t pwrmgr_o,
 
   // dft bypass
   input scan_rst_ni,
@@ -228,8 +233,8 @@ module rv_core_ibex
   // protocol into single ended signal.
   logic esc_irq_nm;
   prim_esc_receiver #(
-    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
-    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+    .N_ESC_SEV   (NEscalationSeverities),
+    .PING_CNT_DW (WidthPingCounter)
   ) u_prim_esc_receiver (
     .clk_i     ( clk_esc_i  ),
     .rst_ni    ( rst_esc_ni ),
@@ -371,6 +376,9 @@ module rv_core_ibex
     .PMPNumRegions               ( PMPNumRegions            ),
     .MHPMCounterNum              ( MHPMCounterNum           ),
     .MHPMCounterWidth            ( MHPMCounterWidth         ),
+    .PMPRstCfg                   ( PMPRstCfg                ),
+    .PMPRstAddr                  ( PMPRstAddr               ),
+    .PMPRstMsecCfg               ( PMPRstMsecCfg            ),
     .RV32E                       ( RV32E                    ),
     .RV32M                       ( RV32M                    ),
     .RV32B                       ( RV32B                    ),
@@ -563,6 +571,7 @@ module rv_core_ibex
     .wdata_i      (32'b0),
     .wdata_intg_i (instr_wdata_intg),
     .be_i         (4'hF),
+    .user_rsvd_i  ('0),
     .valid_o      (instr_rvalid),
     .rdata_o      (instr_rdata),
     .rdata_intg_o (instr_rdata_intg),
@@ -616,6 +625,7 @@ module rv_core_ibex
     .wdata_i      (data_wdata),
     .wdata_intg_i (data_wdata_intg),
     .be_i         (data_be),
+    .user_rsvd_i  ('0),
     .valid_o      (data_rvalid),
     .rdata_o      (data_rdata),
     .rdata_intg_o (data_rdata_intg),

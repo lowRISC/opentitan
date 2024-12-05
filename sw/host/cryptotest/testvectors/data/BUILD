@@ -6,6 +6,8 @@ load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 
 package(default_visibility = ["//visibility:public"])
 
+exports_files(["cshake_hardcoded.hjson"])
+
 # Strip the inner layer of the DRBG repository, which is a zip of zips
 genrule(
     name = "nist_cavp_drbg_sp_800_90a_reseed",
@@ -178,6 +180,10 @@ ECDSA_RANDOM_COUNT = 128
     ]
 ]
 
+################################################################################
+# SHA2, SHA3 - NIST CAVP KAT
+################################################################################
+
 [
     run_binary(
         name = "nist_cavp_{}_{}_{}_json".format(
@@ -212,6 +218,7 @@ ECDSA_RANDOM_COUNT = 128
         ("SHA256", "sha2_fips_180_4", []),
         ("SHA384", "sha2_fips_180_4", []),
         ("SHA512", "sha2_fips_180_4", []),
+        ("SHA3_224", "sha3_fips_202", []),
         ("SHA3_256", "sha3_fips_202", []),
         ("SHA3_384", "sha3_fips_202", []),
         ("SHA3_512", "sha3_fips_202", []),
@@ -231,6 +238,27 @@ ECDSA_RANDOM_COUNT = 128
         "LongMsg",
     ] + extra_msg_types
 ]
+
+################################################################################
+# CSHAKE - NIST Example Values
+################################################################################
+run_binary(
+    name = "cshake_nist_example_values_json",
+    srcs = [
+        ":cshake_nist_example_values.hjson",
+        "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
+    ],
+    outs = [":cshake_nist_example_values.json"],
+    args = [
+        "--src",
+        "$(location :cshake_nist_example_values.hjson)",
+        "--dst",
+        "$(location :cshake_nist_example_values.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
+    ],
+    tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
+)
 
 run_binary(
     name = "nist_cavp_ecdh_sp_800_56a_json",
@@ -298,33 +326,6 @@ run_binary(
         "sha256",
         "sha384",
         "sha512",
-    ]
-]
-
-[
-    run_binary(
-        name = "hjson_{}".format(hash_alg),
-        srcs = [
-            "//sw/device/tests/crypto/testvectors:{}_hardcoded.hjson".format(hash_alg),
-            "//sw/host/cryptotest/testvectors/data/schemas:hash_schema.json",
-        ],
-        outs = [":hjson_{}.json".format(hash_alg)],
-        args = [
-            "--src",
-            "$(location //sw/device/tests/crypto/testvectors:{}_hardcoded.hjson)".format(hash_alg),
-            "--dst",
-            "$(location :hjson_{}.json)".format(hash_alg),
-            "--schema",
-            "$(location //sw/host/cryptotest/testvectors/data/schemas:hash_schema.json)",
-        ],
-        tool = "//sw/host/cryptotest/testvectors/parsers:hjson_hash_parser",
-    )
-    for hash_alg in [
-        "sha3_256",
-        "sha3_384",
-        "sha3_512",
-        "shake128",
-        "shake256",
     ]
 ]
 
@@ -757,3 +758,48 @@ run_binary(
     ],
     tool = "//sw/host/cryptotest/testvectors/parsers:hjson_kmac_parser",
 )
+
+################################################################################
+# NIST CAVP AES KAT
+################################################################################
+
+# NIST provides the AES KAT testvectors as RSP files which are named as
+# "{aes_mode}{test_type}{size}.rsp" (e.g. CBCGFSbox128.rsp)
+# The corresponding conventional cryptotest name uses snakecase:
+# "{aes_mode}_{test_type}_{size}" (e.g. cbc_gfsbox_128)
+NIST_CAVP_AES_KAT_TESTVECTORS = [
+    # (testname, rsp_filename, mode, size)
+    (
+        "{}_{}_{}".format(
+            mode.lower(),
+            test.lower(),
+            size.lower(),
+        ),
+        "{}{}{}.rsp".format(mode, test, size),
+        mode.lower(),
+        size.lower(),
+    )
+    for mode in ("CBC", "CFB128", "ECB", "OFB")
+    for test in ("GFSbox", "KeySbox", "VarKey", "VarTxt")
+    for size in ("128", "192", "256")
+]
+
+[
+    run_binary(
+        name = "nist_cavp_aes_kat_{}_json".format(testname),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:aes_block_schema",
+            "@nist_cavp_aes_kat//:{}".format(rsp_filename),
+        ],
+        outs = ["nist_cavp_aes_kat_{}.json".format(testname)],
+        args = [
+            "$(location @nist_cavp_aes_kat//:{})".format(rsp_filename),  # src
+            "$(location :nist_cavp_aes_kat_{}.json)".format(testname),  # dst
+            mode,
+            size,
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:aes_block_schema)",  # schema
+        ],
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_aes_parser",
+    )
+    for testname, rsp_filename, mode, size in NIST_CAVP_AES_KAT_TESTVECTORS
+]

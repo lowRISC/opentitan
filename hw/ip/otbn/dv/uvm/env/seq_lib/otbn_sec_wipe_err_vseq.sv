@@ -5,29 +5,22 @@
 // A sequence that injects different types of errors into the internal handshake on secure wipes
 // between the controller and the start-stop controller.
 
-`define SSCTRL_HPATH tb.dut.u_otbn_core.u_otbn_start_stop_control
-`define SSCTRL_PATH  `"`SSCTRL_HPATH`"
 
 class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
   `uvm_object_utils(otbn_sec_wipe_err_vseq)
 
   `uvm_object_new
 
-  function void control_secwipe_running_assertion(bit enable);
-    if (enable) $asserton(0, `SSCTRL_HPATH.StartSecureWipeImpliesRunning_A);
-    else $assertoff(0, `SSCTRL_HPATH.StartSecureWipeImpliesRunning_A);
-  endfunction
-
   // Send a spurious secure wipe request and check we lock up
   task send_spurious_req();
-    string err_path = {`SSCTRL_PATH, ".secure_wipe_req_i"};
+    string err_path = cfg.ssctrl_vif.resolve_path("secure_wipe_req_i");
 
     // Secure wipe requests are not allowed when OTBN is idle; so wait for OTBN to become idle.
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusIdle)
     @(cfg.clk_rst_vif.cbn);
 
     // Disable assertion that would abort simulation when the fault is injected.
-    control_secwipe_running_assertion(1'b0);
+    cfg.ssctrl_vif.control_secwipe_running_assertion(1'b0);
     `uvm_info(`gfn, "Requesting secure wipe while OTBN is idle, which is not allowed.", UVM_LOW)
 
     // Inject error.
@@ -44,12 +37,12 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
     `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
     `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
 
-    control_secwipe_running_assertion(1'b1);
+    cfg.ssctrl_vif.control_secwipe_running_assertion(1'b1);
   endtask
 
   // Drop a secure wipe request
   task drop_wipe_request();
-    string err_path = {`SSCTRL_PATH, ".secure_wipe_req_i"};
+    string err_path = cfg.ssctrl_vif.resolve_path("secure_wipe_req_i");
     bit skip_err_injection = 0;
 
     // The OTBN controller requests a secure wipe from the start-stop controller at the end of
@@ -81,7 +74,7 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
 
       // Release force, but before doing so disable an assertion that would otherwise abort
       // simulation with a fatal error.
-      control_secwipe_running_assertion(1'b0);
+      cfg.ssctrl_vif.control_secwipe_running_assertion(1'b0);
       `uvm_info(`gfn, "Releasing force.", UVM_LOW)
       `DV_CHECK_FATAL(uvm_hdl_release(err_path) == 1)
 
@@ -92,13 +85,13 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
       `uvm_info(`gfn, "Waiting for OTBN to lock up.", UVM_LOW)
       `DV_WAIT(cfg.model_agent_cfg.vif.status == otbn_pkg::StatusLocked)
 
-      control_secwipe_running_assertion(1'b1);
+      cfg.ssctrl_vif.control_secwipe_running_assertion(1'b1);
     end
   endtask
 
   // Send a spurious secure wipe acknowledgement
   task send_spurious_ack();
-    string err_path = {`SSCTRL_PATH, ".secure_wipe_ack_i"};
+    string err_path = cfg.ssctrl_vif.resolve_path("secure_wipe_ack_i");
     bit skip_err_injection = 0;
     bit while_executing;
 
@@ -159,6 +152,3 @@ class otbn_sec_wipe_err_vseq extends otbn_base_vseq;
   endtask
 
 endclass
-
-`undef SSCTRL_HPATH
-`undef SSCTRL_PATH

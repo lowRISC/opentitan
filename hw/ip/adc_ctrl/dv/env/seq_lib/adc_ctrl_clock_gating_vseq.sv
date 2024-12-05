@@ -89,7 +89,7 @@ class adc_ctrl_clock_gating_vseq extends adc_ctrl_filters_polled_vseq;
     super.adc_ctrl_off();
   endtask
 
-  // Monitor wakeup signal and re-enable clock on postitive edge
+  // Monitor wakeup signal and re-enable clock on positive edge.
   virtual task monitor_wakeup();
     bit wakeup = 0, wakeup_prev = 0;
     forever begin

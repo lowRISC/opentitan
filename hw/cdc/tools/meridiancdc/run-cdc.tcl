@@ -24,6 +24,7 @@ set PARAMS              [get_env_var "PARAMS"]
 set CDC_WAIVER_FILE     [get_env_var "CDC_WAIVER_FILE"]
 set CDC_WAIVER_DIR      [file dirname $CDC_WAIVER_FILE]
 set ENV_FILE            [get_env_var "ENV_FILE"]
+set USER_CONFIG_FILE    [get_env_var "USER_CONFIG_FILE"]
 
 # Used to disable some SDC constructs that are not needed by CDC.
 set IS_CDC_RUN 1
@@ -86,6 +87,9 @@ read_env $ENV_FILE
 
 # Analyze the intents of the design.
 analyze_intent
+
+# Run design-specific configuration commands.
+source $USER_CONFIG_FILE
 
 # Create directory for reports (if it doesn't exist already).
 set REPORT_DIR reports

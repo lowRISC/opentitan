@@ -12,14 +12,7 @@
 
 `include "prim_assert.sv"
 
-module ast #(
-  parameter int unsigned AdcChannels     = 2,
-  parameter int unsigned AdcDataWidth    = 10,
-  parameter int unsigned EntropyStreams  = 4,
-  parameter int unsigned UsbCalibWidth   = 20,
-  parameter int unsigned Ast2PadOutWidth = 9,
-  parameter int unsigned Pad2AstInWidth  = 8
-) (
+module ast (
   // tlul if
   input tlul_pkg::tl_h2d_t tl_i,              // TLUL H2D
   output tlul_pkg::tl_d2h_t tl_o,             // TLUL D2H
@@ -95,21 +88,21 @@ module ast #(
   input clk_src_usb_en_i,                     // USB Source Clock Enable
   output logic clk_src_usb_o,                 // USB Source Clock
   output logic clk_src_usb_val_o,             // USB Source Clock Valid
-  output logic [UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
+  output logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal_o,  // USB IO Pull-up Calibration Setting
 
   // adc interface
   input adc_pd_i,                             // ADC Power Down
   input ast_pkg::awire_t adc_a0_ai,           // ADC A0 Analog Input
   input ast_pkg::awire_t adc_a1_ai,           // ADC A1 Analog Input
-  input [AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
-  output [AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
+  input [ast_pkg::AdcChannels-1:0] adc_chnsel_i,       // ADC Channel Select
+  output [ast_pkg::AdcDataWidth-1:0] adc_d_o,          // ADC Digital (per channel)
   output adc_d_val_o,                         // ADC Digital Valid
 
   // rng (entropy source) interface
   input rng_en_i,                             // RNG Enable
   input rng_fips_i,                           // RNG FIPS
   output logic rng_val_o,                     // RNG Valid
-  output logic [EntropyStreams-1:0] rng_b_o,  // RNG Bit(s)
+  output logic [ast_pkg::EntropyStreams-1:0] rng_b_o,  // RNG Bit(s)
 
   // entropy distribution interface
   input edn_pkg::edn_rsp_t entropy_rsp_i,     // Entropy Response
@@ -129,8 +122,8 @@ module ast #(
   output ast_pkg::ast_obs_ctrl_t obs_ctrl_o,  // Observe Control
 
   // pad mux/pad related
-  input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
-  output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
+  input [ast_pkg::Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
+  output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
   output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
 
@@ -588,16 +581,16 @@ prim_clock_buf #(
 ///////////////////////////////////////
 adc #(
   .AdcCnvtClks ( AdcCnvtClks ),
-  .AdcChannels ( AdcChannels ),
-  .AdcDataWidth ( AdcDataWidth )
+  .AdcChannels ( ast_pkg::AdcChannels ),
+  .AdcDataWidth ( ast_pkg::AdcDataWidth )
 ) u_adc (
   .adc_a0_ai ( adc_a0_ai ),
   .adc_a1_ai ( adc_a1_ai ),
-  .adc_chnsel_i ( adc_chnsel_i[AdcChannels-1:0] ),
+  .adc_chnsel_i ( adc_chnsel_i[ast_pkg::AdcChannels-1:0] ),
   .adc_pd_i ( adc_pd_i ),
   .clk_adc_i ( clk_ast_adc_i ),
   .rst_adc_ni ( rst_ast_adc_ni ),
-  .adc_d_o ( adc_d_o[AdcDataWidth-1:0] ),
+  .adc_d_o ( adc_d_o[ast_pkg::AdcDataWidth-1:0] ),
   .adc_d_val_o ( adc_d_val_o )
 );
 
@@ -670,7 +663,7 @@ ast_entropy #(
 ast_pkg::ast_dif_t ot1_alert_src;
 
 rng #(
-  .EntropyStreams ( EntropyStreams )
+  .EntropyStreams ( ast_pkg::EntropyStreams )
 ) u_rng (
   .clk_i ( clk_ast_tlul_i ),
   .rst_ni ( rst_ast_tlul_ni ),
@@ -679,7 +672,7 @@ rng #(
   .rng_en_i ( rng_en_i ),
   .rng_fips_i ( rng_fips_i ),
   .scan_mode_i ( scan_mode ),
-  .rng_b_o ( rng_b_o[EntropyStreams-1:0] ),
+  .rng_b_o ( rng_b_o[ast_pkg::EntropyStreams-1:0] ),
   .rng_val_o ( rng_val_o )
 );
 
@@ -904,7 +897,7 @@ end
 assign ot0_alert_src = '{p: intg_err, n: !intg_err};
 
 // USB PU-P and PU-N value selection
-assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
+assign usb_io_pu_cal_o = ast_pkg::UsbCalibWidth'(1 << (ast_pkg::UsbCalibWidth[5-1:0]/2));
 
 
 ///////////////////////////////////////
@@ -912,7 +905,7 @@ assign usb_io_pu_cal_o = UsbCalibWidth'(1 << (UsbCalibWidth[5-1:0]/2));
 ///////////////////////////////////////
 ast_dft u_ast_dft (
   .obs_ctrl_o ( obs_ctrl_o ),
-  .ast2padmux_o ( ast2padmux_o[Ast2PadOutWidth-1:0] ),
+  .ast2padmux_o ( ast2padmux_o[ast_pkg::Ast2PadOutWidth-1:0] ),
   .dpram_rmf_o ( dpram_rmf_o ),
   .dpram_rml_o ( dpram_rml_o ),
   .spram_rm_o ( spram_rm_o ),
@@ -1013,7 +1006,7 @@ assign unused_sigs = ^{ clk_ast_usb_i,
                         shift_en,
                         main_env_iso_en_i,
                         rst_vcmpp_aon_n,
-                        padmux2ast_i[Pad2AstInWidth-1:0],
+                        padmux2ast_i[ast_pkg::Pad2AstInWidth-1:0],
                         dft_strap_test_i.valid,
                         dft_strap_test_i.straps[1:0],
                         lc_dft_en_i[3:0],

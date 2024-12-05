@@ -29,17 +29,17 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
   // compliant with "ROM Integrity Checks" at
   // https://opentitan.org/book/hw/top_${topname}/ip_autogen/pwrmgr/doc/theory_of_operation.html#rom-integrity-checks
   virtual task twirl_rom_response();
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
     @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateAckPwrUp);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
     @(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
     cfg.clk_rst_vif.wait_clks(10);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4False;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
     cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
     cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
   endtask
 
   task body();
@@ -136,9 +136,9 @@ class pwrmgr_wakeup_reset_vseq extends pwrmgr_base_vseq;
 
       if (mubi_mode == PwrmgrMubiRomCtrl) begin
         add_rom_rsp_noise();
-        cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+        cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
         cfg.clk_rst_vif.wait_clks(5);
-        cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+        cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
       end
 
       // This is the expected side-effect of the low power entry reset, since the source of the

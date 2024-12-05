@@ -20,6 +20,7 @@ allowed_suffixes=(
     vsdx
     elf
     woff2
+    o
 
     md
     html

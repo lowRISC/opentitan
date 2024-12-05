@@ -40,6 +40,7 @@ module tlul_adapter_host
   input  logic [DataIntgWidth-1:0]   wdata_intg_i,
   input  logic [top_pkg::TL_DBW-1:0] be_i,
   input  mubi4_t                     instr_type_i,
+  input  logic [RsvdWidth-1:0]       user_rsvd_i,
 
   output logic                       valid_o,
   output logic [top_pkg::TL_DW-1:0]  rdata_o,
@@ -50,7 +51,7 @@ module tlul_adapter_host
   output tl_h2d_t                    tl_o,
   input  tl_d2h_t                    tl_i
 );
-  localparam int WordSize = $clog2(top_pkg::TL_DBW);
+  localparam int unsigned WordSize = $clog2(top_pkg::TL_DBW);
 
   logic [top_pkg::TL_AIW-1:0] tl_source;
   logic [top_pkg::TL_DBW-1:0] tl_be;
@@ -104,7 +105,7 @@ module tlul_adapter_host
     a_source:  tl_source,
     a_address: {addr_i[31:WordSize], {WordSize{1'b0}}},
     a_data:    wdata_i,
-    a_user:    '{default: '0, data_intg: wdata_intg_i, instr_type: instr_type_i},
+    a_user:    '{default: '0, data_intg: wdata_intg_i, instr_type: instr_type_i, rsvd: user_rsvd_i},
     d_ready:   1'b1
   };
 

@@ -30,6 +30,10 @@ flags.add_argument('--dry-run',
                    action=argparse.BooleanOptionalAction,
                    default=True,
                    help='Do not perform any github API actions')
+flags.add_argument('--num',
+                   default=None,
+                   type=int,
+                   help="Number of issues to create before exiting")
 flags.add_argument('testplan', type=str, help='The testplan to process')
 
 
@@ -145,7 +149,7 @@ class GithubApi(object):
         return self.call(cmd, self.dry_run)
 
 
-def create_issues(testplan, gh):
+def create_issues(testplan, gh, num):
     """Create issues in the testplan.
 
     Creates the issues in the testplan and updates the testplan with the
@@ -157,6 +161,7 @@ def create_issues(testplan, gh):
       gh: GithubApi; a GithubApi instance.
     """
     allowed_labels = gh.get_valid_labels()
+    n = 0
     for key in testplan.keys():
         # First get the issue creation template from the testplan
         # and check if the issue has already been created.
@@ -182,17 +187,23 @@ def create_issues(testplan, gh):
         # Save the testplan so if there is a crash later, we've
         # recorded that we created this issue.
         url = gh.create_issue(template)
-        if 'github' not in testpoint:
-            testpoint['github'] = {}
-        testpoint['github']['url'] = url
+        if url:
+            url = url.decode('utf-8').strip()
+            if 'github' not in testpoint:
+                testpoint['github'] = {}
+            testpoint['github']['url'] = url
+            print(f'{testpoint["name"]}: {url}')
         testplan.save()
+        n += 1
+        if num is not None and n >= num:
+            break
 
 
 def main(args):
     gh = GithubApi(args.gh_bin, args.repo, args.dry_run)
     testplan = Testplan(args.testplan)
     testplan.load()
-    create_issues(testplan, gh)
+    create_issues(testplan, gh, args.num)
 
 
 if __name__ == '__main__':

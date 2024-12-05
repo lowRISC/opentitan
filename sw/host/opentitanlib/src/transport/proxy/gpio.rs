@@ -76,6 +76,20 @@ impl GpioPin for ProxyGpioPin {
         }
     }
 
+    fn analog_read(&self) -> Result<f32> {
+        match self.execute_command(GpioRequest::AnalogRead)? {
+            GpioResponse::AnalogRead { value } => Ok(value),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
+    fn analog_write(&self, volts: f32) -> Result<()> {
+        match self.execute_command(GpioRequest::AnalogWrite { value: volts })? {
+            GpioResponse::AnalogWrite => Ok(()),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set(
         &self,
         mode: Option<PinMode>,

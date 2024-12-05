@@ -1,0 +1,73 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "n_wkup_detect"
+      desc: "Number of wakeups"
+      type: "int"
+      default: "2"
+    }
+    {
+      name: "wkup_cnt_width"
+      desc: "Width of the wakeup counts"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_mio_pads"
+      desc: "Number of MIO pads"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_mio_periph_in"
+      desc: "Number of MIO periperal ins"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_mio_periph_out"
+      desc: "Number of MIO periperal outs"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_dio_pads"
+      desc: "Number of DIO pads"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_dio_periph_in"
+      desc: "Number of DIO periperal ins"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "n_dio_periph_out"
+      desc: "Number of DIO periperal outs"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "enable_usb_wakeup"
+      desc: "Enable USB wakeup"
+      type: "bool"
+      default: "1"
+    }
+    {
+      name: "enable_strap_sampling"
+      desc: "Set to true to instantiate the HW strap sampling and TAP selection submodule wake submodule"
+      type: "bool"
+      default: "1"
+    }
+  ]
+}

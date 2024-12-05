@@ -153,8 +153,12 @@ impl X509 {
                         if let Some(key_usage) = &cert.key_usage {
                             Self::push_key_usage_ext(builder, key_usage)?;
                         }
-                        Self::push_auth_key_id_ext(builder, &cert.authority_key_identifier)?;
-                        Self::push_subject_key_id_ext(builder, &cert.subject_key_identifier)?;
+                        if let Some(auth_key_id) = &cert.authority_key_identifier {
+                            Self::push_auth_key_id_ext(builder, auth_key_id)?;
+                        }
+                        if let Some(subj_key_id) = &cert.subject_key_identifier {
+                            Self::push_subject_key_id_ext(builder, subj_key_id)?;
+                        }
                         for ext in &cert.private_extensions {
                             Self::push_cert_extension(builder, ext)?
                         }

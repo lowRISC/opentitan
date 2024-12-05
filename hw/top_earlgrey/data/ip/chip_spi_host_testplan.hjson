@@ -32,7 +32,7 @@
       tests: ["chip_sw_spi_host_tx_rx"]
       bazel: [
         "//sw/device/tests:spi_host_winbond_flash_test",
-        "//sw/device/tests/pmod:spi_host_macronix_flash_test"
+        "//sw/device/tests/pmod:spi_host_macronix1Gb_flash_test"
       ]
     }
     {
@@ -53,7 +53,8 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["//sw/device/tests:spi_passthru_test"]
+      tests: []
+      bazel: ["//sw/device/tests:spi_passthru_test"]
     }
     {
       name: chip_sw_spi_host_configuration
@@ -69,7 +70,8 @@
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["//sw/device/tests:spi_host_config_test"]
+      tests: []
+      bazel: ["//sw/device/tests:spi_host_config_test"]
     }
     {
       name: chip_sw_spi_host_events

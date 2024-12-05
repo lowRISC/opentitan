@@ -18,13 +18,16 @@
     // Manufacturing test cases are part of the Silicon Validation (SiVal) test plan.
     "sw/device/silicon_creator/manuf/data/manuf_testplan.hjson"
 
+    // Cryptolib tests are also part of silicon validation.
+    "sw/device/lib/crypto/data/crypto_testplan.hjson"
+
     // IP block specific top level test plans.
-    "hw/top_earlgrey/data/ip/chip_aes_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_adc_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_aes_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_alert_handler_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_aon_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_clkmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_csrng_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_sysrst_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_edn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_entropy_src_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_flash_ctrl_testplan.hjson",
@@ -34,19 +37,22 @@
     "hw/top_earlgrey/data/ip/chip_keymgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_kmac_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_lc_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_otbn_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_otp_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_pwm_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_pwrmgr_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rom_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rstmgr_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_rv_core_ibex_testplan.hjson"
+    "hw/top_earlgrey/data/ip/chip_rv_dm_testplan.hjson"
     "hw/top_earlgrey/data/ip/chip_rv_plic_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_rv_timer_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_spi_device_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_spi_host_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_sram_ctrl_testplan.hjson",
+    "hw/top_earlgrey/data/ip/chip_sysrst_ctrl_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_uart_testplan.hjson",
     "hw/top_earlgrey/data/ip/chip_usbdev_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_alert_handler_testplan.hjson",
-    "hw/top_earlgrey/data/ip/chip_rv_dm_testplan.hjson"
   ]
 
   testpoints: [
@@ -110,6 +116,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_padctrl_attributes
@@ -129,6 +136,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_padctrl_attributes"]
+      bazel: ["//sw/device/tests:gpio_pinmux_test"]
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
@@ -170,7 +178,8 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: ["chip_sw_sleep_pin_wake"]
+      tests: ["chip_sw_sleep_pin_wake"],
+      bazel: ["//sw/device/tests:sleep_pin_wake_test"]
     }
     {
       name: chip_sw_sleep_pin_retention
@@ -218,7 +227,10 @@
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "RMA"]
       tests: ["chip_tap_straps_dev", "chip_tap_straps_prod", "chip_tap_straps_rma",
               "chip_tap_straps_testunlock0"]
-      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel"],
+      bazel: ["//sw/device/tests:rv_dm_jtag_tap_sel_test_unlocked1",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_dev",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_prod",
+              "//sw/device/tests:rv_dm_jtag_tap_sel_rma"],
     }
 
     // PATTGEN (pre-verified IP) integration tests:
@@ -371,6 +383,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_ast_clk_rst_inputs"]
+      bazel: []
     }
     {
       name: chip_sw_ast_sys_clk_jitter
@@ -391,6 +404,7 @@
               "chip_sw_kmac_mode_kmac_jitter_en",
               "chip_sw_sram_ctrl_scrambled_access_jitter_en",
               "chip_sw_edn_entropy_reqs_jitter"]
+      bazel: []
     }
     {
       name: chip_sw_ast_usb_clk_calib
@@ -411,6 +425,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_usb_ast_clk_calib"]
+      bazel: []
     }
 
     // SENSOR_CTRL tests:
@@ -442,6 +457,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_sensor_ctrl_status"]
+      bazel: []
     }
     {
       name: chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup
@@ -453,6 +469,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_pwrmgr_sleep_sensor_ctrl_alert_wakeup"]
+      bazel: ["//sw/device/tests:sensor_ctrl_alert_test", "//sw/device/tests:sensor_ctrl_wakeup_test"]
     }
 
     ////////////////////////////
@@ -705,7 +722,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_idle_load"]
-      bazel: ["//sw/device/tests:chip_power_idle_load"]
+      bazel: ["//sw/device/tests:chip_power_idle_load_test"]
     }
     {
       name: chip_sw_power_sleep_load
@@ -735,6 +752,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_power_sleep_load"]
+      bazel: ["//sw/device/tests:chip_power_sleep_load_test"]
     }
 
     {

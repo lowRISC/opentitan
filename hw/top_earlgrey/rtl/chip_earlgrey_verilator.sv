@@ -339,14 +339,7 @@ module chip_earlgrey_verilator (
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
   prim_mubi_pkg::mubi4_t ast_init_done;
-  ast #(
-    .EntropyStreams(ast_pkg::EntropyStreams),
-    .AdcChannels(ast_pkg::AdcChannels),
-    .AdcDataWidth(ast_pkg::AdcDataWidth),
-    .UsbCalibWidth(ast_pkg::UsbCalibWidth),
-    .Ast2PadOutWidth(ast_pkg::Ast2PadOutWidth),
-    .Pad2AstInWidth(ast_pkg::Pad2AstInWidth)
-  ) u_ast (
+  ast u_ast (
     // different between verilator and other platforms
     .clk_ast_ext_i         ( clk_i ),
     .por_ni                ( rst_ni ),

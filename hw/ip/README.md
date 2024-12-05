@@ -9,18 +9,20 @@
 | [`aon_timer`]    | Wakeup and watchdog timers running on a low-power, always-on clock                                                                |
 | [`ascon`]        | Ascon authenticated encryption and decryption engine                                                                              |
 | [`csrng`]        | Takes entropy bits to produce cryptographically secure random numbers for consumption by hardware blocks and by software          |
+| [`dma`]          | DMA Controller for the integrated OpenTitan.                                                                                      |
 | [`edn`]          | Distributes random numbers produced by CSRNG to hardware blocks                                                                   |
 | [`entropy_src`]  | Filters and checks raw entropy bits from a random noise source and forwards them to CSRNG                                         |
 | [`gpio`]         | General-purpose I/O pin control interface for software                                                                            |
 | [`hmac`]         | Accelerator for SHA-2 256/384/512-based keyed HMAC and the hash function                                                          |
 | [`i2c`]          | I2C interface for host and device mode, supporting up to 1 Mbaud data rates                                                       |
 | [`keymgr`]       | Managing identities and root keys; shielding confidential assets from software; providing a key derivation interface for software |
+| [`keymgr_dpe`]   | Manage multiple DICE sessions in a DPE-compatible way                                                                             |
 | [`kmac`]         | Accelerator for Keccak-based keyed hash message authentication code and SHA-3 hash functions; with SCA and FI countermeasures     |
 | [`lc_ctrl`]      | Manages device life cycle states and transitions, and controls key manager, flash, OTP, and debug access                          |
+| [`mbx`]          | DOE mailbox for use as an integrated OpenTitan communication channel.                                                             |
 | [`otbn`]         | Programmable coprocessor for asymmetric cryptography with SCA and FI countermeasures                                              |
 | [`otp_ctrl`]     | Interfaces integrated one-time programmable memory, supports scrambling, integrity and secure wipe                                |
 | [`pattgen`]      | Transmission of short time-dependent data patterns on two clock-parallel output channels                                          |
-| [`pinmux`]       | Multiplexes between on-chip hardware blocks and pins; can be configured at runtime                                                |
 | [`pwm`]          | Transmission of pulse-width modulated output signals with adjustable duty cycle                                                   |
 | [`rom_ctrl`]     | Interfaces scrambled boot ROM with system bus and KMAC for initial health check after reset                                       |
 | [`rv_core_ibex`] | Dual-core lockstep 32-bit RISC-V processor running application and control software                                               |
@@ -41,18 +43,20 @@
 [`aon_timer`]: ./aon_timer/README.md
 [`ascon`]: ./ascon/README.md
 [`csrng`]: ./csrng/README.md
+[`dma`]: ./dma/README.md
 [`edn`]: ./edn/README.md
 [`entropy_src`]: ./entropy_src/README.md
 [`gpio`]: ./gpio/README.md
 [`hmac`]: ./hmac/README.md
 [`i2c`]: ./i2c/README.md
 [`keymgr`]: ./keymgr/README.md
+[`keymgr_dpe`]: ./keymgr_dpe/README.md
 [`kmac`]: ./kmac/README.md
 [`lc_ctrl`]: ./lc_ctrl/README.md
+[`mbx`]: ./mbx/README.md
 [`otbn`]: ./otbn/README.md
 [`otp_ctrl`]: ./otp_ctrl/README.md
 [`pattgen`]: ./pattgen/README.md
-[`pinmux`]: ./pinmux/README.md
 [`pwm`]: ./pwm/README.md
 [`rom_ctrl`]: ./rom_ctrl/README.md
 [`rv_core_ibex`]: ./rv_core_ibex/README.md

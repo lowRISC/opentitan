@@ -18,6 +18,7 @@ package keymgr_pkg;
   parameter int SaltWidth = 32 * keymgr_reg_pkg::NumSaltReg;
   parameter int Shares = 2; // number of key shares
   parameter int EdnWidth = edn_pkg::ENDPOINT_BUS_WIDTH;
+  parameter int KeyVersionWidth = 32;  // Key version length for individual DICE stage
 
   // These should be defined in another module's package
   parameter int HealthStateWidth = 128;
@@ -83,7 +84,7 @@ package keymgr_pkg;
   // see security strength description https://keccak.team/keccak.html
   // The max width here is chosen arbitrarily to ensure we do not get out of hand.
   // Since KMAC is a MAC operation, the data can be as long as we need.
-  parameter int KDFMaxWidth = 1600;
+  parameter int KDFMaxWidth = 1984;
 
   // Enumeration for operations
   typedef enum logic [1:0] {
@@ -267,6 +268,11 @@ package keymgr_pkg;
       perm_data[k] = data[perm_sel[k]];
     end
 
+  endfunction
+
+  // checks for all 0's or all 1's of value
+  function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
+    return |value & ~&value;
   endfunction
 
 endpackage : keymgr_pkg

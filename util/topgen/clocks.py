@@ -33,6 +33,22 @@ def _check_choices(val: str, what: str, choices: List[str]) -> str:
         f'{what} is {val!r}, which is none of the expected values: {choices}.')
 
 
+class UnmanagedClock:
+    '''An unmanaged clock (input to the top-level).'''
+
+    def __init__(self, raw: Dict[str, object]):
+        self.name = str(raw['name'])
+        self.signal_name = f'clk_{self.name}_i'
+        self.cg_en_signal = f'cg_en_{self.name}_i'
+
+    def _asdict(self) -> Dict[str, object]:
+        return {
+            'name': self.name,
+            'signal_name': self.signal_name,
+            'cg_en_signal': self.cg_en_signal
+        }
+
+
 class SourceClock:
     '''A clock source (input to the top-level).'''
 
@@ -73,7 +89,7 @@ class ClockSignal:
     def __init__(self, name: str, src: SourceClock):
         self.name = name
         self.src = src
-        self.endpoints = []  # type: List[Tuple[str, str]]
+        self.endpoints: List[Tuple[str, str]] = []
 
     def add_endpoint(self, ep_name: str, ep_port: str) -> None:
         self.endpoints.append((ep_name, ep_port))
@@ -200,6 +216,22 @@ class TypedClocks(NamedTuple):
                 hint_names[clk] = hint_name.as_camel_case()
 
         return hint_names
+
+
+class UnmanagedClocks:
+    '''Unmanaged clock connections for the chip.'''
+
+    def __init__(self, raw: List[object]):
+        self.clks = {clk['name']: UnmanagedClock(clk) for clk in raw}
+
+    def _asdict(self) -> Dict[str, object]:
+        return self.clks
+
+    def get_clock_by_signal_name(self, signal_name: str) -> UnmanagedClock:
+        for clock in self.clks.values():
+            if clock.signal_name == signal_name:
+                return clock
+        raise ValueError(f"No clock defined with signal name {signal_name}") from None
 
 
 class Clocks:

@@ -12,8 +12,8 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"
@@ -203,10 +203,11 @@ static void p256_run_keygen(uint32_t mode, const uint32_t *share0,
       otbn_dmem_write(kEcc256SeedNumWords, share1, kOtbnVarSeed1));
 
   // Execute program.
-  sca_set_trigger_high();
-  sca_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false);
+  pentest_set_trigger_high();
+  pentest_call_and_sleep(otbn_manual_trigger, kIbexOtbnSleepCycles, false,
+                         false);
   SS_CHECK_STATUS_OK(otbn_busy_wait_for_done());
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 }
 
 void ecc256_ecdsa_keygen_fvsr_seed_batch(const uint8_t *data, size_t data_len) {

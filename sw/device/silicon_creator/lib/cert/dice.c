@@ -12,29 +12,16 @@
 #include "sw/device/silicon_creator/lib/cert/cdi_0.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cdi_1.h"  // Generated.
 #include "sw/device/silicon_creator/lib/cert/cert.h"
+#include "sw/device/silicon_creator/lib/cert/dice_keys.h"
 #include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
-#include "sw/device/silicon_creator/lib/drivers/keymgr.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
-#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-#include "otp_ctrl_regs.h"  // Generated.
-
-enum {
-  /**
-   * Size of the largest OTP partition to be measured.
-   */
-  kDiceMeasuredOtpPartitionMaxSizeIn32bitWords =
-      (OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
-       OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE) /
-      sizeof(uint32_t),
-};
-
-static uint32_t otp_state[kDiceMeasuredOtpPartitionMaxSizeIn32bitWords] = {0};
 static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
@@ -47,15 +34,7 @@ static cdi_1_sig_values_t cdi_1_cert_params = {
     .tbs_size = kCdi1MaxTbsSizeBytes,
 };
 
-// clang-format off
-static_assert(
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE &&
-    OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE > OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
-    "The largest DICE measured OTP partition is no longer the "
-    "OwnerSwCfg partition. Update the "
-    "kDiceMeasuredOtpPartitionMaxSizeIn32bitWords constant.");
-// clang-format on
+const dice_cert_format_t kDiceCertFormat = kDiceCertFormatX509TcbInfo;
 
 static_assert(kDiceMeasurementSizeInBytes == 32,
               "The DICE attestation measurement size should equal the size of "
@@ -72,138 +51,26 @@ static bool is_debug_exposed(void) {
   return true;
 }
 
-// UDS (Creator) attestation key diverisfier constants.
-// Note: versions are always set to 0 so these keys are always valid from the
-// perspective of the keymgr hardware.
-const sc_keymgr_diversification_t kUdsKeymgrDiversifier = {
-    .salt =
-        {
-            0xabffa6a9,
-            0xc781f1ad,
-            0x4c1107ad,
-            0xf9210d85,
-            0x0931f555,
-            0x6c5aef5d,
-            0xb9ba4df0,
-            0x77b248d2,
-        },
-    .version = 0,
-};
-// CDI_0 (OwnerIntermediate) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi0KeymgrDiversifier = {
-    .salt =
-        {
-            0x3e5913c7,
-            0x41156f1d,
-            0x998ddb9f,
-            0xfa334191,
-            0x8a85380e,
-            0xba76ca1a,
-            0xdb17c4a7,
-            0xfb8852dc,
-        },
-    .version = 0,
-};
-// CDI_1 (Owner) attestation key diverisfier constants.
-const sc_keymgr_diversification_t kCdi1KeymgrDiversifier = {
-    .salt =
-        {
-            0x2d12c2e3,
-            0x6acc6876,
-            0x4bfb07ee,
-            0xc45fc414,
-            0x5d4fa9de,
-            0xf295b128,
-            0x50f49882,
-            0xbbdefa29,
-        },
-    .version = 0,
-};
-
-const sc_keymgr_ecc_key_t kDiceKeyUds = {
-    .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldUdsKeySeedIdx,
-    .keymgr_diversifier = &kUdsKeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateCreatorRootKey,
-};
-const sc_keymgr_ecc_key_t kDiceKeyCdi0 = {
-    .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldCdi0KeySeedIdx,
-    .keymgr_diversifier = &kCdi0KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerIntermediateKey,
-};
-const sc_keymgr_ecc_key_t kDiceKeyCdi1 = {
-    .type = kScKeymgrKeyTypeAttestation,
-    .keygen_seed_idx = kFlashInfoFieldCdi1KeySeedIdx,
-    .keymgr_diversifier = &kCdi1KeymgrDiversifier,
-    .required_keymgr_state = kScKeymgrStateOwnerKey,
-};
-
-/**
- * Helper function to convert an attestation certificate signature from little
- * to big endian.
- */
-static void curr_tbs_signature_le_to_be_convert(ecdsa_p256_signature_t *sig) {
-  util_reverse_bytes(sig->r, kEcdsaP256SignatureComponentBytes);
-  util_reverse_bytes(sig->s, kEcdsaP256SignatureComponentBytes);
-}
-
-/**
- * Helper function to compute measurements of various OTP partitions that are to
- * be included in attestation certificates.
- */
-static void measure_otp_partition(otp_partition_t partition,
-                                  hmac_digest_t *measurement) {
-  // Compute the digest.
-  otp_dai_read(partition, /*address=*/0, otp_state,
-               kOtpPartitions[partition].size / sizeof(uint32_t));
-  hmac_sha256(otp_state, kOtpPartitions[partition].size, measurement);
-
-  // Check the digest matches what is stored in OTP.
-  // TODO(#21554): remove this conditional once the root keys and key policies
-  // have been provisioned. Until then, these partitions have not been locked.
-  if (partition == kOtpPartitionCreatorSwCfg ||
-      partition == kOtpPartitionOwnerSwCfg) {
-    uint64_t expected_digest = otp_partition_digest_read(partition);
-    uint32_t digest_hi = expected_digest >> 32;
-    uint32_t digest_lo = expected_digest & UINT32_MAX;
-    HARDENED_CHECK_EQ(digest_hi, measurement->digest[1]);
-    HARDENED_CHECK_EQ(digest_lo, measurement->digest[0]);
-  }
-}
-
-rom_error_t dice_uds_tbs_cert_build(cert_key_id_pair_t *key_ids,
-                                    ecdsa_p256_public_key_t *uds_pubkey,
-                                    uint8_t *tbs_cert, size_t *tbs_cert_size) {
-  // Measure OTP partitions.
-  //
-  // Note: we do not measure HwCfg0 as this is the Device ID, which is already
-  // mixed into the keyladder directly via hardware channels.
-  hmac_digest_t otp_creator_sw_cfg_measurement = {.digest = {0}};
-  hmac_digest_t otp_owner_sw_cfg_measurement = {.digest = {0}};
-  hmac_digest_t otp_rot_creator_auth_codesign_measurement = {.digest = {0}};
-  hmac_digest_t otp_rot_creator_auth_state_measurement = {.digest = {0}};
-  measure_otp_partition(kOtpPartitionCreatorSwCfg,
-                        &otp_creator_sw_cfg_measurement);
-  measure_otp_partition(kOtpPartitionOwnerSwCfg, &otp_owner_sw_cfg_measurement);
-  measure_otp_partition(kOtpPartitionRotCreatorAuthCodesign,
-                        &otp_rot_creator_auth_codesign_measurement);
-  measure_otp_partition(kOtpPartitionRotCreatorAuthState,
-                        &otp_rot_creator_auth_state_measurement);
-
+rom_error_t dice_uds_tbs_cert_build(
+    hmac_digest_t *otp_creator_sw_cfg_measurement,
+    hmac_digest_t *otp_owner_sw_cfg_measurement,
+    hmac_digest_t *otp_rot_creator_auth_codesign_measurement,
+    hmac_digest_t *otp_rot_creator_auth_state_measurement,
+    cert_key_id_pair_t *key_ids, ecdsa_p256_public_key_t *uds_pubkey,
+    uint8_t *tbs_cert, size_t *tbs_cert_size) {
   // Generate the TBS certificate.
   uds_tbs_values_t uds_cert_tbs_params = {
       .otp_creator_sw_cfg_hash =
-          (unsigned char *)otp_creator_sw_cfg_measurement.digest,
+          (unsigned char *)otp_creator_sw_cfg_measurement->digest,
       .otp_creator_sw_cfg_hash_size = kHmacDigestNumBytes,
       .otp_owner_sw_cfg_hash =
-          (unsigned char *)otp_owner_sw_cfg_measurement.digest,
+          (unsigned char *)otp_owner_sw_cfg_measurement->digest,
       .otp_owner_sw_cfg_hash_size = kHmacDigestNumBytes,
       .otp_rot_creator_auth_codesign_hash =
-          (unsigned char *)otp_rot_creator_auth_codesign_measurement.digest,
+          (unsigned char *)otp_rot_creator_auth_codesign_measurement->digest,
       .otp_rot_creator_auth_codesign_hash_size = kHmacDigestNumBytes,
       .otp_rot_creator_auth_state_hash =
-          (unsigned char *)otp_rot_creator_auth_state_measurement.digest,
+          (unsigned char *)otp_rot_creator_auth_state_measurement->digest,
       .otp_rot_creator_auth_state_hash_size = kHmacDigestNumBytes,
       .debug_flag = is_debug_exposed(),
       .creator_pub_key_id = (unsigned char *)key_ids->cert->digest,
@@ -249,7 +116,9 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   hmac_sha256(cdi_0_cert_params.tbs, cdi_0_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
+                                       curr_tbs_signature.s);
+
   cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_0_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
   cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
@@ -298,7 +167,8 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   hmac_sha256(cdi_1_cert_params.tbs, cdi_1_cert_params.tbs_size, &tbs_digest);
   HARDENED_RETURN_IF_ERROR(
       otbn_boot_attestation_endorse(&tbs_digest, &curr_tbs_signature));
-  curr_tbs_signature_le_to_be_convert(&curr_tbs_signature);
+  util_p256_signature_le_to_be_convert(curr_tbs_signature.r,
+                                       curr_tbs_signature.s);
   cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
   cdi_1_cert_params.cert_signature_r_size = kAttestationSignatureBytes / 2;
   cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
@@ -312,4 +182,18 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
       *kDiceKeyCdi1.keymgr_diversifier));
 
   return kErrorOk;
+}
+
+rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
+                                  const hmac_digest_t *pubkey_id,
+                                  const ecdsa_p256_public_key_t *pubkey,
+                                  hardened_bool_t *cert_valid_output) {
+  // The function prototype is shared across X.509 and CWT cert formats.
+  // For X.509, we only check the serial_number but not public key contents.
+  OT_DISCARD(pubkey);
+
+  size_t cert_size = cert_obj->cert_body_size;
+  return cert_x509_asn1_check_serial_number(cert_obj->cert_body_p, 0,
+                                            (uint8_t *)pubkey_id->digest,
+                                            cert_valid_output, &cert_size);
 }

@@ -18,7 +18,11 @@ package jtag_riscv_agent_pkg;
   // JTAG TAP for DMI according to debug spec 0.13
   parameter uint DMI_OPW = 2;
   parameter uint DMI_DATAW = 32;
+`ifdef USE_DMI_INTERFACE
+  parameter uint DMI_ADDRW = 16;
+`else
   parameter uint DMI_ADDRW = 7;
+`endif
   parameter uint DMI_IRW = 5;
   parameter uint DMI_DRW = DMI_OPW + DMI_DATAW + DMI_ADDRW;
   parameter uint DTMCS_DRW = 32;

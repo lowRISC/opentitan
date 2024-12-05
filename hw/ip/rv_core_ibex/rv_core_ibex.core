@@ -10,10 +10,8 @@ filesets:
       - lowrisc:ibex:ibex_top
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:alert_handler_reg
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
       - lowrisc:prim:edn_req
@@ -28,7 +26,6 @@ filesets:
       - rtl/rv_core_ibex_cfg_reg_top.sv
       - rtl/rv_core_ibex.sv
       - rtl/rv_core_addr_trans.sv
-      - rtl/ibex_pmp_reset.svh: {is_include_file: true}
     file_type: systemVerilogSource
 
   files_verilator_waiver:

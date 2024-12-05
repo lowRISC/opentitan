@@ -51,6 +51,10 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
     m_kmac_agent_cfg.if_mode = dv_utils_pkg::Device;
     m_kmac_agent_cfg.start_default_device_seq = 1'b1;
     m_kmac_agent_cfg.constant_share_means_error = 1'b0;
+    // The checker reads the upper 8 words of ROM which takes 9 cycles. The rsp_delay_max has been
+    // rounded off by 9*2=18 cycles along with adding 2 just to give an extra precision.
+    m_kmac_agent_cfg.rsp_delay_min = 'd0;
+    m_kmac_agent_cfg.rsp_delay_max = 'd20;
 
     sec_cm_alert_name = "fatal";
   endfunction
@@ -68,14 +72,14 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
 
   // Override the default implementation in dv_base_env_cfg.
   //
-  // This is required for the SRAM environment for reuse at the chip level as 2 different
+  // This is required for the ROM environment for reuse at the chip level as 2 different
   // parameterizations of the design and testbench exist, as a result the custom RAL model for the
-  // SRAM memory primitive must also be explicitly parameterized.
+  // ROM memory primitive must also be explicitly parameterized.
   //
   // We cannot instantiate parameterized UVM objects/components using the standard factory
   // mechanisms, so a custom instantiation method is required here.
   //
-  // Note that the SRAM only has 2 RAL models, one is the "default" CSR model,
+  // Note that the ROM only has 2 RAL models, one is the "default" CSR model,
   // and the other is the custom model to represent the memory primitive.
   virtual function dv_base_reg_block create_ral_by_name(string name);
     if (name == RAL_T::type_name) begin

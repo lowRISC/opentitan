@@ -46,6 +46,7 @@ If run, the following snippet will have the register tables of the AES block (ou
 *Note, one should remove the `#` before the commands.
 This is there so that `CMDGEN` doesn't generate registers in this file.*
 
+The `CMDGEN` tool can also be invoked by the `./hw/Makefile` using the target `cmdgen`.
 
 [mdBook]: https://rust-lang.github.io/mdBook/
 [rustdoc]: https://doc.rust-lang.org/rustdoc/index.html

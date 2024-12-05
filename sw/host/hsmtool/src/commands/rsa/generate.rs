@@ -73,6 +73,7 @@ impl Dispatch for Generate {
             success: true,
             id: id.clone(),
             label: AttrData::Str(self.label.as_ref().cloned().unwrap_or_default()),
+            value: None,
             error: None,
         });
 

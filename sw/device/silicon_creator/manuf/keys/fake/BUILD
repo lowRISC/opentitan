@@ -4,9 +4,14 @@
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files([
-    "cert_endorsement_key.sk.der",
-    "ckms_ca.pem",
-    "fake_ca.pem",
-    "rma_unlock_token_export_key.sk_hsm.der",
-])
+exports_files(glob(["**"]))
+
+filegroup(
+    name = "ca_data",
+    srcs = [
+        ":ca_config.json",
+        ":dice_ca.pem",
+        ":ext_ca.pem",
+        ":sk.pkcs8.der",
+    ],
+)

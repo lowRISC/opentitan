@@ -130,7 +130,7 @@ For more information, consult the `:bitstream_bisect` tool directly!
 
 This section gives an overview of where bitstreams are generated, how they are uploaded to the GCP cache, and how Bazel reaches into the cache.
 
-OpenTitan runs CI tasks on Azure Pipelines that build FPGA bitstreams.
+OpenTitan runs CI tasks on GitHub Actions that build FPGA bitstreams.
 A full bitstream build can take hours, so we cache the output artifacts in a GCS bucket.
 These cached bitstreams can be downloaded and used as-is, or we can splice in freshly-compiled components, including the ROM and the OTP image.
 

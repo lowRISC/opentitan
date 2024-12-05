@@ -59,52 +59,58 @@ class Mode:
             if is_sub_mode and attr == 'name':
                 continue
 
-            # If mode's value is None, then nothing to do here.
+            # If the incoming  value is None, then nothing to do here.
             if mode_attr_val is None:
                 continue
 
-            # If self value is None, then replace with mode's value.
+            # If the current value is None, then replace with the incoming value.
             if self_attr_val is None:
                 setattr(self, attr, mode_attr_val)
                 continue
 
-            # If they are equal, then nothing to do here.
+            # If both values are equal, there is nothing to do.
             if self_attr_val == mode_attr_val:
                 continue
 
-            # Extend if they are both lists.
+            # If we have genuine types (because neither value is None), check
+            # that the values are compatible.
+            if not isinstance(mode_attr_val, type(self_attr_val)):
+                log.error(f"Cannot merge {self.name} with mode {mode.name}: "
+                          f"the incoming values for attribute {attr} are not "
+                          f"of the same type.")
+                sys.exit(1)
+
+            # If the current value is a list, the incoming one must be as well.
+            # Append that to the current list.
             if isinstance(self_attr_val, list):
                 assert isinstance(mode_attr_val, list)
                 self_attr_val.extend(mode_attr_val)
                 continue
 
-            # If the current val is default, replace with new.
+            # The types that we support other than lists are "scalar" types,
+            # which each have a default value. The idea is that a default value
+            # gets overridden by anything else.
             scalar_types = {str: "", int: -1}
             default_val = scalar_types.get(type(self_attr_val))
 
-            if type(self_attr_val) in scalar_types.keys(
-            ) and self_attr_val == default_val:
+            # If the incoming value is the type's default value, it will have
+            # no effect.
+            if mode_attr_val == default_val:
+                continue
+
+            # If the existing value is the type's default value, it will be
+            # overridden by the incoming value.
+            if self_attr_val == default_val:
                 setattr(self, attr, mode_attr_val)
                 continue
 
-            # Check if their types are compatible.
-            if type(self_attr_val) != type(mode_attr_val):
-                log.error(
-                    "Mode %s cannot be merged into %s due to a conflict "
-                    "(type mismatch): %s: {%s(%s), %s(%s)}", mode.name,
-                    self.name, attr, str(self_attr_val),
-                    str(type(self_attr_val)), str(mode_attr_val),
-                    str(type(mode_attr_val)))
-                sys.exit(1)
-
-            # Check if they are different non-default values.
-            if self_attr_val != default_val and mode_attr_val != default_val:
-                log.error(
-                    "Mode %s cannot be merged into %s due to a conflict "
-                    "(unable to pick one from different values): "
-                    "%s: {%s, %s}", mode.name, self.name, attr,
-                    str(self_attr_val), str(mode_attr_val))
-                sys.exit(1)
+            # If we get to here then neither value is the default value and
+            # they are not equal. Raise an error because we don't know how to
+            # merge them.
+            log.error(f"Cannot merge mode {mode.name} into {self.name} "
+                      f"because they have conflicting values for attribute "
+                      f"{attr}: {mode_attr_val} and {self_attr_val}.")
+            sys.exit(1)
 
         # Check newly appended sub_modes, remove 'self' and duplicates
         sub_modes = self.get_sub_modes()

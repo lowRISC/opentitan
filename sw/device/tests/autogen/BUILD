@@ -40,7 +40,12 @@ package(default_visibility = ["//visibility:public"])
         ),
         verilator = verilator_params(
             timeout = "eternal",
-            tags = ["flaky"],
+            tags = [
+                "flaky",
+                "manual",
+            ],
+            # This test can take > 60 minutes, so mark it manual as it
+            # shouldn't run in CI/nightlies.
             # often times out in 3600s on 4 cores
         ),
         deps = [
@@ -92,15 +97,12 @@ test_suite(
 opentitan_test(
     name = "alert_test",
     srcs = ["alert_test.c"],
-    # TODO(#22871): Remove "broken" tag once the tests are fixed.
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),

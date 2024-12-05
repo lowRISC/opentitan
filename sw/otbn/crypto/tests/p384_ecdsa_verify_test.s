@@ -27,9 +27,15 @@ p384_ecdsa_verify_test:
 
 
 .data
+/* status */
+.globl ok
+.balign 4
+ok:
+.word 0x000000739
 
 /* message */
 .globl msg
+.balign 32
 msg:
   .word 0x55555555
   .word 0x55555555
@@ -47,6 +53,7 @@ msg:
 
 /* signature R */
 .globl r
+.balign 32
 r:
   .word 0xb68c28d8
   .word 0x2b23ce3a
@@ -64,6 +71,7 @@ r:
 
 /* signature S */
 .globl s
+.balign 32
 s:
   .word 0x24bc1bf9
   .word 0x752042f5
@@ -81,6 +89,7 @@ s:
 
 /* public key x-coordinate */
 .globl x
+.balign 32
 x:
   .word 0x4877f3d1
   .word 0x7b829460
@@ -98,6 +107,7 @@ x:
 
 /* public key y-coordinate */
 .globl y
+.balign 32
 y:
   .word 0xc181f90f
   .word 0xc31ef079
@@ -115,5 +125,6 @@ y:
 
 /* signature verification result x_res (x_r) */
 .globl x_r
+.balign 32
 x_r:
   .zero 64

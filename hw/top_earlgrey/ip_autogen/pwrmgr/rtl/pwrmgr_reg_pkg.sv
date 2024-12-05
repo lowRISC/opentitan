@@ -17,6 +17,7 @@ package pwrmgr_reg_pkg;
   parameter int NumRstReqs = 2;
   parameter int NumIntRstReqs = 2;
   parameter int NumDebugRstReqs = 1;
+  parameter int NumRomInputs = 1;
   parameter int ResetMainPwrIdx = 2;
   parameter int ResetEscIdx = 3;
   parameter int ResetNdmIdx = 4;

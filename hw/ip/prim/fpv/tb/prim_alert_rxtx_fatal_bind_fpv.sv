@@ -6,7 +6,7 @@
 module prim_alert_rxtx_fatal_bind_fpv;
 
   // this reuses the synchronous VIP.
-  bind prim_alert_rxtx_fpv
+  bind prim_alert_rxtx_tb
         prim_alert_rxtx_assert_fpv prim_alert_rxtx_assert_fpv (
     .clk_i,
     .rst_ni,

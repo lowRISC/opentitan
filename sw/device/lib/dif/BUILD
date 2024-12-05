@@ -252,6 +252,40 @@ cc_test(
 )
 
 cc_library(
+    name = "dma",
+    srcs = [
+        "autogen/dif_dma_autogen.c",
+        "autogen/dif_dma_autogen.h",
+        "dif_dma.c",
+    ],
+    hdrs = [
+        "dif_dma.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/dma/data:dma_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "dma_unittest",
+    srcs = [
+        "autogen/dif_dma_autogen_unittest.cc",
+        "dif_dma_unittest.cc",
+    ],
+    deps = [
+        ":dma",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "edn",
     srcs = [
         "autogen/dif_edn_autogen.c",
@@ -489,6 +523,39 @@ cc_test(
 )
 
 cc_library(
+    name = "keymgr_dpe",
+    srcs = [
+        "autogen/dif_keymgr_dpe_autogen.c",
+        "autogen/dif_keymgr_dpe_autogen.h",
+        "dif_keymgr_dpe.c",
+    ],
+    hdrs = [
+        "dif_keymgr_dpe.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/keymgr_dpe/data:keymgr_dpe_c_regs",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "keymgr_dpe_unittest",
+    srcs = [
+        "autogen/dif_keymgr_dpe_autogen_unittest.cc",
+    ],
+    deps = [
+        ":keymgr_dpe",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
     name = "kmac",
     srcs = [
         "autogen/dif_kmac_autogen.c",
@@ -551,6 +618,41 @@ cc_test(
     ],
     deps = [
         ":lc_ctrl",
+        ":test_base",
+        "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "mbx",
+    srcs = [
+        "autogen/dif_mbx_autogen.c",
+        "autogen/dif_mbx_autogen.h",
+        "dif_mbx.c",
+    ],
+    hdrs = [
+        "dif_mbx.h",
+    ],
+    deps = [
+        ":base",
+        "//hw/ip/mbx/data:mbx_c_regs",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/base:multibits",
+    ],
+)
+
+cc_test(
+    name = "mbx_unittest",
+    srcs = [
+        "autogen/dif_mbx_autogen_unittest.cc",
+        "dif_mbx_unittest.cc",
+    ],
+    deps = [
+        ":mbx",
         ":test_base",
         "@googletest//:gtest_main",
     ],
@@ -670,7 +772,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top_earlgrey/ip/pinmux/data/autogen:pinmux_c_regs",
+        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",

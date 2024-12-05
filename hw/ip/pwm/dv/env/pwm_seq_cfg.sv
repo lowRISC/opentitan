@@ -30,7 +30,6 @@ class pwm_seq_cfg extends uvm_object;
   uint pwm_max_num_pulses        = 4 * pwm_max_param;
 
   // test knobs
-  pwm_mode_e pwm_run_mode        = Allmodes;
   int        pwm_run_channel     = PWM_NUM_CHANNELS;
 
 endclass : pwm_seq_cfg

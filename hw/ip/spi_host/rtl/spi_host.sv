@@ -37,6 +37,8 @@ module spi_host
   input  spi_device_pkg::passthrough_req_t passthrough_i,
   output spi_device_pkg::passthrough_rsp_t passthrough_o,
 
+  output logic             lsio_trigger_o,
+
   output logic             intr_error_o,
   output logic             intr_spi_event_o
 );
@@ -562,6 +564,15 @@ module spi_host
 
   // Qualify interrupt sources individually with dedicated mask register CSR.EVENT_ENABLE
   assign status_spi_event = |(event_vector & event_mask);
+
+  // Flop trigger signal to avoid glitches on the output
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      lsio_trigger_o <= 1'b0;
+    end else begin
+      lsio_trigger_o <= tx_wm | rx_wm;
+    end
+  end
 
   prim_intr_hw #(
     .Width(1),

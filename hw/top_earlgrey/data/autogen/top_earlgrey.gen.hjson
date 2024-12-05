@@ -21,7 +21,9 @@
       "0"
     ]
     default: "0"
+    wait_for_external_reset: false
   }
+  unmanaged_clocks: {}
   clocks:
   {
     hier_paths:
@@ -518,6 +520,71 @@
     ]
   }
   num_cores: "1"
+  addr_spaces:
+  [
+    {
+      name: hart
+      desc: The main address space, shared between the CPU and DM
+      subspaces:
+      [
+        {
+          name: mmio
+          desc:
+            '''
+            MMIO region excludes any memory that is separate from the module configuration
+            space, i.e. ROM, main SRAM, and flash are excluded but retention SRAM, spi_device
+            memory, or usbdev memory are included.
+            '''
+          nodes:
+          [
+            uart0
+            uart1
+            uart2
+            uart3
+            gpio
+            spi_device
+            i2c0
+            i2c1
+            i2c2
+            pattgen
+            rv_timer
+            otp_ctrl
+            lc_ctrl.regs
+            alert_handler
+            spi_host0
+            spi_host1
+            usbdev
+            pwrmgr_aon
+            rstmgr_aon
+            clkmgr_aon
+            sysrst_ctrl_aon
+            adc_ctrl_aon
+            pwm_aon
+            pinmux_aon
+            aon_timer_aon
+            ast
+            sensor_ctrl
+            sram_ctrl_ret_aon
+            flash_ctrl.core
+            flash_ctrl.prim
+            rv_plic
+            aes
+            hmac
+            kmac
+            otbn
+            keymgr
+            csrng
+            entropy_src
+            edn0
+            edn1
+            sram_ctrl_main.regs
+            rom_ctrl.regs
+            rv_core_ibex
+          ]
+        }
+      ]
+    }
+  ]
   module:
   [
     {
@@ -549,6 +616,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -564,8 +645,12 @@
       ]
       base_addrs:
       {
-        null: 0x40000000
+        null:
+        {
+          hart: 0x40000000
+        }
       }
+      generate_dif: true
     }
     {
       name: uart1
@@ -596,6 +681,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart1
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -611,8 +710,12 @@
       ]
       base_addrs:
       {
-        null: 0x40010000
+        null:
+        {
+          hart: 0x40010000
+        }
       }
+      generate_dif: true
     }
     {
       name: uart2
@@ -643,6 +746,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart2
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -658,8 +775,12 @@
       ]
       base_addrs:
       {
-        null: 0x40020000
+        null:
+        {
+          hart: 0x40020000
+        }
       }
+      generate_dif: true
     }
     {
       name: uart3
@@ -690,6 +811,20 @@
       inter_signal_list:
       [
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: uart3
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -705,8 +840,12 @@
       ]
       base_addrs:
       {
-        null: 0x40030000
+        null:
+        {
+          hart: 0x40030000
+        }
       }
+      generate_dif: true
     }
     {
       name: gpio
@@ -726,6 +865,7 @@
       }
       param_decl:
       {
+        GpioAsHwStrapsEn: "0"
         GpioAsyncOn: "1"
       }
       clock_connections:
@@ -744,12 +884,45 @@
           desc: Instantiates 2-flop synchronizers on all GPIO inputs if set to 1.
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: GpioGpioAsyncOn
+        }
+        {
+          name: GpioAsHwStrapsEn
+          desc: Enable HW straps sampling logic for GPIO inputs at initial cold boot
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: GpioGpioAsHwStrapsEn
         }
       ]
       inter_signal_list:
       [
+        {
+          name: strap_en
+          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: gpio
+          index: -1
+        }
+        {
+          name: sampled_straps
+          desc: This vector contains the sampled strap values.
+          struct: gpio_straps
+          package: gpio_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: gpio
+          index: -1
+        }
         {
           name: tl
           struct: tl
@@ -766,8 +939,12 @@
       ]
       base_addrs:
       {
-        null: 0x40040000
+        null:
+        {
+          hart: 0x40040000
+        }
       }
+      generate_dif: true
     }
     {
       name: spi_device
@@ -804,6 +981,7 @@
           desc: Sram Entries. Word size is 32bit width.
           type: spi_device_pkg::sram_type_e
           default: spi_device_pkg::DefaultSramType
+          local: "false"
           expose: "true"
           name_top: SpiDeviceSramType
         }
@@ -874,8 +1052,12 @@
       ]
       base_addrs:
       {
-        null: 0x40050000
+        null:
+        {
+          hart: 0x40050000
+        }
       }
+      generate_dif: true
     }
     {
       name: i2c0
@@ -914,6 +1096,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c0InputDelayCycles
         }
@@ -933,6 +1116,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -948,8 +1145,12 @@
       ]
       base_addrs:
       {
-        null: 0x40080000
+        null:
+        {
+          hart: 0x40080000
+        }
       }
+      generate_dif: true
     }
     {
       name: i2c1
@@ -988,6 +1189,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c1InputDelayCycles
         }
@@ -1007,6 +1209,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c1
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1022,8 +1238,12 @@
       ]
       base_addrs:
       {
-        null: 0x40090000
+        null:
+        {
+          hart: 0x40090000
+        }
       }
+      generate_dif: true
     }
     {
       name: i2c2
@@ -1062,6 +1282,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: I2c2InputDelayCycles
         }
@@ -1081,6 +1302,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c2
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -1096,8 +1331,12 @@
       ]
       base_addrs:
       {
-        null: 0x400A0000
+        null:
+        {
+          hart: 0x400A0000
+        }
       }
+      generate_dif: true
     }
     {
       name: pattgen
@@ -1143,8 +1382,12 @@
       ]
       base_addrs:
       {
-        null: 0x400E0000
+        null:
+        {
+          hart: 0x400E0000
+        }
       }
+      generate_dif: true
     }
     {
       name: rv_timer
@@ -1190,8 +1433,12 @@
       ]
       base_addrs:
       {
-        null: 0x40100000
+        null:
+        {
+          hart: 0x40100000
+        }
       }
+      generate_dif: true
     }
     {
       name: otp_ctrl
@@ -1217,8 +1464,14 @@
       }
       base_addrs:
       {
-        core: 0x40130000
-        prim: 0x40138000
+        core:
+        {
+          hart: 0x40130000
+        }
+        prim:
+        {
+          hart: 0x40138000
+        }
       }
       clock_connections:
       {
@@ -1238,6 +1491,7 @@
           desc: VMEM file to initialize the OTP macro.
           type: ""
           default: '''""'''
+          local: "false"
           expose: "true"
           name_top: OtpCtrlMemInitFile
         }
@@ -1615,6 +1869,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: lc_ctrl
@@ -1636,6 +1891,17 @@
         {
           name: lc
           domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        regs:
+        {
+          hart: 0x40140000
+        }
+        dmi:
+        {
+          hart: 0x0
         }
       }
       param_decl:
@@ -1673,8 +1939,18 @@
             '''
           type: bit
           default: top_pkg::SecVolatileRawUnlockEn
+          local: "false"
           expose: "true"
           name_top: SecLcCtrlVolatileRawUnlockEn
+        }
+        {
+          name: UseDmiInterface
+          desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: LcCtrlUseDmiInterface
         }
         {
           name: RndCnstLcKeymgrDivInvalid
@@ -1741,6 +2017,7 @@
           desc: Chip generation number.
           type: logic [15:0]
           default: 16'h 4001
+          local: "false"
           expose: "true"
           name_top: LcCtrlSiliconCreatorId
         }
@@ -1749,6 +2026,7 @@
           desc: Chip revision number.
           type: logic [15:0]
           default: 16'h 0002
+          local: "false"
           expose: "true"
           name_top: LcCtrlProductId
         }
@@ -1757,6 +2035,7 @@
           desc: Chip revision number.
           type: logic [7:0]
           default: 8'h 01
+          local: "false"
           expose: "true"
           name_top: LcCtrlRevisionId
         }
@@ -1765,8 +2044,18 @@
           desc: JTAG ID code.
           type: logic [31:0]
           default: jtag_id_pkg::LC_CTRL_JTAG_IDCODE
+          local: "false"
           expose: "true"
           name_top: LcCtrlIdcodeValue
+        }
+        {
+          name: NumRmaAckSigs
+          desc: Number of Flash RMA wiping response signals
+          type: int
+          default: "2"
+          local: "true"
+          expose: "true"
+          name_top: LcCtrlNumRmaAckSigs
         }
       ]
       inter_signal_list:
@@ -2200,7 +2489,7 @@
           index: -1
         }
         {
-          name: tl
+          name: regs_tl
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -2209,14 +2498,21 @@
           inst_name: lc_ctrl
           default: ""
           end_idx: -1
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
+          index: -1
+        }
+        {
+          name: dmi_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: lc_ctrl
           index: -1
         }
       ]
-      base_addrs:
-      {
-        null: 0x40140000
-      }
+      generate_dif: true
     }
     {
       name: alert_handler
@@ -2347,8 +2643,12 @@
       ]
       base_addrs:
       {
-        null: 0x40150000
+        null:
+        {
+          hart: 0x40150000
+        }
       }
+      generate_dif: true
     }
     {
       name: spi_host0
@@ -2391,6 +2691,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_host0
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2406,8 +2720,12 @@
       ]
       base_addrs:
       {
-        null: 0x40300000
+        null:
+        {
+          hart: 0x40300000
+        }
       }
+      generate_dif: true
     }
     {
       name: spi_host1
@@ -2448,6 +2766,20 @@
           index: -1
         }
         {
+          name: lsio_trigger
+          desc:
+            '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_host1
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -2463,8 +2795,12 @@
       ]
       base_addrs:
       {
-        null: 0x40310000
+        null:
+        {
+          hart: 0x40310000
+        }
       }
+      generate_dif: true
     }
     {
       name: usbdev
@@ -2509,6 +2845,7 @@
           desc: Stub out the core of entropy_src logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: UsbdevStub
         }
@@ -2517,6 +2854,7 @@
           desc: Maximum number of microseconds for the differential receiver to become operational
           type: int
           default: "100"
+          local: "false"
           expose: "true"
           name_top: UsbdevRcvrWakeTimeUs
         }
@@ -2774,8 +3112,12 @@
       ]
       base_addrs:
       {
-        null: 0x40320000
+        null:
+        {
+          hart: 0x40320000
+        }
       }
+      generate_dif: true
     }
     {
       name: pwrmgr_aon
@@ -2943,8 +3285,8 @@
         }
         {
           name: pwr_cpu
-          struct: pwr_cpu
-          package: pwrmgr_pkg
+          struct: cpu_pwrmgr
+          package: rv_core_ibex_pkg
           type: uni
           act: rcv
           width: 1
@@ -3028,8 +3370,8 @@
           type: uni
           act: rcv
           width: 1
+          default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
-          default: ""
           top_signame: rom_ctrl_pwrmgr_data
           index: -1
         }
@@ -3099,8 +3441,12 @@
       ]
       base_addrs:
       {
-        null: 0x40400000
+        null:
+        {
+          hart: 0x40400000
+        }
       }
+      generate_dif: true
     }
     {
       name: rstmgr_aon
@@ -3164,6 +3510,7 @@
             '''
           type: bit
           default: 1'b1
+          local: "false"
           expose: "true"
           name_top: SecRstmgrAonCheck
         }
@@ -3172,6 +3519,7 @@
           desc: The maximum synchronization delay for parent / child reset checks.
           type: int
           default: "2"
+          local: "false"
           expose: "true"
           name_top: SecRstmgrAonMaxSyncDelay
         }
@@ -3297,8 +3645,12 @@
       ]
       base_addrs:
       {
-        null: 0x40410000
+        null:
+        {
+          hart: 0x40410000
+        }
       }
+      generate_dif: true
     }
     {
       name: clkmgr_aon
@@ -3628,8 +3980,12 @@
       ]
       base_addrs:
       {
-        null: 0x40420000
+        null:
+        {
+          hart: 0x40420000
+        }
       }
+      generate_dif: true
     }
     {
       name: sysrst_ctrl_aon
@@ -3706,8 +4062,12 @@
       ]
       base_addrs:
       {
-        null: 0x40430000
+        null:
+        {
+          hart: 0x40430000
+        }
       }
+      generate_dif: true
     }
     {
       name: adc_ctrl_aon
@@ -3786,8 +4146,12 @@
       ]
       base_addrs:
       {
-        null: 0x40440000
+        null:
+        {
+          hart: 0x40440000
+        }
       }
+      generate_dif: true
     }
     {
       name: pwm_aon
@@ -3840,8 +4204,12 @@
       ]
       base_addrs:
       {
-        null: 0x40450000
+        null:
+        {
+          hart: 0x40450000
+        }
       }
+      generate_dif: true
     }
     {
       name: pinmux_aon
@@ -3874,7 +4242,7 @@
       [
         Aon
       ]
-      attr: templated
+      attr: ipgen
       param_decl:
       {
         SecVolatileRawUnlockEn: top_pkg::SecVolatileRawUnlockEn
@@ -3900,6 +4268,7 @@
             '''
           type: bit
           default: top_pkg::SecVolatileRawUnlockEn
+          local: "false"
           expose: "true"
           name_top: SecPinmuxAonVolatileRawUnlockEn
         }
@@ -3908,6 +4277,7 @@
           desc: Target specific pinmux configuration.
           type: pinmux_pkg::target_cfg_t
           default: pinmux_pkg::DefaultTargetCfg
+          local: "false"
           expose: "true"
           name_top: PinmuxAonTargetCfg
         }
@@ -4290,8 +4660,12 @@
       ]
       base_addrs:
       {
-        null: 0x40460000
+        null:
+        {
+          hart: 0x40460000
+        }
       }
+      generate_dif: true
     }
     {
       name: aon_timer_aon
@@ -4406,8 +4780,12 @@
       ]
       base_addrs:
       {
-        null: 0x40470000
+        null:
+        {
+          hart: 0x40470000
+        }
       }
+      generate_dif: true
     }
     {
       name: ast
@@ -4511,8 +4889,12 @@
       ]
       base_addrs:
       {
-        null: 0x40480000
+        null:
+        {
+          hart: 0x40480000
+        }
       }
+      generate_dif: true
     }
     {
       name: sensor_ctrl_aon
@@ -4648,8 +5030,12 @@
       ]
       base_addrs:
       {
-        null: 0x40490000
+        null:
+        {
+          hart: 0x40490000
+        }
       }
+      generate_dif: true
     }
     {
       name: sram_ctrl_ret_aon
@@ -4683,8 +5069,14 @@
       }
       base_addrs:
       {
-        regs: 0x40500000
-        ram: 0x40600000
+        regs:
+        {
+          hart: 0x40500000
+        }
+        ram:
+        {
+          hart: 0x40600000
+        }
       }
       memory:
       {
@@ -4757,6 +5149,7 @@
           desc: Support execution from SRAM
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SramCtrlRetAonInstrExec
         }
@@ -4765,6 +5158,7 @@
           desc: Number of PRINCE half rounds for the SRAM scrambling feature
           type: int
           default: "3"
+          local: "false"
           expose: "true"
           name_top: SramCtrlRetAonNumPrinceRoundsHalf
         }
@@ -4856,6 +5250,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: flash_ctrl
@@ -4881,9 +5276,18 @@
       }
       base_addrs:
       {
-        core: 0x41000000
-        prim: 0x41008000
-        mem: 0x20000000
+        core:
+        {
+          hart: 0x41000000
+        }
+        prim:
+        {
+          hart: 0x41008000
+        }
+        mem:
+        {
+          hart: 0x20000000
+        }
       }
       param_decl:
       {
@@ -4978,6 +5382,7 @@
           desc: Compile-time option to enable flash scrambling
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SecFlashCtrlScrambleEn
         }
@@ -4986,6 +5391,7 @@
           desc: Depth of program fifo
           type: int
           default: "4"
+          local: "false"
           expose: "true"
           name_top: FlashCtrlProgFifoDepth
         }
@@ -4994,6 +5400,7 @@
           desc: Depth of read fifo
           type: int
           default: "16"
+          local: "false"
           expose: "true"
           name_top: FlashCtrlRdFifoDepth
         }
@@ -5297,6 +5704,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rv_dm
@@ -5326,9 +5734,20 @@
       }
       base_addrs:
       {
-        mem: 0x00010000
-        regs: 0x41200000
+        mem:
+        {
+          hart: 0x00010000
+        }
+        regs:
+        {
+          hart: 0x41200000
+        }
+        dbg:
+        {
+          hart: 0x00001000
+        }
       }
+      generate_dif: false
       clock_connections:
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
@@ -5346,8 +5765,34 @@
           desc: RISC-V debug module JTAG ID code.
           type: logic [31:0]
           default: jtag_id_pkg::RV_DM_JTAG_IDCODE
+          local: "false"
           expose: "true"
           name_top: RvDmIdcodeValue
+        }
+        {
+          name: UseDmiInterface
+          desc: When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: RvDmUseDmiInterface
+        }
+        {
+          name: SecVolatileRawUnlockEn
+          desc:
+            '''
+            Disable (0) or enable (1) volatile RAW UNLOCK capability.
+            If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+            IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+            to 0 in production tapeouts since this weakens the security posture of the RAW
+            UNLOCK mechanism.
+            '''
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: SecRvDmVolatileRawUnlockEn
         }
       ]
       inter_signal_list:
@@ -5506,6 +5951,69 @@
           index: -1
         }
         {
+          name: lc_escalate_en
+          desc:
+            '''
+            Escalation enable signal coming from life cycle controller, used for invalidating
+            the latched lc_hw_debug_en state inside the strap sampling logic.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: lc_check_byp_en
+          desc:
+            '''
+            Check bypass enable signal coming from life cycle controller, used for invalidating
+            the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+            whenever the life cycle controller performs a life cycle transition. Its main use is
+            to skip any background checks inside the life cycle partition of the OTP controller while
+            a life cycle transition is in progress.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: strap_en
+          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: strap_en_override
+          desc:
+            '''
+            This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+            The signal must stay at 1 until reset.
+            Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+            Otherwise this signal is unused.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          default: 1'b0
+          inst_name: rv_dm
+          index: -1
+        }
+        {
           name: sba_tl_h
           struct: tl
           package: tlul_pkg
@@ -5541,6 +6049,16 @@
           default: ""
           end_idx: -1
           top_signame: rv_dm_mem_tl_d
+          index: -1
+        }
+        {
+          name: dbg_tl_d
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: rv_dm
           index: -1
         }
       ]
@@ -5627,8 +6145,12 @@
       ]
       base_addrs:
       {
-        null: 0x48000000
+        null:
+        {
+          hart: 0x48000000
+        }
       }
+      generate_dif: true
     }
     {
       name: aes
@@ -5674,6 +6196,7 @@
           desc: Disable (0) or enable (1) support for 192-bit key lengths (AES-192).
           type: bit
           default: 1'b1
+          local: "false"
           expose: "false"
           name_top: AesAES192Enable
         }
@@ -5686,6 +6209,7 @@
             '''
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SecAesMasking
         }
@@ -5694,6 +6218,7 @@
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplDom
+          local: "false"
           expose: "true"
           name_top: SecAesSBoxImpl
         }
@@ -5706,6 +6231,7 @@
             '''
           type: int unsigned
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecAesStartTriggerDelay
         }
@@ -5719,6 +6245,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecAesAllowForcingMasks
         }
@@ -5732,6 +6259,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecAesSkipPRNGReseeding
         }
@@ -5852,8 +6380,12 @@
       ]
       base_addrs:
       {
-        null: 0x41100000
+        null:
+        {
+          hart: 0x41100000
+        }
       }
+      generate_dif: true
     }
     {
       name: hmac
@@ -5911,8 +6443,12 @@
       ]
       base_addrs:
       {
-        null: 0x41110000
+        null:
+        {
+          hart: 0x41110000
+        }
       }
+      generate_dif: true
     }
     {
       name: kmac
@@ -5957,6 +6493,7 @@
           desc: Disable(0) or enable(1) first-order masking of Keccak round.
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: KmacEnMasking
         }
@@ -5971,6 +6508,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: KmacSwKeyMasked
         }
@@ -5985,6 +6523,7 @@
             '''
           type: int
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecKmacCmdDelay
         }
@@ -5998,8 +6537,32 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecKmacIdleAcceptSwMsg
+        }
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          type: int
+          default: 3
+          local: "false"
+          expose: "true"
+          name_top: KmacNumAppIntf
+        }
+        {
+          name: AppCfg
+          desc:
+            '''
+            Application interface configuration.
+            Top-level connection to the application interface must follow this definition.
+            '''
+          type: kmac_pkg::app_config_t
+          unpacked_dimensions: "[KmacNumAppIntf]"
+          default: "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl}"
+          local: "false"
+          expose: "true"
+          name_top: KmacAppCfg
         }
         {
           name: RndCnstLfsrSeed
@@ -6062,7 +6625,17 @@
           package: kmac_pkg
           type: req_rsp
           act: rsp
-          width: 3
+          width:
+          {
+            name: NumAppIntf
+            desc: Number of application interfaces
+            param_type: int
+            unpacked_dimensions: null
+            default: 3
+            local: false
+            expose: true
+            name_top: KmacNumAppIntf
+          }
           inst_name: kmac
           default: ""
           end_idx: -1
@@ -6136,8 +6709,12 @@
       ]
       base_addrs:
       {
-        null: 0x41120000
+        null:
+        {
+          hart: 0x41120000
+        }
       }
+      generate_dif: true
     }
     {
       name: otbn
@@ -6198,6 +6775,7 @@
           desc: Stub out the core of Otbn logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: OtbnStub
         }
@@ -6206,6 +6784,7 @@
           desc: Selection of the register file implementation. See otbn_pkg.sv.
           type: otbn_pkg::regfile_e
           default: otbn_pkg::RegFileFF
+          local: "false"
           expose: "true"
           name_top: OtbnRegFile
         }
@@ -6229,6 +6808,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecOtbnMuteUrnd
         }
@@ -6242,6 +6822,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: SecOtbnSkipUrndReseedAtStart
         }
@@ -6392,8 +6973,12 @@
       ]
       base_addrs:
       {
-        null: 0x41130000
+        null:
+        {
+          hart: 0x41130000
+        }
       }
+      generate_dif: true
     }
     {
       name: keymgr
@@ -6441,6 +7026,7 @@
             '''
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: KeymgrUseOtpSeedsInsteadOfFlash
         }
@@ -6449,6 +7035,7 @@
           desc: Flag indicating with kmac masking is enabled
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: KeymgrKmacEnMasking
         }
@@ -6761,8 +7348,12 @@
       ]
       base_addrs:
       {
-        null: 0x41140000
+        null:
+        {
+          hart: 0x41140000
+        }
       }
+      generate_dif: true
     }
     {
       name: csrng
@@ -6817,6 +7408,7 @@
           desc: Selection of the S-Box implementation. See aes_pkg.sv.
           type: aes_pkg::sbox_impl_e
           default: aes_pkg::SBoxImplCanright
+          local: "false"
           expose: "true"
           name_top: CsrngSBoxImpl
         }
@@ -6908,8 +7500,12 @@
       ]
       base_addrs:
       {
-        null: 0x41150000
+        null:
+        {
+          hart: 0x41150000
+        }
       }
+      generate_dif: true
     }
     {
       name: entropy_src
@@ -6944,6 +7540,7 @@
           desc: Number of 384-bit entries in the esfinal FIFO
           type: int
           default: "3"
+          local: "false"
           expose: "true"
           name_top: EntropySrcEsFifoDepth
         }
@@ -6952,6 +7549,7 @@
           desc: Number of 32-bit entries in the distr FIFO
           type: int unsigned
           default: "2"
+          local: "false"
           expose: "true"
           name_top: EntropySrcDistrFifoDepth
         }
@@ -6960,6 +7558,7 @@
           desc: Stub out the core of entropy_src logic
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: EntropySrcStub
         }
@@ -7073,8 +7672,12 @@
       ]
       base_addrs:
       {
-        null: 0x41160000
+        null:
+        {
+          hart: 0x41160000
+        }
       }
+      generate_dif: true
     }
     {
       name: edn0
@@ -7155,8 +7758,12 @@
       ]
       base_addrs:
       {
-        null: 0x41170000
+        null:
+        {
+          hart: 0x41170000
+        }
       }
+      generate_dif: true
     }
     {
       name: edn1
@@ -7237,8 +7844,12 @@
       ]
       base_addrs:
       {
-        null: 0x41180000
+        null:
+        {
+          hart: 0x41180000
+        }
       }
+      generate_dif: true
     }
     {
       name: sram_ctrl_main
@@ -7269,8 +7880,14 @@
       }
       base_addrs:
       {
-        regs: 0x411C0000
-        ram: 0x10000000
+        regs:
+        {
+          hart: 0x411C0000
+        }
+        ram:
+        {
+          hart: 0x10000000
+        }
       }
       memory:
       {
@@ -7347,6 +7964,7 @@
           desc: Support execution from SRAM
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: SramCtrlMainInstrExec
         }
@@ -7355,6 +7973,7 @@
           desc: Number of PRINCE half rounds for the SRAM scrambling feature
           type: int
           default: "2"
+          local: "false"
           expose: "true"
           name_top: SramCtrlMainNumPrinceRoundsHalf
         }
@@ -7448,6 +8067,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rom_ctrl
@@ -7467,8 +8087,14 @@
       }
       base_addrs:
       {
-        rom: 0x00008000
-        regs: 0x411e0000
+        rom:
+        {
+          hart: 0x00008000
+        }
+        regs:
+        {
+          hart: 0x411e0000
+        }
       }
       memory:
       {
@@ -7501,6 +8127,7 @@
           desc: Contents of ROM
           type: ""
           default: '''""'''
+          local: "false"
           expose: "true"
           name_top: RomCtrlBootRomInitFile
         }
@@ -7535,6 +8162,7 @@
             '''
           type: bit
           default: 1'b0
+          local: "false"
           expose: "true"
           name_top: SecRomCtrlDisableScrambling
         }
@@ -7627,6 +8255,7 @@
           index: -1
         }
       ]
+      generate_dif: true
     }
     {
       name: rv_core_ibex
@@ -7638,6 +8267,9 @@
         PMPNumRegions: "16"
         MHPMCounterNum: "2"
         MHPMCounterWidth: "32"
+        PMPRstCfg: ibex_pmp_reset_pkg::PmpCfgRst
+        PMPRstAddr: ibex_pmp_reset_pkg::PmpAddrRst
+        PMPRstMsecCfg: ibex_pmp_reset_pkg::PmpMseccfgRst
         RV32E: "0"
         RV32M: ibex_pkg::RV32MSingleCycle
         RV32B: ibex_pkg::RV32BOTEarlGrey
@@ -7654,6 +8286,8 @@
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
         PipeLine: "0"
+        NEscalationSeverities: alert_handler_reg_pkg::N_ESC_SEV
+        WidthPingCounter: alert_handler_reg_pkg::PING_CNT_DW
       }
       clock_srcs:
       {
@@ -7749,10 +8383,29 @@
           randwidth: 64
         }
         {
+          name: NEscalationSeverities
+          desc: Number of escalation severities
+          type: int unsigned
+          default: alert_handler_reg_pkg::N_ESC_SEV
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexNEscalationSeverities
+        }
+        {
+          name: WidthPingCounter
+          desc: Width of the ping counter
+          type: int unsigned
+          default: alert_handler_reg_pkg::PING_CNT_DW
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexWidthPingCounter
+        }
+        {
           name: PMPEnable
           desc: Enable PMP
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPEnable
         }
@@ -7761,6 +8414,7 @@
           desc: PMP Granularity
           type: int unsigned
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPGranularity
         }
@@ -7769,6 +8423,7 @@
           desc: PMP number of regions
           type: int unsigned
           default: "16"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPNumRegions
         }
@@ -7777,6 +8432,7 @@
           desc: "Number of the MHPM counter "
           type: int unsigned
           default: "2"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexMHPMCounterNum
         }
@@ -7785,14 +8441,45 @@
           desc: "Width of the MHPM Counter "
           type: int unsigned
           default: "32"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexMHPMCounterWidth
+        }
+        {
+          name: PMPRstCfg
+          desc: Reset value of PMP config CSRs
+          type: ibex_pkg::pmp_cfg_t
+          unpacked_dimensions: "[16]"
+          default: ibex_pmp_reset_pkg::PmpCfgRst
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexPMPRstCfg
+        }
+        {
+          name: PMPRstAddr
+          desc: Reset value of PMP address CSRs
+          type: logic [33:0]
+          unpacked_dimensions: "[16]"
+          default: ibex_pmp_reset_pkg::PmpAddrRst
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexPMPRstAddr
+        }
+        {
+          name: PMPRstMsecCfg
+          desc: Reset value of MSECCFG CSR
+          type: ibex_pkg::pmp_mseccfg_t
+          default: ibex_pmp_reset_pkg::PmpMseccfgRst
+          local: "false"
+          expose: "true"
+          name_top: RvCoreIbexPMPRstMsecCfg
         }
         {
           name: RV32E
           desc: RV32E
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32E
         }
@@ -7801,6 +8488,7 @@
           desc: RV32M
           type: ibex_pkg::rv32m_e
           default: ibex_pkg::RV32MSingleCycle
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32M
         }
@@ -7809,6 +8497,7 @@
           desc: RV32B
           type: ibex_pkg::rv32b_e
           default: ibex_pkg::RV32BOTEarlGrey
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRV32B
         }
@@ -7817,6 +8506,7 @@
           desc: Reg file
           type: ibex_pkg::regfile_e
           default: ibex_pkg::RegFileFF
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexRegFile
         }
@@ -7825,6 +8515,7 @@
           desc: Branch target ALU
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexBranchTargetALU
         }
@@ -7833,6 +8524,7 @@
           desc: Write back stage
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexWritebackStage
         }
@@ -7841,6 +8533,7 @@
           desc: Instruction cache
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICache
         }
@@ -7849,6 +8542,7 @@
           desc: Instruction cache ECC
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICacheECC
         }
@@ -7857,6 +8551,7 @@
           desc: Scramble instruction cach
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexICacheScramble
         }
@@ -7865,6 +8560,7 @@
           desc: Branch predictor
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexBranchPredictor
         }
@@ -7873,6 +8569,7 @@
           desc: Enable degug trigger
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDbgTriggerEn
         }
@@ -7881,6 +8578,7 @@
           desc: Number of debug hardware break
           type: int
           default: "4"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDbgHwBreakNum
         }
@@ -7889,6 +8587,7 @@
           desc: "Width of the MHPM Counter "
           type: bit
           default: "1"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexSecureIbex
         }
@@ -7897,6 +8596,7 @@
           desc: Halt address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDmHaltAddr
         }
@@ -7905,6 +8605,7 @@
           desc: Exception address
           type: int unsigned
           default: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexDmExceptionAddr
         }
@@ -7913,6 +8614,7 @@
           desc: Pipe line
           type: bit
           default: "0"
+          local: "false"
           expose: "true"
           name_top: RvCoreIbexPipeLine
         }
@@ -8076,8 +8778,8 @@
         }
         {
           name: pwrmgr
-          struct: pwr_cpu
-          package: pwrmgr_pkg
+          struct: cpu_pwrmgr
+          package: rv_core_ibex_pkg
           type: uni
           act: req
           width: 1
@@ -8178,8 +8880,12 @@
       ]
       base_addrs:
       {
-        cfg: 0x411F0000
+        cfg:
+        {
+          hart: 0x411F0000
+        }
       }
+      generate_dif: true
     }
   ]
   memory: []
@@ -8853,9 +9559,9 @@
       [
         peri.tl_otp_ctrl__prim
       ]
-      lc_ctrl.tl:
+      lc_ctrl.regs_tl:
       [
-        peri.tl_lc_ctrl
+        peri.tl_lc_ctrl__regs
       ]
       sensor_ctrl_aon.tl:
       [
@@ -9080,6 +9786,7 @@
         {
           name: rv_core_ibex.corei
           type: host
+          addr_space: hart
           clock: clk_main_i
           reset: rst_main_ni
           pipeline: false
@@ -9092,6 +9799,7 @@
         {
           name: rv_core_ibex.cored
           type: host
+          addr_space: hart
           clock: clk_main_i
           reset: rst_main_ni
           pipeline: false
@@ -9104,6 +9812,7 @@
         {
           name: rv_dm.sba
           type: host
+          addr_space: hart
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
@@ -9124,7 +9833,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41200000
+              base_addrs:
+              {
+                hart: 0x41200000
+              }
               size_byte: 0x10
             }
           ]
@@ -9143,7 +9855,10 @@
           addr_range:
           [
             {
-              base_addr: 0x10000
+              base_addrs:
+              {
+                hart: 0x10000
+              }
               size_byte: 0x1000
             }
           ]
@@ -9162,7 +9877,10 @@
           addr_range:
           [
             {
-              base_addr: 0x8000
+              base_addrs:
+              {
+                hart: 0x8000
+              }
               size_byte: 0x8000
             }
           ]
@@ -9181,7 +9899,10 @@
           addr_range:
           [
             {
-              base_addr: 0x411e0000
+              base_addrs:
+              {
+                hart: 0x411e0000
+              }
               size_byte: 0x80
             }
           ]
@@ -9199,14 +9920,21 @@
           xbar: true
           stub: false
           pipeline: true
+          addr_space: hart
           addr_range:
           [
             {
-              base_addr: 0x40000000
+              base_addrs:
+              {
+                hart: 0x40000000
+              }
               size_byte: 0x200000
             }
             {
-              base_addr: 0x40400000
+              base_addrs:
+              {
+                hart: 0x40400000
+              }
               size_byte: 0x400000
             }
           ]
@@ -9222,7 +9950,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40300000
+              base_addrs:
+              {
+                hart: 0x40300000
+              }
               size_byte: 0x40
             }
           ]
@@ -9241,7 +9972,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40310000
+              base_addrs:
+              {
+                hart: 0x40310000
+              }
               size_byte: 0x40
             }
           ]
@@ -9260,7 +9994,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40320000
+              base_addrs:
+              {
+                hart: 0x40320000
+              }
               size_byte: 0x1000
             }
           ]
@@ -9279,7 +10016,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41000000
+              base_addrs:
+              {
+                hart: 0x41000000
+              }
               size_byte: 0x200
             }
           ]
@@ -9298,7 +10038,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41008000
+              base_addrs:
+              {
+                hart: 0x41008000
+              }
               size_byte: 0x80
             }
           ]
@@ -9317,7 +10060,10 @@
           addr_range:
           [
             {
-              base_addr: 0x20000000
+              base_addrs:
+              {
+                hart: 0x20000000
+              }
               size_byte: 0x100000
             }
           ]
@@ -9336,7 +10082,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41110000
+              base_addrs:
+              {
+                hart: 0x41110000
+              }
               size_byte: 0x2000
             }
           ]
@@ -9355,7 +10104,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41120000
+              base_addrs:
+              {
+                hart: 0x41120000
+              }
               size_byte: 0x1000
             }
           ]
@@ -9374,7 +10126,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41100000
+              base_addrs:
+              {
+                hart: 0x41100000
+              }
               size_byte: 0x100
             }
           ]
@@ -9393,7 +10148,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41160000
+              base_addrs:
+              {
+                hart: 0x41160000
+              }
               size_byte: 0x100
             }
           ]
@@ -9412,7 +10170,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41150000
+              base_addrs:
+              {
+                hart: 0x41150000
+              }
               size_byte: 0x80
             }
           ]
@@ -9431,7 +10192,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41170000
+              base_addrs:
+              {
+                hart: 0x41170000
+              }
               size_byte: 0x80
             }
           ]
@@ -9450,7 +10214,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41180000
+              base_addrs:
+              {
+                hart: 0x41180000
+              }
               size_byte: 0x80
             }
           ]
@@ -9469,7 +10236,10 @@
           addr_range:
           [
             {
-              base_addr: 0x48000000
+              base_addrs:
+              {
+                hart: 0x48000000
+              }
               size_byte: 0x8000000
             }
           ]
@@ -9488,7 +10258,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41130000
+              base_addrs:
+              {
+                hart: 0x41130000
+              }
               size_byte: 0x10000
             }
           ]
@@ -9507,7 +10280,10 @@
           addr_range:
           [
             {
-              base_addr: 0x41140000
+              base_addrs:
+              {
+                hart: 0x41140000
+              }
               size_byte: 0x100
             }
           ]
@@ -9526,7 +10302,10 @@
           addr_range:
           [
             {
-              base_addr: 0x411f0000
+              base_addrs:
+              {
+                hart: 0x411f0000
+              }
               size_byte: 0x100
             }
           ]
@@ -9545,7 +10324,10 @@
           addr_range:
           [
             {
-              base_addr: 0x411c0000
+              base_addrs:
+              {
+                hart: 0x411c0000
+              }
               size_byte: 0x40
             }
           ]
@@ -9563,7 +10345,10 @@
           addr_range:
           [
             {
-              base_addr: 0x10000000
+              base_addrs:
+              {
+                hart: 0x10000000
+              }
               size_byte: 0x20000
             }
           ]
@@ -9571,6 +10356,10 @@
           stub: false
           req_fifo_pass: true
         }
+      ]
+      addr_spaces:
+      [
+        hart
       ]
       clock: clk_main_i
       type: xbar
@@ -9951,7 +10740,7 @@
           pinmux_aon
           otp_ctrl.core
           otp_ctrl.prim
-          lc_ctrl
+          lc_ctrl.regs
           sensor_ctrl_aon
           alert_handler
           ast
@@ -9968,6 +10757,7 @@
         {
           name: main
           type: host
+          addr_space: hart
           clock: clk_peri_i
           reset: rst_peri_ni
           xbar: true
@@ -9987,7 +10777,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40000000
+              base_addrs:
+              {
+                hart: 0x40000000
+              }
               size_byte: 0x40
             }
           ]
@@ -10005,7 +10798,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40010000
+              base_addrs:
+              {
+                hart: 0x40010000
+              }
               size_byte: 0x40
             }
           ]
@@ -10023,7 +10819,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40020000
+              base_addrs:
+              {
+                hart: 0x40020000
+              }
               size_byte: 0x40
             }
           ]
@@ -10041,7 +10840,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40030000
+              base_addrs:
+              {
+                hart: 0x40030000
+              }
               size_byte: 0x40
             }
           ]
@@ -10059,7 +10861,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40080000
+              base_addrs:
+              {
+                hart: 0x40080000
+              }
               size_byte: 0x80
             }
           ]
@@ -10077,7 +10882,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40090000
+              base_addrs:
+              {
+                hart: 0x40090000
+              }
               size_byte: 0x80
             }
           ]
@@ -10095,7 +10903,10 @@
           addr_range:
           [
             {
-              base_addr: 0x400a0000
+              base_addrs:
+              {
+                hart: 0x400a0000
+              }
               size_byte: 0x80
             }
           ]
@@ -10113,7 +10924,10 @@
           addr_range:
           [
             {
-              base_addr: 0x400e0000
+              base_addrs:
+              {
+                hart: 0x400e0000
+              }
               size_byte: 0x40
             }
           ]
@@ -10131,7 +10945,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40450000
+              base_addrs:
+              {
+                hart: 0x40450000
+              }
               size_byte: 0x80
             }
           ]
@@ -10149,8 +10966,11 @@
           addr_range:
           [
             {
-              base_addr: 0x40040000
-              size_byte: 0x40
+              base_addrs:
+              {
+                hart: 0x40040000
+              }
+              size_byte: 0x80
             }
           ]
           xbar: false
@@ -10167,7 +10987,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40050000
+              base_addrs:
+              {
+                hart: 0x40050000
+              }
               size_byte: 0x2000
             }
           ]
@@ -10185,7 +11008,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40100000
+              base_addrs:
+              {
+                hart: 0x40100000
+              }
               size_byte: 0x200
             }
           ]
@@ -10203,7 +11029,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40400000
+              base_addrs:
+              {
+                hart: 0x40400000
+              }
               size_byte: 0x80
             }
           ]
@@ -10221,7 +11050,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40410000
+              base_addrs:
+              {
+                hart: 0x40410000
+              }
               size_byte: 0x80
             }
           ]
@@ -10239,7 +11071,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40420000
+              base_addrs:
+              {
+                hart: 0x40420000
+              }
               size_byte: 0x80
             }
           ]
@@ -10257,7 +11092,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40460000
+              base_addrs:
+              {
+                hart: 0x40460000
+              }
               size_byte: 0x1000
             }
           ]
@@ -10275,7 +11113,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40130000
+              base_addrs:
+              {
+                hart: 0x40130000
+              }
               size_byte: 0x1000
             }
           ]
@@ -10293,7 +11134,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40138000
+              base_addrs:
+              {
+                hart: 0x40138000
+              }
               size_byte: 0x20
             }
           ]
@@ -10302,7 +11146,7 @@
           req_fifo_pass: true
         }
         {
-          name: lc_ctrl
+          name: lc_ctrl.regs
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -10311,7 +11155,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40140000
+              base_addrs:
+              {
+                hart: 0x40140000
+              }
               size_byte: 0x100
             }
           ]
@@ -10329,7 +11176,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40490000
+              base_addrs:
+              {
+                hart: 0x40490000
+              }
               size_byte: 0x80
             }
           ]
@@ -10347,7 +11197,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40150000
+              base_addrs:
+              {
+                hart: 0x40150000
+              }
               size_byte: 0x800
             }
           ]
@@ -10365,7 +11218,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40500000
+              base_addrs:
+              {
+                hart: 0x40500000
+              }
               size_byte: 0x40
             }
           ]
@@ -10383,7 +11239,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40600000
+              base_addrs:
+              {
+                hart: 0x40600000
+              }
               size_byte: 0x1000
             }
           ]
@@ -10401,7 +11260,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40470000
+              base_addrs:
+              {
+                hart: 0x40470000
+              }
               size_byte: 0x40
             }
           ]
@@ -10419,7 +11281,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40430000
+              base_addrs:
+              {
+                hart: 0x40430000
+              }
               size_byte: 0x100
             }
           ]
@@ -10437,7 +11302,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40440000
+              base_addrs:
+              {
+                hart: 0x40440000
+              }
               size_byte: 0x80
             }
           ]
@@ -10455,7 +11323,10 @@
           addr_range:
           [
             {
-              base_addr: 0x40480000
+              base_addrs:
+              {
+                hart: 0x40480000
+              }
               size_byte: 0x400
             }
           ]
@@ -10463,6 +11334,10 @@
           stub: true
           req_fifo_pass: true
         }
+      ]
+      addr_spaces:
+      [
+        hart
       ]
       clock: clk_peri_i
       type: xbar
@@ -10697,7 +11572,7 @@
           index: -1
         }
         {
-          name: tl_lc_ctrl
+          name: tl_lc_ctrl__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -10705,7 +11580,7 @@
           width: 1
           inst_name: peri
           default: ""
-          top_signame: lc_ctrl_tl
+          top_signame: lc_ctrl_regs_tl
           index: -1
         }
         {
@@ -11811,6 +12686,8 @@
     ]
     num_wkup_detect: 8
     wkup_cnt_width: 8
+    enable_usb_wakeup: true
+    enable_strap_sampling: true
     ios:
     [
       {
@@ -13432,6 +14309,7 @@
       }
     }
   ]
+  incoming_alert: {}
   exported_clks: {}
   wakeups:
   [
@@ -14817,6 +15695,7 @@
     rom_ctrl
     rv_core_ibex
   ]
+  outgoing_alert_module: {}
   alert:
   [
     {
@@ -15405,6 +16284,8 @@
       lpg_idx: 17
     }
   ]
+  outgoing_alert: {}
+  unmanaged_resets: {}
   exported_rsts: {}
   alert_lpgs:
   [
@@ -15426,6 +16307,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15450,6 +16333,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: spi_device
@@ -15474,6 +16359,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: i2c0
@@ -15498,6 +16385,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: i2c1
@@ -15522,6 +16411,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: i2c2
@@ -15543,6 +16434,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15565,6 +16458,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15589,6 +16484,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: spi_host0
@@ -15613,6 +16510,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: spi_host1
@@ -15637,6 +16536,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_usb_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: usb
@@ -15662,6 +16563,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: por_io_div4
@@ -15687,6 +16590,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15709,6 +16614,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15733,6 +16640,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15754,6 +16663,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15778,6 +16689,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15802,6 +16715,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc_io_div4
@@ -15826,6 +16741,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15850,6 +16767,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: sys
@@ -15872,6 +16791,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_secure
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15895,6 +16816,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_aes
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15918,6 +16841,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_hmac
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15941,6 +16866,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_kmac
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15964,6 +16891,8 @@
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_otbn
+      unmanaged_clock: false
+      unmanaged_reset: false
       reset_connection:
       {
         name: lc
@@ -15971,10 +16900,25 @@
       }
     }
   ]
+  outgoing_alert_lpgs: {}
   inter_signal:
   {
     signals:
     [
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart0
+        index: -1
+      }
       {
         name: tl
         struct: tl
@@ -15986,6 +16930,20 @@
         default: ""
         end_idx: -1
         top_signame: uart0_tl
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart1
         index: -1
       }
       {
@@ -16002,6 +16960,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart2
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16015,6 +16987,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: uart3
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16025,6 +17011,29 @@
         default: ""
         end_idx: -1
         top_signame: uart3_tl
+        index: -1
+      }
+      {
+        name: strap_en
+        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: gpio
+        index: -1
+      }
+      {
+        name: sampled_straps
+        desc: This vector contains the sampled strap values.
+        struct: gpio_straps
+        package: gpio_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: gpio
         index: -1
       }
       {
@@ -16114,6 +17123,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16139,6 +17162,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c1
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -16161,6 +17198,20 @@
         inst_name: i2c2
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c2
         index: -1
       }
       {
@@ -16971,7 +18022,7 @@
         index: -1
       }
       {
-        name: tl
+        name: regs_tl
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -16980,7 +18031,17 @@
         inst_name: lc_ctrl
         default: ""
         end_idx: -1
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
+        index: -1
+      }
+      {
+        name: dmi_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: lc_ctrl
         index: -1
       }
       {
@@ -17063,6 +18124,20 @@
         index: -1
       }
       {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_host0
+        index: -1
+      }
+      {
         name: tl
         struct: tl
         package: tlul_pkg
@@ -17081,6 +18156,20 @@
         package: spi_device_pkg
         type: req_rsp
         act: rsp
+        width: 1
+        inst_name: spi_host1
+        index: -1
+      }
+      {
+        name: lsio_trigger
+        desc:
+          '''
+          Self-clearing status trigger for the DMA.
+          Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+          '''
+        struct: logic
+        type: uni
+        act: req
         width: 1
         inst_name: spi_host1
         index: -1
@@ -17452,8 +18541,8 @@
       }
       {
         name: pwr_cpu
-        struct: pwr_cpu
-        package: pwrmgr_pkg
+        struct: cpu_pwrmgr
+        package: rv_core_ibex_pkg
         type: uni
         act: rcv
         width: 1
@@ -17537,8 +18626,8 @@
         type: uni
         act: rcv
         width: 1
+        default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
-        default: ""
         top_signame: rom_ctrl_pwrmgr_data
         index: -1
       }
@@ -19109,6 +20198,69 @@
         index: -1
       }
       {
+        name: lc_escalate_en
+        desc:
+          '''
+          Escalation enable signal coming from life cycle controller, used for invalidating
+          the latched lc_hw_debug_en state inside the strap sampling logic.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: lc_check_byp_en
+        desc:
+          '''
+          Check bypass enable signal coming from life cycle controller, used for invalidating
+          the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+          whenever the life cycle controller performs a life cycle transition. Its main use is
+          to skip any background checks inside the life cycle partition of the OTP controller while
+          a life cycle transition is in progress.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: strap_en
+        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: strap_en_override
+        desc:
+          '''
+          This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+          The signal must stay at 1 until reset.
+          Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+          Otherwise this signal is unused.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        default: 1'b0
+        inst_name: rv_dm
+        index: -1
+      }
+      {
         name: sba_tl_h
         struct: tl
         package: tlul_pkg
@@ -19144,6 +20296,16 @@
         default: ""
         end_idx: -1
         top_signame: rv_dm_mem_tl_d
+        index: -1
+      }
+      {
+        name: dbg_tl_d
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: rv_dm
         index: -1
       }
       {
@@ -19300,7 +20462,17 @@
         package: kmac_pkg
         type: req_rsp
         act: rsp
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         inst_name: kmac
         default: ""
         end_idx: -1
@@ -20258,8 +21430,8 @@
       }
       {
         name: pwrmgr
-        struct: pwr_cpu
-        package: pwrmgr_pkg
+        struct: cpu_pwrmgr
+        package: rv_core_ibex_pkg
         type: uni
         act: req
         width: 1
@@ -20914,7 +22086,7 @@
         index: -1
       }
       {
-        name: tl_lc_ctrl
+        name: tl_lc_ctrl__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -20922,7 +22094,7 @@
         width: 1
         inst_name: peri
         default: ""
-        top_signame: lc_ctrl_tl
+        top_signame: lc_ctrl_regs_tl
         index: -1
       }
       {
@@ -22406,7 +23578,17 @@
         package: kmac_pkg
         struct: app_req
         signame: kmac_app_req
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -22417,7 +23599,17 @@
         package: kmac_pkg
         struct: app_rsp
         signame: kmac_app_rsp
-        width: 3
+        width:
+        {
+          name: NumAppIntf
+          desc: Number of application interfaces
+          param_type: int
+          unpacked_dimensions: null
+          default: 3
+          local: false
+          expose: true
+          name_top: KmacNumAppIntf
+        }
         type: req_rsp
         end_idx: -1
         act: rsp
@@ -22777,15 +23969,15 @@
         default: rv_core_ibex_pkg::CPU_CRASH_DUMP_DEFAULT
       }
       {
-        package: pwrmgr_pkg
-        struct: pwr_cpu
+        package: rv_core_ibex_pkg
+        struct: cpu_pwrmgr
         signame: rv_core_ibex_pwrmgr
         width: 1
         type: uni
         end_idx: -1
         act: req
         suffix: ""
-        default: pwrmgr_pkg::PWR_CPU_DEFAULT
+        default: rv_core_ibex_pkg::CPU_PWRMGR_DEFAULT
       }
       {
         package: spi_device_pkg
@@ -23846,7 +25038,7 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: lc_ctrl_tl_req
+        signame: lc_ctrl_regs_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -23857,7 +25049,7 @@
       {
         package: tlul_pkg
         struct: tl_d2h
-        signame: lc_ctrl_tl_rsp
+        signame: lc_ctrl_regs_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

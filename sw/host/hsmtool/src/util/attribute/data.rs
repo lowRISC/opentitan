@@ -138,6 +138,13 @@ impl AttrData {
             _ => Err(AttributeError::InvalidDataType),
         }
     }
+
+    pub fn try_string(&self) -> Result<String, AttributeError> {
+        match self {
+            AttrData::Str(v) => Ok(v.clone()),
+            _ => Err(AttributeError::InvalidDataType),
+        }
+    }
 }
 
 #[cfg(test)]

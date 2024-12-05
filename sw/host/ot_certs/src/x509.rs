@@ -7,9 +7,7 @@ use indexmap::IndexMap;
 use num_bigint_dig::BigUint;
 
 use foreign_types::ForeignTypeRef;
-use openssl::asn1::{
-    Asn1IntegerRef, Asn1ObjectRef, Asn1OctetStringRef, Asn1StringRef, Asn1TimeRef,
-};
+use openssl::asn1::{Asn1IntegerRef, Asn1ObjectRef, Asn1StringRef, Asn1TimeRef};
 use openssl::bn::{BigNum, BigNumContext, BigNumRef};
 use openssl::ec::{EcGroupRef, EcKey};
 use openssl::ecdsa::EcdsaSig;
@@ -82,10 +80,6 @@ fn asn1str_to_str(field: &str, s: &Asn1StringRef) -> Result<Value<String>> {
             .with_context(|| format!("could not extract {} from certificate", field))?
             .to_string(),
     ))
-}
-
-fn asn1octets_to_vec(s: &Asn1OctetStringRef) -> Value<Vec<u8>> {
-    Value::literal(s.as_slice().to_vec())
 }
 
 fn asn1time_to_string(time: &Asn1TimeRef) -> Result<Value<String>> {
@@ -222,6 +216,8 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
     let mut private_extensions = Vec::new();
     let mut basic_constraints = None;
     let mut key_usage: Option<KeyUsage> = None;
+    let mut auth_key_id = None;
+    let mut subj_key_id = None;
     for ext in raw_extensions {
         match ext.object.nid() {
             // Ignore extensions that are standard and handled by openssl.
@@ -240,9 +236,24 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
                     extension::parse_key_usage(&ext).context("could not parse X509 key usage")?,
                 );
             }
-            Nid::AUTHORITY_KEY_IDENTIFIER => (),
+            Nid::AUTHORITY_KEY_IDENTIFIER => {
+                // Although OpenSSL will parse the authority key identifier correctly, it will sometimes
+                // pretend that it doesn't exist if the certificate is unusual (i.e. all key usage bit
+                // set to false) without showing any error. Since this is very confusing, we may as well
+                // parse it ourselves.
+                auth_key_id = Some(Value::Literal(
+                    extension::parse_authority_key_id(&ext)
+                        .context("could not parse authority key identifier")?,
+                ));
+            }
             Nid::SUBJECT_ALT_NAME => (),
-            Nid::SUBJECT_KEY_IDENTIFIER => (),
+            Nid::SUBJECT_KEY_IDENTIFIER => {
+                // Same issue as with authority key identifier.
+                subj_key_id = Some(Value::Literal(
+                    extension::parse_subject_key_id(&ext)
+                        .context("could not parse subject key identifier")?,
+                ));
+            }
             _ => private_extensions
                 .push(extension::parse_extension(&ext).context("could not parse X509 extension")?),
         }
@@ -253,7 +264,6 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             .public_key()
             .context("the X509 does not have a valid public key!")?,
     )?;
-
     Ok(template::Certificate {
         serial_number: asn1int_to_bn("serial number", x509.serial_number())?,
         issuer: asn1name_to_name("issuer", x509.issuer_name())?,
@@ -262,14 +272,8 @@ pub fn parse_certificate(cert: &[u8]) -> Result<template::Certificate> {
             .context("cannot parse not_before time")?,
         not_after: asn1time_to_string(x509.not_after()).context("cannot parse not_after time")?,
         subject_public_key_info,
-        authority_key_identifier: asn1octets_to_vec(
-            x509.authority_key_id()
-                .context("the certificate has not authority key id")?,
-        ),
-        subject_key_identifier: asn1octets_to_vec(
-            x509.subject_key_id()
-                .context("the certificate has not subject key id")?,
-        ),
+        authority_key_identifier: auth_key_id,
+        subject_key_identifier: subj_key_id,
         basic_constraints,
         key_usage,
         subject_alt_name: get_subject_alt_name(&x509)?,

@@ -601,6 +601,7 @@ module hmac
     .wdata_o                    (msg_fifo_wdata ),
     .wmask_o                    (msg_fifo_wmask ),
     .intg_error_o               (               ),
+    .user_rsvd_o                (               ),
     .rdata_i                    (msg_fifo_rdata ),
     .rvalid_i                   (msg_fifo_rvalid),
     .rerror_i                   (msg_fifo_rerror),

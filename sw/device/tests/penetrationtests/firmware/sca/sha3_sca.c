@@ -12,8 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -416,11 +415,13 @@ sha3_sca_error_t sha3_serial_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
-    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, true);
+    pentest_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, true,
+                           false);
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
-    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles, true);
+    pentest_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles,
+                           true, false);
   }
 
   return sha3ScaOk;
@@ -569,10 +570,10 @@ status_t handle_sha3_sca_batch(ujson_t *uj) {
  *
  * @param uj The received uJSON data.
  */
-status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
+status_t handle_sha3_pentest_seed_lfsr(ujson_t *uj) {
   cryptotest_sha3_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_lfsr_t(uj, &uj_lfsr_data));
-  sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
+  pentest_seed_lfsr(read_32(uj_lfsr_data.seed), kPentestLfsrMasking);
 
   return OK_STATUS();
 }
@@ -585,7 +586,7 @@ status_t handle_sha3_sca_seed_lfsr(ujson_t *uj) {
  *
  * @param uj The received uJSON data.
  */
-status_t handle_sha3_sca_init(ujson_t *uj) {
+status_t handle_sha3_pentest_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
   cryptotest_sha3_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_cryptotest_sha3_sca_fpga_mode_t(uj, &uj_data));
@@ -593,7 +594,8 @@ status_t handle_sha3_sca_init(ujson_t *uj) {
     fpga_mode = true;
   }
 
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  pentest_init(kPentestTriggerSourceKmac,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
 
   TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
@@ -603,11 +605,11 @@ status_t handle_sha3_sca_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -625,7 +627,7 @@ status_t handle_sha3_sca(ujson_t *uj) {
   TRY(ujson_deserialize_sha3_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kSha3ScaSubcommandInit:
-      return handle_sha3_sca_init(uj);
+      return handle_sha3_pentest_init(uj);
     case kSha3ScaSubcommandSingleAbsorb:
       return handle_sha3_sca_single_absorb(uj);
     case kSha3ScaSubcommandBatch:
@@ -633,7 +635,7 @@ status_t handle_sha3_sca(ujson_t *uj) {
     case kSha3ScaSubcommandFixedMessageSet:
       return handle_sha3_sca_fixed_message_set(uj);
     case kSha3ScaSubcommandSeedLfsr:
-      return handle_sha3_sca_seed_lfsr(uj);
+      return handle_sha3_pentest_seed_lfsr(uj);
     case kSha3ScaSubcommandDisableMasking:
       return handle_sha3_sca_disable_masking(uj);
     default:

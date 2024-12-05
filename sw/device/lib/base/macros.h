@@ -689,8 +689,9 @@ class SignConverter {
 };
 }  // namespace
 }
-#define OT_SIGNED(value) (SignConverter<typeof(value)>::as_signed((value)))
-#define OT_UNSIGNED(value) (SignConverter<typeof(value)>::as_unsigned((value)))
+#define OT_SIGNED(value) (SignConverter<__typeof__(value)>::as_signed((value)))
+#define OT_UNSIGNED(value) \
+  (SignConverter<__typeof__(value)>::as_unsigned((value)))
 #endif  // __cplusplus
 #endif  // !defined(__ASSEMBLER__) && !defined(NOSTDINC) &&
         // !defined(RUST_PREPROCESSOR_EMIT)

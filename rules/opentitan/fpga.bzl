@@ -61,9 +61,9 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     Returns:
       dict: A dict of fields to create in the provider.
     """
-
+    hashfile = None
     if ctx.attr.kind == "rom":
-        rom = convert_to_scrambled_rom_vmem(
+        (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
             name = name,
             src = elf,
@@ -101,6 +101,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "signed_bin": signed_bin,
         "disassembly": disassembly,
         "mapfile": mapfile,
+        "hashfile": hashfile,
     }
 
 def _test_dispatch(ctx, exec_env, firmware):

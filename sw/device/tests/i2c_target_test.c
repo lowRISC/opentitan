@@ -329,7 +329,7 @@ static status_t command_processor(ujson_t *uj) {
         break;
       case kTestCommandI2cTestConfig: {
         i2c_test_config_t config;
-        TRY(ujson_deserialize_i2c_test_config_t(uj, &config));
+        TRY(UJSON_WITH_CRC(ujson_deserialize_i2c_test_config_t, uj, &config));
         i2c_clock_stretching_delay_micros =
             config.clock_stretching_delay_millis * 1000;
         RESP_ERR(uj, RESP_OK_STATUS(uj));

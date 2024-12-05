@@ -190,15 +190,6 @@ package kmac_pkg;
   // Application interface //
   ///////////////////////////
 
-  // Number of the application interface
-  // Currently KMAC has three interface.
-  // 0: KeyMgr
-  // 1: LC_CTRL
-  // 2: ROM_CTRL
-  // Make sure to change `width` of app inter-module signal definition
-  // if this value is changed.
-  parameter int unsigned NumAppIntf = 3;
-
   // Application Algorithm
   // Each interface can choose algorithms among SHA3, cSHAKE, KMAC
   typedef enum bit [1:0] {
@@ -228,7 +219,7 @@ package kmac_pkg;
   typedef struct packed {
     app_mode_e Mode;
 
-    sha3_pkg::keccak_strength_e Strength;
+    sha3_pkg::keccak_strength_e KeccakStrength;
 
     // PrefixMode determines the origin value of Prefix that is used in KMAC
     // and cSHAKE operations.
@@ -241,33 +232,28 @@ package kmac_pkg;
     logic [NSPrefixW-1:0] Prefix;
   } app_config_t;
 
-  parameter app_config_t AppCfg [NumAppIntf] = '{
-    // KeyMgr
-    '{
-      Mode:       AppKMAC, // KeyMgr uses KMAC operation
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,   // Use prefix parameter
-      // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
-      Prefix:     NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
-    },
+  parameter app_config_t AppCfgKeyMgr = '{
+    Mode: AppKMAC, // KeyMgr uses KMAC operation
+    KeccakStrength: sha3_pkg::L256,
+    PrefixMode: 1'b1,   // Use prefix parameter
+    // {fname: encoded_string("KMAC"), custom_str: encoded_string("")}
+    Prefix: NSPrefixW'({EncodedStringEmpty, EncodedStringKMAC})
+  };
 
-    // LC_CTRL
-    '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L128,
-      PrefixMode: 1'b 1,     // Use prefix parameter
-      // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
-    },
+  parameter app_config_t AppCfgLcCtrl= '{
+    Mode: AppCShake,
+    KeccakStrength: sha3_pkg::L128,
+    PrefixMode: 1'b1,     // Use prefix parameter
+    // {fname: encode_string(""), custom_str: encode_string("LC_CTRL")}
+    Prefix: NSPrefixW'({EncodedStringLcCtrl, EncodedStringEmpty})
+  };
 
-    // ROM_CTRL
-    '{
-      Mode:       AppCShake,
-      Strength:   sha3_pkg::L256,
-      PrefixMode: 1'b 1,     // Use prefix parameter
-      // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
-      Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
-    }
+  parameter app_config_t AppCfgRomCtrl = '{
+    Mode: AppCShake,
+    KeccakStrength: sha3_pkg::L256,
+    PrefixMode: 1'b1,     // Use prefix parameter
+    // {fname: encode_string(""), custom_str: encode_string("ROM_CTRL")}
+    Prefix: NSPrefixW'({EncodedStringRomCtrl, EncodedStringEmpty})
   };
 
   // Exporting the app internal mux selection enum into the package. So that DV
@@ -298,7 +284,76 @@ package kmac_pkg;
     SelSw     = 5'b01111
   } app_mux_sel_e ;
 
+// Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 14 -n 10 \
+  //     -s 2454278799 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||| (14.29%)
+  //  4: |||||||||||||||||||| (27.47%)
+  //  5: ||||||||||||| (18.68%)
+  //  6: |||||||||||||||| (21.98%)
+  //  7: |||||||| (10.99%)
+  //  8: |||| (6.59%)
+  //  9: --
+  // 10: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 3
+  // Maximum Hamming weight: 8
+  //
+  localparam int AppStateWidth = 10;
+  typedef enum logic [AppStateWidth-1:0] {
+    StIdle = 10'b1010111110,
 
+    // Application operation.
+    //
+    // if start request comes from an App first, until the operation ends by the
+    // requested App, all operations are granted to the specific App. SW
+    // requests and other Apps requests will be ignored.
+    //
+    // App interface does not have control signals. When first data valid occurs
+    // from an App, this logic asserts the start command to the downstream. When
+    // last beat pulse comes, this logic asserts the process to downstream
+    // (after the transaction is accepted regardless of partial writes or not)
+    // When absorbed by SHA3 core, the logic sends digest to the requested App
+    // and right next cycle, it triggers done command to downstream.
+
+    // In StAppCfg state, it latches the cfg from AppCfg parameter to determine
+    // the kmac_mode, sha3_mode, keccak strength.
+    StAppCfg = 10'b1010101101,
+
+    StAppMsg = 10'b1110001011,
+
+    // In StKeyOutLen, this module pushes encoded outlen to the MSG_FIFO.
+    // Assume the length is 256 bit, the data will be 48'h 02_0100
+    StAppOutLen  = 10'b1010011000,
+    StAppProcess = 10'b1110110010,
+    StAppWait    = 10'b1001010000,
+
+    // SW Controlled
+    // If start request comes from SW first, until the operation ends, all
+    // requests from KeyMgr will be discarded.
+    StSw = 10'b0010111011,
+
+    // Error KeyNotValid
+    // When KeyMgr operates, the secret key is not ready yet.
+    StKeyMgrErrKeyNotValid = 10'b0111011111,
+
+    StError = 10'b1110010111,
+    StErrorAwaitSw = 10'b0110001100,
+    StErrorAwaitApp = 10'b1011100000,
+    StErrorWaitAbsorbed = 10'b0010100100,
+    StErrorServiceRejected = 10'b1101000111,
+
+    // This state is used for terminal errors
+    StTerminalError = 10'b0101110110
+  } st_e;
 
   // MsgWidth : 64
   // MsgStrbW : 8
@@ -386,9 +441,6 @@ package kmac_pkg;
     // ErrSwHashingWithoutEntropyReady
     //  - Sw issues KMAC op without Entropy setting.
     ErrSwHashingWithoutEntropyReady = 8'h 09,
-
-    // Error Shadow register update
-    ErrShadowRegUpdate = 8'h C0,
 
     // Error due to lc_escalation_en_i or fatal fault
     ErrFatalError = 8'h C1,

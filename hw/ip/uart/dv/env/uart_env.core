@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:uart_agent
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:uart
     files:
       - uart_env_pkg.sv
       - uart_nf_if.sv

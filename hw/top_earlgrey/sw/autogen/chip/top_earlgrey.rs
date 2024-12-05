@@ -89,7 +89,7 @@ pub const GPIO_BASE_ADDR: usize = 0x40040000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #GPIO_BASE_ADDR and
 /// `GPIO_BASE_ADDR + GPIO_SIZE_BYTES`.
-pub const GPIO_SIZE_BYTES: usize = 0x40;
+pub const GPIO_SIZE_BYTES: usize = 0x80;
 
 /// Peripheral base address for spi_device in top earlgrey.
 ///
@@ -203,19 +203,33 @@ pub const OTP_CTRL_PRIM_BASE_ADDR: usize = 0x40138000;
 /// `OTP_CTRL_PRIM_BASE_ADDR + OTP_CTRL_PRIM_SIZE_BYTES`.
 pub const OTP_CTRL_PRIM_SIZE_BYTES: usize = 0x20;
 
-/// Peripheral base address for lc_ctrl in top earlgrey.
+/// Peripheral base address for regs device on lc_ctrl in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const LC_CTRL_BASE_ADDR: usize = 0x40140000;
+pub const LC_CTRL_REGS_BASE_ADDR: usize = 0x40140000;
 
-/// Peripheral size for lc_ctrl in top earlgrey.
+/// Peripheral size for regs device on lc_ctrl in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #LC_CTRL_BASE_ADDR and
-/// `LC_CTRL_BASE_ADDR + LC_CTRL_SIZE_BYTES`.
-pub const LC_CTRL_SIZE_BYTES: usize = 0x100;
+/// address between #LC_CTRL_REGS_BASE_ADDR and
+/// `LC_CTRL_REGS_BASE_ADDR + LC_CTRL_REGS_SIZE_BYTES`.
+pub const LC_CTRL_REGS_SIZE_BYTES: usize = 0x100;
+
+/// Peripheral base address for dmi device on lc_ctrl in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const LC_CTRL_DMI_BASE_ADDR: usize = 0x0;
+
+/// Peripheral size for dmi device on lc_ctrl in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #LC_CTRL_DMI_BASE_ADDR and
+/// `LC_CTRL_DMI_BASE_ADDR + LC_CTRL_DMI_SIZE_BYTES`.
+pub const LC_CTRL_DMI_SIZE_BYTES: usize = 0x1000;
 
 /// Peripheral base address for alert_handler in top earlgrey.
 ///
@@ -510,6 +524,20 @@ pub const RV_DM_MEM_BASE_ADDR: usize = 0x10000;
 /// address between #RV_DM_MEM_BASE_ADDR and
 /// `RV_DM_MEM_BASE_ADDR + RV_DM_MEM_SIZE_BYTES`.
 pub const RV_DM_MEM_SIZE_BYTES: usize = 0x1000;
+
+/// Peripheral base address for dbg device on rv_dm in top earlgrey.
+///
+/// This should be used with #mmio_region_from_addr to access the memory-mapped
+/// registers associated with the peripheral (usually via a DIF).
+pub const RV_DM_DBG_BASE_ADDR: usize = 0x1000;
+
+/// Peripheral size for dbg device on rv_dm in top earlgrey.
+///
+/// This is the size (in bytes) of the peripheral's reserved memory area. All
+/// memory-mapped registers associated with this peripheral should have an
+/// address between #RV_DM_DBG_BASE_ADDR and
+/// `RV_DM_DBG_BASE_ADDR + RV_DM_DBG_SIZE_BYTES`.
+pub const RV_DM_DBG_SIZE_BYTES: usize = 0x200;
 
 /// Peripheral base address for rv_plic in top earlgrey.
 ///
@@ -3252,5 +3280,5 @@ pub enum HintableClocks {
 /// MMIO region excludes any memory that is separate from the module
 /// configuration space, i.e. ROM, main SRAM, and flash are excluded but
 /// retention SRAM, spi_device memory, or usbdev memory are included.
-pub const MMIO_BASE_ADDR: usize = 0x40000000;
-pub const MMIO_SIZE_BYTES: usize = 0x10000000;
+pub const TOP_EARLGREY_MMIO_BASE_ADDR: usize = 0x40000000;
+pub const TOP_EARLGREY_MMIO_SIZE_BYTES: usize = 0x10000000;

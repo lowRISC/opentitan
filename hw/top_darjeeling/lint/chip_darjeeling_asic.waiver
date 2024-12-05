@@ -1,0 +1,78 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for chip_darjeeling_asic
+
+waive -rules {RESET_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} \
+      -msg {'scan_rst_n' is connected to 'tlul_jtag_dtm' port} \
+      -comment "This is a valid reset signal."
+
+waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'dio_in\[42\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -comment "This is the SPI SCK."
+
+waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'dio_in\[43\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -comment "The SPI CSB acts as a clock in some cases."
+
+waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'manual_in_jtag_tck' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
+      -comment "This is due to the JTAG TCK clock."
+
+waive -rules {CLOCK_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'mio_in_raw\[11\]' driven in module 'padring' by port 'gen_mio_pads[11].u_mio_pad.in_raw_o' at padring} \
+      -comment "This is due to the external clock input pin."
+
+waive -rules {RESET_DRIVER} -location {chip_darjeeling_asic.sv} \
+      -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
+      -comment "This is a valid reset signal."
+
+waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} \
+      -msg {'scan_rst_n' is connected to 'tlul_jtag_dtm' port} \
+      -comment "This is a valid reset signal."
+
+# External clock
+waive -rules {CLOCK_DRIVER} -location {pinmux.sv}  -regexp {'(attr_padring_o|mio_attr)\[11\].pull_select' driven in here} \
+      -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
+
+waive -rules {CLOCK_USE} -location {pinmux.sv}  -msg {'hw2reg.mio_pad_attr[11].pull_select.d' is connected to 'pinmux_reg_top'} \
+      -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
+
+waive -rules {CLOCK_USE} -location {pinmux.sv}  -regexp {'dio_wkup_mux\[(42|43)\]' is used for some other purpose, and as clock} \
+      -comment "DioSpiDeviceSck and DioSpiDeviceCsb at indices 42 and 43 both can act as clocks"
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -msg {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock 'clk_src_i' at prim_pulse_sync} \
+      -comment "This is a a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'clkmgr_aon_clocks..*' is connected to 'ast' port 'sns_clks_i..*', and used as a clock} \
+      -comment "This is a clock struct that is fed back into AST."
+
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[11]' is used for some other purpose, and as clock} \
+      -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
+
+# Unused power OK signals
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_darjeeling_asic'} \
+      -comment "Not all POK signals are used inside top_darjeeling"
+
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -regexp {Clock 'clkmgr_aon_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
+      -comment "This is a clock signal that is fed back into AST."
+
+waive -rules {CLOCK_MUX} -location {chip_darjeeling_asic.sv} -msg {Clock 'dio_in[42]' reaches a multiplexer here, used as a clock 'clk_src_i'} \
+      -comment "This is the SPI device clock input."
+
+waive -rules {RESET_USE} -location {chip_darjeeling_asic.sv} -regexp {'rstmgr_aon_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
+      -comment "This is a reset struct that is fed back into AST."
+
+waive -rules {RESET_MUX} -location {chip_darjeeling_asic.sv} -regexp {Asynchronous reset 'rstmgr_aon_resets..*' is driven by a multiplexer here, used as a reset} \
+      -comment "This is a reset struct that is fed back into AST."

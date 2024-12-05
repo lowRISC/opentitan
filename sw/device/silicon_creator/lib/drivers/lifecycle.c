@@ -16,7 +16,7 @@
 #include "lc_ctrl_regs.h"
 
 enum {
-  kBase = TOP_EARLGREY_LC_CTRL_BASE_ADDR,
+  kBase = TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR,
 };
 
 lifecycle_state_t lifecycle_state_get(void) {

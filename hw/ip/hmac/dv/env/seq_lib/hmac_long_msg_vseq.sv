@@ -7,14 +7,24 @@
 
 class hmac_long_msg_vseq extends hmac_smoke_vseq;
   `uvm_object_utils(hmac_long_msg_vseq)
-  `uvm_object_new
 
-  constraint msg_c {
-    msg.size() dist {
-                  0  :/ 1,  // Empty
-      [   1 :   257] :/ 1,  // Up to two 1024-bit blocks
-      [1000 : 3_000] :/ 5,  // 1KB - 2KB according to SW immediate usage
-      [3001 :10_000] :/ 1   // temp set to 10KB as max length, spec max size is 2^64 bits
-    };
-  }
+  // Constraints
+  extern constraint msg_c;
+
+  // Standard SV/UVM methods
+  extern function new(string name="");
 endclass : hmac_long_msg_vseq
+
+
+constraint hmac_long_msg_vseq::msg_c {
+  msg.size() dist {
+    0  :/ 1,  // Empty
+    [   1 :   257] :/ 1,  // Up to two 1024-bit blocks
+    [1000 : 3_000] :/ 5,  // 1KB - 2KB according to SW immediate usage
+    [3001 :10_000] :/ 1   // temp set to 10KB as max length, spec max size is 2^64 bits
+  };
+}
+
+function hmac_long_msg_vseq::new(string name="");
+  super.new(name);
+endfunction : new

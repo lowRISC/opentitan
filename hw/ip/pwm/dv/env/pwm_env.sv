@@ -29,8 +29,8 @@ class pwm_env extends cip_base_env #(
         ::get(this, "", "clk_rst_core_vif", cfg.clk_rst_core_vif)) begin
       `uvm_fatal(`gfn, "\n  pwm_env: failed to get clk_rst_core_vif from uvm_config_db")
     end
-    cfg.core_clk_freq_mhz = cfg.get_clk_core_freq();
-    cfg.clk_rst_core_vif.set_freq_mhz(cfg.core_clk_freq_mhz);
+
+    cfg.clk_rst_core_vif.set_freq_mhz(cfg.get_clk_core_freq());
     `uvm_info(`gfn, $sformatf("\n  env_cfg: bus_clk %0d Mhz, core_clk %0d Mhz",
         cfg.clk_rst_vif.clk_freq_mhz, cfg.clk_rst_core_vif.clk_freq_mhz), UVM_DEBUG)
   endfunction : build_phase

@@ -13,7 +13,7 @@ import yaml
 
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
-from pkg_resources import resource_filename
+import importlib_resources
 
 from reggen.ip_block import IpBlock
 from reggen.multi_register import MultiRegister
@@ -114,7 +114,7 @@ def gen_core_file(outdir: str,
 def get_dv_base_names_objects(dv_base_names: List[str]) -> Dict[str, DvBaseNames]:
     '''Returns a dictionary mapping a `DvBaseNames` object to a block.
 
-    `dv_bave_names` is a list of base class entity names provided on the command-line, in the
+    `dv_base_names` is a list of base class entity names provided on the command-line, in the
     following format:
     ast:block:ast_base_reg_block ast:pkg:ast_base_reg_pkg otp_ctrl:all:otp_ctrl_base
 
@@ -152,7 +152,7 @@ def get_block_base_name(dv_base_names_map: Dict[str, DvBaseNames], block: str) -
 def gen_dv(block: IpBlock, dv_base_names: List[str], outdir: str) -> int:
     '''Generate DV files for an IpBlock'''
 
-    lookup = TemplateLookup(directories=[resource_filename('reggen', '.')])
+    lookup = TemplateLookup(directories=[str(importlib_resources.files('reggen'))])
     uvm_reg_tpl = lookup.get_template('uvm_reg.sv.tpl')
 
     # Generate the RAL package(s). For a device interface with no name we

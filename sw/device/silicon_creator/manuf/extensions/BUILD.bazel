@@ -2,37 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_rust//rust:defs.bzl", "rust_library")
 
 package(default_visibility = ["//visibility:public"])
-
-bool_flag(
-    name = "use_example_perso_ext",
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "example_perso_ext_cfg",
-    flag_values = {
-        ":use_example_perso_ext": "True",
-    },
-)
-
-cc_library(
-    name = "example_perso_fw_ext",
-    srcs = ["example_personalize_ext.c"],
-    deps = [
-        "@//sw/device/lib/dif:flash_ctrl",
-        "@//sw/device/lib/runtime:log",
-        "@//sw/device/lib/testing/json:provisioning_data",
-        "@//sw/device/lib/testing/test_framework:status",
-        "@//sw/device/lib/testing/test_framework:ujson_ottf",
-        "@//sw/device/silicon_creator/lib/cert",
-        "@//sw/device/silicon_creator/manuf/base:personalize_ext",
-        "@//sw/device/silicon_creator/manuf/lib:flash_info_fields",
-    ],
-)
 
 cc_library(
     name = "default_perso_fw_ext",
@@ -48,16 +20,6 @@ cc_library(
     ],
 )
 
-_DEVICE_PERSO_EXTS = select({
-    "example_perso_ext_cfg": [":example_perso_fw_ext"],
-    "//conditions:default": [":default_perso_fw_ext"],
-})
-
-cc_library(
-    name = "perso_fw_ext",
-    deps = _DEVICE_PERSO_EXTS,
-)
-
 rust_library(
     name = "default_ft_ext_lib",
     srcs = ["default_ft_ext_lib.rs"],
@@ -65,16 +27,5 @@ rust_library(
     deps = [
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
-    ],
-)
-
-rust_library(
-    name = "example_ft_ext_lib",
-    srcs = ["example_ft_ext_lib.rs"],
-    crate_name = "ft_ext_lib",
-    deps = [
-        "@crate_index//:anyhow",
-        "@crate_index//:arrayvec",
-        "@crate_index//:log",
     ],
 )

@@ -232,6 +232,7 @@ module otp_ctrl
     .wmask_o                    (                    ), // unused
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o               (  intg_error[1]     ),
+    .user_rsvd_o                (                    ),
     .rdata_i                    (  tlul_rdata        ),
     .rvalid_i                   (  tlul_rvalid       ),
     .rerror_i                   (  tlul_rerror       ),

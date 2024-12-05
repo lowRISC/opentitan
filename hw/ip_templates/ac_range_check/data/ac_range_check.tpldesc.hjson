@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name:    "module_instance_name"
+      desc:    "instance name in case there are multiple AC Range Check instances"
+      type:    "string"
+      default: "ac_range_check"
+    }
+    {
+      name:    "num_ranges",
+      desc:    "Number of range registers",
+      type:    "int",
+      default: "32",
+    }
+  ]
+}

@@ -193,7 +193,7 @@ Until that time, all generated files (see for example the output files from the
 [register generation tool](../../../util/reggen/README.md))
 are checked in.
 There is an over-arching build file in the repository under `hw/Makefile` that builds all of the `regtool` content.
-This is used by an Azure Pipelines pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
+This is used by a GitHub Actions pre-submit check script to ensure that the source files produce a generated file that is identical to the one being submitted.
 
 ## Automatic SV Code Formatting using Verible (Open Source)
 

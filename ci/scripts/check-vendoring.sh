@@ -21,7 +21,6 @@ find . \
 }
 
 git diff --exit-code || {
-    echo >&2 -n "##vso[task.logissue type=error]"
-    echo >&2 "Vendored repositories not up-to-date. Run util/vendor.py to fix."
+    echo >&2 "::error::Vendored repositories not up-to-date. Run util/vendor.py to fix."
     exit 1
 }

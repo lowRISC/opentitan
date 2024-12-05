@@ -25,8 +25,8 @@ class lc_ctrl_claim_transition_if_vseq extends lc_ctrl_smoke_vseq;
 
   task body();
     fork
-      run_clk_byp_rsp(clk_byp_error_rsp);
-      run_flash_rma_rsp(flash_rma_error_rsp);
+      run_clk_byp_rsp(1'b0);
+      run_flash_rma_rsp(1'b0);
     join_none
 
     csr_wr(ral.claim_transition_if, rand_claim_trans_val);

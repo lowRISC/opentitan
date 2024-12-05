@@ -12,6 +12,6 @@ module prim_generic_xnor2 #(
   output logic [Width-1:0] out_o
 );
 
-  assign out_o = !(in0_i ^ in1_i);
+  assign out_o = ~(in0_i ^ in1_i);
 
 endmodule

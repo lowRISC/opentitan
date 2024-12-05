@@ -371,12 +371,19 @@ static status_t test_init(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR);
   TRY(dif_spi_host_init(base_addr, &spi_host));
 
+  uint32_t spi_clock_freq_hz = 1000000;
+  if (kDeviceType == kDeviceSimVerilator) {
+    // On verilator, we reduce the spi clock frequency by a factor of 10
+    // as otherwise we get errors in the SPI host configuration due to
+    // the low high speed peripheral frequency (500 KHz).
+    spi_clock_freq_hz = 100000;
+  }
   CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,
         "kClockFreqHiSpeedPeripheralHz must fit in uint32_t");
   TRY(dif_spi_host_configure(
       &spi_host,
       (dif_spi_host_config_t){
-          .spi_clock = 1000000,
+          .spi_clock = spi_clock_freq_hz,
           .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
           .rx_watermark = kRxWatermark,
           .tx_watermark = kTxWatermark,

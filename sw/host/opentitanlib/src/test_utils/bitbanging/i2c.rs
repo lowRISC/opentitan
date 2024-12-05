@@ -24,16 +24,36 @@ impl Symbol {
         Ok(Self::Broken(buffer))
     }
 
+    // We must extend the transaction: in a given sample, if data is written to SDA at the same time as SCL
+    // being driven high, then physical factors e.g. capacitance can cause the SDA write to appear before
+    // the SCL, even though the order of bitbanging is reversed. This can then cause a mistaken "STOP" signal
+    // to be received. We instead run at half frequency: on one cycle write SDA, and on the next write SCL.
+    // This makes GPIO bitbanging of I2C signals reliable.
+    // Assumes that SCL is low (0) when called.
     pub fn bitbanging<const SDA: u8, const SCL: u8>(&self, samples: &mut Vec<u8>) {
         match self {
+            // Each sample is translated into 2 samples: the first changes the SDA, and
+            // the second changes the SCL, to ensure correct ordering.
             Symbol::Start => samples.extend([
+                // SDA high, SCL high
+                0x01 << SDA | 0x00 << SCL,
                 0x01 << SDA | 0x01 << SCL,
+                // SDA low, SCL high
+                0x00 << SDA | 0x01 << SCL,
+                0x00 << SDA | 0x01 << SCL,
+                // SDA low, SCL low
                 0x00 << SDA | 0x01 << SCL,
                 0x00 << SDA | 0x00 << SCL,
             ]),
             Symbol::Stop => samples.extend([
+                // SDA low, SCL low
+                0x00 << SDA | 0x00 << SCL,
+                0x00 << SDA | 0x00 << SCL,
+                // SDA low, SCL high
                 0x00 << SDA | 0x00 << SCL,
                 0x00 << SDA | 0x01 << SCL,
+                // SDA high, SCL high
+                0x01 << SDA | 0x01 << SCL,
                 0x01 << SDA | 0x01 << SCL,
             ]),
             Symbol::Byte { data, nack } => Self::bitbanging_byte::<SDA, SCL>(*data, *nack, samples),
@@ -45,6 +65,10 @@ impl Symbol {
         let data: u16 = (byte as u16) << 1u16 | nack as u16;
         samples.extend((0..9u8).rev().flat_map(|bit| {
             [
+                // Change SDA (to data), SCL high
+                ((((data >> bit) & 0x01) << SDA) | 0x00 << SCL) as u8,
+                ((((data >> bit) & 0x01) << SDA) | 0x01 << SCL) as u8,
+                // Maintain SDA, SCL low
                 ((((data >> bit) & 0x01) << SDA) | 0x01 << SCL) as u8,
                 ((((data >> bit) & 0x01) << SDA) | 0x00 << SCL) as u8,
             ]
@@ -54,6 +78,10 @@ impl Symbol {
     fn bitbanging_bits<const SDA: u8, const SCL: u8>(bits: &[Bit], samples: &mut Vec<u8>) {
         samples.extend(bits.iter().rev().flat_map(|bit| {
             [
+                // Change SDA (to data), SCL high
+                ((*bit as u8) << SDA) | 0x00 << SCL,
+                ((*bit as u8) << SDA) | 0x01 << SCL,
+                // Maintain SDA, SCL low
                 ((*bit as u8) << SDA) | 0x01 << SCL,
                 ((*bit as u8) << SDA) | 0x00 << SCL,
             ]
@@ -115,6 +143,9 @@ pub mod encoder {
 
     pub struct Encoder<const SDA: u8, const SCL: u8> {}
     impl<const SDA: u8, const SCL: u8> Encoder<SDA, SCL> {
+        // Note that this function will run I2C at half of the specified bitbanging sample frequency, because
+        // two cycles must be used per sample to ensure that changes to SDA appear before the rise of SCL,
+        // as otherwise I2C via GPIO bitbanging can be flaky.
         pub fn run(&self, transfer: &[Transfer]) -> Vec<u8> {
             let mut samples: Vec<u8> = Vec::new();
             for window in transfer.windows(2) {

@@ -6,7 +6,7 @@
   human_name:         "RISC-V Debug Module",
   one_line_desc:      "Enables debug support for Ibex, access protected by life cycle",
   one_paragraph_desc: '''
-  RISC-V Debug Module provides a JTAG test access port (TAP) to interface the Ibex RISC-V core as well as hardware blocks attached to the TileLink on-chip interconnect.
+  RISC-V Debug Module provides a JTAG test access port (TAP) or Debug Module Interface (DMI) to interface the Ibex RISC-V core as well as hardware blocks attached to the TileLink on-chip interconnect.
   The interface to Ibex is compliant with the RISC-V Debug Specification 0.13.2, which in turn is supported by debug software such as OpenOCD and GDB.
   For security reasons, RISC-V Debug Module is only active in life cycles that have hardware debug enabled.
   '''
@@ -16,10 +16,10 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "",
-  version:            "1.1.0",
+  version:            "1.2.0",
   life_stage:         "L1",
   design_stage:       "D2S",
-  verification_stage: "V1",
+  verification_stage: "V2S",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
     // Ideally, this is the processor clock and reset.
@@ -30,6 +30,7 @@
     { protocol: "tlul", direction: "host",   name: "sba" }
     { protocol: "tlul", direction: "device", name: "regs" }
     { protocol: "tlul", direction: "device", name: "mem" }
+    { protocol: "tlul", direction: "device", name: "dbg"  }
   ],
   scan: "true", // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
@@ -44,6 +45,26 @@
       type:    "logic [31:0]",
       default: "32'h 0000_0001",
       desc:    "RISC-V debug module JTAG ID code."
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "UseDmiInterface",
+      desc:    "When 1, a TLUL-based DMI interface is used. When 0, a JTAG TAP is used.",
+      type:    "bit",
+      default: "0",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "SecVolatileRawUnlockEn",
+      type:    "bit",
+      default: "1'b0",
+      desc:    '''
+        Disable (0) or enable (1) volatile RAW UNLOCK capability.
+        If enabled, the strap_en_override_i input can be used to re-sample the straps at runtime.
+        IMPORTANT NOTE: This should only be used in test chips. The parameter must be set
+        to 0 in production tapeouts since this weakens the security posture of the RAW
+        UNLOCK mechanism.
+      '''
       local:   "false",
       expose:  "true"
     },
@@ -150,6 +171,53 @@
       name:    "debug_req"
       act:     "req"
       desc:    "This is the debug request interrupt going to the main processor."
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_escalate_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Escalation enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_check_byp_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               Check bypass enable signal coming from life cycle controller, used for invalidating
+               the latched lc_hw_debug_en state inside the strap sampling logic. This signal is asserted
+               whenever the life cycle controller performs a life cycle transition. Its main use is
+               to skip any background checks inside the life cycle partition of the OTP controller while
+               a life cycle transition is in progress.
+               '''
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en",
+      act:     "rcv",
+      package: "",
+      desc:    '''
+               This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+               ''',
+      default: "1'b0"
+    },
+    { struct:  "logic",
+      type:    "uni",
+      name:    "strap_en_override",
+      act:     "rcv",
+      desc:    '''
+               This signal transitions from 0 -> 1 by the lc_ctrl manager after volatile RAW_UNLOCK in order to re-sample the HW straps.
+               The signal must stay at 1 until reset.
+               Note that this is only used in test chips when SecVolatileRawUnlockEn = 1.
+               Otherwise this signal is unused.
+               ''',
+      default: "1'b0"
     },
   ]
   features: [
@@ -568,6 +636,19 @@
           items: "512"
           swaccess: "ro",
           desc: '''Access window into the debug ROM.'''
+        }
+      },
+    ]
+    // Debug bus attachment
+    dbg: [
+      { window: {
+          name: "dbg"
+          // 0x0 ... 0x40 word addresses are allocated here.
+          items: "128"
+          swaccess: "rw",
+          data-intg-passthru: "true",
+          byte-write: "false",
+          desc: '''Access window to DM CSRs.'''
         }
       },
     ]

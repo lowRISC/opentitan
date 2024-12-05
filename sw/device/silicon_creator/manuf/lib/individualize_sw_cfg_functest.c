@@ -54,7 +54,8 @@ static status_t peripheral_handles_init(void) {
 
 /**
  * Initializes flash info page 0 fields required to complete the
- * individualization step.
+ * individualization step, which include:
+ *   - AST configuration data
  */
 static status_t init_flash_info_page0(void) {
   uint32_t byte_address = 0;
@@ -85,9 +86,9 @@ static status_t init_flash_info_page0(void) {
  * Check the AST configuration data was programmed correctly.
  */
 static status_t check_otp_ast_cfg(void) {
+  // Check OTP fields were programmed correctly.
   uint32_t data;
   uint32_t relative_addr;
-
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
     TRY(dif_otp_ctrl_relative_address(
         kDifOtpCtrlPartitionCreatorSwCfg,
@@ -96,6 +97,15 @@ static status_t check_otp_ast_cfg(void) {
     TRY(otp_ctrl_testutils_dai_read32(
         &otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data));
     TRY_CHECK(data == i);
+  }
+
+  // Check that the AST configuration data was erased from flash info page 0.
+  uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords] = {0};
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    TRY_CHECK(ast_cfg_data[i] == UINT32_MAX);
   }
 
   return OK_STATUS();
@@ -113,33 +123,71 @@ static void sw_reset(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(peripheral_handles_init());
 
+  // Provision CREATOR_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(init_flash_info_page0());
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg(
         &otp_ctrl, &flash_ctrl_state));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_flash_data_default_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl,
+        OTP_CTRL_PARAM_CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG_OFFSET));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_MANUF_STATE_OFFSET));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_creator_sw_cfg_lock(&otp_ctrl));
     CHECK_STATUS_OK(check_otp_ast_cfg());
     LOG_INFO("Provisioned and locked CREATOR_SW_CFG OTP partition.");
     // Halt the CPU here to enable host to perform POR and bootstrap again since
-    // flash scrambling enablement has changed.
+    // flash scrambling enablement has changed. Bootstrap resets the chip as
+    // well, which completes the locking of this partition.
     abort();
   }
 
+  bool perform_reset = false;
+
+  // Provision OWNER_SW_CFG partition.
   if (!status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
-    CHECK_STATUS_OK(
-        manuf_individualize_device_rom_bootstrap_dis_cfg(&otp_ctrl));
+    CHECK_STATUS_OK(manuf_individualize_device_field_cfg(
+        &otp_ctrl, OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_BOOTSTRAP_DIS_OFFSET));
     CHECK_STATUS_OK(manuf_individualize_device_owner_sw_cfg_lock(&otp_ctrl));
     LOG_INFO("Provisioned and locked OWNER_SW_CFG OTP partition.");
-    // Perform SW reset to complete locking of the OWNER_SW_CFG partition.
+    perform_reset |= true;
+  }
+
+  // Provision ROT_CREATOR_AUTH_CODESIGN partition.
+  if (!status_ok(manuf_individualize_device_rot_creator_auth_codesign_check(
+          &otp_ctrl))) {
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_CREATOR_AUTH_CODESIGN OTP partition.");
+    perform_reset |= true;
+  }
+
+  // Provision ROT_CREATOR_AUTH_STATE partition.
+  if (!status_ok(
+          manuf_individualize_device_rot_creator_auth_state_check(&otp_ctrl))) {
+    CHECK_STATUS_OK(
+        manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
+    LOG_INFO("Provisioned and locked ROT_CREATOR_AUTH_STATE OTP partition.");
+    perform_reset |= true;
+  }
+
+  if (perform_reset) {
+    // Perform SW reset to complete locking of the partitions.
     sw_reset();
   }
 
+  // Check all SW_CFG and ROT_CREATOR_AUTH partitions have been locked.
   if (status_ok(manuf_individualize_device_creator_sw_cfg_check(&otp_ctrl)) &&
-      status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl))) {
+      status_ok(manuf_individualize_device_owner_sw_cfg_check(&otp_ctrl)) &&
+      status_ok(manuf_individualize_device_rot_creator_auth_codesign_check(
+          &otp_ctrl)) &&
+      status_ok(
+          manuf_individualize_device_rot_creator_auth_state_check(&otp_ctrl))) {
     return true;
   }
+
   return false;
 }

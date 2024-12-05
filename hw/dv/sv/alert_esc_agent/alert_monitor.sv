@@ -90,7 +90,12 @@ class alert_monitor extends alert_esc_base_monitor;
             begin : isolation_fork
               fork
                 begin : wait_ping_timeout
-                  repeat (cfg.ping_timeout_cycle - 1) @(cfg.vif.monitor_cb);
+                  // Wait for ping_timeout_cycle - 1 cycles on the slower of the two clocks (by
+                  // waiting for both of them in parallel).
+                  fork
+                    repeat (cfg.ping_timeout_cycle - 1) @(cfg.vif.monitor_cb);
+                    repeat (cfg.ping_timeout_cycle - 1) @(cfg.vif.receiver_cb);
+                  join
                   req.ping_timeout = 1'b1;
                 end
                 begin : wait_ping_handshake

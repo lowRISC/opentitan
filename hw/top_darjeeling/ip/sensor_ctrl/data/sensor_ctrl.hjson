@@ -1,0 +1,256 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+# SENSOR_CTRL register template
+#
+{
+  name:               "sensor_ctrl",
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "35",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/ip/sensor_ctrl/dif/dif_sensor_ctrl",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L1",
+      design_stage:       "D3",
+      // block level verification not planned
+      verification_stage: "N/A",
+      notes:              "Verified at the top-level."
+    }
+  ]
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
+             {clock: "clk_aon_i", reset: "rst_aon_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device" }
+  ],
+  interrupt_list: [
+    { name: "io_status_change",
+      desc: "io power status has changed",
+    }
+    { name: "init_status_change",
+      desc: "ast init status has changed",
+    }
+  ],
+  regwidth: "32",
+  param_list: [
+    { name:    "NumAlertEvents",
+      type:    "int",
+      default: "14",
+      desc:    "Number of alert events from ast",
+      local:   "true"
+    },
+    { name:    "NumLocalEvents",
+      type:    "int",
+      default: "1",
+      desc:    "Number of local events",
+      local:   "true"
+    },
+    { name:    "NumAlerts",
+      type:    "int",
+      default: "2",
+      desc:    "Number of alerts sent from sensor control",
+      local:   "true"
+    },
+    { name:    "NumIoRails",
+      type:    "int",
+      default: "2",
+      desc:    "Number of IO rails",
+      local:   "true"
+    },
+  ],
+
+  wakeup_list: [
+    { name: "wkup_req",
+      desc: "Raised if an alert event is seen during low power"
+    },
+  ],
+
+  alert_list: [
+    { name: "recov_alert",
+      desc: "recoverable sensor_ctrl alerts",
+    },
+    { name: "fatal_alert",
+      desc: "fatal sensor_ctrl alerts",
+    }
+  ]
+
+
+  // Define ast_struct package
+  inter_signal_list: [
+    { struct:  "ast_alert",
+      type:    "req_rsp",
+      name:    "ast_alert",
+      act:     "rsp",
+      package: "ast_pkg",
+    },
+
+    { struct:  "ast_status",
+      type:    "uni",
+      name:    "ast_status",
+      act:     "rcv",
+      package: "ast_pkg",
+    },
+
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "ast_init_done",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4True"
+    },
+
+    { struct:  "logic",
+      type:    "uni",
+      name:    "wkup_req",
+      act:     "req",
+      package: ""
+    },
+  ],
+
+registers: [
+    { name: "CFG_REGWEN",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      desc: '''
+      Controls the configurability of !!FATAL_ALERT_EN register.
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "EN",
+          desc: '''
+            Configuration enable.
+          ''',
+          resval: "1",
+        },
+      ]
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "ALERT_TRIG",
+        desc: "Alert trigger test",
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                Alert trigger for testing
+                0 No alerts triggered
+                1 Continuously trigger alert until disabled
+                For bit mapping, please see !!ALERT_TEST
+              ''',
+              resval: "0"
+            },
+        ],
+        tags: [// This register triggers alerts to fire and should be a directed test
+               "excl:CsrNonInitTests:CsrExclWrite"]
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "FATAL_ALERT_EN",
+        regwen: "CFG_REGWEN",
+        desc: '''
+          Each bit marks a corresponding alert as fatal or recoverable.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event is fatal.
+                0 - An alert event is recoverable.
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "RECOV_ALERT",
+        desc: '''
+          Each bit represents a recoverable alert that has been triggered by AST.
+          Since these are recoverable alerts, they can be cleared by software.
+        ''',
+        count: "NumAlertEvents",
+        swaccess: "rw1c",
+        hwaccess: "hrw",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { multireg: {
+        cname: "SENSOR_CTRL",
+        name: "FATAL_ALERT",
+        desc: '''
+          Each bit represents a fatal alert that has been triggered by AST.
+          Since these registers represent fatal alerts, they cannot be cleared.
+
+          The lower bits are used for ast alert events.
+          The upper bits are used for local events.
+        ''',
+        count: "NumAlertEvents+NumLocalEvents",
+        swaccess: "ro",
+        hwaccess: "hrw",
+        fields: [
+            { bits: "0",
+              name: "VAL",
+              desc: '''
+                1 - An alert event has been set
+                0 - No alert event has been set
+              ''',
+              resval: "0"
+            },
+        ],
+      },
+    },
+
+    { name: "STATUS",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      desc: '''
+        Status readback for ast
+      ''',
+
+      fields: [
+        { bits: "0",
+          name: "ast_init_done",
+          desc: '''
+            AST has finished initializing
+          ''',
+          resval: "0",
+        },
+        { bits: "NumIoRails:1",
+          name: "io_pok",
+          desc: '''
+            IO power is ready
+          ''',
+          resval: "0",
+        },
+      ],
+      tags: [// The status readback depends on state of ast and do not always have a set value
+        "excl:CsrAllTests:CsrExclCheck"]
+    },
+  ]
+}

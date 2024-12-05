@@ -1,0 +1,758 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+# DMA register template
+{
+  name:               "dma"
+  human_name:         "DMA Controller"
+  one_line_desc:      "DMA Controller for the integrated OpenTitan."
+  one_paragraph_desc: '''
+  The secure DMA controller provides OpenTitan with the ability to move data blobs securely in and out of the OpenTitan memory while offloading the Ibex core to focus on security critical tasks.
+  The secure DMA provides an hardware isolation layer between OpenTitan and the rest of the SoC.
+  It provides the hardware enforcement of security properties through well defined isolation & access control techniques, hardware based checking and other protection mechanisms.
+  Note that depending upon use case, it is expected that the SoC provides proper security mechanisms for code / data protections such as access control mechanisms, encrypted (w/integrity protection) memory regions etc.
+  '''
+  cip_id:             "36",
+  design_spec:        "../doc"
+  dv_doc:             "../doc/dv"
+  version:            "0.1.0"
+
+  clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
+  scan: "true"        // Enable `scanmode_i` port
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", hier_path: "u_dma_reg" }
+    { protocol: "tlul", direction: "host", name: "host" }
+  ]
+  param_list: [
+    { name: "NumIntClearSources",
+      desc: "Number of interrupt clearing sources to process",
+      type: "int",
+      default: "11",
+      local: "true"
+    },
+    { name: "EnableDataIntgGen",
+      desc: "Compute integrity bits for A channel data on all TL-UL host ports",
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
+    { name: "EnableRspDataIntgCheck",
+      desc: "Enable integrity checks on the response TL-UL D channel",
+      type: "bit",
+      default: "1'b1",
+      local: "false",
+      expose: "true",
+    },
+    { name: "TlUserRsvd",
+      desc: "Value of `rsvd` field in A channel of all TL-UL host ports",
+      type: "logic [tlul_pkg::RsvdWidth-1:0]"
+      default: "'0",
+      local: "false",
+      expose: "true",
+    },
+    { name: "SysRacl",
+      desc: "Value of `racl_vec` field in `sys` output",
+      type: "logic [dma_pkg::SYS_RACL_WIDTH-1:0]"
+      default: "'0",
+      local: "false",
+      expose: "true",
+    },
+    { name: "OtAgentId",
+      desc: "OT Agent ID"
+      type: "int unsigned"
+      default: "0",
+      local: "false",
+      expose: "true",
+    },
+  ],
+  inter_signal_list: [
+    { name: "lsio_trigger"
+      type: "uni",
+      act: "rcv",
+      package: "dma_pkg",
+      struct: "lsio_trigger",
+      width: "1"
+    }
+    { name: "sys"
+      type: "req_rsp"
+      struct: "sys"
+      package: "dma_pkg"
+      act: "req"
+      width: "1"
+    }
+    { struct:  "tl_h2d"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_h2d"
+      act:     "req"
+      desc:    "TL-UL host port for egress into CTN (request part), synchronous"
+    }
+    { struct:  "tl_d2h"
+      package: "tlul_pkg"
+      type:    "uni"
+      name:    "ctn_tl_d2h"
+      act:     "rcv"
+      desc:    "TL-UL host port for egress into CTN (response part), synchronous"
+    }
+  ]
+  interrupt_list: [
+    { name: "dma_done"
+      desc: "DMA operation has been completed."
+      type: "status"
+    }
+    { name: "dma_chunk_done"
+      desc: "Indicates the transfer of a single chunk has been completed."
+      type: "status"
+    }
+    { name: "dma_error"
+      desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
+      type: "status"
+    }
+  ]
+  alert_list: [
+    { name: "fatal_fault"
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
+  ]
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "ASID.INTERSIG.MUBI",
+      desc: "Destination and source ASID signals are multibit encoded."
+    }
+    { name: "RANGE.CONFIG.REGWEN_MUBI",
+      desc: "DMA enabled memory range is software multibit lockable."
+    }
+  ]
+  regwidth: "32"
+  registers: [
+    { name: "SRC_ADDR_LO"
+      desc: '''
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Data is read from this location in a copy operation.
+            The address may be an IO virtual address.
+            Must be aligned to the transfer width.
+            '''
+      swaccess: "rw"
+      hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "src_addr_lo"
+          resval: 0x0
+          desc: '''Lower 32 bits of the source address.
+                Must be aligned to the transfer width.
+                '''
+        }
+      ]
+    }
+    { name: "SRC_ADDR_HI"
+      desc: '''Upper 32 bits of the source address.
+            Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
+            '''
+      swaccess: "rw"
+      hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "src_addr_hi"
+          resval: 0x0
+          desc: '''
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
+                '''
+        }
+      ]
+    }
+    { name: "DST_ADDR_LO"
+      desc: '''
+            Lower 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+            Data is written to this location in a copy operation.
+            The address may be an IO virtual address.
+            Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
+            '''
+      swaccess: "rw"
+      hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "dst_addr_lo"
+          resval: 0x0
+          desc: '''Lower 32 bits of the destination address.
+                Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
+                '''
+        }
+      ]
+    }
+    { name: "DST_ADDR_HI"
+      desc: '''Upper 32 bits of the destination address.
+            Must be aligned to the transfer width.
+            Source and destination address must have the same alignment.
+            '''
+      swaccess: "rw"
+      hwaccess: "hrw"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "dst_addr_hi"
+          resval: 0x0
+          desc: '''
+                Upper 32 bits of the physical or virtual address of memory location within SoC memory address map or physical address within OT non-secure memory space.
+                Must be aligned to the transfer width.
+                Source and destination address must have the same alignment.
+                '''
+        }
+      ]
+    }
+    { name: "ADDR_SPACE_ID"
+      desc: "Address space that source and destination pointers refer to."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "3:0"
+          name: "src_asid"
+          resval: 0x7
+          desc: "Target address space that the source address pointer refers to."
+          enum: [
+            { value: "0x7"
+              name: "OT_ADDR"
+              desc: "OpenTitan 32-bit internal bus."
+            }
+            { value: "0xa"
+              name: "SOC_ADDR"
+              desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
+            }
+            { value: "0x9"
+              name: SYS_ADDR"
+              desc: "SoC system address bus using 64 bit SYS port."
+            }
+          ]
+        }
+        { bits: "7:4"
+          name: "dst_asid"
+          resval: 0x7
+          desc: "Target address space that the destination address pointer refers to."
+          enum: [
+            { value: "0x7"
+              name: "OT_ADDR"
+              desc: "OpenTitan 32-bit internal bus."
+            }
+            { value: "0xa"
+              name: "SOC_ADDR"
+              desc: "SoC control register bus using 32-bit (or 64 bits if configured by an SoC) control port."
+            }
+            { value: "0x9"
+              name: SYS_ADDR"
+              desc: "SoC system address bus using 64 bit SYS port."
+            }
+          ]
+        }
+      ]
+    }
+    { name: "ENABLED_MEMORY_RANGE_BASE"
+      desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      regwen: "RANGE_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "base"
+          resval: 0x0
+          desc: "Base Address to mark the start of the DMA enabled memory range within the OT internal memory space."
+        }
+      ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "ENABLED_MEMORY_RANGE_LIMIT"
+      desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+      swaccess: "rw"
+      hwaccess: "hro"
+      hwqe: "true"
+      regwen: "RANGE_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "limit"
+          resval: 0x0
+          desc: "Limit Address to mark the end of the DMA enabled memory range within the OT internal memory space."
+        }
+      ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "RANGE_VALID"
+      desc: "Indicates that the ENABLED_MEMORY_RANGE_BASE and _LIMIT registers have been programmed to restrict DMA accesses within the OT internal address space."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "RANGE_REGWEN"
+      fields: [
+        { name: "range_valid"
+          desc: "Once set the enabled memory base and limit registers are valid."
+          bits: "0"
+          resval: "0"
+        }
+      ]
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "RANGE_REGWEN"
+      desc: "Used to lock the DMA enabled memory range configuration registers."
+      swaccess: "rw0c"
+      hwaccess: "hro"
+      fields: [
+        { bits: "3:0"
+          mubi: "true"
+          name: "regwen"
+          resval: true
+          desc: '''
+                Used by firmware to lock the DMA enabled memory range configuration registers from further modification.
+                Once this register is set to kMultiBitBool4False, it can only be set to kMultiBitBool4True through a reset event.
+
+                Default Value = kMultiBitBool4True -> Unlocked at reset.
+                '''
+        }
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "CFG_REGWEN"
+      desc: '''
+            Indicates whether the configuration registers are locked because the DMA controller is operating.
+            In the idle state, this register is set to kMultiBitBool4True.
+            When the DMA is performing an operation, i.e., the DMA is busy, this register is set to kMultiBitBool4False.
+            During the DMA operation, the CONTROL and STATUS registers remain usable.
+            The comportable registers (the interrupt and alert configuration) are NOT locked during the DMA operation and can still be updated.
+            When the DMA reaches an interrupt or alert condition, it will perform the action according to the current register configuration.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwext: "true"
+      fields: [
+        { bits: "3:0"
+          mubi: "true"
+          resval: true
+          name: "regwen"
+          desc: '''
+                Used by hardware to lock the DMA configuration registers.
+                This register is purely managed by hardware and only software readable.
+                '''
+        }
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "TOTAL_DATA_SIZE"
+      desc: "Total size of the data blob involved in DMA movement."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "data_size"
+          resval: 0x0
+          desc: '''
+                Total size (in bytes) of the data blob involved in DMA movement for multiple transfers.
+
+                Minimum: 1 byte.
+                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Works in conjunction with Transfer width register.
+                '''
+        }
+      ]
+    }
+    { name: "CHUNK_DATA_SIZE"
+      desc: "Number of bytes to be transferred in response to each interrupt/firmware request."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "31:0"
+          name: "data_size"
+          resval: 0x0
+          desc: '''
+                Size (in bytes) for a single DMA transfer.
+                In hardware handshake mode, the DMA reads in chunks of CHUNK_DATA_SIZE from the peripheral.
+                For a single memory transfer CHUNK_DATA_SIZE and TOTAL_DATA_SIZE are set to the same value.
+
+                Minimum: 1 byte.
+                Maximum: May be restricted to a maximum pre-defined size based on OT DMA enabled memory space allocation.
+                Works in conjunction with Transfer width register.
+                '''
+        }
+      ]
+    }
+    { name: "TRANSFER_WIDTH"
+      desc: "Denotes the width of each transaction that the DMA shall issue."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "1:0"
+          name: "transaction_width"
+          resval: 0x2
+          desc: '''
+                Denotes the width of each transaction that the DMA shall issue during the data movement.
+
+                Multiple transactions of this width will be issued until total size number of bytes are reached.
+                Note that firmware may need to set a different value if a receiving IP supports a read / write transaction width that is less than 1 DWORD.
+                This does not affect the wrap-around mechanism.
+                Note that the value 3 for this register represents an invalid configuration that leads to an error.
+                '''
+          enum: [
+            { value: "0",
+              name: "ONE_BYTE"
+              desc: "One byte per transaction."
+            }
+            { value: "1",
+              name: TWO_BYTE",
+              desc: "Two bytes per transaction."
+            }
+            { value: "2",
+              name: "FOUR_BYTE",
+              desc: '''
+                    Four bytes per transaction.
+                    Default value after reset.
+                    '''
+            }
+          ]
+        }
+      ]
+    }
+    { name: "CONTROL"
+      desc: "Control register for DMA data movement."
+      swaccess: "rw"
+      hwaccess: "hro"
+      fields: [
+        { bits: "3:0"
+          name: "opcode"
+          resval: 0x0
+          desc: '''
+                Defines the type of DMA operations.
+                '''
+          enum: [
+            { value: "0",
+              name: "COPY"
+              desc: "Copy Operation, Simple copy from source to destination."
+            }
+            { value: "1",
+              name: "SHA256"
+              desc: "Perform inline hashing using SHA256."
+            }
+            { value: "2",
+              name: "SHA384"
+              desc: "Perform inline hashing using SHA384."
+            }
+            { value: "3",
+              name: "SHA512"
+              desc: "Perform inline hashing using SHA512."
+            }
+          ]
+        }
+        { bits: "4"
+          name: "hardware_handshake_enable"
+          resval: 0x0
+          desc: '''
+                Enable hardware handshake mode.
+                Used to clear FIFOs from low speed IO peripherals receiving data, e.g., I3C receive buffer.
+                  Listen to an input trigger signal.
+                  Read data from source address location.
+                  Copy to destination address.
+                  Number of bytes specified in size register.
+                  Note assumption is the peripheral lowers input once FIFO is cleared.
+                No explicit clearing necessary.
+                '''
+        }
+        { bits: "5"
+          name: "memory_buffer_auto_increment_enable"
+          resval: 0x0
+          desc: '''
+                Used in conjunction with the hardware handshake mode of operation.
+                Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
+                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
+                Enables firmware to take appropriate action prior to reaching the limit.
+                '''
+        }
+        { bits: "6"
+          name: "fifo_auto_increment_enable"
+          resval: 0x0
+          desc: '''
+                Used in conjunction with the hardware handshake mode of operation.
+                If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
+                Else uses the same address for all transactions.
+                '''
+        }
+        { bits: "7"
+          name: "data_direction"
+          resval: 0x0
+          desc: '''
+                Used in conjunction with the hardware handshake enable.
+                0: Receive data from LSIO FIFO to memory buffer.
+                1: Send data from memory buffer to LSIO FIFO.
+                '''
+        }
+        { bits: "8"
+          name: "initial_transfer"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
+                Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
+                Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
+                '''
+        }
+        { bits: "27"
+          name: "abort"
+          swaccess: "wo"
+          hwaccess: "hrw"
+          resval: 0x0
+          desc: '''
+                Aborts the DMA operation if this bit is set.
+                Sets the corresponding bit in the status register once abort operation is complete.
+                Any OpenTitan-internal transactions are guaranteed to complete, but there are no guarantees on the SoC interface.
+                '''
+        }
+        { bits: "31"
+          name: "go"
+          resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
+          desc: '''
+                Trigger the DMA operation when the Go bit is set.
+                For normal operation, DMA engine clears the GO bit automatically after the configured operation is complete.
+                For Hardware handshake operation, DMA engine does not auto clear the Go bit.
+                Firmware shall clear the Go bit when it intends to stop the hardware handshake operation.
+                '''
+        }
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could have side
+      // effects (e.g., starting an operation when the `go` bit is written) which the automated
+      // tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    { name: "STATUS"
+      desc: "Status indication for DMA data movement."
+      swaccess: "rw1c"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          name: "busy"
+          resval: 0x0
+          hwaccess: "hrw"
+          swaccess: "ro"
+          desc: '''
+                DMA operation is active if this bit is set.
+                DMA engine clears this bit when operation is complete.
+                This bit may be set as long as hardware handshake mode is active and triggered.
+                '''
+        }
+        { bits: "1"
+          name: "done"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Configured DMA operation is complete.
+                Cleared automatically by the hardware when starting a new transfer.
+                '''
+        }
+        { bits: "2"
+          name: "aborted"
+          resval: 0x0
+          desc: "Set once aborted operation drains."
+        }
+        { bits: "3"
+          name: "error"
+          resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
+          desc: '''
+                Error occurred during the operation.
+                ERROR_CODE register denotes the source of the error.
+                '''
+        }
+        { bits: "4"
+          name: "sha2_digest_valid"
+          swaccess: "ro"
+          resval: 0x0
+          hwaccess: "hrw"
+          hwqe: "true"
+          desc: '''
+                Indicates whether the SHA2_DIGEST register contains a valid digest.
+                This value is cleared on the initial transfer and set when the digest is written.
+                '''
+        }
+        { bits: "5"
+          name: "chunk_done"
+          resval: 0x0
+          hwaccess: "hrw"
+          desc: '''
+                Transfer of a single chunk is complete.
+                Only raised for multi-chunk memory-to-memory transfers.
+                Cleared automatically by the hardware when starting the transfer of a new chunk.
+                '''
+        }
+      ]
+    }
+    { name: "ERROR_CODE"
+      desc: '''
+            Denotes the source of the operational error.
+            The error is cleared by writing the RW1C STATUS.error register.
+            '''
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          name: "src_addr_error"
+          resval: 0x0
+          desc: "Source address is invalid."
+        }
+        { bits: "1"
+          name: "dst_addr_error"
+          resval: 0x0
+          desc: "Destination address is invalid."
+        }
+        { bits: "2"
+          name: "opcode_error"
+          resval: 0x0
+          desc: "Opcode is invalid."
+        }
+        { bits: "3"
+          name: "size_error"
+          resval: 0x0
+          desc: "TRANSFER_WIDTH encodes an invalid value, TOTAL_DATA_SIZE or CHUNK_SIZE are zero, or inline hashing is not using 32-bit transfer width"
+        }
+        { bits: "4"
+          name: "bus_error"
+          resval: 0x0
+          desc: "The bus transfer returned an error."
+        }
+        { bits: "5"
+          name: "base_limit_error"
+          resval: 0x0
+          desc: "The base and limit addresses contain an invalid value."
+        }
+        { bits: "6"
+          name: "range_valid_error"
+          resval: 0x0
+          desc: "The DMA enabled memory range is not configured."
+        }
+        { bits: "7"
+          name: "asid_error"
+          resval: 0x0
+          desc: "The source or destination ASID contains an invalid value."
+        }
+      ]
+    }
+    { multireg: {
+        name: "SHA2_DIGEST"
+        cname: "DMA"
+        desc: '''
+              Digest register for the inline hashing operation.
+              Depending on the used hashing mode, not all registers are used.
+                SHA256: Digest is stored in registers 0 to 7
+                SHA384: Digest is stored in registers 0 to 11
+                SHA512: Digest is stored in registers 0 to 15
+              '''
+        count: "16"
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { name: "data"
+            desc: "SHA2 digest data"
+            bits: "31:0"
+            resval: "0"
+          }
+        ]
+      }
+    }
+    { name: "HANDSHAKE_INTR_ENABLE"
+      desc: "Enable bits for incoming handshake interrupt wires."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "NumIntClearSources-1:0"
+          name: "mask"
+          resval: "0x7FF"
+          desc: "Enable bits for incoming handshake interrupt wires."
+        }
+      ]
+    }
+    { name: "CLEAR_INTR_SRC"
+      desc: '''
+            Valid bits for which interrupt sources need clearing.
+            When HANDSHAKE_INTR_ENABLE is non-zero and corresponding lsio_trigger becomes set,
+            DMA issues writes with address from INTR_SRC_ADDR and write value from INTR_SRC_WR_VAL corresponding to each
+            bit set in this register.
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { name: "source"
+          desc: "Source N needs interrupt cleared"
+          bits: "NumIntClearSources-1:0"
+          resval: 0x0
+        }
+      ]
+    }
+    { name: "CLEAR_INTR_BUS"
+      desc: '''Bus selection bit where the clearing command should be performed."
+            0: CTN/System fabric
+            1: OT-internal crossbar
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { name: "bus"
+          desc: "Bus selection bit for source N."
+          bits: "NumIntClearSources-1:0"
+          resval: 0x0
+        }
+      ]
+    }
+    { multireg: {
+        name: "INTR_SRC_ADDR"
+        desc: "Destination address for interrupt source clearing write."
+        count: "NumIntClearSources"
+        cname: "ADDR"
+        swaccess: "rw"
+        hwaccess: "hro"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "addr"
+            desc: "Destination address for interrupt source clearing write."
+            bits: "31:0"
+            resval: 0x0
+          }
+        ]
+      }
+    }
+    { skipto: "0x11C" }
+    { multireg: {
+        name: "INTR_SRC_WR_VAL"
+        desc: "Write value for interrupt clearing write."
+        count: "NumIntClearSources"
+        cname: "WRVAL"
+        swaccess: "rw"
+        hwaccess: "hro"
+        regwen: "CFG_REGWEN"
+        fields: [
+          { name: "wr_val"
+            desc: "Write value for interrupt clearing write."
+            bits: "31:0"
+            resval: 0x0
+          }
+        ]
+      }
+    }
+  ]
+}

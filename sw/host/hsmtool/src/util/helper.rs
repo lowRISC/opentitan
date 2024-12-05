@@ -9,6 +9,7 @@ use rand::prelude::*;
 use std::convert::AsRef;
 use std::fs::File;
 use std::io::{Read, Write};
+use std::ops::Range;
 use std::path::Path;
 
 use crate::error::HsmError;
@@ -16,8 +17,12 @@ use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::escape::as_hex;
 
 /// Constructs a search template given an `id` or `label`.
-pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribute>> {
-    let mut attr = AttributeMap::default();
+pub fn search_spec_ex(
+    id: Option<&str>,
+    label: Option<&str>,
+    attr: Option<&AttributeMap>,
+) -> Result<Vec<Attribute>> {
+    let mut attr = attr.map_or(Default::default(), |s| s.clone());
     if let Some(id) = id {
         attr.insert(AttributeType::Id, AttrData::Str(id.into()));
     }
@@ -28,6 +33,10 @@ pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribut
         return Err(HsmError::NoSearchCriteria.into());
     }
     attr.to_vec()
+}
+
+pub fn search_spec(id: Option<&str>, label: Option<&str>) -> Result<Vec<Attribute>> {
+    search_spec_ex(id, label, None)
 }
 
 /// Returns `true` if one or more objects specified by `id` or `label` exist.
@@ -88,4 +97,28 @@ pub fn lockfile<P: AsRef<Path>>(path: P) -> Result<File> {
     rustix::fs::flock(&lf, rustix::fs::FlockOperation::LockExclusive)?;
     log::info!("Lock acquired");
     Ok(lf)
+}
+
+fn parse_usize(s: &str) -> Result<usize> {
+    if let Some(hex) = s.strip_prefix("0x") {
+        Ok(usize::from_str_radix(hex, 16)?)
+    } else {
+        Ok(s.parse::<usize>()?)
+    }
+}
+
+/// Parse a range from a string (e.g. "10..20").  The integers in the range may be expressed in
+/// either decimal or hexadecimal.
+pub fn parse_range(s: &str) -> Result<Range<usize>> {
+    if let Some((a, b)) = s.split_once("..") {
+        let start = parse_usize(a)?;
+        let end = parse_usize(b)?;
+        if start < end {
+            Ok(Range { start, end })
+        } else {
+            Err(HsmError::Unsupported(format!("bad range: {s:?}")).into())
+        }
+    } else {
+        Err(HsmError::Unsupported(format!("bad range: {s:?}")).into())
+    }
 }

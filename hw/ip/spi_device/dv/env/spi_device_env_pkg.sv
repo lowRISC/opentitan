@@ -93,11 +93,6 @@ package spi_device_env_pkg;
   parameter uint SFDP_SIZE                       = 256;
   parameter uint PAYLOAD_FIFO_START_ADDR         = SFDP_START_ADDR + SFDP_SIZE; // 0xd00
   parameter uint PAYLOAD_FIFO_SIZE               = 256;
-  // CMD_FIFO_START_ADDR is 0xe00
-  parameter uint CMD_FIFO_START_ADDR             = PAYLOAD_FIFO_START_ADDR + PAYLOAD_FIFO_SIZE;
-  parameter uint CMD_FIFO_SIZE                   = 32;
-  parameter uint ADDR_FIFO_START_ADDR            = CMD_FIFO_START_ADDR + CMD_FIFO_SIZE; // 0xe20
-  parameter uint ADDR_FIFO_SIZE                  = 32;
 
   parameter uint FW_FLASH_CSB_ID                 = 0; // for both FW and flash/passthrough mode
   parameter uint TPM_CSB_ID                      = 1;

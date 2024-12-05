@@ -63,6 +63,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   // pinmux
   output logic strap_o,
+  output logic strap_sampled_o,
   output logic low_power_o,
 
   // processing elements
@@ -103,7 +104,6 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   // strap sample should only happen on cold boot or when the
   // the system goes through a reset cycle
-  logic strap_sampled;
 
   // disable processing element fetching
   lc_ctrl_pkg::lc_tx_t fetch_en_q, fetch_en_d;
@@ -180,11 +180,11 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      strap_sampled <= 1'b0;
+      strap_sampled_o <= 1'b0;
     end else if (&rst_sys_req_q) begin
-      strap_sampled <= 1'b0;
+      strap_sampled_o <= 1'b0;
     end else if (strap_o) begin
-      strap_sampled <= 1'b1;
+      strap_sampled_o <= 1'b1;
     end
   end
 
@@ -338,7 +338,7 @@ module pwrmgr_fsm import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;(
       end
 
       FastPwrStateStrap: begin
-        strap_o = ~strap_sampled;
+        strap_o = ~strap_sampled_o;
         state_d =  FastPwrStateRomCheckDone;
       end
 

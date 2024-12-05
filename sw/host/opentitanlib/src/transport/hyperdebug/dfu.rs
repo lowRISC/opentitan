@@ -4,12 +4,13 @@
 
 // Firmware update protocol for HyperDebug
 
-use anyhow::{anyhow, bail, Context, Result};
+use anyhow::{anyhow, bail, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
+use std::cmp::Ordering;
 
 use crate::transport::{
     Capabilities, Capability, ProgressIndicator, Transport, TransportError, UpdateFirmware,
@@ -23,8 +24,12 @@ const PID_DFU_BOOTLOADER: u16 = 0xdf11;
 /// of the `opentitantool` invocation (and presenting itself with STMs VID:DID, rather than
 /// Google's).
 pub struct HyperdebugDfu {
+    // Handle to USB device which may or may not already be in DFU mode
     usb_backend: RefCell<UsbBackend>,
     current_firmware_version: Option<String>,
+    // expected USB VID:PID of the HyperDebug device when not in DFU mode
+    usb_vid: u16,
+    usb_pid: u16,
 }
 
 impl HyperdebugDfu {
@@ -41,11 +46,9 @@ impl HyperdebugDfu {
         // will put the desired firmware on the HyperDebug, both in the case of previous
         // interrupted update, as well as the ordinary case of outdated or current HyperDebug
         // firmware already running.
-        if let Ok(usb_backend) = UsbBackend::new(
-            usb_vid.unwrap_or(VID_ST_MICROELECTRONICS),
-            usb_pid.unwrap_or(PID_DFU_BOOTLOADER),
-            usb_serial,
-        ) {
+        if let Ok(usb_backend) =
+            UsbBackend::new(VID_ST_MICROELECTRONICS, PID_DFU_BOOTLOADER, usb_serial)
+        {
             // HyperDebug device is already in DFU mode, we cannot query firmware version through
             // USB strings.  (And the fact that it was left in DFU mode, probably as a result of a
             // previous incomplete update attempt, should mean that we would not want to trust the
@@ -53,6 +56,8 @@ impl HyperdebugDfu {
             return Ok(Self {
                 usb_backend: RefCell::new(usb_backend),
                 current_firmware_version: None,
+                usb_vid: usb_vid.unwrap_or(super::VID_GOOGLE),
+                usb_pid: usb_pid.unwrap_or(super::PID_HYPERDEBUG),
             });
         }
 
@@ -76,6 +81,8 @@ impl HyperdebugDfu {
         Ok(Self {
             usb_backend: RefCell::new(usb_backend),
             current_firmware_version,
+            usb_vid: usb_vid.unwrap_or(super::VID_GOOGLE),
+            usb_pid: usb_pid.unwrap_or(super::PID_HYPERDEBUG),
         })
     }
 }
@@ -94,6 +101,8 @@ impl Transport for HyperdebugDfu {
                 &update_firmware_action.firmware,
                 update_firmware_action.progress.as_ref(),
                 update_firmware_action.force,
+                self.usb_vid,
+                self.usb_pid,
             )
         } else {
             bail!(TransportError::UnsupportedOperation)
@@ -167,6 +176,8 @@ pub fn update_firmware(
     firmware: &Option<Vec<u8>>,
     progress: &dyn ProgressIndicator,
     force: bool,
+    usb_vid: u16,
+    usb_pid: u16,
 ) -> Result<Option<Box<dyn Annotate>>> {
     let firmware: &[u8] = if let Some(vec) = firmware.as_ref() {
         validate_firmware_image(vec)?;
@@ -185,6 +196,14 @@ pub fn update_firmware(
                 );
                 return Ok(None);
             }
+            if is_older_than(new_version, current_version)? {
+                log::warn!(
+                    "Will not downgrade from {} to {}.  Consider --force.",
+                    current_version,
+                    new_version,
+                );
+                return Ok(None);
+            }
         }
     }
 
@@ -196,6 +215,7 @@ pub fn update_firmware(
     if wait_for_idle(usb_device, dfu_desc.dfu_interface)? != DFU_STATE_APP_IDLE {
         // Device is already running DFU bootloader, proceed to firmware transfer.
         do_update_firmware(usb_device, dfu_desc, firmware, progress)?;
+        restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
         return Ok(None);
     }
 
@@ -233,19 +253,24 @@ pub fn update_firmware(
     let dfu_desc = scan_usb_descriptor(&dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
     do_update_firmware(&dfu_device, dfu_desc, firmware, progress)?;
-
-    // At this point, the new firmware has been completely transferred, and the USB device is
-    // resetting and booting the new firmware.  Wait a second, then verify that device can now be
-    // found on the USB bus with the original DID:VID.
-    std::thread::sleep(std::time::Duration::from_millis(1000));
-    log::info!("Connecting to newly flashed firmware...");
-    let _new_device = UsbBackend::new(
-        usb_device.get_vendor_id(),
-        usb_device.get_product_id(),
-        Some(usb_device.get_serial_number()),
-    )
-    .context("Unable to establish connection after flashing.  Possibly bad image.")?;
+    restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
     Ok(None)
+}
+
+fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Result<()> {
+    // At this point, the new firmware has been completely transferred, and the USB device is
+    // resetting and booting the new firmware.  Wait up to five seconds, repeatedly testing if the
+    // device can be found on the USB bus with the original DID:VID.
+    log::info!("Connecting to newly flashed firmware...");
+    for _ in 0..10 {
+        std::thread::sleep(std::time::Duration::from_millis(500));
+        if UsbBackend::new(usb_vid, usb_pid, Some(serial_number)).is_ok() {
+            return Ok(());
+        }
+    }
+    bail!(TransportError::FirmwareProgramFailed(
+        "Unable to establish connection after flashing.  Possibly bad image.".to_string()
+    ));
 }
 
 fn do_update_firmware(
@@ -460,5 +485,85 @@ fn wait_for_idle(dfu_device: &UsbBackend, dfu_interface: u8) -> Result<u8> {
                 response[4]
             )));
         }
+    }
+}
+
+/// Returns true if the two version strings have the same text prefix, e.g. "hyperdebug_",
+/// differing only in the subsequent numbers, and furthermore that the numbers in `version_a` are
+/// strictly "less than" those in `version_b`.
+fn is_older_than(version_a: &str, version_b: &str) -> Result<bool> {
+    let apos = version_a.find(char::is_numeric).unwrap_or(version_a.len());
+    let bpos = version_b.find(char::is_numeric).unwrap_or(version_b.len());
+    if version_a[..apos] != version_b[..bpos] {
+        return Ok(false);
+    }
+    let version_a = &version_a[apos..];
+    let version_b = &version_b[apos..];
+    if version_a.is_empty() || version_b.is_empty() {
+        return Ok(false);
+    }
+    let apos = version_a
+        .find(|ch: char| !char::is_numeric(ch))
+        .unwrap_or(version_a.len());
+    let bpos = version_b
+        .find(|ch: char| !char::is_numeric(ch))
+        .unwrap_or(version_b.len());
+    let aval = version_a[..apos].parse::<u64>()?;
+    let bval = version_b[..bpos].parse::<u64>()?;
+    match aval.cmp(&bval) {
+        Ordering::Less => Ok(true),
+        Ordering::Greater => Ok(false),
+        // Exact match so far, recursively inspect any further numbers in the string.
+        Ordering::Equal => is_older_than(&version_a[apos..], &version_b[apos..]),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_is_older_than() {
+        // Ordering of dates, with fallback to sequence suffix.
+        assert_eq!(
+            is_older_than("hyp_20240101_99", "hyp_20240801_01").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_older_than("hyp_20240801_01", "hyp_20240101_99").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_01", "hyp_20240101_02").unwrap(),
+            true
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_02", "hyp_20240101_01").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyp_20240101_01", "hyp_20240101_01").unwrap(),
+            false
+        );
+
+        // Lexicographical ordering of version string.
+        assert_eq!(is_older_than("fancy_1.2.5", "fancy_1.11.1").unwrap(), true);
+        assert_eq!(is_older_than("fancy_1.11.1", "fancy_1.2.5").unwrap(), false);
+        assert_eq!(is_older_than("fancy_1.2.2", "fancy_1.2.11").unwrap(), true);
+        assert_eq!(is_older_than("fancy_1.2.11", "fancy_1.2.2").unwrap(), false);
+        assert_eq!(
+            is_older_than("fancy_1.2.11", "fancy_1.2.11").unwrap(),
+            false
+        );
+
+        // Not comparable, neither is considered "older" than the other.
+        assert_eq!(
+            is_older_than("fancy_1.2.5", "hyperdebug_20240101_02").unwrap(),
+            false
+        );
+        assert_eq!(
+            is_older_than("hyperdebug_20240101_02", "fancy_1.2.5").unwrap(),
+            false
+        );
     }
 }

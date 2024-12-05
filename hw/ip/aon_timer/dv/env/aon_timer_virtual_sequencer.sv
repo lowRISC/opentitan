@@ -8,7 +8,10 @@ class aon_timer_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(aon_timer_virtual_sequencer)
 
-
-  `uvm_component_new
+  extern function new (string name = "", uvm_component parent=null);
 
 endclass
+
+function aon_timer_virtual_sequencer::new (string name="", uvm_component parent=null);
+  super.new(name, parent);
+endfunction : new

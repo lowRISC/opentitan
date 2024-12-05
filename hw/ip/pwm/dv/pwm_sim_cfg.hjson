@@ -35,10 +35,19 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["pwm_bind", "pwm_cov_bind", "sec_cm_prim_onehot_check_bind"]
+  sim_tops: ["pwm_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Coverage exclusion
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/pwm/dv/cov/pwm_unr_excl.vRefine"]
+
+  overrides: [
+    {
+      // Override the base ccf coverage configuration file for the "default" build mode (used for tests
+      // other than the CSR tests). This will include the default cover.ccf file as its first item.
+      name: default_xcelium_cov_cfg_file
+      value: "{proj_root}/hw/ip/pwm/dv/cov/cover.ccf"
+    }
+  ]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50
@@ -54,9 +63,15 @@
     }
   ]
 
-    run_opts: ["+uvm_set_verbosity={component_a},{id_a},{verbosity_a},{phase_a}",
-               "+cdc_instrumentation_enabled=1"]
+  run_opts: [
+    "+cdc_instrumentation_enabled=1",
 
+    // Use a short enough timeout for a standard test. This is essentially driven by NUM_CYCLES,
+    // which is slightly over 1e6. The DV_COMMON_CLK_CONSTRAINT macro in dv_macros.svh guarantees a
+    // frequency of at least 5MHz. At a clock frequency of 5MHz, we'd expect 1e6 cycles to take
+    // 0.2 seconds, so we set the timeout to 0.3 seconds.
+    "+test_timeout_ns=300_000_000"
+  ]
 
   // Default UVM test and seq class name.
   uvm_test: pwm_base_test
@@ -71,6 +86,13 @@
     {
       name: pwm_rand_output
       uvm_test_seq: pwm_rand_output_vseq
+    }
+    {
+      name: pwm_heartbeat_wrap
+      uvm_test_seq: pwm_heartbeat_wrap_vseq
+      // We don't need many seeds of this test: it will exercise
+      // identical code across the different channels anyway.
+      reseed: 10
     }
     {
       name: pwm_perf

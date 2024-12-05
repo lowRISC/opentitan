@@ -78,10 +78,10 @@ package ascon_reg_pkg;
 
   typedef struct packed {
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } no_ad;
     struct packed {
-      logic        q;
+      logic [3:0]  q;
     } no_msg;
     struct packed {
       logic        q;
@@ -202,22 +202,18 @@ package ascon_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } alert_recov_ctrl_aux_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
-    } alert_recov_block_ctrl_update_err;
-    struct packed {
-      logic        d;
-      logic        de;
     } alert_fatal_fault;
   } ascon_hw2reg_status_reg_t;
 
   typedef struct packed {
     struct packed {
-      logic [2:0]  d;
+      logic        d;
       logic        de;
-    } data_type;
+    } msg_valid;
+    struct packed {
+      logic        d;
+      logic        de;
+    } tag_valid;
     struct packed {
       logic [1:0]  d;
       logic        de;
@@ -249,17 +245,17 @@ package ascon_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    ascon_reg2hw_alert_test_reg_t alert_test; // [1267:1264]
-    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1263:1132]
-    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1131:1000]
-    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [999:868]
-    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [867:736]
-    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [735:604]
-    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [603:472]
-    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [471:340]
-    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [339:208]
-    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [207:76]
-    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [75:66]
+    ascon_reg2hw_alert_test_reg_t alert_test; // [1273:1270]
+    ascon_reg2hw_key_share0_mreg_t [3:0] key_share0; // [1269:1138]
+    ascon_reg2hw_key_share1_mreg_t [3:0] key_share1; // [1137:1006]
+    ascon_reg2hw_nonce_share0_mreg_t [3:0] nonce_share0; // [1005:874]
+    ascon_reg2hw_nonce_share1_mreg_t [3:0] nonce_share1; // [873:742]
+    ascon_reg2hw_data_in_share0_mreg_t [3:0] data_in_share0; // [741:610]
+    ascon_reg2hw_data_in_share1_mreg_t [3:0] data_in_share1; // [609:478]
+    ascon_reg2hw_tag_in_mreg_t [3:0] tag_in; // [477:346]
+    ascon_reg2hw_msg_out_mreg_t [3:0] msg_out; // [345:214]
+    ascon_reg2hw_tag_out_mreg_t [3:0] tag_out; // [213:82]
+    ascon_reg2hw_ctrl_shadowed_reg_t ctrl_shadowed; // [81:66]
     ascon_reg2hw_ctrl_aux_shadowed_reg_t ctrl_aux_shadowed; // [65:64]
     ascon_reg2hw_block_ctrl_shadowed_reg_t block_ctrl_shadowed; // [63:35]
     ascon_reg2hw_trigger_reg_t trigger; // [34:33]
@@ -268,16 +264,16 @@ package ascon_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    ascon_hw2reg_key_share0_mreg_t [3:0] key_share0; // [1090:963]
-    ascon_hw2reg_key_share1_mreg_t [3:0] key_share1; // [962:835]
-    ascon_hw2reg_nonce_share0_mreg_t [3:0] nonce_share0; // [834:707]
-    ascon_hw2reg_nonce_share1_mreg_t [3:0] nonce_share1; // [706:579]
-    ascon_hw2reg_data_in_share0_mreg_t [3:0] data_in_share0; // [578:451]
-    ascon_hw2reg_data_in_share1_mreg_t [3:0] data_in_share1; // [450:323]
-    ascon_hw2reg_msg_out_mreg_t [3:0] msg_out; // [322:195]
-    ascon_hw2reg_tag_out_mreg_t [3:0] tag_out; // [194:67]
-    ascon_hw2reg_trigger_reg_t trigger; // [66:63]
-    ascon_hw2reg_status_reg_t status; // [62:47]
+    ascon_hw2reg_key_share0_mreg_t [3:0] key_share0; // [1086:959]
+    ascon_hw2reg_key_share1_mreg_t [3:0] key_share1; // [958:831]
+    ascon_hw2reg_nonce_share0_mreg_t [3:0] nonce_share0; // [830:703]
+    ascon_hw2reg_nonce_share1_mreg_t [3:0] nonce_share1; // [702:575]
+    ascon_hw2reg_data_in_share0_mreg_t [3:0] data_in_share0; // [574:447]
+    ascon_hw2reg_data_in_share1_mreg_t [3:0] data_in_share1; // [446:319]
+    ascon_hw2reg_msg_out_mreg_t [3:0] msg_out; // [318:191]
+    ascon_hw2reg_tag_out_mreg_t [3:0] tag_out; // [190:63]
+    ascon_hw2reg_trigger_reg_t trigger; // [62:59]
+    ascon_hw2reg_status_reg_t status; // [58:47]
     ascon_hw2reg_output_valid_reg_t output_valid; // [46:40]
     ascon_hw2reg_fsm_state_reg_t fsm_state; // [39:8]
     ascon_hw2reg_error_reg_t error; // [7:0]

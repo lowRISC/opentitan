@@ -5,70 +5,82 @@
 // sequence to check operation at min/max bandwidth
 class pwm_perf_vseq extends pwm_rand_output_vseq;
   `uvm_object_utils(pwm_perf_vseq)
-  `uvm_object_new
 
-  // variables
-  rand bit [15:0] rand_dc;
-  rand bit [15:0] rand_blink;
+  // The duty cycle used for all channels
+  rand bit [15:0]  rand_dc;
 
-  // constraints
-  constraint rand_chan_c {
-    rand_chan dist {MAX_32:/1, 0:/1};
-  }
+  // The blink threshold used for all channels
+  rand bit [15:0]  rand_blink;
 
-  constraint rand_invert_c {
-    rand_invert dist {MAX_32:/1, 0:/1};
-  }
+  // A param_reg_t value to configure each channel
+  rand param_reg_t pwm_param[PWM_NUM_CHANNELS];
 
-  constraint rand_reg_param_c {
-    rand_reg_param.HtbtEn == 1'b1 -> rand_reg_param.BlinkEn == 1'b1;
-    rand_reg_param.RsvParam == 0;
-    rand_reg_param.PhaseDelay dist {MAX_16:/1, 0:/1};
-  }
+  // Either enable all channels or none of them. Similarly for inverting channels.
+  extern constraint rand_chan_c;
+  extern constraint rand_invert_c;
 
-  constraint duration_cycles_c {
-    duration_cycles == {NUM_CYCLES};
-  }
+  // Enable "low power mode" half of the time (overriding the constraint with the same name in
+  // pwm_rand_output_vseq that uses low power mode less often)
+  extern constraint low_power_c;
 
-  constraint low_power_c {
-    low_power dist {1'b1:/1, 1'b0:/1};
-  }
+  // Constrain phase delay to be minimal or maximal
+  extern constraint phase_delay_c;
 
-  constraint rand_dc_c {
-    rand_dc dist {MAX_16:/1, 16'h1:/1, 16'h0:/1};
-  }
+  // The duty cycle and the threshold for the heartbeat blink counter should be minimal or maximal,
+  // correspoding to both counters being minimal or both counters being maximal.
+  extern constraint rand_dc_c;
+  extern constraint rand_blink_c;
 
-  constraint rand_blink_c {
-    rand_blink dist {MAX_16:/1, 16'h1:/1, 16'h0:/1};
-  }
+  extern function new (string name="");
+  extern virtual task body();
+endclass
 
-  virtual task body();
+constraint pwm_perf_vseq::rand_chan_c {
+  rand_chan dist {MAX_32 :/ 1, 0 :/ 1};
+}
 
-    set_reg_en(Enable);
-    set_ch_enables(32'h0);
-    rand_pwm_cfg_reg();
+constraint pwm_perf_vseq::rand_invert_c {
+  rand_invert dist {MAX_32 :/ 1, 0 :/ 1};
+}
 
-    for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-      cfg.duty_cycle[i].A = rand_dc[i];
-      cfg.duty_cycle[i].B = rand_dc[i];
-      set_duty_cycle(i, cfg.duty_cycle[i]);
-      cfg.blink[i].A = rand_blink[i];
-      cfg.blink[i].B = rand_blink[i];
-      set_blink(i, cfg.blink[i]);
+constraint pwm_perf_vseq::low_power_c {
+  low_power dist {1'b1 :/ 1, 1'b0 :/ 1};
+}
 
-      cfg.pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
-      cfg.pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
-      set_param(i, cfg.pwm_param[i]);
-    end
+constraint pwm_perf_vseq::phase_delay_c {
+  rand_reg_param.PhaseDelay dist {MAX_16 :/ 1, 0 :/ 1};
+}
 
-    set_ch_invert(rand_invert);
-    set_ch_enables(rand_chan);
+constraint pwm_perf_vseq::rand_dc_c {
+  rand_dc dist {MAX_16 :/ 1, 16'h0 :/ 1};
+}
 
-    low_power_mode(low_power, duration_cycles);
+constraint pwm_perf_vseq::rand_blink_c {
+  rand_blink dist {MAX_16 :/ 1, 16'h0 :/ 1};
+}
 
-    `uvm_info(`gfn, $sformatf("Runtime: %d", duration_cycles), UVM_HIGH)
-    shutdown_dut();
+function pwm_perf_vseq::new (string name = "");
+  super.new(name);
+endfunction
 
-  endtask : body
+task pwm_perf_vseq::body();
+  set_ch_enables(32'h0);
+  rand_pwm_cfg_reg();
 
-endclass : pwm_perf_vseq
+  for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
+    set_duty_cycle(i, .A(rand_dc), .B(rand_dc));
+    set_blink(i, .A(rand_blink), .B(rand_blink));
+
+    pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
+    pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
+    set_param(i, pwm_param[i]);
+  end
+
+  set_ch_invert(rand_invert);
+  set_ch_enables(rand_chan);
+
+  low_power_mode(low_power, NUM_CYCLES);
+
+  shutdown_dut();
+
+endtask : body

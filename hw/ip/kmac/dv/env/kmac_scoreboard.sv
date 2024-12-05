@@ -153,16 +153,16 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                                 ({KMAC_FIFO_DEPTH{1'b1}} << KmacStatusFifoDepthLSB);
 
   // TLM fifos
-  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[kmac_pkg::NumAppIntf];
+  uvm_tlm_analysis_fifo #(kmac_app_item) kmac_app_rsp_fifo[NUM_APP_INTF];
   uvm_tlm_analysis_fifo #(push_pull_agent_pkg::push_pull_item #(
     .HostDataWidth(kmac_app_agent_pkg::KMAC_REQ_DATA_WIDTH)))
-    kmac_app_req_fifo[kmac_pkg::NumAppIntf];
+    kmac_app_req_fifo[NUM_APP_INTF];
 
   `uvm_component_new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+    for (int i = 0; i < NUM_APP_INTF; i++) begin
       kmac_app_req_fifo[i] = new($sformatf("kmac_app_req_fifo[%0d]", i), this);
       kmac_app_rsp_fifo[i] = new($sformatf("kmac_app_rsp_fifo[%0d]", i), this);
     end
@@ -575,24 +575,30 @@ class kmac_scoreboard extends cip_base_scoreboard #(
                 `DV_CHECK_FATAL(in_kmac_app == 1,
                     "in_kmac_app is not set, scoreboard has not picked up KMAC_APP request")
 
-                // Check app interface errors.
-                if (app_mode == AppKeymgr && cfg.enable_masking && !entropy_ready) begin
-                  app_intf_err = 1;
+                // We expect an app interface error if app_mode is AppKeymgr (meaning that we are
+                // in the mode where we are talking to the keymgr) and either there is no entropy
+                // to perform the masking that is enabled or the key has been invalidated.
+                app_intf_err = (app_mode == AppKeymgr &&
+                                ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated));
+
+                // Check app interface errors have been reported as expected.
+                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
+
+
+                // Check that digests have been zeroed if there was an interface error. If not,
+                // extract the digests and (if configured) check they are correct.
+                if (app_intf_err) begin
                   `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share0 == 0,
                     "APP interface error, expect output to be all 0s")
                   `DV_CHECK_FATAL(kmac_app_rsp.rsp_digest_share1 == 0,
                     "APP interface error, expect output to be all 0s")
                 end else begin
-
                   // assign digest values
                   kmac_app_digest_share0 = kmac_app_rsp.rsp_digest_share0;
                   kmac_app_digest_share1 = kmac_app_rsp.rsp_digest_share1;
 
                   if (do_check_digest) check_digest();
                 end
-
-                `DV_CHECK_FATAL(kmac_app_rsp.rsp_error == app_intf_err)
-
 
                 in_kmac_app = 0;
                 sha3_squeeze = 0;
@@ -1723,8 +1729,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(
     byte fname_arr[];
     byte custom_str_arr[];
 
-    if (en_kmac_app && kmac_pkg::AppCfg[app_mode].PrefixMode) begin
-      prefix_bytes = {<< byte {kmac_pkg::AppCfg[app_mode].Prefix}};
+    if (en_kmac_app && APP_CFG[app_mode].PrefixMode) begin
+      prefix_bytes = {<< byte {APP_CFG[app_mode].Prefix}};
     end else begin
       prefix_bytes = {<< 32 {prefix}};
       prefix_bytes = {<< byte {prefix_bytes}};

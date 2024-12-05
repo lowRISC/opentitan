@@ -12,6 +12,8 @@
     host_unr_source_bits = math.ceil(math.log2(num_hosts))
   else:
     host_unr_source_bits = 0
+  # TODO: Add support for multiple ASIDs within an xbar.
+  addr_space = sorted(xbar.hosts[0].addr_spaces)[0]
 %>\
 
 +tree tb.dut
@@ -33,7 +35,8 @@
 // [UNR] these device address bits are always 0
 % for device in xbar.devices:
 <%
-    excl_bits = lib.get_toggle_excl_bits(device.addr_range)
+    addr_range = device.addr_ranges[addr_space]
+    excl_bits = lib.get_toggle_excl_bits(addr_range)
 
     esc_name = device.name.replace('.', '__')
 %>\

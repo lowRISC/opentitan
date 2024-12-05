@@ -32,6 +32,8 @@ module i2c
   output logic              cio_sda_o,
   output logic              cio_sda_en_o,
 
+  output logic              lsio_trigger_o,
+
   // Interrupts
   output logic              intr_fmt_threshold_o,
   output logic              intr_rx_threshold_o,
@@ -104,6 +106,8 @@ module i2c
     .scl_o(scl_int),
     .sda_i(cio_sda_i),
     .sda_o(sda_int),
+
+    .lsio_trigger_o,
 
     .intr_fmt_threshold_o,
     .intr_rx_threshold_o,

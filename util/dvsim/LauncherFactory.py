@@ -9,6 +9,8 @@ from Launcher import Launcher
 from LocalLauncher import LocalLauncher
 from LsfLauncher import LsfLauncher
 from SgeLauncher import SgeLauncher
+from SlurmLauncher import SlurmLauncher
+from NcLauncher import NcLauncher
 
 try:
     from edacloudlauncher.EdaCloudLauncher import EdaCloudLauncher
@@ -44,6 +46,12 @@ def set_launcher_type(is_local=False):
 
     elif launcher == "sge":
         _LAUNCHER_CLS = SgeLauncher
+
+    elif launcher == "nc":
+        _LAUNCHER_CLS = NcLauncher
+
+    elif launcher == "slurm":
+        _LAUNCHER_CLS = SlurmLauncher
 
     # These custom launchers are site specific. They may not be committed to
     # the open source repo.

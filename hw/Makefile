@@ -17,6 +17,7 @@ IPS ?= aes           \
        adc_ctrl      \
        aon_timer     \
        csrng         \
+       dma           \
        edn           \
        entropy_src   \
        flash_ctrl    \
@@ -24,8 +25,10 @@ IPS ?= aes           \
        hmac          \
        i2c           \
        keymgr        \
+       keymgr_dpe    \
        kmac          \
        lc_ctrl       \
+       mbx           \
        otbn          \
        otp_ctrl      \
        pattgen       \
@@ -43,7 +46,7 @@ IPS ?= aes           \
        uart          \
        usbdev
 
-TOPS ?= top_earlgrey
+TOPS ?= top_darjeeling top_earlgrey
 
 USE_BUFFER ?= 0
 
@@ -81,7 +84,7 @@ endif
 
 .PHONY: $(ips_reg) $(tops_gen) $(tops_reg)
 
-all: $(ips_reg) $(tops_gen) $(tops_reg)
+all: $(ips_reg) $(tops_gen) $(tops_reg) cmdgen
 
 regs: $(ips_reg) $(tops_reg)
 
@@ -138,5 +141,10 @@ $(tops_reg): %_reg:
 	mkdir -p ${REG_OUTPUT_DV_DIR}/$*
 	${PRJ_DIR}/util/topgen.py -t $(top-hjson) -r -o ${REG_OUTPUT_DV_DIR}/$* ${toolflags}
 
+# This runs cmdgen on all md files of the repo.
+cmdgen:
+	${PRJ_DIR}/util/cmdgen.py -u '**/*.md'
+
+top_and_cmdgen: top cmdgen
 
 .PHONY: all

@@ -1,0 +1,39 @@
+From 1a2ead40e2e15ca058882ad86f4ac32e5c5b6177 Mon Sep 17 00:00:00 2001
+From: Tommy Chiu <tommychiu@google.com>
+Date: Thu, 17 Oct 2024 13:23:43 +0800
+Subject: [PATCH] Add a local strlen implementation
+
+Not all developing environments have access to strlen.
+---
+ src/cbor_writer.c | 8 +++++++-
+ 1 file changed, 7 insertions(+), 1 deletion(-)
+
+diff --git a/src/cbor_writer.c b/src/cbor_writer.c
+index 6c70129..c473543 100644
+--- a/src/cbor_writer.c
++++ b/src/cbor_writer.c
+@@ -30,6 +30,12 @@ enum CborType {
+   CBOR_TYPE_SIMPLE = 7,
+ };
+ 
++static unsigned long _strlen(const char* in) {
++  unsigned long ret;
++  for (ret = 0; *in++; ret++);
++  return ret;
++}
++
+ static bool CborWriteWouldOverflowCursor(size_t size, struct CborOut* out) {
+   return size > SIZE_MAX - out->cursor;
+ }
+@@ -127,7 +133,7 @@ uint8_t* CborAllocBstr(size_t data_size, struct CborOut* out) {
+ }
+ 
+ void CborWriteTstr(const char* str, struct CborOut* out) {
+-  CborWriteStr(CBOR_TYPE_TSTR, strlen(str), str, out);
++  CborWriteStr(CBOR_TYPE_TSTR, _strlen(str), str, out);
+ }
+ 
+ char* CborAllocTstr(size_t size, struct CborOut* out) {
+-- 
+2.47.0.rc1.288.g06298d1525-goog
+

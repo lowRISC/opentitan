@@ -200,10 +200,13 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   task rom_coverage_collector();
     forever
-      @(cfg.pwrmgr_vif.rom_ctrl or cfg.pwrmgr_vif.lc_hw_debug_en or cfg.pwrmgr_vif.lc_dft_en) begin
+      @(cfg.pwrmgr_vif.rom_ctrl[0] or
+        cfg.pwrmgr_vif.lc_hw_debug_en or
+        cfg.pwrmgr_vif.lc_dft_en) begin
         if (cfg.en_cov) begin
-          cov.rom_active_blockers_cg.sample(cfg.pwrmgr_vif.rom_ctrl.done,
-                                            cfg.pwrmgr_vif.rom_ctrl.good, cfg.pwrmgr_vif.lc_dft_en,
+          cov.rom_active_blockers_cg.sample(cfg.pwrmgr_vif.rom_ctrl[0].done,
+                                            cfg.pwrmgr_vif.rom_ctrl[0].good,
+                                            cfg.pwrmgr_vif.lc_dft_en,
                                             cfg.pwrmgr_vif.lc_hw_debug_en);
         end
       end

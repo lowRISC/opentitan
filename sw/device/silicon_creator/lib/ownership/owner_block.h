@@ -5,6 +5,7 @@
 #ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNER_BLOCK_H_
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNER_BLOCK_H_
 
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
@@ -37,6 +38,16 @@ typedef struct owner_application_keyring {
   /** Pointers to the application keys. */
   const owner_application_key_t *key[16];
 } owner_application_keyring_t;
+
+/**
+ * Initialize the owner config with default values.
+ *
+ * The sram_exec mode is set to DisabledLocked and the three configuration
+ * pointers are set to kHardenedBoolFalse.
+ *
+ * @param config A pointer to a config struct holding pointers to config items.
+ */
+void owner_config_default(owner_config_t *config);
 
 /**
  * Parse an owner block, extracting pointers to keys and configuration items.
@@ -75,6 +86,15 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
                                    uint32_t key_alg, uint32_t key_id,
                                    size_t *index);
 
+/**
+ * Determine whether a particular rescue command is allowed.
+ *
+ * @param rescue A pointer to the rescue configuration.
+ * @param command The rescue command to check.
+ * @return kHardenedBoolTrue if allowed.
+ */
+hardened_bool_t owner_rescue_command_allowed(
+    const owner_rescue_config_t *rescue, uint32_t command);
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

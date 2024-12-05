@@ -77,8 +77,8 @@ impl I2cTransferStart {
 
 impl I2cTestConfig {
     pub fn write(&self, uart: &dyn Uart) -> Result<()> {
-        TestCommand::I2cTestConfig.send(uart)?;
-        self.send(uart)?;
+        TestCommand::I2cTestConfig.send_with_crc(uart)?;
+        self.send_with_crc(uart)?;
         Status::recv(uart, Duration::from_secs(300), false)?;
         Ok(())
     }

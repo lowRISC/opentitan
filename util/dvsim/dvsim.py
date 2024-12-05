@@ -34,6 +34,9 @@ import Launcher
 import LauncherFactory
 import LocalLauncher
 import SgeLauncher
+import SlurmLauncher
+import LsfLauncher
+import NcLauncher
 from CfgFactory import make_cfg
 from Deploy import RunTest
 from Timer import Timer
@@ -276,9 +279,9 @@ def parse_args():
         # Disable it pending more verbose and automatic solution and document in
         # help message
         usage='%(prog)s {} [-h] [options]'.format(cfg_metavar),
-        epilog="Either place the positional argument ahead of the optional args:\n" \
-               "eg. `dvsim.py {} -i ITEM ITEM` \n" \
-               "or end a sequence of optional args with `--`:\n" \
+        epilog="Either place the positional argument ahead of the optional args:\n"
+               "eg. `dvsim.py {} -i ITEM ITEM` \n"
+               "or end a sequence of optional args with `--`:\n"
                "eg. `dvsim.py -i ITEM ITEM -- {}`\n".format(cfg_metavar, cfg_metavar))
 
     parser.add_argument("cfg",
@@ -439,6 +442,15 @@ def parse_args():
                       action='store_true',
                       help=('Run the flow in GUI mode instead of the batch '
                             'mode.'))
+
+    disg.add_argument("--gui-debug",
+                      "-gd",
+                      action='store_true',
+                      help=('Run the flow in GUI mode and enable tool debug '
+                            'features such as: breakpoints, live values, '
+                            'transactions recording... (works with Xcelium '
+                            'only for the moment). '
+                            '[!] Has a significant performance impact.'))
 
     disg.add_argument("--interactive",
                       action='store_true',
@@ -722,7 +734,10 @@ def main():
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
     LocalLauncher.LocalLauncher.max_parallel = args.max_parallel
+    SlurmLauncher.SlurmLauncher.max_parallel = args.max_parallel
     SgeLauncher.SgeLauncher.max_parallel = args.max_parallel
+    LsfLauncher.LsfLauncher.max_parallel = args.max_parallel
+    NcLauncher.NcLauncher.max_parallel = args.max_parallel
     Launcher.Launcher.max_odirs = args.max_odirs
     LauncherFactory.set_launcher_type(args.local)
 

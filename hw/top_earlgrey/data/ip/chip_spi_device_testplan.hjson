@@ -73,13 +73,14 @@
               model.
             '''
       stage: V3
-      si_stage: NA
+      si_stage: SV3
       features: [
         "SPI_DEVICE.MODE.PASSTHROUGH",
         "SPI_DEVICE.HW.LANES",
         "SPI_DEVICE.MODE.PASSTHROUGH.CMD_FILTER",
       ]
-      tests: ["//sw/device/tests:spi_passthru_test"]
+      tests: []
+      bazel: ["//sw/device/tests:spi_passthru_test"]
     }
     {
       name: chip_sw_spi_device_pass_through_collision
@@ -161,7 +162,7 @@
                which is why the "features" list is empty. It may be reclassifed in the future.
              '''
       stage: V3
-      si_stage: None
+      si_stage: SV3
       lc_states: [ "PROD" ]
       features: ["SPI_DEVICE.CFG",
                  "SPI_DEVICE.JEDEC_CC",

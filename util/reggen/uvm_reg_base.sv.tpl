@@ -601,10 +601,10 @@ reg_field_name, field)">\
         assert 0
 %>\
       ${reg_inst}.add_hdl_path_slice(
-          "${shadowed_reg_path}.committed_reg.q",
+          "${shadowed_reg_path}.committed_reg.q", // verilog_lint: waive line-length
           ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtl");
       ${reg_inst}.add_hdl_path_slice(
-          "${shadowed_reg_path}.shadow_reg.q",
+          "${shadowed_reg_path}.shadow_reg.q", // verilog_lint: waive line-length
           ${field.bits.lsb}, ${field.bits.width()}, 0, "BkdrRegPathRtlShadow");
     % endfor
   % endif

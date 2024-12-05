@@ -19,6 +19,14 @@ enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
 };
 
+void owner_config_default(owner_config_t *config) {
+  // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
+  config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
+  config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
+  config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
+  config->sram_exec = kOwnerSramExecModeDisabledLocked;
+}
+
 rom_error_t owner_block_parse(const owner_block_t *block,
                               owner_config_t *config,
                               owner_application_keyring_t *keyring) {
@@ -27,12 +35,8 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   if (block->header.length != sizeof(owner_block_t))
     return kErrorOwnershipInvalidTagLength;
 
+  owner_config_default(config);
   config->sram_exec = block->sram_exec_mode;
-
-  // Use a bogus pointer value to avoid the all-zeros pattern of NULL.
-  config->flash = (const owner_flash_config_t *)kHardenedBoolFalse;
-  config->info = (const owner_flash_info_config_t *)kHardenedBoolFalse;
-  config->rescue = (const owner_rescue_config_t *)kHardenedBoolFalse;
 
   uint32_t remain = sizeof(block->data);
   uint32_t offset = 0;
@@ -190,4 +194,21 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
     }
   }
   return kErrorOwnershipKeyNotFound;
+}
+
+hardened_bool_t owner_rescue_command_allowed(
+    const owner_rescue_config_t *rescue, uint32_t command) {
+  // If no rescue configuration is supplied in the owner config, then all rescue
+  // commands are allowed.
+  if ((hardened_bool_t)rescue == kHardenedBoolFalse)
+    return kHardenedBoolTrue;
+
+  hardened_bool_t allowed = kHardenedBoolFalse;
+  size_t length = (rescue->header.length - sizeof(*rescue)) / sizeof(uint32_t);
+  for (size_t i = 0; i < length; ++i) {
+    if (command == rescue->command_allow[i]) {
+      allowed = kHardenedBoolTrue;
+    }
+  }
+  return allowed;
 }

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load("//rules/opentitan:defs.bzl", "opentitan_test")
 
 opentitan_test(
@@ -489,28 +489,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "sleep_pin_wake_test",
-    srcs = ["sleep_pin_wake_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:flash_ctrl",
-        "//sw/device/lib/dif:pinmux",
-        "//sw/device/lib/dif:pwrmgr",
-        "//sw/device/lib/dif:rv_plic",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
-        "//sw/device/lib/testing:isr_testutils",
-        "//sw/device/lib/testing:pwrmgr_testutils",
-        "//sw/device/lib/testing:rand_testutils",
-        "//sw/device/lib/testing:rv_plic_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "spi_host_tx_rx_test",
     srcs = ["spi_host_tx_rx_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
@@ -524,6 +502,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:rand_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
@@ -547,6 +526,7 @@ opentitan_test(
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing:spi_device_testutils",
         "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )

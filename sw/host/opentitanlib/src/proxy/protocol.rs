@@ -75,6 +75,10 @@ pub enum GpioRequest {
     SetPullMode {
         pull: PullMode,
     },
+    AnalogWrite {
+        value: f32,
+    },
+    AnalogRead,
     MultiSet {
         mode: Option<PinMode>,
         value: Option<bool>,
@@ -89,6 +93,8 @@ pub enum GpioResponse {
     Read { value: bool },
     SetMode,
     SetPullMode,
+    AnalogWrite,
+    AnalogRead { value: f32 },
     MultiSet,
 }
 
@@ -177,6 +183,7 @@ pub enum UartRequest {
         rate: u32,
     },
     SetParity(Parity),
+    GetDevicePath,
     Read {
         timeout_millis: Option<u32>,
         len: u32,
@@ -193,6 +200,7 @@ pub enum UartResponse {
     GetBaudrate { rate: u32 },
     SetBaudrate,
     SetParity,
+    GetDevicePath { path: String },
     Read { data: Vec<u8> },
     Write,
     SupportsNonblockingRead { has_support: bool },
@@ -240,6 +248,7 @@ pub enum SpiRequest {
     SetVoltage {
         voltage: Voltage,
     },
+    GetFlashromArgs,
     RunTransaction {
         transaction: Vec<SpiTransferRequest>,
     },
@@ -275,6 +284,9 @@ pub enum SpiResponse {
         sizes: MaxSizes,
     },
     SetVoltage,
+    GetFlashromArgs {
+        programmer: String,
+    },
     RunTransaction {
         transaction: Vec<SpiTransferResponse>,
     },

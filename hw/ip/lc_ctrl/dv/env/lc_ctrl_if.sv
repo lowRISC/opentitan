@@ -8,7 +8,9 @@
 `define LC_CTRL_FSM_PATH tb.dut.u_lc_ctrl_fsm
 `endif
 
-interface lc_ctrl_if (
+interface lc_ctrl_if #(
+  parameter int NumRmaAckSigs
+) (
   input clk,
   input rst_n
 );

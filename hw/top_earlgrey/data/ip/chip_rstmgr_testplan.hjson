@@ -70,7 +70,9 @@
         "RSTMGR.RESET_INFO.CLEAR",
       ]
       tests: ["chip_rv_dm_ndm_reset_req"]
-      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req"],
+      bazel: ["//sw/device/tests:rv_dm_ndm_reset_req_test_unlocked1",
+              "//sw/device/tests:rv_dm_ndm_reset_req_dev",
+              "//sw/device/tests:rv_dm_ndm_reset_req_rma"],
     }
     {
       name: chip_sw_rstmgr_cpu_info
@@ -82,11 +84,11 @@
             Refer to `chip_sw_rstmgr_*sys_reset_info`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This can be an important diagnostic tool, so setting it to SV2.
+            This can be an important diagnostic tool, so setting it to SV1.
             This test already runs in CW310.
             '''
       stage: V2
-      si_stage: SV2
+      si_stage: SV1
       lc_states: ["PROD"]
       features: [
         "RSTMGR.CPU_INFO.CAPTURE",
@@ -130,10 +132,10 @@
             Refer to `chip_sw_rstmgr_*sys_reset_info`.
 
             SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
-            This can be an important diagnostic tool, so setting it to SV3.
+            This can be an important diagnostic tool, so setting it to SV1.
             '''
       stage: V2
-      si_stage: SV3
+      si_stage: SV1
       lc_states: ["PROD"]
       features: [
         "RSTMGR.ALERT_INFO.CAPTURE",

@@ -70,9 +70,9 @@ pub struct Certificate {
     /// X509 certificate's public key.
     pub subject_public_key_info: SubjectPublicKeyInfo,
     /// X509 certificate's authority key identifier.
-    pub authority_key_identifier: Value<Vec<u8>>,
+    pub authority_key_identifier: Option<Value<Vec<u8>>>,
     /// X509 certificate's public key identifier.
-    pub subject_key_identifier: Value<Vec<u8>>,
+    pub subject_key_identifier: Option<Value<Vec<u8>>>,
     // X509 basic constraints extension, optional.
     pub basic_constraints: Option<BasicConstraints>,
     pub key_usage: Option<KeyUsage>,
@@ -568,8 +568,8 @@ mod tests {
                     y: Value::variable("owner_pub_key_ec_y"),
                 },
             }),
-            authority_key_identifier: Value::variable("signing_pub_key_id"),
-            subject_key_identifier: Value::variable("owner_pub_key_id"),
+            authority_key_identifier: Some(Value::variable("signing_pub_key_id")),
+            subject_key_identifier: Some(Value::variable("owner_pub_key_id")),
             basic_constraints: None,
             key_usage: Some(KeyUsage {
                 digital_signature: None,

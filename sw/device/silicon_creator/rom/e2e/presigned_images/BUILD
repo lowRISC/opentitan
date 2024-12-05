@@ -2,11 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:opentitan.bzl",
-    "bin_to_vmem",
-    "scramble_flash_vmem",
-)
+load("//rules/opentitan:legacy.bzl", "scramble_flash_vmem", "vmem_file")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -18,16 +14,16 @@ _EMPTY_TEST_DEVICES = [
 ]
 
 # ROM self hash test binaries and aliases.
-bin_to_vmem(
+vmem_file(
     name = "rom_e2e_self_hash_sim_dv_vmem64",
-    bin = "rom_e2e_self_hash_sim_dv.signed.bin",
+    src = "rom_e2e_self_hash_sim_dv.signed.bin",
     word_size = 64,
 )
 
 scramble_flash_vmem(
     name = "rom_e2e_self_hash_sim_dv_scr_vmem64",
+    src = ":rom_e2e_self_hash_sim_dv_vmem64",
     otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
-    vmem = ":rom_e2e_self_hash_sim_dv_vmem64",
 )
 
 [

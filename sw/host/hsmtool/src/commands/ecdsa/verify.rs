@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{anyhow, Result};
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
 use std::any::Any;
+use std::ops::Range;
 use std::path::PathBuf;
 
 use crate::commands::{BasicResult, Dispatch};
@@ -23,13 +24,17 @@ pub struct Verify {
     id: Option<String>,
     #[arg(short, long)]
     label: Option<String>,
-    #[arg(short, long, value_enum, default_value = "sha256-hash")]
+    #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
     /// Reverse the input data and result (for little-endian targets).
     #[arg(short = 'r', long)]
     little_endian: bool,
+    /// The signature is at the given byte range of the input file.
+    #[arg(short, long, value_parser=helper::parse_range, conflicts_with="signature")]
+    signature_at: Option<Range<usize>>,
     input: PathBuf,
-    signature: PathBuf,
+    #[arg(conflicts_with = "signature_at")]
+    signature: Option<PathBuf>,
 }
 
 #[typetag::serde(name = "ecdsa-verify")]
@@ -46,17 +51,22 @@ impl Dispatch for Verify {
         attrs.push(Attribute::Verify(true));
         let object = helper::find_one_object(session, &attrs)?;
 
-        let mut data = helper::read_file(&self.input)?;
-        if self.little_endian {
-            // OpenTitanTool writes digest files in little-endian byte order,
-            // (same as the hmac peripheral's default output mode).  The ECDSA
-            // implementation performs the signature calculation with the bytes in
-            // big-endian order.
-            data.reverse();
-        }
-        let data = self.format.prepare(KeyType::Ec, &data)?;
+        let data = helper::read_file(&self.input)?;
+        let data = self
+            .format
+            .prepare(KeyType::Ec, &data, self.little_endian)?;
         let mechanism = self.format.mechanism(KeyType::Ec)?;
-        let mut signature = helper::read_file(&self.signature)?;
+        let mut signature = if let Some(filename) = &self.signature {
+            helper::read_file(filename)?
+        } else if let Some(range) = &self.signature_at {
+            let input = helper::read_file(&self.input)?;
+            input
+                .get(range.clone())
+                .ok_or_else(|| anyhow!("Invalid range on input file: {range:?}"))?
+                .to_vec()
+        } else {
+            unreachable!();
+        };
         if self.little_endian {
             let half = signature.len() / 2;
             signature[..half].reverse();

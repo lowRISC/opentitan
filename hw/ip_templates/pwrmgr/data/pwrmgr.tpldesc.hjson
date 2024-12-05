@@ -52,5 +52,17 @@
       type: "int"
       default: "2"
     }
+    {
+      name: "wait_for_external_reset"
+      desc: "Wait for external reset requests"
+      type: "bool"
+      default: false
+    }
+    {
+      name: "NumRomInputs"
+      desc: "Number of ROM inputs"
+      type: "int"
+      default: "1"
+    }
   ]
 }

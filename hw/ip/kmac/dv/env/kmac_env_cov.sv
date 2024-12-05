@@ -205,7 +205,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
   config_masked_cg config_masked_cg;
   config_unmasked_cg config_unmasked_cg;
 
-  app_cg_wrap app_cg_wrappers[kmac_pkg::NumAppIntf];
+  app_cg_wrap app_cg_wrappers[kmac_env_pkg::NUM_APP_INTF];
 
   covergroup msg_len_cg with function sample(int len);
     msg_len: coverpoint len {
@@ -301,8 +301,7 @@ class kmac_env_cov extends cip_base_env_cov #(.CFG_T(kmac_env_cfg));
     kmac_err_code: coverpoint kmac_err {
       ignore_bins ignore = {kmac_pkg::ErrNone};
       // Covered by direct sequence, if scb enabled for those seq, can remove it from this list.
-      illegal_bins il = {kmac_pkg::ErrShadowRegUpdate,
-                         kmac_pkg::ErrWaitTimerExpired,
+      illegal_bins il = {kmac_pkg::ErrWaitTimerExpired,
                          kmac_pkg::ErrIncorrectEntropyMode,
                          kmac_pkg::ErrSwHashingWithoutEntropyReady};
     }

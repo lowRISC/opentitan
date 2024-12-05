@@ -18,8 +18,14 @@ class xbar_base_vseq extends dv_base_vseq #(.CFG_T               (xbar_env_cfg),
   uint                   min_req_cnt = 100;
   uint                   max_req_cnt = 200;
 
+  uint                   max_num_trans = 20;
+
   // if seq crosses with the other seq, only need to enable device rsp thread
   bit                    do_device_rsp = 1;
+
+  constraint num_trans_c {
+    num_trans inside {[1 : max_num_trans]};
+  }
 
   constraint req_cnt_c {
     foreach (host_seq[i]) {

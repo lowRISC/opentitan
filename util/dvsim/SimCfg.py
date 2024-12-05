@@ -82,6 +82,8 @@ class SimCfg(FlowCfg):
         # Set default sim modes for unpacking
         if args.gui:
             self.en_build_modes.append("gui")
+        if args.gui_debug:
+            self.en_build_modes.append("gui_debug")
         if args.waves is not None:
             self.en_build_modes.append("waves")
         else:
@@ -449,10 +451,11 @@ class SimCfg(FlowCfg):
             # existing one.
             is_unique = True
             for build in self.builds:
-                if build.is_equivalent_job(new_build):
-                    # Discard `new_build` since it is equivalent to build. If
-                    # `new_build` is the same as `primary_build_mode`, update
-                    # `primary_build_mode` to match `build`.
+                if new_build.is_equivalent_job(build):
+                    # Discard `new_build` since build implements the same
+                    # thing. If `new_build` is the same as
+                    # `primary_build_mode`, update `primary_build_mode` to
+                    # match `build`.
                     if new_build.name == self.primary_build_mode:
                         self.primary_build_mode = build.name
                     new_build = build
@@ -484,11 +487,17 @@ class SimCfg(FlowCfg):
         self.runs = ([]
                      if self.build_only else self._expand_run_list(build_map))
 
-        # In GUI mode, only allow one test to run.
+        # In GUI mode or GUI with debug mode, only allow one test to run.
         if self.gui and len(self.runs) > 1:
             self.runs = self.runs[:1]
             log.warning("In GUI mode, only one test is allowed to run. "
                         "Picking {}".format(self.runs[0].full_name))
+
+        # GUI mode is only available for Xcelium for the moment.
+        if (self.gui_debug) and (self.tool not in ['xcelium']):
+            log.error("GUI debug mode is only available for Xcelium, please remove "
+                      "--gui_debug / -gd option or switch to Xcelium tool.")
+            sys.exit(1)
 
         # Add builds to the list of things to run, only if --run-only switch
         # is not passed.

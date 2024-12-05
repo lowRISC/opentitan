@@ -143,8 +143,7 @@ class sysrst_ctrl_base_vseq extends cip_base_vseq #(
         super.apply_reset(kind);
         // Aon domain has very slow clock so uses scheme 0 to make sure the `rst_ni` and
         // `rst_aon_ni` will be asserted together within one clk_i cycle.
-        cfg.clk_aon_rst_vif.apply_reset(.pre_reset_dly_clks(0),
-                                        .reset_width_clks(400),
+        cfg.clk_aon_rst_vif.apply_reset(.reset_width_clks(400),
                                         .post_reset_dly_clks(0),
                                         .rst_n_scheme(common_ifs_pkg::RstAssertSyncDeassertSync));
       join

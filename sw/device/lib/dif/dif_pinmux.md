@@ -1,6 +1,6 @@
 # Pin Multiplexer DIF Checklist
 
-This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Pin Multiplexer DIF](../../../../hw/ip/pinmux/README.md).
+This checklist is for [Development Stage](../../../../doc/project_governance/development_stages.md) transitions for the [Pin Multiplexer DIF](../../../../hw/top_earlgrey/ip_autogen/pinmux/README.md).
 All checklist items refer to the content in the [Checklist](../../../../doc/project_governance/checklist/README.md).
 
 <h2>DIF Checklist</h2>

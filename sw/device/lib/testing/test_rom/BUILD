@@ -65,6 +65,21 @@ legacy_rom_targets(
     target = "test_rom",
 )
 
+[
+    filegroup(
+        name = "test_rom_{}_hashfile".format(dev),
+        srcs = [":test_rom"],
+        output_group = "{}_hashfile".format(dev),
+    )
+    for dev in [
+        "sim_dv",
+        "sim_verilator",
+        "fpga_cw305",
+        "fpga_cw310",
+        "fpga_cw340",
+    ]
+]
+
 # TODO(#12905): Use a slightly hollowed out version of the silicon_creator bootstrap
 # and other functions necessary to build the test_rom for the english breakfast top level.
 cc_library(

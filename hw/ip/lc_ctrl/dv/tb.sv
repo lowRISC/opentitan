@@ -13,6 +13,7 @@ module tb;
   import lc_ctrl_test_pkg::*;
   import otp_ctrl_pkg::*;
   import jtag_riscv_agent_pkg::*;
+  import lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS;
 
   // LC_CTRL parameters
   // Enable asynchronous transitions on alerts.
@@ -43,6 +44,10 @@ module tb;
   assign lc_ctrl_if.otp_vendor_test_ctrl_o = otp_vendor_test_ctrl;
   assign otp_vendor_test_status = lc_ctrl_if.otp_vendor_test_status_i;
 
+  // Used for JTAG DTM connections via TL-UL.
+  tlul_pkg::tl_h2d_t dmi_tl_h2d;
+  tlul_pkg::tl_d2h_t dmi_tl_d2h;
+
   // HW revision
   lc_hw_rev_t hw_rev_o;
 
@@ -56,7 +61,8 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  lc_ctrl_if lc_ctrl_if (
+  lc_ctrl_if #(.NumRmaAckSigs(NUM_RMA_ACK_SIGS))
+  lc_ctrl_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -92,11 +98,35 @@ module tb;
 
   `DV_ALERT_IF_CONNECT()
 
+`ifdef USE_DMI_INTERFACE
+  // Helper module to translate JTAG -> TL-UL requests.
+  // TODO: In the long term this JTAG agent should probably be replaced by a TL-UL agent.
+  tlul_jtag_dtm #(
+    .IdcodeValue(IdcodeValue)
+  ) u_tlul_jtag_dtm (
+    .clk_i       (clk),
+    .rst_ni      (rst_n),
+    .jtag_i      ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
+    .jtag_o      ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
+    .scan_rst_ni (lc_ctrl_if.scan_rst_ni),
+    .scanmode_i  (lc_ctrl_if.scanmode_i),
+    .tl_h2d_o    (dmi_tl_h2d),
+    .tl_d2h_i    (dmi_tl_d2h)
+  );
+`else
+  assign dmi_tl_h2d = tlul_pkg::TL_H2D_DEFAULT;
+`endif
+
   // dut
   lc_ctrl #(
     .AlertAsyncOn(AlertAsyncOn),
     // Idcode value for the JTAG.
     .IdcodeValue(IdcodeValue),
+`ifdef USE_DMI_INTERFACE
+    .UseDmiInterface(1'b1),
+`else
+    .UseDmiInterface(1'b0),
+`endif
     // Random netlist constants
     .RndCnstLcKeymgrDivInvalid(RndCnstLcKeymgrDivInvalid),
     .RndCnstLcKeymgrDivTestUnlocked(RndCnstLcKeymgrDivTestUnlocked),
@@ -106,7 +136,8 @@ module tb;
     .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
     .ProductId(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
     .RevisionId(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
-    .SecVolatileRawUnlockEn(`SEC_VOLATILE_RAW_UNLOCK_EN)
+    .SecVolatileRawUnlockEn(`SEC_VOLATILE_RAW_UNLOCK_EN),
+    .NumRmaAckSigs(NUM_RMA_ACK_SIGS)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -115,13 +146,21 @@ module tb;
     .clk_kmac_i (clk),
     .rst_kmac_ni(rst_n),
 
-    .tl_i      (tl_if.h2d),
-    .tl_o      (tl_if.d2h),
+    .regs_tl_i (tl_if.h2d),
+    .regs_tl_o (tl_if.d2h),
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
+`ifdef USE_DMI_INTERFACE
+    .jtag_i     ('0),
+    .jtag_o     (),
+`else
     .jtag_i     ({jtag_if.tck, jtag_if.tms, jtag_if.trst_n, jtag_if.tdi}),
     .jtag_o     ({jtag_if.tdo, lc_ctrl_if.tdo_oe}),
+`endif
+    .dmi_tl_i(dmi_tl_h2d),
+    .dmi_tl_o(dmi_tl_d2h),
+
     .scanmode_i (lc_ctrl_if.scanmode_i),
     .scan_rst_ni(lc_ctrl_if.scan_rst_ni),
 
@@ -179,9 +218,9 @@ module tb;
 
   // JTAG/TL Mutex claim
   // Need a small delay to filter out glitches
-  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.tap_reg2hw.claim_transition_if.qe == 1) &&
+  assign #1ps lc_ctrl_if.mutex_claim_jtag = (dut.tap_dmi_reg2hw.claim_transition_if.qe == 1) &&
       prim_mubi_pkg::mubi8_test_false_loose(
-      dut.tap_claim_transition_if_q
+      dut.tap_dmi_claim_transition_if_q
   );
 
   assign #1ps lc_ctrl_if.mutex_claim_tl = (dut.reg2hw.claim_transition_if.qe == 1) &&
@@ -213,7 +252,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
-    uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+    uvm_config_db#(virtual lc_ctrl_if#(.NumRmaAckSigs(NUM_RMA_ACK_SIGS)))::
+                   set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
 
     // verilog_format: off - avoid bad formatting
     // The jtag_agent is a low_level agent that configured inside jtag_riscv_agent.

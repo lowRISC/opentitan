@@ -4,7 +4,6 @@
 
 class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   `uvm_object_utils(hmac_env_cfg)
-  `uvm_object_new
 
   // A flag to nofity scoreboard if digest is corrupted by wipe_secret command.
   bit wipe_secret_triggered;
@@ -25,14 +24,24 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
 
   hmac_vif hmac_vif;
 
-  virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
-    list_of_alerts = hmac_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
-    // set num_interrupts & num_alerts which will be used to create coverage and more
-    num_interrupts = ral.intr_state.get_n_used_bits();
+  // Standard SV/UVM methods
+  extern function new(string name="");
 
-    // only support 1 outstanding TL items in tlul_adapter
-    m_tl_agent_cfg.max_outstanding_req = 1;
-  endfunction
+  // Class specific methods
+  extern function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+endclass : hmac_env_cfg
 
-endclass
+
+function hmac_env_cfg::new(string name="");
+  super.new(name);
+endfunction : new
+
+function void hmac_env_cfg::initialize(bit [TL_AW-1:0] csr_base_addr = '1);
+  list_of_alerts = hmac_env_pkg::LIST_OF_ALERTS;
+  super.initialize(csr_base_addr);
+  // set num_interrupts & num_alerts which will be used to create coverage and more
+  num_interrupts = ral.intr_state.get_n_used_bits();
+
+  // only support 1 outstanding TL items in tlul_adapter
+  m_tl_agent_cfg.max_outstanding_req = 1;
+endfunction : initialize

@@ -1,0 +1,132 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Prepare environment
+description: Install dependencies and prepare environment needed for OpenTitan
+
+inputs:
+  service_account_json:
+    description: Service account JSON for Google Cloud access
+    default: ''
+  verilator-version:
+    description: Verilator version to install
+    required: true
+    default: '4.210'
+  verilator-path:
+    description: Path at which to install Veriltator
+    required: true
+    default: /tools/verilator
+  verible-version:
+    description: Verible version to install
+    required: true
+    default: 'v0.0-3622-g07b310a3'
+  verible-path:
+    description: Path at which to install Verible
+    required: true
+    default: /tools/verible
+  configure-bazel:
+    description: Configure Bazel to use remote cache
+    required: true
+    default: true
+
+runs:
+  using: composite
+  steps:
+    - name: Install system dependencies
+      run: |
+        sudo apt update
+        grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
+      shell: bash
+
+    - uses: astral-sh/setup-uv@v3
+      with:
+        version: '0.4.20'
+        enable-cache: true
+        cache-dependency-glob: |
+          pyproject.toml
+          python-requirements.txt
+
+    - name: Install Python
+      shell: bash
+      run: |
+        uv python install 3.8
+        # Create a virtual environment for UV
+        uv venv ~/.local/share/venv
+        echo "$HOME/.local/share/venv/bin" >> "$GITHUB_PATH"
+        echo "VIRTUAL_ENV=$HOME/.local/share/venv" >> "$GITHUB_ENV"
+
+    - name: Install Python dependencies
+      shell: bash
+      run: |
+        uv pip install -r python-requirements.txt --require-hashes
+        # We installed uv from setup-uv action, so uninstall from venv to prevent conflict
+        uv pip uninstall uv
+
+    - name: Install Verilator
+      run: |
+        VERILATOR_TAR="verilator-v${{ inputs.verilator-version }}.tar.gz"
+        VERILATOR_URL="https://storage.googleapis.com/verilator-builds/${VERILATOR_TAR}"
+        sudo mkdir -p "${{ inputs.verilator-path }}"
+        curl -sSfL "$VERILATOR_URL" | sudo tar -C "${{ inputs.verilator-path }}" -xvzf -
+        echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
+      shell: bash
+
+    - name: Install Verible
+      run: |
+        VERIBLE_TAR="verible-${{ inputs.verible-version }}-linux-static-x86_64.tar.gz"
+        VERIBLE_URL="https://github.com/chipsalliance/verible/releases/download/${{ inputs.verible-version }}/${VERIBLE_TAR}"
+        sudo mkdir -p "${{ inputs.verible-path }}"
+        curl -sSfL "$VERIBLE_URL" | sudo tar -C "${{ inputs.verible-path }}" -xvzf - --strip-components=1
+        # Fixup bin permission which is broken in tarball.
+        sudo chmod 755 "${{ inputs.verible-path }}/bin"
+        echo "${{ inputs.verible-path }}/bin" >> "$GITHUB_PATH"
+      shell: bash
+
+    # Log into Google Cloud using service account JSON.
+    # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
+    # This needs access to secrets and thus doesn't work for pull request.
+    - uses: google-github-actions/auth@v2
+      if: github.event_name != 'pull_request'
+      with:
+        credentials_json: '${{ inputs.service_account_json }}'
+
+    - name: Configure ~/.bazelrc
+      if: inputs.configure-bazel == 'true'
+      run: |
+        cp ci/.bazelrc ~/.bazelrc
+        # Inject the OS version into a parameter used in the action key computation to
+        # avoid collisions between different operating systems in the caches.
+        # See #14695 for more information.
+        echo "build --remote_default_exec_properties=OSVersion=\"$(lsb_release -ds)\"" >> ~/.bazelrc
+
+        if ${{ github.event_name != 'pull_request' }}; then
+          echo "Will upload to the cache." >&2
+          echo "build --google_default_credentials" >> ~/.bazelrc
+        else
+          echo "Download from cache only." >&2
+          echo "build --remote_upload_local_results=false" >> ~/.bazelrc
+        fi
+      shell: bash
+
+    - name: Install merge-junit
+      run: |
+        MERGE_JUNIT_PATH="/tools/merge-junit"
+        MERGE_JUNIT_TAR="merge-junit-v0.2.1-x86_64-unknown-linux-musl.tar.gz"
+        MERGE_JUNIT_URL="https://github.com/tobni/merge-junit/releases/download/v0.2.1/${MERGE_JUNIT_TAR}"
+        MERGE_JUNIT_SHA256="5c6a63063f3a155ea4da912d5cae2ec4a89022df31d7942f2aba463ee4790152"
+
+        curl -fLSs -o "/tmp/${MERGE_JUNIT_TAR}" "$MERGE_JUNIT_URL"
+        HASH=$(sha256sum "/tmp/$MERGE_JUNIT_TAR" | awk '{print $1}')
+        if [[ "$HASH" != "$MERGE_JUNIT_SHA256" ]]; then
+          echo "The hash of merge-junit does not match" >&2
+          echo "$HASH != $MERGE_JUNIT_SHA256" >&2
+          exit 1
+        fi
+
+        sudo mkdir -p $MERGE_JUNIT_PATH
+        sudo chmod 777 $MERGE_JUNIT_PATH
+        tar -C $MERGE_JUNIT_PATH -xvzf "/tmp/${MERGE_JUNIT_TAR}" --strip-components=1
+        echo $MERGE_JUNIT_PATH >> "$GITHUB_PATH"
+        rm "/tmp/${MERGE_JUNIT_TAR}"
+      shell: bash

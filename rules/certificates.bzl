@@ -33,6 +33,7 @@ def _certificate_codegen_impl(ctx):
             "--output-c={}".format(pre_c.path),
             "--output-h={}".format(pre_h.path),
             "--output-unittest={}".format(pre_ut.path),
+            "--cert-format={}".format(ctx.attr.cert_format),
         ],
         executable = tc.tools.opentitantool,
         mnemonic = "GenCertTemplate",
@@ -76,6 +77,10 @@ certificate_codegen = rule(
             executable = True,
             doc = "The clang-format executable",
         ),
+        "cert_format": attr.string(
+            values = ["cwt", "x509"],
+            doc = "certificate format of the template",
+        ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
@@ -88,10 +93,11 @@ certificate_codegen = rule(
 # - <name>_hdrs: filegroup corresponding to the `headers` output group of <name>
 # - <name>_library: cc_library that compiles the sources, exports the headers and links to the asn1
 #   library.
-def certificate_template(name, template):
+def certificate_template(name, template, cert_format = "x509"):
     certificate_codegen(
         name = name,
         template = template,
+        cert_format = cert_format,
     )
 
     native.filegroup(
@@ -117,6 +123,7 @@ def certificate_template(name, template):
         hdrs = [":{}_hdrs".format(name)],
         deps = [
             "@//sw/device/silicon_creator/lib/cert:asn1",
+            "@//sw/device/silicon_creator/lib/cert:cbor",
         ],
     )
 

@@ -98,7 +98,7 @@
       name: chip_sw_hmac_sha2_stress
       desc: '''Verify SHA2 mode of operation.
 
-            - Verify the following digest sizes: 256
+            - Verify the following digest sizes: 256, 384, 512
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
             - Use endianness configuration used in the crypto library.
@@ -109,15 +109,22 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hash_kat",
-        "//sw/device/tests/crypto:hmac_sha256_functest",
+        "//sw/device/tests/crypto/cryptotest:sha256_kat",
+        "//sw/device/tests/crypto/cryptotest:sha384_kat",
+        "//sw/device/tests/crypto/cryptotest:sha512_kat",
+        "//sw/device/tests/crypto:sha256_functest",
+        "//sw/device/tests/crypto:sha384_functest",
+        "//sw/device/tests/crypto:sha512_functest",
       ]
     }
     {
       name: chip_sw_hmac_stress
       desc: '''Verify HMAC mode of operation.
 
-            - Verify the following security configurations: HMAC-SHA2-256
+            - Verify all HMAC modes of operation:
+              - HMAC-SHA2-256
+              - HMAC-SHA2-384
+              - HMAC-SHA2-512
             - Verify input message size of 0 bytes.
             - Verify multiple input message sizes as defined in NIST test vectors.
             - Use endianness configuration used in the crypto library.
@@ -128,10 +135,13 @@
       lc_states: ["PROD"]
       tests: []
       bazel: [
-        "//sw/device/tests/crypto/cryptotest:hmac_kat",
-        "//sw/device/tests/crypto:kmac_functest_hardcoded",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha256_kat",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha384_kat",
+        "//sw/device/tests/crypto/cryptotest:hmac_sha512_kat",
+        "//sw/device/tests/crypto:hmac_functest",
+        "//sw/device/tests/crypto:hmac_sha256_functest",
+        "//sw/device/tests/crypto:hmac_sha384_functest",
         "//sw/device/tests/crypto:hmac_sha512_functest",
-        "//sw/device/tests/crypto:hmac_sha384_functest"
       ]
     }
     {

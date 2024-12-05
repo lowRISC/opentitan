@@ -480,6 +480,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
   task entropy_inject_thread();
     bit do_inject, injection_mandatory;
     bit [TL_DW - 1:0] fw_ov_value;
+    bit [TL_DW - 1:0] unused;
 
     injection_mandatory = ((cfg.dut_cfg.fw_over_enable == MuBi4True) &&
                            (cfg.dut_cfg.fw_read_enable == MuBi4True));
@@ -504,7 +505,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
           `DV_CHECK_MEMBER_RANDOMIZE_FATAL(dly_to_insert_entropy);
           cfg.clk_rst_vif.wait_clks(dly_to_insert_entropy);
           `uvm_info(`gfn, $sformatf("injecting entropy: %08x", fw_ov_value), UVM_FULL)
-          csr_rd(.ptr(ral.fw_ov_wr_fifo_full.fw_ov_wr_fifo_full));
+          csr_rd(.ptr(ral.fw_ov_wr_fifo_full.fw_ov_wr_fifo_full), .value(unused));
           ral.fw_ov_wr_data.set(fw_ov_value);
           csr_update(.csr(ral.fw_ov_wr_data));
         end
@@ -853,18 +854,9 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     // Don't enable here, let the main loop do that explicitly
   endtask
 
-  function void disable_assertions();
+  function void disable_entropy_drop_assertions();
     if (cfg.rng_max_delay) begin
-      // Disable assertions which expect that no entropy is dropped between the esrng,
-      // esbit and postht FIFOs.
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsrngFifoPushedIntoEsbitOrPosthtFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_EsbitFifoPushedIntoPosthtFifo_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_EsbitFifoPushedIntoPosthtFifo_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.AtReset_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-      $assertoff(0, tb.dut.u_entropy_src_core.Final_PosthtFifoPushedFromEsbitOrEsrngFifos_A);
-      // TODO(#24085): Remove this assertoff once the issue is solved.
-      $assertoff(0, tb.dut.u_entropy_src_core.FifosEmptyWhenShaProcess_A);
+      cfg.entropy_src_path_vif.disable_entroy_drop_assertions();
     end
   endfunction
 
@@ -874,7 +866,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     continue_sim = 1;
     reset_needed = 0;
 
-    disable_assertions();
+    disable_entropy_drop_assertions();
     // Start sequences in the background
     start_indefinite_seqs();
 

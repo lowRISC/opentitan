@@ -143,18 +143,22 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     sar_type_x_digest_size : cross save_and_restore_cp, digest_size_cp;
   endgroup : save_and_restore_cg
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-    cfg_cg                      = new();
-    status_cg                   = new();
-    msg_len_cg                  = new();
-    err_code_cg                 = new();
-    wr_config_during_hash_cg    = new();
-    wr_key_during_hash_cg       = new();
-    wr_key_during_sha_only_cg   = new();
-    wr_msg_during_hash_cg       = new();
-    trig_rst_during_hash_cg     = new();
-    rd_digest_during_hmac_en_cg = new();
-    save_and_restore_cg         = new();
-  endfunction : new
-endclass
+  // Standard SV/UVM methods
+  extern function new(string name, uvm_component parent);
+endclass : hmac_env_cov
+
+
+function hmac_env_cov::new(string name, uvm_component parent);
+  super.new(name, parent);
+  cfg_cg                      = new();
+  status_cg                   = new();
+  msg_len_cg                  = new();
+  err_code_cg                 = new();
+  wr_config_during_hash_cg    = new();
+  wr_key_during_hash_cg       = new();
+  wr_key_during_sha_only_cg   = new();
+  wr_msg_during_hash_cg       = new();
+  trig_rst_during_hash_cg     = new();
+  rd_digest_during_hmac_en_cg = new();
+  save_and_restore_cg         = new();
+endfunction : new

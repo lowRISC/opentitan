@@ -41,6 +41,7 @@ top_required = {
     'type': ['s', 'type of hjson. Shall be "top" always'],
     'clocks': ['g', 'group of clock properties'],
     'resets': ['l', 'list of resets'],
+    'addr_spaces': ['g', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
     'memory': ['l', 'list of memories. At least one memory '
                     'is needed to run the software'],
@@ -48,9 +49,11 @@ top_required = {
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
     'pinmux': ['g', 'pinmux configuration'],
+    'unmanaged_clocks': ['l', 'List of unmanaged external clocks']
 }
 
 top_optional = {
+    'ac_range_check': ['g', 'Optional AC range configuration'],
     'alert_async': ['l', 'async alerts (generated)'],
     'alert': ['lnw', 'alerts (generated)'],
     'alert_module': [
@@ -60,18 +63,23 @@ top_optional = {
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
+    'incoming_alert': ['g', 'Parsed incoming alerts (generated)'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupt': ['lnw', 'interrupts (generated)'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"]
+    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
+    'unmanaged_resets': ['l', 'List of unmanaged external resets']
 }
 
 top_added = {}
 
-pinmux_required = {}
+pinmux_required = {
+    'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
+    'enable_strap_sampling': ['pb', 'Enable hardware strap sampling of pinmux']
+}
 pinmux_optional = {
     'num_wkup_detect': [
         'd', 'Number of wakeup detectors'
@@ -193,13 +201,18 @@ module_optional = {
     'clock_reset_export': ['l', 'optional list with prefixes for exported '
                                 'clocks and resets at the chip level'],
     'attr': ['s', 'optional attribute indicating whether the IP is '
-                  '"templated" or "reggen_only"'],
-    'base_addr': ['s', 'hex start address of the peripheral '
+                  '"ipgen", "reggen_top", or "reggen_only"'],
+    'base_addr': ['g', 'dict of address space mapped to the corresponding '
+                       'hex start address of the peripheral '
                        '(if the IP has only a single TL-UL interface)'],
-    'base_addrs': ['d', 'hex start addresses of the peripheral '
+    'base_addrs': ['g', 'hex start addresses of the peripheral '
                         ' (if the IP has multiple TL-UL interfaces)'],
     'memory': ['g', 'optional dict with memory region attributes'],
-    'param_decl': ['g', 'optional dict that allows to override instantiation parameters']
+    'param_decl': ['g', 'optional dict that allows to override instantiation parameters'],
+    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that '
+                           'module'],
+    'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
+                            'group']
 }
 
 module_added = {
@@ -281,7 +294,8 @@ class Flash:
     max_banks = 4
     max_pages_per_bank = 1024
 
-    def __init__(self, mem):
+    def __init__(self, mem, base_addrs):
+        self.base_addrs = {asid: int(base, 16) for (asid, base) in base_addrs.items()}
         self.banks = mem.get('banks', 2)
         self.pages_per_bank = mem.get('pages_per_bank', 8)
         self.program_resolution = mem.get('program_resolution', 128)
@@ -618,25 +632,21 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     error = 0
 
-    # there should only be one each of pwrmgr/clkmgr/rstmgr
-    pwrmgrs = [m for m in top['module'] if m['type'] == 'pwrmgr']
-    clkmgrs = [m for m in top['module'] if m['type'] == 'clkmgr']
-    rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
-
-    if len(pwrmgrs) == 1 * len(clkmgrs) == 1 * len(rstmgrs) != 1:
-        log.error("Incorrect number of pwrmgr/clkmgr/rstmgr")
-        error += 1
-
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
+    unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())
+    unmanaged_reset_nets = [net for reset in top.get('unmanaged_resets', [])
+                            for net in reset.values()]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['name'].lower()
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets)
-        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs)
+        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets,
+                                unmanaged_reset_nets)
+        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
+                                unmanaged_clock_srcs)
 
         if error:
             log.error("module clock/reset checking failed")
@@ -647,9 +657,9 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         xbarcfg_name = xbarcfg['name'].lower()
         log.info("Checking clock/resets for xbar %s" % xbarcfg_name)
         error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                reset_nets, "xbar")
+                                reset_nets, unmanaged_reset_nets, "xbar")
         error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                clock_srcs, "xbar")
+                                clock_srcs, unmanaged_clock_srcs, "xbar")
 
         if error:
             log.error("xbar clock/reset checking failed")
@@ -662,7 +672,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 # For each defined reset connection in top*.hjson, there exists a defined port at the destination
 # and defined reset net
 # There are the same number of defined connections as there are ports
-def validate_reset(top, inst, reset_nets, prefix=""):
+def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
     # Gather inst port list
     error = 0
 
@@ -728,7 +738,7 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 
     missing_net = [
         net['name'] for net in top['reset_connections'].values()
-        if net['name'] not in reset_nets
+        if net['name'] not in reset_nets + unmanaged_reset_nets
     ]
 
     if missing_net:
@@ -744,7 +754,7 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 # For each defined clock_src in top*.hjson, there exists a defined port at the destination
 # and defined clock source
 # There are the same number of defined connections as there are ports
-def validate_clock(top, inst, clock_srcs, prefix=""):
+def validate_clock(top, inst, clock_srcs, unmanaged_clock_srcs, prefix=""):
     # Gather inst port list
     error = 0
 
@@ -778,7 +788,7 @@ def validate_clock(top, inst, clock_srcs, prefix=""):
     for port, net in top['clock_srcs'].items():
         net_name = net['clock'] if isinstance(net, Dict) else net
 
-        if net_name not in clock_srcs:
+        if net_name not in clock_srcs and net_name not in unmanaged_clock_srcs:
             missing_net.append(net)
 
     if missing_net:
@@ -845,25 +855,24 @@ def check_modules(top, prefix):
                                      'nor extra configuration.  Unable to determine '
                                      'memory size')
 
+                # make sure the memory regions correspond to the TL-UL interfaces
+                if intf not in m['base_addrs']:
+                    raise ValueError(f'{prefix} {modname} memory region {intf} does not '
+                                     'correspond to any of the defined TL-UL interfaces')
+
                 if 'size' not in value:
                     mem_type = value['config'].get('type', "")
 
                     if mem_type == "flash":
                         check_keys(value['config'], eflash_required, eflash_optional,
                                    eflash_added, "Eflash")
-                        flash = Flash(value['config'])
+                        flash = Flash(value['config'], m['base_addrs'][intf])
                         value['size'] = flash.size
                         value['config'] = flash
                     else:
                         raise ValueError(f'{m["name"]} memory config declaration does not have '
                                          'a valid type')
 
-                # make sure the memory regions correspond to the TL-UL interfaces
-                if intf not in m['base_addrs']:
-                    log.error("{} {} memory region {} does not "
-                              "correspond to any of the defined "
-                              "TL-UL interfaces".format(prefix, modname, intf))
-                    error += 1
                 # make sure the linker region access attribute is valid
                 attr = value.get('swaccess', 'unknown attribute')
                 if attr not in ['ro', 'rw']:

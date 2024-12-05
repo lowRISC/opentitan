@@ -37,7 +37,7 @@
     notes:              ""
   }
   {
-    version:            "2.0.0",
+    version:            "2.1.0",
     life_stage:         "L1",
     design_stage:       "D2S",
     verification_stage: "V2S",
@@ -127,6 +127,17 @@
         It sends an rx_overflow interrupt if it sees an extra character when the RX FIFO is full.
       '''
     },
+  ]
+  inter_signal_list: [
+    { struct: "logic"
+      type:   "uni"
+      name:   "lsio_trigger"
+      desc: '''
+            Self-clearing status trigger for the DMA.
+            Set when RX or TX FIFOs are past their configured watermarks matching watermark interrupt behaviour.
+      '''
+      act:    "req"
+    }
   ]
   countermeasures: [
     { name: "BUS.INTEGRITY",

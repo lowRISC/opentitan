@@ -73,7 +73,8 @@ UJSON_SERDE_STRUCT(LcTokenHash, \
     field(owner_manifest_measurement, uint32_t, 8) \
     field(owner_measurement, uint32_t, 8) \
     field(owner_security_version, uint32_t) \
-    field(auth_key_key_id, uint8_t, 20)
+    field(dice_auth_key_key_id, uint8_t, 20) \
+    field(ext_auth_key_key_id, uint8_t, 20)
 UJSON_SERDE_STRUCT(ManufCertgenInputs, \
                    manuf_certgen_inputs_t, \
                    STRUCT_MANUF_CERTGEN_INPUTS);

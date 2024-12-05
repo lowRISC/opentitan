@@ -9,7 +9,7 @@ from typing import Dict, Optional, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
-from pkg_resources import resource_filename
+import importlib_resources
 
 from reggen.ip_block import IpBlock
 from reggen.lib import check_int
@@ -94,9 +94,9 @@ def get_reg_tx_type(block: IpBlock, reg: RegBase, hw2reg: bool) -> str:
 def gen_rtl(block: IpBlock, outdir: str) -> int:
     # Read Register templates
     reg_top_tpl = Template(
-        filename=resource_filename('reggen', 'reg_top.sv.tpl'))
+        filename=str(importlib_resources.files('reggen') / 'reg_top.sv.tpl'))
     reg_pkg_tpl = Template(
-        filename=resource_filename('reggen', 'reg_pkg.sv.tpl'))
+        filename=str(importlib_resources.files('reggen') / 'reg_pkg.sv.tpl'))
 
     # In case the generated package contains alias definitions, we add
     # the alias implementation identifier to the package name so that it

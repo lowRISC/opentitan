@@ -32,7 +32,7 @@
               - Use SW to calculate that, and it will also exercise the Ibex.
               - SW sends all the keys through CSRs to KMAC to generate the degist data.
               - DV calls C functions to generate and backdoor load to a specific memory location
-                for SW. (Adpot this approach.)
+                for SW. (Adopt this approach.)
 
             X-ref'ed with kmac test.
             '''
@@ -43,6 +43,7 @@
         "chip_sw_keymgr_key_derivation",
         "chip_sw_keymgr_key_derivation_jitter_en",
       ]
+      bazel: ["//sw/device/tests:keymgr_key_derivation_test"]
     }
     {
       name: chip_sw_keymgr_sideload_kmac_error
@@ -84,7 +85,7 @@
               `manuf_ft_provision_rma_token_and_personalization` for more details.
             - Sideload is expected to work in the following keymgr states: `CreatorRootKey`,
               `OwnerIntKey` and `OwnerKey`. The test program should try to cover as many states
-              as possible give the initial device state.
+              as possible given the initial device state.
             - Key derivations must be reproducible across boot cycles during regular operating
               conditions.
 
@@ -97,7 +98,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_keymgr_sideload_kmac"]
-      bazel: ["//sw/device/tests:keymgr_sideload_kmac_test"]
+      bazel: [
+        "//sw/device/tests:keymgr_sideload_kmac_test",
+        "//sw/device/tests/crypto:kmac_sideload_functest_hardcoded",
+      ]
     }
     {
       name: chip_sw_keymgr_sideload_aes
@@ -133,6 +137,8 @@
       bazel: [
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
+        "//sw/device/tests/crypto:ecdh_p384_sideload_functest",
+        "//sw/device/tests/crypto:ecdsa_p384_sideload_functest",
       ]
     }
     {
@@ -141,19 +147,18 @@
 
             - For each keymgr operational state: `CreatorRootKey`, `OwnerIntKey` and `OwnerKey`:
               - Generate identity SW output for the Attestation CDI.
-              - Generate SW output for the Attestation CDI.
               - Generate OTBN sideload output for the Attestation CDI.
             - Ensure that the key output changes after calculating the previous steps after a
               keymgr advance operation.
             - The keymgr shall be able to reproduce the same keys for a give device configuration
               and known set of inputs.
-            - The softwre binding registers must be locked after configuration until a keymgr
+            - The software binding registers must be locked after configuration until a keymgr
               advance operation.
 
             Notes:
 
             - The device initial state needs to be equivalent to the end state of the
-              `manuf_ft_provision_rma_token_and_personalization` testpoint, otherwise they keymgr
+              `manuf_ft_provision_rma_token_and_personalization` testpoint, otherwise the keymgr
               will fail to advance into operational states.
             - Ensure the entropy complex is running in continuous mode, and that KMAC is configured
               to extract entropy from EDN.
@@ -168,8 +173,12 @@
             stage: V3
             si_stage: SV2
             lc_states: ["PROD"]
-            tests: []
-            bazel: []
+            tests: ["chip_sw_keymgr_derive_attestation"]
+            bazel: [
+              // Covers all points in the test except for the software binding registers.
+              "//sw/device/silicon_creator/lib:otbn_boot_services_functest",
+              "//sw/device/tests:keymgr_derive_attestation_test",
+            ]
     }
     {
       name: chip_sw_keymgr_derive_sealing
@@ -192,8 +201,8 @@
             stage: V3
             si_stage: SV3
             lc_states: ["PROD"]
-            tests: []
-            bazel: []
+            tests: ["chip_sw_keymgr_derive_sealing"]
+            bazel: ["//sw/device/tests:keymgr_derive_sealing_test"]
     }
   ]
 }

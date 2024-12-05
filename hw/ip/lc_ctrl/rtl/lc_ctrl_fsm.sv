@@ -10,7 +10,9 @@ module lc_ctrl_fsm
   import lc_ctrl_pkg::*;
   import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
-#(// Random netlist constants
+#(
+  parameter int unsigned    NumRmaAckSigs                 = 2,
+  // Random netlist constants
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivInvalid      = LcKeymgrDivWidth'(0),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivTestUnlocked = LcKeymgrDivWidth'(1),
   parameter lc_keymgr_div_t RndCnstLcKeymgrDivDev          = LcKeymgrDivWidth'(2),

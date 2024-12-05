@@ -166,6 +166,11 @@ static rom_error_t xmodem_send_start(void *iohandle, uint32_t retries) {
   return kErrorXModemTimeoutStart;
 }
 
+void xmodem_cancel(void *iohandle) {
+  xmodem_putchar(iohandle, kXModemCancel);
+  xmodem_putchar(iohandle, kXModemCancel);
+}
+
 static rom_error_t xmodem_send_finish(void *iohandle) {
   xmodem_putchar(iohandle, kXModemEof);
   uint8_t ch;

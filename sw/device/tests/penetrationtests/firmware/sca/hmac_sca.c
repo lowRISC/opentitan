@@ -14,8 +14,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -78,27 +77,28 @@ static status_t trigger_hmac(uint8_t key_buf[], uint8_t mask_buf[],
       .data = tag_buf,
   };
 
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   TRY(otcrypto_hmac(&key, input_message, tag));
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
   return OK_STATUS();
 }
 
-status_t handle_hmac_sca_init(ujson_t *uj) {
+status_t handle_hmac_pentest_init(ujson_t *uj) {
   // Setup trigger and enable peripherals needed for the test.
-  sca_select_trigger_type(kScaTriggerTypeSw);
+  pentest_select_trigger_type(kPentestTriggerTypeSw);
   // Enable the HMAC module and disable unused IP blocks to improve
   // SCA measurements.
-  sca_init(kScaTriggerSourceHmac, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac);
+  pentest_init(kPentestTriggerSourceHmac,
+               kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
+                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralEdn | kPentestPeripheralHmac);
 
   // Disable the instruction cache and dummy instructions for SCA.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
   // Read device ID and return to host.
   penetrationtest_device_id_t uj_output;
-  TRY(sca_read_device_id(uj_output.device_id));
+  TRY(pentest_read_device_id(uj_output.device_id));
   RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
 
   return OK_STATUS();
@@ -212,7 +212,7 @@ status_t handle_hmac_sca(ujson_t *uj) {
   TRY(ujson_deserialize_hmac_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kHmacScaSubcommandInit:
-      return handle_hmac_sca_init(uj);
+      return handle_hmac_pentest_init(uj);
     case kHmacScaSubcommandBatchFvsr:
       return handle_hmac_sca_batch_fvsr(uj);
     case kHmacScaSubcommandBatchRandom:

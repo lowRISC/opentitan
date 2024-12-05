@@ -80,3 +80,8 @@ py_binary(
     srcs = ["fusesoc_build.py"],
     deps = all_requirements,
 )
+
+py_library(
+    name = "version_file",
+    srcs = ["version_file.py"],
+)

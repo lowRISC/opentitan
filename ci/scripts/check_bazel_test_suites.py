@@ -26,9 +26,6 @@ EMPTY_TEST_SUITE_DESCRIPTION = """
 Test suites below contain zero tests. This is probably an accident.
 """
 
-AZURE_PIPELINES_WARNING = "##vso[task.logissue type=warning]"
-AZURE_PIPELINES_ERROR = "##vso[task.logissue type=error]"
-
 if __name__ == '__main__':
     bazel = BazelQueryRunner()
     non_manual_test_suites = list(bazel.find_non_manual_test_suites())
@@ -36,13 +33,13 @@ if __name__ == '__main__':
 
     if non_manual_test_suites:
         print("-" * 80)
-        print(AZURE_PIPELINES_WARNING + NON_MANUAL_TEST_SUITE_DESCRIPTION)
+        print("::warning::" + NON_MANUAL_TEST_SUITE_DESCRIPTION)
         for target in non_manual_test_suites:
             print("  - " + target)
 
     if empty_test_suites:
         print("-" * 80)
-        print(AZURE_PIPELINES_ERROR + EMPTY_TEST_SUITE_DESCRIPTION)
+        print("::error::" + EMPTY_TEST_SUITE_DESCRIPTION)
         for target in empty_test_suites:
             print("  - " + target)
 

@@ -12,6 +12,7 @@ filesets:
       - lowrisc:dv:usb20_agent
       - lowrisc:dv:usb20_usbdpi
       - lowrisc:dv:dv_base_reg
+      - lowrisc:ip:usbdev
     files:
       - usbdev_env_pkg.sv
       - usbdev_osc_tuning_if.sv

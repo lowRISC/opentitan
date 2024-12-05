@@ -11,7 +11,7 @@
   import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
 
   // These parameters are used for top_earlgrey retention sram
-  build_opts: ["+define+SRAM_ADDR_WIDTH=10",
+  build_opts: ["+define+SRAM_WORD_ADDR_WIDTH=10",
                "+define+INSTR_EXEC=0",
                "+define+NUM_PRINCE_ROUNDS_HALF=3"]
 }

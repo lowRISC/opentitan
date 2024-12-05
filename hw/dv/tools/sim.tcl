@@ -38,9 +38,17 @@ if {$simulator eq "xcelium"} {
   assertion -list -depth all -multiline -permoff $tb_top
 }
 
-# In GUI mode, let the user take control of running the simulation.
 global gui
-if {$gui == 0} {
+global gui_debug
+# In GUI mode, let the user take control of running the simulation.
+# In GUI debug mode, run only up until the end of the UVM elaboration phase to have access to the
+# dynamic objects.
+if {$gui_debug == 1} {
+  if {$simulator eq "xcelium"} {
+    uvm_phase -stop_at build -end
+    run
+  }
+} elseif {$gui == 0} {
   run
   if {$simulator eq "xcelium"} {
     # Xcelium provides a `finish` tcl command instead of `quit`. The argument '2' enables the

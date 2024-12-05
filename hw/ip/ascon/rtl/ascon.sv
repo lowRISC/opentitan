@@ -78,6 +78,9 @@ module ascon
     .alert_recov_o(ascon_recov_alert),
     .alert_fatal_o(ascon_fatal_alert),
 
+    .error_recov_i(shadowed_update_err),
+    .error_fatal_i(alert[1]),
+
     .keymgr_key_i,
 
     .reg2hw(reg2hw),

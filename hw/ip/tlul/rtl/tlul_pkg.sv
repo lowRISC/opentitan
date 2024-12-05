@@ -33,6 +33,8 @@ package tlul_pkg;
   parameter int DataMaxWidth    = 32;
   parameter int DataIntgWidth   = 7;
   parameter int DataFullWidth   = DataMaxWidth + DataIntgWidth;
+  parameter int RsvdWidth       = top_pkg::TL_AUW - prim_mubi_pkg::MuBi4Width -
+                                  H2DCmdIntgWidth - DataIntgWidth;
 
   // Data that is returned upon an a TL-UL error belonging to an instruction fetch.
   // Note that this data will be returned with the correct bus integrity value.
@@ -42,7 +44,7 @@ package tlul_pkg;
   parameter logic [top_pkg::TL_DW-1:0] DataWhenError      = {top_pkg::TL_DW{1'b1}};
 
   typedef struct packed {
-    logic [4:0]                 rsvd;
+    logic [RsvdWidth-1:0]       rsvd;
     prim_mubi_pkg::mubi4_t      instr_type;
     logic [H2DCmdIntgWidth-1:0] cmd_intg;
     logic [DataIntgWidth-1:0]   data_intg;

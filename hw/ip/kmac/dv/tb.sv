@@ -19,8 +19,8 @@ module tb;
   // keymgr/kmac sideload wires
   keymgr_pkg::hw_key_req_t kmac_sideload_key;
   // kmac_app interfaces
-  kmac_pkg::app_req_t [kmac_pkg::NumAppIntf-1:0] app_req;
-  kmac_pkg::app_rsp_t [kmac_pkg::NumAppIntf-1:0] app_rsp;
+  kmac_pkg::app_req_t [NUM_APP_INTF-1:0] app_req;
+  kmac_pkg::app_rsp_t [NUM_APP_INTF-1:0] app_rsp;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
@@ -37,7 +37,7 @@ module tb;
     .sideload_key (kmac_sideload_key)
   );
 
-  kmac_app_intf kmac_app_if[kmac_pkg::NumAppIntf](.clk(clk), .rst_n(rst_n));
+  kmac_app_intf kmac_app_if[NUM_APP_INTF](.clk(clk), .rst_n(rst_n));
 
   // edn_clk, edn_rst_n and edn_if is defined and driven in below macro
   `DV_EDN_IF_CONNECT
@@ -48,7 +48,8 @@ module tb;
 
   kmac #(
     .EnMasking(`EN_MASKING),
-    .SwKeyMasked(`SW_KEY_MASKED)
+    .SwKeyMasked(`SW_KEY_MASKED),
+    .NumAppIntf(NUM_APP_INTF)
   ) dut (
     .clk_i              (clk            ),
     .rst_ni             (rst_n          ),
@@ -89,7 +90,7 @@ module tb;
     .entropy_i          ({edn_if[0].ack, edn_if[0].d_data} )
   );
 
-  for (genvar i = 0; i < kmac_pkg::NumAppIntf; i++) begin : gen_kmac_app_intf
+  for (genvar i = 0; i < NUM_APP_INTF; i++) begin : gen_kmac_app_intf
     assign app_req[i]                   = kmac_app_if[i].kmac_data_req;
     assign kmac_app_if[i].kmac_data_rsp = app_rsp[i];
     assign kmac_if.app_req[i] = app_req[i];

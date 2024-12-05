@@ -105,6 +105,8 @@ class Xbar:
         upNode = self.get_node(u_node)
         dnNode = self.get_node(d_node)
 
+        for host_asid in upNode.addr_spaces:
+            assert host_asid in dnNode.addr_spaces
         edge = Edge(upNode, dnNode)
 
         if any([

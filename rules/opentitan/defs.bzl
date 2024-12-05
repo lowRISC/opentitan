@@ -4,6 +4,7 @@
 
 """Rules to build OpenTitan for the RISC-V target"""
 
+load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
     _OPENTITAN_CPU = "OPENTITAN_CPU",
@@ -16,26 +17,15 @@ load(
     _opentitan_test = "opentitan_test",
 )
 load(
+    "@lowrisc_opentitan//rules/opentitan:ci.bzl",
+    "ci_orchestrator",
+)
+load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
     _fpga_cw305 = "fpga_cw305",
     _fpga_cw310 = "fpga_cw310",
     _fpga_cw340 = "fpga_cw340",
     _fpga_params = "fpga_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
-    _silicon = "silicon",
-    _silicon_params = "silicon_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
-    _sim_verilator = "sim_verilator",
-    _verilator_params = "verilator_params",
-)
-load(
-    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
-    _dv_params = "dv_params",
-    _sim_dv = "sim_dv",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:keyutils.bzl",
@@ -46,14 +36,32 @@ load(
     _spx_key_by_name = "spx_key_by_name",
     _spx_key_for_lc_state = "spx_key_for_lc_state",
 )
+load(
+    "@lowrisc_opentitan//rules/opentitan:manual.bzl",
+    _opentitan_manual_test = "opentitan_manual_test",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:silicon.bzl",
+    _silicon = "silicon",
+    _silicon_params = "silicon_params",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_dv.bzl",
+    _dv_params = "dv_params",
+    _sim_dv = "sim_dv",
+)
+load(
+    "@lowrisc_opentitan//rules/opentitan:sim_verilator.bzl",
+    _sim_verilator = "sim_verilator",
+    _verilator_params = "verilator_params",
+)
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
 # and opentitan_binary rules.
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
-# Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
-# to get to them.
+# Re-exports of names from transition.bzl
 OPENTITAN_CPU = _OPENTITAN_CPU
 OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
 opentitan_transition = _opentitan_transition
@@ -85,6 +93,8 @@ rsa_key_by_name = _rsa_key_by_name
 spx_key_for_lc_state = _spx_key_for_lc_state
 spx_key_by_name = _spx_key_by_name
 
+opentitan_manual_test = _opentitan_manual_test
+
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
@@ -96,7 +106,6 @@ EARLGREY_TEST_ENVS = {
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-    "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
 }
 
 # All CW340 test environments for Earlgrey.
@@ -143,6 +152,8 @@ def _hacky_tags(env):
     (_, suffix) = env.split(":")
     tags = []
     if suffix.startswith("fpga"):
+        tags.append("fpga")
+
         # We have tags like "cw310_rom_with_real_keys" or "cw310_test_rom"
         # applied to our tests.  Since there is no way to adjust tags in a
         # rule's implementation, we have to infer these tag names from the
@@ -185,6 +196,7 @@ def opentitan_test(
         silicon = _silicon_params(),
         verilator = _verilator_params(),
         data = [],
+        run_in_ci = None,
         **kwargs):
     """Instantiate a test per execution environment.
 
@@ -212,6 +224,7 @@ def opentitan_test(
       dv: Execution overrides for a DV-based test.
       silicon: Execution overrides for a silicon-based test.
       verilator: Execution overrides for a verilator-based test.
+      run_in_ci: Override the automatic selection of execution environments to run in CI and run exactly those environments.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
     test_parameters = {
@@ -224,7 +237,8 @@ def opentitan_test(
     test_parameters.update(kwargs)
     kwargs_unused = kwargs.keys()
 
-    all_tests = []
+    # Precompute parameters.
+    all_test_params = []
     for (env, pname) in exec_env.items():
         pname = _parameter_name(env, pname)
 
@@ -237,6 +251,28 @@ def opentitan_test(
         tparam = test_parameters[pname]
         if pname in kwargs_unused:
             kwargs_unused.remove(pname)
+        all_test_params.append((env, pname, tparam, extra_tags))
+
+    # Find all exec_envs which are not marked as broken.
+    non_broken_exec_env = []
+    for (env, pname, tparam, extra_tags) in all_test_params:
+        if not ("broken" in tparam.tags + extra_tags):
+            non_broken_exec_env.append(env)
+
+    if run_in_ci == None:
+        skip_in_ci = sets.make(ci_orchestrator(name, non_broken_exec_env))
+        all_envs = sets.make([env for (env, _, _, _) in all_test_params])
+        run_in_ci = sets.difference(all_envs, skip_in_ci)
+    else:
+        run_in_ci = sets.make(run_in_ci)
+
+    all_tests = []
+    for (env, pname, tparam, extra_tags) in all_test_params:
+        # Tag test if it must not run in CI.
+        skip_in_ci = []
+        if not sets.contains(run_in_ci, env):
+            skip_in_ci.append("skip_in_ci")
+
         (_, suffix) = env.split(":")
         test_name = "{}_{}".format(name, suffix)
         all_tests.append(":" + test_name)
@@ -254,7 +290,7 @@ def opentitan_test(
             exec_env = env,
             naming_convention = "{name}",
             # Tagging and timeout info always comes from a param block.
-            tags = tparam.tags + extra_tags,
+            tags = tparam.tags + extra_tags + skip_in_ci,
             timeout = tparam.timeout,
             local = tparam.local,
             # Override parameters in the test rule.

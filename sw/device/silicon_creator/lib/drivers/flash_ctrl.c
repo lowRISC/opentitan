@@ -356,6 +356,22 @@ rom_error_t flash_ctrl_info_read(const flash_ctrl_info_page_t *info_page,
   return wait_for_done(kErrorFlashCtrlInfoRead);
 }
 
+rom_error_t flash_ctrl_info_read_zeros_on_read_error(
+    const flash_ctrl_info_page_t *info_page, uint32_t offset,
+    uint32_t word_count, void *data) {
+  rom_error_t err = flash_ctrl_info_read(info_page, offset, word_count, data);
+  if (err != kErrorOk) {
+    flash_ctrl_error_code_t flash_ctrl_err_code;
+    flash_ctrl_error_code_get(&flash_ctrl_err_code);
+    if (flash_ctrl_err_code.rd_err) {
+      // If we encountered a read error, return all 0s.
+      memset(data, 0, word_count * sizeof(uint32_t));
+      return kErrorOk;
+    }
+  }
+  return err;
+}
+
 rom_error_t flash_ctrl_data_write(uint32_t addr, uint32_t word_count,
                                   const void *data) {
   return write(addr, kFlashCtrlPartitionData, word_count, data,

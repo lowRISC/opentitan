@@ -11,6 +11,8 @@ LocalToolInfo = provider(fields = [
     "gen_mem_image",
     "gen_otp_rot_auth_json",
     "gen_otp_immutable_rom_ext_json",
+    "gen_otp_creator_manuf_state_json",
+    "update_manifest_json",
 ])
 
 def _localtools_toolchain(ctx):
@@ -19,6 +21,7 @@ def _localtools_toolchain(ctx):
         gen_mem_image = ctx.attr.gen_mem_image[0].files_to_run,
         gen_otp_rot_auth_json = ctx.attr.gen_otp_rot_auth_json[0].files_to_run,
         gen_otp_immutable_rom_ext_json = ctx.attr.gen_otp_immutable_rom_ext_json[0].files_to_run,
+        update_manifest_json = ctx.attr.update_manifest_json[0].files_to_run,
     )
     return platform_common.ToolchainInfo(
         name = ctx.label.name,
@@ -45,6 +48,11 @@ localtools_toolchain = rule(
         ),
         "gen_otp_immutable_rom_ext_json": attr.label(
             default = "//util/design:gen-otp-immutable-rom-ext-json",
+            executable = True,
+            cfg = host_tools_transition,
+        ),
+        "update_manifest_json": attr.label(
+            default = "//util/design:update-manifest-json",
             executable = True,
             cfg = host_tools_transition,
         ),

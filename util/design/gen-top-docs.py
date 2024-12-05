@@ -29,6 +29,11 @@ def generate_mmap_table(top_level):
 
     for module in top_level["module"]:
         for j, (name, base) in enumerate(module["base_addrs"].items()):
+            # TODO(): Don't hard-code the addr space name for software
+            # TODO(): Document all addr spaces and explain what they represent
+            if "hart" not in base:
+                continue
+            base = base["hart"]
 
             base_address = f"{base} ({name})"
             if name == "null":

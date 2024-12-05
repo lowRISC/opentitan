@@ -6,3 +6,9 @@
 
 waive -rules {STAR_PORT_CONN_USE} -location {prim_ram_1r1w.sv} -regexp {.*wild card port connection encountered on instance.*} \
       -comment "Generated prims may have wildcard connections."
+
+waive -rules {HIER_BRANCH_NOT_READ} -location {prim_ram_1r1w_async_adv.sv} -regexp {Net 'rst_a_ni' is not read from in module 'prim_ram_1r1w_async_adv} \
+      -comment "rst_a_ni is only used in assertions in certain confgurations."
+
+waive -rules {INPUT_NOT_READ} -location {prim_ram_1r1w_async_adv.sv} -regexp {Input port 'rst_a_ni' is not read from, instance} \
+      -comment "rst_a_ni is only used in assertions in certain confgurations."

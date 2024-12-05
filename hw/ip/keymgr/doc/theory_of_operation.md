@@ -53,15 +53,17 @@ When transitioning from `Initialized` to this state, a KMAC operation is invoked
 The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `CreatorRootKey`.
 
 Inputs to the derivation function are:
-*  `DiversificationKey`: Secret seed from flash
+*  `HardwareRevisionSecret`: A global design time constant.
+*  `ROMHash`: SHA-3-256 hash of the ROM image.
 *  `HealthMeasurement`: Current life cycle state
    *  To avoid a state value corresponding to each life cycle state, the raw life cycle value is not used.
    *  Instead, certain life cycle states diversify the same way.
    *  Please see the life cycle controller for more details.
 *  `DeviceIdentifier`: Unique device identification.
-*  `HardwareRevisionSecret`: A global design time constant.
+*  `SoftwareBinding`: A software programmed value related to ROMExt.
 
-Other than the `DiversificationKey` and `HardwareRevisionSecret`, none of the values above are considered secret.
+
+Other than `HardwareRevisionSecret`, none of the values above are considered secret.
 
 Once the `CreatorRootKey` is reached, software can request key manager to advance state, generate output key or generate output identity.
 The key used for all 3 functions is the `CreatorRootKey`.
@@ -77,7 +79,7 @@ This state is reached through another invocation of the KMAC operation using the
 The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `OwnerIntermediateKey`.
 
 The relevant data inputs are:
-*  `OwnerRootSecret`: Secret seed from flash.
+*  `CreatorSecret`: A secret seed from flash determined by the SiliconCreator.
 *  `SoftwareBinding`: A software programmed value representing the first owner code to be run.
 
 Once the `OwnerIntermediateKey` is created, software can request key manager to advance state, generate output key or generate output identity.
@@ -92,6 +94,7 @@ This state is reached through another invocation of the KMAC operation using the
 The output of the KMAC operation replaces the previous value of the internal key, and the new value becomes the `OwnerRootKey`.
 
 The relevant inputs are:
+*  `OwnerRootSecret`: Secret seed from flash.
 *   `SoftwareBinding` - A software programmed value representing the owner kernel code.
 
 Once the `OwnerRootKey` is created, software can request key manager to advance state, generate output key or generate output identity.

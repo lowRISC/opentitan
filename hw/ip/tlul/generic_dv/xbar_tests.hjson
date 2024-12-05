@@ -96,7 +96,12 @@
                  "+max_device_req_delay=1000",
                  "+max_device_rsp_delay=1000",
                  "+max_host_valid_len=2000",
-                 "+max_device_valid_len=2000"]
+                 "+max_device_valid_len=2000",
+                 // Large delays can cause this test to time out for large crossbar configurations.
+                 // Thus reduce the number of runs (called `num_trans` in `dv_base_vseq`) to prevent
+                 // timeouts.
+                 "+max_num_trans=10",
+                ]
     }
 
     {
@@ -110,7 +115,12 @@
                  "+max_device_req_delay=1000",
                  "+max_device_rsp_delay=10",
                  "+max_host_valid_len=2000",
-                 "+max_device_valid_len=2000"]
+                 "+max_device_valid_len=2000",
+                 // Slow responses can cause this test to time out for large crossbar
+                 // configurations. Thus reduce the number of runs (called `num_trans` in
+                 // `dv_base_vseq`) to prevent timeouts.
+                 "+max_num_trans=10",
+                ]
     }
 
     {
@@ -132,7 +142,12 @@
                  "+max_device_req_delay=1000",
                  "+max_device_rsp_delay=10",
                  "+max_host_valid_len=2000",
-                 "+max_device_valid_len=2000"]
+                 "+max_device_valid_len=2000",
+                 // Slow responses can cause this test to time out for large crossbar
+                 // configurations. Thus reduce the number of runs (called `num_trans` in
+                 // `dv_base_vseq`) to prevent timeouts.
+                 "+max_num_trans=10",
+                ]
     }
 
     {

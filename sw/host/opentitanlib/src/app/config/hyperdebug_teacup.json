@@ -404,6 +404,16 @@
       "name": "VBUS_SENSE",
       "mode": "Input",
       "alias_of": "CN10_18"
+    },
+    {
+        // Connected to active-low shutdown pin on the LED driver. This is
+        // pulled low by the rev 1.5 Teacup board, so it must be driven high to
+        // activate the driver. This configuration makes a high output the
+        // default.
+        "name": "LED_SD_L",
+        "mode": "PushPull",
+        "level": true,
+        "alias_of": "CN10_15"
     }
   ],
   "spi": [

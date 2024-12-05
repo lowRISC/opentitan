@@ -138,7 +138,12 @@ class OTBNState:
         # cancelled).
         self.injected_err_bits = 0
         self.lock_immediately = False
-        self.zero_insn_cnt_next = False
+
+        # OTBN might zero its insn_cnt register during a secure wipe. The
+        # precise cycle that this happens depends slightly on how we decide to
+        # do so. If this is not None, it is a counter of the number of cycles
+        # before the zeroing should happen.
+        self.time_to_insn_cnt_zero = None  # type: Optional[int]
 
         # If this is set, all software errors should result in the model status
         # being locked.

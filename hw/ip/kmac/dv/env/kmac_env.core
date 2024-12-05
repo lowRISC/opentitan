@@ -38,6 +38,7 @@ filesets:
       - seq_lib/kmac_burst_write_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_app_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_app_with_partial_data_vseq.sv: {is_include_file: true}
+      - seq_lib/kmac_sideload_invalid_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_entropy_refresh_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_mubi_vseq.sv: {is_include_file: true}
       - seq_lib/kmac_error_vseq.sv: {is_include_file: true}

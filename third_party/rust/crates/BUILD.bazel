@@ -13,15 +13,21 @@ exports_files(
         "cargo-bazel.json",
         "crates.bzl",
         "defs.bzl",
-    ] + glob(["*.bazel"]),
+    ] + glob(
+        include = ["*.bazel"],
+        allow_empty = True,
+    ),
 )
 
 filegroup(
     name = "srcs",
-    srcs = glob([
-        "*.bazel",
-        "*.bzl",
-    ]),
+    srcs = glob(
+        include = [
+            "*.bazel",
+            "*.bzl",
+        ],
+        allow_empty = True,
+    ),
 )
 
 # Workspace Member Dependencies
@@ -118,6 +124,12 @@ alias(
 alias(
     name = "cryptoki-sys",
     actual = "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
+    tags = ["manual"],
+)
+
+alias(
+    name = "cryptoki-sys-binding-srcs",
+    actual = "@crate_index__cryptoki-sys-0.1.6//:binding_srcs",
     tags = ["manual"],
 )
 
@@ -220,6 +232,12 @@ alias(
 alias(
     name = "indoc",
     actual = "@crate_index__indoc-2.0.4//:indoc",
+    tags = ["manual"],
+)
+
+alias(
+    name = "itertools",
+    actual = "@crate_index__itertools-0.13.0//:itertools",
     tags = ["manual"],
 )
 
@@ -514,6 +532,12 @@ alias(
 alias(
     name = "zerocopy",
     actual = "@crate_index__zerocopy-0.7.11//:zerocopy",
+    tags = ["manual"],
+)
+
+alias(
+    name = "zeroize",
+    actual = "@crate_index__zeroize-1.8.1//:zeroize",
     tags = ["manual"],
 )
 

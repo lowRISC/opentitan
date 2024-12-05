@@ -38,8 +38,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
-        "//sw/device/lib/crypto/impl/ecc:p256_common",
+        "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -179,30 +178,23 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-[
-    opentitan_binary(
-        name = "firmware_{}".format(exec_env),
-        testonly = True,
-        srcs = [":firmware.c"],
-        exec_env = [
-            "//hw/top_earlgrey:{}".format(exec_env),
-        ],
-        deps = FIRMWARE_DEPS,
-    )
-    for exec_env in [
-        "fpga_cw310_test_rom",
-        "fpga_cw340_test_rom",
-        "silicon_owner_sival_rom_ext",
-        "silicon_owner_prodc_rom_ext",
-    ]
-]
+opentitan_binary(
+    name = "firmware",
+    testonly = True,
+    srcs = [":firmware.c"],
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
+    ],
+    deps = FIRMWARE_DEPS,
+)
 
 opentitan_test(
     name = "chip_pen_test",
     srcs = [":firmware.c"],
     exec_env = {
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": "silicon_owner",
     },
     silicon_owner = silicon_params(
         tags = ["broken"],

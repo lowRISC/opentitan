@@ -31,12 +31,28 @@
   // Enable cdc instrumentation.
   run_opts: ["+cdc_instrumentation_enabled=1"]
 
+  run_modes: [
+    {
+      name: vcs_disable_cg_mode
+      run_opts: ["-covg_disable_cg"]
+    }
+    // Xcelium does not support the -covg_disable_cg flag
+    {
+      name: xcelium_disable_cg_mode
+      run_opts: []
+    }
+    {
+      name: disable_cg_mode
+      en_run_modes: ["{tool}_disable_cg_mode"]
+    }
+  ]
+
   // List of test specifications.
   tests: [
     {
       name: tl_agent_smoke
       uvm_test_seq: tl_agent_base_vseq
-      run_opts: ["-covg_disable_cg"]
+      en_run_modes: ["{tool}_disable_cg_mode"]
     }
   ]
 

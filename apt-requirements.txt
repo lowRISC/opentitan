@@ -17,6 +17,7 @@ clang-format
 cmake
 curl
 doxygen
+file
 flex
 g++
 git
@@ -48,5 +49,6 @@ python3-wheel
 srecord
 tree
 xsltproc
-zlib1g-dev
 xz-utils
+zip
+zlib1g-dev

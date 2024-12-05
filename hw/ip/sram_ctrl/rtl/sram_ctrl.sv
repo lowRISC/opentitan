@@ -110,6 +110,7 @@ module sram_ctrl
 
   // SEC_CM: CTRL.CONFIG.REGWEN
   // SEC_CM: EXEC.CONFIG.REGWEN
+  // SEC_CM: READBACK.CONFIG.REGWEN
   sram_ctrl_regs_reg_top u_reg_regs (
     .clk_i,
     .rst_ni,
@@ -496,6 +497,7 @@ module sram_ctrl
     .wmask_o                    (tlul_wmask),
     // SEC_CM: BUS.INTEGRITY
     .intg_error_o               (bus_integ_error[1]),
+    .user_rsvd_o                (),
     .rdata_i                    (sram_rdata),
     .rvalid_i                   (sram_rvalid),
     .rerror_i                   ('0),

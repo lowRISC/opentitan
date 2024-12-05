@@ -47,7 +47,8 @@ fi
 
 env DVSIM_MAX_PARALLEL="$mp" \
   util/dvsim/dvsim.py --tool=veriblelint "$dvsim_cfg" || {
-    echo -n "##vso[task.logissue type=error]"
-    echo "Verilog style lint of $human_desc sources with Verible failed. Run 'util/dvsim/dvsim.py -t veriblelint $dvsim_cfg' and fix all errors."
+    echo "::error::"\
+        "Verilog style lint of ${human_desc} sources with Verible failed." \
+        "Run 'util/dvsim/dvsim.py -t veriblelint ${dvsim_cfg}' and fix all errors."
     exit 1
 }

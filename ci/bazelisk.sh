@@ -3,6 +3,12 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# In GitHub actions, we configure Bazel using ~/.bazelisk using .github/actions/prepare-env
+# So execute bazelisk.sh directly.
+if [[ -n "$GITHUB_ACTIONS" ]]; then
+    exec "$(dirname $0)"/../bazelisk.sh "$@"
+fi
+
 # This is the CI version of `bazelisk.sh`, which calls into the "usual" wrapper,
 # but adds various flags to produce CI-friendly output. It does so by prociding a
 # command-line specified .bazelrc (that is applied alongside //.bazelrc).

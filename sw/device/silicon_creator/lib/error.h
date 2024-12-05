@@ -54,6 +54,7 @@ enum module_ {
   kModuleRescue =          MODULE_CODE('R', 'S'),
   kModuleCert =            MODULE_CODE('C', 'E'),
   kModuleOwnership =       MODULE_CODE('O', 'W'),
+  kModulePersoTlv =        MODULE_CODE('P', 'T'),
   // clang-format on
 };
 
@@ -215,6 +216,11 @@ enum module_ {
   X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipKeyNotFound,       ERROR_(12, kModuleOwnership, kNotFound)), \
+  \
+  X(kErrorPersoTlvInternal,           ERROR_(0, kModulePersoTlv, kInternal)), \
+  X(kErrorPersoTlvCertObjNotFound,    ERROR_(1, kModulePersoTlv, kNotFound)), \
+  X(kErrorPersoTlvCertNameTooLong,    ERROR_(2, kModulePersoTlv, kOutOfRange)), \
+  X(kErrorPersoTlvOutputBufTooSmall,  ERROR_(3, kModulePersoTlv, kOutOfRange)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

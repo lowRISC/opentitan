@@ -7,7 +7,7 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
   // ext interfaces
   kmac_vif kmac_vif;
 
-  rand kmac_app_agent_cfg m_kmac_app_agent_cfg[kmac_pkg::NumAppIntf];
+  rand kmac_app_agent_cfg m_kmac_app_agent_cfg[kmac_env_pkg::NUM_APP_INTF];
   rand key_sideload_agent_cfg keymgr_sideload_agent_cfg;
 
   // Masked KMAC is the default configuration
@@ -21,6 +21,10 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
 
   // Skip read check for some error test case
   bit skip_read_check = 0;
+
+  // Tracks if a test invalidated the sideloading key.
+  bit key_invalidated = 0;
+
   // These values are used by the test vector tests to select the correct vector text files.
   // These are unused by all other tests.
   int sha3_variant;
@@ -46,7 +50,7 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
     shadow_storage_err_status_fields[ral.cfg_regwen.en] = 0;
     shadow_storage_err_status_fields[ral.status.sha3_idle] = 0;
 
-    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+    for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin
       string name = $sformatf("m_kmac_app_agent_cfg[%0d]", i);
       m_kmac_app_agent_cfg[i] = kmac_app_agent_cfg::type_id::create(name);
       m_kmac_app_agent_cfg[i].if_mode = dv_utils_pkg::Host;

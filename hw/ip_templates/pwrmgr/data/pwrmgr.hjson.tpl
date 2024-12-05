@@ -142,6 +142,14 @@
   ]
 
   inter_signal_list: [
+% if wait_for_external_reset:
+    { struct:  "pwr_boot_status",
+      type:    "uni",
+      name:    "boot_status",
+      act:     "req",
+      package: "pwrmgr_pkg",
+    },
+% endif
     { struct:  "pwr_ast",
       type:    "req_rsp",
       name:    "pwr_ast",
@@ -198,11 +206,11 @@
       package: "prim_esc_pkg",
     },
 
-    { struct:  "pwr_cpu",
+    { struct:  "cpu_pwrmgr",
       type:    "uni",
       name:    "pwr_cpu",
       act:     "rcv",
-      package: "pwrmgr_pkg",
+      package: "rv_core_ibex_pkg",
     },
 
     { struct:  "logic",
@@ -245,7 +253,9 @@
       type:    "uni",
       name:    "rom_ctrl",
       act:     "rcv",
+      width:   "${NumRomInputs}"
       package: "rom_ctrl_pkg",
+      default: "rom_ctrl_pkg::PWRMGR_DATA_DEFAULT"
     },
 
     { struct:  "lc_tx",
@@ -313,6 +323,13 @@
       desc: "Number of debug reset requets",
       type: "int",
       default: "${len(debug_reset_reqs)}",
+      local: "true"
+    },
+
+    { name: "NumRomInputs",
+      desc: "Number of inputs from ROM_CTRL",
+      type: "int",
+      default: "${NumRomInputs}",
       local: "true"
     },
 

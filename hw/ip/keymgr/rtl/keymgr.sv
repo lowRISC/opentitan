@@ -80,12 +80,15 @@ module keymgr
   `ASSERT_INIT(AdvDataWidth_A, AdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(IdDataWidth_A,  IdDataWidth  <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
+  `ASSERT_INIT(MaxWidthDivisible_A, KDFMaxWidth % KmacDataIfWidth == 0)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
   import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::mubi4_test_false_strict;
   import lc_ctrl_pkg::lc_tx_test_true_strict;
   import lc_ctrl_pkg::lc_tx_t;
+
+  localparam int unsigned NumRomDigestInputs = 1;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -498,17 +501,19 @@ module keymgr
   assign max_key_versions[OwnerInt] = reg2hw.max_owner_int_key_ver_shadowed.q;
   assign max_key_versions[Owner]    = reg2hw.max_owner_key_ver_shadowed.q;
 
+  logic [KeyVersionWidth-1:0] cur_max_key_version;
+  assign cur_max_key_version = max_key_versions[stage_sel];
 
   // General module for checking inputs
   logic key_vld;
   // SEC_CM: CONSTANTS.CONSISTENCY
   // SEC_CM: INTERSIG.CONSISTENCY
   keymgr_input_checks #(
-    .KmacEnMasking(KmacEnMasking)
+    .KmacEnMasking(KmacEnMasking),
+    .NumRomDigestInputs(NumRomDigestInputs)
   ) u_checks (
     .rom_digest_i,
-    .max_key_versions_i(max_key_versions),
-    .stage_sel_i(stage_sel),
+    .cur_max_key_version_i(cur_max_key_version),
     .key_version_i(reg2hw.key_version),
     .creator_seed_i(creator_seed),
     .owner_seed_i(owner_seed),

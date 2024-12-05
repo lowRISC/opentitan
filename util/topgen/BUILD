@@ -42,6 +42,7 @@ py_library(
         "//util/reggen:params",
         "//util/reggen:window",
         requirement("mako"),
+        requirement("importlib_resources"),
     ],
 )
 
@@ -55,6 +56,7 @@ py_library(
         "rust.py",
     ],
     deps = [
+        "//util:version_file",
         "//util/reggen:inter_signal",
         "//util/reggen:ip_block",
         "//util/reggen:validate",

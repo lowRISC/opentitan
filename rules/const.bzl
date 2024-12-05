@@ -141,8 +141,8 @@ CONST = struct(
         ESC_PHASE_3 = 0x76,
     ),
     MANUF_STATE = struct(
-        SIVAL = 0x30305653,  # ASCII `SV00`.
-        PRODC = 0x30304350,  # ASCII `PC00`.
+        PERSO_INITIAL = 0x00000000,
+        PERSONALIZED = 0x53524550,  # ASCII `PERS`.
     ),
 )
 

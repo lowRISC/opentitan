@@ -19,6 +19,7 @@ args=(
     -name .git -prune -o
     -name vendor -prune -o
     -name scratch -prune -o
+    -name build-site -prune -o
     # Filter to executable files.
     -type f
     -executable

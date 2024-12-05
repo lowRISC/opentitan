@@ -1236,14 +1236,14 @@ class keymgr_scoreboard extends cip_base_scoreboard #(
   virtual function keymgr_pkg::keymgr_working_state_e get_next_state(
       keymgr_pkg::keymgr_working_state_e cur = current_state);
     keymgr_pkg::keymgr_working_state_e next_linear_state = keymgr_env_pkg::get_next_state(cur);
+    logic creator_root_key_valid = cfg.keymgr_vif.otp_key.creator_root_key_share0_valid &
+                                   cfg.keymgr_vif.otp_key.creator_root_key_share1_valid;
 
     if (// If keymgr is not enabled in the current LC
         !cfg.keymgr_vif.get_keymgr_en() ||
         // or the linearly next state would be initialized but not all of the Creator Root Key
         // shares are valid
-        (next_linear_state == keymgr_pkg::StInit &&
-         !&{cfg.keymgr_vif.otp_key.creator_root_key_share0_valid,
-            cfg.keymgr_vif.otp_key.creator_root_key_share1_valid})
+        (next_linear_state == keymgr_pkg::StInit && !creator_root_key_valid)
     ) begin
       // then the next state is invalid.
       return keymgr_pkg::StInvalid;

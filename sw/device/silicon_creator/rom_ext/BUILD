@@ -16,31 +16,20 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "rom_ext_epmp",
-    srcs = ["rom_ext_epmp.c"],
-    hdrs = ["rom_ext_epmp.h"],
-    deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:bitfield",
-        "//sw/device/lib/base:csr",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:epmp_state",
-    ],
-)
-
-cc_library(
     name = "rescue",
     srcs = ["rescue.c"],
     hdrs = ["rescue.h"],
     deps = [
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/base:memory",
+        "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:xmodem",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/ownership:owner_block",
     ],
 )
 
@@ -218,38 +207,32 @@ cc_library(
         ":rescue",
         ":rom_ext_boot_policy",
         ":rom_ext_boot_policy_ptrs",
-        ":rom_ext_epmp",
         ":sigverify_keys",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/base:stdasm",
-        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/imm_rom_ext:main_lib",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib:shutdown",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
-        "//sw/device/silicon_creator/lib/cert",
-        "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
-        "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:dice",
+        "//sw/device/silicon_creator/lib/cert:dice_chain",
         "//sw/device/silicon_creator/lib/drivers:ast",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:ibex",
-        "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
         "//sw/device/silicon_creator/lib/drivers:pinmux",
@@ -257,6 +240,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:rnd",
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/ownership",
+        "//sw/device/silicon_creator/lib/ownership:ownership_activate",
         "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
         "//sw/device/silicon_creator/lib/sigverify",
         "//sw/otbn/crypto:boot",
@@ -274,6 +258,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -290,13 +275,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_b",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -313,13 +299,14 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
     ],
 )
 
 opentitan_binary(
     name = "rom_ext_slot_virtual",
+    testonly = True,
     # TODO(#22780): Integrate real keys for A1 flows.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
@@ -335,8 +322,32 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
+    ],
+)
+
+opentitan_binary(
+    name = "rom_ext_with_nop_imm_slot_virtual",
+    testonly = True,
+    # TODO(#22780): Integrate real keys for A1 flows.
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw310",
+        "//hw/top_earlgrey:fpga_cw340",
+        "//hw/top_earlgrey:sim_dv_base",
+        "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_earlgrey:silicon_creator",
+    ],
+    linker_script = ":ld_slot_virtual",
+    manifest = ":manifest",
+    deps = [
+        ":rom_ext",
+        "//sw/device/lib/crt",
+        "//sw/device/silicon_creator/imm_rom_ext/prebuilts:nop_imm_rom_ext",
+        "//sw/device/silicon_creator/lib:manifest_def",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
 

@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#include "sw/device/lib/base/hardened_asm.h"
+#include "otp_ctrl_regs.h"
 
 /**
  * ROM_EXT Interrupt Vector
@@ -78,15 +80,32 @@ _rom_ext_interrupt_vector:
   .type _rom_ext_start_boot, @function
 _rom_ext_start_boot:
   /**
-   * Set up the global pointer `gp`.
-   *
    * Linker relaxations are disabled until the global pointer is setup below,
    * because otherwise some sequences may be turned into `gp`-relative
    * sequences, which is incorrect when `gp` is not initialized.
    */
   .option push
   .option norelax
+
+  /**
+   * Call the .rom_ext_immutable first if it's not called by ROM.
+   */
+  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+            OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
+  lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET(a0)
+  li   t1, HARDENED_BOOL_TRUE
+  beq  t0, t1, .L_mutable_start_boot
+  call _rom_ext_immutable_start
+
+  /**
+   * Continue booting the mutable rom_ext.
+   */
+.L_mutable_start_boot:
+  /**
+   * Set up the global pointer `gp`.
+   */
   la gp, __global_pointer$
+
   .option pop
 
   /**

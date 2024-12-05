@@ -202,12 +202,12 @@ It is notable that there are many differences between an FPGA implementation of 
 Some pad attributes with analog characteristics like drive strength, slew rate and Open Drain technology are not supported on all platforms.
 
 The pin multiplexor is a peripheral on the TLUL bus, with collections of registers that provide software configurability.
-See the [pinmux specification](../../../ip/pinmux/README.md) for how to connect peripheral IO to chip IO and for information on pad control features.
+See the [pinmux specification](../../ip_autogen/pinmux/README.md) for how to connect peripheral IO to chip IO and for information on pad control features.
 
 ##### UART
 
 The chip contains one UART peripheral that implement single-lane duplex UART functionality.
-The outputs and inputs can be configured to any chip IO via the [pinmux](../../../ip/pinmux/README.md).
+The outputs and inputs can be configured to any chip IO via the [pinmux](../../ip_autogen/pinmux/README.md).
 
 See the [UART specification](../../../ip/uart/README.md) for more details on this peripheral.
 
@@ -216,7 +216,7 @@ See the [UART specification](../../../ip/uart/README.md) for more details on thi
 The chip contains one GPIO peripheral that creates 32 bits of bidirectional communication with the outside world via the pinmux.
 Via pinmux any of the 32 pins of GPIO can be connected to any of the 32 MIO chip pins, in any direction.
 See the [GPIO specification](../../../ip/gpio/README.md) for more details on this peripheral.
-See the [pinmux specification](../../../ip/pinmux/README.md) for how to connect peripheral IO to chip IO.
+See the [pinmux specification](../../ip_autogen/pinmux/README.md) for how to connect peripheral IO to chip IO.
 
 ##### SPI device
 
@@ -404,6 +404,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 | otp_ctrl          | otp_ctrl      | 0x40130000 (core) |
 |                   |               | 0x40138000 (prim) |
 | lc_ctrl           | lc_ctrl       | 0x40140000 (regs) |
+|                   |               | 0x0 (dmi)         |
 | alert_handler     | alert_handler | 0x40150000 (regs) |
 | spi_host0         | spi_host      | 0x40300000 (regs) |
 | spi_host1         | spi_host      | 0x40310000 (regs) |
@@ -425,6 +426,7 @@ For the purpose of `top_earlgrey`, the first option has been chosen to benefit s
 |                   |               | 0x20000000 (mem)  |
 | rv_dm             | rv_dm         | 0x00010000 (mem)  |
 |                   |               | 0x41200000 (regs) |
+|                   |               | 0x00001000 (dbg)  |
 | rv_plic           | rv_plic       | 0x48000000 (regs) |
 | aes               | aes           | 0x41100000 (regs) |
 | hmac              | hmac          | 0x41110000 (regs) |

@@ -52,6 +52,9 @@ class FlowCfg():
         self.branch = args.branch
         self.job_prefix = args.job_prefix
         self.gui = args.gui
+        self.gui_debug = args.gui_debug
+        if self.gui_debug:
+            self.gui = 1
 
         self.interactive = args.interactive
 
@@ -301,17 +304,17 @@ class FlowCfg():
                               "Found this instead:\n%s", str(item))
                     sys.exit(1)
 
-    def _do_override(self, ov_name, ov_value):
+    def _do_override(self, ov_name: str, ov_value: object) -> None:
         # Go through self attributes and replace with overrides
         if hasattr(self, ov_name):
             orig_value = getattr(self, ov_name)
-            if type(orig_value) == type(ov_value):
+            if isinstance(ov_value, type(orig_value)):
                 log.debug("Overriding \"%s\" value \"%s\" with \"%s\"",
                           ov_name, orig_value, ov_value)
                 setattr(self, ov_name, ov_value)
             else:
                 log.error("The type of override value \"%s\" for \"%s\" "
-                          "mismatches the type of original value \"%s\"",
+                          "doesn't match the type of original value \"%s\"",
                           ov_value, ov_name, orig_value)
                 sys.exit(1)
         else:
@@ -370,8 +373,8 @@ class FlowCfg():
         '''
         self.prune_selected_cfgs()
 
-        # GUI or Interactive mode is allowed only for one cfg.
-        if (self.gui or self.interactive) and len(self.cfgs) > 1:
+        # GUI, GUI debug or Interactive mode is allowed only for one cfg.
+        if (self.gui or self.gui_debug or self.interactive) and len(self.cfgs) > 1:
             log.fatal("In GUI mode, only one cfg can be run.")
             sys.exit(1)
 

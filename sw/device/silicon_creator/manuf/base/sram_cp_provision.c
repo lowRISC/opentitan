@@ -45,8 +45,8 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  TRY(dif_lc_ctrl_init(mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_BASE_ADDR),
-                       &lc_ctrl));
+  TRY(dif_lc_ctrl_init(
+      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
@@ -140,21 +140,21 @@ static status_t print_inputs_to_console(
 
   LOG_INFO("Device ID:");
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", provisioning_data->device_id[i]);
+    LOG_INFO("0x%08x", provisioning_data->device_id[i]);
   }
   LOG_INFO("Test Unlock Token Hash:");
   for (size_t i = 0; i < ARRAYSIZE(provisioning_data->test_unlock_token_hash);
        ++i) {
     high = provisioning_data->test_unlock_token_hash[i] >> 32;
     low = provisioning_data->test_unlock_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%x%x", high, low);
+    LOG_INFO("0x%08x%08x", high, low);
   }
   LOG_INFO("Test Exit Token Hash:");
   for (size_t i = 0; i < ARRAYSIZE(provisioning_data->test_exit_token_hash);
        ++i) {
     high = provisioning_data->test_exit_token_hash[i] >> 32;
     low = provisioning_data->test_exit_token_hash[i] & 0xffffffff;
-    LOG_INFO("0x%x%x", high, low);
+    LOG_INFO("0x%08x%08x", high, low);
   }
   return OK_STATUS();
 }

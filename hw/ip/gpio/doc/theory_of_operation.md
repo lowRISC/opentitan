@@ -72,6 +72,16 @@ effect of the peripheral's driven output (so will only differ from DATA_OUT if
 the output driver is unable to switch the pin or during the delay imposed
 if the noise filter is enabled).
 
+#### GPIO Inputs as HW Straps
+The GPIO controller also provides an additional optional feature to sample the GPIO input values as hardware configuration straps
+These input values are sampled only at initial cold boot reset deassertion and is not sampled thereafter.
+Thus any change in the input configuration information after power on reset deassertion will not be captured.
+A strap_en signal driven by the pwrmgr is used for this sampling mechanism. The strap_en pulse is a single cycle pulse of the io div4 clock
+It is expected to toggle only once at cold boot.
+
+The snapshot value of the GPIO inputs is available in the [`HW_STRAPS_DATA_IN`](../data/gpio.hjson#hw_straps_data_in) register for firmware read out
+Note that all 32 bits of input data to the GPIO controller are sampled in this mode regardless of the gpio output enable status
+
 ### Interrupts
 
 The GPIO module provides 32 interrupt signals to the main processor.

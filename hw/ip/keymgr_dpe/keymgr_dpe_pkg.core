@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:keymgr_dpe_pkg:0.1"
+description: "Keymgr DPE Package"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:constants:top_pkg
+      - lowrisc:ip:edn_pkg
+      - lowrisc:ip:keymgr_pkg
+    files:
+      - rtl/keymgr_dpe_reg_pkg.sv
+      - rtl/keymgr_dpe_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

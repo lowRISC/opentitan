@@ -143,7 +143,8 @@
        stage: V2
        si_stage: SV1
        tests: []
-       bazel: ["//sw/device/tests:rv_core_ibex_isa_test"]
+       bazel: ["//sw/device/tests:rv_core_ibex_isa_test_prod",
+               "//sw/device/tests:rv_core_ibex_isa_test_test_unlocked0"]
        lc_states: ["PROD"]
        features: [
          "RV_CORE_IBEX.CPU.ISA"
@@ -209,7 +210,8 @@
          "RV_CORE_IBEX.CPU.ICACHE",
          "RV_CORE_IBEX.CPU.MEMORY"
        ]
-       bazel: ["//sw/device/tests:rv_core_ibex_mem_test"]
+       bazel: ["//sw/device/tests:rv_core_ibex_mem_test_prod",
+               "//sw/device/tests:rv_core_ibex_mem_test_test_unlocked0"]
     }
     {
      name: chip_sw_rv_core_ibex_lockstep_glitch
@@ -220,8 +222,9 @@
               - Inputs into the lockstep core are corrupted.
            '''
      stage: V2S
-     si_stage: None
+     si_stage: NA
      tests: ["chip_sw_rv_core_ibex_lockstep_glitch"]
+     bazel: []
     }
     {
       name: chip_sw_rv_core_ibex_alerts

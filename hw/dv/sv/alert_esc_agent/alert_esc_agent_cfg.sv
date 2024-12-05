@@ -50,7 +50,7 @@ class alert_esc_agent_cfg extends dv_base_agent_cfg;
   int unsigned ack_stable_min = 0;
   int unsigned ack_stable_max = 10;
 
-  bit use_seq_item_ping_delay;
+  bit use_seq_item_ping_delay = 1'b1;
   int unsigned ping_delay_min = 0;
   int unsigned ping_delay_max = 10;
 

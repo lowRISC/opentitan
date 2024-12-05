@@ -265,10 +265,10 @@ interface ibex_icache_fcov_if import ibex_pkg::*; #(
       }
       cp_state: coverpoint fill_buffer_state;
       cp_fill_buffer_done_reason : coverpoint fill_buffer_done_reason;
-      cp_state_when_disabling: coverpoint fill_buffer_state iff icache_just_disabled;
-      cp_state_when_enabling: coverpoint fill_buffer_state iff icache_just_enabled;
-      cp_state_when_inval_start: coverpoint fill_buffer_state iff icache_inval_start;
-      cp_starting_beat: coverpoint starting_beat iff fill_alloc[i_fb];
+      cp_state_when_disabling: coverpoint fill_buffer_state iff (icache_just_disabled);
+      cp_state_when_enabling: coverpoint fill_buffer_state iff (icache_just_enabled);
+      cp_state_when_inval_start: coverpoint fill_buffer_state iff (icache_inval_start);
+      cp_starting_beat: coverpoint starting_beat iff (fill_alloc[i_fb]);
     endgroup
 
     `DV_FCOV_INSTANTIATE_CG(icache_fillbuf_cg, en_icache_fcov)

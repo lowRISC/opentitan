@@ -4,7 +4,8 @@
 
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/p256_common.h"
+#include "sw/device/lib/crypto/impl/ecc/p256.h"
+#include "sw/device/lib/crypto/impl/ecc/p384.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -15,6 +16,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/ecdh_commands.h"
 
 static const int P256_KEY_BYTES = 32;
+static const int P384_KEY_BYTES = 48;
 
 status_t handle_ecdh(ujson_t *uj) {
   // Declare ECDH parameter ujson deserializer types
@@ -32,6 +34,9 @@ status_t handle_ecdh(ujson_t *uj) {
   otcrypto_ecc_curve_type_t curve_type;
   otcrypto_unblinded_key_t public_key;
   p256_point_t pub_p256;
+  p384_point_t pub_p384;
+  p256_masked_scalar_t private_key_masked_p256;
+  p384_masked_scalar_t private_key_masked_p384;
 
   otcrypto_key_config_t key_config = {
       .version = kOtcryptoLibVersion1,
@@ -43,7 +48,7 @@ status_t handle_ecdh(ujson_t *uj) {
   uint32_t *private_key_masked_raw;
   uint32_t private_keyblob_length;
   switch (uj_curve) {
-    case kCryptotestEcdhCurveP256:
+    case kCryptotestEcdhCurveP256: {
       curve_type = kOtcryptoEccCurveTypeNistP256;
       memset(pub_p256.x, 0, kP256CoordWords * 4);
       memcpy(pub_p256.x, uj_qx.coordinate, uj_qx.coordinate_len);
@@ -54,14 +59,37 @@ status_t handle_ecdh(ujson_t *uj) {
       public_key.key = (uint32_t *)&pub_p256;
       key_config.key_length = P256_KEY_BYTES;
       shared_key_words = P256_KEY_BYTES / sizeof(uint32_t);
-      p256_masked_scalar_t private_key_masked;
-      memset(private_key_masked.share0, 0, kP256MaskedScalarShareBytes);
-      memcpy(private_key_masked.share0, uj_private_key.d0, kP256ScalarBytes);
-      memset(private_key_masked.share1, 0, kP256MaskedScalarShareBytes);
-      memcpy(private_key_masked.share1, uj_private_key.d1, kP256ScalarBytes);
-      private_key_masked_raw = (uint32_t *)&private_key_masked;
-      private_keyblob_length = sizeof(private_key_masked);
+      memset(private_key_masked_p256.share0, 0, kP256MaskedScalarShareBytes);
+      memcpy(private_key_masked_p256.share0, uj_private_key.d0,
+             kP256ScalarBytes);
+      memset(private_key_masked_p256.share1, 0, kP256MaskedScalarShareBytes);
+      memcpy(private_key_masked_p256.share1, uj_private_key.d1,
+             kP256ScalarBytes);
+      private_key_masked_raw = (uint32_t *)&private_key_masked_p256;
+      private_keyblob_length = sizeof(private_key_masked_p256);
       break;
+    }
+    case kCryptotestEcdhCurveP384: {
+      curve_type = kOtcryptoEccCurveTypeNistP384;
+      memset(pub_p384.x, 0, kP384CoordWords * 4);
+      memcpy(pub_p384.x, uj_qx.coordinate, uj_qx.coordinate_len);
+      memset(pub_p384.y, 0, kP384CoordWords * 4);
+      memcpy(pub_p384.y, uj_qy.coordinate, uj_qy.coordinate_len);
+      public_key.key_mode = kOtcryptoKeyModeEcdh;
+      public_key.key_length = sizeof(p384_point_t);
+      public_key.key = (uint32_t *)&pub_p384;
+      key_config.key_length = P384_KEY_BYTES;
+      shared_key_words = P384_KEY_BYTES / sizeof(uint32_t);
+      memset(private_key_masked_p384.share0, 0, kP384MaskedScalarShareBytes);
+      memcpy(private_key_masked_p384.share0, uj_private_key.d0,
+             kP384ScalarBytes);
+      memset(private_key_masked_p384.share1, 0, kP384MaskedScalarShareBytes);
+      memcpy(private_key_masked_p384.share1, uj_private_key.d1,
+             kP384ScalarBytes);
+      private_key_masked_raw = (uint32_t *)&private_key_masked_p384;
+      private_keyblob_length = sizeof(private_key_masked_p384);
+      break;
+    }
     default:
       LOG_ERROR("Unsupported ECC curve: %d", uj_curve);
       return INVALID_ARGUMENT();

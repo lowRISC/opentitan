@@ -43,20 +43,12 @@ static status_t peripheral_handles_init(void) {
   return OK_STATUS();
 }
 
-enum {
-  /**
-   * Index of the `cert_flash_layout` array in the `ft_personalize.c` base
-   * firmware to use to hold the TPM EK certificate.
-   */
-  kTpmCertFlashLayoutIdx = 1,
-};
-
 /**
  * Configures flash info pages to store device certificates.
  */
 static status_t config_and_erase_tpm_certificate_flash_pages(void) {
-  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved7);
-  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved7,
+  flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageOwnerReserved6);
+  TRY(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerReserved6,
                             kFlashCtrlEraseTypePage));
   return OK_STATUS();
 }
@@ -69,13 +61,13 @@ static status_t personalize_gen_tpm_ek_certificate(
     cert_flash_info_layout_t *cert_flash_layout) {
   size_t curr_cert_size = 0;
   // Set the endorsement key ID.
-  memcpy(tpm_endorsement_key_id.digest, certgen_inputs->auth_key_key_id,
+  memcpy(tpm_endorsement_key_id.digest, certgen_inputs->ext_auth_key_key_id,
          kCertKeyIdSizeInBytes);
 
   // Set the flash info page layout.
-  cert_flash_layout[kTpmCertFlashLayoutIdx].used = true;
-  cert_flash_layout[kTpmCertFlashLayoutIdx].group_name = "TPM";
-  cert_flash_layout[kTpmCertFlashLayoutIdx].num_certs = 1;
+  cert_flash_layout[kCertFlashLayoutExt0Idx].used = true;
+  cert_flash_layout[kCertFlashLayoutExt0Idx].group_name = "TPM";
+  cert_flash_layout[kCertFlashLayoutExt0Idx].num_certs = 1;
 
   // Provision TPM keygen seeds to flash info.
   TRY(manuf_personalize_flash_asymm_key_seed(
@@ -88,8 +80,10 @@ static status_t personalize_gen_tpm_ek_certificate(
   curr_cert_size = sizeof(cert_buffer);
   TRY(tpm_ek_tbs_cert_build(&tpm_key_ids, &curr_pubkey, cert_buffer,
                             &curr_cert_size));
-  return perso_tlv_prepare_cert_for_shipping("TPM EK", true, cert_buffer,
-                                             curr_cert_size, perso_blob);
+  TRY(perso_tlv_push_cert_to_perso_blob("TPM EK", /*needs_endorsement=*/true,
+                                        kDiceCertFormatX509TcbInfo, cert_buffer,
+                                        curr_cert_size, perso_blob));
+  return OK_STATUS();
 }
 
 status_t personalize_extension_pre_cert_endorse(

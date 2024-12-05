@@ -49,7 +49,7 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
   endfunction
 
   task wait_and_check(string path);
-    prim_mubi_pkg::mubi4_t rst_en;
+    logic [3:0] rst_en;
     logic leaf_rst;
     string epath = {path, ".rst_en_o"};
     string opath = {path, ".leaf_rst_o"};
@@ -62,7 +62,8 @@ class rstmgr_leaf_rst_shadow_attack_vseq extends rstmgr_base_vseq;
     `DV_CHECK(uvm_hdl_read(epath, rst_en), $sformatf("Path %0s has problem", epath))
     `DV_CHECK(uvm_hdl_read(opath, leaf_rst), $sformatf("Path %0s has problem", opath))
 
-    `DV_CHECK_EQ(rst_en, prim_mubi_pkg::MuBi4False, $sformatf("%s value mismatch", epath))
+    `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(rst_en), prim_mubi_pkg::MuBi4False,
+                 $sformatf("%s value mismatch", epath))
     `DV_CHECK_EQ(leaf_rst, 1, $sformatf("%s value mismatch", opath))
   endtask : wait_and_check
 

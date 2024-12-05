@@ -44,14 +44,14 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
           .t_weight(1), .f_weight(3), .other_weight(1)
       );
       cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(1), .f_weight(3), .other_weight(1));
-      cfg.pwrmgr_vif.rom_ctrl.done = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
           .t_weight(1), .f_weight(3), .other_weight(1));
-      cfg.pwrmgr_vif.rom_ctrl.good = get_rand_mubi4_val(
+      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
           .t_weight(1), .f_weight(3), .other_weight(1));
 
       `uvm_info(`gfn, $sformatf(
-                "Set done 0x%x, good 0x%x", cfg.pwrmgr_vif.rom_ctrl.done,
-                cfg.pwrmgr_vif.rom_ctrl.good), UVM_MEDIUM)
+                "Set done 0x%x, good 0x%x", cfg.pwrmgr_vif.rom_ctrl[0].done,
+                cfg.pwrmgr_vif.rom_ctrl[0].good), UVM_MEDIUM)
 
       enabled_resets = resets_en & resets;
       `uvm_info(`gfn, $sformatf(
@@ -82,7 +82,7 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
       `uvm_info(`gfn, "Wait for Fast State NE FastPwrStateActive", UVM_MEDIUM)
       `DV_WAIT(cfg.pwrmgr_vif.fast_state != pwrmgr_pkg::FastPwrStateActive)
 
-      if (cfg.pwrmgr_vif.rom_ctrl.done != prim_mubi_pkg::MuBi4True) begin
+      if (cfg.pwrmgr_vif.rom_ctrl[0].done != prim_mubi_pkg::MuBi4True) begin
         // Check fast state is not FastPwrStateActive for a while
         repeat (20) begin
           @cfg.slow_clk_rst_vif.cb;
@@ -91,17 +91,17 @@ class pwrmgr_disable_rom_integrity_check_vseq extends pwrmgr_base_vseq;
 
         // Set done to True.
         `uvm_info(`gfn, "Set rom_ctrl.done input True", UVM_MEDIUM)
-        cfg.pwrmgr_vif.rom_ctrl.done = prim_mubi_pkg::MuBi4True;
+        cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
         cfg.slow_clk_rst_vif.wait_clks(2);
       end
 
-      if (cfg.pwrmgr_vif.rom_ctrl.good != prim_mubi_pkg::MuBi4True) begin
+      if (cfg.pwrmgr_vif.rom_ctrl[0].good != prim_mubi_pkg::MuBi4True) begin
         bit blocked = 0;
         detect_block(blocked);
         if (blocked) begin
           if (release_by_good) begin
             // Set to good.
-            cfg.pwrmgr_vif.rom_ctrl.good = prim_mubi_pkg::MuBi4True;
+            cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
           end else begin
             // Disable rom checks.
             `uvm_info(`gfn, "Set lc ctrl inputs On", UVM_MEDIUM)

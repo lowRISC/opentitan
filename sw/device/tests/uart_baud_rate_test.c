@@ -24,16 +24,13 @@ static const uint32_t kBaseAddrs[4] = {
     TOP_EARLGREY_UART2_BASE_ADDR,
     TOP_EARLGREY_UART3_BASE_ADDR,
 };
-static uint32_t kBauds[7] = {
-    9600, 115200, 230400, 128000, 256000, 1000000, 1500000,
-};
+static const uint32_t kBauds[11] = {
+    4800, 9600, 19200, 38400, 57600, 115200, 230400, 128000, 256000, 1000000,
+    // This baud rate will only work on silicon, the FPGA cannot go fast enough:
+    1500000};
 
 enum {
   kTestTimeoutMillis = 500000,
-  // Number of Bauds to test from `kBauds`.
-  kBaudCountSilicon = 7,
-  // The two highest Bauds won't work at the clock speed we run the FPGAs at.
-  kBaudCountFpga = 5,
 };
 
 typedef enum test_phase {
@@ -58,24 +55,24 @@ OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 static status_t test_uart_baud(void) {
   test_phase = kTestPhaseCfg;
 
-  CHECK_DIF_OK(dif_uart_configure(
-      &uart, (dif_uart_config_t){
-                 .baudrate = (uint32_t)baud_rate,
-                 .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
-                 .parity_enable = kDifToggleDisabled,
-                 .parity = kDifUartParityEven,
-                 .tx_enable = kDifToggleEnabled,
-                 .rx_enable = kDifToggleEnabled,
-             }));
+  TRY(dif_uart_configure(&uart,
+                         (dif_uart_config_t){
+                             .baudrate = (uint32_t)baud_rate,
+                             .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                             .parity_enable = kDifToggleDisabled,
+                             .parity = kDifUartParityEven,
+                             .tx_enable = kDifToggleEnabled,
+                             .rx_enable = kDifToggleEnabled,
+                         }));
 
-  CHECK_DIF_OK(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
+  TRY(dif_uart_fifo_reset(&uart, kDifUartDatapathAll));
 
   LOG_INFO("Configured UART%d with Baud rate %d", uart_idx, baud_rate);
 
   OTTF_WAIT_FOR(test_phase == kTestPhaseSend, kTestTimeoutMillis);
 
   LOG_INFO("Sending data...");
-  CHECK_DIF_OK(dif_uart_bytes_send(&uart, kSendData, sizeof(kSendData), NULL));
+  TRY(dif_uart_bytes_send(&uart, kSendData, sizeof(kSendData), NULL));
   LOG_INFO("Data sent");
 
   OTTF_WAIT_FOR(test_phase == kTestPhaseRecv, kTestTimeoutMillis);
@@ -83,9 +80,9 @@ static status_t test_uart_baud(void) {
   LOG_INFO("Receiving data...");
   uint8_t data[sizeof(kSendData)] = {0};
   for (size_t i = 0; i < sizeof(data); ++i) {
-    CHECK_DIF_OK(dif_uart_byte_receive_polled(&uart, &data[i]));
+    TRY(dif_uart_byte_receive_polled(&uart, &data[i]));
   }
-  CHECK_ARRAYS_EQ(data, kSendData, sizeof(kSendData));
+  TRY_CHECK_ARRAYS_EQ(data, kSendData, sizeof(kSendData));
 
   test_phase = kTestPhaseDone;
 
@@ -112,8 +109,13 @@ bool test_main(void) {
   CHECK_STATUS_OK(
       uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
 
-  size_t baud_count =
-      kDeviceType == kDeviceSilicon ? kBaudCountSilicon : kBaudCountFpga;
+  size_t baud_count = ARRAYSIZE(kBauds);
+
+  // We only want to run the highest bauds (1MBd and 1.5MBd) on chips going
+  // at the real speed (24MHz). FPGAs clocking slower cannot test these.
+  if (kClockFreqPeripheralHz < 24 * 1000 * 1000) {
+    baud_count -= 2;
+  }
 
   // Check every baud rate is sent and received okay.
   status_t result = OK_STATUS();

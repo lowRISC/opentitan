@@ -775,6 +775,7 @@ module usbdev
       .wdata_o                    (sw_mem_a_wdata),
       .wmask_o                    (),           // Not used
       .intg_error_o               (),
+      .user_rsvd_o                (),
       .rdata_i                    (sw_mem_a_rdata),
       .rvalid_i                   (sw_mem_a_rvalid),
       .rerror_i                   (sw_mem_a_rerror),

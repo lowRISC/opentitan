@@ -79,6 +79,8 @@
       ]
     }
     NumRstReqs: 2
+    wait_for_external_reset: false
+    NumRomInputs: 1
     topname: earlgrey
   }
 }

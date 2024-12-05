@@ -10,15 +10,15 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct        | Type    | Act   |   Width | Description   |
-|:---------------|:-----------------------|:--------|:------|--------:|:--------------|
-| keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   |       1 |               |
-| app            | kmac_pkg::app          | req_rsp | rsp   |       3 |               |
-| entropy        | edn_pkg::edn           | req_rsp | req   |       1 |               |
-| idle           | prim_mubi_pkg::mubi4   | uni     | req   |       1 |               |
-| en_masking     | logic                  | uni     | req   |       1 |               |
-| lc_escalate_en | lc_ctrl_pkg::lc_tx     | uni     | rcv   |       1 |               |
-| tl             | tlul_pkg::tl           | req_rsp | rsp   |       1 |               |
+| Port Name      | Package::Struct        | Type    | Act   | Width      | Description   |
+|:---------------|:-----------------------|:--------|:------|:-----------|:--------------|
+| keymgr_key     | keymgr_pkg::hw_key_req | uni     | rcv   | 1          |               |
+| app            | kmac_pkg::app          | req_rsp | rsp   | NumAppIntf |               |
+| entropy        | edn_pkg::edn           | req_rsp | req   | 1          |               |
+| idle           | prim_mubi_pkg::mubi4   | uni     | req   | 1          |               |
+| en_masking     | logic                  | uni     | req   | 1          |               |
+| lc_escalate_en | lc_ctrl_pkg::lc_tx     | uni     | rcv   | 1          |               |
+| tl             | tlul_pkg::tl           | req_rsp | rsp   | 1          |               |
 
 ## Interrupts
 

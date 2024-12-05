@@ -25,6 +25,11 @@ void xmodem_recv_start(void *iohandle);
 void xmodem_ack(void *iohandle, bool ack);
 
 /**
+ * Send an Xmodem cancel sequence.
+ */
+void xmodem_cancel(void *iohandle);
+
+/**
  * Receive a frame using Xmodem-CRC
  *
  * @param iohandle An opaque user point associated with the io device.

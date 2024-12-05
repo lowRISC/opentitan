@@ -154,7 +154,7 @@ When OpenTitan is in reset, `ec_rst_l_o` will be asserted (active low).
 The power-on-reset value of [`PIN_ALLOWED_CTL.EC_RST_L_1`](registers.md#pin_allowed_ctl) and [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) will guarantee that `ec_rst_l_o` remains asserted after OpenTitan reset is released.
 The software can release `ec_rst_l_o` explicitly by setting [`PIN_OUT_CTL.EC_RST_L`](registers.md#pin_out_ctl) to 0 during boot in order to complete the OpenTitan and EC power-on-reset sequence.
 
-Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../pinmux/README.md) before releasing `ec_rst_l_o`.
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../../ip_templates/pinmux/README.md) before releasing `ec_rst_l_o`.
 
 ## Flash Write Protect Output
 
@@ -163,7 +163,7 @@ The `flash_wp_l_o` signal does have a corresponding input signal `flash_wp_l_i` 
 Hence, the value of `flash_wp_l_o` defaults to asserted low when it is not explicitly driven via the override function.
 The software can release `flash_wp_l_o` explicitly by setting an override to 1, that is setting [`PIN_ALLOWED_CTL.FLASH_WP_L_1`](registers.md#pin_allowed_ctl) to 1, [`PIN_OUT_CTL.FLASH_WP_L`](registers.md#pin_out_ctl) to 1 and [`PIN_OUT_VALUE.FLASH_WP_L`](registers.md#pin_out_value) to 1.
 
-Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../pinmux/README.md) before releasing `flash_wp_l_o`.
+Note that since the `sysrst_ctrl` does not have control over the pad open-drain settings, software should properly initialize the pad attributes of the corresponding pad in the [pinmux configuration](../../../ip_templates/pinmux/README.md) before releasing `flash_wp_l_o`.
 
 ## Device Interface Functions (DIFs)
 

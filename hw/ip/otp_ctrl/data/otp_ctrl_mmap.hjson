@@ -114,127 +114,301 @@
             items: [
                 {
                     name: "CREATOR_SW_CFG_AST_CFG",
-                    size: "156"
+                    size: "156",
+                    desc: '''
+                    AST configuration data. These values get blindly copied to
+                    the AST CSRs during ROM execution.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_AST_INIT_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Controls whether or not the CREATOR_SW_CFG_AST_CFG values
+                    get copied to the AST CSRs during ROM execution.
+                    A value of kMultiBitBool4True enables copying; all other
+                    values disable.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_ROM_EXT_SKU",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    SKU identifier metadata. Unused by SiliconCreator software.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_SIGVERIFY_SPX_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Controls whether or not SPHINCS+ signature verification will
+                    be executed when the ROM attempts to boot the ROM_EXT.
+                    A value of kSigverifySpxDisabledOtp disables SPHINCS+
+                    signature verification, while all other values enable it.
+                    Note, SPHINCS+ signature verification is always disabled in
+                    TEST_UNLOCKED* LC states.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The default scrambling, ECC, and high endurance
+                    configuration settings for flash data pages set during ROM
+                    execution.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The scrambling, ECC, and high endurance configuration
+                    settings for the boot data flash info pages set during ROM
+                    execution.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Scrambling and ECC configuration overrides (set by the ROM)
+                    for the Creator and OwnerSeed flash info pages (pages 1 and
+                    2 in partition 0) that are hardwired to the keygmr. By
+                    default, scrambling and ECC on these flash info pages must
+                    be enabled in order to successfully crank the keygmr (in the
+                    ROM_EXT). However, values of kMultiBitBool4True for each
+                    subfield in this field will disable this requirement. See
+                    the HW_INFO_CFG_OVERRIDE flash_ctrl CSR for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to enable use of hardware generated entropy
+                    (from the entropy complex via EDN) in the `rnd_uint32`
+                    function. A value of kHardenedBoolTrue enables the use of
+                    hardware generated entropy, while all other values disable.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_JITTER_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to enable clock jitter. A value of
+                    kMultiBitBool4False disables, while all other values enable.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RET_RAM_RESET_MASK",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Reset reason mask used to initialize (by overwriting with
+                    random data) retention SRAM during ROM execution. A value of
+                    0 only initializes retention SRAM on power-on-resets.See
+                    rstmgr RESET_INFO CSR documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_MANUF_STATE",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Manufacturing state binding field. For use by
+                    SiliconCreators or SiliconOwners to bind ROM_EXT images to a
+                    specific device or set of devices.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_ROM_EXEC_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to enable execution of ROM. A value of 0
+                    disables, while all other values enable. This enables
+                    provisioning flows to attach JTAG connections and halt the
+                    CPU before the device has been fully provisioned. All SKUs
+                    should set this field to a non-zero value. Provisioning
+                    flows shall take care to program this field at the
+                    appropriate time during.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_CPUCTRL",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Value to write to the Ibex CPUCTRL CSR during ROM execution.
+                    This field controls settings such as ICACHE enablement. See
+                    Ibex documentation for more information.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Value of the min_security_version_rom_ext field of the
+                    default boot data.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_MIN_SEC_VER_BL0",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Value of the min_security_version_bl0 field of the
+                    default boot data.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to enable the default boot data in PROD and
+                    PROD_END life cycle states. A value of kHardenedBoolTrue
+                    enables, all other values disable. If left disabled,
+                    provisioning flows are required to setup boot data pages
+                    prior to enabling ROM execution.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RMA_SPIN_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to enable a busy-wait delay loop in the ROM,
+                    when a specific SW strapping configuration is applied during
+                    boot, to provide time to trigger an RMA lifecycle transition
+                    over JTAG. A value of kHardenedBoolTrue enables, all other
+                    values disable.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RMA_SPIN_CYCLES",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The number of Ibex clock cycles to spin for when waiting for
+                    an RMA transition. Used in combination with the
+                    CREATOR_SW_CFG_RMA_SPIN_EN field.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The repetition count health test thresholds to enable
+                    entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The repetition count symbol health test thresholds to enable
+                    entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The adaptive proportion health test high thresholds to
+                    enable entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The adaptive proportion health test low thresholds to enable
+                    entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The bucket health test thresholds to enable entropy_src with
+                    during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The Markov health test high thresholds to enable entropy_src
+                    with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The Markov health test low thresholds to enable entropy_src
+                    with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The external health test high thresholds to enable the
+                    entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The external health test low thresholds to enable the
+                    entropy_src with during ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_ALERT_THRESHOLD",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The alert threshold to configure the entropy_src with during
+                    ROM execution.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    A CRC32 digest of all entropy_src health test threshold
+                    configuration fields above.
+                    This must be configured if CREATOR_SW_CFG_RNG_EN is true.
+                    See entropy_src documentation for more details.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_SRAM_KEY_RENEW_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM should request SRAM to be rescrambled
+                    with a new key on every boot. kHardenedBoolFalse disables,
+                    while all other values enable.
+                    '''
                 }
                 {
                     name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN",
-                    size: "4"
+                    size: "4",
                     desc: '''
                     Enablement of the ROM_EXT immutable code section.
                     A value of kHardenedBoolTrue enables the feature.
@@ -243,7 +417,7 @@
                 }
                 {
                     name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_START_OFFSET",
-                    size: "4"
+                    size: "4",
                     desc: '''
                     Relative offset from the start of the ROM_EXT slot to
                     find the immutable code section at.
@@ -251,26 +425,30 @@
                 }
                 {
                     name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH",
-                    size: "4"
+                    size: "4",
                     desc: '''
                     Length (in bytes) of the immutable code section.
                     '''
                 }
                 {
                     name: "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH",
-                    size: "32"
+                    size: "32",
                     desc: '''
                     SHA256 hash of the immutable ROM_EXT section.
                     '''
                 }
                 {
                     name: "CREATOR_SW_CFG_RESERVED",
-                    size: "32"
+                    size: "32",
+                    desc: '''
+                    Unused bits in the CREATOR_SW_CFG OTP partition. These can
+                    be claimed by software as needed.
+                    '''
                 }
             ],
             desc: '''Software configuration partition.
-            This is for device-specific calibration data. For example, clock,
-            LDO, RNG.
+            This is for device-specific calibration data, e.g, clock, LDO, RNG,
+            and configuration settings set by the ROM.
             '''
         }
         {
@@ -288,93 +466,259 @@
             items: [
                 {
                     name: "OWNER_SW_CFG_ROM_ERROR_REPORTING",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    The shutdown error reporting verbosity used by the ROM.
+                    Should be configured to one of several
+                    `shutdown_error_redact_t` values. See
+                    `sw/device/silicon_creator/lib/shutdown.h` for more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_BOOTSTRAP_DIS",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to disable ROM bootstrap mechanism. A value
+                    of kHardenedBoolTrue disable bootstrap mechanism in the ROM,
+                    while all other values enable it. Note, the provisioning
+                    flow should take care when to program this field if it is
+                    used by a SKU, as there is no way to get firmware into flash
+                    in a PROD LC state if a valid ROM_EXT does not already exist
+                    in flash once this value is configured to true.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASS_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    A four byte packed field, where each byte controls whether
+                    or not the ROM enables each alert class (A through D) of the
+                    alert_handler. The byte-sized subfields are arranged from D
+                    to A, MSB to LSB. Each byte should be set to an
+                    `alert_enable_t` value accordingly. See the alert_handler
+                    documentation for more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ESCALATION",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    A four byte packed field, where each byte controls the
+                    escalation configuration for each alert class (A through D)
+                    of the alert_handler configured by the ROM. The byte-sized
+                    subfields are arranged from D to A, MSB to LSB. Each byte
+                    should be set to an `alert_escalate_t` value accordingly.
+                    See the alert_handler documentation for more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION",
-                    size: "320"
+                    size: "320",
+                    desc: '''
+                    The alert classifications (A through D) for each alert
+                    source of the alert_handler to be configured by the ROM. The
+                    field consists of a contiguous 320-byte block, or 80 32-bit
+                    words. The four bytes in each word encode the configuration
+                    of a single alert source across four lifecycle states, in
+                    order from LSB to MSB: PROD, PROD_END, DEV, and RMA. Each
+                    byte should be set to an `alert_class_t` value accordingly.
+                    The order of the 80 32-bit words, from LSB to MSB can be
+                    found in the EARLGREY_ALERTS list in `rules/const.bzl`.
+                    See the alert_handler documentation for more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION",
-                    size: "64"
+                    size: "64",
+                    desc: '''
+                    Same as the `OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION` field,
+                    except these configuration correspond to the local alert
+                    sources found in the `EARLGREY_LOC_ALERTS list in
+                    `rules/const.bzl`.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH",
-                    size: "16"
+                    size: "16",
+                    desc: '''
+                    The alert accumulation threshold values for each alert class
+                    (A through D) of the alert_handler to be configured by the
+                    ROM. This field consists of four 32-bit words encoding the
+                    accumulation thresholds for each alert class A through D
+                    arranged LSW to MSW. See the alert_handler documentation for
+                    more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES",
-                    size: "16"
+                    size: "16",
+                    desc: '''
+                    Same as the `OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH` field,
+                    except each value corresponds to the interrupt timeout
+                    configuration of an alert class.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES",
-                    size: "64"
+                    size: "64",
+                    desc: '''
+                    The alert escalation phase durations, measured in clock
+                    cycles, the ROM will configure the four alert phases for
+                    each alert class of the alert_handler. This field consists
+                    of a contiguous 64-byte block, or an array of four 128-bit
+                    fields. Each 128-bit subfield encodes four 32-bit words that
+                    contain the alert phase cycle count configurations for alert
+                    escalation phases 0 to 3, from LSW to MSW. Each 128-bit
+                    subfield is contains all cofigurations for a single alert
+                    class, arranged from class A to D, from LS to MS. For
+                    example, the cycle durations of each escalation phase in
+                    this field should be configured as such, from LSB to MSB:
+                    <classA,phase0>...<classA,phase3>...<classD,phase0>...
+                    <classD,phase3>. See the alert_handler documentation for
+                    more details.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
                     size: "4",
+                    desc: '''
+                    The expected CRC32 digest over all of the alert_handler
+                    configurations set up by the ROM for a device operating in
+                    the PROD LC state. The ROM reads this field and checks it
+                    against a digest it computes over the alert_handler
+                    configuration it programmed. This field is expected to be
+                    automatically computed by the `otp_alert_digest()` Bazel
+                    rule. See the `alert_config_crc32()` function in the
+                    SiliconCreator alert_handler driver for more details on what
+                    configurations are included in this digest.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
                     size: "4",
+                    desc: '''
+                    Same as the `OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD` field,
+                    except the expected digest is for chips operating in the
+                    PROD_END LC state.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
                     size: "4",
+                    desc: '''
+                    Same as the `OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD` field,
+                    except the expected digest is for chips operating in the
+                    DEV LC state.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
                     size: "4",
+                    desc: '''
+                    Same as the `OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD` field,
+                    except the expected digest is for chips operating in the
+                    RMA LC state.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Watchdog timer bite threshold (in cycles) configured by the ROM.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not to configure the attestation SW binding CSRs
+                    of the keymgr with the value in ROM_EXT manifest or the
+                    measurement of the OTP CreatorSwCfg, OwnerSwCfg, and
+                    secure boot key integrity digest. A value of
+                    kHardenedBoolTrue uses the ROM computed OTP measurements,
+                    while all other values trigger the use of the binding values
+                    included in the ROM_EXT manifest.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_MANUF_STATE",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Manufacturing state binding field. For use by
+                    SiliconCreators or SiliconOwners to bind BL0 images to a
+                    specific device or set of devices.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    A two byte packed word that indicates the expected rstmgr
+                    alert and CPU info dump enable states, configured in the
+                    rstmgr's ALERT_INFO_CTRL and CPU_INFO_CTRL CSRs respectively.
+                    The expected format of this fields is
+                    {0,0,kHardenedBool*,kHardenedBool*}, read MSB to LSB, where
+                    the left most kHardenedBool* entry indicates the expected
+                    enablement state of the ALERT_INFO_CTRL, and the right most
+                    indicates the enablement state of the CPU_INFO_CTRL. Since
+                    the ROM expects both to be disabled upon handing over
+                    execution control to the ROM_EXT, this entire OTP field
+                    **should be left unprovisioned, or set to all 0**.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_ROM_EXT_BOOTSTRAP_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Unused. Set to 0.
+                    '''
                 }
                 {
                     // Datatype: packed bytes per alert.  Each byte is a pair
                     // of Mubi4: [Recoverable, Enabled].
                     name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG",
-                    size: "12" // 2 settings per alert (disabled, fatal), 4 bit per setting, space for 12 alerts (currently 11 used)
+                    size: "12",
+                    desc: '''
+                    Alert configuration values for the sensor_ctrl block
+                    that will be configured by the ROM. This field is 12 bytes
+                    long, where each byte contains two 4-bit packed subfields,
+                    encoding two four bit boolean values (kMultiBitBool4False or
+                    kMultiBitBool4True), as follows (read MSB to LSB):
+                    {fatality, enablement}. For example, the byte 0x69 would
+                    encode the alert is: 1) recoverable, and 2) disabled.
+
+                    Currently, there are only 11 alerts in sensor_ctrl to
+                    configure, thus only the least significant bytes in this
+                    field are used.
+                    '''
                 }
                 {
                     // Datatype: Two packed Mubi4s:
                     // [ret-ram readback enable][main sram readback en].
                     name: "OWNER_SW_CFG_ROM_SRAM_READBACK_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    This field encodes the enablements of the readback security
+                    features for the main and retention SRAMs to be configured
+                    by the ROM. This field is four bytes, but the LSB contains
+                    two 4-bit packed kMultiBitBool4* values that indicate the
+                    enablement of the feature for the retention SRAM and
+                    main SRAM, from MSB to LSB respectively. See the READBACK
+                    CSR of the sram_ctrl for more details on this feature.
+                    '''
                 }
                 {
                     // Datatype: hardened_bool_t.
                     // True preserves, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_PRESERVE_RESET_REASON_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM should preserve the reset reasons CSR
+                    state in the rstmgr, or clear it. A value of
+                    kHardenedBoolTrue preserves the CSR, while other values
+                    trigger the ROM to clear the CSR after copying the reason to
+                    the retention SRAM.
+                    '''
                 }
                 {
                     // Datatype: 2x16-bit hardened_bool_t values.
@@ -384,23 +728,55 @@
                     // If the value is any other value and the reset reason validation
                     // fails, the chip will fault during bootup.
                     name: "OWNER_SW_CFG_ROM_RESET_REASON_CHECK_VALUE",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Two packed 16-bit values that indicate whether the ROM
+                    should perform a validation check on the the reset reasons
+                    during boot. The validation check is a hardening mechanism
+                    that checks the reset reasons for consistency at two
+                    different points in time. Both packed values should be the
+                    same. Values of kHardenedBoolFalse will instruct the ROM to
+                    skip the reset reasons validation check, while all other
+                    values will instruct the ROM to perform the check.
+                    '''
                 }
                 {
                     // Datatype: hardened_bool_t.
                     // False disables, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_BANNER_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM should print a banner message to the
+                    console UART during boot. A value of kHardenedBoolFalse
+                    disables the message printing, while all other values enable
+                    it.
+                    '''
                 }
                 {
                     // Datatype: hardended_bool_t
                     // True enables, all other values default behavior.
                     name: "OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN",
-                    size: "4"
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM should use the flash ECC exception
+                    handler during execution. A value of kHardenedBoolTrue
+                    allows the ROM to use an the exception handler that recovers
+                    gracefully and continues the boot process if a flash ECC
+                    error is encountered during verification of a specific
+                    ROM_EXT slot. This enables the ROM to attempt booting the
+                    next ROM_EXT slot if the first slot attempted has been
+                    corrupted. All other values trigger default ROM exception
+                    handling, which is all exceptions trigger a chip shutdown
+                    and reset.
+                    '''
                 }
                 {
                     name: "OWNER_SW_CFG_RESERVED",
-                    size: "128"
+                    size: "128",
+                    desc: '''
+                    Unused bits in the OWNER_SW_CFG OTP partition. These can be
+                    claimed by software as needed.
+                    '''
                 }
             ],
             desc: '''Software configuration partition.
@@ -596,17 +972,24 @@
                     // initialized or is in error state. If not specified,
                     // a value of '0 will be used.
                     inv_default: "<random>",
+                    desc: '''
+                    Unique device identifier that is always exposed through the
+                    lifecycle JTAG tap. See OpenTitan documentation on Device
+                    Identifiers.
+                    '''
                 },
                 {
                     name:        "MANUF_STATE",
                     size:        "32",
                     inv_default: "<random>",
+                    desc: '''
+                    Field to capture manufacturing status. Currently unused. Set
+                    to 0.
+                    '''
                 },
             ],
             desc: '''Hardware configuration 0 partition.
-            This contains
-            - DEVICE_ID: Unique device identifier.
-            - MANUF_STATE: Vector for capturing the manufacturing status.
+            This contains a device identifier and manufacturing state.
             '''
         }
         {
@@ -625,28 +1008,41 @@
                     name:        "EN_SRAM_IFETCH",
                     size:        "1",
                     ismubi:      true,
-                    inv_default: false
+                    inv_default: false,
+                    desc: '''
+                    Enablement of execute from SRAM switch in the sram_ctrl (see
+                    EXEC CSR). A kMultiBitBool8True value enables, while all
+                    other values disable.
+                    '''
                 },
                 {
                     name:        "EN_CSRNG_SW_APP_READ",
                     size:        "1",
                     ismubi:      true,
-                    inv_default: false
+                    inv_default: false,
+                    desc: '''
+                    Enablement of CSRNG software application interface. A
+                    kMultiBitBool8True value enables, while all other values
+                    disable. Enablement is required to extract output from
+                    CSRNG via software.
+                    '''
                 },
                 {
                     name:        "DIS_RV_DM_LATE_DEBUG",
                     size:        "1",
                     ismubi:      true,
-                    inv_default: false
+                    inv_default: false,
+                    desc: '''
+                    Disablement of RV_DM late debug feature (see rv_dm
+                    documentation). A kMultiBitBool8True disables the late debug
+                    feature and renders the rv_dm fully ungated in DEV lifecycle
+                    states. All other values gate rv_dm reachability based on
+                    the value of LATE_DEBUG_ENABLE CSR in the rv_dm block.
+                    '''
                 },
             ],
             desc: '''Hardware configuration 1 partition.
-            This contains
-            - EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
-            - EN_CSRNG_SW_APP_READ: This input efuse is used to enable access to the
-              NIST internal state per instance.
-            - DIS_RV_DM_LATE_DEBUG: Setting this to true bypasses the late debug
-              enablement of RV_DM in the DEV life cycle state.
+            This contains several hardware feature switches.
             '''
         }
         {

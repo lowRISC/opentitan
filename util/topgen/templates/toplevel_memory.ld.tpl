@@ -52,12 +52,12 @@ MEMORY {
 % for m in top["module"]:
   % if "memory" in m:
     % for key, mem in m["memory"].items():
-  ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key]}, LENGTH = ${mem["size"]}
+  ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key][helper.addr_space]}, LENGTH = ${mem["size"]}
     % endfor
   % endif
 % endfor
 % for m in top["memory"]:
-  ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"]}, LENGTH = ${m["size"]}
+  ${m["name"]}(${memory_to_flags(m)}) : ORIGIN = ${m["base_addr"][helper.addr_space]}, LENGTH = ${m["size"]}
 % endfor
   rom_ext_virtual(rx) : ORIGIN = 0x90000000, LENGTH = ${get_virtual_memory_size(top)}
   owner_virtual(rx) : ORIGIN = 0xa0000000, LENGTH = ${get_virtual_memory_size(top)}
@@ -85,11 +85,19 @@ _stack_start = _stack_end - _stack_size;
 _static_critical_size = 8168;
 
 /**
- * `.chip_info` at the top of ROM.
+ * `.chip_info` at the top of each ROM.
  */
 _chip_info_size = 128;
-_chip_info_end   = ORIGIN(rom) + LENGTH(rom);
-_chip_info_start = _chip_info_end - _chip_info_size;
+% for m in top["module"]:
+  % if "memory" in m:
+    % for key, mem in m["memory"].items():
+      % if key == "rom":
+_${mem["label"]}_chip_info_end = ORIGIN(${mem["label"]}) + LENGTH(${mem["label"]});
+_${mem["label"]}_chip_info_start = _${mem["label"]}_chip_info_end - _chip_info_size;
+      % endif
+    % endfor
+  % endif
+% endfor
 
 /**
  * Size of the initial ePMP RX region at reset (in bytes). This region must be

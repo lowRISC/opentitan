@@ -13,7 +13,6 @@ opentitan_test(
     name = "teacup_leds_demo",
     srcs = ["teacup_leds_demo.c"],
     exec_env = {
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [
@@ -31,7 +30,6 @@ opentitan_test(
     name = "teacup_leds_and_screen_demo",
     srcs = ["teacup_leds_and_screen_demo.c"],
     exec_env = {
-        "//hw/top_earlgrey:silicon_owner_prodc_rom_ext": None,
         "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
     },
     deps = [

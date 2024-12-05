@@ -77,7 +77,6 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           vendor_test_32bit_array[(OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
                                    OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE) /
                                   sizeof(uint32_t)];
-
       TRY(otp_ctrl_testutils_dai_read32_array(
           otp_ctrl, kDifOtpCtrlPartitionVendorTest, 0, vendor_test_32bit_array,
           (OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
@@ -107,6 +106,42 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
                                     OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET),
           .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
                  OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
+      };
+      TRY(otcrypto_hash(input, digest));
+    } break;
+    case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
+      uint32_t rot_creator_auth_codesign_32bit_array
+          [(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
+           sizeof(uint32_t)];
+      TRY(otp_ctrl_testutils_dai_read32_array(
+          otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthCodesign, 0,
+          rot_creator_auth_codesign_32bit_array,
+          (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE) /
+              sizeof(uint32_t)));
+      otcrypto_const_byte_buf_t input = {
+          .data = (unsigned char *)rot_creator_auth_codesign_32bit_array,
+          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
+                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
+      };
+      TRY(otcrypto_hash(input, digest));
+    } break;
+    case kDifOtpCtrlPartitionRotCreatorAuthState: {
+      uint32_t rot_creator_auth_state_32bit_array
+          [(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+            OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /
+           sizeof(uint32_t)];
+      TRY(otp_ctrl_testutils_dai_read32_array(
+          otp_ctrl, kDifOtpCtrlPartitionRotCreatorAuthState, 0,
+          rot_creator_auth_state_32bit_array,
+          (OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+           OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE) /
+              sizeof(uint32_t)));
+      otcrypto_const_byte_buf_t input = {
+          .data = (unsigned char *)rot_creator_auth_state_32bit_array,
+          .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
+                 OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
       };
       TRY(otcrypto_hash(input, digest));
     } break;

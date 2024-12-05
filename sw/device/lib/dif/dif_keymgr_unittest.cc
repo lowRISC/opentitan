@@ -173,6 +173,7 @@ class DifKeymgrInitialized : public DifKeymgrTest {
   struct OperationStartParams {
     uint32_t dest_sel;
     uint32_t operation;
+    dif_keymgr_cdi_type_t cdi_type;
   };
 
   /**
@@ -188,6 +189,10 @@ class DifKeymgrInitialized : public DifKeymgrTest {
          {
              .offset = KEYMGR_CONTROL_SHADOWED_OPERATION_OFFSET,
              .value = params.operation,
+         },
+         {
+             .offset = KEYMGR_CONTROL_SHADOWED_CDI_SEL_BIT,
+             .value = params.cdi_type,
          }});
 
     EXPECT_WRITE32(KEYMGR_START_REG_OFFSET, {{
@@ -607,29 +612,43 @@ TEST_F(GetStateTest, UnexpectedState) {
 class GenerateIdentityTest : public DifKeymgrInitialized {};
 
 TEST_F(GenerateIdentityTest, BadArgs) {
-  EXPECT_DIF_BADARG(dif_keymgr_generate_identity_seed(nullptr));
+  EXPECT_DIF_BADARG(dif_keymgr_generate_identity_seed(nullptr, {}));
 }
 
 TEST_F(GenerateIdentityTest, LockedBusy) {
   ExpectBusy();
 
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_), kDifLocked);
+  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_, {}), kDifLocked);
 }
 
 TEST_F(GenerateIdentityTest, LockedConfig) {
   ExpectLockedConfig();
 
-  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_), kDifLocked);
+  EXPECT_EQ(dif_keymgr_generate_identity_seed(&keymgr_, {}), kDifLocked);
 }
 
-TEST_F(GenerateIdentityTest, Generate) {
+TEST_F(GenerateIdentityTest, GenerateSealing) {
   ExpectIdle();
   ExpectOperationStart({
       .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
       .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
+      .cdi_type = kDifKeymgrSealingCdi,
   });
 
-  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(&keymgr_));
+  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(
+      &keymgr_, {.cdi_type = kDifKeymgrSealingCdi}));
+}
+
+TEST_F(GenerateIdentityTest, GenerateAttestation) {
+  ExpectIdle();
+  ExpectOperationStart({
+      .dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+      .operation = KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_ID,
+      .cdi_type = kDifKeymgrAttestationCdi,
+  });
+
+  EXPECT_DIF_OK(dif_keymgr_generate_identity_seed(
+      &keymgr_, {.cdi_type = kDifKeymgrAttestationCdi}));
 }
 
 class GenerateVersionedKeyTest : public DifKeymgrInitialized {};
@@ -667,6 +686,10 @@ struct GenerateVersionedKeyTestCase {
    * Expected OPERATION values to be written to the CONTROL register.
    */
   uint32_t exp_operation;
+  /**
+   * Expected CDI_SEL value to be written to the CONTROL register.
+   */
+  dif_keymgr_cdi_type_t cdi_type;
 };
 
 class GenerateVersionedKey
@@ -702,18 +725,42 @@ INSTANTIATE_TEST_SUITE_P(
             .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
             .exp_operation =
                 KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT,
+            .cdi_type = kDifKeymgrSealingCdi,
         },
         GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestAes,
             .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_AES,
             .exp_operation =
                 KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .cdi_type = kDifKeymgrSealingCdi,
         },
         GenerateVersionedKeyTestCase{
             .dest = kDifKeymgrVersionedKeyDestKmac,
             .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
             .exp_operation =
                 KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .cdi_type = kDifKeymgrSealingCdi,
+        },
+        GenerateVersionedKeyTestCase{
+            .dest = kDifKeymgrVersionedKeyDestSw,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_SW_OUTPUT,
+            .cdi_type = kDifKeymgrAttestationCdi,
+        },
+        GenerateVersionedKeyTestCase{
+            .dest = kDifKeymgrVersionedKeyDestAes,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_AES,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .cdi_type = kDifKeymgrAttestationCdi,
+        },
+        GenerateVersionedKeyTestCase{
+            .dest = kDifKeymgrVersionedKeyDestKmac,
+            .exp_dest_sel = KEYMGR_CONTROL_SHADOWED_DEST_SEL_VALUE_KMAC,
+            .exp_operation =
+                KEYMGR_CONTROL_SHADOWED_OPERATION_VALUE_GENERATE_HW_OUTPUT,
+            .cdi_type = kDifKeymgrAttestationCdi,
         }));
 
 class SideloadClearTest : public DifKeymgrInitialized {};

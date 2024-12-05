@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends cip_base_vseq #(
+class sram_ctrl_base_vseq #(
+    parameter int AddrWidth = `SRAM_WORD_ADDR_WIDTH
+  ) extends cip_base_vseq #(
     .RAL_T               (sram_ctrl_regs_reg_block),
     .CFG_T               (sram_ctrl_env_cfg#(AddrWidth)),
     .COV_T               (sram_ctrl_env_cov#(AddrWidth)),
@@ -24,6 +26,10 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
 
   int partial_access_pct = 10;
 
+  // Used by the throughput_w_readback test. When 1'b1, the readback feature is
+  // enabled at the beginning of the test.
+  bit init_w_readback = 1'b0;
+
   constraint readback_en_c {
     soft readback_en inside {MuBi4True, MuBi4False};
   }
@@ -32,6 +38,8 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     super.pre_start();
     void'($value$plusargs("partial_access_pct=%0d", partial_access_pct));
     `DV_CHECK_LE(partial_access_pct, 100)
+    void'($value$plusargs("init_w_readback=%0d", init_w_readback));
+    `DV_CHECK_LE(init_w_readback, 1)
     // Wait for ram initialization to be done, since it blocks memory accesses.
     `DV_WAIT(cfg.in_init == 1'b0, "Timed out waiting for initialization done")
     // Make sure that the sram_readback_en task only runs once during the test.
@@ -49,17 +57,17 @@ class sram_ctrl_base_vseq #(parameter int AddrWidth = `SRAM_ADDR_WIDTH) extends 
     if (!readback_running && do_readback_en) sram_readback_en();
   endtask
 
-  // Enable readback feature only for non-throughput and non-sec_cm tests. The
-  // readback feature is randomly initialized to on/off at the start of the test
-  // and randomly switched during the tests.
-  // TODO(#23321) Adapt the troughput tests to take the delay caused by the
-  // readback feature into account.
+  // Randomly disable or enable the readback feature during a test run.
+  // If a subclass wants to manually enable the readback feature, it should
+  // directly write to the readback enable register.
   virtual protected task sram_readback_en();
     readback_running = 1;
     if (uvm_re_match("*throughput*", get_type_name()) &&
         uvm_re_match("*sec_cm*", get_type_name()) &&
+        uvm_re_match("*readback_err*", get_type_name()) &&
         uvm_re_match("*throughput*", common_seq_type) &&
-        uvm_re_match("*sec_cm*", common_seq_type)) begin
+        uvm_re_match("*sec_cm*", common_seq_type) &&
+        uvm_re_match("*readback_err*", common_seq_type)) begin
       // Configure the SRAM TLUL agent to wait at least 2 cycles before dropping
       // a request.
       cfg.m_tl_agent_cfgs[cfg.sram_ral_name].a_valid_len_min = 2;

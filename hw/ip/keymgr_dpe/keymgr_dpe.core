@@ -1,0 +1,89 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:ip:keymgr_dpe:0.1"
+description: "Key Manager DPE"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:prim:count
+      - lowrisc:prim:edn_req
+      - lowrisc:prim:lc_sync
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:msb_extend
+      - lowrisc:prim:mubi
+      - lowrisc:prim:sec_anchor
+      - lowrisc:prim:secded
+      - lowrisc:prim:sparse_fsm
+      - lowrisc:ip:keymgr_dpe_pkg
+      - lowrisc:ip:kmac_pkg
+      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:ip:rom_ctrl_pkg
+      - lowrisc:ip:tlul
+      - lowrisc:ip:keymgr_common
+    files:
+      - rtl/keymgr_dpe.sv
+      - rtl/keymgr_dpe_ctrl.sv
+      - rtl/keymgr_dpe_op_state_ctrl.sv
+      - rtl/keymgr_dpe_reg_top.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/keymgr_dpe.vlt
+    file_type: vlt
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/keymgr_dpe.waiver
+    file_type: waiver
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - tool_verilator  ? (files_verilator_waiver)
+      - tool_ascentlint ? (files_ascentlint_waiver)
+      - files_rtl
+    toplevel: keymgr_dpe
+
+  lint:
+    <<: *default_target
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  syn:
+    <<: *default_target
+    # TODO: set default to DC once
+    # this option is available
+    # olofk/edalize#89
+    default_tool: icarus
+    parameters:
+      - SYNTHESIS=true
+
+  formal:
+    filesets:
+      - files_rtl
+    toplevel: keymgr_dpe_ctrl

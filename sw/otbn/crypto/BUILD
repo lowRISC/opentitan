@@ -118,25 +118,14 @@ otbn_library(
 )
 
 otbn_binary(
-    name = "p256_ecdh",
+    name = "run_p256",
     srcs = [
-        "p256_ecdh.s",
+        "run_p256.s",
     ],
     deps = [
         ":p256_base",
         ":p256_isoncurve",
         ":p256_shared_key",
-    ],
-)
-
-otbn_binary(
-    name = "p256_ecdsa",
-    srcs = [
-        "p256_ecdsa.s",
-    ],
-    deps = [
-        ":p256_base",
-        ":p256_isoncurve",
         ":p256_sign",
         ":p256_verify",
     ],
@@ -376,20 +365,9 @@ otbn_binary(
 )
 
 otbn_binary(
-    name = "p384_curve_point_valid",
+    name = "run_p384",
     srcs = [
-        "p384_curve_point_valid.s",
-    ],
-    deps = [
-        ":p384_base",
-        ":p384_isoncurve",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdh",
-    srcs = [
-        "p384_ecdh.s",
+        "run_p384.s",
     ],
     deps = [
         ":p384_a2b",
@@ -397,54 +375,12 @@ otbn_binary(
         ":p384_base",
         ":p384_base_mult",
         ":p384_internal_mult",
+        ":p384_isoncurve",
         ":p384_keygen",
         ":p384_keygen_from_seed",
+        ":p384_modinv",
         ":p384_scalar_mult",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_keygen",
-    srcs = [
-        "p384_ecdsa_keygen.s",
-    ],
-    deps = [
-        ":p384_b2a",
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_keygen",
-        ":p384_keygen_from_seed",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_sign",
-    srcs = [
-        "p384_ecdsa_sign.s",
-    ],
-    deps = [
-        ":p384_b2a",
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_keygen",
-        ":p384_keygen_from_seed",
-        ":p384_modinv",
         ":p384_sign",
-    ],
-)
-
-otbn_binary(
-    name = "p384_ecdsa_verify",
-    srcs = [
-        "p384_ecdsa_verify.s",
-    ],
-    deps = [
-        ":p384_base",
-        ":p384_base_mult",
-        ":p384_internal_mult",
-        ":p384_modinv",
         ":p384_verify",
     ],
 )

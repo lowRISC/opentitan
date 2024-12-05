@@ -2,28 +2,19 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
-load(
-    "@lowrisc_opentitan//rules:rv.bzl",
-    "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
-)
+load("@lowrisc_opentitan//rules:manifest.bzl", "update_manifest")
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load("@lowrisc_opentitan//rules:signing.bzl", "sign_binary")
 load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "obj_disassemble",
     "obj_transform",
 )
-
-# Re-exports of names from transition.bzl; many files in the repo use opentitan.bzl
-# to get to them.
-OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
-opentitan_transition = _opentitan_transition
+load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback", "get_override")
+load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules/opentitan:util.bzl", "assemble_for_test")
 
 def _expand(ctx, name, items):
     """Perform location and make_variable expansion on a list of items.
@@ -194,6 +185,9 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
+    if manifest and ctx.attr.immutable_rom_ext_enabled:
+        manifest = update_manifest(ctx, manifest, elf, exec_env._update_manifest_json)
+
     if (manifest or rsa_key) and kind != "ram":
         if not (manifest and (rsa_key or ecdsa_key)):
             fail("Signing requires a manifest and an rsa_key or ecdsa_key, and optionally an spx_key")
@@ -238,7 +232,7 @@ def _opentitan_binary(ctx):
         deps = ctx.attr.deps + exec_env.libs
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
-        providers.append(exec_env.provider(**provides))
+        providers.append(exec_env.provider(kind = kind, **provides))
         default_info.append(provides["default"])
         default_info.append(provides["elf"])
 
@@ -330,6 +324,10 @@ common_binary_attrs = {
         default = "//hw/ip/rom_ctrl/util:scramble_image",
         executable = True,
         cfg = "exec",
+    ),
+    "immutable_rom_ext_enabled": attr.bool(
+        doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
+        default = False,
     ),
 }
 
@@ -451,4 +449,39 @@ opentitan_test = rv_rule(
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     test = True,
+)
+
+def _opentitan_binary_assemble_impl(ctx):
+    assembled_bins = []
+    tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
+    for env in ctx.attr.exec_env:
+        exec_env_name = env[ExecEnvInfo].exec_env
+        exec_env_provider = env[ExecEnvInfo].provider
+        name = "{}_{}".format(ctx.attr.name, exec_env_name)
+        spec = []
+        input_bins = []
+        for binary, offset in ctx.attr.bins.items():
+            if binary[exec_env_provider].kind != "flash":
+                fail("Only flash binaries can be assembled.")
+            input_bins.append(binary[exec_env_provider].default)
+            spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
+        assembled_bins.append(
+            assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool),
+        )
+    return [DefaultInfo(files = depset(assembled_bins))]
+
+opentitan_binary_assemble = rule(
+    implementation = _opentitan_binary_assemble_impl,
+    attrs = {
+        "bins": attr.label_keyed_string_dict(
+            allow_files = True,
+            mandatory = True,
+            doc = "Dictionary of binaries and the offsets they should be placed.",
+        ),
+        "exec_env": attr.label_list(
+            providers = [ExecEnvInfo],
+            doc = "List of execution environments for this target.",
+        ),
+    },
+    toolchains = [LOCALTOOLS_TOOLCHAIN],
 )

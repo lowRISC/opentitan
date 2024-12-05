@@ -3,7 +3,3 @@
 # SPDX-License-Identifier: Apache-2.0
 
 package(default_visibility = ["//visibility:public"])
-
-exports_files([
-    "gen_requirements.sh",
-])

@@ -70,7 +70,7 @@ class aes_base_test extends cip_base_test #(
     cfg.fixed_data_en               = 0;
   // fixed operation (enc or dec)
     cfg.fixed_operation_en          = 0;
-    cfg.fixed_operation             = 1'b0;
+    cfg.fixed_operation             = aes_pkg::AES_ENC;
   // fixed iv (will set all to 0)
     cfg.fixed_iv_en                 = 0;
     cfg.fixed_keylen_en             = 0;

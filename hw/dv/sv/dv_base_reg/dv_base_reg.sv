@@ -328,31 +328,64 @@ class dv_base_reg extends uvm_reg;
   // access policy. For register write via csr_wr(), this function is included in post_write().
   // For register write via tl_access(), user will need to call this function manually.
   virtual function void lock_lockable_flds(uvm_reg_data_t val, uvm_predict_e kind);
-    if (is_wen_reg()) begin
-      `uvm_info(`gfn, $sformatf("lock_lockable_flds %d val", val), UVM_LOW);
-      foreach (m_fields[i]) begin
-        dv_base_reg_field fld;
-        `downcast(fld, m_fields[i])
-        if (fld.is_wen_fld()) begin
-          uvm_reg_data_t field_val = val & fld.get_field_mask();
-          string field_access = fld.get_access();
-          case (field_access)
-            // discussed in issue #1922: enable register is standarized to W0C or RO (if HW has
-            // write access).
-            "W0C": begin
-              // This is the regular behavior with W0C access policy enabled (i.e., only
-              // clearing is possible).
-              if (kind == UVM_PREDICT_WRITE && field_val == 1'b0) begin
-                fld.set_lockable_flds_access(1);
-              // In this case we are using direct prediction where the access policy is not
-              // applied. I.e., a regwen bit that has been set to 0 can be set to 1 again.
-              end else if (kind == UVM_PREDICT_DIRECT) begin
-                fld.set_lockable_flds_access((~field_val) & fld.get_field_mask());
-              end
-            end
-            "RO": ; // if RO, it's updated by design, need to predict in scb
-            default:`uvm_fatal(`gfn, $sformatf("lock register invalid access %s", field_access))
+    if (!is_wen_reg()) return;
+
+    foreach (m_fields[i]) begin
+      dv_base_reg_field fld;
+      `downcast(fld, m_fields[i])
+
+      if (fld.is_wen_fld()) begin
+        uvm_reg_data_t field_val = val & fld.get_field_mask();
+        string field_access = fld.get_access();
+
+        // Check whether this field of the regwen is writeable at all (the regwen might not be
+        // writeable by software, in which case we can ignore it)
+        if (field_access == "RO")
+          continue;
+
+        if (fld.get_mubi_width() == 0) begin
+          // This field is not encoded with a mubi value, and the only access type that we support
+          // is W0C. Check that it has been set up properly.
+          if (field_access != "W0C") begin
+            `uvm_fatal(`gfn, $sformatf("Field has access %0s (not W0C) and is not a mubi type.",
+                                       field_access))
+          end
+
+          // Because this field is W0C, software is allowed to clear it (disabling the write-enable)
+          // by writing a zero. Writing any other value will have no effect.
+          //
+          // A UVM_PREDICT_DIRECT prediction is a way for DV code to directly inform the RAL of a
+          // write coming through (not necessarily from software). This works by setting each bit if
+          // that bit of the write value is zero.
+          if (kind == UVM_PREDICT_WRITE && field_val == 1'b0) begin
+            fld.set_lockable_flds_access(1);
+          end else if (kind == UVM_PREDICT_DIRECT) begin
+            fld.set_lockable_flds_access((~field_val) & fld.get_field_mask());
+          end
+        end else begin
+          // This field is encoded as a mubi value of the given width.
+          uvm_reg_data_t encoded_true;
+
+          // Mubi fields only support the RW access value in UVM (because the bitwise operation to
+          // clear a mubi will set some bits and clear others!)
+          if (field_access != "RW") begin
+            `uvm_fatal(`gfn, $sformatf("Field has access %0s (not RW) but is a mubi type.",
+                                       field_access))
+          end
+
+          case (fld.get_mubi_width())
+            4: encoded_true = prim_mubi_pkg::MuBi4True;
+            8: encoded_true = prim_mubi_pkg::MuBi8True;
+            16: encoded_true = prim_mubi_pkg::MuBi16True;
+            32: encoded_true = prim_mubi_pkg::MuBi32True;
+            default: `uvm_fatal(`gfn, $sformatf("Unknown mubi width: %0d", fld.get_mubi_width()))
           endcase
+
+          // Process the write as having locked the field if the value being written is anything
+          // other than encoded_true. A write of encoded_true is a nop.
+          if (field_val != encoded_true) begin
+            fld.set_lockable_flds_access(1);
+          end
         end
       end
     end

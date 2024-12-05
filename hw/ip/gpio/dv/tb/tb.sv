@@ -11,6 +11,7 @@ module tb;
   import gpio_env_pkg::*;
   import gpio_test_pkg::*;
   import gpio_reg_pkg::*;
+  import gpio_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -51,6 +52,10 @@ module tb;
     .clk_i (clk),
     .rst_ni(rst_n),
 
+    // TODO: need to test snapshot functionality
+    .strap_en_i(1'b0),
+    .sampled_straps_o(),
+
     .tl_i(tl_if.h2d),
     .tl_o(tl_if.d2h),
 
@@ -59,10 +64,9 @@ module tb;
     .alert_rx_i(alert_rx),
     .alert_tx_o(alert_tx),
 
-    .cio_gpio_i   (gpio_i),
-    .cio_gpio_o   (gpio_o),
-    .cio_gpio_en_o(gpio_oe)
-
+    .cio_gpio_i          (gpio_i),
+    .cio_gpio_o          (gpio_o),
+    .cio_gpio_en_o       (gpio_oe)
   );
 
   assign interrupts[NUM_GPIOS-1:0] = gpio_intr;

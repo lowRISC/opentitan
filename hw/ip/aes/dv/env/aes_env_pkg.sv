@@ -58,6 +58,7 @@ package aes_env_pkg;
     bit          key_len;
     bit          mode;
     bit          rsd_rate;
+    bit          op;
   } cfg_error_type_t;
 
   // used in FI verification seq and if

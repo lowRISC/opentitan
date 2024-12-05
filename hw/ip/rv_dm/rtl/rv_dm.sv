@@ -15,8 +15,10 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter logic [31:0]          IdcodeValue  = 32'h 0000_0001
+  parameter logic [NumAlerts-1:0] AlertAsyncOn           = {NumAlerts{1'b1}},
+  parameter logic [31:0]          IdcodeValue            = 32'h 0000_0001,
+  parameter bit                   UseDmiInterface        = 1'b0,
+  parameter bit                   SecVolatileRawUnlockEn = 0
 ) (
   input  logic                clk_i,       // clock
   input  logic                clk_lc_i,    // only declared here so that the topgen
@@ -34,6 +36,10 @@ module rv_dm
   input  lc_ctrl_pkg::lc_tx_t lc_dft_en_i,
   // HW Debug lifecycle enable signal (latched version from pinmux, only used for JTAG/TAP gating)
   input  lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
+  input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  input                       strap_en_i,
+  input                       strap_en_override_i,
   // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // Late debug enable disablement signal coming from the OTP HW_CFG1 partition.
   input  prim_mubi_pkg::mubi8_t otp_dis_rv_dm_late_debug_i,
@@ -61,8 +67,12 @@ module rv_dm
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  // JTAG TAP
   input  jtag_pkg::jtag_req_t jtag_i,
-  output jtag_pkg::jtag_rsp_t jtag_o
+  output jtag_pkg::jtag_rsp_t jtag_o,
+  // TL-UL-based DMI
+  input  tlul_pkg::tl_h2d_t dbg_tl_d_i,
+  output tlul_pkg::tl_d2h_t dbg_tl_d_o
 );
 
   ///////////////////////////
@@ -104,7 +114,7 @@ module rv_dm
   tlul_pkg::tl_h2d_t mem_tl_win_h2d;
   tlul_pkg::tl_d2h_t mem_tl_win_d2h;
   rv_dm_reg_pkg::rv_dm_regs_reg2hw_t regs_reg2hw;
-  logic regs_intg_error, rom_intg_error;
+  logic regs_intg_error, rom_intg_error, dmi_intg_error, dbg_intg_error;
   logic sba_gate_intg_error, rom_gate_intg_error;
 
   rv_dm_regs_reg_top u_reg_regs (
@@ -125,7 +135,7 @@ module rv_dm
   // Alerts
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  assign alerts[0] = regs_intg_error | rom_intg_error |
+  assign alerts[0] = regs_intg_error | rom_intg_error | dmi_intg_error | dbg_intg_error |
                      sba_gate_intg_error | rom_gate_intg_error;
 
   assign alert_test = {
@@ -177,14 +187,6 @@ module rv_dm
   } rv_dm_lc_en_e;
   // These must be equal so that the difference between LcEnResetReq and LcEnDebugReq is NrHarts.
   `ASSERT(RvDmLcEnDebugVal_A, int'(LcEnDebugReq) == LcEnDebugReqVal)
-
-  // debug enable gating
-  typedef enum logic [3:0] {
-    PmEnDmiReq,
-    PmEnJtagIn,
-    PmEnJtagOut,
-    PmEnLastPos
-  } rv_dm_pm_en_e;
 
   lc_ctrl_pkg::lc_tx_t lc_hw_debug_en;
   prim_lc_sync #(
@@ -257,25 +259,11 @@ module rv_dm
     .lc_en_o(lc_hw_debug_en_gated)
   );
 
-  lc_ctrl_pkg::lc_tx_t [PmEnLastPos-1:0] pinmux_hw_debug_en;
-  prim_lc_sync #(
-    .NumCopies(int'(PmEnLastPos))
-  ) u_pm_en_sync (
-    .clk_i,
-    .rst_ni,
-    .lc_en_i(pinmux_hw_debug_en_i),
-    .lc_en_o(pinmux_hw_debug_en)
-  );
-
   dm::dmi_req_t  dmi_req;
   dm::dmi_resp_t dmi_rsp;
   logic dmi_req_valid, dmi_req_ready;
   logic dmi_rsp_valid, dmi_rsp_ready;
   logic dmi_rst_n;
-
-  logic dmi_en;
-  // SEC_CM: DM_EN.CTRL.LC_GATED
-  assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
 
   ////////////////////////
   // NDM Reset Tracking //
@@ -398,6 +386,7 @@ module rv_dm
     .wdata_i      (host_wdata),
     .wdata_intg_i ('0),
     .be_i         (host_be),
+    .user_rsvd_i  ('0),
     .valid_o      (host_r_valid),
     .rdata_o      (host_r_rdata),
     .rdata_intg_o (),
@@ -408,7 +397,7 @@ module rv_dm
     //    errors during test / debug life cycle states so that the system can be debugged
     //    without triggering alerts.
     // 3) the error condition is hooked up to an error CSR that can be read out by the debugger
-    //    via JTAG so that bus integrity errors can be told appart from regular bus errors.
+    //    via JTAG or DMI so that bus integrity errors can be told apart from regular bus errors.
     .intg_err_o   (host_r_other_err),
     .tl_o         (sba_tl_h_o_int),
     .tl_i         (sba_tl_h_i_int)
@@ -439,64 +428,162 @@ module rv_dm
   end
   assign debug_req_o = debug_req & debug_req_en;
 
-  // Gating of JTAG signals
-  jtag_pkg::jtag_req_t jtag_in_int;
-  jtag_pkg::jtag_rsp_t jtag_out_int;
+  if (UseDmiInterface) begin : gen_dmi_gating
+    //////////////////////////////////////////////
+    // TL-UL-based Debug Module Interface (DMI) //
+    //////////////////////////////////////////////
 
-  assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
-  assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;
-
-  // Bound-in DPI module replaces the TAP
+    // If DMIDirectTAP is defined, a bound-in DPI module replaces the TAP that's defined
+    // within the ifndef block
 `ifndef DMIDirectTAP
+    tlul_pkg::tl_h2d_t dbg_tl_h2d_win;
+    tlul_pkg::tl_d2h_t dbg_tl_d2h_win;
 
-  logic tck_muxed;
-  logic trst_n_muxed;
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_prim_clock_mux2 (
-    .clk0_i(jtag_in_int.tck),
-    .clk1_i(clk_i),
-    .sel_i (testmode),
-    .clk_o (tck_muxed)
-  );
+    rv_dm_dbg_reg_top u_rv_dm_dbg_reg_top (
+      .clk_i,
+      .rst_ni,
+      .tl_i      (dbg_tl_d_i),
+      .tl_o      (dbg_tl_d_o),
+      .tl_win_o  (dbg_tl_h2d_win),
+      .tl_win_i  (dbg_tl_d2h_win),
+      .intg_err_o(dbg_intg_error)
+    );
 
-  prim_clock_mux2 #(
-    .NoFpgaBufG(1'b1)
-  ) u_prim_rst_n_mux2 (
-    .clk0_i(jtag_in_int.trst_n),
-    .clk1_i(scan_rst_ni),
-    .sel_i (testmode),
-    .clk_o (trst_n_muxed)
-  );
+    rv_dm_dmi_gate #(
+      .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
+    ) u_rv_dm_dmi_gate (
+      .clk_i,
+      .rst_ni,
+      .strap_en_override_i,
+      .strap_en_i,
+      .lc_hw_debug_en_i,
+      .lc_check_byp_en_i,
+      .lc_escalate_en_i,
+      .dbg_tl_h2d_win_i ( dbg_tl_h2d_win ),
+      .dbg_tl_d2h_win_o ( dbg_tl_d2h_win ),
+      .dmi_req_valid_o  ( dmi_req_valid  ),
+      .dmi_req_ready_i  ( dmi_req_ready  ),
+      .dmi_req_o        ( dmi_req        ),
+      .dmi_rsp_valid_i  ( dmi_rsp_valid  ),
+      .dmi_rsp_ready_o  ( dmi_rsp_ready  ),
+      .dmi_rsp_i        ( dmi_rsp        ),
 
-  // JTAG TAP
-  dmi_jtag #(
-    .IdcodeValue    (IdcodeValue),
-    .NumDmiWordAbits(7)
-  ) dap (
-    .clk_i            (clk_i),
-    .rst_ni           (rst_ni),
-    .testmode_i       (testmode),
-    .test_rst_ni      (scan_rst_ni),
+      // Integrity error
+      .intg_error_o(                   dmi_intg_error)
+    );
 
-    .dmi_rst_no       (dmi_rst_n),
-    .dmi_req_o        (dmi_req),
-    .dmi_req_valid_o  (dmi_req_valid),
-    .dmi_req_ready_i  (dmi_req_ready & dmi_en),
-
-    .dmi_resp_i       (dmi_rsp      ),
-    .dmi_resp_ready_o (dmi_rsp_ready),
-    .dmi_resp_valid_i (dmi_rsp_valid & dmi_en),
-
-    //JTAG
-    .tck_i            (tck_muxed),
-    .tms_i            (jtag_in_int.tms),
-    .trst_ni          (trst_n_muxed),
-    .td_i             (jtag_in_int.tdi),
-    .td_o             (jtag_out_int.tdo),
-    .tdo_oe_o         (jtag_out_int.tdo_oe)
-  );
+    // This only clears the DMI FIFO inside the dm_csrs implementation.
+    // Since the JTAG DTM used in this system can always drain this FIFO,
+    // no additional reset request should be needed in order to clear it.
+    assign dmi_rst_n = rst_ni;
+`else
+    assign dmi_intg_error = 1'b0;
+    assign dbg_tl_d_o = tlul_pkg::TL_D2H_DEFAULT;
 `endif
+
+    // Tied-off signals from the JTAG interface and read unsed signals
+    assign jtag_o = '0;
+    logic unused_signals;
+    assign unused_signals = ^{jtag_i, scan_rst_ni, pinmux_hw_debug_en_i};
+  end else begin : gen_jtag_gating
+    // Gating of JTAG signals
+    jtag_pkg::jtag_req_t jtag_in_int;
+    jtag_pkg::jtag_rsp_t jtag_out_int;
+
+    typedef enum logic [1:0] {
+      PmEnDmiReq,
+      PmEnJtagIn,
+      PmEnJtagOut,
+      PmEnLastPos
+    } rv_dm_pm_en_e;
+
+    lc_ctrl_pkg::lc_tx_t [PmEnLastPos-1:0] pinmux_hw_debug_en;
+    prim_lc_sync #(
+      .NumCopies(int'(PmEnLastPos))
+    ) u_pm_en_sync (
+      .clk_i,
+      .rst_ni,
+      .lc_en_i(pinmux_hw_debug_en_i),
+      .lc_en_o(pinmux_hw_debug_en)
+    );
+
+    assign jtag_in_int = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagIn]))  ? jtag_i : '0;
+    assign jtag_o = (lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnJtagOut])) ? jtag_out_int : '0;
+
+    logic dmi_en;
+
+    // SEC_CM: DM_EN.CTRL.LC_GATED
+    assign dmi_en = lc_tx_test_true_strict(pinmux_hw_debug_en[PmEnDmiReq]);
+
+    // If DMIDirectTAP is not defined, a bound-in DPI module replaces the TAP and TL-UL DMI that
+    // is defined within the ifndef block
+`ifndef DMIDirectTAP
+    logic tck_muxed;
+    logic trst_n_muxed;
+    logic dmi_req_valid_raw, dmi_rsp_ready_raw;
+
+    prim_clock_mux2 #(
+      .NoFpgaBufG(1'b1)
+    ) u_prim_clock_mux2 (
+      .clk0_i(jtag_in_int.tck),
+      .clk1_i(clk_i),
+      .sel_i (testmode),
+      .clk_o (tck_muxed)
+    );
+
+    prim_clock_mux2 #(
+      .NoFpgaBufG(1'b1)
+    ) u_prim_rst_n_mux2 (
+      .clk0_i(jtag_in_int.trst_n),
+      .clk1_i(scan_rst_ni),
+      .sel_i (testmode),
+      .clk_o (trst_n_muxed)
+    );
+
+    // JTAG TAP
+    dmi_jtag #(
+      .IdcodeValue    (IdcodeValue),
+      .NumDmiWordAbits(7)
+    ) dap (
+      .clk_i            (clk_i),
+      .rst_ni           (rst_ni),
+      .testmode_i       (testmode),
+      .test_rst_ni      (scan_rst_ni),
+
+      .dmi_rst_no       (dmi_rst_n),
+      .dmi_req_o        (dmi_req),
+      .dmi_req_valid_o  (dmi_req_valid_raw),
+      .dmi_req_ready_i  (dmi_req_ready & dmi_en),
+
+      .dmi_resp_i       (dmi_rsp      ),
+      .dmi_resp_ready_o (dmi_rsp_ready_raw),
+      .dmi_resp_valid_i (dmi_rsp_valid & dmi_en),
+
+      //JTAG
+      .tck_i            (tck_muxed),
+      .tms_i            (jtag_in_int.tms),
+      .trst_ni          (trst_n_muxed),
+      .td_i             (jtag_in_int.tdi),
+      .td_o             (jtag_out_int.tdo),
+      .tdo_oe_o         (jtag_out_int.tdo_oe)
+    );
+
+    // Gated DMI signals
+    assign dmi_req_valid = dmi_req_valid_raw & dmi_en;
+    assign dmi_rsp_ready = dmi_rsp_ready_raw & dmi_en;
+`endif
+    // Tied-off and ignore signals from the DMI interface
+    assign dmi_intg_error      = 1'b0;
+    assign dbg_intg_error      = 1'b0;
+    assign dbg_tl_d_o          = tlul_pkg::TL_D2H_DEFAULT;
+
+    logic unused_signals;
+    assign unused_signals = ^{dbg_tl_d_i,
+                              lc_check_byp_en_i,
+                              lc_escalate_en_i,
+                              strap_en_i,
+                              strap_en_override_i};
+  end
 
   // SEC_CM: DM_EN.CTRL.LC_GATED
   // SEC_CM: MEM_TL_LC_GATE.FSM.SPARSE
@@ -568,37 +655,37 @@ module rv_dm
     .clk_i,
     .rst_ni,
     .next_dm_addr_i,
-    .testmode_i            (testmode              ),
-    .ndmreset_o            (ndmreset_req          ),
-    .ndmreset_ack_i        (ndmreset_ack          ),
+    .testmode_i            (testmode            ),
+    .ndmreset_o            (ndmreset_req        ),
+    .ndmreset_ack_i        (ndmreset_ack        ),
     .dmactive_o,
-    .debug_req_o           (debug_req             ),
+    .debug_req_o           (debug_req           ),
     .unavailable_i,
-    .hartinfo_i            (hartinfo              ),
-    .slave_req_i           (device_req            ),
-    .slave_we_i            (device_we             ),
-    .slave_addr_i          (device_addr_aligned   ),
-    .slave_be_i            (device_be             ),
-    .slave_wdata_i         (device_wdata          ),
-    .slave_rdata_o         (device_rdata          ),
-    .slave_err_o           (device_err            ),
-    .master_req_o          (host_req              ),
-    .master_add_o          (host_add              ),
-    .master_we_o           (host_we               ),
-    .master_wdata_o        (host_wdata            ),
-    .master_be_o           (host_be               ),
-    .master_gnt_i          (host_gnt              ),
-    .master_r_valid_i      (host_r_valid          ),
-    .master_r_err_i        (host_r_err            ),
-    .master_r_other_err_i  (host_r_other_err      ),
-    .master_r_rdata_i      (host_r_rdata          ),
-    .dmi_rst_ni            (dmi_rst_n             ),
-    .dmi_req_valid_i       (dmi_req_valid & dmi_en),
-    .dmi_req_ready_o       (dmi_req_ready         ),
-    .dmi_req_i             (dmi_req               ),
-    .dmi_resp_valid_o      (dmi_rsp_valid         ),
-    .dmi_resp_ready_i      (dmi_rsp_ready & dmi_en),
-    .dmi_resp_o            (dmi_rsp               )
+    .hartinfo_i            (hartinfo            ),
+    .slave_req_i           (device_req          ),
+    .slave_we_i            (device_we           ),
+    .slave_addr_i          (device_addr_aligned ),
+    .slave_be_i            (device_be           ),
+    .slave_wdata_i         (device_wdata        ),
+    .slave_rdata_o         (device_rdata        ),
+    .slave_err_o           (device_err          ),
+    .master_req_o          (host_req            ),
+    .master_add_o          (host_add            ),
+    .master_we_o           (host_we             ),
+    .master_wdata_o        (host_wdata          ),
+    .master_be_o           (host_be             ),
+    .master_gnt_i          (host_gnt            ),
+    .master_r_valid_i      (host_r_valid        ),
+    .master_r_err_i        (host_r_err          ),
+    .master_r_other_err_i  (host_r_other_err    ),
+    .master_r_rdata_i      (host_r_rdata        ),
+    .dmi_rst_ni            (dmi_rst_n           ),
+    .dmi_req_valid_i       (dmi_req_valid       ),
+    .dmi_req_ready_o       (dmi_req_ready       ),
+    .dmi_req_i             (dmi_req             ),
+    .dmi_resp_valid_o      (dmi_rsp_valid       ),
+    .dmi_resp_ready_i      (dmi_rsp_ready       ),
+    .dmi_resp_o            (dmi_rsp             )
   );
 
   ////////////////
@@ -614,13 +701,22 @@ module rv_dm
   `ASSERT_KNOWN(TlSbaAValidKnown_A, sba_tl_h_o.a_valid)
   `ASSERT_KNOWN(TlSbaDReadyKnown_A, sba_tl_h_o.d_ready)
 
+  `ASSERT_KNOWN(TlDmiDValidKnown_A, dbg_tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlDmiAReadyKnown_A, dbg_tl_d_o.a_ready)
+
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
   `ASSERT_KNOWN(DebugReqOKnown_A, debug_req_o)
 
-  // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
-  `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
-  `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
+  if (UseDmiInterface) begin : gen_dmi_assertions
+    `ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
+    `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
+      u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg, alert_tx_o[0])
+  end else begin : gen_jtag_assertions
+    // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
+    `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
+    `ASSERT_KNOWN(JtagRspOTdoOeKnown_A, jtag_o.tdo_oe, !jtag_i.tck, !jtag_i.trst_n)
+  end
 
   `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(SbaTlLcGateFsm_A,
     u_tlul_lc_gate_sba.u_state_regs, alert_tx_o[0])
@@ -629,5 +725,5 @@ module rv_dm
     u_tlul_lc_gate_rom.u_state_regs, alert_tx_o[0])
 
   // Alert assertions for reg_we onehot check
-  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
+  `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A, u_reg_regs, alert_tx_o[0])
 endmodule

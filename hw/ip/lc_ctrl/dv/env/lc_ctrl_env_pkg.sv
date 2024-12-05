@@ -12,7 +12,7 @@ package lc_ctrl_env_pkg;
   import tl_agent_pkg::*;
   import cip_base_pkg::*;
   import csr_utils_pkg::*;
-  import lc_ctrl_ral_pkg::*;
+  import lc_ctrl_regs_ral_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
@@ -207,7 +207,7 @@ package lc_ctrl_env_pkg;
   } lc_pwr_if_e;
 
   typedef virtual pins_if #(LcPwrIfWidth) pwr_lc_vif;
-  typedef virtual lc_ctrl_if lc_ctrl_vif;
+  typedef virtual lc_ctrl_if #(NUM_RMA_ACK_SIGS) lc_ctrl_vif;
 
   // LC states which are valid for transitions
   const

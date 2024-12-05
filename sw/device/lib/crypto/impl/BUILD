@@ -4,7 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
-load("//rules:opentitan.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 
 config_setting(
     name = "crypto_status_debug",
@@ -51,10 +51,8 @@ cc_library(
         ":keyblob",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:hmac",
-        "//sw/device/lib/crypto/impl/ecc:ecdh_p256",
-        "//sw/device/lib/crypto/impl/ecc:ecdh_p384",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p384",
+        "//sw/device/lib/crypto/impl/ecc:p256",
+        "//sw/device/lib/crypto/impl/ecc:p384",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

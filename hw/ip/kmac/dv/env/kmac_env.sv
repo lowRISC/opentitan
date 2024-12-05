@@ -12,13 +12,13 @@ class kmac_env extends cip_base_env #(
 
   `uvm_component_new
 
-  kmac_app_agent m_kmac_app_agent[kmac_pkg::NumAppIntf];
+  kmac_app_agent m_kmac_app_agent[kmac_env_pkg::NUM_APP_INTF];
   key_sideload_agent keymgr_sideload_agent;
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+    for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin
       string name = $sformatf("m_kmac_app_agent[%0d]", i);
       m_kmac_app_agent[i] = kmac_app_agent::type_id::create(name, this);
       uvm_config_db#(kmac_app_agent_cfg)::set(this, name, "cfg", cfg.m_kmac_app_agent_cfg[i]);
@@ -39,7 +39,7 @@ class kmac_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
-    for (int i = 0; i < kmac_pkg::NumAppIntf; i++) begin
+    for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin
       m_kmac_app_agent[i].monitor.analysis_port.connect(scoreboard.kmac_app_rsp_fifo[i].analysis_export);
       m_kmac_app_agent[i].m_data_push_agent.monitor.analysis_port.connect(
         scoreboard.kmac_app_req_fifo[i].analysis_export);

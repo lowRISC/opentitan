@@ -123,8 +123,8 @@ hw/ip/pattgen/dv/env/seq_lib/pattgen_error_vseq.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_smoke_vseq.sv
 hw/ip/pattgen/dv/env/seq_lib/pattgen_vseq_list.sv
 hw/ip/pattgen/dv/tests/pattgen_test_pkg.sv
-hw/ip/pinmux/rtl/pinmux_jtag_breakout.sv
-hw/ip/pinmux/rtl/pinmux_jtag_buf.sv
+hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_breakout.sv
+hw/top_earlgrey/ip_autogen/pinmux/rtl/pinmux_jtag_buf.sv
 hw/ip/prim/fpv/tb/prim_fifo_sync_bind_fpv.sv
 hw/ip/prim/rtl/prim_assert_dummy_macros.svh
 hw/ip/prim/rtl/prim_assert_standard_macros.svh
@@ -153,8 +153,6 @@ hw/ip/prim_xilinx/rtl/prim_xilinx_flop.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_flop_en.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_pad_attr.sv
 hw/ip/prim_xilinx/rtl/prim_xilinx_xor2.sv
-hw/ip/pwm/dv/cov/pwm_cov_bind.sv
-hw/ip/pwm/dv/cov/pwm_cov_if.sv
 hw/ip/pwm/dv/env/pwm_env_cov.sv
 hw/ip/pwm/dv/env/pwm_env_pkg.sv
 hw/ip/pwm/dv/env/pwm_virtual_sequencer.sv

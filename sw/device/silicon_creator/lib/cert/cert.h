@@ -52,6 +52,15 @@ enum {
 };
 
 /**
+ * DICE certificate format. It supports 2 types currently.
+ * Each DICE implementation declares one of those specifically.
+ */
+typedef enum dice_cert_format {
+  kDiceCertFormatX509TcbInfo = 0,
+  kDiceCertFormatCWTAndroid = 1,
+} dice_cert_format_t;
+
+/**
  * Defines a grouping of certificates onto a single flash info page.
  */
 typedef struct cert_flash_info_layout {

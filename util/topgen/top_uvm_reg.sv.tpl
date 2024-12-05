@@ -46,58 +46,66 @@
 ${make_ral_pkg(block_dv_base_names, top.regwidth, reg_block_path, rb, esc_if_name)}
 %   endfor
 % endfor
-##
-##
-## Now that we've made the block-level packages, re-instate the
-## package-filename check. The only package left is chip_ral_pkg, which should
-## match the generated filename.
-
-// verilog_lint: waive-start package-filename
+## Now assemble the top-level RALs for each address space.
+% for addr_space in sorted(top.addr_spaces):
+<%
+    # TODO: Do not hard-code "hart" as a special ASID.
+    ral_id = "chip_" + addr_space
+    if addr_space == "hart":
+      ral_id = "chip"
+%>\
 
 // Block: chip
-package chip_ral_pkg;
+// Address space: ${addr_space}
+package ${ral_id}_ral_pkg;
 <%
-  if_packages = []
-  for block_name, block in sorted(top.blocks.items()):
-    for if_name in block.reg_blocks:
-      if_suffix = '' if if_name is None else '_' + if_name
-      if_packages.append('{}{}_ral_pkg'.format(block_name.lower(), if_suffix))
+  if_packages = set()
+  for block_name, inst_names in sorted(top.block_instances[addr_space].items()):
+    block = top.blocks[block_name]
+    for inst_name in inst_names:
+      for if_name in block.reg_blocks:
+        if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+        if_suffix = '' if if_name is None else '_' + if_name
+        if_packages.add('{}{}_ral_pkg'.format(block_name.lower(), if_suffix))
+  if_packages = sorted(if_packages)
 
   windows = top.window_block.windows
-  block_dv_base_names = get_block_base_name(dv_base_names_map, "chip")
+  block_dv_base_names = get_block_base_name(dv_base_names_map, ral_id)
 %>\
 ${make_ral_pkg_hdr(block_dv_base_names.pkg, if_packages)}
-${make_ral_pkg_fwd_decls('chip', [], windows)}
+${make_ral_pkg_fwd_decls(ral_id, [], windows)}
 % for window in windows:
 
-${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
+${make_ral_pkg_window_class(block_dv_base_names.mem, ral_id, window)}
 % endfor
 
-  class chip_reg_block extends ${block_dv_base_names.block};
+  class ${ral_id}_reg_block extends ${block_dv_base_names.block};
     // sub blocks
-% for block_name, block in sorted(top.blocks.items()):
-%   for inst_name in top.block_instances[block_name.lower()]:
-%     for if_name, rb in block.reg_blocks.items():
+%   for block_name, inst_names in sorted(top.block_instances[addr_space].items()):
+<%    block = top.blocks[block_name] %>\
+%     for inst_name in inst_names:
+%       for if_name, rb in block.reg_blocks.items():
 <%
-        if_suffix = '' if if_name is None else '_' + if_name
-        esc_if_name = block_name.lower() + if_suffix
-        if_inst = inst_name + if_suffix
+          if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+          if_suffix = '' if if_name is None else '_' + if_name
+          esc_if_name = block_name.lower() + if_suffix
+          if_inst = inst_name + if_suffix
 %>\
     bit create_${if_inst} = 1'b1;
     rand ${bcname(esc_if_name)} ${if_inst};
+%       endfor
 %     endfor
 %   endfor
-% endfor
-% if windows:
+%   if windows:
     // memories
-%   for window in windows:
-    rand ${mcname('chip', window)} ${miname(window)};
-%   endfor
-% endif
+%     for window in windows:
+    rand ${mcname(ral_id, window)} ${miname(window)};
+%     endfor
+%   endif
 
-    `uvm_object_utils(chip_reg_block)
+    `uvm_object_utils(${ral_id}_reg_block)
 
-    function new(string name = "chip_reg_block",
+    function new(string name = "${ral_id}_reg_block",
                  int    has_coverage = UVM_NO_COVERAGE);
       super.new(name, has_coverage);
     endfunction : new
@@ -115,23 +123,27 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
       end
 
       // create sub blocks and add their maps
-% for block_name, block in sorted(top.blocks.items()):
-%   for inst_name in top.block_instances[block_name.lower()]:
-%     for if_name, rb in block.reg_blocks.items():
+%   for block_name, inst_names in sorted(top.block_instances[addr_space].items()):
+<%    block = top.blocks[block_name] %>\
+%     for inst_name in inst_names:
+%       for if_name, rb in block.reg_blocks.items():
 <%
-        if_suffix = '' if if_name is None else '_' + if_name
-        esc_if_name = block_name.lower() + if_suffix
-        if_inst = inst_name + if_suffix
+          if addr_space not in top.if_addrs[(inst_name, if_name)]: continue
+          if_suffix = '' if if_name is None else '_' + if_name
+          esc_if_name = block_name.lower() + if_suffix
+          if_inst = inst_name + if_suffix
 
-        if top.attrs.get(inst_name) == 'reggen_only':
-          hdl_path = 'tb.dut.u_' + inst_name
-        else:
-          hdl_path = 'tb.dut.top_earlgrey.u_' + inst_name
-        qual_if_name = (inst_name, if_name)
-        base_addr = top.if_addrs[qual_if_name]
-        base_addr_txt = sv_base_addr(top, qual_if_name)
+          if top.attrs.get(inst_name) == 'reggen_only':
+            hdl_path = 'tb.dut.u_' + inst_name
+          else:
+            hdl_path = 'tb.dut.top_earlgrey.u_' + inst_name
+          qual_if_name = (inst_name, if_name)
+          if addr_space not in top.if_addrs[qual_if_name]:
+            continue
+          base_addr = top.if_addrs[qual_if_name][addr_space]
+          base_addr_txt = sv_base_addr(top, qual_if_name, addr_space)
 
-        hpr_indent = (len(if_inst) + len('.set_hdl_path_root(')) * ' '
+          hpr_indent = (len(if_inst) + len('.set_hdl_path_root(')) * ' '
 %>\
       if (create_${if_inst}) begin
         ${if_inst} =
@@ -148,12 +160,14 @@ ${make_ral_pkg_window_class(block_dv_base_names.mem, 'chip', window)}
         default_map.add_submap(.child_map(${if_inst}.default_map),
                                .offset(base_addr + ${base_addr_txt}));
       end
+%       endfor
 %     endfor
 %   endfor
-% endfor
-${make_ral_pkg_window_instances(top.regwidth, 'chip', top.window_block)}
+${make_ral_pkg_window_instances(top.regwidth, ral_id, top.window_block)}
 
     endfunction : build
-  endclass : chip_reg_block
+  endclass : ${ral_id}_reg_block
 
 endpackage
+% endfor
+// verilog_lint: waive-start package-filename

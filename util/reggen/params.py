@@ -4,7 +4,7 @@
 
 import re
 from collections.abc import MutableMapping
-from typing import Dict, Iterator, List, Optional, Tuple
+from typing import Dict, Iterator, List, Optional, Tuple, Union
 
 from reggen.lib import check_keys, check_str, check_int, check_bool, check_list
 
@@ -22,14 +22,22 @@ OPTIONAL_FIELDS = {
         's', "number of bits to randomize in the parameter. 0 by default."
     ],
     'randtype': ['s', "type of randomization to perform. none by default"],
+    'unpacked_dimensions': [
+        's', "unpacked dimensions of parameter e.g. [16] for a single unpacked "
+             "dimension of size 16. none by default"],
 }
 
 
 class BaseParam:
-    def __init__(self, name: str, desc: Optional[str], param_type: str):
+    def __init__(self,
+                 name: str,
+                 desc: Optional[str],
+                 param_type: str,
+                 unpacked_dimensions: Optional[str]):
         self.name = name
         self.desc = desc
         self.param_type = param_type
+        self.unpacked_dimensions = unpacked_dimensions
 
     def apply_default(self, value: str) -> None:
         if self.param_type[:3] == 'int':
@@ -37,7 +45,7 @@ class BaseParam:
                       'default value for parameter {} '
                       '(which has type {})'
                       .format(self.name, self.param_type))
-        self.default = value
+        self.default: Union[str, int] = value
 
     def as_dict(self) -> Dict[str, object]:
         rd = {}  # type: Dict[str, object]
@@ -45,6 +53,8 @@ class BaseParam:
         if self.desc is not None:
             rd['desc'] = self.desc
         rd['type'] = self.param_type
+        if self.unpacked_dimensions is not None:
+            rd['unpacked_dimensions'] = self.unpacked_dimensions
         return rd
 
 
@@ -53,8 +63,9 @@ class LocalParam(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str,
+                 unpacked_dimensions: Optional[str],
                  value: str):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, unpacked_dimensions)
         self.value = value
 
     def expand_value(self, when: str) -> int:
@@ -77,15 +88,19 @@ class Parameter(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str,
+                 unpacked_dimensions: Optional[str],
                  default: str,
+                 local: bool,
                  expose: bool):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, unpacked_dimensions)
         self.default = default
+        self.local = local
         self.expose = expose
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
         rd['default'] = self.default
+        rd['local'] = 'true' if self.local else 'false'
         rd['expose'] = 'true' if self.expose else 'false'
         return rd
 
@@ -99,7 +114,7 @@ class RandParameter(BaseParam):
                  randtype: str):
         assert randcount > 0
         assert randtype in ['perm', 'data']
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, None)
         self.randcount = randcount
         self.randtype = randtype
 
@@ -120,7 +135,7 @@ class MemSizeParameter(BaseParam):
                  name: str,
                  desc: Optional[str],
                  param_type: str):
-        super().__init__(name, desc, param_type)
+        super().__init__(name, desc, param_type, None)
 
 
 def _parse_parameter(where: str, raw: object) -> BaseParam:
@@ -136,6 +151,14 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
         desc = None
     else:
         desc = check_str(r_desc, 'desc field of ' + where)
+
+    r_unpacked_dimensions = rd.get('unpacked_dimensions')
+    if r_unpacked_dimensions is None:
+        unpacked_dimensions = None
+    else:
+        unpacked_dimensions = \
+            check_str(r_unpacked_dimensions,
+                      'unpacked_dimensions field of ' + where)
 
     # TODO: We should probably check that any register called RndCnstFoo has
     #       randtype and randcount.
@@ -256,14 +279,12 @@ def _parse_parameter(where: str, raw: object) -> BaseParam:
                       'default field of {}, (an integer parameter)'
                       .format(name))
 
-    if local:
-        if expose:
-            raise ValueError('At {}, the localparam {} cannot be exposed to '
-                             'the top-level.'
-                             .format(where, name))
-        return LocalParam(name, desc, param_type, value=default)
+    if local and expose:
+        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
+    elif local:
+        return LocalParam(name, desc, param_type, unpacked_dimensions, default)
     else:
-        return Parameter(name, desc, param_type, default, expose)
+        return Parameter(name, desc, param_type, unpacked_dimensions, default, local, expose)
 
 
 # Note: With a modern enough Python, we'd like this to derive from
@@ -380,4 +401,5 @@ class ReggenParams(Params):
         for param in self.by_name.values():
             if isinstance(param, LocalParam):
                 ret.append(param)
+
         return ret

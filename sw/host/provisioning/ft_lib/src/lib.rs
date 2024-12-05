@@ -3,19 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use sha2::{Digest, Sha256};
+use std::collections::HashMap;
+use std::collections::HashSet;
 use std::path::PathBuf;
 use std::time::Duration;
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
-use elliptic_curve::pkcs8::DecodePrivateKey;
-use elliptic_curve::SecretKey;
-use p256::NistP256;
 use zerocopy::AsBytes;
 
-use cert_lib::{
-    get_cert_size, parse_and_endorse_x509_cert, validate_certs_chain, CertEndorsementKey,
-};
+use cert_lib::{parse_and_endorse_x509_cert, validate_cert_chain, CaConfig, CaKey, EndorsedCert};
 use ft_ext_lib::ft_ext;
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
@@ -29,6 +26,7 @@ use opentitanlib::test_utils::load_sram_program::{
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
 use ot_certs::x509::parse_certificate;
+use ot_certs::CertFormat;
 use perso_tlv_lib::perso_tlv_get_field;
 use perso_tlv_lib::{CertHeader, CertHeaderType, ObjHeader, ObjHeaderType, ObjType};
 use ujson_lib::provisioning_data::{
@@ -160,22 +158,13 @@ pub fn test_exit(
     Ok(())
 }
 
-// This enum provides two different certificate signing key representations. In
-// case the local fake certificate is used for certificate chain validation, the
-// key is a path to the file containing the private key. In case a Cloud KMS
-// certificate is used, the key is a string, the ID of the key in cloud storage.
-pub enum KeyWrapper {
-    LocalKey(PathBuf),
-    CkmsKey(String),
-}
-
 fn send_rma_unlock_token_hash(
-    rma_unlock_token_hash: &ArrayVec<u32, 4>,
+    rma_unlock_token: &ArrayVec<u32, 4>,
     timeout: Duration,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     let rma_token_hash = LcTokenHash {
-        hash: hash_lc_token(rma_unlock_token_hash.as_bytes())?,
+        hash: hash_lc_token(rma_unlock_token.as_bytes())?,
     };
 
     // Wait for test to start running.
@@ -241,15 +230,6 @@ fn get_cert(data: &[u8]) -> Result<CertHeader> {
     let header_size = header_len + name_len;
     let cert_body: Vec<u8> = data[header_size..wrapped_size].to_vec();
 
-    // Sanity check, total size and cert size must  match
-    let cert_size = get_cert_size(&cert_body)?;
-    if cert_size != cert_body.len() {
-        bail!(
-            "cert size {} does not match length {}",
-            cert_size,
-            cert_body.len()
-        );
-    }
     Ok(CertHeader {
         wrapped_size,
         cert_name,
@@ -296,10 +276,10 @@ fn process_dev_seeds(seeds: &[u8]) -> Result<()> {
 }
 
 fn provision_certificates(
-    cert_endorsement_key_wrapper: KeyWrapper,
+    ca_cfgs: HashMap<String, CaConfig>,
+    ca_keys: HashMap<String, CaKey>,
     perso_certgen_inputs: &ManufCertgenInputs,
     timeout: Duration,
-    ca_certificate: PathBuf,
     spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
     // Send attestation TCB measurements for generating DICE certificates.
@@ -310,18 +290,6 @@ fn provision_certificates(
     let _ = UartConsole::wait_for(spi_console, r"Exporting TBS certificates ...", timeout)?;
     let perso_blob = PersoBlob::recv(spi_console, timeout, true)?;
 
-    // Select the CA endorsement key to use.
-    let key = match cert_endorsement_key_wrapper {
-        KeyWrapper::LocalKey(path) => {
-            log::info!("Using local key for cert endorsement");
-            CertEndorsementKey::LocalKey(SecretKey::<NistP256>::read_pkcs8_der_file(path)?)
-        }
-        KeyWrapper::CkmsKey(key_id) => {
-            log::info!("Using Cloud KMS key for cert endorsement");
-            CertEndorsementKey::CkmsKey(key_id)
-        }
-    };
-
     // Extract certificate byte vectors, endorse TBS certs, and ensure they parse with OpenSSL.
     // During the process, both:
     //   1. prepare a UJSON payload of endorsed certs to send back to the device,
@@ -329,9 +297,19 @@ fn provision_certificates(
     //   3. hash all certs to check the integrity of what gets written back to the device.
     let mut cert_hasher = Sha256::new();
     let mut start: usize = 0;
-    let mut host_endorsed_certs: Vec<Vec<u8>> = Vec::new();
+    let mut dice_cert_chain: Vec<EndorsedCert> = Vec::new();
+    let mut sku_specific_certs: Vec<EndorsedCert> = Vec::new();
     let mut num_host_endorsed_certs = 0;
     let mut endorsed_cert_concat = ArrayVec::<u8, 4096>::new();
+
+    // Extract CAs.
+    let dice_ca_cert = &ca_cfgs["dice"].certificate;
+    let dice_ca_key = &ca_keys["dice"];
+    let ext_ca_cert = &ca_cfgs["ext"].certificate;
+    let ext_ca_key = &ca_keys["ext"];
+
+    // DICE certificate names.
+    let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
 
     for _ in 0..perso_blob.num_objs {
         log::info!("Processing next object");
@@ -343,7 +321,7 @@ fn provision_certificates(
         }
         start += obj_header_size;
         match header.obj_type {
-            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert => (),
+            ObjType::EndorsedX509Cert | ObjType::UnendorsedX509Cert | ObjType::EndorsedCwtCert => {}
             ObjType::DevSeed => {
                 let dev_seed_size = header.obj_size - obj_header_size;
                 let seeds = &perso_blob.body[start..start + dev_seed_size];
@@ -359,16 +337,23 @@ fn provision_certificates(
         let cert = get_cert(&perso_blob.body[start..])?;
         start += cert.wrapped_size;
 
+        // Extract the certificate bytes and endorse the cert if needed.
         let cert_bytes = if header.obj_type == ObjType::UnendorsedX509Cert {
             // Endorse the cert and updates its size.
-            let cert_bytes = parse_and_endorse_x509_cert(cert.cert_body.clone(), &key)?;
+            let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
+                parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
+            } else {
+                parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
+            };
 
-            // Prepare a collection of certs whose endorsements should be checked with OpenSSL.
-            // TODO: verify the endorsement of the UDS certificate with OpenSSL. It is currently
-            // failing signature verification due to the custom DiceTcbInfo extension being a
-            // non-recognizable extension that is marked "critical".
-            if cert.cert_name != "UDS" {
-                host_endorsed_certs.push(cert_bytes.clone());
+            // Prepare a collection of (SKU-specific) certs whose endorsements should be verified.
+            if !dice_cert_names.contains(cert.cert_name) {
+                sku_specific_certs.push(EndorsedCert {
+                    format: CertFormat::X509,
+                    name: cert.cert_name.to_string(),
+                    bytes: cert_bytes.clone(),
+                    ignore_critical: false,
+                });
             }
 
             // Prepare the UJSON data payloads that will be sent back to the device.
@@ -378,9 +363,26 @@ fn provision_certificates(
         } else {
             cert.cert_body
         };
+
+        // Collect all DICE certs to validate the chain.
+        // TODO(lowRISC/opentitan:#24281): Add CWT verifier
+        if dice_cert_names.contains(cert.cert_name)
+            && header.obj_type == ObjType::UnendorsedX509Cert
+        {
+            dice_cert_chain.push(EndorsedCert {
+                format: CertFormat::X509,
+                name: cert.cert_name.to_string(),
+                bytes: cert_bytes.clone(),
+                ignore_critical: true,
+            });
+        }
+
         // Ensure all certs parse with OpenSSL (even those that where endorsed on device).
         log::info!("{} Cert: {}", cert.cert_name, hex::encode(&cert_bytes));
-        let _ = parse_certificate(&cert_bytes)?;
+        // TODO(lowRISC/opentitan:#24281): Add CWT parser
+        if header.obj_type != ObjType::DevSeed && header.obj_type != ObjType::EndorsedCwtCert {
+            let _ = parse_certificate(&cert_bytes)?;
+        }
         // Push the cert into the hasher so we can ensure the certs written to the device's flash
         // info pages match those verified on the host.
         cert_hasher.update(cert_bytes);
@@ -422,9 +424,17 @@ fn provision_certificates(
     }
 
     // Validate the certificate endorsements with OpenSSL.
-    if !host_endorsed_certs.is_empty() {
-        validate_certs_chain(ca_certificate.to_str().unwrap(), &host_endorsed_certs)?;
+    // TODO(lowRISC/opentitan:#24281): Add CWT verifier
+    log::info!("Validating DICE certificate chain with OpenSSL ...");
+    validate_cert_chain(dice_ca_cert.to_str().unwrap(), &dice_cert_chain)?;
+    log::info!("Success.");
+    log::info!("Validating SKU-specific certificates with OpenSSL ...");
+    if !sku_specific_certs.is_empty() {
+        for sku_specific_cert in sku_specific_certs.iter() {
+            validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
+        }
     }
+    log::info!("Success.");
 
     Ok(())
 }
@@ -433,28 +443,66 @@ fn provision_certificates(
 pub fn run_ft_personalize(
     transport: &TransportWrapper,
     init: &InitializeTest,
-    cert_endorsement_key_wrapper: KeyWrapper,
+    rma_unlock_token: &ArrayVec<u32, 4>,
+    ca_cfgs: HashMap<String, CaConfig>,
+    ca_keys: HashMap<String, CaKey>,
     perso_certgen_inputs: &ManufCertgenInputs,
-    timeout: Duration,
-    ca_certificate: PathBuf,
-    rma_unlock_token_hash: &ArrayVec<u32, 4>,
+    second_bootstrap: PathBuf,
     spi_console: &SpiConsoleDevice,
+    timeout: Duration,
 ) -> Result<()> {
-    // Bootstrap personalization binary into flash.
+    // Bootstrap only personalization binary into ROM_EXT slot A in flash.
     init.bootstrap.init(transport)?;
-    // Bootstrap again since the flash scrambling seeds were provisioned in the previous step.
+
+    // Bootstrap personalization + ROM_EXT + Owner FW binaries into flash, since
+    // flash scrambling seeds were provisioned in the previous step.
     let _ = UartConsole::wait_for(spi_console, r"Bootstrap requested.", timeout)?;
-    init.bootstrap.init(transport)?;
-    send_rma_unlock_token_hash(rma_unlock_token_hash, timeout, spi_console)?;
-    provision_certificates(
-        cert_endorsement_key_wrapper,
-        perso_certgen_inputs,
-        timeout,
-        ca_certificate,
-        spi_console,
-    )?;
+    init.bootstrap.load(transport, &second_bootstrap)?;
+
+    // Send RMA unlock token digest to device.
+    send_rma_unlock_token_hash(rma_unlock_token, timeout, spi_console)?;
+
+    // Provision all device certificates.
+    provision_certificates(ca_cfgs, ca_keys, perso_certgen_inputs, timeout, spi_console)?;
 
     let _ = UartConsole::wait_for(spi_console, r"Personalization done.", timeout)?;
+
+    Ok(())
+}
+
+pub fn check_rom_ext_boot_up(
+    transport: &TransportWrapper,
+    init: &InitializeTest,
+    timeout: Duration,
+) -> Result<()> {
+    transport.reset_target(init.bootstrap.options.reset_delay, true)?;
+    let uart_console = transport.uart("console")?;
+    let _ = UartConsole::wait_for(&*uart_console, r"Starting ROM_EXT.*\r\n", timeout)?;
+
+    // Timeout for waiting for a potential error message indicating invalid UDS certificate.
+    // This value is tested on fpga cw340 and could be potentially fine-tuned.
+    const UDS_CERT_INVALID_TIMEOUT: Duration = Duration::from_millis(200);
+
+    let result = UartConsole::wait_for(
+        &*uart_console,
+        r".*UDS certificate not valid.",
+        UDS_CERT_INVALID_TIMEOUT,
+    );
+
+    match result {
+        Ok(_captures) => {
+            // Error message found.
+            bail!("Invalid UDS certificate detected!");
+        }
+        Err(e) => {
+            if e.to_string().contains("Timed Out") {
+                // Error message not found after timeout. This is the expected behavior.
+            } else {
+                // An unexpected error occurred while waiting for the console output.
+                bail!(e);
+            }
+        }
+    }
 
     Ok(())
 }

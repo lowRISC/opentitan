@@ -61,7 +61,8 @@ KNOWN_CIP_IDS = {
     37: 'mbx',
     38: 'soc_proxy',
     39: 'keymgr_dpe',
-    40: 'ascon'
+    40: 'ascon',
+    41: 'ac_range_check'
 }
 
 REQUIRED_ALIAS_FIELDS = {
@@ -331,7 +332,8 @@ class IpBlock:
                     LocalParam(name='NumAlerts',
                                desc='Number of alerts',
                                param_type='int',
-                               value=str(len(alerts))))
+                               value=str(len(alerts)),
+                               unpacked_dimensions=None))
 
         scan = check_bool(rd.get('scan', False), 'scan field of ' + what)
 
@@ -339,6 +341,7 @@ class IpBlock:
                                      'inter_signal_list field')
         inter_signals = [
             InterSignal.from_raw(
+                params,
                 'entry {} of the inter_signal_list field'.format(idx + 1),
                 entry) for idx, entry in enumerate(r_inter_signals)
         ]

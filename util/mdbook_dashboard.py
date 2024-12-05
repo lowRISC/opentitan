@@ -50,16 +50,16 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
     ],
     'top_earlgrey': [
         (
-            REPO_TOP / "hw/top_earlgrey/ip/pinmux/data/autogen/pinmux.hjson",
-            REPO_TOP / "hw/ip/pinmux/",
-        ),
-        (
             REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
             REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/",
         ),
         (
             REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
             REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/",
+        ),
+        (
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/",
         ),
         (
             REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",

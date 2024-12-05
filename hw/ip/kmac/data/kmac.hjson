@@ -123,6 +123,23 @@
       local:   "false"
       expose:  "true"
     }
+    { name:    "NumAppIntf"
+      type:    "int"
+      default: "3"
+      desc:    "Number of application interfaces"
+      local:   "false"
+      expose:  "true"
+    }
+    { name:                "AppCfg"
+      desc:                '''Application interface configuration.
+                           Top-level connection to the application interface must follow this definition.
+                           '''
+      type:                "kmac_pkg::app_config_t"
+      unpacked_dimensions: "[KmacNumAppIntf]"
+      default:             "'{kmac_pkg::AppCfgKeyMgr, kmac_pkg::AppCfgLcCtrl, kmac_pkg::AppCfgRomCtrl}"
+      local:               "false"
+      expose:              "true"
+    }
     { name:    "NumWordsKey"
       type:    "int"
       default: "16"
@@ -196,7 +213,7 @@
       name:    "app"
       act:     "rsp"
       package: "kmac_pkg"
-      width:   "3"
+      width:   "NumAppIntf"
     }
     { struct:  "edn"
       type:    "req_rsp"

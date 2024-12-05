@@ -11,6 +11,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/spi_device_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
@@ -154,6 +155,9 @@ bool test_main(void) {
                                             kDifPinmuxPadKindMio, in_attr,
                                             &out_attr));
   }
+
+  // Configure fast slew rate and strong drive strength for SPI device pads.
+  CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));
 
   CHECK_DIF_OK(
       dif_spi_device_tpm_configure(&spi_device, kDifToggleEnabled, kTpmConfig));

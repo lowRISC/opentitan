@@ -80,7 +80,7 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
             // a regular init for sram_ret (4kb) takes 1024 cycles
             // add some big delay before checking status, so that we know the status
             // always fails.
-            cfg.clk_rst_vif.wait_clks($urandom_range(0, 2 ** (`SRAM_ADDR_WIDTH + 1)));
+            cfg.clk_rst_vif.wait_clks($urandom_range(0, 2 ** (`SRAM_WORD_ADDR_WIDTH + 1)));
           end
           // read out STATUS csr, scoreboard will check that proper updates have been made
           csr_rd(.ptr(ral.status), .value(status));

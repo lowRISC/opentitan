@@ -1,0 +1,14 @@
+{
+  "dice": {
+    "certificate": "sw/device/silicon_creator/manuf/keys/fake/dice_ca.pem",
+    "key_id": "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112",
+    "key_type": "Raw",
+    "key": "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der"
+  },
+  "ext": {
+    "certificate": "sw/device/silicon_creator/manuf/keys/fake/ext_ca.pem",
+    "key_id": "0xfe584ae7_53790cfd_8601a312_fb32d3c1_b822d112",
+    "key_type": "Raw",
+    "key": "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der"
+  }
+}

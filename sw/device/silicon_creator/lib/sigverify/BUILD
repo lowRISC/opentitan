@@ -120,6 +120,9 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "long",
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":mod_exp_ibex",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -174,11 +177,9 @@ cc_library(
 opentitan_test(
     name = "rsa_verify_functest",
     srcs = ["rsa_verify_functest.c"],
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
         },
     ),
@@ -282,14 +283,7 @@ cc_test(
 opentitan_test(
     name = "sigverify_dynamic_functest_hardcoded",
     srcs = ["sigverify_dynamic_functest.c"],
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            # FIXME broken in sival ROM_EXT, remove this line when fixed. See #21706.
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "long",
         tags = [
@@ -317,6 +311,9 @@ opentitan_test(
     fpga = fpga_params(
         timeout = "long",
     ),
+    # This test can take > 40 minutes, so mark it manual as it shouldn't run
+    # in CI/nightlies.
+    verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":sigverify",
         "//sw/device/lib/testing/test_framework:ottf_main",

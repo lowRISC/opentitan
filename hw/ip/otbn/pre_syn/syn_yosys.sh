@@ -66,17 +66,18 @@ OT_DEP_SOURCES=(
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_sync_reqack.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_packer_fifo.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_lfsr.sv
-    "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_flop_2sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_cdc_rand_delay.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_reg_we_check.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_onehot_check.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_mubi4_sender.sv
     "$LR_SYNTH_SRC_DIR"/../prim/rtl/prim_fifo_sync_cnt.sv
     "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop.sv
+    "$LR_SYNTH_SRC_DIR"/../prim_generic/rtl/prim_generic_flop_2sync.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_flop_en.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_buf.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_xor2.sv
+    "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_xnor2.sv
     "$LR_SYNTH_SRC_DIR"/../prim_xilinx/rtl/prim_xilinx_and2.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_adapter_sram.sv
     "$LR_SYNTH_SRC_DIR"/../tlul/rtl/tlul_sram_byte.sv
@@ -134,11 +135,13 @@ for file in "${OT_DEP_SOURCES[@]}"; do
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
     sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xilinx_flop_2sync/prim_generic_flop_2sync/g' \
+        $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xnor2/prim_xilinx_xnor2/g'            $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_and2/prim_xilinx_and2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_ram_1p/prim_generic_ram_1p/g'         $LR_SYNTH_OUT_DIR/generated/${module}.v
 
@@ -170,11 +173,13 @@ for file in "$LR_SYNTH_SRC_DIR"/rtl/*.sv; do
     # Make sure auto-generated primitives are resolved to generic or Xilinx-specific primitives
     # where available.
     sed -i 's/prim_flop/prim_xilinx_flop/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
-    sed -i 's/prim_xilinx_flop_2sync/prim_flop_2sync/g'  $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xilinx_flop_2sync/prim_generic_flop_2sync/g' \
+        $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_flop/prim_xilinx_flop/g'   $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_buf/prim_xilinx_buf/g'                $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_sec_anchor_buf/prim_xilinx_buf/g'     $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_xor2/prim_xilinx_xor2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
+    sed -i 's/prim_xnor2/prim_xilinx_xnor2/g'            $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_and2/prim_xilinx_and2/g'              $LR_SYNTH_OUT_DIR/generated/${module}.v
     sed -i 's/prim_ram_1p/prim_generic_ram_1p/g'         $LR_SYNTH_OUT_DIR/generated/${module}.v
 

@@ -258,6 +258,8 @@ module tb;
    .model_insn_cnt_i (model_insn_cnt)
   );
 
+  otbn_ssctrl_if ssctrl_if();
+
   //////////////////////////////////////////////////////////////////////////////
   // Model/RTL consistency checks
   //
@@ -304,6 +306,7 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "otp_clk_rst_vif", otp_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
+    uvm_config_db#(ssctrl_vif)::set(null, "*.env", "ssctrl_vif", ssctrl_if);
     uvm_config_db#(escalate_vif)::set(null, "*.env", "escalate_vif", escalate_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(virtual otbn_model_if#(.ImemSizeByte(ImemSizeByte)))::set(

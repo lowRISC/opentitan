@@ -10,12 +10,14 @@
       name: xbar_smoke
       desc: '''Sequentially test each host to access any device'''
       stage: V1
+      si_stage: NA
       tests: ["xbar_smoke"]
     }
     {
       name: xbar_base_random_sequence
       desc: '''Enable all hosts to randomly send transactions to any device'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_random"]
     }
     {
@@ -25,6 +27,7 @@
             - Large delay from 0 ~ 1000 cycles
             - Small delay (0-10 cycles) for a_channel, large delay (0-1000 cycles) for d_channel'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_smoke_zero_delays", "xbar_smoke_large_delays", "xbar_smoke_slow_rsp",
               "xbar_random_zero_delays", "xbar_random_large_delays", "xbar_random_slow_rsp"]
     }
@@ -35,6 +38,7 @@
             - Ensure DUT returns d_error=1 if address is unmapped and transaction isn't passed down
               to any device'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_unmapped_addr", "xbar_error_and_unmapped_addr"]
     }
     {
@@ -43,6 +47,7 @@
             - Drive any random value on size, mask, opcode in both channels
             - Ensure everything just pass through host to device or device to host'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_error_random", "xbar_error_and_unmapped_addr"]
     }
     {
@@ -52,12 +57,14 @@
             - If the device isn't accessible for the host, let the host randomly access the other
               devices'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_access_same_device", "xbar_access_same_device_slow_rsp"]
     }
     {
       name: xbar_all_hosts_use_same_source_id
       desc: '''Test all hosts use same ID at the same same'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_same_source"]
     }
     {
@@ -66,6 +73,7 @@
             - Combine all sequences and run in parallel
             - Add random reset between each iteration'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_stress_all", "xbar_stress_all_with_error"]
     }
     {
@@ -75,6 +83,7 @@
               stress seq and then start a new stress seq
             - Run a few iteration to ensure reset doesn't break the design'''
       stage: V2
+      si_stage: NA
       tests: ["xbar_stress_all_with_rand_reset", "xbar_stress_all_with_reset_error"]
     }
   ]

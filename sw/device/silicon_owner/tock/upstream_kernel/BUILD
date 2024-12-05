@@ -4,7 +4,8 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//rules:opentitan.bzl", "OPENTITAN_CPU", "elf_to_disassembly", "obj_transform")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//rules/opentitan:legacy.bzl", "obj_transform")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -66,6 +67,6 @@ rust_binary(
 
 obj_transform(
     name = "raw_kernel",
-    srcs = [":kernel"],
+    src = ":kernel",
     tags = ["manual"],
 )

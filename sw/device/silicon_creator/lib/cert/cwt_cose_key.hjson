@@ -1,0 +1,74 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+    name: "cwt_cose_key",
+
+    // RFC9052: https://datatracker.ietf.org/doc/html/rfc9052
+    // RFC9053: https://datatracker.ietf.org/doc/html/rfc9053
+
+    variables: {
+        // ECC P256 public key: this is an EC point on
+        // the prime256v1 curve so it has two components
+        // (x and y) which are 32-bytes integers.
+        pub_key_ec_x: {
+            type: "byte-array",
+            exact-size: 32,
+        },
+        pub_key_ec_y: {
+            type: "byte-array",
+            exact-size: 32,
+        },
+    },
+
+    constants: {
+        key_type_label: {
+            type: "integer",
+            value: 1
+        },
+        key_type_value: {
+            type: "integer",
+            // RFC9052 Section 7.1 COSE Key Common Parameters
+            // EC2
+            value: 2
+        },
+        alg_type_label: {
+            type: "integer",
+            value: 3
+        },
+        alg_type_value: {
+            type: "integer",
+            // RFC9053 Section 2.1 ECDSA
+            // ECDSA w/ SHA-256
+            value: -7
+        },
+        curve_type_label: {
+            type: "integer",
+            value: -1
+        },
+        curve_type_value: {
+            type: "integer",
+            // RFC9053 Section 7.1 Elliptic Curve Keys
+            // P-256
+            value: 1
+        },
+        key_x_label: {
+            type: "integer",
+            value: -2
+        },
+        key_y_label: {
+            type: "integer",
+            value: -3
+        },
+    },
+
+    // Reference: https://cs.android.com/android/platform/superproject/main/+/main:hardware/interfaces/security/rkp/aidl/android/hardware/security/keymint/generateCertificateRequestV2.cddl
+    // PubKeyECDSA256
+    structure: {
+        key_type_label: key_type_value
+        alg_type_label: alg_type_value
+        curve_type_label: curve_type_value
+        key_x_label: pub_key_ec_x
+        key_y_label: pub_key_ec_y
+    }
+}

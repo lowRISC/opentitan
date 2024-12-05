@@ -66,7 +66,7 @@ static status_t print_flash_info_0_data_to_console(void) {
   TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldDeviceId,
                                   device_id, kHwCfgDeviceIdSizeIn32BitWords));
   for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", device_id[i]);
+    LOG_INFO("0x%08x", device_id[i]);
   }
 
   LOG_INFO("AST Calibration Values:");
@@ -74,20 +74,18 @@ static status_t print_flash_info_0_data_to_console(void) {
       &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
       kFlashInfoAstCalibrationDataSizeIn32BitWords));
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%x", ast_cfg_data[i]);
+    LOG_INFO("0x%08x", ast_cfg_data[i]);
   }
 
   return OK_STATUS();
 }
 
 /**
- * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg partitions.
+ * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg and RotCreatorAuth{Codesign,State}
+ * partitions.
  *
- * Note: CreatorSwCfg partition is not locked yet, as the flash scrambling OTP
- * field is not provisioned until after the Secret1 partition is provisioned
- * during personalization. OwnerSwCfg partition is also not locked yet, as the
- * bootstrap disablement OTP field is not provisioned until the last bootstrap
- * operation is done in the personalization flow.
+ * Note: CreatorSwCfg and OwnerSwCfg partitions are not locked yet, as not
+ * all fields can be programmed until the personalization stage.
  */
 static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
@@ -97,6 +95,8 @@ static status_t provision(ujson_t *uj) {
                                         in_data.device_id));
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
+  TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
   LOG_INFO("FT SRAM provisioning done.");
   return OK_STATUS();
 }

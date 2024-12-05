@@ -22,6 +22,8 @@ module uart
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  output logic    lsio_trigger_o,
+
   // Generic IO
   input           cio_rx_i,
   output logic    cio_tx_o,
@@ -62,6 +64,8 @@ module uart
 
     .rx    (cio_rx_i   ),
     .tx    (cio_tx_o   ),
+
+    .lsio_trigger_o,
 
     .intr_tx_watermark_o,
     .intr_tx_empty_o,

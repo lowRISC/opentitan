@@ -23,6 +23,7 @@ py_library(
     deps = [
         "//util/reggen:validate",
         requirement("mako"),
+        requirement("importlib_resources"),
     ],
 )
 
