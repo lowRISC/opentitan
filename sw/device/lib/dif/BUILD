@@ -656,7 +656,7 @@ cc_library(
     ],
     deps = [
         ":base",
-        "//hw/top:dt_dma",
+        "//hw/top:dt_mbx",
         "//hw/top:mbx_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -1012,7 +1012,6 @@ cc_library(
         ":base",
         "//hw/top:dt_rv_dm",
         "//hw/top:rv_dm_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
     ],
