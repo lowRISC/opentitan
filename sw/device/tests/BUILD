@@ -4981,6 +4981,7 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
+            "{firmware:elf}"
         """,
         test_harness = "//sw/host/tests/chip/spi_device:spi_passthru",
     ),
