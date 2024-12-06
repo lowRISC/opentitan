@@ -24,7 +24,9 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-      cfg.clk_rst_vif.wait_clks(delay);
+      cfg.clk_rst_vif.wait_clks_or_rst(delay);
+      // Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
 
       randcase
         // drive new gpio data in
@@ -36,7 +38,8 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
           `uvm_info(msg_id, "drive random value on gpio_i", UVM_HIGH)
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
-          cfg.clk_rst_vif.wait_clks(1);
+
+          cfg.clk_rst_vif.wait_clks_or_rst(1);
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end
@@ -79,7 +82,7 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
       begin
         bit [TL_DW-1:0] reg_rd_data;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-        cfg.clk_rst_vif.wait_clks(delay);
+        cfg.clk_rst_vif.wait_clks_or_rst(delay);
         // read intr_state register
         csr_rd(.ptr(ral.intr_state), .value(reg_rd_data));
       end
