@@ -52,9 +52,9 @@ module soc_dbg_ctrl_jtag_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [4:0] reg_we_check;
+  logic [5:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(5)
+    .OneHotWidth(6)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -127,6 +127,12 @@ module soc_dbg_ctrl_jtag_reg_top (
   logic jtag_control_we;
   logic jtag_control_qs;
   logic jtag_control_wd;
+  logic jtag_status_re;
+  logic jtag_status_auth_debug_intent_set_qs;
+  logic jtag_status_auth_window_open_qs;
+  logic jtag_status_auth_window_closed_qs;
+  logic jtag_status_auth_unlock_success_qs;
+  logic jtag_status_auth_unlock_failed_qs;
   logic jtag_boot_status_re;
   logic jtag_boot_status_main_clk_status_qs;
   logic jtag_boot_status_io_clk_status_qs;
@@ -249,6 +255,83 @@ module soc_dbg_ctrl_jtag_reg_top (
 
     // to register interface (read)
     .qs     (jtag_control_qs)
+  );
+
+
+  // R[jtag_status]: V(True)
+  //   F[auth_debug_intent_set]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_status_auth_debug_intent_set (
+    .re     (jtag_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_status.auth_debug_intent_set.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_status_auth_debug_intent_set_qs)
+  );
+
+  //   F[auth_window_open]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_status_auth_window_open (
+    .re     (jtag_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_status.auth_window_open.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_status_auth_window_open_qs)
+  );
+
+  //   F[auth_window_closed]: 5:5
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_status_auth_window_closed (
+    .re     (jtag_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_status.auth_window_closed.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_status_auth_window_closed_qs)
+  );
+
+  //   F[auth_unlock_success]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_status_auth_unlock_success (
+    .re     (jtag_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_status.auth_unlock_success.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_status_auth_unlock_success_qs)
+  );
+
+  //   F[auth_unlock_failed]: 7:7
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_status_auth_unlock_failed (
+    .re     (jtag_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_status.auth_unlock_failed.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_status_auth_unlock_failed_qs)
   );
 
 
@@ -391,14 +474,15 @@ module soc_dbg_ctrl_jtag_reg_top (
 
 
 
-  logic [4:0] addr_hit;
+  logic [5:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET);
     addr_hit[1] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET);
     addr_hit[2] = (reg_addr == SOC_DBG_CTRL_JTAG_CONTROL_OFFSET);
-    addr_hit[3] = (reg_addr == SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET);
-    addr_hit[4] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET);
+    addr_hit[3] = (reg_addr == SOC_DBG_CTRL_JTAG_STATUS_OFFSET);
+    addr_hit[4] = (reg_addr == SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET);
+    addr_hit[5] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -410,15 +494,17 @@ module soc_dbg_ctrl_jtag_reg_top (
                (addr_hit[1] & (|(SOC_DBG_CTRL_JTAG_PERMIT[1] & ~reg_be))) |
                (addr_hit[2] & (|(SOC_DBG_CTRL_JTAG_PERMIT[2] & ~reg_be))) |
                (addr_hit[3] & (|(SOC_DBG_CTRL_JTAG_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(SOC_DBG_CTRL_JTAG_PERMIT[4] & ~reg_be)))));
+               (addr_hit[4] & (|(SOC_DBG_CTRL_JTAG_PERMIT[4] & ~reg_be))) |
+               (addr_hit[5] & (|(SOC_DBG_CTRL_JTAG_PERMIT[5] & ~reg_be)))));
   end
 
   // Generate write-enables
   assign jtag_control_we = addr_hit[2] & reg_we & !reg_error;
 
   assign jtag_control_wd = reg_wdata[0];
-  assign jtag_boot_status_re = addr_hit[3] & reg_re & !reg_error;
-  assign jtag_trace_soc_dbg_state_re = addr_hit[4] & reg_re & !reg_error;
+  assign jtag_status_re = addr_hit[3] & reg_re & !reg_error;
+  assign jtag_boot_status_re = addr_hit[4] & reg_re & !reg_error;
+  assign jtag_trace_soc_dbg_state_re = addr_hit[5] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -428,6 +514,7 @@ module soc_dbg_ctrl_jtag_reg_top (
     reg_we_check[2] = jtag_control_we;
     reg_we_check[3] = 1'b0;
     reg_we_check[4] = 1'b0;
+    reg_we_check[5] = 1'b0;
   end
 
   // Read data return
@@ -448,6 +535,14 @@ module soc_dbg_ctrl_jtag_reg_top (
       end
 
       addr_hit[3]: begin
+        reg_rdata_next[0] = jtag_status_auth_debug_intent_set_qs;
+        reg_rdata_next[4] = jtag_status_auth_window_open_qs;
+        reg_rdata_next[5] = jtag_status_auth_window_closed_qs;
+        reg_rdata_next[6] = jtag_status_auth_unlock_success_qs;
+        reg_rdata_next[7] = jtag_status_auth_unlock_failed_qs;
+      end
+
+      addr_hit[4]: begin
         reg_rdata_next[0] = jtag_boot_status_main_clk_status_qs;
         reg_rdata_next[1] = jtag_boot_status_io_clk_status_qs;
         reg_rdata_next[2] = jtag_boot_status_otp_done_qs;
@@ -458,7 +553,7 @@ module soc_dbg_ctrl_jtag_reg_top (
         reg_rdata_next[17:15] = jtag_boot_status_rom_ctrl_good_qs;
       end
 
-      addr_hit[4]: begin
+      addr_hit[5]: begin
         reg_rdata_next[31:0] = jtag_trace_soc_dbg_state_qs;
       end
 

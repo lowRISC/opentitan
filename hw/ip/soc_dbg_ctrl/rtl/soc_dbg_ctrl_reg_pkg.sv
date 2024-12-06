@@ -43,6 +43,24 @@ package soc_dbg_ctrl_reg_pkg;
   } soc_dbg_ctrl_reg2hw_debug_policy_relocked_reg_t;
 
   typedef struct packed {
+    struct packed {
+      logic        q;
+    } auth_unlock_failed;
+    struct packed {
+      logic        q;
+    } auth_unlock_success;
+    struct packed {
+      logic        q;
+    } auth_window_closed;
+    struct packed {
+      logic        q;
+    } auth_window_open;
+    struct packed {
+      logic        q;
+    } auth_debug_intent_set;
+  } soc_dbg_ctrl_reg2hw_status_reg_t;
+
+  typedef struct packed {
     logic [6:0]  d;
   } soc_dbg_ctrl_hw2reg_debug_policy_category_shadowed_reg_t;
 
@@ -64,11 +82,12 @@ package soc_dbg_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    soc_dbg_ctrl_reg2hw_alert_test_reg_t alert_test; // [20:17]
-    soc_dbg_ctrl_reg2hw_debug_policy_valid_shadowed_reg_t debug_policy_valid_shadowed; // [16:13]
+    soc_dbg_ctrl_reg2hw_alert_test_reg_t alert_test; // [25:22]
+    soc_dbg_ctrl_reg2hw_debug_policy_valid_shadowed_reg_t debug_policy_valid_shadowed; // [21:18]
     soc_dbg_ctrl_reg2hw_debug_policy_category_shadowed_reg_t
-        debug_policy_category_shadowed; // [12:4]
-    soc_dbg_ctrl_reg2hw_debug_policy_relocked_reg_t debug_policy_relocked; // [3:0]
+        debug_policy_category_shadowed; // [17:9]
+    soc_dbg_ctrl_reg2hw_debug_policy_relocked_reg_t debug_policy_relocked; // [8:5]
+    soc_dbg_ctrl_reg2hw_status_reg_t status; // [4:0]
   } soc_dbg_ctrl_core_reg2hw_t;
 
   // HW -> register type for core interface
@@ -87,6 +106,7 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED_OFFSET = 5'h c;
   parameter logic [CoreAw-1:0] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 5'h 10;
   parameter logic [CoreAw-1:0] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 5'h 14;
+  parameter logic [CoreAw-1:0] SOC_DBG_CTRL_STATUS_OFFSET = 5'h 18;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [1:0] SOC_DBG_CTRL_ALERT_TEST_RESVAL = 2'h 0;
@@ -104,17 +124,19 @@ package soc_dbg_ctrl_reg_pkg;
     SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED,
     SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED,
     SOC_DBG_CTRL_TRACE_DEBUG_POLICY_CATEGORY,
-    SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED,
+    SOC_DBG_CTRL_STATUS
   } soc_dbg_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] SOC_DBG_CTRL_CORE_PERMIT [6] = '{
+  parameter logic [3:0] SOC_DBG_CTRL_CORE_PERMIT [7] = '{
     4'b 0001, // index[0] SOC_DBG_CTRL_ALERT_TEST
     4'b 0001, // index[1] SOC_DBG_CTRL_DEBUG_POLICY_VALID_SHADOWED
     4'b 0001, // index[2] SOC_DBG_CTRL_DEBUG_POLICY_CATEGORY_SHADOWED
     4'b 0001, // index[3] SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED
     4'b 0001, // index[4] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_CATEGORY
-    4'b 0001  // index[5] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    4'b 0001, // index[5] SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    4'b 0001  // index[6] SOC_DBG_CTRL_STATUS
   };
 
   ///////////////////////////////////////////////
@@ -140,6 +162,24 @@ package soc_dbg_ctrl_reg_pkg;
       logic        de;
     } relocked;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+    } auth_debug_intent_set;
+    struct packed {
+      logic        d;
+    } auth_window_open;
+    struct packed {
+      logic        d;
+    } auth_window_closed;
+    struct packed {
+      logic        d;
+    } auth_unlock_success;
+    struct packed {
+      logic        d;
+    } auth_unlock_failed;
+  } soc_dbg_ctrl_hw2reg_jtag_status_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -180,9 +220,10 @@ package soc_dbg_ctrl_reg_pkg;
   // HW -> register type for jtag interface
   typedef struct packed {
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t
-        jtag_trace_debug_policy_category; // [67:60]
+        jtag_trace_debug_policy_category; // [72:65]
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t
-        jtag_trace_debug_policy_valid_relocked; // [59:50]
+        jtag_trace_debug_policy_valid_relocked; // [64:55]
+    soc_dbg_ctrl_hw2reg_jtag_status_reg_t jtag_status; // [54:50]
     soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t jtag_boot_status; // [49:32]
     soc_dbg_ctrl_hw2reg_jtag_trace_soc_dbg_state_reg_t jtag_trace_soc_dbg_state; // [31:0]
   } soc_dbg_ctrl_jtag_hw2reg_t;
@@ -191,10 +232,17 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 5'h 0;
   parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 5'h 4;
   parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_CONTROL_OFFSET = 5'h 8;
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET = 5'h c;
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET = 5'h 10;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_STATUS_OFFSET = 5'h c;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET = 5'h 10;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET = 5'h 14;
 
   // Reset values for hwext registers and their fields for jtag interface
+  parameter logic [7:0] SOC_DBG_CTRL_JTAG_STATUS_RESVAL = 8'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_DEBUG_INTENT_SET_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_WINDOW_OPEN_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_WINDOW_CLOSED_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_UNLOCK_SUCCESS_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_UNLOCK_FAILED_RESVAL = 1'h 0;
   parameter logic [17:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_RESVAL = 18'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_MAIN_CLK_STATUS_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_IO_CLK_STATUS_RESVAL = 1'h 0;
@@ -212,17 +260,19 @@ package soc_dbg_ctrl_reg_pkg;
     SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY,
     SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED,
     SOC_DBG_CTRL_JTAG_CONTROL,
+    SOC_DBG_CTRL_JTAG_STATUS,
     SOC_DBG_CTRL_JTAG_BOOT_STATUS,
     SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE
   } soc_dbg_ctrl_jtag_id_e;
 
   // Register width information to check illegal writes for jtag interface
-  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [5] = '{
+  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [6] = '{
     4'b 0001, // index[0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY
     4'b 0001, // index[1] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
     4'b 0001, // index[2] SOC_DBG_CTRL_JTAG_CONTROL
-    4'b 0111, // index[3] SOC_DBG_CTRL_JTAG_BOOT_STATUS
-    4'b 1111  // index[4] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE
+    4'b 0001, // index[3] SOC_DBG_CTRL_JTAG_STATUS
+    4'b 0111, // index[4] SOC_DBG_CTRL_JTAG_BOOT_STATUS
+    4'b 1111  // index[5] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE
   };
 
 endpackage

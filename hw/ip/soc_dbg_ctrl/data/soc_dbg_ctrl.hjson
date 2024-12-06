@@ -225,6 +225,47 @@
           }
         ]
       }
+      { name:     "STATUS"
+        desc:     "Debug Status Register"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "0"
+            name: "auth_debug_intent_set"
+            desc: '''
+                  Status bit indicating whether the debug intent hardware strap was set.
+                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "auth_window_open"
+            desc: '''
+                  Status bit that tells whether debug authorization exchange can take place.
+                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  '''
+            resval: "0"
+          }
+          { bits: "5"
+            name: "auth_window_closed"
+            desc: '''
+                  Status bit that indicates that SoC reset sequence is unpaused SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
+                  Note that the rest of the SoC reset sequence is triggered by the OT RoT.
+                  '''
+            resval: "0"
+          }
+          { bits: "6"
+            name: "auth_unlock_success"
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level."
+            resval: "0"
+          }
+          { bits: "7"
+            name: "auth_unlock_failed"
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level."
+            resval: "0"
+          }
+        ]
+      }
     ]
     jtag: [
       { name: "JTAG_TRACE_DEBUG_POLICY_CATEGORY"
@@ -277,6 +318,48 @@
                     1'b0: Stop and halt boot flow.
                     1'b1: Continue with the boot flow and let Ibex fetch code.
                   '''
+          }
+        ]
+      }
+      { name:     "JTAG_STATUS"
+        desc:     "Debug Status Register"
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "0"
+            name: "auth_debug_intent_set"
+            desc: '''
+                  Status bit indicating whether the debug intent hardware strap was set.
+                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "auth_window_open"
+            desc: '''
+                  Status bit that tells whether debug authorization exchange can take place.
+                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  '''
+            resval: "0"
+          }
+          { bits: "5"
+            name: "auth_window_closed"
+            desc: '''
+                  Status bit that indicates that SoC reset sequence is unpaused, SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
+                  Note that the rest of the SoC reset sequence is triggered by the OT RoT"
+                  '''
+            resval: "0"
+          }
+          { bits: "6"
+            name: "auth_unlock_success"
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level"
+            resval: "0"
+          }
+          { bits: "7"
+            name: "auth_unlock_failed"
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level"
+            resval: "0"
           }
         ]
       }

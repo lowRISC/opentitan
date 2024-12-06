@@ -15,6 +15,7 @@ Depending on the configured debug category, a consumer might accept the debug co
 | soc_dbg_ctrl.[`DEBUG_POLICY_RELOCKED`](#debug_policy_relocked)                         | 0xc      |        4 | Debug Policy relocked                                                                                    |
 | soc_dbg_ctrl.[`TRACE_DEBUG_POLICY_CATEGORY`](#trace_debug_policy_category)             | 0x10     |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
 | soc_dbg_ctrl.[`TRACE_DEBUG_POLICY_VALID_RELOCKED`](#trace_debug_policy_valid_relocked) | 0x14     |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
+| soc_dbg_ctrl.[`STATUS`](#status)                                                       | 0x18     |        4 | Debug Status Register                                                                                    |
 
 ## ALERT_TEST
 Alert Test Register
@@ -121,6 +122,28 @@ Trace register to observe the valid or relocked state that is either determined 
 |  7:4   |   ro   |   0x9   | relocked | The relocked state determined by hardware or software. |
 |  3:0   |   ro   |   0x9   | valid    | The valid state determined by hardware or software.    |
 
+## STATUS
+Debug Status Register
+- Offset: `0x18`
+- Reset default: `0x0`
+- Reset mask: `0xf1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "auth_debug_intent_set", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "auth_window_open", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "auth_window_closed", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "auth_unlock_success", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "auth_unlock_failed", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                                                                                                        |
+|:------:|:------:|:-------:|:----------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |                       | Reserved                                                                                                                                                                                                                                           |
+|   7    |   rw   |   0x0   | auth_unlock_failed    | Status bit indicating whether the unlock protocol resulted in unlock failure at requested level.                                                                                                                                                   |
+|   6    |   rw   |   0x0   | auth_unlock_success   | Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level.                                                                                                                                              |
+|   5    |   rw   |   0x0   | auth_window_closed    | Status bit that indicates that SoC reset sequence is unpaused SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset. Note that the rest of the SoC reset sequence is triggered by the OT RoT. |
+|   4    |   rw   |   0x0   | auth_window_open      | Status bit that tells whether debug authorization exchange can take place. This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.                                                |
+|  3:1   |        |         |                       | Reserved                                                                                                                                                                                                                                           |
+|   0    |   rw   |   0x0   | auth_debug_intent_set | Status bit indicating whether the debug intent hardware strap was set. If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.                                             |
+
 ## Summary of the **`jtag`** interface's registers
 
 | Name                                                                                             | Offset   |   Length | Description                                                                                              |
@@ -128,8 +151,9 @@ Trace register to observe the valid or relocked state that is either determined 
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_CATEGORY`](#jtag_trace_debug_policy_category)             | 0x0      |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED`](#jtag_trace_debug_policy_valid_relocked) | 0x4      |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
 | soc_dbg_ctrl.[`JTAG_CONTROL`](#jtag_control)                                                     | 0x8      |        4 | JTAG control register to interact with the boot flow.                                                    |
-| soc_dbg_ctrl.[`JTAG_BOOT_STATUS`](#jtag_boot_status)                                             | 0xc      |        4 | Debug boot status register that tells important boot state information.                                  |
-| soc_dbg_ctrl.[`JTAG_TRACE_SOC_DBG_STATE`](#jtag_trace_soc_dbg_state)                             | 0x10     |        4 | Tells the current debug state coming from OTP.                                                           |
+| soc_dbg_ctrl.[`JTAG_STATUS`](#jtag_status)                                                       | 0xc      |        4 | Debug Status Register                                                                                    |
+| soc_dbg_ctrl.[`JTAG_BOOT_STATUS`](#jtag_boot_status)                                             | 0x10     |        4 | Debug boot status register that tells important boot state information.                                  |
+| soc_dbg_ctrl.[`JTAG_TRACE_SOC_DBG_STATE`](#jtag_trace_soc_dbg_state)                             | 0x14     |        4 | Tells the current debug state coming from OTP.                                                           |
 
 ## JTAG_TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
@@ -183,10 +207,32 @@ JTAG control register to interact with the boot flow.
 |  31:1  |        |         |               | Reserved                                                                                                                                      |
 |   0    |   rw   |   0x0   | boot_continue | JTAG bit to stop or continue the boot flow of Ibex. 1'b0: Stop and halt boot flow. 1'b1: Continue with the boot flow and let Ibex fetch code. |
 
+## JTAG_STATUS
+Debug Status Register
+- Offset: `0xc`
+- Reset default: `0x0`
+- Reset mask: `0xf1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "auth_debug_intent_set", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "auth_window_open", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "auth_window_closed", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "auth_unlock_success", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "auth_unlock_failed", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:----------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:8  |        |         |                       | Reserved                                                                                                                                                                                                                                            |
+|   7    |   ro   |   0x0   | auth_unlock_failed    | Status bit indicating whether the unlock protocol resulted in unlock failure at requested level                                                                                                                                                     |
+|   6    |   ro   |   0x0   | auth_unlock_success   | Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level                                                                                                                                                |
+|   5    |   ro   |   0x0   | auth_window_closed    | Status bit that indicates that SoC reset sequence is unpaused, SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset. Note that the rest of the SoC reset sequence is triggered by the OT RoT" |
+|   4    |   ro   |   0x0   | auth_window_open      | Status bit that tells whether debug authorization exchange can take place. This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.                                                 |
+|  3:1   |        |         |                       | Reserved                                                                                                                                                                                                                                            |
+|   0    |   ro   |   0x0   | auth_debug_intent_set | Status bit indicating whether the debug intent hardware strap was set. If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.                                              |
+
 ## JTAG_BOOT_STATUS
 Debug boot status register that tells important boot state information.
 Note that this information is reflected only if the hw_dft_en signal is true.
-- Offset: `0xc`
+- Offset: `0x10`
 - Reset default: `0x0`
 - Reset mask: `0x3ffff`
 
@@ -211,7 +257,7 @@ Note that this information is reflected only if the hw_dft_en signal is true.
 ## JTAG_TRACE_SOC_DBG_STATE
 Tells the current debug state coming from OTP.
 Note that this information is reflected only if the hw_dft_en signal is true.
-- Offset: `0x10`
+- Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
