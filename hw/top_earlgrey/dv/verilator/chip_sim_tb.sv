@@ -118,6 +118,7 @@ module chip_sim_tb (
   // jtagdpi u_jtagdpi (
   //   .clk_i,
   //   .rst_ni,
+  //   .active      (1'b1),
 
   //   .jtag_tck    (cio_jtag_tck),
   //   .jtag_tms    (cio_jtag_tms),

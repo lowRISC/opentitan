@@ -8,6 +8,7 @@ module jtagdpi #(
 )(
   input  logic clk_i,
   input  logic rst_ni,
+  input  bit   active,
 
   output logic jtag_tck,
   output logic jtag_tms,
@@ -31,8 +32,10 @@ module jtagdpi #(
 
   chandle ctx;
 
-  initial begin
+  function automatic void initialize();
     int port, assert_srst;
+
+    assert (ctx == null);
 
     // The listening socket port can be customized at runtime
     port = ListenPort;
@@ -43,6 +46,14 @@ module jtagdpi #(
     void'($value$plusargs("jtagdpi_assert_srst=%0d", assert_srst));
 
     ctx = jtagdpi_create(Name, port, assert_srst);
+  endfunction
+
+  initial begin
+    if (active) initialize();
+  end
+
+  always @(posedge active) begin
+    if (ctx == null) initialize();
   end
 
   final begin
@@ -51,8 +62,8 @@ module jtagdpi #(
   end
 
   always_ff @(posedge clk_i, negedge rst_ni) begin
-    jtagdpi_tick(ctx, jtag_tck, jtag_tms, jtag_tdi, jtag_trst_n, jtag_srst_n,
-                 jtag_tdo);
+    if (active) jtagdpi_tick(ctx, jtag_tck, jtag_tms, jtag_tdi, jtag_trst_n,
+                             jtag_srst_n, jtag_tdo);
   end
 
 endmodule
