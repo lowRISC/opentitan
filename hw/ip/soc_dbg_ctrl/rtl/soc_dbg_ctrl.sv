@@ -244,6 +244,10 @@ module soc_dbg_ctrl
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.de = 1'b1;
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.d  = soc_dbg_policy_q.relocked;
 
+  // The status register is written by IBEX firmware and is reflected into the JTAG status register.
+  // The JTAG user shall query this status register.
+  assign jtag_hw2reg.jtag_status = soc_dbg_ctrl_hw2reg_jtag_status_reg_t'(core_reg2hw.status);
+
   always_comb  begin
     jtag_hw2reg.jtag_boot_status = '0;
     jtag_hw2reg.jtag_trace_soc_dbg_state = '0;
