@@ -68,13 +68,13 @@ module otp_ctrl_cov_bind;
   );
 
   // Mubi internal coverage for buffered and unbuffered partitions.
-% for part in otp_mmap.config["partitions"][:-1]:
+% for part in otp_mmap["partitions"][:-1]:
 <% part_name = Name.from_snake_case(part["name"]) %>\
   `PART_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
 % endfor
 
   // Mubi internal coverage for DAI interface access
-% for part in otp_mmap.config["partitions"][:-1]:
+% for part in otp_mmap["partitions"][:-1]:
 <% part_name = Name.from_snake_case(part["name"]) %>\
   `DAI_MUBI_COV(${part_name.as_snake_case()}, otp_ctrl_part_pkg::${part_name.as_camel_case()}Idx)
 % endfor
