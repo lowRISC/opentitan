@@ -21,7 +21,7 @@ module soc_dbg_ctrl_jtag_reg_top (
 
   import soc_dbg_ctrl_reg_pkg::* ;
 
-  localparam int AW = 4;
+  localparam int AW = 5;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -52,9 +52,9 @@ module soc_dbg_ctrl_jtag_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [2:0] reg_we_check;
+  logic [4:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(3)
+    .OneHotWidth(5)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -127,6 +127,17 @@ module soc_dbg_ctrl_jtag_reg_top (
   logic jtag_control_we;
   logic jtag_control_qs;
   logic jtag_control_wd;
+  logic jtag_boot_status_re;
+  logic jtag_boot_status_main_clk_status_qs;
+  logic jtag_boot_status_io_clk_status_qs;
+  logic jtag_boot_status_otp_done_qs;
+  logic jtag_boot_status_lc_done_qs;
+  logic jtag_boot_status_cpu_fetch_en_qs;
+  logic [6:0] jtag_boot_status_halt_fsm_state_qs;
+  logic [2:0] jtag_boot_status_rom_ctrl_done_qs;
+  logic [2:0] jtag_boot_status_rom_ctrl_good_qs;
+  logic jtag_trace_soc_dbg_state_re;
+  logic [31:0] jtag_trace_soc_dbg_state_qs;
 
   // Register instances
   // R[jtag_trace_debug_policy_category]: V(False)
@@ -241,13 +252,153 @@ module soc_dbg_ctrl_jtag_reg_top (
   );
 
 
+  // R[jtag_boot_status]: V(True)
+  //   F[main_clk_status]: 0:0
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_boot_status_main_clk_status (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.main_clk_status.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_main_clk_status_qs)
+  );
 
-  logic [2:0] addr_hit;
+  //   F[io_clk_status]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_boot_status_io_clk_status (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.io_clk_status.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_io_clk_status_qs)
+  );
+
+  //   F[otp_done]: 2:2
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_boot_status_otp_done (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.otp_done.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_otp_done_qs)
+  );
+
+  //   F[lc_done]: 3:3
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_boot_status_lc_done (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.lc_done.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_lc_done_qs)
+  );
+
+  //   F[cpu_fetch_en]: 4:4
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_jtag_boot_status_cpu_fetch_en (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.cpu_fetch_en.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_cpu_fetch_en_qs)
+  );
+
+  //   F[halt_fsm_state]: 11:5
+  prim_subreg_ext #(
+    .DW    (7)
+  ) u_jtag_boot_status_halt_fsm_state (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.halt_fsm_state.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_halt_fsm_state_qs)
+  );
+
+  //   F[rom_ctrl_done]: 14:12
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_jtag_boot_status_rom_ctrl_done (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.rom_ctrl_done.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_rom_ctrl_done_qs)
+  );
+
+  //   F[rom_ctrl_good]: 17:15
+  prim_subreg_ext #(
+    .DW    (3)
+  ) u_jtag_boot_status_rom_ctrl_good (
+    .re     (jtag_boot_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_boot_status.rom_ctrl_good.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_boot_status_rom_ctrl_good_qs)
+  );
+
+
+  // R[jtag_trace_soc_dbg_state]: V(True)
+  prim_subreg_ext #(
+    .DW    (32)
+  ) u_jtag_trace_soc_dbg_state (
+    .re     (jtag_trace_soc_dbg_state_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.jtag_trace_soc_dbg_state.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (jtag_trace_soc_dbg_state_qs)
+  );
+
+
+
+  logic [4:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET);
     addr_hit[1] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET);
     addr_hit[2] = (reg_addr == SOC_DBG_CTRL_JTAG_CONTROL_OFFSET);
+    addr_hit[3] = (reg_addr == SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET);
+    addr_hit[4] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -257,13 +408,17 @@ module soc_dbg_ctrl_jtag_reg_top (
     wr_err = (reg_we &
               ((addr_hit[0] & (|(SOC_DBG_CTRL_JTAG_PERMIT[0] & ~reg_be))) |
                (addr_hit[1] & (|(SOC_DBG_CTRL_JTAG_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(SOC_DBG_CTRL_JTAG_PERMIT[2] & ~reg_be)))));
+               (addr_hit[2] & (|(SOC_DBG_CTRL_JTAG_PERMIT[2] & ~reg_be))) |
+               (addr_hit[3] & (|(SOC_DBG_CTRL_JTAG_PERMIT[3] & ~reg_be))) |
+               (addr_hit[4] & (|(SOC_DBG_CTRL_JTAG_PERMIT[4] & ~reg_be)))));
   end
 
   // Generate write-enables
   assign jtag_control_we = addr_hit[2] & reg_we & !reg_error;
 
   assign jtag_control_wd = reg_wdata[0];
+  assign jtag_boot_status_re = addr_hit[3] & reg_re & !reg_error;
+  assign jtag_trace_soc_dbg_state_re = addr_hit[4] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -271,6 +426,8 @@ module soc_dbg_ctrl_jtag_reg_top (
     reg_we_check[0] = 1'b0;
     reg_we_check[1] = 1'b0;
     reg_we_check[2] = jtag_control_we;
+    reg_we_check[3] = 1'b0;
+    reg_we_check[4] = 1'b0;
   end
 
   // Read data return
@@ -288,6 +445,21 @@ module soc_dbg_ctrl_jtag_reg_top (
 
       addr_hit[2]: begin
         reg_rdata_next[0] = jtag_control_qs;
+      end
+
+      addr_hit[3]: begin
+        reg_rdata_next[0] = jtag_boot_status_main_clk_status_qs;
+        reg_rdata_next[1] = jtag_boot_status_io_clk_status_qs;
+        reg_rdata_next[2] = jtag_boot_status_otp_done_qs;
+        reg_rdata_next[3] = jtag_boot_status_lc_done_qs;
+        reg_rdata_next[4] = jtag_boot_status_cpu_fetch_en_qs;
+        reg_rdata_next[11:5] = jtag_boot_status_halt_fsm_state_qs;
+        reg_rdata_next[14:12] = jtag_boot_status_rom_ctrl_done_qs;
+        reg_rdata_next[17:15] = jtag_boot_status_rom_ctrl_good_qs;
+      end
+
+      addr_hit[4]: begin
+        reg_rdata_next[31:0] = jtag_trace_soc_dbg_state_qs;
       end
 
       default: begin

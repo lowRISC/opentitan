@@ -280,6 +280,99 @@
           }
         ]
       }
+      { name: "JTAG_BOOT_STATUS"
+        desc: '''
+              Debug boot status register that tells important boot state information.
+              Note that this information is reflected only if the hw_dft_en signal is true.
+              '''
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "0"
+            name: "main_clk_status"
+            desc: '''
+                    Status of the main clock activation
+                  '''
+            resval: "0"
+          }
+          { bits: "1"
+            name: "io_clk_status"
+            desc: '''
+                    Status of the IO Clock activation
+                  '''
+            resval: "0"
+          }
+          { bits: "2"
+            name: "otp_done"
+            desc: '''
+                    OTP controller initialization complete
+                  '''
+            resval: "0"
+          }
+          { bits: "3"
+            name: "lc_done"
+            desc: '''
+                    Lifecycle controller initialization done; LC policy is decoded and set
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "cpu_fetch_en"
+            desc: '''
+                    Indication from powermanger to IBEX to state code execution
+                  '''
+            resval: "0"
+          }
+          { bits: "11:5"
+            name: "halt_fsm_state"
+            desc: '''
+                  The state of the halt state FSM.
+                  '''
+            resval: "0"
+          }
+          { bits: "14:12"
+            name: "boot_greenlight_done"
+            desc: '''
+                  Green lights for the boot process: _done_ indication coming from
+                    [0]: base ROM
+                    [1]: second ROM
+                    [2]: this module
+
+                  Note that for the boot process to go through, all _done_ bits in this field and all _good_ bits in the next field need to be set.
+                  '''
+            resval: "0"
+          }
+          { bits: "17:15"
+            name: "boot_greenlight_good"
+            desc: '''
+                  Green lights status for the boot process: _good_ indication coming from
+                    [0]: base ROM
+                    [1]: second ROM
+                    [2]: this module
+                  '''
+            resval: "0"
+          }
+        ]
+      }
+      { name: "JTAG_TRACE_SOC_DBG_STATE"
+        desc: '''
+              Tells the current debug state coming from OTP.
+              Note that this information is reflected only if the hw_dft_en signal is true.
+              '''
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "31:0"
+            name: "soc_dbg_state"
+            desc: '''
+                  The current debug state.
+                  '''
+            resval: "0"
+          }
+        ]
+      }
     ]
   }
 }
