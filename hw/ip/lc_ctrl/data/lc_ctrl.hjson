@@ -299,6 +299,13 @@
     // Life cycle broadcast signals
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_raw_test_rma"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "lc_dft_en"
       act:     "req"
       default: "lc_ctrl_pkg::Off"
