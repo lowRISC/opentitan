@@ -34,7 +34,8 @@ MSG_TEMPLATE_BFV_LCV = "{}{}\r\n{}{}\r\n(?s:.*){}{}\r\n{}{}\r\n".format(
     "{1}",
 )
 
-MSG_STARTING_ROM_EXT = "Starting ROM_EXT"
+# When starting ROM_EXT, immutable section will always run first.
+MSG_STARTING_ROM_EXT = "\nIMM_ROM_EXT v"
 
 MSG_PASS = "PASS!"
 
