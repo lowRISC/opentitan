@@ -174,6 +174,7 @@ FIRMWARE_DEPS = [
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",
     "//sw/device/lib/ujson",
+    "//hw/top_earlgrey/sw/autogen:top_earlgrey",
 
     # Include all JSON commands.
     "//sw/device/tests/crypto/cryptotest/json:commands",
