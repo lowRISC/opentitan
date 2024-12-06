@@ -268,14 +268,9 @@ module dma
   always_comb begin
     control_d.opcode                     = opcode_e'(reg2hw.control.opcode.q);
     control_d.cfg_handshake_en           = reg2hw.control.hardware_handshake_enable.q;
-    control_d.cfg_data_direction         = reg2hw.control.data_direction.q;
-    control_d.cfg_fifo_auto_increment_en = reg2hw.control.fifo_auto_increment_enable.q;
     control_d.range_valid                = reg2hw.range_valid.q;
     control_d.enabled_memory_range_base  = reg2hw.enabled_memory_range_base.q;
     control_d.enabled_memory_range_limit = reg2hw.enabled_memory_range_limit.q;
-
-    control_d.cfg_memory_buffer_auto_increment_en =
-      reg2hw.control.memory_buffer_auto_increment_enable.q;
   end
 
   prim_flop_en #(
@@ -748,26 +743,24 @@ module dma
             default: next_error[DmaSizeErr] = 1'b1;  // Invalid transfer_width
           endcase
 
+          // Use start address on first byte of transaction
           if ((transfer_byte_q == '0) ||
-              (control_q.cfg_handshake_en &&
-              // Does the source address need resetting to the configured base address?
-              ((control_q.cfg_data_direction && chunk_byte_q == '0 &&
-                !control_q.cfg_memory_buffer_auto_increment_en) ||
-               (!control_q.cfg_data_direction &&
-               (chunk_byte_q == '0 || !control_q.cfg_fifo_auto_increment_en))))) begin
+              // or when being in the fixed address mode
+              reg2hw.src_control.increment.q == AddrNoIncrement ||
+              // or when transferring the first byte of a chunk and in wrapped increment mode
+              (chunk_byte_q == '0 && reg2hw.src_control.wrap.q == AddrWrapChunk)) begin
             src_addr_d = {reg2hw.src_addr_hi.q, reg2hw.src_addr_lo.q};
           end else begin
             // Advance from the previous transaction within this chunk
             src_addr_d = src_addr_q + SYS_ADDR_WIDTH'(transfer_width_d);
           end
 
+          // Use start address on first byte of transaction
           if ((transfer_byte_q == '0) ||
-              (control_q.cfg_handshake_en    &&
-              // Does the destination address need resetting to the configured base address?
-              ((!control_q.cfg_data_direction && chunk_byte_q == '0 &&
-                !control_q.cfg_memory_buffer_auto_increment_en) ||
-               (control_q.cfg_data_direction &&
-               (chunk_byte_q == '0 || !control_q.cfg_fifo_auto_increment_en))))) begin
+              // or when being in the fixed address mode
+              reg2hw.dst_control.increment.q == AddrNoIncrement ||
+              // or when transferring the first byte of a chunk and in wrapped increment mode
+              (chunk_byte_q == '0 && reg2hw.dst_control.wrap.q == AddrWrapChunk)) begin
             dst_addr_d = {reg2hw.dst_addr_hi.q, reg2hw.dst_addr_lo.q};
           end else begin
             // Advance from the previous transaction within this chunk
@@ -1139,13 +1132,7 @@ module dma
                            (ctrl_state_q == DmaShaWait)           ||
                            (ctrl_state_q == DmaShaFinalize);
 
-  assign new_dst_addr = control_q.cfg_data_direction ?
-    ({reg2hw.dst_addr_hi.q, reg2hw.dst_addr_lo.q} + SYS_ADDR_WIDTH'(transfer_width_q)) :
-    ({reg2hw.dst_addr_hi.q, reg2hw.dst_addr_lo.q} + SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q));
 
-  assign new_src_addr = control_q.cfg_data_direction ?
-    ({reg2hw.src_addr_hi.q, reg2hw.src_addr_lo.q} + SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) :
-    ({reg2hw.src_addr_hi.q, reg2hw.src_addr_lo.q} + SYS_ADDR_WIDTH'(transfer_width_q));
 
   // Calculate the number of bytes remaining until the end of the current chunk.
   // Note that the total transfer size may be a non-integral multiple of the programmed chunk size,
@@ -1170,25 +1157,27 @@ module dma
     // since multi-chunked transfers roundtrip via IDLE.
     hw2reg.cfg_regwen.d = prim_mubi_pkg::mubi4_bool_to_mubi(~reg2hw.status.busy.q);
 
-    // If we are in hardware handshake mode with auto-increment increment the corresponding address
-    // when finishing a DMA operation when transitioning from a data move state to the idle state
+    // When we would update the register, we would update it with the current transferred number of
+    // bytes of the current chunk
+    new_dst_addr = {reg2hw.dst_addr_hi.q, reg2hw.dst_addr_lo.q} +
+                    SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q);
+    new_src_addr = {reg2hw.src_addr_hi.q, reg2hw.src_addr_lo.q} +
+                    SYS_ADDR_WIDTH'(chunk_byte_q);
+
+    // If we are in multi-chunk mode, we need to update the register addresses since they are needed
+    // for the next chunk. Do this only when going back to Idle and when we are incrementing the
+    // address but not doing wrap-around.
     update_dst_addr_reg = 1'b0;
     update_src_addr_reg = 1'b0;
-    if (control_q.cfg_handshake_en && control_q.cfg_memory_buffer_auto_increment_en &&
-        data_move_state && (ctrl_state_d == DmaIdle)) begin
-      if (control_q.cfg_data_direction) begin
+    if (data_move_state && (ctrl_state_d == DmaIdle)) begin
+      if (reg2hw.src_control.increment.q == AddrNoIncrement &&
+          reg2hw.src_control.wrap.q == AddrNoWrapChunk) begin
         update_src_addr_reg = 1'b1;
-      end else begin
+      end
+      if (reg2hw.dst_control.increment.q == AddrNoIncrement &&
+          reg2hw.dst_control.wrap.q == AddrNoWrapChunk) begin
         update_dst_addr_reg = 1'b1;
       end
-    end
-
-    hw2reg.control.initial_transfer.de = 1'b0;
-    hw2reg.control.initial_transfer.d  = 1'b0;
-    // Clear the inline initial transfer flag starting flag when leaving the DmaIdle the first time
-    if ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
-        reg2hw.control.initial_transfer.q) begin
-      hw2reg.control.initial_transfer.de = 1'b1;
     end
 
     hw2reg.dst_addr_hi.de = update_dst_addr_reg;
@@ -1202,6 +1191,14 @@ module dma
 
     hw2reg.src_addr_lo.de = update_src_addr_reg;
     hw2reg.src_addr_lo.d  = new_src_addr[31:0];
+
+    hw2reg.control.initial_transfer.de = 1'b0;
+    hw2reg.control.initial_transfer.d  = 1'b0;
+    // Clear the inline initial transfer flag starting flag when leaving the DmaIdle the first time
+    if ((ctrl_state_q == DmaIdle) && (ctrl_state_d != DmaIdle) &&
+        reg2hw.control.initial_transfer.q) begin
+      hw2reg.control.initial_transfer.de = 1'b1;
+    end
 
     // Assert busy write enable on
     // - transitions from IDLE out

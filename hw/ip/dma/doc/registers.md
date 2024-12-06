@@ -23,49 +23,51 @@
 | dma.[`CHUNK_DATA_SIZE`](#chunk_data_size)                       | 0x3c     |        4 | Number of bytes to be transferred in response to each interrupt/firmware request.                                                                        |
 | dma.[`TRANSFER_WIDTH`](#transfer_width)                         | 0x40     |        4 | Denotes the width of each transaction that the DMA shall issue.                                                                                          |
 | dma.[`CONTROL`](#control)                                       | 0x44     |        4 | Control register for DMA data movement.                                                                                                                  |
-| dma.[`STATUS`](#status)                                         | 0x48     |        4 | Status indication for DMA data movement.                                                                                                                 |
-| dma.[`ERROR_CODE`](#error_code)                                 | 0x4c     |        4 | Denotes the source of the operational error.                                                                                                             |
-| dma.[`SHA2_DIGEST_0`](#sha2_digest)                             | 0x50     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_1`](#sha2_digest)                             | 0x54     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_2`](#sha2_digest)                             | 0x58     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_3`](#sha2_digest)                             | 0x5c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_4`](#sha2_digest)                             | 0x60     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_5`](#sha2_digest)                             | 0x64     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_6`](#sha2_digest)                             | 0x68     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_7`](#sha2_digest)                             | 0x6c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_8`](#sha2_digest)                             | 0x70     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_9`](#sha2_digest)                             | 0x74     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_10`](#sha2_digest)                            | 0x78     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_11`](#sha2_digest)                            | 0x7c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_12`](#sha2_digest)                            | 0x80     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_13`](#sha2_digest)                            | 0x84     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_14`](#sha2_digest)                            | 0x88     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`SHA2_DIGEST_15`](#sha2_digest)                            | 0x8c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
-| dma.[`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable)           | 0x90     |        4 | Enable bits for incoming handshake interrupt wires.                                                                                                      |
-| dma.[`CLEAR_INTR_SRC`](#clear_intr_src)                         | 0x94     |        4 | Valid bits for which interrupt sources need clearing.                                                                                                    |
-| dma.[`CLEAR_INTR_BUS`](#clear_intr_bus)                         | 0x98     |        4 | Bus selection bit where the clearing command should be performed."                                                                                       |
-| dma.[`INTR_SRC_ADDR_0`](#intr_src_addr)                         | 0x9c     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_1`](#intr_src_addr)                         | 0xa0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_2`](#intr_src_addr)                         | 0xa4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_3`](#intr_src_addr)                         | 0xa8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_4`](#intr_src_addr)                         | 0xac     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_5`](#intr_src_addr)                         | 0xb0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_6`](#intr_src_addr)                         | 0xb4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_7`](#intr_src_addr)                         | 0xb8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_8`](#intr_src_addr)                         | 0xbc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_9`](#intr_src_addr)                         | 0xc0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_ADDR_10`](#intr_src_addr)                        | 0xc4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
-| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x11c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x120    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                |
-| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`SRC_CONTROL`](#src_control)                               | 0x48     |        4 | Defines the addressing behavior of the DMA for the source address.                                                                                       |
+| dma.[`DST_CONTROL`](#dst_control)                               | 0x4c     |        4 | Defines the addressing behavior of the DMA for the destination address.                                                                                  |
+| dma.[`STATUS`](#status)                                         | 0x50     |        4 | Status indication for DMA data movement.                                                                                                                 |
+| dma.[`ERROR_CODE`](#error_code)                                 | 0x54     |        4 | Denotes the source of the operational error.                                                                                                             |
+| dma.[`SHA2_DIGEST_0`](#sha2_digest)                             | 0x58     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_1`](#sha2_digest)                             | 0x5c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_2`](#sha2_digest)                             | 0x60     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_3`](#sha2_digest)                             | 0x64     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_4`](#sha2_digest)                             | 0x68     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_5`](#sha2_digest)                             | 0x6c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_6`](#sha2_digest)                             | 0x70     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_7`](#sha2_digest)                             | 0x74     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_8`](#sha2_digest)                             | 0x78     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_9`](#sha2_digest)                             | 0x7c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_10`](#sha2_digest)                            | 0x80     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_11`](#sha2_digest)                            | 0x84     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_12`](#sha2_digest)                            | 0x88     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_13`](#sha2_digest)                            | 0x8c     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_14`](#sha2_digest)                            | 0x90     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`SHA2_DIGEST_15`](#sha2_digest)                            | 0x94     |        4 | Digest register for the inline hashing operation.                                                                                                        |
+| dma.[`HANDSHAKE_INTR_ENABLE`](#handshake_intr_enable)           | 0x98     |        4 | Enable bits for incoming handshake interrupt wires.                                                                                                      |
+| dma.[`CLEAR_INTR_SRC`](#clear_intr_src)                         | 0x9c     |        4 | Valid bits for which interrupt sources need clearing.                                                                                                    |
+| dma.[`CLEAR_INTR_BUS`](#clear_intr_bus)                         | 0xa0     |        4 | Bus selection bit where the clearing command should be performed."                                                                                       |
+| dma.[`INTR_SRC_ADDR_0`](#intr_src_addr)                         | 0xa4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_1`](#intr_src_addr)                         | 0xa8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_2`](#intr_src_addr)                         | 0xac     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_3`](#intr_src_addr)                         | 0xb0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_4`](#intr_src_addr)                         | 0xb4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_5`](#intr_src_addr)                         | 0xb8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_6`](#intr_src_addr)                         | 0xbc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_7`](#intr_src_addr)                         | 0xc0     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_8`](#intr_src_addr)                         | 0xc4     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_9`](#intr_src_addr)                         | 0xc8     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_ADDR_10`](#intr_src_addr)                        | 0xcc     |        4 | Destination address for interrupt source clearing write.                                                                                                 |
+| dma.[`INTR_SRC_WR_VAL_0`](#intr_src_wr_val)                     | 0x124    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_1`](#intr_src_wr_val)                     | 0x128    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_2`](#intr_src_wr_val)                     | 0x12c    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_3`](#intr_src_wr_val)                     | 0x130    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_4`](#intr_src_wr_val)                     | 0x134    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_5`](#intr_src_wr_val)                     | 0x138    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_6`](#intr_src_wr_val)                     | 0x13c    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_7`](#intr_src_wr_val)                     | 0x140    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_8`](#intr_src_wr_val)                     | 0x144    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_9`](#intr_src_wr_val)                     | 0x148    |        4 | Write value for interrupt clearing write.                                                                                                                |
+| dma.[`INTR_SRC_WR_VAL_10`](#intr_src_wr_val)                    | 0x14c    |        4 | Write value for interrupt clearing write.                                                                                                                |
 
 ## INTR_STATE
 Interrupt State Register
@@ -456,26 +458,24 @@ Other values are reserved.
 Control register for DMA data movement.
 - Offset: `0x44`
 - Reset default: `0x0`
-- Reset mask: `0x880001ff`
+- Reset mask: `0x8800011f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "memory_buffer_auto_increment_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "fifo_auto_increment_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "data_direction", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 18}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 370}}
+{"reg": [{"name": "opcode", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "hardware_handshake_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "initial_transfer", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 18}, {"name": "abort", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "go", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                                 |
-|:------:|:------:|:-------:|:-------------------------------------------------------------------------------------|
-|   31   |   rw   |   0x0   | [go](#control--go)                                                                   |
-| 30:28  |        |         | Reserved                                                                             |
-|   27   |   wo   |   0x0   | [abort](#control--abort)                                                             |
-|  26:9  |        |         | Reserved                                                                             |
-|   8    |   rw   |   0x0   | [initial_transfer](#control--initial_transfer)                                       |
-|   7    |   rw   |   0x0   | [data_direction](#control--data_direction)                                           |
-|   6    |   rw   |   0x0   | [fifo_auto_increment_enable](#control--fifo_auto_increment_enable)                   |
-|   5    |   rw   |   0x0   | [memory_buffer_auto_increment_enable](#control--memory_buffer_auto_increment_enable) |
-|   4    |   rw   |   0x0   | [hardware_handshake_enable](#control--hardware_handshake_enable)                     |
-|  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                                           |
+|  Bits  |  Type  |  Reset  | Name                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------|
+|   31   |   rw   |   0x0   | [go](#control--go)                                               |
+| 30:28  |        |         | Reserved                                                         |
+|   27   |   wo   |   0x0   | [abort](#control--abort)                                         |
+|  26:9  |        |         | Reserved                                                         |
+|   8    |   rw   |   0x0   | [initial_transfer](#control--initial_transfer)                   |
+|  7:5   |        |         | Reserved                                                         |
+|   4    |   rw   |   0x0   | [hardware_handshake_enable](#control--hardware_handshake_enable) |
+|  3:0   |   rw   |   0x0   | [opcode](#control--opcode)                                       |
 
 ### CONTROL . go
 Trigger the DMA operation when the Go bit is set.
@@ -492,22 +492,6 @@ Any OpenTitan-internal transactions are guaranteed to complete, but there are no
 Marks the initial transfer to initialize the DMA and SHA engine for one transfer that can span over multiple single DMA transfers.
 Used for hardware handshake and ordinary transfers, in which multiple transfers contribute to a final digest.
 Note, for non-handshake transfers with inline hashing mode enabled, this bit must be set to also mark the first transfer.
-
-### CONTROL . data_direction
-Used in conjunction with the hardware handshake enable.
-0: Receive data from LSIO FIFO to memory buffer.
-1: Send data from memory buffer to LSIO FIFO.
-
-### CONTROL . fifo_auto_increment_enable
-Used in conjunction with the hardware handshake mode of operation.
-If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
-Else uses the same address for all transactions.
-
-### CONTROL . memory_buffer_auto_increment_enable
-Used in conjunction with the hardware handshake mode of operation.
-Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
-Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
-Enables firmware to take appropriate action prior to reaching the limit.
 
 ### CONTROL . hardware_handshake_enable
 Enable hardware handshake mode.
@@ -531,9 +515,47 @@ Defines the type of DMA operations.
 
 Other values are reserved.
 
+## SRC_CONTROL
+Defines the addressing behavior of the DMA for the source address.
+- Offset: `0x48`
+- Reset default: `0x0`
+- Reset mask: `0x3`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "increment", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wrap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                    |
+|:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:2  |        |         |           | Reserved                                                                                                                                                                                                       |
+|   1    |   rw   |   0x0   | wrap      | When 1: Source address wrapped back to the starting address when finishing a chunk.                                                                                                                            |
+|   0    |   rw   |   0x0   | increment | Defines the increment behavior after every DMA read. When 0: Source address is not changed. All reads are done from the same address. When 1: Source address is incremented by transfer_width after each read. |
+
+## DST_CONTROL
+Defines the addressing behavior of the DMA for the destination address.
+- Offset: `0x4c`
+- Reset default: `0x0`
+- Reset mask: `0x3`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "increment", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "wrap", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 110}}
+```
+
+|  Bits  |  Type  |  Reset  | Name      | Description                                                                                                                                                                                                                |
+|:------:|:------:|:-------:|:----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:2  |        |         |           | Reserved                                                                                                                                                                                                                   |
+|   1    |   rw   |   0x0   | wrap      | When 1: Destination address wrapped back to the starting address when finishing a chunk.                                                                                                                                   |
+|   0    |   rw   |   0x0   | increment | Defines the increment behavior after every DMA write. When 0: Destination address is not changed. All writes are done to the same address. When 1: Destintation address is incremented by transfer_width after each write. |
+
 ## STATUS
 Status indication for DMA data movement.
-- Offset: `0x48`
+- Offset: `0x50`
 - Reset default: `0x0`
 - Reset mask: `0x3f`
 
@@ -556,7 +578,7 @@ Status indication for DMA data movement.
 ## ERROR_CODE
 Denotes the source of the operational error.
 The error is cleared by writing the RW1C STATUS.error register.
-- Offset: `0x4c`
+- Offset: `0x54`
 - Reset default: `0x0`
 - Reset mask: `0xff`
 
@@ -591,22 +613,22 @@ Depending on the used hashing mode, not all registers are used.
 
 | Name           | Offset   |
 |:---------------|:---------|
-| SHA2_DIGEST_0  | 0x50     |
-| SHA2_DIGEST_1  | 0x54     |
-| SHA2_DIGEST_2  | 0x58     |
-| SHA2_DIGEST_3  | 0x5c     |
-| SHA2_DIGEST_4  | 0x60     |
-| SHA2_DIGEST_5  | 0x64     |
-| SHA2_DIGEST_6  | 0x68     |
-| SHA2_DIGEST_7  | 0x6c     |
-| SHA2_DIGEST_8  | 0x70     |
-| SHA2_DIGEST_9  | 0x74     |
-| SHA2_DIGEST_10 | 0x78     |
-| SHA2_DIGEST_11 | 0x7c     |
-| SHA2_DIGEST_12 | 0x80     |
-| SHA2_DIGEST_13 | 0x84     |
-| SHA2_DIGEST_14 | 0x88     |
-| SHA2_DIGEST_15 | 0x8c     |
+| SHA2_DIGEST_0  | 0x58     |
+| SHA2_DIGEST_1  | 0x5c     |
+| SHA2_DIGEST_2  | 0x60     |
+| SHA2_DIGEST_3  | 0x64     |
+| SHA2_DIGEST_4  | 0x68     |
+| SHA2_DIGEST_5  | 0x6c     |
+| SHA2_DIGEST_6  | 0x70     |
+| SHA2_DIGEST_7  | 0x74     |
+| SHA2_DIGEST_8  | 0x78     |
+| SHA2_DIGEST_9  | 0x7c     |
+| SHA2_DIGEST_10 | 0x80     |
+| SHA2_DIGEST_11 | 0x84     |
+| SHA2_DIGEST_12 | 0x88     |
+| SHA2_DIGEST_13 | 0x8c     |
+| SHA2_DIGEST_14 | 0x90     |
+| SHA2_DIGEST_15 | 0x94     |
 
 
 ### Fields
@@ -621,7 +643,7 @@ Depending on the used hashing mode, not all registers are used.
 
 ## HANDSHAKE_INTR_ENABLE
 Enable bits for incoming handshake interrupt wires.
-- Offset: `0x90`
+- Offset: `0x98`
 - Reset default: `0x7ff`
 - Reset mask: `0x7ff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -642,7 +664,7 @@ Valid bits for which interrupt sources need clearing.
 When HANDSHAKE_INTR_ENABLE is non-zero and corresponding lsio_trigger becomes set,
 DMA issues writes with address from INTR_SRC_ADDR and write value from INTR_SRC_WR_VAL corresponding to each
 bit set in this register.
-- Offset: `0x94`
+- Offset: `0x9c`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -662,7 +684,7 @@ bit set in this register.
 Bus selection bit where the clearing command should be performed."
 0: CTN/System fabric
 1: OT-internal crossbar
-- Offset: `0x98`
+- Offset: `0xa0`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -687,17 +709,17 @@ Destination address for interrupt source clearing write.
 
 | Name             | Offset   |
 |:-----------------|:---------|
-| INTR_SRC_ADDR_0  | 0x9c     |
-| INTR_SRC_ADDR_1  | 0xa0     |
-| INTR_SRC_ADDR_2  | 0xa4     |
-| INTR_SRC_ADDR_3  | 0xa8     |
-| INTR_SRC_ADDR_4  | 0xac     |
-| INTR_SRC_ADDR_5  | 0xb0     |
-| INTR_SRC_ADDR_6  | 0xb4     |
-| INTR_SRC_ADDR_7  | 0xb8     |
-| INTR_SRC_ADDR_8  | 0xbc     |
-| INTR_SRC_ADDR_9  | 0xc0     |
-| INTR_SRC_ADDR_10 | 0xc4     |
+| INTR_SRC_ADDR_0  | 0xa4     |
+| INTR_SRC_ADDR_1  | 0xa8     |
+| INTR_SRC_ADDR_2  | 0xac     |
+| INTR_SRC_ADDR_3  | 0xb0     |
+| INTR_SRC_ADDR_4  | 0xb4     |
+| INTR_SRC_ADDR_5  | 0xb8     |
+| INTR_SRC_ADDR_6  | 0xbc     |
+| INTR_SRC_ADDR_7  | 0xc0     |
+| INTR_SRC_ADDR_8  | 0xc4     |
+| INTR_SRC_ADDR_9  | 0xc8     |
+| INTR_SRC_ADDR_10 | 0xcc     |
 
 
 ### Fields
@@ -719,17 +741,17 @@ Write value for interrupt clearing write.
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| INTR_SRC_WR_VAL_0  | 0x11c    |
-| INTR_SRC_WR_VAL_1  | 0x120    |
-| INTR_SRC_WR_VAL_2  | 0x124    |
-| INTR_SRC_WR_VAL_3  | 0x128    |
-| INTR_SRC_WR_VAL_4  | 0x12c    |
-| INTR_SRC_WR_VAL_5  | 0x130    |
-| INTR_SRC_WR_VAL_6  | 0x134    |
-| INTR_SRC_WR_VAL_7  | 0x138    |
-| INTR_SRC_WR_VAL_8  | 0x13c    |
-| INTR_SRC_WR_VAL_9  | 0x140    |
-| INTR_SRC_WR_VAL_10 | 0x144    |
+| INTR_SRC_WR_VAL_0  | 0x124    |
+| INTR_SRC_WR_VAL_1  | 0x128    |
+| INTR_SRC_WR_VAL_2  | 0x12c    |
+| INTR_SRC_WR_VAL_3  | 0x130    |
+| INTR_SRC_WR_VAL_4  | 0x134    |
+| INTR_SRC_WR_VAL_5  | 0x138    |
+| INTR_SRC_WR_VAL_6  | 0x13c    |
+| INTR_SRC_WR_VAL_7  | 0x140    |
+| INTR_SRC_WR_VAL_8  | 0x144    |
+| INTR_SRC_WR_VAL_9  | 0x148    |
+| INTR_SRC_WR_VAL_10 | 0x14c    |
 
 
 ### Fields
