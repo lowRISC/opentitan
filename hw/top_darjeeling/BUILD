@@ -64,8 +64,8 @@ test_suite(
     tests = [
         # base_rom_e2e_smoke?
         "//sw/device/tests/autogen:plic_all_irqs_test_0_sim_dv",
-        "//sw/device/tests/autogen:plic_all_irqs_test_10_sim_dv",
-        "//sw/device/tests/autogen:plic_all_irqs_test_20_sim_dv",
+        "//sw/device/tests/autogen:plic_all_irqs_test_1_sim_dv",
+        "//sw/device/tests/autogen:plic_all_irqs_test_2_sim_dv",
         # "//sw/device/tests:rv_dm_lc_disabled_tl_sim_dv",
         # "//sw/device/tests:rv_dm_lc_disabled_jtag_sim_dv",
         "//sw/device/tests:kmac_app_rom_test_sim_dv",
