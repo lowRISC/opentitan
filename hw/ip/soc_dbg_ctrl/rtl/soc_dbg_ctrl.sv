@@ -223,6 +223,11 @@ module soc_dbg_ctrl
 
   // Distribute debug policy to the SoC
   assign soc_dbg_policy_bus_o = soc_dbg_policy_q;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Trace logic for JTAG and Core
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
   // Allow SW to trace the actual debug policy that is either determined by hardware or software
   // Either for the ROT
   assign core_hw2reg.trace_debug_policy_category.de                = 1'b1;
@@ -238,6 +243,34 @@ module soc_dbg_ctrl
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.valid.d     = soc_dbg_policy_q.valid;
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.de = 1'b1;
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.d  = soc_dbg_policy_q.relocked;
+
+  always_comb  begin
+    jtag_hw2reg.jtag_boot_status = '0;
+    jtag_hw2reg.jtag_trace_soc_dbg_state = '0;
+
+    if (lc_tx_test_true_strict(lc_dft_en_i)) begin
+      jtag_hw2reg.jtag_boot_status.main_clk_status.d  = boot_status_i.clk_status.main_status;
+      jtag_hw2reg.jtag_boot_status.io_clk_status.d    = boot_status_i.clk_status.io_status;
+      jtag_hw2reg.jtag_boot_status.otp_done.d         = boot_status_i.otp_done;
+      jtag_hw2reg.jtag_boot_status.lc_done.d          = boot_status_i.lc_done;
+      jtag_hw2reg.jtag_boot_status.halt_fsm_state     = halt_state_q;
+      jtag_hw2reg.jtag_boot_status.cpu_fetch_en.d     =
+        lc_tx_test_true_strict(boot_status_i.cpu_fetch_en);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_done.d[0] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[0].done);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_done.d[1] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[1].done);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_done.d[2] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[2].done);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_good.d[0] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[0].good);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_good.d[1] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[1].good);
+      jtag_hw2reg.jtag_boot_status.boot_greenlight_good.d[2] =
+        mubi4_test_true_strict(boot_status_i.rom_ctrl_status[2].good);
+      jtag_hw2reg.jtag_trace_soc_dbg_state.d          = soc_dbg_state_i;
+    end
+  end
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Ibex Halt feature via the pwrmgr's ROM_CTRL input

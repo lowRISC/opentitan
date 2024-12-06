@@ -11,7 +11,7 @@ package soc_dbg_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 5;
-  parameter int JtagAw = 4;
+  parameter int JtagAw = 5;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -141,6 +141,37 @@ package soc_dbg_ctrl_reg_pkg;
     } relocked;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
 
+  typedef struct packed {
+    struct packed {
+      logic        d;
+    } main_clk_status;
+    struct packed {
+      logic        d;
+    } io_clk_status;
+    struct packed {
+      logic        d;
+    } otp_done;
+    struct packed {
+      logic        d;
+    } lc_done;
+    struct packed {
+      logic        d;
+    } cpu_fetch_en;
+    struct packed {
+      logic [6:0]  d;
+    } halt_fsm_state;
+    struct packed {
+      logic [2:0]  d;
+    } rom_ctrl_done;
+    struct packed {
+      logic [2:0]  d;
+    } rom_ctrl_good;
+  } soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t;
+
+  typedef struct packed {
+    logic [31:0] d;
+  } soc_dbg_ctrl_hw2reg_jtag_trace_soc_dbg_state_reg_t;
+
   // Register -> HW type for jtag interface
   typedef struct packed {
     soc_dbg_ctrl_reg2hw_jtag_control_reg_t jtag_control; // [0:0]
@@ -149,28 +180,49 @@ package soc_dbg_ctrl_reg_pkg;
   // HW -> register type for jtag interface
   typedef struct packed {
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t
-        jtag_trace_debug_policy_category; // [17:10]
+        jtag_trace_debug_policy_category; // [67:60]
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t
-        jtag_trace_debug_policy_valid_relocked; // [9:0]
+        jtag_trace_debug_policy_valid_relocked; // [59:50]
+    soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t jtag_boot_status; // [49:32]
+    soc_dbg_ctrl_hw2reg_jtag_trace_soc_dbg_state_reg_t jtag_trace_soc_dbg_state; // [31:0]
   } soc_dbg_ctrl_jtag_hw2reg_t;
 
   // Register offsets for jtag interface
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 4'h 0;
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 4'h 4;
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_CONTROL_OFFSET = 4'h 8;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 5'h 0;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 5'h 4;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_CONTROL_OFFSET = 5'h 8;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_OFFSET = 5'h c;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_OFFSET = 5'h 10;
+
+  // Reset values for hwext registers and their fields for jtag interface
+  parameter logic [17:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_RESVAL = 18'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_MAIN_CLK_STATUS_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_IO_CLK_STATUS_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_OTP_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_LC_DONE_RESVAL = 1'h 0;
+  parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_CPU_FETCH_EN_RESVAL = 1'h 0;
+  parameter logic [6:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_HALT_FSM_STATE_RESVAL = 7'h 0;
+  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_ROM_CTRL_DONE_RESVAL = 3'h 0;
+  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_ROM_CTRL_GOOD_RESVAL = 3'h 0;
+  parameter logic [31:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_RESVAL = 32'h 0;
+  parameter logic [31:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_SOC_DBG_STATE_RESVAL = 32'h 0;
 
   // Register index for jtag interface
   typedef enum int {
     SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY,
     SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED,
-    SOC_DBG_CTRL_JTAG_CONTROL
+    SOC_DBG_CTRL_JTAG_CONTROL,
+    SOC_DBG_CTRL_JTAG_BOOT_STATUS,
+    SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE
   } soc_dbg_ctrl_jtag_id_e;
 
   // Register width information to check illegal writes for jtag interface
-  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [3] = '{
+  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [5] = '{
     4'b 0001, // index[0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY
     4'b 0001, // index[1] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
-    4'b 0001  // index[2] SOC_DBG_CTRL_JTAG_CONTROL
+    4'b 0001, // index[2] SOC_DBG_CTRL_JTAG_CONTROL
+    4'b 0111, // index[3] SOC_DBG_CTRL_JTAG_BOOT_STATUS
+    4'b 1111  // index[4] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE
   };
 
 endpackage

@@ -14,7 +14,7 @@ package tl_dbg_pkg;
   localparam logic [31:0] ADDR_MASK_RV_DM__DBG         = 32'h 000001ff;
   localparam logic [31:0] ADDR_MASK_MBX_JTAG__SOC      = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_LC_CTRL__DMI       = 32'h 00000fff;
-  localparam logic [31:0] ADDR_MASK_SOC_DBG_CTRL__JTAG = 32'h 0000000f;
+  localparam logic [31:0] ADDR_MASK_SOC_DBG_CTRL__JTAG = 32'h 0000001f;
 
   localparam int N_HOST   = 1;
   localparam int N_DEVICE = 4;
