@@ -90,7 +90,8 @@ class alert_esc_agent extends dv_base_agent#(
     end
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
+  // TODO MVy: I think an agent is not supposed to have a run phase, this is an issue
+  virtual task run_main();
     if (cfg.is_alert && cfg.is_active && cfg.start_default_rsp_seq) begin
       // For host mode, run alert ping auto-response sequence.
       if (cfg.if_mode == dv_utils_pkg::Host) begin
@@ -98,7 +99,7 @@ class alert_esc_agent extends dv_base_agent#(
             alert_sender_ping_rsp_seq::type_id::create("m_seq", this);
         uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                                 "default_sequence", m_seq.get_type());
-        sequencer.start_phase_sequence(phase);
+        // sequencer.start_phase_sequence(phase);   // has been deprecated from UVM ref manual
       end else begin
         alert_receiver_alert_rsp_seq response_seq;
         alert_receiver_ping_seq      ping_seq;
@@ -108,7 +109,7 @@ class alert_esc_agent extends dv_base_agent#(
         response_seq = alert_receiver_alert_rsp_seq::type_id::create("response_seq", this);
         uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                                 "default_sequence", response_seq.get_type());
-        sequencer.start_phase_sequence(phase);
+        // sequencer.start_phase_sequence(phase);   // has been deprecated from UVM ref manual
 
         // Also run an alert ping sequence, which will send back-to-back sequence items that wait a
         // while and then request a ping (stopping immediately if a genuine alert has been raised).
