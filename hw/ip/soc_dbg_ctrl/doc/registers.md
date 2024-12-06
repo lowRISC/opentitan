@@ -128,6 +128,7 @@ Trace register to observe the valid or relocked state that is either determined 
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_CATEGORY`](#jtag_trace_debug_policy_category)             | 0x0      |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED`](#jtag_trace_debug_policy_valid_relocked) | 0x4      |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
 | soc_dbg_ctrl.[`JTAG_CONTROL`](#jtag_control)                                                     | 0x8      |        4 | JTAG control register to interact with the boot flow.                                                    |
+| soc_dbg_ctrl.[`JTAG_BOOT_STATUS`](#jtag_boot_status)                                             | 0xc      |        4 | Debug Status Register that tells important boot state information.                                       |
 
 ## JTAG_TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
@@ -180,6 +181,59 @@ JTAG control register to interact with the boot flow.
 |:------:|:------:|:-------:|:--------------|:----------------------------------------------------|
 |  31:1  |        |         |               | Reserved                                            |
 |   0    |   rw   |   0x0   | boot_continue | JTAG bit to stop or continue the boot flow if Ibex. |
+
+## JTAG_BOOT_STATUS
+ Debug Status Register that tells important boot state information.
+ Note that this information is reflected only if the hw_dft_en signal is true
+- Offset: `0xc`
+- Reset default: `0x0`
+- Reset mask: `0x7ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "main_clk_status", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "io_clk_status", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lc_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "rom_ctrl_done", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "rom_ctrl_good", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "cpu_fetch_en", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                                  |
+|:------:|:------:|:-------:|:------------------------------------------------------|
+| 31:11  |        |         | Reserved                                              |
+|   10   |   ro   |   0x0   | [cpu_fetch_en](#jtag_boot_status--cpu_fetch_en)       |
+|  9:7   |   ro   |   0x0   | [rom_ctrl_good](#jtag_boot_status--rom_ctrl_good)     |
+|  6:4   |   ro   |   0x0   | [rom_ctrl_done](#jtag_boot_status--rom_ctrl_done)     |
+|   3    |   ro   |   0x0   | [lc_done](#jtag_boot_status--lc_done)                 |
+|   2    |   ro   |   0x0   | [otp_done](#jtag_boot_status--otp_done)               |
+|   1    |   ro   |   0x0   | [io_clk_status](#jtag_boot_status--io_clk_status)     |
+|   0    |   ro   |   0x0   | [main_clk_status](#jtag_boot_status--main_clk_status) |
+
+### JTAG_BOOT_STATUS . cpu_fetch_en
+ Indication from powermanger to IBEX to state code execution
+
+### JTAG_BOOT_STATUS . rom_ctrl_good
+ Rom control integrity check status; One bit corresponding to each ROM 
+ ROM0 = base ROM 
+ ROM1 = second ROM partition
+ ROM2 = the continue boot inidcaiton form IBEX halt FSM socdbg_ctrl module - 
+        leverages pwrmgr ROM controler inputs to halt boot sequence
+
+### JTAG_BOOT_STATUS . rom_ctrl_done
+ Rom control initialization done; One bit corresponding to each ROM 
+ ROM0 = base ROM 
+ ROM1 = second ROM partition
+ ROM2 = the continue boot inidcaiton form IBEX halt FSM socdbg_ctrl module - 
+        leverages pwrmgr ROM controler inputs to halt boot sequence
+
+### JTAG_BOOT_STATUS . lc_done
+ Lifecycle controller initialization done; LC policy is decoded and set
+
+### JTAG_BOOT_STATUS . otp_done
+ OTP controller initialization complete
+
+### JTAG_BOOT_STATUS . io_clk_status
+ Status of the IO Clock activation
+
+### JTAG_BOOT_STATUS . main_clk_status
+ Status of the main clock activation
 
 
 <!-- END CMDGEN -->
