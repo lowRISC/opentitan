@@ -4,7 +4,6 @@
 //
 // HJSON with partition metadata.
 //
-${gen_comment}
 <%
 from topgen.lib import Name
 

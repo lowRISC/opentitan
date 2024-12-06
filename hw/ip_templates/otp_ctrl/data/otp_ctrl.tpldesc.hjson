@@ -15,11 +15,5 @@
       type: "object"
       default: {}
     }
-    {
-      name: "gen_comment"
-      desc: "The comment inserted for each generated file"
-      type: "string"
-      default: ""
-    }
   ]
 }
