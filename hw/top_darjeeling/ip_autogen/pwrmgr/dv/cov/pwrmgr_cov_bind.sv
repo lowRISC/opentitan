@@ -36,6 +36,16 @@ module pwrmgr_cov_bind;
     .mubi   (rom_ctrl_i[1].good)
   );
 
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl2_good_mubi_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (rom_ctrl_i[2].done)
+  );
+
+  bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_rom_ctrl2_done_mubi_cov_if (
+    .rst_ni (rst_ni),
+    .mubi   (rom_ctrl_i[2].good)
+  );
+
   bind pwrmgr cip_mubi_cov_if #(.Width(prim_mubi_pkg::MuBi4Width)) u_sw_rst_req_mubi_cov_if (
     .rst_ni (rst_ni),
     .mubi   (sw_rst_req_i)

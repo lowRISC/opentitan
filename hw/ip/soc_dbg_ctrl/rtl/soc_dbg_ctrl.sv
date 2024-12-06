@@ -30,18 +30,24 @@ module soc_dbg_ctrl
   input  lc_ctrl_state_pkg::soc_dbg_state_t         soc_dbg_state_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_dft_en_i,
   input  lc_ctrl_pkg::lc_tx_t                       lc_hw_debug_en_i,
+  input  lc_ctrl_pkg::lc_tx_t                       lc_raw_test_rma_i,
+  input  pwrmgr_pkg::pwr_boot_status_t              boot_status_i,
   // Boot information from the pwrmgr
-  input  pwrmgr_pkg::pwr_boot_status_t              boot_status_i
+  // Halts CPU boot in early lifecycle stages after reset based on an external signal
+  // Halt functionality disappears in the production lifecycle
+  input  logic                                      halt_cpu_boot_i,
+  output rom_ctrl_pkg::pwrmgr_data_t                continue_cpu_boot_o
 );
   soc_dbg_ctrl_core_reg2hw_t core_reg2hw;
   soc_dbg_ctrl_core_hw2reg_t core_hw2reg;
+  so_cdbg_ctrl_jtag_reg2hw_t jtag_reg2hw;
   soc_dbg_ctrl_jtag_hw2reg_t jtag_hw2reg;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Alert Management
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  logic core_tl_intg_err, jtag_tl_intg_err;
+  logic core_tl_intg_err, jtag_tl_intg_err, halt_fsm_err;
   logic shadowed_storage_err, shadowed_update_err;
   logic policy_shadowed_storage_err, policy_shadowed_update_err;
   logic [NumAlerts-1:0] alert_test, alert;
@@ -53,7 +59,7 @@ module soc_dbg_ctrl
     core_reg2hw.alert_test.recov_ctrl_update_err.qe
   };
   assign alert[0] = core_tl_intg_err | jtag_tl_intg_err | shadowed_storage_err |
-                    policy_shadowed_storage_err;
+                    policy_shadowed_storage_err | halt_fsm_err;
   assign alert[1] = shadowed_update_err | policy_shadowed_update_err;
 
   localparam logic [NumAlerts-1:0] IsFatal = {1'b0, 1'b1};
@@ -97,6 +103,7 @@ module soc_dbg_ctrl
     .rst_ni,
     .tl_i       (jtag_tl_i),
     .tl_o       (jtag_tl_o),
+    .reg2hw     (jtag_reg2hw),
     .hw2reg     (jtag_hw2reg),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o (jtag_tl_intg_err)
@@ -232,6 +239,100 @@ module soc_dbg_ctrl
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.de = 1'b1;
   assign jtag_hw2reg.jtag_trace_debug_policy_valid_relocked.relocked.d  = soc_dbg_policy_q.relocked;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Ibex Halt feature via the pwrmgr's ROM_CTRL input
+  //
+  // Hold IBEX from fetching code during early debug and DFT scenarios.
+  // Leverages the power manager's ROM integrity check function to enable this functionality.
+  //   * pwrmgr_data_t -> done is used to halt / continue
+  //   * pwrmgr_data_t -> good is permanently set to True
+  //   * A side note: ROM integrity check is disabled in pwrmgr_fsm in TEST / RMA states
+  //
+  // IBEX fetch is halted in the following scenario:
+  //   * lc_dft_en_i is True, i.e. the Lifecycle is in TEST or RMA state and
+  //   * halt_cpu_boot_i pin is asserted (This is an external pin)
+  // Remains in the halted state until a write from the JTAG-DMI register sets the
+  // JTAG_CONTROL.boot_continue bit.
+  //
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+
+  assign continue_cpu_boot_o.good = prim_mubi_pkg::MuBi4True;
+
+  // Synchronize the input pin to io_div4 clk --> same as the pwrmgr fsm clk
+  logic halt_cpu_boot_sync;
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_prim_flop_2sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(halt_cpu_boot_i),
+    .q_o(halt_cpu_boot_sync)
+  );
+
+  halt_state_e halt_state_d, halt_state_q;
+
+  always_comb begin
+    // Default assignments
+    halt_state_d             = halt_state_q;
+    halt_fsm_err             = 0;
+    continue_cpu_boot_o.done = prim_mubi_pkg::MuBi4False;
+
+    unique case (halt_state_q)
+      Idle: begin
+        if (boot_status_i.lc_done) begin
+          halt_state_d = CheckLifecycleState;
+        end
+      end
+
+      CheckLifecycleState: begin
+        // If RAW state, wait for volatile unlock
+        if (lc_tx_test_true_strict(lc_raw_test_rma_i)) begin
+          halt_state_d = Wait4DftEn;
+        end else begin
+          halt_state_d = HaltDone;
+        end
+      end
+
+      Wait4DftEn: begin
+        // Wait in this state until Volatile Raw Unlock is performed
+        // If !SecVolatileRawUnlockEn this is a passthrough state as lc_dft_en
+        // should be asserted along with lc_raw_test_rma
+        if (lc_tx_test_true_strict(lc_dft_en_i)) begin
+          halt_state_d = CheckHaltPin;
+        end
+      end
+
+      CheckHaltPin: begin
+        // Go to halt state if required
+        if (halt_cpu_boot_sync) begin
+          halt_state_d = CheckJtagGo;
+        end else begin
+          halt_state_d = HaltDone;
+        end
+      end
+
+      CheckJtagGo: begin
+        // Stay in halt state until JTAG command
+        if (jtag_reg2hw.jtag_control.q) begin
+          halt_state_d = HaltDone;
+        end
+      end
+
+      HaltDone: begin
+        // Stay here until the next reset
+        continue_cpu_boot_o.done = prim_mubi_pkg::MuBi4True;
+      end
+
+      default: begin
+        // Should not enter this state
+        halt_fsm_err = 1'b1;
+      end
+    endcase
+  end
+
+  // SEC_CM: FSM.SPARSE
+  `PRIM_FLOP_SPARSE_FSM(u_state_regs, halt_state_d, halt_state_q, halt_state_e, Idle)
+
   logic unused_signals;
   assign unused_signals = ^{boot_status_i.clk_status,
                             boot_status_i.cpu_fetch_en,
@@ -251,4 +352,6 @@ module soc_dbg_ctrl
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
 
+  // Alert assertion for sparse FSM.
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(HaltStateFsmCheck_A, u_state_regs, alert_tx_o[0])
 endmodule

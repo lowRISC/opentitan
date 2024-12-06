@@ -139,7 +139,7 @@
           {
             soc_dbg: 0x2300
           }
-          size_byte: 0x8
+          size_byte: 0x10
         }
       ]
       xbar: false
