@@ -1,7 +1,6 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-${gen_comment}
 <%
 from topgen.lib import Name
 %>\
