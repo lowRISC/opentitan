@@ -100,6 +100,31 @@
                This signals enables TEST & RMA mode accesses.
                '''
     }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_raw_test_rma"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Test enable qualifier coming from life cycle controller.
+               This signals enables RAW, TEST and RMA mode accesses.
+               '''
+    }
+    { struct:  'logic'
+      type:    'uni'
+      name:    'halt_cpu_boot'
+      act:     'rcv'
+    }
+    { struct:  'pwrmgr_data'
+      type:    'uni'
+      name:    'continue_cpu_boot'
+      package: 'rom_ctrl_pkg'
+      act:     'req'
+      desc:    '''
+               Artificial ROM control input to the pwrmgr to halt the boot process.
+               '''
+    }
   ]
 
   regwidth: "32"
@@ -146,7 +171,7 @@
                   '''
             tags: ["shadowed_reg_path:u_debug_policy_category_shadowed"]
           }
-        ] 
+        ]
       }
       { name: "DEBUG_POLICY_RELOCKED"
         desc: "Debug Policy relocked"
@@ -235,6 +260,22 @@
             name: "valid"
             desc: '''
                   The valid state determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name: "JTAG_CONTROL"
+        desc: "JTAG control register to interact with the boot flow."
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "0"
+            resval: "0"
+            name: "boot_continue"
+            desc: '''
+                  JTAG bit to stop or continue the boot flow of Ibex.
+                    1'b0: Stop and halt boot flow.
+                    1'b1: Continue with the boot flow and let Ibex fetch code.
                   '''
           }
         ]

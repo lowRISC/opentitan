@@ -127,6 +127,7 @@ Trace register to observe the valid or relocked state that is either determined 
 |:-------------------------------------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------------|
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_CATEGORY`](#jtag_trace_debug_policy_category)             | 0x0      |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED`](#jtag_trace_debug_policy_valid_relocked) | 0x4      |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
+| soc_dbg_ctrl.[`JTAG_CONTROL`](#jtag_control)                                                     | 0x8      |        4 | JTAG control register to interact with the boot flow.                                                    |
 
 ## JTAG_TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
@@ -162,6 +163,23 @@ Trace register to observe the valid or relocked state that is either determined 
 |  31:8  |        |         |          | Reserved                                               |
 |  7:4   |   ro   |   0x9   | relocked | The relocked state determined by hardware or software. |
 |  3:0   |   ro   |   0x9   | valid    | The valid state determined by hardware or software.    |
+
+## JTAG_CONTROL
+JTAG control register to interact with the boot flow.
+- Offset: `0x8`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "boot_continue", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+```
+
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                                                   |
+|:------:|:------:|:-------:|:--------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |               | Reserved                                                                                                                                      |
+|   0    |   rw   |   0x0   | boot_continue | JTAG bit to stop or continue the boot flow of Ibex. 1'b0: Stop and halt boot flow. 1'b1: Continue with the boot flow and let Ibex fetch code. |
 
 
 <!-- END CMDGEN -->

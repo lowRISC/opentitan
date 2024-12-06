@@ -11,7 +11,7 @@ package soc_dbg_ctrl_reg_pkg;
 
   // Address widths within the block
   parameter int CoreAw = 5;
-  parameter int JtagAw = 3;
+  parameter int JtagAw = 4;
 
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
@@ -122,6 +122,10 @@ package soc_dbg_ctrl_reg_pkg;
   ///////////////////////////////////////////////
 
   typedef struct packed {
+    logic        q;
+  } soc_dbg_ctrl_reg2hw_jtag_control_reg_t;
+
+  typedef struct packed {
     logic [6:0]  d;
     logic        de;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t;
@@ -137,6 +141,11 @@ package soc_dbg_ctrl_reg_pkg;
     } relocked;
   } soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t;
 
+  // Register -> HW type for jtag interface
+  typedef struct packed {
+    soc_dbg_ctrl_reg2hw_jtag_control_reg_t jtag_control; // [0:0]
+  } soc_dbg_ctrl_jtag_reg2hw_t;
+
   // HW -> register type for jtag interface
   typedef struct packed {
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t
@@ -146,19 +155,22 @@ package soc_dbg_ctrl_reg_pkg;
   } soc_dbg_ctrl_jtag_hw2reg_t;
 
   // Register offsets for jtag interface
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 3'h 0;
-  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 3'h 4;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET = 4'h 0;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET = 4'h 4;
+  parameter logic [JtagAw-1:0] SOC_DBG_CTRL_JTAG_CONTROL_OFFSET = 4'h 8;
 
   // Register index for jtag interface
   typedef enum int {
     SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY,
-    SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED,
+    SOC_DBG_CTRL_JTAG_CONTROL
   } soc_dbg_ctrl_jtag_id_e;
 
   // Register width information to check illegal writes for jtag interface
-  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [2] = '{
+  parameter logic [3:0] SOC_DBG_CTRL_JTAG_PERMIT [3] = '{
     4'b 0001, // index[0] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY
-    4'b 0001  // index[1] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    4'b 0001, // index[1] SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED
+    4'b 0001  // index[2] SOC_DBG_CTRL_JTAG_CONTROL
   };
 
 endpackage

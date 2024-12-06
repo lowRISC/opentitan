@@ -27,6 +27,9 @@
 
     // Wait for external resets for integrated OpenTitan
     wait_for_external_reset: true
+
+    // Ibex halt feature via additional ROM Control input
+    halt_ibex_via_rom_ctrl: true
   },
 
   // List of unmanaged external clocks
@@ -1142,8 +1145,9 @@
                                    'aon_timer_aon.sleep_mode'],
       'pwrmgr_aon.fetch_en'     : ['rv_core_ibex.pwrmgr_cpu_en'],
       'pwrmgr_aon.rom_ctrl'     : ['rom_ctrl0.pwrmgr_data',
-                                   'rom_ctrl1.pwrmgr_data'],
-      'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],                             
+                                   'rom_ctrl1.pwrmgr_data',
+                                   'soc_dbg_ctrl.continue_cpu_boot'],
+      'pwrmgr_aon.boot_status'  : ['soc_dbg_ctrl.boot_status'],
       'keymgr_dpe.rom_digest'   : ['rom_ctrl0.keymgr_data',
                                    'rom_ctrl1.keymgr_data'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
@@ -1200,6 +1204,7 @@
       'lc_ctrl.strap_en_override'  : ['rv_dm.strap_en_override'],
 
       // LC function control signal broadcast
+      'lc_ctrl.lc_raw_test_rma'    : ['soc_dbg_ctrl.lc_raw_test_rma']
       'lc_ctrl.lc_dft_en'          : ['otp_ctrl.lc_dft_en',
                                       'ast.lc_dft_en',
                                       'pwrmgr_aon.lc_dft_en',
@@ -1380,6 +1385,7 @@
         'soc_proxy.soc_gpo_async'         : 'soc_gpo_async',
         'spi_device.sck_monitor'          : 'sck_monitor',
         'soc_dbg_ctrl.soc_dbg_policy_bus' : 'soc_dbg_policy_bus',
+        'soc_dbg_ctrl.halt_cpu_boot'      : 'debug_halt_cpu_boot',
     },
   },
 
