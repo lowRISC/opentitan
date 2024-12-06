@@ -62,7 +62,7 @@ def main():
 
     # Patterns for ascentlint.log
     parser_args.update({
-        args.repdir.joinpath('lint-ascentlint/ascentlint.log'): [
+        next(args.repdir.glob('*/lint-ascentlint/ascentlint.log')): [
             ("flow_error", r"^FlexNet Licensing error.*"),
             ("flow_error", r"^Error: .*"),
             ("flow_error", r"^ERROR.*"),
@@ -77,7 +77,7 @@ def main():
 
     # Patterns for ascentlint.rpt
     parser_args.update({
-        args.repdir.joinpath('lint-ascentlint/ascentlint.rpt'): [
+        next(args.repdir.glob('*/lint-ascentlint/ascentlint.rpt')): [
             ("lint_error", r"^E  .*"),
             ("lint_warning", r"^W  .*"),
             ("lint_info", r"^I  .*")
