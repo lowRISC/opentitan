@@ -22,7 +22,9 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Insert some random delay
-      cfg.clk_rst_vif.wait_clks(delay);
+      cfg.clk_rst_vif.wait_clks_or_rst(delay);
+      // Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
 
       randcase
         // drive new gpio data in
@@ -35,7 +37,8 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
-          cfg.clk_rst_vif.wait_clks(1);
+          cfg.clk_rst_vif.wait_clks_or_rst(1);
+
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end
@@ -52,7 +55,8 @@ class gpio_dout_din_regs_random_rw_vseq extends gpio_base_vseq;
             1: begin
               // Add single clock cycle delay to avoid update and predict at
               // the same time due to weak pull-up after undrive_gpio_in()
-              cfg.clk_rst_vif.wait_clks(1);
+              cfg.clk_rst_vif.wait_clks_or_rst(1);
+
               // DATA_IN register is RO, but writing random value to it
               // should have no impact on gpio functionality
               csr_wr(.ptr(ral.data_in), .value(csr_val));
