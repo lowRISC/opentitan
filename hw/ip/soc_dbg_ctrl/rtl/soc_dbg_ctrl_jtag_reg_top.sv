@@ -12,6 +12,7 @@ module soc_dbg_ctrl_jtag_reg_top (
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
+  output soc_dbg_ctrl_reg_pkg::soc_dbg_ctrl_jtag_reg2hw_t reg2hw, // Write
   input  soc_dbg_ctrl_reg_pkg::soc_dbg_ctrl_jtag_hw2reg_t hw2reg, // Read
 
   // Integrity check errors
@@ -20,7 +21,7 @@ module soc_dbg_ctrl_jtag_reg_top (
 
   import soc_dbg_ctrl_reg_pkg::* ;
 
-  localparam int AW = 3;
+  localparam int AW = 4;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -51,9 +52,9 @@ module soc_dbg_ctrl_jtag_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [1:0] reg_we_check;
+  logic [2:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(2)
+    .OneHotWidth(3)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -123,6 +124,9 @@ module soc_dbg_ctrl_jtag_reg_top (
   logic [6:0] jtag_trace_debug_policy_category_qs;
   logic [3:0] jtag_trace_debug_policy_valid_relocked_valid_qs;
   logic [3:0] jtag_trace_debug_policy_valid_relocked_relocked_qs;
+  logic jtag_control_we;
+  logic jtag_control_qs;
+  logic jtag_control_wd;
 
   // Register instances
   // R[jtag_trace_debug_policy_category]: V(False)
@@ -209,12 +213,41 @@ module soc_dbg_ctrl_jtag_reg_top (
   );
 
 
+  // R[jtag_control]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_jtag_control (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [1:0] addr_hit;
+    // from register interface
+    .we     (jtag_control_we),
+    .wd     (jtag_control_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.jtag_control.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (jtag_control_qs)
+  );
+
+
+
+  logic [2:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_CATEGORY_OFFSET);
     addr_hit[1] = (reg_addr == SOC_DBG_CTRL_JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET);
+    addr_hit[2] = (reg_addr == SOC_DBG_CTRL_JTAG_CONTROL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -223,16 +256,21 @@ module soc_dbg_ctrl_jtag_reg_top (
   always_comb begin
     wr_err = (reg_we &
               ((addr_hit[0] & (|(SOC_DBG_CTRL_JTAG_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(SOC_DBG_CTRL_JTAG_PERMIT[1] & ~reg_be)))));
+               (addr_hit[1] & (|(SOC_DBG_CTRL_JTAG_PERMIT[1] & ~reg_be))) |
+               (addr_hit[2] & (|(SOC_DBG_CTRL_JTAG_PERMIT[2] & ~reg_be)))));
   end
 
   // Generate write-enables
+  assign jtag_control_we = addr_hit[2] & reg_we & !reg_error;
+
+  assign jtag_control_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
     reg_we_check = '0;
     reg_we_check[0] = 1'b0;
     reg_we_check[1] = 1'b0;
+    reg_we_check[2] = jtag_control_we;
   end
 
   // Read data return
@@ -246,6 +284,10 @@ module soc_dbg_ctrl_jtag_reg_top (
       addr_hit[1]: begin
         reg_rdata_next[3:0] = jtag_trace_debug_policy_valid_relocked_valid_qs;
         reg_rdata_next[7:4] = jtag_trace_debug_policy_valid_relocked_relocked_qs;
+      end
+
+      addr_hit[2]: begin
+        reg_rdata_next[0] = jtag_control_qs;
       end
 
       default: begin

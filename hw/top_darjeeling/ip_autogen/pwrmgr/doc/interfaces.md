@@ -27,7 +27,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ndmreset_req   | logic                        | uni     | rcv   |       1 |               |
 | strap          | logic                        | uni     | req   |       1 |               |
 | low_power      | logic                        | uni     | req   |       1 |               |
-| rom_ctrl       | rom_ctrl_pkg::pwrmgr_data    | uni     | rcv   |       2 |               |
+| rom_ctrl       | rom_ctrl_pkg::pwrmgr_data    | uni     | rcv   |       3 |               |
 | fetch_en       | lc_ctrl_pkg::lc_tx           | uni     | req   |       1 |               |
 | lc_dft_en      | lc_ctrl_pkg::lc_tx           | uni     | rcv   |       1 |               |
 | lc_hw_debug_en | lc_ctrl_pkg::lc_tx           | uni     | rcv   |       1 |               |
