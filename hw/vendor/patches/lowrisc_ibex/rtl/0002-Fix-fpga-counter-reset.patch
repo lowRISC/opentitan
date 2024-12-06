@@ -1,0 +1,19 @@
+diff --git a/ibex_counter.sv b/ibex_counter.sv
+index c78e510ee4..b4dc7ec347 100644
+--- a/ibex_counter.sv
++++ b/ibex_counter.sv
+@@ -55,8 +55,12 @@ module ibex_counter #(
+   localparam int DspPragma = CounterWidth < 49 ? "yes" : "no";
+   (* use_dsp = DspPragma *) logic [CounterWidth-1:0] counter_q;
+ 
+-  // DSP output register requires synchronous reset.
+-  `define COUNTER_FLOP_RST posedge clk_i
++  if (CounterWidth < 49) begin : g_dsp_counter
++    // DSP output register requires synchronous reset.
++    `define COUNTER_FLOP_RST posedge clk_i
++  end else begin : g_no_dsp_counter
++    `define COUNTER_FLOP_RST posedge clk_i or negedge rst_ni
++  end
+ `else
+   logic [CounterWidth-1:0] counter_q;
+ 
