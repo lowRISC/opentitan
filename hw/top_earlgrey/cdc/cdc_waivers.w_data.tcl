@@ -88,27 +88,27 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   (ReceivingFlop =~ "*top_earlgrey.u_lc_ctrl.u_dmi_jtag.i_dmi_jtag_tap.*q*")} -comment {SPI read cmds combined}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic.b_rdata_o*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.b_rdata_o*") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_fwmode.u_tx_fifo.storage*")} -comment {SPI fwmode mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic.b_rdata_o*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.b_rdata_o*") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_fwmode.u_txf_ctrl.sram_rdata_q*")} -comment {SPI fwmode mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic.b_rdata_o*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.b_rdata_o*") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.p2s_byte_o*")} -comment {SPI readcmd mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic.b_rdata_o*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.b_rdata_o*") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_fifo.gen_normal_fifo.storage*")} -comment {SPI readcmd mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.gen_generic.u_impl_generic.b_rdata_o*") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_memory_2p.u_mem.b_rdata_o*") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.gen_normal_fifo.storage*")} -comment {SPI readcmd mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"top_earlgrey.u_spi_device.u_fwmode.u_rx_fifo.sync_wptr.u_sync_2.gen_generic.u_impl_generic.q_o[3:0]") && \
+  {(Signal=~"top_earlgrey.u_spi_device.u_fwmode.u_rx_fifo.sync_wptr.u_sync_2.q_o[3:0]") && \
   (ReceivingFlop =~ "top_earlgrey.u_spi_device.u_reg.u_reg_if.rdata*")} -comment {SPI reg mux}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
@@ -137,7 +137,7 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression             \
   (ReceivingFlop =~ "u_ast.u_ast_clks_byp.u_clk_src_*_sel.clk_ext_en_q")} -comment {W_DATA issues in AST block}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression             \
-  {(Signal=~"u_ast.u_ast_clks_byp.*_clk_byp_dgl.gen_generic.u_impl_generic.q_o*") && \
+  {(Signal=~"u_ast.u_ast_clks_byp.*_clk_byp_dgl.q_o*") && \
   (ReceivingFlop =~ "u_ast.u_ast_clks_byp.u_clk_src_*_sel.clk_*_sel")} -comment {W_DATA issues in AST block}
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"u_ast.dft_scan_md_o*") && (ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon*_scan*")} -comment {W_DATA issues in AST block}
@@ -156,21 +156,21 @@ set_rule_status -rule {W_DATA} -status {Waived} -expression {(ReceivingFlop=~"to
 
 set_rule_status -rule {W_DATA} -status {Waived} -expression {(Signal=~"IO*") && (ReceivingFlop =~ "top_earlgrey.u_spi_host1.u_spi_core.u_shift_reg.rx_buf_q[3:0]*")} -comment {W_DATA issues caused by duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon*_scan*") && (Signal =~ "top_earlgrey.u_clkmgr_aon.u_no_scan_io_div4_div.*_o") && (Association =~ "None")} -status {Waived} -comment {clock mux}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.gen_generic.u_impl_generic.q_o[1]") && (Signal =~ "top_earlgrey.u_clkmgr_aon.u_no_scan_io_div4_div.step_down_ack_o") && (Association =~ "None")} -status {Waived} -comment {clock mux}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.gen_generic.u_impl_generic.q_o[0]") && (Signal =~ "top_earlgrey.u_clkmgr_aon.u_no_scan_io_div2_div.gen_div2.step_down_nq") && (Association =~ "None")} -status {Waived} -comment {clock mux}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o[23:0]") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.sck_status_staged[23:0]") && (Association =~ "None")} -status {Waived}  -comment {tool doesn't recognize multiple spi clocks on the same domain}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.q_o[1]") && (Signal =~ "top_earlgrey.u_clkmgr_aon.u_no_scan_io_div4_div.step_down_ack_o") && (Association =~ "None")} -status {Waived} -comment {clock mux}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_clkmgr_aon.u_clkmgr_byp.u_step_down_acks_sync.q_o[0]") && (Signal =~ "top_earlgrey.u_clkmgr_aon.u_no_scan_io_div2_div.gen_div2.step_down_nq") && (Association =~ "None")} -status {Waived} -comment {clock mux}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.q_o[23:0]") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.sck_status_staged[23:0]") && (Association =~ "None")} -status {Waived}  -comment {tool doesn't recognize multiple spi clocks on the same domain}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_host1.u_spi_core.u_shift_reg.sd_i_q[3:0]") && (Signal =~ "IOR3") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_host1.u_spi_core.u_shift_reg.sr_q[3:0]") && (Signal =~ "IOR3") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.outclk_p2s_byte_o*") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o*") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.sys_status_o[23:0]") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.gen_generic.u_impl_generic.q_o[23:0]") && (Association =~ "None")} -status {Waived} -comment {signal is qualified by synchronized pulse}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.*_q*") && (Signal =~ "top_earlgrey.u_rv_dm.u_pm_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o[3:0]") && (Association =~ "None")} -status {Waived} -comment {signal is synchronized and qualified}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.outclk_p2s_byte_o*") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.q_o*") && (Association =~ "None")} -status {Waived} -comment {tool does not recognize duplicate clocks on PAD}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spid_status.sys_status_o[23:0]") && (Signal =~ "top_earlgrey.u_spi_device.u_spid_status.u_stage_to_commit.q_o[23:0]") && (Association =~ "None")} -status {Waived} -comment {signal is qualified by synchronized pulse}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.*_q*") && (Signal =~ "top_earlgrey.u_rv_dm.u_pm_en_sync.gen_flops.u_prim_flop_2sync.u_sync_2.q_o[3:0]") && (Association =~ "None")} -status {Waived} -comment {signal is synchronized and qualified}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_rv_dm.dap.*_q*") && (Signal =~ "IOR*") && (Association =~ "None")} -status {Waived} -comment  {W_DATA issues caused by duplicate clocks on PAD}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_spi_tpm.is_*_reg*") && (Signal =~ "top_earlgrey.u_spi_device.u_spi_tpm.sys_clk_tpm_cfg*") && (Association =~ "None")} -status {Waived} -comment {signal is qualified by synchronized pulse}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_upload.*_cmdfifo_set*") && (Signal =~ "top_earlgrey.u_spi_device.u_upload.*_cmdfifo_set*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.u_spi_device.u_readcmd.u_readbuffer.watermark_crossed*") && (Signal =~ "top_earlgrey.u_spi_device.u_reg.u_read_threshold.q[9:0]*") && (Association =~ "None")} -status {Waived} -comment {tool doesn't recognize multiple spi clocks on the same domain}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.u_prim_lc_sender_pinmux_hw_debug_en.gen_flops.u_prim_flop.u_secure_anchor_flop.gen_generic.u_impl_generic.q_o*") && (Association =~ "None")} -status {Waived}  -comment {JTAG mux in quasi-static}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.u_prim_lc_sender_pinmux_hw_debug_en.gen_flops.u_prim_flop.u_secure_anchor_flop.q_o*") && (Association =~ "None")} -status {Waived}  -comment {JTAG mux in quasi-static}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.mio_pad_attr_q*") && (Association =~ "None")} -status {Waived}  -comment {included in waived paths : start signal and receiving signal (flop) have been reviewed and waived in the same error or other errors} -comment {JTAG mux in quasi-static}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.tap_strap_q*") && (Association =~ "None")} -status {Waived}   -comment {JTAG mux in quasi-static}
-set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.gen_flops.u_prim_flop_2sync.u_sync_2.gen_generic.u_impl_generic.q_o*") && (Association =~ "None")} -status {Waived}   -comment {JTAG mux in quasi-static}
+set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "top_earlgrey.*.i_dmi_jtag_tap.bypass_q*") && (Signal =~ "top_earlgrey.u_pinmux_aon.u_pinmux_strap_sampling.u_prim_lc_sync_lc_dft_en.gen_flops.u_prim_flop_2sync.u_sync_2.q_o*") && (Association =~ "None")} -status {Waived}   -comment {JTAG mux in quasi-static}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "u_ast.rng_en_i*") && (Signal =~ "top_earlgrey.u_entropy_src.*") && (Association =~ "None")} -status {Waived}   -comment {Clarified by Nuvoton : ast liberty model does not have a synchronizer}
 set_rule_status -rule {W_DATA} -expression {(ReceivingFlop =~ "u_ast.rng_fips_i*") && (Signal =~ "top_earlgrey.u_entropy_src.*") && (Association =~ "None")} -status {Waived}   -comment {Clarified by Nuvoton : ast liberty model does not have a synchronizer}
