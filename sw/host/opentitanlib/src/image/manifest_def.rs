@@ -5,11 +5,13 @@
 use crate::image::manifest::*;
 use crate::image::manifest_ext::ManifestExtId;
 use crate::util::bigint::fixed_size_bigint;
+use crate::util::known_keys::KNOWN_KEYS;
 use crate::util::num_de::HexEncoded;
 use crate::util::parse_int::ParseInt;
 
 use anyhow::{bail, Result};
 use serde::{Deserialize, Serialize};
+use serde_annotate::Annotate;
 use std::convert::{TryFrom, TryInto};
 use std::fmt;
 use std::iter::IntoIterator;
@@ -50,7 +52,7 @@ macro_rules! manifest_def {
             $field_name:ident: $field_type:ty,
         )*
     }, $out_type:ident) => {
-        #[derive(Clone, Default, Deserialize, Serialize, Debug)]
+        #[derive(Clone, Default, Deserialize, Serialize, Debug, Annotate)]
         $access struct $name {
             $(
                 $(#[$doc])?
@@ -224,6 +226,7 @@ manifest_def! {
     pub struct ManifestSpec {
         signature: ManifestSigverifyBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
+        #[annotate(comment = pub_key_id())]
         pub_key: ManifestSigverifyBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
@@ -241,6 +244,19 @@ manifest_def! {
         entry_point: ManifestSmallInt<u32>,
         extensions: [ManifestExtTableEntryDef; CHIP_MANIFEST_EXT_TABLE_COUNT],
     }, Manifest
+}
+
+impl ManifestSpec {
+    fn pub_key_id(&self) -> Option<String> {
+        if let Some(key) = &self.pub_key.0 {
+            let b = key.to_le_bytes();
+            let w = u32::from_le_bytes([b[0], b[1], b[2], b[3]]);
+            let name = KNOWN_KEYS.get(&w).unwrap_or(&"unknown");
+            Some(format!("Public Key ID {w:08x} is {name}"))
+        } else {
+            None
+        }
+    }
 }
 
 manifest_def! {
