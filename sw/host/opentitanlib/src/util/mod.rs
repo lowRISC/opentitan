@@ -7,6 +7,7 @@ pub mod bitbang;
 pub mod bitfield;
 pub mod file;
 pub mod hexdump;
+pub mod known_keys;
 pub mod num_de;
 pub mod parse_int;
 pub mod present;
