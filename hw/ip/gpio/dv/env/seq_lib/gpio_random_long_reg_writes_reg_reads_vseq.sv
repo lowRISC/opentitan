@@ -23,7 +23,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
     // Wait for minimum 1 clock cycle initially to avoid reading of data_in
     // immediately as the first iteration after reset, while data_in prediction
     // is still being processed
-    cfg.clk_rst_vif.wait_clks(1);
+    cfg.clk_rst_vif.wait_clks_or_rst(1);
 
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
@@ -31,7 +31,10 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reg_op, num_reg_op inside {[25:50]};)
 
-      cfg.clk_rst_vif.wait_clks(delay);
+      cfg.clk_rst_vif.wait_clks_or_rst(delay);
+      // Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
+
       randcase
         // drive new gpio data in
         1: begin
@@ -41,7 +44,7 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
           // Wait for one clock cycle for us to read data_in reg reliably
-          cfg.clk_rst_vif.wait_clks(1);
+          cfg.clk_rst_vif.wait_clks_or_rst(1);
         end
         // long reg write
         1: begin
