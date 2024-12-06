@@ -128,6 +128,8 @@ Trace register to observe the valid or relocked state that is either determined 
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_CATEGORY`](#jtag_trace_debug_policy_category)             | 0x0      |        4 | Trace register to observe the debug category that is either determined by hardware or software.          |
 | soc_dbg_ctrl.[`JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED`](#jtag_trace_debug_policy_valid_relocked) | 0x4      |        4 | Trace register to observe the valid or relocked state that is either determined by hardware or software. |
 | soc_dbg_ctrl.[`JTAG_CONTROL`](#jtag_control)                                                     | 0x8      |        4 | JTAG control register to interact with the boot flow.                                                    |
+| soc_dbg_ctrl.[`JTAG_BOOT_STATUS`](#jtag_boot_status)                                             | 0xc      |        4 | Debug boot status register that tells important boot state information.                                  |
+| soc_dbg_ctrl.[`JTAG_TRACE_SOC_DBG_STATE`](#jtag_trace_soc_dbg_state)                             | 0x10     |        4 | Tells the current debug state coming from OTP.                                                           |
 
 ## JTAG_TRACE_DEBUG_POLICY_CATEGORY
 Trace register to observe the debug category that is either determined by hardware or software.
@@ -180,6 +182,48 @@ JTAG control register to interact with the boot flow.
 |:------:|:------:|:-------:|:--------------|:----------------------------------------------------------------------------------------------------------------------------------------------|
 |  31:1  |        |         |               | Reserved                                                                                                                                      |
 |   0    |   rw   |   0x0   | boot_continue | JTAG bit to stop or continue the boot flow of Ibex. 1'b0: Stop and halt boot flow. 1'b1: Continue with the boot flow and let Ibex fetch code. |
+
+## JTAG_BOOT_STATUS
+Debug boot status register that tells important boot state information.
+Note that this information is reflected only if the hw_dft_en signal is true.
+- Offset: `0xc`
+- Reset default: `0x0`
+- Reset mask: `0x3ffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "main_clk_status", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "io_clk_status", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lc_done", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "cpu_fetch_en", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "halt_fsm_state", "bits": 7, "attr": ["ro"], "rotate": -90}, {"name": "boot_greenlight_done", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "boot_greenlight_good", "bits": 3, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                       |
+|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:18  |        |         |                      | Reserved                                                                                                                                                                                                                                          |
+| 17:15  |   ro   |   0x0   | boot_greenlight_good | Green lights status for the boot process: _good_ indication coming from [0]: base ROM [1]: second ROM [2]: this module                                                                                                                            |
+| 14:12  |   ro   |   0x0   | boot_greenlight_done | Green lights for the boot process: _done_ indication coming from [0]: base ROM [1]: second ROM [2]: this module Note that for the boot process to go through, all _done_ bits in this field and all _good_ bits in the next field need to be set. |
+|  11:5  |   ro   |   0x0   | halt_fsm_state       | The state of the halt state FSM.                                                                                                                                                                                                                  |
+|   4    |   ro   |   0x0   | cpu_fetch_en         | Indication from powermanger to IBEX to state code execution                                                                                                                                                                                       |
+|   3    |   ro   |   0x0   | lc_done              | Lifecycle controller initialization done; LC policy is decoded and set                                                                                                                                                                            |
+|   2    |   ro   |   0x0   | otp_done             | OTP controller initialization complete                                                                                                                                                                                                            |
+|   1    |   ro   |   0x0   | io_clk_status        | Status of the IO Clock activation                                                                                                                                                                                                                 |
+|   0    |   ro   |   0x0   | main_clk_status      | Status of the main clock activation                                                                                                                                                                                                               |
+
+## JTAG_TRACE_SOC_DBG_STATE
+Tells the current debug state coming from OTP.
+Note that this information is reflected only if the hw_dft_en signal is true.
+- Offset: `0x10`
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "soc_dbg_state", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name          | Description              |
+|:------:|:------:|:-------:|:--------------|:-------------------------|
+|  31:0  |   ro   |   0x0   | soc_dbg_state | The current debug state. |
 
 
 <!-- END CMDGEN -->
