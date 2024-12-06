@@ -28,7 +28,7 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
 
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-      cfg.clk_rst_vif.wait_clks(delay);
+      cfg.clk_rst_vif.wait_clks_or_rst(delay);
       `uvm_info(msg_id, $sformatf("delay = %0d", delay), UVM_HIGH)
 
       // Step-1 Program interrupt registers
@@ -52,7 +52,7 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
               cfg.gpio_vif.drive(gpio_i);
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay_before_gpio_change,
                                                  delay_before_gpio_change inside {[1:5]};)
-              cfg.clk_rst_vif.wait_clks(delay_before_gpio_change);
+              cfg.clk_rst_vif.wait_clks_or_rst(delay_before_gpio_change);
             end
             gpio_tgl_cycle_done = 1'b1;
           end
@@ -61,7 +61,11 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
               uint rd_period;
               bit [TL_DW-1:0] reg_rd_data;
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rd_period, rd_period inside {[2:20]};)
-              cfg.clk_rst_vif.wait_clks(rd_period);
+
+              // Skip if a reset is ongoing...
+              if (!cfg.clk_rst_vif.rst_n) break;
+
+              cfg.clk_rst_vif.wait_clks_or_rst(rd_period);
               `uvm_info(msg_id, $sformatf("Reading intr_state after %0d more clock cycles",
                                           rd_period), UVM_HIGH)
               randcase
