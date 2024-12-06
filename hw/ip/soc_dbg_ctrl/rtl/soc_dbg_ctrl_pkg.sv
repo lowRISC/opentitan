@@ -43,4 +43,33 @@ package soc_dbg_ctrl_pkg;
     prim_mubi_pkg::mubi4_t relocked;
   } soc_dbg_policy_t;
 
+  // Encoding generated with:
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
+  //     -s 1870242553 --language=sv
+  //
+  // Hamming distance histogram:
+  //
+  //  0: --
+  //  1: --
+  //  2: --
+  //  3: |||||||||||||||||||| (53.33%)
+  //  4: ||||||||||||||||| (46.67%)
+  //  5: --
+  //  6: --
+  //
+  // Minimum Hamming distance: 3
+  // Maximum Hamming distance: 4
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 5
+  //
+  localparam int StateWidth = 6;
+  typedef enum logic [StateWidth-1:0] {
+      Idle                = 6'b101000,
+      CheckLifecycleState = 6'b011101,
+      Wait4DftEn          = 6'b000110,
+      CheckHaltPin        = 6'b110011,
+      CheckJtagGo         = 6'b111110,
+      HaltDone            = 6'b100101
+  } halt_state_e;
+
 endpackage

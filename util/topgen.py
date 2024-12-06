@@ -407,6 +407,10 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
     n_rom_ctrl = lib.num_rom_ctrl(top['module'])
     assert n_rom_ctrl > 0
 
+    # Add another artificial ROM_CTRL input to allow IBEX halting that input
+    if top['power'].get('halt_ibex_via_rom_ctrl', False):
+        n_rom_ctrl += 1
+
     if n_wkups < 1:
         n_wkups = 1
         log.warning(

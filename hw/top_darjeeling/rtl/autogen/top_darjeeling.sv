@@ -251,6 +251,7 @@ module top_darjeeling #(
   input  logic [15:0] soc_gpo_async_i,
   output logic       sck_monitor_o,
   output soc_dbg_ctrl_pkg::soc_dbg_policy_t       soc_dbg_policy_bus_o,
+  input  logic       debug_halt_cpu_boot_i,
 
 
   // All externally supplied clocks
@@ -494,7 +495,7 @@ module top_darjeeling #(
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
+  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_aon_rom_ctrl;
   pwrmgr_pkg::pwr_boot_status_t       pwrmgr_aon_boot_status;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_dpe_rom_digest;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
@@ -524,6 +525,7 @@ module top_darjeeling #(
   otp_ctrl_pkg::lc_otp_vendor_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   logic       lc_ctrl_strap_en_override;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_raw_test_rma;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
@@ -1220,7 +1222,7 @@ module top_darjeeling #(
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
-      .lc_raw_test_rma_o(),
+      .lc_raw_test_rma_o(lc_ctrl_lc_raw_test_rma),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
@@ -2445,6 +2447,9 @@ module top_darjeeling #(
       .soc_dbg_policy_bus_o(soc_dbg_policy_bus_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_raw_test_rma_i(lc_ctrl_lc_raw_test_rma),
+      .halt_cpu_boot_i(debug_halt_cpu_boot_i),
+      .continue_cpu_boot_o(pwrmgr_aon_rom_ctrl[2]),
       .core_tl_i(soc_dbg_ctrl_core_tl_req),
       .core_tl_o(soc_dbg_ctrl_core_tl_rsp),
       .jtag_tl_i(soc_dbg_ctrl_jtag_tl_req),
