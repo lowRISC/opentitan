@@ -5,7 +5,7 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-parts = otp_mmap.config["partitions"]
+parts = otp_mmap["partitions"]
 digest_parts = [part for part in parts if
                 part["hw_digest"] or part["sw_digest"]]
 read_locked_csr_parts = [part for part in parts if part["read_lock"] == "CSR"]
