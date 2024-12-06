@@ -27,14 +27,23 @@ opentitan_autogen_tests(
     top = "//hw/top:top_desc",
 )
 
+# Number of peripherals per test.
+NR_IRQ_PERIPH_PER_TEST = 10
+
+# Total numbers of tests (the last one will contain but remaining IRQs).
+NR_IRQ_PERIPH_TESTS = 3
+
 [
     opentitan_test(
-        name = "plic_all_irqs_test_{}".format(min),
+        name = "plic_all_irqs_test_{}".format(idx),
         srcs = [":autogen_plic_all_irqs_test_src"],
+        # For the last test, we do not specify TEST_MAX_IRQ_PERIPHERAL so
+        # we are sure to capture all peripherals.
         copts = [
-            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(min),
-            "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
-        ],
+            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(idx * NR_IRQ_PERIPH_PER_TEST),
+        ] + ([
+            "-DTEST_MAX_IRQ_PERIPHERAL={}".format((idx + 1) * NR_IRQ_PERIPH_PER_TEST),
+        ] if idx < NR_IRQ_PERIPH_TESTS - 1 else []),
         exec_env = dicts.add(
             EARLGREY_TEST_ENVS,
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
@@ -65,15 +74,14 @@ opentitan_autogen_tests(
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, 23, 10)
+    for idx in range(NR_IRQ_PERIPH_TESTS)
 ]
 
 test_suite(
     name = "plic_all_irqs_test",
     tests = [
-        "plic_all_irqs_test_0",
-        "plic_all_irqs_test_10",
-        "plic_all_irqs_test_20",
+        "plic_all_irqs_test_{}".format(idx)
+        for idx in range(NR_IRQ_PERIPH_TESTS)
     ],
 )
 

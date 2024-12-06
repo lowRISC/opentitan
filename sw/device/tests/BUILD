@@ -2315,7 +2315,7 @@ opentitan_test(
     srcs = ["kmac_app_rom_test.c"],
     exec_env = EARLGREY_TEST_ENVS,
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:devicetables",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:rom_ctrl",
         "//sw/device/lib/runtime:log",
