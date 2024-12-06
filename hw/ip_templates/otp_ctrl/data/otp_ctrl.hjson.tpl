@@ -8,13 +8,13 @@ ${gen_comment}
 <%
 from topgen.lib import Name
 
-num_part = len(otp_mmap.config["partitions"])
+num_part = len(otp_mmap["partitions"])
 num_part_unbuf = 0
-for part in otp_mmap.config["partitions"]:
+for part in otp_mmap["partitions"]:
   if part["variant"] == "Unbuffered":
     num_part_unbuf += 1
 num_part_buf = num_part - num_part_unbuf
-otp_size_as_bytes = 2 ** otp_mmap.config["otp"]["byte_addr_width"]
+otp_size_as_bytes = 2 ** otp_mmap["otp"]["byte_addr_width"]
 otp_size_as_uint32 = otp_size_as_bytes // 4
 %>\
 {
@@ -150,7 +150,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     { name: "OtpByteAddrWidth",
       desc: "Width of the OTP byte address.",
       type: "int",
-      default: "${otp_mmap.config["otp"]["byte_addr_width"]}",
+      default: "${otp_mmap["otp"]["byte_addr_width"]}",
       local: "true"
     },
     { name: "NumErrorEntries",
@@ -197,7 +197,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       default: "${num_part_buf}",
       local: "true"
     },
-% for part in otp_mmap.config["partitions"]:
+% for part in otp_mmap["partitions"]:
 <%
   part_name = Name.from_snake_case(part["name"])
   part_name_camel = part_name.as_camel_case()
@@ -713,7 +713,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
         tags: [ // OTP internal HW can modify status register
                 "excl:CsrAllTests:CsrExclCheck"],
         fields: [
-  % for k, part in enumerate(otp_mmap.config["partitions"]):
+  % for k, part in enumerate(otp_mmap["partitions"]):
           { bits: "${k}"
             name: "${part["name"]}_ERROR"
             desc: '''
@@ -1140,7 +1140,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       ////////////////////////////////////
       // Dynamic Locks of SW Parititons //
       ////////////////////////////////////
-  % for part in otp_mmap.config["partitions"]:
+  % for part in otp_mmap["partitions"]:
     % if part["read_lock"].lower() == "csr":
       { name: "${part["name"]}_READ_LOCK",
         desc: '''
@@ -1169,7 +1169,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       ///////////////////////
       // Integrity Digests //
       ///////////////////////
-  % for part in otp_mmap.config["partitions"]:
+  % for part in otp_mmap["partitions"]:
     % if part["sw_digest"]:
       { multireg: {
           name:     "${part["name"]}_DIGEST",
