@@ -203,7 +203,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h00020000, 32'h00020fff}
     }},
     '{"soc_dbg_ctrl__jtag", '{
-        '{32'h00002300, 32'h0000230f}
+        '{32'h00002300, 32'h0000231f}
     }}};
 
   // List of Xbar hosts

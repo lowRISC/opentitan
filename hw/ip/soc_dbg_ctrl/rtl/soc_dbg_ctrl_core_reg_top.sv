@@ -56,9 +56,9 @@ module soc_dbg_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [5:0] reg_we_check;
+  logic [6:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(6)
+    .OneHotWidth(7)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -144,6 +144,17 @@ module soc_dbg_ctrl_core_reg_top (
   logic [6:0] trace_debug_policy_category_qs;
   logic [3:0] trace_debug_policy_valid_relocked_valid_qs;
   logic [3:0] trace_debug_policy_valid_relocked_relocked_qs;
+  logic status_we;
+  logic status_auth_debug_intent_set_qs;
+  logic status_auth_debug_intent_set_wd;
+  logic status_auth_window_open_qs;
+  logic status_auth_window_open_wd;
+  logic status_auth_window_closed_qs;
+  logic status_auth_window_closed_wd;
+  logic status_auth_unlock_success_qs;
+  logic status_auth_unlock_success_wd;
+  logic status_auth_unlock_failed_qs;
+  logic status_auth_unlock_failed_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -352,8 +363,145 @@ module soc_dbg_ctrl_core_reg_top (
   );
 
 
+  // R[status]: V(False)
+  //   F[auth_debug_intent_set]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_auth_debug_intent_set (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [5:0] addr_hit;
+    // from register interface
+    .we     (status_we),
+    .wd     (status_auth_debug_intent_set_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.auth_debug_intent_set.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_auth_debug_intent_set_qs)
+  );
+
+  //   F[auth_window_open]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_auth_window_open (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_auth_window_open_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.auth_window_open.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_auth_window_open_qs)
+  );
+
+  //   F[auth_window_closed]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_auth_window_closed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_auth_window_closed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.auth_window_closed.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_auth_window_closed_qs)
+  );
+
+  //   F[auth_unlock_success]: 6:6
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_auth_unlock_success (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_auth_unlock_success_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.auth_unlock_success.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_auth_unlock_success_qs)
+  );
+
+  //   F[auth_unlock_failed]: 7:7
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_status_auth_unlock_failed (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (status_we),
+    .wd     (status_auth_unlock_failed_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.status.auth_unlock_failed.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (status_auth_unlock_failed_qs)
+  );
+
+
+
+  logic [6:0] addr_hit;
   always_comb begin
     addr_hit = '0;
     addr_hit[0] = (reg_addr == SOC_DBG_CTRL_ALERT_TEST_OFFSET);
@@ -362,6 +510,7 @@ module soc_dbg_ctrl_core_reg_top (
     addr_hit[3] = (reg_addr == SOC_DBG_CTRL_DEBUG_POLICY_RELOCKED_OFFSET);
     addr_hit[4] = (reg_addr == SOC_DBG_CTRL_TRACE_DEBUG_POLICY_CATEGORY_OFFSET);
     addr_hit[5] = (reg_addr == SOC_DBG_CTRL_TRACE_DEBUG_POLICY_VALID_RELOCKED_OFFSET);
+    addr_hit[6] = (reg_addr == SOC_DBG_CTRL_STATUS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -374,7 +523,8 @@ module soc_dbg_ctrl_core_reg_top (
                (addr_hit[2] & (|(SOC_DBG_CTRL_CORE_PERMIT[2] & ~reg_be))) |
                (addr_hit[3] & (|(SOC_DBG_CTRL_CORE_PERMIT[3] & ~reg_be))) |
                (addr_hit[4] & (|(SOC_DBG_CTRL_CORE_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(SOC_DBG_CTRL_CORE_PERMIT[5] & ~reg_be)))));
+               (addr_hit[5] & (|(SOC_DBG_CTRL_CORE_PERMIT[5] & ~reg_be))) |
+               (addr_hit[6] & (|(SOC_DBG_CTRL_CORE_PERMIT[6] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -394,6 +544,17 @@ module soc_dbg_ctrl_core_reg_top (
   assign debug_policy_relocked_we = addr_hit[3] & reg_we & !reg_error;
 
   assign debug_policy_relocked_wd = reg_wdata[3:0];
+  assign status_we = addr_hit[6] & reg_we & !reg_error;
+
+  assign status_auth_debug_intent_set_wd = reg_wdata[0];
+
+  assign status_auth_window_open_wd = reg_wdata[4];
+
+  assign status_auth_window_closed_wd = reg_wdata[5];
+
+  assign status_auth_unlock_success_wd = reg_wdata[6];
+
+  assign status_auth_unlock_failed_wd = reg_wdata[7];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -404,6 +565,7 @@ module soc_dbg_ctrl_core_reg_top (
     reg_we_check[3] = debug_policy_relocked_we;
     reg_we_check[4] = 1'b0;
     reg_we_check[5] = 1'b0;
+    reg_we_check[6] = status_we;
   end
 
   // Read data return
@@ -434,6 +596,14 @@ module soc_dbg_ctrl_core_reg_top (
       addr_hit[5]: begin
         reg_rdata_next[3:0] = trace_debug_policy_valid_relocked_valid_qs;
         reg_rdata_next[7:4] = trace_debug_policy_valid_relocked_relocked_qs;
+      end
+
+      addr_hit[6]: begin
+        reg_rdata_next[0] = status_auth_debug_intent_set_qs;
+        reg_rdata_next[4] = status_auth_window_open_qs;
+        reg_rdata_next[5] = status_auth_window_closed_qs;
+        reg_rdata_next[6] = status_auth_unlock_success_qs;
+        reg_rdata_next[7] = status_auth_unlock_failed_qs;
       end
 
       default: begin
