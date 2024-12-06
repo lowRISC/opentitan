@@ -63,6 +63,7 @@ top_optional = {
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
     'incoming_alert': ['g', 'Parsed incoming alerts (generated)'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupt': ['lnw', 'interrupts (generated)'],
@@ -212,7 +213,8 @@ module_optional = {
     'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that '
                            'module'],
     'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
-                            'group']
+                            'group'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
 }
 
 module_added = {

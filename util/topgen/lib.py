@@ -995,7 +995,9 @@ class TopGen:
         # When we generate the `interrupts` enum, the only info we have about
         # the source is the module name. We'll use `source_name_map` to map a
         # short module name to the full name object used for the enum constant.
-        source_name_map = {}
+        source_name_map = {
+            'unknown': unknown_source
+        }
 
         for name in self.top["interrupt_module"]:
 
@@ -1019,7 +1021,8 @@ class TopGen:
                     irq_id = interrupts.add_constant(name,
                                                      docstring="{} {}".format(
                                                          intr["name"], i))
-                    source_name = source_name_map[intr["module_name"]]
+                    source_name_key = 'unknown' if intr['incoming'] else intr['module_name']
+                    source_name = source_name_map[source_name_key]
                     plic_mapping.add_entry(irq_id, source_name)
                     self.device_irqs[intr["module_name"]].append(intr["name"] +
                                                                  str(i))

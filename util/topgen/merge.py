@@ -977,7 +977,16 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
                                                    module=m.lower())
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
+            qual['incoming'] = False
             top["interrupt"].append(qual)
+
+    for irqs in top['incoming_interrupt'].values():
+        for irq in irqs:
+            # Qualify name with module name
+            irq['name'] = f"{irq['module_name']}_{irq['name']}"
+            irq['incoming'] = True
+            irq['width'] = 1
+            top["interrupt"].append(irq)
 
 
 def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
