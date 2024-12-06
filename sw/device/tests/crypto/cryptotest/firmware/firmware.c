@@ -10,6 +10,8 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
 // Include commands
 #include "sw/device/tests/crypto/cryptotest/json/aes_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
@@ -31,7 +33,9 @@
 #include "kmac.h"
 #include "sphincsplus.h"
 
-OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
+OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
+                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.test_may_clobber = false, );
 
 status_t process_cmd(ujson_t *uj) {
   while (true) {
