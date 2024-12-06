@@ -85,6 +85,7 @@ module lc_ctrl
   // Life cycle broadcast outputs (all of them are registered).
   // SEC_CM: INTERSIG.MUBI
   output lc_tx_t                                     lc_dft_en_o,
+  output lc_tx_t                                     lc_raw_test_rma_o,
   output lc_tx_t                                     lc_nvm_debug_en_o,
   output lc_tx_t                                     lc_hw_debug_en_o,
   output lc_tx_t                                     lc_cpu_en_o,
@@ -584,6 +585,8 @@ module lc_ctrl
     .lc_en_i(lc_raw_test_rma),
     .lc_en_o(lc_raw_test_rma_buf)
   );
+
+  assign lc_raw_test_rma_o = lc_raw_test_rma;
 
   assign lc_otp_vendor_test_o.ctrl = (lc_tx_test_true_strict(lc_raw_test_rma_buf[0])) ?
                                      otp_vendor_test_ctrl_q                           : '0;
