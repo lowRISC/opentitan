@@ -1049,6 +1049,8 @@ def main():
         # that to the alert handler's module definition.
         if 'incoming_alert' not in topcfg:
             topcfg['incoming_alert'] = {}
+        if 'incoming_interrupt' not in topcfg:
+            topcfg['incoming_interrupt'] = OrderedDict()
 
         for m in topcfg['module']:
             if m['type'] == 'alert_handler':
@@ -1058,6 +1060,12 @@ def main():
                         mapping = hjson.load(falert)
                         for alert_group, alerts in mapping.items():
                             topcfg['incoming_alert'][alert_group] = alerts
+            elif m['type'] == 'rv_plic':
+                for irq_mappings_path in m.get('incoming_interrupt', []):
+                    with open(Path(args.topcfg).parent / irq_mappings_path, "r") as firq:
+                        irq_mapping = hjson.load(firq)
+                        for irq_group, irqs in irq_mapping.items():
+                            topcfg['incoming_interrupt'][irq_group] = irqs
     except ValueError:
         raise SystemExit(sys.exc_info()[1])
 

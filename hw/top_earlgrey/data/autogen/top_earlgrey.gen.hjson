@@ -14321,6 +14321,7 @@
     }
   ]
   incoming_alert: {}
+  incoming_interrupt: {}
   exported_clks: {}
   wakeups:
   [
@@ -14436,6 +14437,7 @@
       module_name: uart0
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart0_rx_watermark
@@ -14444,6 +14446,7 @@
       module_name: uart0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: uart0_tx_done
@@ -14452,6 +14455,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_rx_overflow
@@ -14460,6 +14464,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_rx_frame_err
@@ -14468,6 +14473,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_rx_break_err
@@ -14476,6 +14482,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_rx_timeout
@@ -14484,6 +14491,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_rx_parity_err
@@ -14492,6 +14500,7 @@
       module_name: uart0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart0_tx_empty
@@ -14500,6 +14509,7 @@
       module_name: uart0
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart1_tx_watermark
@@ -14508,6 +14518,7 @@
       module_name: uart1
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart1_rx_watermark
@@ -14516,6 +14527,7 @@
       module_name: uart1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: uart1_tx_done
@@ -14524,6 +14536,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_rx_overflow
@@ -14532,6 +14545,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_rx_frame_err
@@ -14540,6 +14554,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_rx_break_err
@@ -14548,6 +14563,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_rx_timeout
@@ -14556,6 +14572,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_rx_parity_err
@@ -14564,6 +14581,7 @@
       module_name: uart1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart1_tx_empty
@@ -14572,6 +14590,7 @@
       module_name: uart1
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart2_tx_watermark
@@ -14580,6 +14599,7 @@
       module_name: uart2
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart2_rx_watermark
@@ -14588,6 +14608,7 @@
       module_name: uart2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: uart2_tx_done
@@ -14596,6 +14617,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_rx_overflow
@@ -14604,6 +14626,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_rx_frame_err
@@ -14612,6 +14635,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_rx_break_err
@@ -14620,6 +14644,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_rx_timeout
@@ -14628,6 +14653,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_rx_parity_err
@@ -14636,6 +14662,7 @@
       module_name: uart2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart2_tx_empty
@@ -14644,6 +14671,7 @@
       module_name: uart2
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart3_tx_watermark
@@ -14652,6 +14680,7 @@
       module_name: uart3
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: uart3_rx_watermark
@@ -14660,6 +14689,7 @@
       module_name: uart3
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: uart3_tx_done
@@ -14668,6 +14698,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_rx_overflow
@@ -14676,6 +14707,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_rx_frame_err
@@ -14684,6 +14716,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_rx_break_err
@@ -14692,6 +14725,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_rx_timeout
@@ -14700,6 +14734,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_rx_parity_err
@@ -14708,6 +14743,7 @@
       module_name: uart3
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: uart3_tx_empty
@@ -14716,6 +14752,7 @@
       module_name: uart3
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: gpio_gpio
@@ -14724,6 +14761,7 @@
       module_name: gpio
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_upload_cmdfifo_not_empty
@@ -14732,6 +14770,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_upload_payload_not_empty
@@ -14740,6 +14779,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_upload_payload_overflow
@@ -14748,6 +14788,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_readbuf_watermark
@@ -14756,6 +14797,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_readbuf_flip
@@ -14764,6 +14806,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_tpm_header_not_empty
@@ -14772,6 +14815,7 @@
       module_name: spi_device
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_tpm_rdfifo_cmd_end
@@ -14780,6 +14824,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_device_tpm_rdfifo_drop
@@ -14788,6 +14833,7 @@
       module_name: spi_device
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_fmt_threshold
@@ -14796,6 +14842,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_rx_threshold
@@ -14804,6 +14851,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_acq_threshold
@@ -14812,6 +14860,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_rx_overflow
@@ -14820,6 +14869,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_controller_halt
@@ -14828,6 +14878,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_scl_interference
@@ -14836,6 +14887,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_sda_interference
@@ -14844,6 +14896,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_stretch_timeout
@@ -14852,6 +14905,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_sda_unstable
@@ -14860,6 +14914,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_cmd_complete
@@ -14868,6 +14923,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_tx_stretch
@@ -14876,6 +14932,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_tx_threshold
@@ -14884,6 +14941,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_acq_stretch
@@ -14892,6 +14950,7 @@
       module_name: i2c0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_unexp_stop
@@ -14900,6 +14959,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c0_host_timeout
@@ -14908,6 +14968,7 @@
       module_name: i2c0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_fmt_threshold
@@ -14916,6 +14977,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_rx_threshold
@@ -14924,6 +14986,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_acq_threshold
@@ -14932,6 +14995,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_rx_overflow
@@ -14940,6 +15004,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_controller_halt
@@ -14948,6 +15013,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_scl_interference
@@ -14956,6 +15022,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_sda_interference
@@ -14964,6 +15031,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_stretch_timeout
@@ -14972,6 +15040,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_sda_unstable
@@ -14980,6 +15049,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_cmd_complete
@@ -14988,6 +15058,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_tx_stretch
@@ -14996,6 +15067,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_tx_threshold
@@ -15004,6 +15076,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_acq_stretch
@@ -15012,6 +15085,7 @@
       module_name: i2c1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_unexp_stop
@@ -15020,6 +15094,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c1_host_timeout
@@ -15028,6 +15103,7 @@
       module_name: i2c1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_fmt_threshold
@@ -15036,6 +15112,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_rx_threshold
@@ -15044,6 +15121,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_acq_threshold
@@ -15052,6 +15130,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_rx_overflow
@@ -15060,6 +15139,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_controller_halt
@@ -15068,6 +15148,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_scl_interference
@@ -15076,6 +15157,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_sda_interference
@@ -15084,6 +15166,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_stretch_timeout
@@ -15092,6 +15175,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_sda_unstable
@@ -15100,6 +15184,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_cmd_complete
@@ -15108,6 +15193,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_tx_stretch
@@ -15116,6 +15202,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_tx_threshold
@@ -15124,6 +15211,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_acq_stretch
@@ -15132,6 +15220,7 @@
       module_name: i2c2
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_unexp_stop
@@ -15140,6 +15229,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: i2c2_host_timeout
@@ -15148,6 +15238,7 @@
       module_name: i2c2
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: pattgen_done_ch0
@@ -15156,6 +15247,7 @@
       module_name: pattgen
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: pattgen_done_ch1
@@ -15164,6 +15256,7 @@
       module_name: pattgen
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: rv_timer_timer_expired_hart0_timer0
@@ -15172,6 +15265,7 @@
       module_name: rv_timer
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: otp_ctrl_otp_operation_done
@@ -15180,6 +15274,7 @@
       module_name: otp_ctrl
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: otp_ctrl_otp_error
@@ -15188,6 +15283,7 @@
       module_name: otp_ctrl
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: alert_handler_classa
@@ -15196,6 +15292,7 @@
       module_name: alert_handler
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: alert_handler_classb
@@ -15204,6 +15301,7 @@
       module_name: alert_handler
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: alert_handler_classc
@@ -15212,6 +15310,7 @@
       module_name: alert_handler
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: alert_handler_classd
@@ -15220,6 +15319,7 @@
       module_name: alert_handler
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_host0_error
@@ -15228,6 +15328,7 @@
       module_name: spi_host0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_host0_spi_event
@@ -15236,6 +15337,7 @@
       module_name: spi_host0
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: spi_host1_error
@@ -15244,6 +15346,7 @@
       module_name: spi_host1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: spi_host1_spi_event
@@ -15252,6 +15355,7 @@
       module_name: spi_host1
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_pkt_received
@@ -15260,6 +15364,7 @@
       module_name: usbdev
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_pkt_sent
@@ -15268,6 +15373,7 @@
       module_name: usbdev
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_disconnected
@@ -15276,6 +15382,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_host_lost
@@ -15284,6 +15391,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_link_reset
@@ -15292,6 +15400,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_link_suspend
@@ -15300,6 +15409,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_link_resume
@@ -15308,6 +15418,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_av_out_empty
@@ -15316,6 +15427,7 @@
       module_name: usbdev
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_rx_full
@@ -15324,6 +15436,7 @@
       module_name: usbdev
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_av_overflow
@@ -15332,6 +15445,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_link_in_err
@@ -15340,6 +15454,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_rx_crc_err
@@ -15348,6 +15463,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_rx_pid_err
@@ -15356,6 +15472,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_rx_bitstuff_err
@@ -15364,6 +15481,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_frame
@@ -15372,6 +15490,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_powered
@@ -15380,6 +15499,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_link_out_err
@@ -15388,6 +15508,7 @@
       module_name: usbdev
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: usbdev_av_setup_empty
@@ -15396,6 +15517,7 @@
       module_name: usbdev
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: pwrmgr_aon_wakeup
@@ -15404,6 +15526,7 @@
       module_name: pwrmgr_aon
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: sysrst_ctrl_aon_event_detected
@@ -15412,6 +15535,7 @@
       module_name: sysrst_ctrl_aon
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: adc_ctrl_aon_match_pending
@@ -15420,6 +15544,7 @@
       module_name: adc_ctrl_aon
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: aon_timer_aon_wkup_timer_expired
@@ -15428,6 +15553,7 @@
       module_name: aon_timer_aon
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: aon_timer_aon_wdog_timer_bark
@@ -15436,6 +15562,7 @@
       module_name: aon_timer_aon
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: sensor_ctrl_aon_io_status_change
@@ -15444,6 +15571,7 @@
       module_name: sensor_ctrl_aon
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: sensor_ctrl_aon_init_status_change
@@ -15452,6 +15580,7 @@
       module_name: sensor_ctrl_aon
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: flash_ctrl_prog_empty
@@ -15460,6 +15589,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: flash_ctrl_prog_lvl
@@ -15468,6 +15598,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Status
       default_val: true
+      incoming: false
     }
     {
       name: flash_ctrl_rd_full
@@ -15476,6 +15607,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: flash_ctrl_rd_lvl
@@ -15484,6 +15616,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: flash_ctrl_op_done
@@ -15492,6 +15625,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: flash_ctrl_corr_err
@@ -15500,6 +15634,7 @@
       module_name: flash_ctrl
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: hmac_hmac_done
@@ -15508,6 +15643,7 @@
       module_name: hmac
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: hmac_fifo_empty
@@ -15516,6 +15652,7 @@
       module_name: hmac
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: hmac_hmac_err
@@ -15524,6 +15661,7 @@
       module_name: hmac
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: kmac_kmac_done
@@ -15532,6 +15670,7 @@
       module_name: kmac
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: kmac_fifo_empty
@@ -15540,6 +15679,7 @@
       module_name: kmac
       intr_type: IntrType.Status
       default_val: false
+      incoming: false
     }
     {
       name: kmac_kmac_err
@@ -15548,6 +15688,7 @@
       module_name: kmac
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: otbn_done
@@ -15556,6 +15697,7 @@
       module_name: otbn
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: keymgr_op_done
@@ -15564,6 +15706,7 @@
       module_name: keymgr
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: csrng_cs_cmd_req_done
@@ -15572,6 +15715,7 @@
       module_name: csrng
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: csrng_cs_entropy_req
@@ -15580,6 +15724,7 @@
       module_name: csrng
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: csrng_cs_hw_inst_exc
@@ -15588,6 +15733,7 @@
       module_name: csrng
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: csrng_cs_fatal_err
@@ -15596,6 +15742,7 @@
       module_name: csrng
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: entropy_src_es_entropy_valid
@@ -15604,6 +15751,7 @@
       module_name: entropy_src
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: entropy_src_es_health_test_failed
@@ -15612,6 +15760,7 @@
       module_name: entropy_src
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: entropy_src_es_observe_fifo_ready
@@ -15620,6 +15769,7 @@
       module_name: entropy_src
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: entropy_src_es_fatal_err
@@ -15628,6 +15778,7 @@
       module_name: entropy_src
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: edn0_edn_cmd_req_done
@@ -15636,6 +15787,7 @@
       module_name: edn0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: edn0_edn_fatal_err
@@ -15644,6 +15796,7 @@
       module_name: edn0
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: edn1_edn_cmd_req_done
@@ -15652,6 +15805,7 @@
       module_name: edn1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
     {
       name: edn1_edn_fatal_err
@@ -15660,6 +15814,7 @@
       module_name: edn1
       intr_type: IntrType.Event
       default_val: false
+      incoming: false
     }
   ]
   alert_module:
