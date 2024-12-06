@@ -2183,6 +2183,17 @@
           index: 1
         }
         {
+          name: lc_raw_test_rma
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          index: -1
+        }
+        {
           name: lc_dft_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -17714,6 +17725,17 @@
         inst_name: lc_ctrl
         top_signame: kmac_app
         index: 1
+      }
+      {
+        name: lc_raw_test_rma
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        index: -1
       }
       {
         name: lc_dft_en
