@@ -4,7 +4,6 @@
 //
 // Binds OTP_CTRL functional coverage interaface to the top level OTP_CTRL module.
 //
-${gen_comment}
 <%
 from topgen.lib import Name
 
