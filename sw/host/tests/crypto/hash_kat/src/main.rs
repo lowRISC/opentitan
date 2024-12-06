@@ -21,6 +21,7 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
+use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -54,7 +55,7 @@ const HASH_CMD_MAX_CUSTOMIZATION_STRING_BYTES: usize = 16;
 fn run_hash_testcase(
     test_case: &HashTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -63,9 +64,7 @@ fn run_hash_testcase(
         test_case.algorithm,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
-
-    CryptotestCommand::Hash.send(&*uart)?;
+    CryptotestCommand::Hash.send(spi_console)?;
 
     assert!(
         test_case.message.len() <= HASH_CMD_MAX_MESSAGE_BYTES,
@@ -95,14 +94,14 @@ fn run_hash_testcase(
         "cshake-256" => CryptotestHashAlgorithm::Cshake256,
         _ => panic!("Unsupported hash algorithm"),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send required digest size for SHAKE tests (this value is
     // ignored for SHA2/3)
     CryptotestHashShakeDigestLength {
         length: test_case.digest.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send hash preimage
     CryptotestHashMessage {
@@ -112,10 +111,10 @@ fn run_hash_testcase(
             .unwrap(),
         customization_string_len: test_case.customization_string.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Get hash output
-    let hash_output = CryptotestHashOutput::recv(&*uart, opts.timeout, false)?;
+    let hash_output = CryptotestHashOutput::recv(spi_console, opts.timeout, false)?;
     // Stepwise hashing is currently supported by SHA2 only.
     let mut failed = false;
     match test_case.algorithm.as_str() {
@@ -158,9 +157,9 @@ fn run_hash_testcase(
 }
 
 fn test_hash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
@@ -172,7 +171,7 @@ fn test_hash(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for hash_test in &hash_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_hash_testcase(hash_test, opts, transport, &mut fail_counter)?;
+            run_hash_testcase(hash_test, opts, &spi_console_device, &mut fail_counter)?;
         }
     }
     assert_eq!(

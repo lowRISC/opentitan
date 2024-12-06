@@ -22,6 +22,7 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
+use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -52,7 +53,7 @@ struct SphincsPlusTestCase {
 fn run_sphincsplus_testcase(
     test_case: &SphincsPlusTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -61,9 +62,7 @@ fn run_sphincsplus_testcase(
         test_case.algorithm,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
-
-    CryptotestCommand::SphincsPlus.send(&*uart)?;
+    CryptotestCommand::SphincsPlus.send(spi_console)?;
     assert_eq!(test_case.algorithm.as_str(), "sphincs+");
 
     // Send operation
@@ -71,7 +70,7 @@ fn run_sphincsplus_testcase(
         "verify" => CryptotestSphincsPlusOperation::Verify,
         _ => panic!("Unsupported SPHINCS+ operation"),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send hash algorithm
     match test_case.hash_alg.as_str() {
@@ -79,7 +78,7 @@ fn run_sphincsplus_testcase(
         "shake-256" => CryptotestSphincsPlusHashAlg::Shake256,
         _ => panic!("Unsupported hash algorithm"),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send public key
     CryptotestSphincsPlusPublicKey {
@@ -87,7 +86,7 @@ fn run_sphincsplus_testcase(
             .expect("SPHINCS+ public key was too large for device firmware configuration."),
         public_len: test_case.public.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send message
     CryptotestSphincsPlusMessage {
@@ -95,7 +94,7 @@ fn run_sphincsplus_testcase(
             .expect("SPHINCS+ message was too large for device firmware configuration."),
         message_len: test_case.message.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Send signature
     CryptotestSphincsPlusSignature {
@@ -103,10 +102,10 @@ fn run_sphincsplus_testcase(
             .expect("SPHINCS+ signature was too large for device firmware configuration."),
         signature_len: test_case.signature.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Get verification output
-    let success = match CryptotestSphincsPlusVerifyOutput::recv(&*uart, opts.timeout, false)? {
+    let success = match CryptotestSphincsPlusVerifyOutput::recv(spi_console, opts.timeout, false)? {
         CryptotestSphincsPlusVerifyOutput::Success => true,
         CryptotestSphincsPlusVerifyOutput::Failure => false,
         CryptotestSphincsPlusVerifyOutput::IntValue(i) => {
@@ -126,9 +125,9 @@ fn run_sphincsplus_testcase(
 }
 
 fn test_sphincsplus(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
@@ -140,7 +139,7 @@ fn test_sphincsplus(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for sphincsplus_test in &sphincsplus_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_sphincsplus_testcase(sphincsplus_test, opts, transport, &mut fail_counter)?;
+            run_sphincsplus_testcase(sphincsplus_test, opts, &spi_console_device, &mut fail_counter)?;
         }
     }
     assert_eq!(

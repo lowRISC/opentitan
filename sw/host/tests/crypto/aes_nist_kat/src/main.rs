@@ -21,6 +21,7 @@ use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
+use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -55,30 +56,28 @@ const AES_BLOCK_BYTES: usize = 128 / 8;
 fn run_aes_testcase(
     test_case: &AesTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
 ) -> Result<()> {
-    let uart = transport.uart("console")?;
-
     assert_eq!(test_case.algorithm.as_str(), "aes");
-    CryptotestCommand::Aes.send(&*uart)?;
-    AesSubcommand::AesBlock.send(&*uart)?;
+    CryptotestCommand::Aes.send(spi_console)?;
+    AesSubcommand::AesBlock.send(spi_console)?;
 
     match test_case.mode.as_str() {
-        "cbc" => CryptotestAesMode::Cbc.send(&*uart)?,
-        "cfb128" => CryptotestAesMode::Cfb.send(&*uart)?,
-        "ecb" => CryptotestAesMode::Ecb.send(&*uart)?,
-        "ofb" => CryptotestAesMode::Ofb.send(&*uart)?,
+        "cbc" => CryptotestAesMode::Cbc.send(spi_console)?,
+        "cfb128" => CryptotestAesMode::Cfb.send(spi_console)?,
+        "ecb" => CryptotestAesMode::Ecb.send(spi_console)?,
+        "ofb" => CryptotestAesMode::Ofb.send(spi_console)?,
         _ => panic!("Invalid AES mode"),
     }
     match test_case.operation.as_str() {
-        "encrypt" => CryptotestAesOperation::Encrypt.send(&*uart)?,
-        "decrypt" => CryptotestAesOperation::Decrypt.send(&*uart)?,
+        "encrypt" => CryptotestAesOperation::Encrypt.send(spi_console)?,
+        "decrypt" => CryptotestAesOperation::Decrypt.send(spi_console)?,
         _ => panic!("Invalid AES operation"),
     }
     match test_case.padding.as_str() {
-        "null" => CryptotestAesPadding::Null.send(&*uart)?,
-        "pkcs7" => CryptotestAesPadding::Pkcs7.send(&*uart)?,
-        "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(&*uart)?,
+        "null" => CryptotestAesPadding::Null.send(spi_console)?,
+        "pkcs7" => CryptotestAesPadding::Pkcs7.send(spi_console)?,
+        "iso9797m2" => CryptotestAesPadding::Iso9797M2.send(spi_console)?,
         _ => panic!("Invalid AES padding scheme"),
     }
 
@@ -119,9 +118,9 @@ fn run_aes_testcase(
         input,
         input_len,
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
-    let aes_output = CryptotestAesOutput::recv(&*uart, opts.timeout, false)?;
+    let aes_output = CryptotestAesOutput::recv(spi_console, opts.timeout, false)?;
     assert_eq!(
         aes_output.output[0..input_len],
         expected_output[0..input_len]
@@ -130,9 +129,9 @@ fn run_aes_testcase(
 }
 
 fn test_aes(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let test_vector_files = &opts.aes_json;
@@ -143,7 +142,7 @@ fn test_aes(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for aes_test in &aes_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_aes_testcase(aes_test, opts, transport)?;
+            run_aes_testcase(aes_test, opts, &spi_console_device)?;
         }
     }
     Ok(())

@@ -18,7 +18,11 @@
 #include "sw/device/tests/crypto/cryptotest/json/commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/ecdsa_commands.h"
 
-OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+
+OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
+                        .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
+                        .console.test_may_clobber = false, );
 
 bool ecdsa_p256_params_set(cryptotest_ecdsa_coordinate_t uj_qx,
                            cryptotest_ecdsa_coordinate_t uj_qy,
