@@ -30,13 +30,14 @@ class entropy_src_xht_agent extends dv_base_agent #(
     monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
+  // TODO MVy: I think an agent is not supposed to have a run phase, this is an issue
+  virtual task run_main();
     entropy_src_xht_base_device_seq m_seq
         = entropy_src_xht_base_device_seq::type_id::create("m_seq", this);
     if (cfg.start_default_seq) begin
       uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                               "default_sequence", m_seq.get_type());
-      sequencer.start_phase_sequence(phase);
+      // sequencer.start_phase_sequence(phase);   // has been deprecated from UVM ref manual
     end
   endtask
 

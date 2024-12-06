@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 class reset_item extends uvm_sequence_item;
-  rand int unsigned assert_delay;   // If reset is sync: number of clock cycles, async: time in ns
-  rand int unsigned assert_width;   // If reset is sync: number of clock cycles, async: time in ns
+  rand int unsigned assert_delay;   // If reset is sync: number of clock cycles, async: time in ps
+  rand int unsigned assert_width;   // If reset is sync: number of clock cycles, async: time in ps
 
   `uvm_object_utils_begin(reset_item)
     `uvm_field_int(assert_delay, UVM_DEFAULT)

@@ -11,7 +11,6 @@ class reset_driver extends dv_base_driver #(
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent = null);
   extern task pre_reset_phase(uvm_phase phase);
-  extern task reset_phase(uvm_phase phase);
 
   // Parent methods
   extern virtual task reset_signals();
@@ -29,20 +28,6 @@ endfunction : new
 task reset_driver::pre_reset_phase(uvm_phase phase);
   cfg.vif.drive_idle(cfg.polarity);
 endtask : pre_reset_phase
-
-task reset_driver::reset_phase(uvm_phase phase);
-  reset_item tr;
-
-  phase.raise_objection(this);
-  // Build the initial transaction as the first reset should occur from the reset_phase
-  tr = reset_item::type_id::create("tr");
-  if (!tr.randomize() with {
-    assert_delay == cfg.ini_assert_delay;
-    assert_width == cfg.ini_assert_width;
-  }) `uvm_fatal(`gfn, "Failed to randomize transaction !")
-  drive_trans(tr);
-  phase.drop_objection(this);
-endtask : reset_phase
 
 task reset_driver::reset_signals();
   // Requires to be overriden but can remain empty for this particular agent
@@ -85,7 +70,7 @@ task reset_driver::hold_state(reset_phase_e reset_phase, int unsigned waiting_ti
   if (is_sync) begin
     time_unit = "clock cycle(s)";
   end else begin
-    time_unit = "ns";
+    time_unit = "ps";
   end
 
   if (waiting_time > 0) begin
@@ -96,7 +81,7 @@ task reset_driver::hold_state(reset_phase_e reset_phase, int unsigned waiting_ti
     if (is_sync) begin
       repeat (waiting_time) @(posedge cfg.vif.clk_i);
     end else begin
-      #(waiting_time*1ns);
+      #(waiting_time*1ps);
     end
   end
 endtask : hold_state

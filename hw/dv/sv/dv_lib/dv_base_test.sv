@@ -96,7 +96,7 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     rst_seq = reset_seq::type_id::create("rst_seq");
     fork
       begin
-        #100us;
+        #50us;
         if (!rst_seq.randomize()) begin
           `uvm_fatal(`gfn, "Failed to randomize transaction !")
         end
@@ -127,8 +127,8 @@ class dv_base_test #(type CFG_T = dv_base_env_cfg,
     rst_agt_cfg.polarity              = ActiveLow;
     rst_agt_cfg.assert_is_sync        = 0;
     rst_agt_cfg.deassert_is_sync      = 1;
-    rst_agt_cfg.ini_assert_delay      = 50;
-    rst_agt_cfg.ini_assert_width      = 100;
+    rst_agt_cfg.ini_assert_delay      = 1_000;  // In ps
+    rst_agt_cfg.ini_assert_width      = 100;    // In clock cycles
   endfunction : config_reset_agent
 
   virtual task run_seq(string test_seq_s, uvm_phase phase);

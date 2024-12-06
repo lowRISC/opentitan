@@ -22,7 +22,7 @@ module tb;
   wire intr_hmac_err;
 
   // interfaces
-  clk_rst_if clk_rst_if(.clk(clk), .rst_n());
+  clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));  // The rst_n is an input to the clk_rst_if
   reset_interface reset_if();
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
@@ -57,8 +57,8 @@ module tb;
   assign rst_n          = reset_if.rst_o;   // From the agent to the TB
 
   initial begin
-    // drive clk and rst_n from clk_if
-    clk_rst_if.set_active();
+    clk_rst_if.has_reset_agent = 1;
+    clk_rst_if.set_active(.drive_rst_n_val(0));
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual reset_interface)::set(null, "*", "reset_vif", reset_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);

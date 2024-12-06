@@ -104,6 +104,11 @@ interface clk_rst_if #(
   // use IfName as a part of msgs to indicate which clk_rst_vif instance
   string msg_id = $sformatf("[%m(clk_rst_if):%s]", IfName);
 
+  // Since a reset agent agent has been created, the reset shouldn't be driven from this interface
+  // anymore, but it is fed into it from the reset agent instead and the clock should only
+  // start once the reset had happen already
+  bit has_reset_agent = 0;
+
   clocking cb @(posedge clk);
   endclocking
 
@@ -302,7 +307,7 @@ interface clk_rst_if #(
       fork
         begin
           // Only wait for reset if driving it, otherwise it may never come.
-          if (drive_rst_n) begin
+          if (drive_rst_n || has_reset_agent) begin
             wait_for_reset(.wait_posedge(1'b0));
 
             // Wait a short time after reset before starting to drive the clock.

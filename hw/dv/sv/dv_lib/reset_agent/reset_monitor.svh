@@ -54,7 +54,7 @@ task reset_monitor::collect_trans();
           if (cfg.assert_is_sync) begin
             @(posedge cfg.vif.clk_i);
           end else begin
-            #(1ns);
+            #(1ps);
           end
           cnt_assert_delay++;
         end
@@ -88,7 +88,7 @@ task reset_monitor::collect_trans();
           if (cfg.deassert_is_sync) begin
             @(posedge cfg.vif.clk_i);
           end else begin
-            #(1ns);
+            #(1ps);
           end
           cnt_assert_width++;
         end

@@ -30,9 +30,18 @@ class dv_base_env_cfg #(type RAL_T = dv_base_reg_block) extends uvm_object;
   // bit to configure all uvcs with zero delays to create high bw test
   rand bit zero_delays;
 
+  // Number of reset to issue before being able to claim end of test
+  rand int nb_reset_to_issue;
+
   // set zero_delays 40% of the time
   constraint zero_delays_c {
     zero_delays dist {1'b0 := 6, 1'b1 := 4};
+  }
+
+  // By default only the initial reset will be issued. For the tests requiring to perform on the
+  // fly resets, this constraint should be overwritten.
+  constraint nb_reset_to_issue_c {
+    soft nb_reset_to_issue == 1;
   }
 
   // reg model & q of valid csr addresses

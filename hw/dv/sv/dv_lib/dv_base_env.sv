@@ -77,6 +77,7 @@ class dv_base_env #(type CFG_T               = dv_base_env_cfg,
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    virtual_sequencer.rst_sqr = rst_agt.sequencer;
     if (cfg.en_cov) begin
       rst_agt.reset_tr_ap.connect(cov.reset_tr_imp);
     end

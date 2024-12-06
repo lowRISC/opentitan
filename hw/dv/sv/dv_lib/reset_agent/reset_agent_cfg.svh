@@ -18,9 +18,9 @@ class reset_agent_cfg extends dv_base_agent_cfg;
   // Reset deassertion should be synchronous to the input clock
   bit           deassert_is_sync = 1;
   // Initial reset delay
-  int unsigned  ini_assert_delay = 100;
+  int unsigned  ini_assert_delay = 10_000;  // In ps by default as assertion is asynchronous
   // Initial reset duration
-  int unsigned  ini_assert_width = 100;
+  int unsigned  ini_assert_width = 100;     // In clock cycles by default as deassertion is sync
 
   // Standard SV/UVM methods
   extern function new(string name = "");

@@ -7,8 +7,6 @@ class reset_base_seq extends dv_base_seq #(
   .CFG_T       (reset_agent_cfg),
   .SEQUENCER_T (reset_sequencer)
 );
-// class reset_base_seq extends uvm_sequence #(reset_item);
-//   `uvm_object_utils(reset_base_seq)
 
   // Standard SV/UVM methods
   extern function new (string name = "");

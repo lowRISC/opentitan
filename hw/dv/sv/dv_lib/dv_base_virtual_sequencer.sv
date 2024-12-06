@@ -13,6 +13,8 @@ class dv_base_virtual_sequencer #(type CFG_T = dv_base_env_cfg,
   CFG_T         cfg;
   COV_T         cov;
 
+  reset_sequencer rst_sqr;  // TODO MVy: manage multiple reset domains, do we need multiple sqr?
+
   uvm_analysis_imp_vsqr_reset #(
     reset_state_e, dv_base_virtual_sequencer#(CFG_T,COV_T)) reset_st_imp;
 
@@ -27,5 +29,12 @@ class dv_base_virtual_sequencer #(type CFG_T = dv_base_env_cfg,
   virtual function void write_vsqr_reset(reset_state_e reset_st);
     // TODO MVy: see if under_reset bit implementation is required or if fine to use the one from
     // cfg class.
+    // TODO MVy: probably not a good idea to kill all the sequences running on this main sequencer.
+    // the best would probably be to disable the running process but not from here.
+    // if (reset_st == ResetAsserted) begin
+    //   stop_sequences();
+    //   `uvm_info(`gfn, "DEBUG_MVy - stop_sequences called", UVM_LOW)
+    // end
+    // `uvm_info(`gfn, $sformatf("Update reset state to %0s", reset_st.name()), UVM_DEBUG)
   endfunction : write_vsqr_reset
 endclass

@@ -24,7 +24,8 @@ class key_sideload_agent#(
     end
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
+  // TODO MVy: I think an agent is not supposed to have a run phase, this is an issue
+  virtual task run_main();
     key_sideload_set_seq#(KEY_T) p_seq;
     if (cfg.start_default_seq) begin
       p_seq = key_sideload_set_seq#(KEY_T)::type_id::create("p_seq", this);

@@ -43,9 +43,10 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
   // to this component via a UVM analysis import.
   virtual function void write_sqr_reset(reset_state_e reset_st);
     if (reset_st == ResetAsserted) begin
-      // stop_sequences();
+      stop_sequences();
+      `uvm_info(`gfn, "stop_sequences called", UVM_MEDIUM)
     end
-    `uvm_info(`gtn, $sformatf("Update reset state to %0s", reset_st.name()), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("Update reset state to %0s", reset_st.name()), UVM_DEBUG)
   endfunction : write_sqr_reset
 
 endclass
