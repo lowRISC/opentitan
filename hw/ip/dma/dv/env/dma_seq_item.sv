@@ -12,9 +12,8 @@
 // first
 // - src_asid
 // - dst_asid
-// - direction
-// - auto_inc_buffer
-// - auto_inc_fifo
+// - addr_inc
+// - chunk_wrap
 // - handshake
 // - per_transfer_width
 // Then the memory range is randomized
@@ -33,11 +32,13 @@
 class dma_seq_item extends uvm_sequence_item;
 
   // Variables to configure DMA
-  rand bit auto_inc_buffer;
-  rand bit auto_inc_fifo;
   rand bit handshake;
   rand bit [63:0] src_addr;
   rand bit [63:0] dst_addr;
+  rand bit        src_chunk_wrap;
+  rand bit        dst_chunk_wrap;
+  rand bit        src_addr_inc;
+  rand bit        dst_addr_inc;
   rand bit        mem_range_valid;
   rand bit [31:0] mem_range_base;
   rand bit [31:0] mem_range_limit;
@@ -48,7 +49,6 @@ class dma_seq_item extends uvm_sequence_item;
   rand dma_transfer_width_e per_transfer_width;
   rand asid_encoding_e src_asid;
   rand asid_encoding_e dst_asid;
-  rand dma_control_data_direction_e direction;
   // Variable to indicate if interrupt needs clearing before reading from FIFO
   rand bit [dma_reg_pkg::NumIntClearSources-1:0] clear_intr_src;
   // Variable to indicate the bus on which each interrupt clearing address resides
@@ -90,10 +90,13 @@ class dma_seq_item extends uvm_sequence_item;
   `uvm_object_utils_begin(dma_seq_item)
     `uvm_field_int(src_addr, UVM_DEFAULT)
     `uvm_field_int(dst_addr, UVM_DEFAULT)
+    `uvm_field_int(dst_chunk_wrap, UVM_DEFAULT)
+    `uvm_field_int(src_chunk_wrap, UVM_DEFAULT)
+    `uvm_field_int(dst_addr_inc, UVM_DEFAULT)
+    `uvm_field_int(src_addr_inc, UVM_DEFAULT)
     `uvm_field_enum(asid_encoding_e, src_asid, UVM_DEFAULT)
     `uvm_field_enum(asid_encoding_e, dst_asid, UVM_DEFAULT)
     `uvm_field_enum(opcode_e, opcode, UVM_DEFAULT)
-    `uvm_field_enum(dma_control_data_direction_e, direction, UVM_DEFAULT)
     `uvm_field_int(mem_range_valid, UVM_DEFAULT)
     `uvm_field_int(mem_range_base, UVM_DEFAULT)
     `uvm_field_int(mem_range_limit, UVM_DEFAULT)
@@ -101,8 +104,6 @@ class dma_seq_item extends uvm_sequence_item;
     `uvm_field_int(total_data_size, UVM_DEFAULT)
     `uvm_field_int(chunk_data_size, UVM_DEFAULT)
     `uvm_field_enum(dma_transfer_width_e, per_transfer_width, UVM_DEFAULT)
-    `uvm_field_int(auto_inc_buffer, UVM_DEFAULT)
-    `uvm_field_int(auto_inc_fifo, UVM_DEFAULT)
     `uvm_field_int(handshake, UVM_DEFAULT)
     `uvm_field_int(is_valid_config, UVM_DEFAULT)
     `uvm_field_int(handshake_intr_en, UVM_DEFAULT)
@@ -163,14 +164,13 @@ class dma_seq_item extends uvm_sequence_item;
           src_addr >= mem_range_base;
           src_addr <= mem_range_limit;
           mem_range_limit - src_addr >= chunk_data_size;
-          // If auto increment is not used on the memory end of the operation then successive chunks
-          // overlap each other, but in other cases the entire transfer must fit within the window
-          if (!handshake || (direction == DmaRcvData && auto_inc_buffer)) {
+          // If wrapping is not used after chunk than the entire transfer must fit within the window
+          if (!src_chunk_wrap) {
             mem_range_limit - src_addr >= total_data_size;
           }
         } else {
           // Choose a source address range that lies partially outside the DMA-enabled memory range.
-          if (auto_inc_buffer) {
+          if (!src_chunk_wrap) {
             // Choose start address to be too low or end address to be too high.
             src_addr < mem_range_base  ||
             src_addr > mem_range_limit ||
@@ -214,10 +214,8 @@ class dma_seq_item extends uvm_sequence_item;
           dst_addr >= mem_range_base;
           dst_addr <= mem_range_limit;
           mem_range_limit - dst_addr >= chunk_data_size;
-          // If auto increment is not used on the memory end of the operation, then successive/
-          // chunks overlap each other, but in other cases the entire transfer must fit within the
-          // window
-          if (!handshake || (direction == DmaSendData && auto_inc_buffer)) {
+          // If wrapping is not used after chunk than the entire transfer must fit within the window
+          if (!dst_chunk_wrap) {
             mem_range_limit - dst_addr >= total_data_size;
           }
           if (src_asid == OtInternalAddr) {
@@ -232,7 +230,7 @@ class dma_seq_item extends uvm_sequence_item;
         } else {
           // Choose a destination address range that lies partially outside the DMA-enabled memory
           // range.
-          if (auto_inc_buffer) {
+          if (!dst_chunk_wrap) {
             // Choose start address to be too low or end address to be too high.
             dst_addr < mem_range_base  ||
             dst_addr > mem_range_limit ||
@@ -292,8 +290,8 @@ class dma_seq_item extends uvm_sequence_item;
     // source/destination addresses meet the alignment requirements for the start of the next
     // chunk.
     // For narrower handshaking transfers, there is also a 4n requirement on the chunk size when
-    // the FIFO address end does not advance, to keep the source and destination alignments equal
-    if (per_transfer_width == DmaXfer4BperTxn || (handshake && !auto_inc_fifo)) {
+    // auto-increment is not used, to keep the source and destination alignments equal
+    if (per_transfer_width == DmaXfer4BperTxn || !src_addr_inc || !dst_addr_inc) {
       chunk_data_size[1:0] == '0;
     } else {
       per_transfer_width == DmaXfer2BperTxn -> chunk_data_size[0] == 1'b0;
@@ -306,8 +304,9 @@ class dma_seq_item extends uvm_sequence_item;
       opcode inside {OpcSha256, OpcSha384, OpcSha512} -> chunk_data_size[1:0] == 2'b00;
 
       // Source and destination addresses must have the same alignment at the start of non-initial
-      // chunks when addresses advance
-      !handshake || auto_inc_buffer -> chunk_data_size[1:0] == 2'b00;
+      // chunks when either is not wrapping chunks.
+      (dst_addr_inc && !dst_chunk_wrap) -> chunk_data_size[1:0] == 2'b00;
+      (src_addr_inc && !src_chunk_wrap) -> chunk_data_size[1:0] == 2'b00;
     }
 
     // Chunk size must be a multiple of the bytes/transaction
@@ -430,10 +429,7 @@ class dma_seq_item extends uvm_sequence_item;
 
     // Transfer mode
     str = {str,
-        $sformatf("\n\thandshake               : %0d", handshake),
-        $sformatf("\n\tdirection               : %0d", direction),
-        $sformatf("\n\tauto_inc_fifo           : %0d", auto_inc_fifo),
-        $sformatf("\n\tauto_inc_buffer         : %0d", auto_inc_buffer)
+        $sformatf("\n\thandshake               : %0d", handshake)
     };
 
     // Transfer properties
@@ -442,6 +438,10 @@ class dma_seq_item extends uvm_sequence_item;
         $sformatf("\n\tdst_asid                : %x",     dst_asid),
         $sformatf("\n\tsrc_addr                : 0x%16x", src_addr),
         $sformatf("\n\tdst_addr                : 0x%16x", dst_addr),
+        $sformatf("\n\tsrc_chunk_wrap          : %0d",    src_chunk_wrap),
+        $sformatf("\n\tdst_chunk_wrap          : %0d",    dst_chunk_wrap),
+        $sformatf("\n\tsrc_addr_inc            : %0d",    src_addr_inc),
+        $sformatf("\n\tdst_addr_inc            : %0d",    dst_addr_inc),
         $sformatf("\n\topcode                  : %0d",    opcode),
         $sformatf("\n\tper_transfer_width      : %0d",    per_transfer_width),
         $sformatf("\n\tchunk_data_size         : 0x%x",   chunk_data_size),
@@ -482,7 +482,8 @@ class dma_seq_item extends uvm_sequence_item;
   //   if settings are valid (returns 1), expected request queue must be populated
   //   else (returns 0) queue will not be updated
   function bit check_config(string reason = "");
-    bit [31:0] memory_range;
+    bit [31:0] src_memory_range;
+    bit [31:0] dst_memory_range;
     bit [1:0] align_mask;
     bit valid_config = 1;
 
@@ -490,10 +491,20 @@ class dma_seq_item extends uvm_sequence_item;
     // that the configuration is invalid.
     `uvm_info(`gfn, $sformatf("Checking configuration (%s)", reason), UVM_MEDIUM)
 
-    // Ascertain the size of the in-memory buffer
-    memory_range = total_data_size;
-    if (handshake && !auto_inc_buffer) begin
-      memory_range = chunk_data_size;  // All chunks overlap each other
+    // Ascertain the size of the in-memory buffer(s).
+    src_memory_range = total_data_size;
+    if (src_chunk_wrap) begin
+      src_memory_range = chunk_data_size;  // All chunks overlap each other
+      if (!src_addr_inc) begin
+        src_memory_range = 4;
+      end
+    end
+    dst_memory_range = total_data_size;
+    if (dst_chunk_wrap) begin
+      dst_memory_range = chunk_data_size;  // All chunks overlaps each other
+      if (!dst_addr_inc) begin
+        dst_memory_range = 4;
+      end
     end
 
     // Testing of the System bus may be waived in this DV environment
@@ -503,14 +514,14 @@ class dma_seq_item extends uvm_sequence_item;
       // above); if the upper bits do not match then reads or writes will be faulted, and 32-bit
       // address wraparound is not permitted.
       if (src_asid == SocSystemAddr) begin
-        if (src_addr[63:32] != soc_system_hi_addr || src_addr[31:0] >= ~memory_range) begin
+        if (src_addr[63:32] != soc_system_hi_addr || src_addr[31:0] >= ~src_memory_range) begin
           `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Reads not met",
                     UVM_MEDIUM)
           valid_config = 0;
         end
       end
       if (dst_asid == SocSystemAddr) begin
-        if (dst_addr[63:32] != soc_system_hi_addr || dst_addr[31:0] >= ~memory_range) begin
+        if (dst_addr[63:32] != soc_system_hi_addr || dst_addr[31:0] >= ~dst_memory_range) begin
           `uvm_info(`gfn, " - Limitations of 32-bit TL-UL for testing System bus Writes not met",
                     UVM_MEDIUM)
           valid_config = 0;
@@ -559,7 +570,8 @@ class dma_seq_item extends uvm_sequence_item;
     // to OT internal address space, but the memory range restriction does not apply if _both_
     // are within the OT internal address space.
     if (src_asid == OtInternalAddr && dst_asid != OtInternalAddr) begin
-      if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0], memory_range)) begin
+      if (mem_range_valid && !is_buffer_in_dma_memory_region(src_addr[31:0],
+                                                             src_memory_range)) begin
         // If source address space ID points to OT internal address space,
         // it must be within DMA enabled address range.
         `uvm_info(`gfn,
@@ -572,7 +584,8 @@ class dma_seq_item extends uvm_sequence_item;
     end else if (dst_asid == OtInternalAddr && src_asid != OtInternalAddr) begin
       // If destination address space ID points to OT internal address space
       // it must be within DMA enabled address range.
-      if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0], memory_range)) begin
+      if (mem_range_valid && !is_buffer_in_dma_memory_region(dst_addr[31:0],
+                                                             dst_memory_range)) begin
         `uvm_info(`gfn,
                   $sformatf(
                     " - Invalid dst addr range found lo: %08x hi: %08x with base: %08x limit: %0x",
@@ -623,7 +636,7 @@ class dma_seq_item extends uvm_sequence_item;
     // Multi-chunk transfers will fault the transfer at the point of starting non-initial chunks
     // if the `chunk_data_size` values does not ensure that they do not have appropriately-aligned
     // addresses, so we expect an error at some point even if not immediately.
-    if (chunk_data_size < total_data_size && (!handshake || auto_inc_buffer)) begin
+    if (chunk_data_size < total_data_size && (!dst_chunk_wrap || !src_chunk_wrap)) begin
       if (|(chunk_data_size & align_mask)) begin
         `uvm_info(`gfn,
                   " - Chunk data does not meet alignment requirements for multi-chunk transfers",
@@ -678,49 +691,28 @@ class dma_seq_item extends uvm_sequence_item;
     src_asid = OtInternalAddr;
     dst_asid = OtInternalAddr;
     opcode = OpcCopy;
-    direction = DmaRcvData;
     mem_range_base = 0;
     mem_range_limit = 0;
     total_data_size = 0;
     per_transfer_width = DmaXfer1BperTxn;
-    auto_inc_buffer = 0;
-    auto_inc_fifo = 0;
+    dst_addr_inc = 1;
+    src_addr_inc = 1;
+    dst_chunk_wrap = 0;
+    src_chunk_wrap = 0;
     handshake = 0;
     // reset non random variables
     valid_dma_config = 0;
     range_regwen = MuBi4True;
   endfunction
 
-  // Disable randomization of all variables
-  function void disable_randomization();
-    src_addr.rand_mode(0);
-    dst_addr.rand_mode(0);
-    src_asid.rand_mode(0);
-    dst_asid.rand_mode(0);
-    opcode.rand_mode(0);
-    direction.rand_mode(0);
-    mem_range_base.rand_mode(0);
-    mem_range_limit.rand_mode(0);
-    total_data_size.rand_mode(0);
-    per_transfer_width.rand_mode(0);
-    auto_inc_buffer.rand_mode(0);
-    auto_inc_fifo.rand_mode(0);
-    handshake.rand_mode(0);
-    range_regwen.rand_mode(0);
-  endfunction
-
   // Return if Read FIFO mode enabled (no auto increment of source address)
   function bit get_read_fifo_en();
-    return handshake && // Handshake mode enabled
-           direction == DmaRcvData && // Read from FIFO
-           !auto_inc_fifo; // FIFO address auto increment disabled
+    return !src_addr_inc;
   endfunction
 
   // Return if Write FIFO mode enabled (no auto increment of destination address)
   function bit get_write_fifo_en();
-    return handshake && // Handshake mode enabled
-           direction == DmaSendData && // Write to FIFO
-           !auto_inc_fifo; // FIFO address auto increment disabled
+    return !dst_addr_inc;
   endfunction
 
   // Simply utility function that returns the actual size of a chunk starting at the given offset
