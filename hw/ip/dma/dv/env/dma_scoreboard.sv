@@ -126,7 +126,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
   function void check_addr(bit [63:0]       addr,        // Observed address.
                            bit [63:0]       exp_addr,    // Expectation.
                            bit              restricted,  // DMA-enabled range applies.
-                           bit              fixed_addr,  // Fixed address (FIFO w/out auto-inc).
+                           bit              fixed_addr,  // Fixed address.
                            // Expected address range for this accesses of this type.
                            bit [63:0]       range_start,
                            bit [31:0]       range_len,
@@ -147,7 +147,6 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `DV_CHECK(addr[1:0] == 0, $sformatf("Address is not 4 Byte aligned"))
 
     // Is this end of the transfer a fixed address?
-    // (FIFO end of a transfer in hardware handshaking mode, without address auto-incrementing.)
     if (fixed_addr) begin
       `DV_CHECK(addr[63:2] == range_start[63:2],
                 $sformatf("0x%0x doesn't match %s start addr:0x%0x (handshake mode no auto-incr)",
@@ -201,7 +200,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
                                    uint             num_bytes,
                                    // Start address of transfer (= start of first chunk).
                                    bit [63:0]       start_addr,
-                                   bit              fifo_access,
+                                   bit              addr_inc,
+                                   bit              chunk_wrap,
                                    // Configuration for this transfer.
                                    ref dma_seq_item dma_config,
                                    input string     check_type);  // Type of access.
@@ -210,18 +210,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     // Are we expecting another access?
     if (num_bytes < dma_config.total_data_size) begin
-      // No support for fixed source/destination address or overlapping of chunks in
-      // memory-to-memory mode.
-      if (dma_config.handshake) begin
-        if (!dma_config.chunk_data_size || (num_bytes % dma_config.chunk_data_size)) begin
-          // Still within this chunk; do we advance per bus transaction?
-          if (fifo_access && !dma_config.auto_inc_fifo) begin
-            // Fixed address.
-            next_addr = addr;
-          end
-        end else if (fifo_access || !dma_config.auto_inc_buffer) begin
-          // End of a chunk, but all chunks overlap.
-          next_addr = start_addr;
+      if (!dma_config.chunk_data_size || (num_bytes % dma_config.chunk_data_size)) begin
+        // Still within this chunk; do we advance per bus transaction?
+        if (!addr_inc) begin
+          // Fixed address.
+          next_addr = addr;
+        end
+      end else begin
+        // End of chunk.
+        if (chunk_wrap) begin
+          next_addr = start_addr;  // All chunks start at the same address.
+        end else if (!addr_inc) begin
+          // Chunks do not overlap but all words within a chunk do.
+          next_addr = addr + dma_config.chunk_data_size;
         end
       end
     end else begin
@@ -230,9 +231,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
 
     `uvm_info(`gfn, $sformatf("%s prediction 0x%0x (num_bytes 0x%0x after 0x%0x)",
                               check_type, next_addr, num_bytes, addr), UVM_DEBUG)
-    `uvm_info(`gfn, $sformatf("  (start 0x%0x, fifo %d, inc_fifo %d, inc_buffer %d)",
-                              start_addr, fifo_access, dma_config.auto_inc_fifo,
-                              dma_config.auto_inc_buffer), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("  (start 0x%0x, addr_inc %d, chunk_wrap %d)",
+                              start_addr, addr_inc, chunk_wrap), UVM_DEBUG)
     return next_addr;
   endfunction
 
@@ -243,21 +243,12 @@ class dma_scoreboard extends cip_base_scoreboard #(
     uint expected_per_txn_bytes = dma_config.transfer_width_to_num_bytes(
                                     dma_config.per_transfer_width);
     tl_a_op_e a_opcode = tl_a_op_e'(item.a_opcode);
-    bit [31:0] memory_range;
     int intr_source;
 
     `uvm_info(`gfn, $sformatf("Got addr txn \n:%s", item.sprint()), UVM_DEBUG)
     // Common checks
     // Check if the transaction is of correct size
     `DV_CHECK_EQ(item.a_size, 2); // Always 4B
-
-    // The range of memory addresses that should be touched by the DMA controller depends upon
-    // whether the memory_buffer_inc is set in hardware handshake mode
-    memory_range = dma_config.total_data_size;
-    if (dma_config.handshake && !dma_config.auto_inc_buffer) begin
-      // All chunks within the transfer overlap each other in memory
-      memory_range = dma_config.chunk_data_size;
-    end
 
     // Interface specific checks
     // - Read transactions are from Source interface and
@@ -266,7 +257,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // Does the DMA-enabled memory range apply to this type of access?
       bit restricted = dma_config.mem_range_valid && (dma_config.src_asid == OtInternalAddr &&
                                                       dma_config.dst_asid != OtInternalAddr);
-
+      bit fixed_addr = dma_config.src_chunk_wrap & !dma_config.src_addr_inc;
+      bit [31:0] memory_range;
       // Check if the transaction has correct mask
       `DV_CHECK_EQ($countones(item.a_mask), 4) // Always 4B
       // Check source ASID for read transaction
@@ -281,9 +273,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
       intr_source = intr_addr_lookup(a_addr);
       `DV_CHECK_EQ(intr_source, -1, "Unexpected Read access to Clear Interrupt address")
 
+      // The range of memory addresses that should be touched by the DMA controller depends upon
+      // whether address incrementing and/or chunk wrapping are used.
+      memory_range = dma_config.total_data_size;
+      if (dma_config.src_chunk_wrap) begin
+        // All chunks within the transfer overlap each other in memory
+        memory_range = dma_config.chunk_data_size;
+        if (!dma_config.src_addr_inc) begin
+          // This configuration is even more restrictive; all accesses are to a single address.
+          memory_range = 4;
+        end
+      end
+
       // Validate the read address for this source access.
-      check_addr(a_addr, exp_src_addr, restricted, dma_config.get_read_fifo_en(),
-                 dma_config.src_addr, memory_range, dma_config, "Source");
+      check_addr(a_addr, exp_src_addr, restricted, fixed_addr, dma_config.src_addr, memory_range,
+                 dma_config, "Source");
 
       // Push addr item to source queue
       src_queue.push_back(item);
@@ -298,18 +302,32 @@ class dma_scoreboard extends cip_base_scoreboard #(
       // this is important because the current transaction address is missing its LSBs and thus
       // cannot be used.
       exp_src_addr = predict_addr(exp_src_addr, num_bytes_read, dma_config.src_addr,
-                                  dma_config.handshake & (dma_config.direction == DmaRcvData),
+                                  dma_config.src_addr_inc, dma_config.src_chunk_wrap,
                                   dma_config, "Source");
     end else begin // Write transaction
       // Does the DMA-enabled memory range apply to this type of access?
       bit restricted = dma_config.mem_range_valid && (dma_config.dst_asid == OtInternalAddr &&
                                                       dma_config.src_asid != OtInternalAddr);
 
+      bit fixed_addr = dma_config.dst_chunk_wrap & !dma_config.dst_addr_inc;
+      bit [31:0] memory_range;
       // Is this address a 'Clear Interrupt' operation?
       intr_source = intr_addr_lookup(a_addr);
       // Push addr item to destination queue
       dst_queue.push_back(item);
       `uvm_info(`gfn, $sformatf("Addr channel checks done for destination item"), UVM_HIGH)
+
+      // The range of memory addresses that should be touched by the DMA controller depends upon
+      // whether chunks overlap.
+      memory_range = dma_config.total_data_size;
+      if (dma_config.dst_chunk_wrap) begin
+        // All chunks within the transfer overlap each other in memory
+        memory_range = dma_config.chunk_data_size;
+        if (!dma_config.dst_addr_inc) begin
+          // This configuration is even more restrictive; all accesses are to a single address.
+          memory_range = 4;
+        end
+      end
 
       // Write to 'Clear Interrupt' address?
       if (intr_source < 0) begin
@@ -320,8 +338,8 @@ class dma_scoreboard extends cip_base_scoreboard #(
         uint remaining_bytes;
 
         // Validate the write address for this destination access.
-        check_addr(a_addr, exp_dst_addr, restricted, dma_config.get_write_fifo_en(),
-                   dma_config.dst_addr, memory_range, dma_config, "Destination");
+        check_addr(a_addr, exp_dst_addr, restricted, fixed_addr, dma_config.dst_addr, memory_range,
+                   dma_config, "Destination");
 
         // Note: this will only work because we KNOW that we don't reprogram the `chunk_data_size`
         //       register, so we can rely upon all non-final chunks being of the same size
@@ -374,7 +392,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // this is important because the current transaction address is missing its LSBs and thus
         // cannot be used.
         exp_dst_addr = predict_addr(exp_dst_addr, num_bytes_transferred, dma_config.dst_addr,
-                                    dma_config.handshake & (dma_config.direction == DmaSendData),
+                                    dma_config.dst_addr_inc, dma_config.dst_chunk_wrap,
                                     dma_config, "Destination");
       end else begin
         // Write to 'Clear Interrupt' address, so check the value written and the bus to which the
@@ -869,23 +887,29 @@ class dma_scoreboard extends cip_base_scoreboard #(
       end
       "src_addr_lo": begin
         dma_config.src_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got src_addr_lo = %0x",
-                                  dma_config.src_addr[31:0]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Got src_addr_lo = %0x", dma_config.src_addr[31:0]), UVM_HIGH)
       end
       "src_addr_hi": begin
         dma_config.src_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got src_addr_hi = %0x",
-                                  dma_config.src_addr[63:32]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Got src_addr_hi = %0x", dma_config.src_addr[63:32]), UVM_HIGH)
       end
       "dst_addr_lo": begin
         dma_config.dst_addr[31:0] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got dst_addr_lo = %0x",
-                                  dma_config.dst_addr[31:0]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Got dst_addr_lo = %0x", dma_config.dst_addr[31:0]), UVM_HIGH)
       end
       "dst_addr_hi": begin
         dma_config.dst_addr[63:32] = item.a_data;
-        `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x",
-                                  dma_config.dst_addr[63:32]), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x", dma_config.dst_addr[63:32]), UVM_HIGH)
+      end
+      "dst_config", "dst_control": begin
+        `uvm_info(`gfn, $sformatf("Got dst_config = %0x", item.a_data), UVM_HIGH)
+        dma_config.dst_chunk_wrap = get_field_val(ral.dst_config.wrap, item.a_data);
+        dma_config.dst_addr_inc = get_field_val(ral.dst_config.increment, item.a_data);
+      end
+      "src_config", "src_control": begin
+        `uvm_info(`gfn, $sformatf("Got src_config = %0x", item.a_data), UVM_HIGH)
+        dma_config.src_chunk_wrap = get_field_val(ral.src_config.wrap, item.a_data);
+        dma_config.src_addr_inc = get_field_val(ral.src_config.increment, item.a_data);       
       end
       "addr_space_id": begin
         // Get mirrored field value and cast to associated enum in dma_config
@@ -1035,10 +1059,11 @@ class dma_scoreboard extends cip_base_scoreboard #(
           dma_config.handshake = `gmv(ral.control.hardware_handshake_enable);
           `uvm_info(`gfn, $sformatf("Got hardware_handshake_mode = %0b", dma_config.handshake),
                     UVM_HIGH)
-          // Get auto-increment bit
-          dma_config.auto_inc_buffer = `gmv(ral.control.memory_buffer_auto_increment_enable);
-          dma_config.auto_inc_fifo = `gmv(ral.control.fifo_auto_increment_enable);
-          dma_config.direction = dma_control_data_direction_e'(`gmv(ral.control.data_direction));
+          // Get auto-increment and wrap bits
+          dma_config.dst_chunk_wrap = `gmv(ral.dst_config.wrap);
+          dma_config.src_chunk_wrap = `gmv(ral.src_config.wrap);
+          dma_config.dst_addr_inc = `gmv(ral.dst_config.increment);
+          dma_config.src_addr_inc = `gmv(ral.src_config.increment);
 
           `uvm_info(`gfn, $sformatf("dma_config\n %s",
                                     dma_config.sprint()), UVM_HIGH)
@@ -1192,21 +1217,17 @@ class dma_scoreboard extends cip_base_scoreboard #(
             bit [63:0] dst_addr = dma_config.dst_addr;
             bit [63:0] src_addr = dma_config.src_addr;
 
-            if (!dma_config.handshake ||
-                (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+            if (dma_config.src_addr_inc && !dma_config.src_chunk_wrap) begin
               src_addr += num_bytes_checked;
             end
-            if (!dma_config.handshake ||
-                (dma_config.direction == DmaRcvData && dma_config.auto_inc_buffer)) begin
+            if (dma_config.dst_addr_inc && !dma_config.dst_chunk_wrap) begin
               dst_addr += num_bytes_checked;
             end
 
-            // TODO: we are still unable to check the final output data after the transfer if
-            // overwriting has occurred; this will happen with a memory source/destination that
-            // doesn't auto increment after each chunk, _or_ with a FIFO target that is actually
-            // using a memory model because auto increment is enabled.
-            if (dma_config.handshake && (!dma_config.auto_inc_buffer ||
-                 (dma_config.direction == DmaSendData && dma_config.auto_inc_fifo))) begin
+            // TODO: we are still unable to check the final output data if in hardware-handshaking
+            // mode and the destination chunks overlap but auto-increment _is_ used, ie. it's not
+            // using a FIFO model.
+            if (dma_config.handshake && dma_config.dst_chunk_wrap && dma_config.dst_addr_inc) begin
               `uvm_info(`gfn, "Unable to check output data because of chunks overlapping", UVM_LOW)
             end else begin
               check_data(dma_config, src_addr, dst_addr, num_bytes_checked, check_bytes);
