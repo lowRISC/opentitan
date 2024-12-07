@@ -187,11 +187,10 @@ class dma_base_vseq extends cip_base_vseq #(
       // Supply a block of data for this transfer
       populate_src_fifo(dma_config.src_asid, cfg.src_data, offset, size);
     end else begin
-      // The source address depends upon the configuration; chunks may overlap each other for
+      // The source address depends upon the configuration; chunks may overlap each other.
       // hardware-handshaking mode.
       bit [63:0] src_addr = dma_config.src_addr;
-      if (!dma_config.handshake ||
-          (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+      if (!dma_config.src_chunk_wrap) begin
         src_addr += offset;
       end else begin
         src_addr += offset % dma_config.chunk_data_size;
@@ -247,11 +246,9 @@ class dma_base_vseq extends cip_base_vseq #(
       set_model_fifo_mode(dma_config.src_asid, dma_config.src_addr, dma_config.per_transfer_width,
                           chunk_size);
     end else begin
-      // The source address depends upon the configuration; chunks may overlap each other for
-      // hardware-handshaking mode.
+      // The source address depends upon the configuration; chunks may overlap each other.
       bit [31:0] src_addr = dma_config.src_addr;
-      if (!dma_config.handshake ||
-          (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+      if (!dma_config.src_chunk_wrap) begin
         src_addr += offset;
       end
     end
@@ -264,7 +261,7 @@ class dma_base_vseq extends cip_base_vseq #(
       // TODO: Presently there is no way to intervene and check per-chunk data, so gather it all
       // into a single large FIFO and the scoreboard will check it all at the end of the transfer.
       bit [31:0] max_size = chunk_size;
-      if (dma_config.handshake && dma_config.direction == DmaSendData) begin
+      if (dma_config.handshake) begin
         max_size = dma_config.total_data_size;
       end
 
@@ -300,6 +297,20 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.dst_addr_hi, dst_addr[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_addr), UVM_HIGH)
   endtask : set_dst_addr
+
+  // Task: Write to Source Configuration
+  task set_src_config(bit chunk_wrap, bit addr_inc);
+    ral.src_config.wrap.set(chunk_wrap);
+    ral.src_config.increment.set(addr_inc);
+    csr_update(ral.src_config);
+  endtask : set_src_config
+
+  // Task: Write to Destination Configuration
+  task set_dst_config(bit chunk_wrap, bit addr_inc);
+    ral.dst_config.wrap.set(chunk_wrap);
+    ral.dst_config.increment.set(addr_inc);
+    csr_update(ral.dst_config);
+  endtask : set_dst_config
 
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
@@ -364,6 +375,8 @@ class dma_base_vseq extends cip_base_vseq #(
     abort_pending = 1'b0;
     set_src_addr(dma_config.src_addr);
     set_dst_addr(dma_config.dst_addr);
+    set_src_config(dma_config.src_chunk_wrap, dma_config.src_addr_inc);
+    set_dst_config(dma_config.dst_chunk_wrap, dma_config.dst_addr_inc);
     set_addr_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
@@ -472,6 +485,12 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
+    // Set fifo enable bit; the FIFO is used whenever address incrementing does not occur
+    // after each (partial-)word transfer; the normal memory model would not cope with that
+    // and would be continually losing data.
+    set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
+    set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
+
     if (dma_config.handshake) begin
       // Will the test sequence generate any interrupts?
       bit [31:0] fifo_interrupt_mask;
@@ -481,9 +500,6 @@ class dma_base_vseq extends cip_base_vseq #(
 
       `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
                 UVM_HIGH)
-      // Set fifo enable bit
-      set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
-      set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
 
       // TODO: there may be some merit at some point to starting handshaking transfers when
       // interrupts cannot occur, but only if we're expecting to abort transfers, for example.
@@ -577,19 +593,13 @@ class dma_base_vseq extends cip_base_vseq #(
   task set_control(opcode_e opcode,
                    bit initial_transfer,
                    bit handshake,
-                   bit auto_inc_buffer,
-                   bit auto_inc_fifo,
-                   bit data_direction,
                    bit go);   // Commence transfer?
     uvm_reg_data_t data = 0;
     string action;
 
     action = go ? "Executing" : "Setting";
-    `uvm_info(`gfn, $sformatf(
-              "DMA: %s CONTROL OpC=%d Initial=%d Handshake=%d inc_buffer=%d inc_fifo=%d dir=%d",
-                action, opcode, initial_transfer, handshake, auto_inc_buffer, auto_inc_fifo,
-                data_direction),
-              UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: %s CONTROL OpC=%d Initial=%d Handshake=%d",
+                              action, opcode, initial_transfer, handshake), UVM_HIGH)
 
     // Exclusive access to CONTROL register
     // Note: a parallel thread may be attempting to Abort transfers using the CONTROL register.
@@ -602,11 +612,6 @@ class dma_base_vseq extends cip_base_vseq #(
     data = get_csr_val_with_updated_field(ral.control.opcode, data, int'(opcode));
     data = get_csr_val_with_updated_field(ral.control.initial_transfer, data, initial_transfer);
     data = get_csr_val_with_updated_field(ral.control.hardware_handshake_enable, data, handshake);
-    data = get_csr_val_with_updated_field(ral.control.memory_buffer_auto_increment_enable, data,
-                                          auto_inc_buffer);
-    data = get_csr_val_with_updated_field(ral.control.fifo_auto_increment_enable, data,
-                                          auto_inc_fifo);
-    data = get_csr_val_with_updated_field(ral.control.data_direction, data, data_direction);
     data = get_csr_val_with_updated_field(ral.control.abort, data, abort_pending);
     data = get_csr_val_with_updated_field(ral.control.go, data, 1'b0);
 
@@ -626,9 +631,6 @@ class dma_base_vseq extends cip_base_vseq #(
     set_control(dma_config.opcode,
                 initial_transfer,
                 dma_config.handshake,
-                dma_config.auto_inc_buffer,
-                dma_config.auto_inc_fifo,
-                dma_config.direction,
                 1'b1); // Go
   endtask
 
