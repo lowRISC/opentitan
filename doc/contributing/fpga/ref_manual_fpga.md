@@ -143,8 +143,7 @@ The following files are produced as a result:
 * `fpga_cw310_rom.bit` (ROM, RMA OTP image)
 * `fpga_cw310_rom_otp_dev.bit` (ROM, DEV OTP image)
 * `lowrisc_systems_chip_earlgrey_cw310_0.1.bit` (test ROM, RMA OTP image)
-* `otp.mmi`
-* `rom.mmi`
+* `memories.mmi`
 
 If CI is working on the `master` branch, it puts selected build artifacts into a tarball, which it then uploads to the GCS bucket. The latest tarball is available here: https://storage.googleapis.com/opentitan-bitstreams/master/bitstream-latest.tar.gz
 
