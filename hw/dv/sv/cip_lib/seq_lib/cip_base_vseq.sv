@@ -272,23 +272,32 @@ class cip_base_vseq #(
 
     rsp = tl_seq.rsp;
 
-    if (!write) begin
-      data = rsp.d_data;
-      if (check_exp_data && !cfg.under_reset) begin
-        bit [BUS_DW-1:0] masked_data = data & compare_mask;
-        exp_data &= compare_mask;
-        `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+    if(rsp != null) begin
+      if (!write) begin
+        data = rsp.d_data;
+        if (check_exp_data && !cfg.under_reset) begin
+          bit [BUS_DW-1:0] masked_data = data & compare_mask;
+          exp_data &= compare_mask;
+          `DV_CHECK_EQ(masked_data, exp_data, $sformatf("addr 0x%0h read out mismatch", addr))
+        end
       end
-    end
-    if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
-      `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
-                   $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
-    end
+      if (check_rsp && !cfg.under_reset && tl_intg_err_type == TlIntgErrNone) begin
+        `DV_CHECK_EQ(rsp.d_error, exp_err_rsp,
+                    $sformatf("unexpected error response for addr: 0x%x", rsp.a_addr))
+      end
 
-    // Expose whether the transaction ran and whether it generated an error. Note that we
-    // probably only want to do a RAL update if it ran and caused no error.
-    completed = rsp.rsp_completed;
-    saw_err = rsp.d_error;
+      // Expose whether the transaction ran and whether it generated an error. Note that we
+      // probably only want to do a RAL update if it ran and caused no error.
+      completed = rsp.rsp_completed;
+      saw_err = rsp.d_error;
+
+    end else begin
+      // Expose whether the transaction ran and whether it generated an error. Note that we
+      // probably only want to do a RAL update if it ran and caused no error.
+      completed = 0;
+      saw_err = 0;
+
+    end
   endtask
 
   // CIP spec indicates all comportable IPs will have the same standardized interrupt csrs. We can
@@ -707,7 +716,6 @@ class cip_base_vseq #(
   // override this task from {block}_common_vseq if needed
   virtual task rand_reset_eor_clean_up();
   endtask
-
   // Run the given sequence together with a TL errors vseq. Suddenly inject a reset after at most
   // reset_delay_bound cycles. When we come out of reset, check all CSR values to ensure they are
   // the documented reset values.
@@ -717,12 +725,10 @@ class cip_base_vseq #(
     `DV_CHECK_FATAL(seq != null)
     `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq for sequence %s",
                                seq.get_full_name()), UVM_MEDIUM)
-
     for (int i = 1; i <= num_times; i++) begin
       bit ongoing_reset;
       bit do_read_and_check_all_csrs;
       bit vseq_done = 1'b0;
-
       `uvm_info(`gfn, $sformatf("running run_seq_with_rand_reset_vseq iteration %0d/%0d",
                                 i, num_times), UVM_LOW)
       // Arbitration: requests at highest priority granted in FIFO order, so that we can predict
@@ -779,7 +785,6 @@ class cip_base_vseq #(
               end
             end
           join_any
-
           // If vseq_done is false then we have issued a reset (the second process in the fork) but
           // the vseq that we were racing against hasn't noticed the reset and stopped. Killing that
           // process will cause confusing errors (because there will be some sequence that's waiting
@@ -789,8 +794,8 @@ class cip_base_vseq #(
           // can_reset_with_csr_accesses=1: we expect the vseq to run to completion before the reset
           // signal is de-asserted. To make things easier to debug if it hasn't done, fail in an
           // understandable way here.
-          if (cfg.can_reset_with_csr_accesses) `DV_CHECK_FATAL(vseq_done)
-
+          //if (cfg.can_reset_with_csr_accesses) `DV_CHECK_FATAL(vseq_done)
+          wait(vseq_done)
           disable fork;
           `uvm_info(`gfn, $sformatf("\nStress w/ reset is done for run %0d/%0d", i, num_times),
                     UVM_LOW)

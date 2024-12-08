@@ -27,10 +27,14 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
 
+      //Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       cfg.clk_rst_vif.wait_clks(delay);
       `uvm_info(msg_id, $sformatf("delay = %0d", delay), UVM_HIGH)
 
+      //Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
       // Step-1 Program interrupt registers
       pgm_intr_regs();
 
@@ -48,7 +52,11 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
               bit [TL_DW-1:0] data_in;
               int delay_before_gpio_change;
               `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
-              `uvm_info(msg_id, $sformatf("Driving new gpio value 0x%0h", gpio_i), UVM_HIGH)
+
+              //Skip if a reset is ongoing...
+              if (!cfg.clk_rst_vif.rst_n) break;
+
+              `uvm_info(msg_id, $sformatf("Driving new gpio value 0x%0h", gpio_i), UVM_LOW)
               cfg.gpio_vif.drive(gpio_i);
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(delay_before_gpio_change,
                                                  delay_before_gpio_change inside {[1:5]};)
@@ -61,9 +69,16 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
               uint rd_period;
               bit [TL_DW-1:0] reg_rd_data;
               `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rd_period, rd_period inside {[2:20]};)
+
+              //Skip if a reset is ongoing...
+              if (!cfg.clk_rst_vif.rst_n) break;
+
               cfg.clk_rst_vif.wait_clks(rd_period);
               `uvm_info(msg_id, $sformatf("Reading intr_state after %0d more clock cycles",
                                           rd_period), UVM_HIGH)
+
+              //Skip if a reset is ongoing...
+              if (!cfg.clk_rst_vif.rst_n) break;
               randcase
                 1: begin
                   csr_rd(.ptr(ral.data_in), .value(reg_rd_data));
@@ -72,6 +87,10 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
                   csr_rd(.ptr(ral.intr_state), .value(reg_rd_data));
                 end
               endcase
+
+              //Skip if a reset is ongoing...
+              if (!cfg.clk_rst_vif.rst_n) break;
+
               // Randomly clear random set of interrupt state register bits
               if ($urandom_range(0, 1)) begin
                 `DV_CHECK_RANDOMIZE_FATAL(ral.intr_state)
@@ -84,7 +103,6 @@ class gpio_rand_intr_trigger_vseq extends gpio_base_vseq;
           end
         join
       end
-
       `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
 
     end // end for

@@ -14,12 +14,15 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
   `uvm_object_new
 
   task body();
+
     // gpio pins_if pins_o value to drive
     bit [NUM_GPIOS-1:0] gpio_i;
     // gpio pins_if pins_oe value to drive
     bit [NUM_GPIOS-1:0] gpio_i_oen;
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
 
+    //Skip if a reset is ongoing...
+    if (!cfg.clk_rst_vif.rst_n) return;
     // Wait for minimum 1 clock cycle initially to avoid reading of data_in
     // immediately as the first iteration after reset, while data_in prediction
     // is still being processed
@@ -31,31 +34,42 @@ class gpio_random_long_reg_writes_reg_reads_vseq extends gpio_base_vseq;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(num_reg_op, num_reg_op inside {[25:50]};)
 
+      //Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
       cfg.clk_rst_vif.wait_clks(delay);
+
       randcase
         // drive new gpio data in
         1: begin
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
-          `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i", gpio_i), UVM_HIGH)
+          `uvm_info(msg_id, $sformatf("drive random value 0x%0h on gpio_i", gpio_i), UVM_LOW)
 
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
+
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           // Wait for one clock cycle for us to read data_in reg reliably
           cfg.clk_rst_vif.wait_clks(1);
         end
         // long reg write
         1: begin
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           undrive_gpio_in();
           repeat (num_reg_op) gpio_reg_wr();
         end
         // long reg read
         1: begin
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           repeat (num_reg_op) gpio_reg_rd();
         end
       endcase
 
     end // end for
-
   endtask : body
 
   // Task: gpio_reg_wr
