@@ -48,6 +48,7 @@ python3-urllib3
 python3-wheel
 srecord
 tree
+xmlstarlet
 xsltproc
 xz-utils
 zip
