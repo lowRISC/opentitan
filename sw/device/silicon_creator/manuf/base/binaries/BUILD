@@ -6,15 +6,6 @@ load("//rules/opentitan:cc.bzl", "exec_env_filegroup")
 
 package(default_visibility = ["//visibility:public"])
 
-filegroup(
-    name = "perso_bins",
-    srcs = [
-        "ft_personalize_sival_fpga_cw340_rom_with_fake_keys.signed.bin",
-        "ft_personalize_sival_fpga_hyper310_rom_with_fake_keys.signed.bin",
-        "ft_personalize_sival_silicon_creator.signed.bin",
-    ],
-)
-
 exec_env_filegroup(
     name = "ft_personalize_sival",
     testonly = True,
