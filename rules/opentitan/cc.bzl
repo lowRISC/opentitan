@@ -586,12 +586,21 @@ def _exec_env_filegroup(ctx):
         fail("The set of files and exec_envs must be matched: files =", fset.keys(), ", exec_env =", eset.keys())
 
     result = []
+    default_files = []
     for k in files.keys():
         provider = exec_env[k][ExecEnvInfo].provider
         f = files[k].files.to_list()
         if len(f) != 1:
             fail("files[{}] must supply exactly one file".format(k))
+
+        # Return the exec_env's provider so this rule can be consumed by
+        # opentitan_test rules.
         result.append(provider(default = f[0], kind = ctx.attr.kind))
+        default_files.append(f[0])
+
+    # Also return a DefaultInfo provider so this rule can be consumed by other
+    # filegroup or packaging rules.
+    result.append(DefaultInfo(files = depset(default_files)))
     return result
 
 exec_env_filegroup = rule(
