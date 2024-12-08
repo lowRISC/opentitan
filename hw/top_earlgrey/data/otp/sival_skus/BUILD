@@ -235,7 +235,7 @@ LC_MISSION_STATES = get_lc_items(
 # This profile represents the OTP state of a device that has completed CP
 # provisioning.
 MANUF_INITIALIZED = [
-    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
+    "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
 ]
 
 # The `MANUF_SW_INITIALIZED` OTP profile configures the following partitions:
@@ -257,23 +257,23 @@ MANUF_SW_INITIALIZED = [
 # It also includes the `MANUF_INITIALIZED` profile defined above. It represents
 # the OTP state of a device that has completed FT individualize provisioning.
 MANUF_INDIVIDUALIZED = MANUF_INITIALIZED + MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
+    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
+    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
 ]
 
 # The `MANUF_PERSONALIZED` OTP profile configures the SECRET1 and SECRET2 OTP
 # partitions. It also includes the `MANUF_INDIVIDUALIZED` profile. It represents
 # the OTP state of a device that has completed all provisioning steps.
 MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
-    "//hw/ip/otp_ctrl/data:otp_json_secret1",
-    "//hw/ip/otp_ctrl/data:otp_json_fixed_secret2",
+    "//hw/top_earlgrey/data/otp:otp_json_secret1",
+    "//hw/top_earlgrey/data/otp:otp_json_fixed_secret2",
 ]
 
 # OTP *_SW_CFG and ROT_CREATOR_AUTH_* constants used to generate an FT
 # individualization binary.
 otp_image_consts(
     name = "otp_consts_c_file",
-    src = "//hw/ip/otp_ctrl/data:otp_json_baseline",
+    src = "//hw/top_earlgrey/data/otp:otp_json_baseline",
     # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
     # OTP profile instead.
     overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
@@ -297,7 +297,7 @@ cc_library(
 # See sw/device/tests/doc/sival/devguide.md for more details.
 otp_image(
     name = "otp_img_test_unlocked0_manuf_empty",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
 )
 
 # `MANUF_INITIALIZED` configuration. This configuration will be generally used
@@ -305,7 +305,7 @@ otp_image(
 # See sw/device/tests/doc/sival/devguide.md for more details.
 otp_image(
     name = "otp_img_test_locked0_manuf_initialized",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_locked0",
+    src = "//hw/top_earlgrey/data/otp:otp_json_test_locked0",
     overlays = MANUF_INITIALIZED,
 )
 
@@ -314,7 +314,7 @@ otp_image(
 [
     otp_image(
         name = "otp_img_test_unlocked{}_manuf_initialized".format(i),
-        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
+        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = MANUF_INITIALIZED,
     )
     for i in range(1, 8)
@@ -328,7 +328,7 @@ otp_image(
 [
     otp_image(
         name = "otp_img_{}_manuf_individualized".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = MANUF_INDIVIDUALIZED,
     )
     for lc_state, _ in get_lc_items(
@@ -351,7 +351,7 @@ otp_image(
 [
     otp_image(
         name = "otp_img_{}_manuf_personalized".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = MANUF_PERSONALIZED,
     )
     for lc_state, _ in LC_MISSION_STATES
@@ -359,13 +359,13 @@ otp_image(
 
 otp_image(
     name = "otp_img_dev_manuf_personalized_enable_rv_dm_late_debug_enable",
-    src = "//hw/ip/otp_ctrl/data:otp_json_dev",
+    src = "//hw/top_earlgrey/data/otp:otp_json_dev",
     overlays = MANUF_PERSONALIZED + [":otp_json_hw_cfg1_enable_rv_dm_late_debug"],
 )
 
 # `MANUF_PERSONALIZED` configuration for RMA. Only available in secure environments.
 otp_image(
     name = "otp_img_rma_manuf_personalized",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = MANUF_PERSONALIZED,
 )
