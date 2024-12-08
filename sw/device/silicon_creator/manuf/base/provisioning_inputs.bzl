@@ -24,7 +24,7 @@ EARLGREY_SKUS = {
     "emulation": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
+        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -38,7 +38,7 @@ EARLGREY_SKUS = {
     "emulation_dice_cwt": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
+        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -52,7 +52,7 @@ EARLGREY_SKUS = {
     "emulation_tpm": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": ["//sw/device/silicon_creator/manuf/keys/fake:ca_data"],
+        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": [
@@ -70,7 +70,7 @@ EARLGREY_SKUS = {
     # "sival": {
     #     "otp": "sival",
     #     "ca_config": "//sw/device/silicon_creator/manuf/keys/sival:ca_config.json",
-    #     "ca_data": ["//sw/device/silicon_creator/manuf/keys/sival:ca_data"],
+    #     "ca_data": "//sw/device/silicon_creator/manuf/keys/sival:ca_data",
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
     #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
     #     "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
