@@ -151,6 +151,10 @@
       name: "{name}_readback_err"
       uvm_test_seq: sram_ctrl_readback_err_vseq
     }
+    {
+      name: "{name}_mubi_enc_err"
+      uvm_test_seq: sram_ctrl_mubi_enc_err_vseq
+    }
   ]
 
   // List of regressions.

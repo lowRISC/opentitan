@@ -211,6 +211,9 @@
     { name: "LC_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: "The life cycle hardware debug enable signal is multibit encoded."
     }
+    { name: "PRIM_RAM.CTRL.MUBI",
+      desc: "The control signals inside prim_ram are multibit encoded."
+    }
     { name: "MEM.INTEGRITY",
       desc: "End-to-end data/memory integrity scheme."
     }
