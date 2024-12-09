@@ -16,6 +16,8 @@ EARLGREY_OTP_CFGS = {
     "emulation": "//hw/top_earlgrey/data/otp/emulation:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
+EXT_SIGNED_PERSO_BINS = []
+
 # A dictionary of SKU configurations that will be used to generate FT
 # personalization binaries that configure OTP and flash info pages as defined
 # in these bazel targets.
@@ -24,7 +26,7 @@ EARLGREY_SKUS = {
     "emulation": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -32,13 +34,13 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
-        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -46,13 +48,13 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_cwt_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
-        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
         "otp": "emulation",
         "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
-        "ca_data": "//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
         "device_ext_libs": [
@@ -63,14 +65,14 @@ EARLGREY_SKUS = {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "ecdsa_key": {},
-        "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # This configuration is not really usable in master but left here as an example until
     # a more appropriate solution is found.
     # "sival": {
     #     "otp": "sival",
     #     "ca_config": "//sw/device/silicon_creator/manuf/keys/sival:ca_config.json",
-    #     "ca_data": "//sw/device/silicon_creator/manuf/keys/sival:ca_data",
+    #     "ca_data": "@//sw/device/silicon_creator/manuf/keys/sival:ca_data",
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
     #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
     #     "device_ext_libs": ["@provisioning_exts//:default_perso_fw_ext"],
@@ -81,7 +83,7 @@ EARLGREY_SKUS = {
     #     "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
     #     "ecdsa_key": {"//hw/top_earlgrey/data/otp/skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
     #     "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
-    #     "orchestrator_cfg": "//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
+    #     "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
     #     "offline": True,
     # },
 } | EXT_EARLGREY_SKUS

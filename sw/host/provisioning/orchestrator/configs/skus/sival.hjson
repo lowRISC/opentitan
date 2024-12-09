@@ -8,6 +8,8 @@
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
+  otp: "sival",
+  perso_bin: "sw/device/silicon_creator/manuf/base/binaries/ft_personalize_{sku}_{target}.signed.bin",
   dice_ca: {
     certificate: "sw/device/silicon_creator/manuf/keys/sival/dice_ca.pem",
     key: "sv00-earlgrey-a1-ca-dice-0",
