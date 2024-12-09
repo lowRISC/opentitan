@@ -214,27 +214,16 @@ task aon_timer_base_vseq::write_wkup_reg(input uvm_object ptr, input uvm_reg_dat
 
   if (csr_or_fld.csr == null)
     `uvm_fatal(`gfn, "Couldn't decode argument into CSR reg")
-  path_to_we = {"tb.dut.u_reg.aon_", csr_or_fld.csr.get_name(), "_we"};
+  path_to_we = {".u_reg.aon_", csr_or_fld.csr.get_name(), "_we"};
+  csr_utils_pkg::csr_wr(ptr, value);
   // Fork killable by reset
   fork
     begin : iso_fork
       fork
         wait(cfg.under_reset);
         begin
-          csr_utils_pkg::csr_wr(ptr, value);
           // After write we wait for WE to go high and then low
-          do begin
-            if (! uvm_hdl_read(path_to_we, we))
-			        `uvm_error (`gfn, $sformatf("HDL Read from %s failed", path_to_we))
-            if (we === 0)
-              cfg.aon_clk_rst_vif.wait_clks(1); // enabled is synchronised to the aon domain
-          end while (!we);
-          do begin
-            if (! uvm_hdl_read(path_to_we, we))
-			        `uvm_error (`gfn, $sformatf("HDL Read from %s failed", path_to_we))
-            if (we === 1)
-              cfg.aon_clk_rst_vif.wait_clks(1); // enabled is synchronised to the aon domain
-          end while (we);
+          cfg.wait_for_we_pulse(path_to_we);
         end
       join_any
       disable fork;
