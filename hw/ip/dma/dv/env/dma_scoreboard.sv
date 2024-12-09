@@ -789,9 +789,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
   // Note: that this is destructive in that it pops the data from the FIFO
   function bit [7:0] get_fifo_data(asid_encoding_e asid, bit [63:0] addr);
     case (asid)
-      OtInternalAddr: return cfg.fifo_host.read_byte(addr);
-      SocControlAddr: return cfg.fifo_ctn.read_byte(addr);
-      SocSystemAddr : return cfg.fifo_sys.read_byte(addr);
+      OtInternalAddr: return cfg.fifo_dst_host.read_byte(addr);
+      SocControlAddr: return cfg.fifo_dst_ctn.read_byte(addr);
+      SocSystemAddr : return cfg.fifo_dst_sys.read_byte(addr);
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
       end
@@ -901,6 +901,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         dma_config.dst_addr[63:32] = item.a_data;
         `uvm_info(`gfn, $sformatf("Got dst_addr_hi = %0x", dma_config.dst_addr[63:32]), UVM_HIGH)
       end
+      // TODO: Drop dst_control and src_control
       "dst_config", "dst_control": begin
         `uvm_info(`gfn, $sformatf("Got dst_config = %0x", item.a_data), UVM_HIGH)
         dma_config.dst_chunk_wrap = get_field_val(ral.dst_config.wrap, item.a_data);

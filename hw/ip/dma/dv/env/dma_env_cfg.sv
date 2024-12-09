@@ -43,9 +43,16 @@ class dma_env_cfg extends cip_base_env_cfg #(.RAL_T(dma_reg_block));
   // FIFO depending on handshake_mode_en
   // These models are used in TL device sequences
   // Data comparison is done in scoreboard
-  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_host;
-  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_ctn;
-  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_sys;
+  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_dst_host;
+  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_dst_ctn;
+  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_dst_sys;
+  // Each interface requires separate source and destination FIFO to handle the case where the
+  // read traffic and the write traffic both occur on the same interface and neither is using
+  // incrementing addressing.
+  dma_handshake_mode_fifo#(.AddrWidth(HOST_ADDR_WIDTH)) fifo_src_host;
+  dma_handshake_mode_fifo#(.AddrWidth(CTN_ADDR_WIDTH)) fifo_src_ctn;
+  dma_handshake_mode_fifo#(.AddrWidth(SYS_ADDR_WIDTH)) fifo_src_sys;
+  // Memory models may be used for typical transfers where addresses are incremented.
   mem_model#(.AddrWidth(HOST_ADDR_WIDTH), .DataWidth(HOST_DATA_WIDTH)) mem_host;
   mem_model#(.AddrWidth(CTN_ADDR_WIDTH), .DataWidth(CTN_DATA_WIDTH)) mem_ctn;
   mem_model#(.AddrWidth(SYS_ADDR_WIDTH), .DataWidth(SYS_DATA_WIDTH)) mem_sys;
