@@ -27,24 +27,39 @@
  * @param[in]  x9: pointer to temp reg, must be set to 3
  * @param[in]  x11: pointer to temp reg, must be set to 2
  *
- * clobbered registers: x8, x21, w0, w2
+ * clobbered registers: x8, x21, x22, x23, w0, w2, w3
  * clobbered Flag Groups: none
  */
 sel_sqr_or_sqrmul:
+  /* read FG0.C and add 2, x22 is a pointer to w3 if FG0.C == 1 else w2 */
+  csrrs     x22, FG0, x0
+  andi      x22, x22, 1
+  addi      x22, x22, 2
   /* iterate over all limbs */
-  loop      x30, 4
+  loop      x30, 10
+    /* read single random bit */
+    csrrs     x23, URND, x0
+    andi      x23, x23, 1
+    /* randomly change WDRs */
+    xor       x22, x22,  x23
+    xor       x9,  x9,   x23
+    xor       x11, x11,  x23
+
     /* load limb from dmem */
-    bn.lid    x9, 0(x21)
+    bn.lid    x11, 0(x21)
+
+    /* randomize dmem with random number from URND */
+    bn.wsrr   w0, URND
+    bn.sid    x0, 0(x21)
 
     /* load limb from regfile buffer */
-    bn.movr   x11, x8++
-
-    /* conditional select: w0 = FG0.C?w[x8+i]:dmem[x21+i] */
-    bn.sel    w0, w2, w3, C
+    bn.movr   x9, x8++
 
     /* store selected limb to dmem */
-    bn.sid    x0, 0(x21++)
-
+    bn.sid    x22, 0(x21++)
+  /* restore clobbered x9, x11 */
+  li x9, 3
+  li x11, 2
   ret
 
 
