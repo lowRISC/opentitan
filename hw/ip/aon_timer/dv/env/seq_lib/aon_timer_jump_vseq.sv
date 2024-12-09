@@ -15,6 +15,7 @@ class aon_timer_jump_vseq extends aon_timer_base_vseq;
 
 endclass : aon_timer_jump_vseq
 
+
 constraint aon_timer_jump_vseq::thold_count_c {
   solve wkup_thold before wkup_count;
   solve aim_bite, wdog_bark_thold, wdog_bite_thold before wdog_count;
@@ -32,17 +33,19 @@ function aon_timer_jump_vseq::new (string name="");
 endfunction : new
 
 task aon_timer_jump_vseq::body();
+
   aon_timer_init();
   jump_configure();
   wait_for_interrupt();
   aon_timer_shutdown();
+
 endtask : body
 
 task aon_timer_jump_vseq::jump_configure();
 
   // Write random value to the COUNT registers
-  csr_utils_pkg::csr_wr(ral.wkup_count_lo, wkup_count[31:0]);
-  csr_utils_pkg::csr_wr(ral.wkup_count_hi, wkup_count[63:32]);
+  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0], "tb.dut.u_reg.aon_wkup_count_lo_we");
+  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32], "tb.dut.u_reg.aon_wkup_count_hi_we");
   `uvm_info(`gfn,
             $sformatf("\n\t Writing random COUNT value of %d to WKUP", wkup_count),
             UVM_HIGH)
