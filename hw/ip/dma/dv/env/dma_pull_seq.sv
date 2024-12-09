@@ -16,8 +16,9 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
   // FIFO interrupt clear register address
   // with address as key and corresponding write value as value of the associative array
   bit [31:0] fifo_intr_clear_reg[bit [31:0]];
-  // FIFO instance
-  dma_handshake_mode_fifo #(AddrWidth) fifo;
+  // FIFO instances for destination and source.
+  dma_handshake_mode_fifo #(AddrWidth) dst_fifo;
+  dma_handshake_mode_fifo #(AddrWidth) src_fifo;
   // Bytes/transaction; because the `tlul_adapter_host` module always retrieves entire bus words,
   // to track the number of bytes read by the DMA controller, this 'useful bytes per transaction'
   // must be supplied.
@@ -93,7 +94,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
             if (rsp.a_mask[i]) begin
               bytes_written++;
               if (write_fifo_en) begin
-                fifo.write_byte(a_addr + i, data[7:0]);
+                dst_fifo.write_byte(a_addr + i, data[7:0]);
               end else begin
                 mem.write_byte(a_addr + i, data[7:0]);
               end
@@ -104,7 +105,7 @@ class dma_pull_seq #(int AddrWidth = 32) extends tl_device_seq#(.AddrWidth(AddrW
       end else begin
         // Collect data from source model
         if (read_fifo_en) begin
-          rsp.d_data = fifo.read_word_tlul(a_addr, rsp.a_mask);
+          rsp.d_data = src_fifo.read_word_tlul(a_addr, rsp.a_mask);
         end else begin
           for (int i = 0; i < $bits(rsp.a_mask); i++) begin
             rsp.d_data = rsp.d_data >> 8;
