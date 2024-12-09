@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::{bail, ensure, Result};
 use clap::Parser;
 use std::time::Duration;
 
@@ -69,6 +69,18 @@ fn main() -> Result<()> {
 
     let uart = transport.uart("console")?;
     let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+
+    // Enable VBUS sense on the board if necessary.
+    if opts.usb.vbus_control_available() {
+        opts.usb.enable_vbus(&transport, true)?;
+    }
+    // Sense VBUS if available.
+    if opts.usb.vbus_sense_available() {
+        ensure!(
+            opts.usb.vbus_present(&transport)?,
+            "OT USB does not appear to be connected to a host (VBUS not detected)"
+        );
+    }
 
     execute_test!(usbdev_echo, &opts, &*uart);
 
