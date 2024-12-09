@@ -122,7 +122,11 @@ fpga_cw310(
     name = "fpga_cw310_rom_ext",
     testonly = True,
     base = ":fpga_cw310_test_rom",
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
+        "//conditions:default": {"//signing:appkey": "0"},
+    }),
     exec_env = "fpga_cw310_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -138,7 +142,10 @@ fpga_cw310(
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+    rom_ext = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
+    }),
 )
 
 fpga_cw310(
@@ -330,7 +337,11 @@ fpga_cw340(
     name = "fpga_cw340_rom_ext",
     testonly = True,
     base = ":fpga_cw340_rom_with_fake_keys",
-    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+    ecdsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
+        # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
+        "//conditions:default": {"//signing:appkey": "0"},
+    }),
     exec_env = "fpga_cw340_rom_ext",
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
@@ -345,7 +356,10 @@ fpga_cw340(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+    rom_ext = select({
+        "//signing:test_keys": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
+    }),
 )
 
 # FPGA configuration used to emulate silicon targets. This rule can be used by
@@ -453,8 +467,6 @@ silicon(
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
         "assemble": "{rom_ext}@0 {firmware}@0x10000",
     },
-    # The //conditions:default ROM_EXT needs to be updated to use the following
-    # target once available:
     rom_ext = select({
         "//signing:test_keys": "//sw/device/silicon_creator/rom_ext/sival:rom_ext_dice_x509_fake_slot_a",
         "//conditions:default": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
