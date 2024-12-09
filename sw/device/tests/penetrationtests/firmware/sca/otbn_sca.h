@@ -65,6 +65,39 @@ status_t handle_otbn_sca_ecc256_set_c(ujson_t *uj);
 status_t handle_otbn_sca_ecc256_set_seed(ujson_t *uj);
 
 /**
+ * otbn.sca.ecdsa256.sign command handler.
+ *
+ * Runs a ECDSA 256 sign operation, used to measure whether the operation
+ * leakes secret information.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_ecdsa_p256_sign(ujson_t *uj);
+
+/**
+ * otbn.sca.ecdsa256.sign_batch command handler.
+ *
+ * Same as otbn.sca.ecdsa256.sign but in batch mode. Random message, random
+ * key, and random secret is used.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_ecdsa_p256_sign_batch(ujson_t *uj);
+
+/**
+ * otbn.sca.ecdsa256.sign_fvsr_batch command handler.
+ *
+ * Same as otbn.sca.ecdsa256.sign but in batch mode. Fixed or random message,
+ * fixed or random key, and fixed or random secret is used.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_ecdsa_p256_sign_fvsr_batch(ujson_t *uj);
+
+/**
  * Initializes the OTBN SCA test on the device.
  *
  * @param uj An initialized uJSON context.
