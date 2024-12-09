@@ -18,6 +18,7 @@ class aon_timer_prescaler_vseq extends aon_timer_base_vseq;
 
 endclass : aon_timer_prescaler_vseq
 
+
 constraint aon_timer_prescaler_vseq::thold_count_c {
   wkup_thold      inside {[1:2]};
   wdog_bark_thold inside {[1:2]};
@@ -31,10 +32,12 @@ function aon_timer_prescaler_vseq::new (string name="");
 endfunction : new
 
 task aon_timer_prescaler_vseq::body();
+
   aon_timer_init();
   prescaler_configure();
   wait_for_interrupt();
   aon_timer_shutdown();
+
 endtask : body
 
 task aon_timer_prescaler_vseq::prescaler_configure();
@@ -44,6 +47,9 @@ task aon_timer_prescaler_vseq::prescaler_configure();
   `uvm_info(`gfn,
             $sformatf("\n\t Writing random prescaler value of %d to WKUP CTRL", prescaler),
             UVM_HIGH)
+
+  csr_utils_pkg::csr_spinwait(.ptr(ral.wkup_ctrl.prescaler), .exp_data(prescaler), .backdoor(1));
+  `uvm_info(`gfn, "Written values (wkup_prescaler) has propagated through the CDC", UVM_DEBUG)
 
 
   `uvm_info(`gfn, "Enabling AON Timer (WKUP ONLY). Writing 1 to WKUP_CTRL", UVM_HIGH)
