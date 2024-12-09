@@ -39,9 +39,7 @@ _ZERO_256BIT_HEXSTR = "0x" + "_".join(["00000000"] * 8)
 # CP & FT Device Firmware
 _BASE_DEV_DIR           = "sw/device/silicon_creator/manuf/base"  # noqa: E221
 _CP_DEVICE_ELF          = "{base_dir}/sram_cp_provision_{target}.elf"  # noqa: E221
-_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{sku}_{target}.elf"  # noqa: E221
-_FT_PERSO_EMULATION_BIN = "{base_dir}/ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin"  # noqa: E221, E501
-_FT_PERSO_SKU_BIN       = "{base_dir}/binaries/ft_personalize_{sku}_{target}.signed.bin"  # noqa: E221, E501
+_FT_INDIVID_DEVICE_ELF  = "{base_dir}/sram_ft_individualize_{otp}_{target}.elf"  # noqa: E221
 _FT_FW_BUNDLE_BIN       = "{base_dir}/ft_fw_bundle_{sku}_{target}.img"  # noqa: E221
 # CP & FT Host Binaries
 _CP_HOST_BIN = "sw/host/provisioning/cp/cp"
@@ -193,9 +191,7 @@ class OtDut():
         individ_elf = _FT_INDIVID_DEVICE_ELF
         # Emulation perso bins are signed online with fake keys, and therefore
         # have different file naming patterns than production SKUs.
-        perso_bin = _FT_PERSO_EMULATION_BIN
-        if self.sku_config.name != "emulation":
-            perso_bin = _FT_PERSO_SKU_BIN
+        perso_bin = self.sku_config.perso_bin
         fw_bundle_bin = _FT_FW_BUNDLE_BIN
         if self.fpga:
             # Set host flags and device binaries for FPGA DUT.
@@ -207,7 +203,7 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
                 base_dir=self._base_dev_dir(),
-                sku=self.sku_config.name,
+                otp=self.sku_config.otp,
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
             perso_bin = perso_bin.format(
                 base_dir=self._base_dev_dir(),
@@ -225,7 +221,7 @@ class OtDut():
                                            openocd_cfg=openocd_cfg)
             host_flags += " --disable-dft-on-reset"
             individ_elf = individ_elf.format(base_dir=self._base_dev_dir(),
-                                             sku=self.sku_config.name,
+                                             otp=self.sku_config.otp,
                                              target="silicon_creator")
             perso_bin = perso_bin.format(base_dir=self._base_dev_dir(),
                                          sku=self.sku_config.name,
