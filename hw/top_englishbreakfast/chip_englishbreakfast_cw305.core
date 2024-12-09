@@ -8,6 +8,7 @@ description: "English Breakfast toplevel for the ChipWhisperer CW305 board"
 filesets:
   files_rtl_cw305:
     depend:
+      - lowrisc:prim_xilinx:prim_xilinx_default_pkg
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:ast
       - lowrisc:systems:topgen

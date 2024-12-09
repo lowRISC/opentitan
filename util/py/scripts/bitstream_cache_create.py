@@ -45,10 +45,9 @@ def collect_file_map(fragment: Dict, fragment_dir: Path):
         bitstream = os.path.join(fragment_dir, metadata['bitstream']['file'])
         bitstream_renamed = os.path.join(design, os.path.basename(bitstream))
         file_map[bitstream] = bitstream_renamed
-        for mmi in metadata['memory_map_info'].values():
-            mmi_file = os.path.join(fragment_dir, mmi['file'])
-            mmi_renamed = os.path.join(design, os.path.basename(mmi_file))
-            file_map[mmi_file] = mmi_renamed
+        mmi_file = os.path.join(fragment_dir, metadata['memory_map_info']['file'])
+        mmi_renamed = os.path.join(design, os.path.basename(mmi_file))
+        file_map[mmi_file] = mmi_renamed
     return file_map
 
 
@@ -94,7 +93,7 @@ def main(argv: list[str]):
     args = parser.parse_args(args=argv[1:])
     stamp = get_scm_revision(args.stamp_file)
     manifest = {
-        'schema_version': 2,
+        'schema_version': 3,
         'designs': {},
     }
     file_map = {}
