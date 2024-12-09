@@ -399,8 +399,11 @@ silicon(
         "--interface={interface}",
     ],
     design = "earlgrey",
-    # TODO: Add switch to enable privdate key.
-    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+    ecdsa_key = select({
+        "//signing:test_keys": {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+        # We choose key zero in the keyset, which should be `*-earlgrey-a1-root-ecdsa-prod-0`.
+        "//conditions:default": {"//signing:appkey": "0"},
+    }),
     exec_env = "silicon_creator",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
     flash_scramble_tool = "//util/design:gen-flash-img",
