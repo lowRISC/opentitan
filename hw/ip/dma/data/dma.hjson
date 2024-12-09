@@ -470,34 +470,6 @@
                 No explicit clearing necessary.
                 '''
         }
-        { bits: "5"
-          name: "memory_buffer_auto_increment_enable"
-          resval: 0x0
-          desc: '''
-                Used in conjunction with the hardware handshake mode of operation.
-                Auto Increments the memory buffer address register by data size to point to the next memory buffer address.
-                Generate a warning (assert interrupt) if the auto-incremented address reaches close to the value set in limit address register to prevent destination buffer overflow.
-                Enables firmware to take appropriate action prior to reaching the limit.
-                '''
-        }
-        { bits: "6"
-          name: "fifo_auto_increment_enable"
-          resval: 0x0
-          desc: '''
-                Used in conjunction with the hardware handshake mode of operation.
-                If set, reads/writes from/to incremental addresses for FIFO data accesses within each chunk, resetting to the initial value at the beginning of each new chunk.
-                Else uses the same address for all transactions.
-                '''
-        }
-        { bits: "7"
-          name: "data_direction"
-          resval: 0x0
-          desc: '''
-                Used in conjunction with the hardware handshake enable.
-                0: Receive data from LSIO FIFO to memory buffer.
-                1: Send data from memory buffer to LSIO FIFO.
-                '''
-        }
         { bits: "8"
           name: "initial_transfer"
           resval: 0x0
@@ -536,6 +508,58 @@
       // effects (e.g., starting an operation when the `go` bit is written) which the automated
       // tests are not aware of.
       tags: ["excl:CsrAllTests:CsrExclWrite"]
+    }
+    {
+      name: "SRC_CONTROL"
+      desc: "Defines the addressing behavior of the DMA for the source address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "1"
+          name: "wrap"
+          resval: 0x0
+          desc: '''
+                When 1: Source address wrapped back to the starting address when finishing a chunk.
+                '''
+        }
+        { bits: 0
+          name: "increment"
+          resval: 0x0
+          desc: '''
+                Defines the increment behavior after every DMA read.
+                When 0: Source address is not changed.
+                        All reads are done from the same address.
+                When 1: Source address is incremented by transfer_width after each read.
+                '''
+        }
+      ]
+    }
+    {
+      name: "DST_CONTROL"
+      desc: "Defines the addressing behavior of the DMA for the destination address."
+      swaccess: "rw"
+      hwaccess: "hro"
+      regwen: "CFG_REGWEN"
+      fields: [
+        { bits: "1"
+          name: "wrap"
+          resval: 0x0
+          desc: '''
+                When 1: Destination address wrapped back to the starting address when finishing a chunk.
+                '''
+        }
+        { bits: "0"
+          name: "increment"
+          resval: 0x0
+          desc: '''
+                Defines the increment behavior after every DMA write.
+                When 0: Destination address is not changed.
+                        All writes are done to the same address.
+                When 1: Destination address is incremented by transfer_width after each write.
+                '''
+        }
+      ]
     }
     { name: "STATUS"
       desc: "Status indication for DMA data movement."
@@ -736,7 +760,7 @@
         ]
       }
     }
-    { skipto: "0x11C" }
+    { skipto: "0x124" }
     { multireg: {
         name: "INTR_SRC_WR_VAL"
         desc: "Write value for interrupt clearing write."
