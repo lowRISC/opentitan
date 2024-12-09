@@ -317,8 +317,6 @@ fn provision_certificates(
     // Extract CAs.
     let dice_ca_cert = &ca_cfgs["dice"].certificate;
     let dice_ca_key = &ca_keys["dice"];
-    let ext_ca_cert = &ca_cfgs["ext"].certificate;
-    let ext_ca_key = &ca_keys["ext"];
 
     // DICE certificate names.
     let dice_cert_names = HashSet::from(["UDS", "CDI_0", "CDI_1"]);
@@ -358,6 +356,7 @@ fn provision_certificates(
             let cert_bytes = if dice_cert_names.contains(cert.cert_name) {
                 parse_and_endorse_x509_cert(cert.cert_body.clone(), dice_ca_key)?
             } else {
+                let ext_ca_key = &ca_keys["ext"];
                 parse_and_endorse_x509_cert(cert.cert_body.clone(), ext_ca_key)?
             };
 
@@ -451,7 +450,10 @@ fn provision_certificates(
     // TODO(lowRISC/opentitan:#24281): Add CWT verifier
     let t0 = Instant::now();
     if !dice_cert_chain.is_empty() {
-        log::info!("Validating DICE certificate chain with OpenSSL ...");
+        log::info!(
+            "Validating DICE certificate chain with OpenSSL (root CA: {:?}) ...",
+            dice_ca_cert
+        );
         validate_cert_chain(dice_ca_cert.to_str().unwrap(), &dice_cert_chain)?;
         log::info!("Success.");
     }
@@ -459,7 +461,11 @@ fn provision_certificates(
 
     let t0 = Instant::now();
     if !sku_specific_certs.is_empty() {
-        log::info!("Validating SKU-specific certificates with OpenSSL ...");
+        let ext_ca_cert = &ca_cfgs["ext"].certificate;
+        log::info!(
+            "Validating SKU-specific certificates with OpenSSL (root CA: {:?}) ...",
+            ext_ca_cert
+        );
         for sku_specific_cert in sku_specific_certs.iter() {
             validate_cert_chain(ext_ca_cert.to_str().unwrap(), &[sku_specific_cert.clone()])?;
         }
