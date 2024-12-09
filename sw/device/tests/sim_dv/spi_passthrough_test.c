@@ -29,10 +29,13 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // Bit map of command slots to be filtered. This is supplied by the DV
 // environment.
-const volatile uint32_t kFilteredCommands;
+static const volatile uint32_t kFilteredCommands;
 
 // Whether to upload write commands and have software relay them.
-const volatile uint8_t kUploadWriteCommands;
+static const volatile uint8_t kUploadWriteCommands;
+
+// Which readpipeline_mode should be used for read commands.
+static const volatile uint8_t kReadPipelineMode;
 
 static dif_pinmux_t pinmux;
 static dif_rv_plic_t rv_plic;
@@ -402,11 +405,21 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
   bool upload_write_commands = (kUploadWriteCommands != 0);
-  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
-      &spi_device, kFilteredCommands, upload_write_commands));
 
-  // Enable all spi_device and spi_host interrupts, and check that they do not
-  // trigger unless command upload is enabled.
+  // Configures the read_pippeline_mode for the commands ReadFast, ReadDual,
+  // ReadQuad.
+  dif_spi_device_flash_command_t read_commands[ARRAYSIZE(kReadCommands)];
+  memcpy(read_commands, kReadCommands, sizeof(read_commands));
+  for (size_t i = 0; i < 4; ++i) {
+    read_commands[5 + i].read_pipeline_mode = kReadPipelineMode;
+  }
+
+  CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
+      &spi_device, kFilteredCommands, upload_write_commands, kWriteCommands,
+      ARRAYSIZE(kWriteCommands), read_commands, ARRAYSIZE(kReadCommands)));
+
+  // Enable all spi_device and spi_host interrupts, and check that they do
+  // not trigger unless command upload is enabled.
   dif_spi_device_irq_t all_spi_device_irqs[] = {
       kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
       kDifSpiDeviceIrqReadbufWatermark,
