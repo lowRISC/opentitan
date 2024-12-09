@@ -5,9 +5,9 @@
 // Description: PWM Core Module
 
 module pwm_core #(
-  parameter int NOutputs = 6,
-  parameter int PhaseCntDw = 16,
-  parameter int BeatCntDw = 27
+  parameter int unsigned NOutputs = 6,
+  parameter int unsigned PhaseCntDw = 16,
+  parameter int unsigned BeatCntDw = 27
 ) (
   input                           clk_core_i,
   input                           rst_core_ni,
@@ -17,10 +17,12 @@ module pwm_core #(
   output logic [NOutputs-1:0]     pwm_o
 );
 
+  localparam int unsigned DcResnDw = $clog2(PhaseCntDw);
+
   // Reset internal counters whenever parameters change.
 
   logic                clr_phase_cntr;
-  logic [NOutputs-1:0] clr_blink_cntr;
+  logic [NOutputs-1:0] clr_chan_cntr;
 
   assign clr_phase_cntr = reg2hw.cfg.clk_div.qe | reg2hw.cfg.dc_resn.qe | reg2hw.cfg.cntr_en.qe;
 
@@ -29,7 +31,7 @@ module pwm_core #(
     // Though it may be a bit overkill, we reset the internal blink counters whenever any channel
     // specific parameters change.
 
-    assign clr_blink_cntr[ii] = reg2hw.pwm_en[ii].qe | reg2hw.invert[ii].qe |
+    assign clr_chan_cntr[ii] = reg2hw.pwm_en[ii].qe | reg2hw.invert[ii].qe |
                                 reg2hw.pwm_param[ii].phase_delay.qe |
                                 reg2hw.pwm_param[ii].htbt_en.qe |
                                 reg2hw.pwm_param[ii].blink_en.qe |
@@ -46,8 +48,8 @@ module pwm_core #(
 
   logic                  cntr_en;
   logic [BeatCntDw-1:0]  clk_div;
-  logic [3:0]            dc_resn;
-  logic [3:0]            lshift;
+  logic [DcResnDw-1:0]   dc_resn;
+  logic [DcResnDw-1:0]   lshift;
 
   logic [BeatCntDw-1:0]  beat_ctr_q;
   logic [BeatCntDw-1:0]  beat_ctr_d;
@@ -81,7 +83,7 @@ module pwm_core #(
 
   // Only update phase_ctr at the end of each beat
   // Exception: allow reset to zero whenever not enabled
-  assign lshift = 4'd15 - dc_resn;
+  assign lshift = DcResnDw'(PhaseCntDw - 1'b1) - dc_resn;
   assign phase_ctr_en = beat_end & (clr_phase_cntr | cntr_en);
   assign phase_ctr_incr =  (PhaseCntDw)'('h1) << lshift;
   assign {phase_ctr_overflow, phase_ctr_next} = phase_ctr_q + phase_ctr_incr;
@@ -115,8 +117,8 @@ module pwm_core #(
       .blink_param_x_i  (reg2hw.blink_param[ii].x.q),
       .blink_param_y_i  (reg2hw.blink_param[ii].y.q),
       .phase_ctr_i      (phase_ctr_q),
-      .clr_blink_cntr_i (clr_blink_cntr[ii]),
       .cycle_end_i      (cycle_end),
+      .clr_chan_cntr_i  (clr_chan_cntr[ii]),
       .dc_resn_i        (dc_resn),
       .pwm_o            (pwm_o[ii])
     );
