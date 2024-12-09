@@ -35,6 +35,9 @@ class dv_base_reg extends uvm_reg;
   // through the 1st/2nd (or both) writes
   semaphore            atomic_en_shadow_wr;
 
+  // Can be set before predicting a value for the case the register 'is_busy==1'
+  bit                  predicting_value;
+
   function new(string       name = "",
                int unsigned n_bits,
                int          has_coverage);
