@@ -122,8 +122,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_rv_timer_irq_get_type(const dif_rv_timer_t *rv_timer,
                                        dif_rv_timer_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (rv_timer == NULL || type == NULL ||
-      irq == kDifRvTimerIrqTimerExpiredHart0Timer0 + 1) {
+  if (rv_timer == NULL || type == NULL || irq < 0 ||
+      irq > kDifRvTimerIrqTimerExpiredHart0Timer0) {
     return kDifBadArg;
   }
 

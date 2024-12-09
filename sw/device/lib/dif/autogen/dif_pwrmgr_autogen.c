@@ -70,7 +70,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pwrmgr_irq_get_type(const dif_pwrmgr_t *pwrmgr,
                                      dif_pwrmgr_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (pwrmgr == NULL || type == NULL || irq == kDifPwrmgrIrqWakeup + 1) {
+  if (pwrmgr == NULL || type == NULL || irq < 0 || irq > kDifPwrmgrIrqWakeup) {
     return kDifBadArg;
   }
 

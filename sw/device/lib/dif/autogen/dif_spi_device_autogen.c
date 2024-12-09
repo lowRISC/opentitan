@@ -94,8 +94,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_device_irq_get_type(const dif_spi_device_t *spi_device,
                                          dif_spi_device_irq_t irq,
                                          dif_irq_type_t *type) {
-  if (spi_device == NULL || type == NULL ||
-      irq == kDifSpiDeviceIrqTpmRdfifoDrop + 1) {
+  if (spi_device == NULL || type == NULL || irq < 0 ||
+      irq > kDifSpiDeviceIrqTpmRdfifoDrop) {
     return kDifBadArg;
   }
 

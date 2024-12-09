@@ -76,7 +76,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_dma_irq_get_type(const dif_dma_t *dma, dif_dma_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (dma == NULL || type == NULL || irq == kDifDmaIrqDmaError + 1) {
+  if (dma == NULL || type == NULL || irq < 0 || irq > kDifDmaIrqDmaError) {
     return kDifBadArg;
   }
 

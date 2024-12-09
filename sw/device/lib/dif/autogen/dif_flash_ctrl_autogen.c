@@ -100,8 +100,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_irq_get_type(const dif_flash_ctrl_t *flash_ctrl,
                                          dif_flash_ctrl_irq_t irq,
                                          dif_irq_type_t *type) {
-  if (flash_ctrl == NULL || type == NULL ||
-      irq == kDifFlashCtrlIrqCorrErr + 1) {
+  if (flash_ctrl == NULL || type == NULL || irq < 0 ||
+      irq > kDifFlashCtrlIrqCorrErr) {
     return kDifBadArg;
   }
 

@@ -87,8 +87,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_entropy_src_irq_get_type(const dif_entropy_src_t *entropy_src,
                                           dif_entropy_src_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (entropy_src == NULL || type == NULL ||
-      irq == kDifEntropySrcIrqEsFatalErr + 1) {
+  if (entropy_src == NULL || type == NULL || irq < 0 ||
+      irq > kDifEntropySrcIrqEsFatalErr) {
     return kDifBadArg;
   }
 

@@ -74,7 +74,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_pattgen_irq_get_type(const dif_pattgen_t *pattgen,
                                       dif_pattgen_irq_t irq,
                                       dif_irq_type_t *type) {
-  if (pattgen == NULL || type == NULL || irq == kDifPattgenIrqDoneCh1 + 1) {
+  if (pattgen == NULL || type == NULL || irq < 0 ||
+      irq > kDifPattgenIrqDoneCh1) {
     return kDifBadArg;
   }
 
