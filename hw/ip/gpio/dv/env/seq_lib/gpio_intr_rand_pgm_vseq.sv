@@ -23,26 +23,43 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
 
+
+      //Skip if a reset is ongoing...
+      if (!cfg.clk_rst_vif.rst_n) return;
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
       cfg.clk_rst_vif.wait_clks(delay);
 
+
       randcase
         // drive new gpio data in
-        1: begin
+        1: begin : drive_gpio_data_in
           // gpio input to drive
           bit [NUM_GPIOS-1:0] gpio_i;
           bit [NUM_GPIOS-1:0] data_in;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           `uvm_info(msg_id, "drive random value on gpio_i", UVM_HIGH)
+
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
+
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
+
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           cfg.clk_rst_vif.wait_clks(1);
+
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end
         // write random value(s) to gpio interrupt register(s)
-        1: begin
+        1: begin : write_rand_gpio_intr_reg
           `uvm_info(msg_id, "program interrupt register(s) to random value(s)", UVM_HIGH)
+
+          //Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
 
           if ($urandom_range(0, 1)) begin
             `DV_CHECK_RANDOMIZE_FATAL(ral.intr_enable)
@@ -78,6 +95,9 @@ class gpio_intr_rand_pgm_vseq extends gpio_base_vseq;
       // Read interrupt state register value
       begin
         bit [TL_DW-1:0] reg_rd_data;
+
+        //Skip if a reset is ongoing...
+        if (!cfg.clk_rst_vif.rst_n) break;
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
         cfg.clk_rst_vif.wait_clks(delay);
         // read intr_state register
