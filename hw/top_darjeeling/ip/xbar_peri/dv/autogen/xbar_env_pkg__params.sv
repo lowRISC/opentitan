@@ -63,6 +63,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"ast", '{
         '{32'h30480000, 32'h304803ff}
+    }},
+    '{"soc_dbg_ctrl__core", '{
+        '{32'h30160000, 32'h3016001f}
 }}};
 
   // List of Xbar hosts
@@ -86,5 +89,6 @@ tl_host_t xbar_hosts[$] = '{
         "ast",
         "sram_ctrl_ret_aon__ram",
         "sram_ctrl_ret_aon__regs",
-        "aon_timer_aon"}}
+        "aon_timer_aon",
+        "soc_dbg_ctrl__core"}}
 };

@@ -62,7 +62,8 @@ KNOWN_CIP_IDS = {
     38: 'soc_proxy',
     39: 'keymgr_dpe',
     40: 'ascon',
-    41: 'ac_range_check'
+    41: 'ac_range_check',
+    42: 'soc_dbg_ctrl'
 }
 
 REQUIRED_ALIAS_FIELDS = {

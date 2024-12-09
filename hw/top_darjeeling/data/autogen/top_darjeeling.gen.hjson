@@ -22,6 +22,7 @@
     ]
     default: "0"
     wait_for_external_reset: true
+    halt_ibex_via_rom_ctrl: true
   }
   unmanaged_clocks: {}
   clocks:
@@ -481,6 +482,7 @@
             ast
             sensor_ctrl
             soc_proxy.core
+            soc_dbg_ctrl.core
             sram_ctrl_ret_aon
             rv_plic
             aes
@@ -1697,6 +1699,20 @@
           index: 1
         }
         {
+          name: lc_raw_test_rma
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: lc_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: lc_ctrl_lc_raw_test_rma
+          index: -1
+        }
+        {
           name: lc_dft_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -2306,10 +2322,12 @@
           width: 1
           inst_name: pwrmgr_aon
           default: ""
-          external: true
-          top_signame: pwrmgr_boot_status
-          conn_type: false
+          end_idx: -1
+          top_type: broadcast
+          top_signame: pwrmgr_aon_boot_status
           index: -1
+          external: true
+          conn_type: true
         }
         {
           name: pwr_ast
@@ -2497,7 +2515,7 @@
           package: rom_ctrl_pkg
           type: uni
           act: rcv
-          width: 2
+          width: 3
           default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
           inst_name: pwrmgr_aon
           end_idx: -1
@@ -8362,6 +8380,184 @@
       generate_dif: true
     }
     {
+      name: soc_dbg_ctrl
+      type: soc_dbg_ctrl
+      clock_srcs:
+      {
+        clk_i: io_div4
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc_io_div4
+          domain: "0"
+        }
+      }
+      base_addrs:
+      {
+        core:
+        {
+          hart: 0x30160000
+        }
+        jtag:
+        {
+          soc_dbg: 0x2300
+        }
+      }
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: boot_status
+          struct: pwr_boot_status
+          package: pwrmgr_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          top_signame: pwrmgr_aon_boot_status
+          index: -1
+        }
+        {
+          name: soc_dbg_state
+          struct: soc_dbg_state
+          package: lc_ctrl_state_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_dbg_ctrl
+          index: -1
+        }
+        {
+          name: soc_dbg_policy_bus
+          struct: soc_dbg_policy
+          package: soc_dbg_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          external: true
+          top_signame: soc_dbg_policy_bus
+          conn_type: false
+          index: -1
+        }
+        {
+          name: lc_hw_debug_en
+          desc: Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: soc_dbg_ctrl
+          top_signame: lc_ctrl_lc_hw_debug_en
+          index: -1
+        }
+        {
+          name: lc_dft_en
+          desc:
+            '''
+            Test enable qualifier coming from life cycle controller.
+            This signals enables TEST & RMA mode accesses.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: soc_dbg_ctrl
+          top_signame: lc_ctrl_lc_dft_en
+          index: -1
+        }
+        {
+          name: lc_raw_test_rma
+          desc:
+            '''
+            Test enable qualifier coming from life cycle controller.
+            This signals enables RAW, TEST and RMA mode accesses.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: soc_dbg_ctrl
+          top_signame: lc_ctrl_lc_raw_test_rma
+          index: -1
+        }
+        {
+          name: halt_cpu_boot
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          package: ""
+          external: true
+          top_signame: debug_halt_cpu_boot
+          conn_type: false
+          index: -1
+        }
+        {
+          name: continue_cpu_boot
+          desc: Artificial ROM control input to the pwrmgr to halt the boot process.
+          struct: pwrmgr_data
+          package: rom_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          top_signame: pwrmgr_aon_rom_ctrl
+          index: 2
+        }
+        {
+          name: core_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: soc_dbg_ctrl_core_tl
+          index: -1
+        }
+        {
+          name: jtag_tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: soc_dbg_ctrl
+          default: ""
+          end_idx: -1
+          top_signame: soc_dbg_ctrl_jtag_tl
+          index: -1
+        }
+      ]
+      generate_dif: true
+    }
+    {
       name: rv_core_ibex
       type: rv_core_ibex
       param_decl:
@@ -9198,6 +9394,11 @@
       [
         rom_ctrl0.pwrmgr_data
         rom_ctrl1.pwrmgr_data
+        soc_dbg_ctrl.continue_cpu_boot
+      ]
+      pwrmgr_aon.boot_status:
+      [
+        soc_dbg_ctrl.boot_status
       ]
       keymgr_dpe.rom_digest:
       [
@@ -9301,11 +9502,16 @@
       [
         rv_dm.strap_en_override
       ]
+      lc_ctrl.lc_raw_test_rma:
+      [
+        soc_dbg_ctrl.lc_raw_test_rma
+      ]
       lc_ctrl.lc_dft_en:
       [
         otp_ctrl.lc_dft_en
         ast.lc_dft_en
         pwrmgr_aon.lc_dft_en
+        soc_dbg_ctrl.lc_dft_en
       ]
       lc_ctrl.lc_hw_debug_en:
       [
@@ -9315,6 +9521,7 @@
         rv_dm.lc_hw_debug_en
         clkmgr_aon.lc_hw_debug_en
         pwrmgr_aon.lc_hw_debug_en
+        soc_dbg_ctrl.lc_hw_debug_en
       ]
       lc_ctrl.lc_cpu_en:
       [
@@ -9670,6 +9877,10 @@
       [
         peri.tl_aon_timer_aon
       ]
+      soc_dbg_ctrl.core_tl:
+      [
+        peri.tl_soc_dbg_ctrl__core
+      ]
       mbx0.soc_tl_d:
       [
         mbx.tl_mbx0__soc
@@ -9717,6 +9928,10 @@
       lc_ctrl.dmi_tl:
       [
         dbg.tl_lc_ctrl__dmi
+      ]
+      soc_dbg_ctrl.jtag_tl:
+      [
+        dbg.tl_soc_dbg_ctrl__jtag
       ]
     }
     top:
@@ -9821,6 +10036,8 @@
       soc_proxy.soc_gpi_async: soc_gpi_async
       soc_proxy.soc_gpo_async: soc_gpo_async
       spi_device.sck_monitor: sck_monitor
+      soc_dbg_ctrl.soc_dbg_policy_bus: soc_dbg_policy_bus
+      soc_dbg_ctrl.halt_cpu_boot: debug_halt_cpu_boot
     }
   }
   xbar:
@@ -11578,6 +11795,7 @@
           sram_ctrl_ret_aon.ram
           sram_ctrl_ret_aon.regs
           aon_timer_aon
+          soc_dbg_ctrl.core
         ]
       }
       nodes:
@@ -11994,6 +12212,27 @@
           stub: true
           req_fifo_pass: true
         }
+        {
+          name: soc_dbg_ctrl.core
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: soc_dbg_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x30160000
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -12243,6 +12482,18 @@
           external: true
           top_signame: ast_tl
           conn_type: false
+          index: -1
+        }
+        {
+          name: tl_soc_dbg_ctrl__core
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: peri
+          default: ""
+          top_signame: soc_dbg_ctrl_core_tl
           index: -1
         }
       ]
@@ -12670,6 +12921,7 @@
           rv_dm.dbg
           mbx_jtag.soc
           lc_ctrl.dmi
+          soc_dbg_ctrl.jtag
         ]
       }
       nodes:
@@ -12750,6 +13002,27 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: soc_dbg_ctrl.jtag
+          type: device
+          clock: clk_peri_i
+          reset: rst_peri_ni
+          pipeline: false
+          inst_type: soc_dbg_ctrl
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_dbg: 0x2300
+              }
+              size_byte: 0x20
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -12807,6 +13080,18 @@
           inst_name: dbg
           default: ""
           top_signame: lc_ctrl_dmi_tl
+          index: -1
+        }
+        {
+          name: tl_soc_dbg_ctrl__jtag
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: dbg
+          default: ""
+          top_signame: soc_dbg_ctrl_jtag_tl
           index: -1
         }
       ]
@@ -16340,6 +16625,7 @@
     mbx_jtag
     mbx_pcie0
     mbx_pcie1
+    soc_dbg_ctrl
     rv_core_ibex
   ]
   outgoing_alert_module: {}
@@ -17199,6 +17485,24 @@
       module_name: mbx_pcie1
       lpg_name: infra_lc_0
       lpg_idx: 11
+    }
+    {
+      name: soc_dbg_ctrl_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_dbg_ctrl
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: soc_dbg_ctrl_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_dbg_ctrl
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -18367,6 +18671,20 @@
         index: 1
       }
       {
+        name: lc_raw_test_rma
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: lc_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: lc_ctrl_lc_raw_test_rma
+        index: -1
+      }
+      {
         name: lc_dft_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -18806,10 +19124,12 @@
         width: 1
         inst_name: pwrmgr_aon
         default: ""
-        external: true
-        top_signame: pwrmgr_boot_status
-        conn_type: false
+        end_idx: -1
+        top_type: broadcast
+        top_signame: pwrmgr_aon_boot_status
         index: -1
+        external: true
+        conn_type: true
       }
       {
         name: pwr_ast
@@ -18997,7 +19317,7 @@
         package: rom_ctrl_pkg
         type: uni
         act: rcv
-        width: 2
+        width: 3
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
         inst_name: pwrmgr_aon
         end_idx: -1
@@ -22234,6 +22554,142 @@
         index: -1
       }
       {
+        name: boot_status
+        struct: pwr_boot_status
+        package: pwrmgr_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        top_signame: pwrmgr_aon_boot_status
+        index: -1
+      }
+      {
+        name: soc_dbg_state
+        struct: soc_dbg_state
+        package: lc_ctrl_state_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_dbg_ctrl
+        index: -1
+      }
+      {
+        name: soc_dbg_policy_bus
+        struct: soc_dbg_policy
+        package: soc_dbg_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        external: true
+        top_signame: soc_dbg_policy_bus
+        conn_type: false
+        index: -1
+      }
+      {
+        name: lc_hw_debug_en
+        desc: Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: soc_dbg_ctrl
+        top_signame: lc_ctrl_lc_hw_debug_en
+        index: -1
+      }
+      {
+        name: lc_dft_en
+        desc:
+          '''
+          Test enable qualifier coming from life cycle controller.
+          This signals enables TEST & RMA mode accesses.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: soc_dbg_ctrl
+        top_signame: lc_ctrl_lc_dft_en
+        index: -1
+      }
+      {
+        name: lc_raw_test_rma
+        desc:
+          '''
+          Test enable qualifier coming from life cycle controller.
+          This signals enables RAW, TEST and RMA mode accesses.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: soc_dbg_ctrl
+        top_signame: lc_ctrl_lc_raw_test_rma
+        index: -1
+      }
+      {
+        name: halt_cpu_boot
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        package: ""
+        external: true
+        top_signame: debug_halt_cpu_boot
+        conn_type: false
+        index: -1
+      }
+      {
+        name: continue_cpu_boot
+        desc: Artificial ROM control input to the pwrmgr to halt the boot process.
+        struct: pwrmgr_data
+        package: rom_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        top_signame: pwrmgr_aon_rom_ctrl
+        index: 2
+      }
+      {
+        name: core_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: soc_dbg_ctrl_core_tl
+        index: -1
+      }
+      {
+        name: jtag_tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: soc_dbg_ctrl
+        default: ""
+        end_idx: -1
+        top_signame: soc_dbg_ctrl_jtag_tl
+        index: -1
+      }
+      {
         name: rst_cpu_n
         struct: logic
         type: uni
@@ -23323,6 +23779,18 @@
         index: -1
       }
       {
+        name: tl_soc_dbg_ctrl__core
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: peri
+        default: ""
+        top_signame: soc_dbg_ctrl_core_tl
+        index: -1
+      }
+      {
         name: tl_mbx
         struct: tl
         package: tlul_pkg
@@ -23492,6 +23960,18 @@
         inst_name: dbg
         default: ""
         top_signame: lc_ctrl_dmi_tl
+        index: -1
+      }
+      {
+        name: tl_soc_dbg_ctrl__jtag
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: dbg
+        default: ""
+        top_signame: soc_dbg_ctrl_jtag_tl
         index: -1
       }
       {
@@ -23707,9 +24187,9 @@
         type: uni
         default: ""
         direction: out
-        conn_type: false
+        conn_type: true
         index: -1
-        netname: pwrmgr_boot_status
+        netname: pwrmgr_aon_boot_status
       }
       {
         package: prim_mubi_pkg
@@ -24743,6 +25223,30 @@
         index: -1
         netname: sck_monitor
       }
+      {
+        package: soc_dbg_ctrl_pkg
+        struct: soc_dbg_policy
+        signame: soc_dbg_policy_bus_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: soc_dbg_policy_bus
+      }
+      {
+        package: ""
+        struct: logic
+        signame: debug_halt_cpu_boot_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: debug_halt_cpu_boot
+      }
     ]
     definitions:
     [
@@ -25003,12 +25507,23 @@
         package: rom_ctrl_pkg
         struct: pwrmgr_data
         signame: pwrmgr_aon_rom_ctrl
-        width: 2
+        width: 3
         type: uni
         end_idx: -1
         act: rcv
         suffix: ""
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
+      }
+      {
+        package: pwrmgr_pkg
+        struct: pwr_boot_status
+        signame: pwrmgr_aon_boot_status
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: pwrmgr_pkg::PWR_BOOT_STATUS_DEFAULT
       }
       {
         package: rom_ctrl_pkg
@@ -25337,6 +25852,17 @@
         act: req
         suffix: ""
         default: 1'b0
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        signame: lc_ctrl_lc_raw_test_rma
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
       }
       {
         package: lc_ctrl_pkg
@@ -27035,6 +27561,28 @@
       {
         package: tlul_pkg
         struct: tl_h2d
+        signame: soc_dbg_ctrl_core_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: soc_dbg_ctrl_core_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
         signame: mbx0_soc_tl_d_req
         width: 1
         type: req_rsp
@@ -27289,6 +27837,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: lc_ctrl_dmi_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: soc_dbg_ctrl_jtag_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: soc_dbg_ctrl_jtag_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
