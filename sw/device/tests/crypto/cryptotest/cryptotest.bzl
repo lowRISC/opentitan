@@ -21,6 +21,7 @@ CRYPTOTEST_EXEC_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_test_rom": None,
     "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_test_rom": "fpga_cw340",
+    "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_cw340",
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon",
 }
 
@@ -45,7 +46,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci = False):
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -53,9 +54,9 @@ def cryptotest(name, test_vectors, test_args, test_harness, skip_in_nightly_ci =
         test_vectors: the test vectors to use.
         test_args: additional arguments to pass to the test.
         test_harness: the test harness to use.
-        skip_in_nightly_ci: indicate if the test should be run in the nightly CI.
+        slow_test: indicate if the test should be run in the nightly CI.
     """
-    tags = ["skip_in_nightly_ci"] if skip_in_nightly_ci else []
+    tags = ["slow_test"] if slow_test else []
     opentitan_test(
         name = name,
         srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
