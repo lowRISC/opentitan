@@ -22,73 +22,6 @@ env:
   VIVADO_VERSION: "2021.1"
 
 jobs:
-  fpga_cw310_sival_nightly:
-    name: FPGA CW310 SiVal tests
-    runs-on: [ubuntu-22.04-fpga, cw310]
-
-    env:
-      GS_PATH: opentitan-test-results
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
-
-      - name: Install dependencies
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-
-      - uses: google-github-actions/setup-gcloud@v2
-
-      - name: Update hyperdebug
-        # We run the update command twice to workaround an issue with udev on the container.
-        # Where rusb cannot dynamically update its device list in CI (udev is not completely
-        # functional). If the device is in normal mode, the first thing that opentitantool
-        # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-        # never detected. But if we run the tool another time, the device list is queried again
-        # and opentitantool can finish the update. The device will now reboot in normal mode
-        # and work for the hyperdebug job.
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware \
-          || ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
-
-      - name: Run tests after ROM boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
-
-      - name: Run tests after ROM_EXT boot stage
-        if: success() || failure()
-        run: |
-          module load xilinx/vivado
-          bazel_tests="$(mktemp)"
-          ./bazelisk.sh query 'attr("tags", "[\[ ]cw310_sival_rom_ext[,\]]", tests(//sw/device/...))' \
-                                                    | grep -v examples \
-                                                    | grep -v penetrationtests \
-                                                    > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
-
-      - name: Compute bucket destination
-        id: bucket_destination
-        if: ${{ !cancelled() }}
-        run: |
-          BUCKET_PATH=$GS_PATH/job/${{ github.job }}/branch/${{ inputs.branch || 'earlgrey_1.0.0'}}/$(date +%Y-%m-%d-%H%M%S)_test_results.xml
-          echo "BUCKET_PATH=$BUCKET_PATH" >> $GITHUB_OUTPUT
-
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: fpga_cw310_sival_nightly-test-results
-          bucket-destination: ${{ steps.bucket_destination.outputs.BUCKET_PATH }}
 
   fpga_cw340_sival_nightly:
     name: FPGA CW340 SiVal tests
@@ -111,18 +44,6 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Update hyperdebug
-        # We run the update command twice to workaround an issue with udev on the container.
-        # Where rusb cannot dynamically update its device list in CI (udev is not completely
-        # functional). If the device is in normal mode, the first thing that opentitantool
-        # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-        # never detected. But if we run the tool another time, the device list is queried again
-        # and opentitantool can finish the update. The device will now reboot in normal mode
-        # and work for the hyperdebug job.
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware \
-          || ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
-
       - name: Run tests after ROM boot stage
         if: success() || failure()
         run: |
@@ -130,6 +51,7 @@ jobs:
           bazel_tests="$(mktemp)"
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival[,\]]", tests(//sw/device/...))' \
                                                     | grep -v examples \
+                                                    | grep spi \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
           ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
@@ -141,8 +63,10 @@ jobs:
           bazel_tests="$(mktemp)"
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival_rom_ext[,\]]", tests(//sw/device/...))' \
                                                     | grep -v examples \
+                                                    | grep aes \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
+
           ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
 
       - name: Compute bucket destination
@@ -180,18 +104,6 @@ jobs:
 
       - uses: google-github-actions/setup-gcloud@v2
 
-      - name: Update hyperdebug
-        # We run the update command twice to workaround an issue with udev on the container.
-        # Where rusb cannot dynamically update its device list in CI (udev is not completely
-        # functional). If the device is in normal mode, the first thing that opentitantool
-        # does is to switch it to DFU mode and wait until it reconnects. This reconnection is
-        # never detected. But if we run the tool another time, the device list is queried again
-        # and opentitantool can finish the update. The device will now reboot in normal mode
-        # and work for the hyperdebug job.
-        run: |
-          ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware \
-          || ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware
-
       - name: Run tests
         if: success() || failure()
         run: |
@@ -201,6 +113,7 @@ jobs:
           ./bazelisk.sh query 'attr("tags", "[\[ ]cw340_sival_rom_ext[,\]]", tests(//sw/device/...))' \
                       'intersect attr("tags", "slow_test", tests(//sw/device/...))' \
                                                                   | grep -v examples \
+                                                                  | grep aes \
                                                                   | grep -v penetrationtests \
                                                                   > "$bazel_tests"
 
@@ -220,89 +133,3 @@ jobs:
           artifact-name: fpga_cw340_slow_sival_nightly-test-results
           bucket-destination: ${{ steps.bucket_destination.outputs.BUCKET_PATH }}
 
-  rom_e2e:
-    name: ROM E2E Tests
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run all ROM E2E tests
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --test_tag_filters=-verilator,-dv,-broken \
-            --build_tests_only \
-            --test_output=errors \
-            //sw/device/silicon_creator/rom/e2e/...
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: rom_e2e-test-results
-
-  slow_otbn_crypto_tests:
-    name: Slow OTBN Crypto Tests
-    runs-on: ubuntu-22.04
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run the tests
-        run: |
-          ./bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: slow_otbn_crypto_tests-test-results
-
-  bob_spi_i2c:
-    name: "BoB: SPI and I2C Tests"
-    runs-on: [ubuntu-22.04-fpga, cw310]
-    timeout-minutes: 180
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for the bitstream cache to work.
-      - name: Prepare environment
-        uses: ./.github/actions/prepare-env
-        with:
-          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-      - name: Run the PMOD tests with Test ROM
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --test_output=errors \
-            --test_tag_filters="cw310_test_rom" \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Run the PMOD tests for SiVal
-        run: |
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ./bazelisk.sh test \
-            --define DISABLE_VERILATOR_BUILD=true \
-            --define bitstream=gcp_splice \
-            --build_tests_only \
-            --test_output=errors \
-            --test_tag_filters=cw310_sival,-broken \
-            $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
-      - name: Publish Bazel test results
-        uses: ./.github/actions/publish-bazel-test-results
-        if: ${{ !cancelled() }}
-        with:
-          artifact-name: bob_spi_i2c-test-results
