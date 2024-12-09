@@ -107,6 +107,8 @@ opentitan_binary(
     srcs = ["bare_metal_start.S"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        "//hw/top_earlgrey:silicon_owner_sival_rom_ext",
     ],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
