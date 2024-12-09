@@ -22,6 +22,9 @@ extern "C" {
     value(_, Ecc256EnMasks) \
     value(_, Ecc256SetC) \
     value(_, Ecc256SetSeed) \
+    value(_, EcdsaP256Sign) \
+    value(_, EcdsaP256SignBatch) \
+    value(_, EcdsaP256SignFvsrBatch) \
     value(_, Init) \
     value(_, InitKeyMgr) \
     value(_, InsnCarryFlag) \
@@ -71,6 +74,17 @@ UJSON_SERDE_STRUCT(PenetrationtestOtbnScaRsa512DecOut, penetrationtest_otbn_sca_
 #define OTBN_SCA_BIG_NUM(field, string) \
     field(big_num, uint32_t, 8)
 UJSON_SERDE_STRUCT(PenetrationtestOtbnScaBigNum, penetrationtest_otbn_sca_big_num_t, OTBN_SCA_BIG_NUM);
+
+#define OTBN_SCA_ECDSA_P256_SIGN(field, string) \
+    field(msg, uint32_t, 8) \
+    field(d0, uint32_t, 10) \
+    field(k0, uint32_t, 10)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaEcdsaP256Sign, penetrationtest_otbn_sca_ecdsa_p256_sign_t, OTBN_SCA_ECDSA_P256_SIGN);
+
+#define OTBN_SCA_ECDSA_P256_SIGNATURE(field, string) \
+    field(r, uint8_t, 32) \
+    field(s, uint8_t, 32)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaEcdsaP256Signature, penetrationtest_otbn_sca_ecdsa_p256_signature_t, OTBN_SCA_ECDSA_P256_SIGNATURE);
 
 // clang-format on
 
