@@ -80,7 +80,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_kmac_irq_get_type(const dif_kmac_t *kmac, dif_kmac_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (kmac == NULL || type == NULL || irq == kDifKmacIrqKmacErr + 1) {
+  if (kmac == NULL || type == NULL || irq < 0 || irq > kDifKmacIrqKmacErr) {
     return kDifBadArg;
   }
 

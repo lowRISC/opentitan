@@ -84,8 +84,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_aon_timer_irq_get_type(const dif_aon_timer_t *aon_timer,
                                         dif_aon_timer_irq_t irq,
                                         dif_irq_type_t *type) {
-  if (aon_timer == NULL || type == NULL ||
-      irq == kDifAonTimerIrqWdogTimerBark + 1) {
+  if (aon_timer == NULL || type == NULL || irq < 0 ||
+      irq > kDifAonTimerIrqWdogTimerBark) {
     return kDifBadArg;
   }
 

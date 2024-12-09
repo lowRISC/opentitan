@@ -76,7 +76,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_spi_host_irq_get_type(const dif_spi_host_t *spi_host,
                                        dif_spi_host_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (spi_host == NULL || type == NULL || irq == kDifSpiHostIrqSpiEvent + 1) {
+  if (spi_host == NULL || type == NULL || irq < 0 ||
+      irq > kDifSpiHostIrqSpiEvent) {
     return kDifBadArg;
   }
 
