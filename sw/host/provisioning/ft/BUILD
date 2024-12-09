@@ -21,6 +21,7 @@ package(default_visibility = ["//visibility:public"])
             "//sw/host/provisioning/ujson_lib",
             "//sw/host/provisioning/util_lib",
             "@crate_index//:anyhow",
+            "@crate_index//:arrayvec",
             "@crate_index//:base64ct",
             "@crate_index//:clap",
             "@crate_index//:elliptic-curve",
