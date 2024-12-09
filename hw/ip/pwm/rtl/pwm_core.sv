@@ -17,19 +17,47 @@ module pwm_core #(
   output logic [NOutputs-1:0]     pwm_o
 );
 
-  // Reset internal counters whenever parameters change.
+  localparam int unsigned DcResnDw = $clog2(PhaseCntDw);
+
+  // Reset internal counters whenever the phase counter becomes enabled; the new pulse cycle starts
+  // immediately. The phase counter may be disabled at any time.
+  logic                 cntr_en_q;
+  logic [BeatCntDw-1:0] clk_div_q;
+  logic [DcResnDw-1:0]  dc_resn_q;
 
   logic                clr_phase_cntr;
-  logic [NOutputs-1:0] clr_blink_cntr;
+  logic [NOutputs-1:0] clr_chan_cntr;
 
-  assign clr_phase_cntr = reg2hw.cfg.clk_div.qe | reg2hw.cfg.dc_resn.qe | reg2hw.cfg.cntr_en.qe;
+  assign clr_phase_cntr = reg2hw.cfg.cntr_en.qe & reg2hw.cfg.cntr_en.q & ~cntr_en_q;
+
+  // Capture channel state, in order to determine which channel(s) shall be reset when a shared
+  // register is updated.
+  logic [NOutputs-1:0] pwm_en_q;
+  logic [NOutputs-1:0] invert_q;
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
+      pwm_en_q  <= '0;
+      invert_q  <= '0;
+    end else begin
+      for (int unsigned ii = 0; ii < NOutputs; ii++) begin
+        if (reg2hw.pwm_en[ii].qe) pwm_en_q[ii] <= reg2hw.pwm_en[ii].q;
+      end
+      for (int unsigned ii = 0; ii < NOutputs; ii++) begin
+        if (reg2hw.invert[ii].qe) invert_q[ii] <= reg2hw.invert[ii].q;
+      end
+    end
+  end
 
   for (genvar ii = 0; ii < NOutputs; ii++) begin : gen_chan_clr
 
-    // Though it may be a bit overkill, we reset the internal blink counters whenever any channel
-    // specific parameters change.
+    // Reset the internal timing state whenever any channel specific parameters change.
+    //
+    // Note that since the `pwm_en` and `invert` registers are shared among all of the channels,
+    // we perform this reset only when a channel becomes enabled (important for starting them
+    // synchronized) or its inversion state is modified.
 
-    assign clr_blink_cntr[ii] = reg2hw.pwm_en[ii].qe | reg2hw.invert[ii].qe |
+    assign clr_chan_cntr[ii] = (reg2hw.pwm_en[ii].qe & reg2hw.pwm_en[ii].q & ~pwm_en_q[ii]) |
+                               (reg2hw.invert[ii].qe & (reg2hw.invert[ii].q ^ invert_q[ii])) |
                                 reg2hw.pwm_param[ii].phase_delay.qe |
                                 reg2hw.pwm_param[ii].htbt_en.qe |
                                 reg2hw.pwm_param[ii].blink_en.qe |
@@ -46,8 +74,8 @@ module pwm_core #(
 
   logic                  cntr_en;
   logic [BeatCntDw-1:0]  clk_div;
-  logic [3:0]            dc_resn;
-  logic [3:0]            lshift;
+  logic [DcResnDw-1:0]   dc_resn;
+  logic [DcResnDw-1:0]   lshift;
 
   logic [BeatCntDw-1:0]  beat_ctr_q;
   logic [BeatCntDw-1:0]  beat_ctr_d;
@@ -62,13 +90,28 @@ module pwm_core #(
   logic                  phase_ctr_en;
   logic                  cycle_end;
 
-  assign cntr_en = reg2hw.cfg.cntr_en.q;
-  assign dc_resn = reg2hw.cfg.dc_resn.q;
-  assign clk_div = reg2hw.cfg.clk_div.q;
+  // Capture phase counter configuration when the counter becomes enabled.
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
+      cntr_en_q <= '0;
+      clk_div_q <= '0;
+      dc_resn_q <= '0;
+    end else begin
+      // Enabled state may be changed at any time.
+      if (reg2hw.cfg.cntr_en.qe) cntr_en_q <= reg2hw.cfg.cntr_en.q;
+      // Phase counter configuration is updated only when becoming enabled.
+      if (clr_phase_cntr)        clk_div_q <= reg2hw.cfg.clk_div.q;
+      if (clr_phase_cntr)        dc_resn_q <= reg2hw.cfg.dc_resn.q;
+    end
+  end
+
+  assign cntr_en = reg2hw.cfg.cntr_en.qe ? reg2hw.cfg.cntr_en.q : cntr_en_q;
+  assign dc_resn = clr_phase_cntr        ? reg2hw.cfg.dc_resn.q : dc_resn_q;
+  assign clk_div = clr_phase_cntr        ? reg2hw.cfg.clk_div.q : clk_div_q;
 
   assign beat_ctr_d = (clr_phase_cntr) ? '0 :
                       (beat_ctr_q == clk_div) ? '0 : (beat_ctr_q + 1'b1);
-  assign beat_ctr_en = clr_phase_cntr | cntr_en;
+  assign beat_ctr_en = cntr_en;
   assign beat_end = (beat_ctr_q == clk_div);
 
   always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
@@ -79,10 +122,10 @@ module pwm_core #(
     end
   end
 
-  // Only update phase_ctr at the end of each beat
-  // Exception: allow reset to zero whenever not enabled
-  assign lshift = 4'd15 - dc_resn;
-  assign phase_ctr_en = beat_end & (clr_phase_cntr | cntr_en);
+  // Only update phase_ctr at the end of each beat.
+  // Exception: allow reset to zero whenever the phase counter parameters are set.
+  assign lshift = DcResnDw'(PhaseCntDw - 1) - dc_resn;
+  assign phase_ctr_en = clr_phase_cntr | (beat_end & cntr_en);
   assign phase_ctr_incr =  (PhaseCntDw)'('h1) << lshift;
   assign {phase_ctr_overflow, phase_ctr_next} = phase_ctr_q + phase_ctr_incr;
   assign phase_ctr_d = clr_phase_cntr ? '0 : phase_ctr_next;
@@ -115,8 +158,9 @@ module pwm_core #(
       .blink_param_x_i  (reg2hw.blink_param[ii].x.q),
       .blink_param_y_i  (reg2hw.blink_param[ii].y.q),
       .phase_ctr_i      (phase_ctr_q),
-      .clr_blink_cntr_i (clr_blink_cntr[ii]),
+      .phase_ctr_next_i (phase_ctr_next),
       .cycle_end_i      (cycle_end),
+      .clr_chan_cntr_i  (clr_chan_cntr[ii]),
       .dc_resn_i        (dc_resn),
       .pwm_o            (pwm_o[ii])
     );
