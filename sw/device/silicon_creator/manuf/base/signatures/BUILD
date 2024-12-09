@@ -9,7 +9,8 @@ filegroup(
     srcs = glob(
         ["*.ecdsa_sig"],
         # TODO(#25361): Eliminate this exclude and source signatures from the
-        # external @provisioning_exts repo.
+        # external @provisioning_exts repo.  In the meantime, comment this out
+        # when re-attaching signatures.
         exclude = glob(["ft_personalize_gb_*"]),
     ),
 )
