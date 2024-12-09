@@ -26,7 +26,7 @@ module pwm_chan #(
   input                clr_chan_cntr_i,
   input [DcResnDw-1:0] dc_resn_i,
 
-  output logic pwm_o
+  output logic         pwm_o
 );
 
   logic [CntDw-1:0] duty_cycle_actual;
@@ -220,7 +220,19 @@ module pwm_chan #(
   assign pwm_int = !pwm_en_i ? 1'b0 :
                    phase_wrap ? on_phase_started | ~off_phase_started :
                                 on_phase_started & ~off_phase_started;
+  // Optional inversion.
+  logic pwm_d;
+  assign pwm_d = invert_i ? ~pwm_int : pwm_int;
 
-  assign pwm_o = invert_i ? ~pwm_int : pwm_int;
+  // Register the output to prevent glitches.
+  logic pwm_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      pwm_q <= 1'b0;
+    end else begin
+      pwm_q <= pwm_d;
+    end
+  end
+  assign pwm_o = pwm_q;
 
 endmodule : pwm_chan
