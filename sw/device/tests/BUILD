@@ -4443,6 +4443,14 @@ opentitan_test(
         """,
         test_harness = "//sw/host/tests/chip/usb:usbdev_smoketest",
     ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_smoketest",
+    ),
     verilator = verilator_params(timeout = "long"),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
