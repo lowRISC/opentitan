@@ -142,7 +142,7 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
     } increment;
-  } dma_reg2hw_src_control_reg_t;
+  } dma_reg2hw_src_config_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -151,7 +151,7 @@ package dma_reg_pkg;
     struct packed {
       logic        q;
     } increment;
-  } dma_reg2hw_dst_control_reg_t;
+  } dma_reg2hw_dst_config_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -333,8 +333,8 @@ package dma_reg_pkg;
     dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [790:759]
     dma_reg2hw_transfer_width_reg_t transfer_width; // [758:757]
     dma_reg2hw_control_reg_t control; // [756:748]
-    dma_reg2hw_src_control_reg_t src_control; // [747:746]
-    dma_reg2hw_dst_control_reg_t dst_control; // [745:744]
+    dma_reg2hw_src_config_reg_t src_config; // [747:746]
+    dma_reg2hw_dst_config_reg_t dst_config; // [745:744]
     dma_reg2hw_status_reg_t status; // [743:737]
     dma_reg2hw_handshake_intr_enable_reg_t handshake_intr_enable; // [736:726]
     dma_reg2hw_clear_intr_src_reg_t clear_intr_src; // [725:715]
@@ -376,8 +376,8 @@ package dma_reg_pkg;
   parameter logic [BlockAw-1:0] DMA_CHUNK_DATA_SIZE_OFFSET = 9'h 3c;
   parameter logic [BlockAw-1:0] DMA_TRANSFER_WIDTH_OFFSET = 9'h 40;
   parameter logic [BlockAw-1:0] DMA_CONTROL_OFFSET = 9'h 44;
-  parameter logic [BlockAw-1:0] DMA_SRC_CONTROL_OFFSET = 9'h 48;
-  parameter logic [BlockAw-1:0] DMA_DST_CONTROL_OFFSET = 9'h 4c;
+  parameter logic [BlockAw-1:0] DMA_SRC_CONFIG_OFFSET = 9'h 48;
+  parameter logic [BlockAw-1:0] DMA_DST_CONFIG_OFFSET = 9'h 4c;
   parameter logic [BlockAw-1:0] DMA_STATUS_OFFSET = 9'h 50;
   parameter logic [BlockAw-1:0] DMA_ERROR_CODE_OFFSET = 9'h 54;
   parameter logic [BlockAw-1:0] DMA_SHA2_DIGEST_0_OFFSET = 9'h 58;
@@ -452,8 +452,8 @@ package dma_reg_pkg;
     DMA_CHUNK_DATA_SIZE,
     DMA_TRANSFER_WIDTH,
     DMA_CONTROL,
-    DMA_SRC_CONTROL,
-    DMA_DST_CONTROL,
+    DMA_SRC_CONFIG,
+    DMA_DST_CONFIG,
     DMA_STATUS,
     DMA_ERROR_CODE,
     DMA_SHA2_DIGEST_0,
@@ -519,8 +519,8 @@ package dma_reg_pkg;
     4'b 1111, // index[15] DMA_CHUNK_DATA_SIZE
     4'b 0001, // index[16] DMA_TRANSFER_WIDTH
     4'b 1111, // index[17] DMA_CONTROL
-    4'b 0001, // index[18] DMA_SRC_CONTROL
-    4'b 0001, // index[19] DMA_DST_CONTROL
+    4'b 0001, // index[18] DMA_SRC_CONFIG
+    4'b 0001, // index[19] DMA_DST_CONFIG
     4'b 0001, // index[20] DMA_STATUS
     4'b 0001, // index[21] DMA_ERROR_CODE
     4'b 1111, // index[22] DMA_SHA2_DIGEST_0

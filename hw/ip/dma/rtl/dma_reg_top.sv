@@ -187,16 +187,16 @@ module dma_reg_top (
   logic control_abort_wd;
   logic control_go_qs;
   logic control_go_wd;
-  logic src_control_we;
-  logic src_control_increment_qs;
-  logic src_control_increment_wd;
-  logic src_control_wrap_qs;
-  logic src_control_wrap_wd;
-  logic dst_control_we;
-  logic dst_control_increment_qs;
-  logic dst_control_increment_wd;
-  logic dst_control_wrap_qs;
-  logic dst_control_wrap_wd;
+  logic src_config_we;
+  logic src_config_increment_qs;
+  logic src_config_increment_wd;
+  logic src_config_wrap_qs;
+  logic src_config_wrap_wd;
+  logic dst_config_we;
+  logic dst_config_increment_qs;
+  logic dst_config_increment_wd;
+  logic dst_config_wrap_qs;
+  logic dst_config_wrap_wd;
   logic status_we;
   logic status_busy_qs;
   logic status_done_qs;
@@ -1156,11 +1156,11 @@ module dma_reg_top (
   assign reg2hw.control.go.qe = control_qe;
 
 
-  // R[src_control]: V(False)
+  // R[src_config]: V(False)
   // Create REGWEN-gated WE signal
-  logic src_control_gated_we;
-  assign src_control_gated_we =
-    src_control_we &
+  logic src_config_gated_we;
+  assign src_config_gated_we =
+    src_config_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   //   F[increment]: 0:0
   prim_subreg #(
@@ -1168,13 +1168,13 @@ module dma_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_src_control_increment (
+  ) u_src_config_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (src_control_gated_we),
-    .wd     (src_control_increment_wd),
+    .we     (src_config_gated_we),
+    .wd     (src_config_increment_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1182,11 +1182,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.src_control.increment.q),
+    .q      (reg2hw.src_config.increment.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (src_control_increment_qs)
+    .qs     (src_config_increment_qs)
   );
 
   //   F[wrap]: 1:1
@@ -1195,13 +1195,13 @@ module dma_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_src_control_wrap (
+  ) u_src_config_wrap (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (src_control_gated_we),
-    .wd     (src_control_wrap_wd),
+    .we     (src_config_gated_we),
+    .wd     (src_config_wrap_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1209,19 +1209,19 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.src_control.wrap.q),
+    .q      (reg2hw.src_config.wrap.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (src_control_wrap_qs)
+    .qs     (src_config_wrap_qs)
   );
 
 
-  // R[dst_control]: V(False)
+  // R[dst_config]: V(False)
   // Create REGWEN-gated WE signal
-  logic dst_control_gated_we;
-  assign dst_control_gated_we =
-    dst_control_we &
+  logic dst_config_gated_we;
+  assign dst_config_gated_we =
+    dst_config_we &
           prim_mubi_pkg::mubi4_test_true_strict(prim_mubi_pkg::mubi4_t'(cfg_regwen_qs));
   //   F[increment]: 0:0
   prim_subreg #(
@@ -1229,13 +1229,13 @@ module dma_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dst_control_increment (
+  ) u_dst_config_increment (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dst_control_gated_we),
-    .wd     (dst_control_increment_wd),
+    .we     (dst_config_gated_we),
+    .wd     (dst_config_increment_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1243,11 +1243,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dst_control.increment.q),
+    .q      (reg2hw.dst_config.increment.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (dst_control_increment_qs)
+    .qs     (dst_config_increment_qs)
   );
 
   //   F[wrap]: 1:1
@@ -1256,13 +1256,13 @@ module dma_reg_top (
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_dst_control_wrap (
+  ) u_dst_config_wrap (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (dst_control_gated_we),
-    .wd     (dst_control_wrap_wd),
+    .we     (dst_config_gated_we),
+    .wd     (dst_config_wrap_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1270,11 +1270,11 @@ module dma_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.dst_control.wrap.q),
+    .q      (reg2hw.dst_config.wrap.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (dst_control_wrap_qs)
+    .qs     (dst_config_wrap_qs)
   );
 
 
@@ -3006,8 +3006,8 @@ module dma_reg_top (
     addr_hit[15] = (reg_addr == DMA_CHUNK_DATA_SIZE_OFFSET);
     addr_hit[16] = (reg_addr == DMA_TRANSFER_WIDTH_OFFSET);
     addr_hit[17] = (reg_addr == DMA_CONTROL_OFFSET);
-    addr_hit[18] = (reg_addr == DMA_SRC_CONTROL_OFFSET);
-    addr_hit[19] = (reg_addr == DMA_DST_CONTROL_OFFSET);
+    addr_hit[18] = (reg_addr == DMA_SRC_CONFIG_OFFSET);
+    addr_hit[19] = (reg_addr == DMA_DST_CONFIG_OFFSET);
     addr_hit[20] = (reg_addr == DMA_STATUS_OFFSET);
     addr_hit[21] = (reg_addr == DMA_ERROR_CODE_OFFSET);
     addr_hit[22] = (reg_addr == DMA_SHA2_DIGEST_0_OFFSET);
@@ -3191,16 +3191,16 @@ module dma_reg_top (
   assign control_abort_wd = reg_wdata[27];
 
   assign control_go_wd = reg_wdata[31];
-  assign src_control_we = addr_hit[18] & reg_we & !reg_error;
+  assign src_config_we = addr_hit[18] & reg_we & !reg_error;
 
-  assign src_control_increment_wd = reg_wdata[0];
+  assign src_config_increment_wd = reg_wdata[0];
 
-  assign src_control_wrap_wd = reg_wdata[1];
-  assign dst_control_we = addr_hit[19] & reg_we & !reg_error;
+  assign src_config_wrap_wd = reg_wdata[1];
+  assign dst_config_we = addr_hit[19] & reg_we & !reg_error;
 
-  assign dst_control_increment_wd = reg_wdata[0];
+  assign dst_config_increment_wd = reg_wdata[0];
 
-  assign dst_control_wrap_wd = reg_wdata[1];
+  assign dst_config_wrap_wd = reg_wdata[1];
   assign status_we = addr_hit[20] & reg_we & !reg_error;
 
   assign status_done_wd = reg_wdata[1];
@@ -3307,8 +3307,8 @@ module dma_reg_top (
     reg_we_check[15] = chunk_data_size_gated_we;
     reg_we_check[16] = transfer_width_gated_we;
     reg_we_check[17] = control_we;
-    reg_we_check[18] = src_control_gated_we;
-    reg_we_check[19] = dst_control_gated_we;
+    reg_we_check[18] = src_config_gated_we;
+    reg_we_check[19] = dst_config_gated_we;
     reg_we_check[20] = status_we;
     reg_we_check[21] = 1'b0;
     reg_we_check[22] = 1'b0;
@@ -3442,13 +3442,13 @@ module dma_reg_top (
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[0] = src_control_increment_qs;
-        reg_rdata_next[1] = src_control_wrap_qs;
+        reg_rdata_next[0] = src_config_increment_qs;
+        reg_rdata_next[1] = src_config_wrap_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[0] = dst_control_increment_qs;
-        reg_rdata_next[1] = dst_control_wrap_qs;
+        reg_rdata_next[0] = dst_config_increment_qs;
+        reg_rdata_next[1] = dst_config_wrap_qs;
       end
 
       addr_hit[20]: begin
