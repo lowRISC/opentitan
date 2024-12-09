@@ -38,6 +38,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/otbn_boot_services.h"
+#include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
@@ -334,7 +335,10 @@ static status_t personalize_otp_and_flash_secrets(ujson_t *uj) {
 static void compute_keymgr_owner_int_binding(manuf_certgen_inputs_t *inputs) {
   memcpy(attestation_binding_value.data, inputs->rom_ext_measurement,
          kDiceMeasurementSizeInBytes);
+  // In the silicon_creator stage, we set the sealing binding to the
+  // manifest->identifier of the ROM_EXT stage.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
+  sealing_binding_value.data[0] = CHIP_ROM_EXT_IDENTIFIER;
 }
 
 /**
@@ -354,6 +358,8 @@ static void compute_keymgr_owner_binding(manuf_certgen_inputs_t *inputs) {
   hmac_sha256_final(&combined_measurements);
   memcpy(attestation_binding_value.data, combined_measurements.digest,
          kDiceMeasurementSizeInBytes);
+  // We expect the owner to use a Application Key binding  of
+  // {`prod`, 0, ... }.
   memset(sealing_binding_value.data, 0, kDiceMeasurementSizeInBytes);
   sealing_binding_value.data[0] = kOwnerAppDomainProd;
 }
