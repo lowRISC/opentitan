@@ -1,0 +1,31 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:reset_agent"
+description: "DV reset agent"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_base_agent
+
+    files:
+      - reset_agent_pkg.sv
+      - reset_interface.sv
+
+      - reset_item.svh: {is_include_file: true}
+      - reset_agent_cfg.svh: {is_include_file: true}
+      - reset_agent_cov.svh: {is_include_file: true}
+      - reset_sequencer.svh: {is_include_file: true}
+      - reset_driver.svh: {is_include_file: true}
+      - reset_monitor.svh: {is_include_file: true}
+      - reset_agent.svh: {is_include_file: true}
+      - seq_lib/reset_seq_lib.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
