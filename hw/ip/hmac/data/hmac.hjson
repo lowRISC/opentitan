@@ -567,8 +567,10 @@
 
               <!-- req_hmac_0031 begin -->
               The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
-              When `CFG.sha_en` is 0, these registers can be written to by software.
               <!-- req_hmac_0031 end -->
+              <!-- req_hmac_003b begin -->
+              When `CFG.sha_en` is 0, these registers can be written to by software.
+              <!-- req_hmac_003b end -->
               ''',
         count: "NumDigestWords",
         cname: "HMAC",
@@ -591,9 +593,9 @@
             Message is byte granularity.
             Lower 3 bits [2:0] are ignored.
 
-            <!-- req_hmac_0031 begin -->
+            <!-- req_hmac_003c begin -->
             When `CFG.sha_en` is 0, this register can be written by software.
-            <!-- req_hmac_0031 end -->
+            <!-- req_hmac_003c end -->
             ''',
       swaccess: "rw",
       hwaccess: "hrw",
@@ -606,9 +608,9 @@
     { name: "MSG_LENGTH_UPPER",
       desc: '''Received Message Length calculated by the HMAC in bits [63:32]
 
-            <!-- req_hmac_0031 begin -->
+            <!-- req_hmac_003c begin -->
             When `CFG.sha_en` is 0, this register can be written by software.
-            <!-- req_hmac_0031 end -->
+            <!-- req_hmac_003c end -->
             <!-- imp_hmac_0014 begin -->
             For SHA-2-2 256 computations, message length is 64-bit {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
             For SHA-2 384/512 message length is extended to 128-bit in line with [nist-fips-180-4] where the upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
