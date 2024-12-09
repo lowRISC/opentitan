@@ -7,6 +7,13 @@ load("//rules:otbn.bzl", "otbn_binary")
 package(default_visibility = ["//visibility:public"])
 
 otbn_binary(
+    name = "otbn_insn_carry_flag",
+    srcs = [
+        "otbn_insn_carry_flag.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_key_sideload_sca",
     srcs = [
         "otbn_key_sideload_sca.s",
