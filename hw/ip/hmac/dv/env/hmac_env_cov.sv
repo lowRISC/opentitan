@@ -103,6 +103,12 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     msg_len_upper_cross: cross hmac_en, msg_len_upper_cp;
   endgroup : msg_len_cg
 
+  covergroup wr_msg_len_during_sha_en_cg with function sample (logic msg_len_lower,
+                                                               logic msg_len_upper);
+    msg_len_lower_cp: coverpoint msg_len_lower {bins true = {1'b1};}
+    msg_len_upper_cp: coverpoint msg_len_upper {bins true = {1'b1};}
+  endgroup : wr_msg_len_during_sha_en_cg
+
   covergroup wr_config_during_hash_cg with function sample (logic wr_config_during_hash);
     cp: coverpoint wr_config_during_hash {bins true = {1'b1};}
   endgroup : wr_config_during_hash_cg
@@ -154,6 +160,7 @@ function hmac_env_cov::new(string name, uvm_component parent);
   status_cg                   = new();
   msg_len_cg                  = new();
   err_code_cg                 = new();
+  wr_msg_len_during_sha_en_cg = new();
   wr_config_during_hash_cg    = new();
   wr_key_during_hash_cg       = new();
   wr_key_during_sha_only_cg   = new();
