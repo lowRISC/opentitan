@@ -30,12 +30,34 @@ module pwm_core #(
 
   assign clr_phase_cntr = reg2hw.cfg.cntr_en.qe & reg2hw.cfg.cntr_en.q & ~cntr_en_q;
 
+  // Capture channel state, in order to determine which channel(s) shall be reset when a shared
+  // register is updated.
+  logic [NOutputs-1:0] pwm_en_q;
+  logic [NOutputs-1:0] invert_q;
+  always_ff @(posedge clk_core_i or negedge rst_core_ni) begin
+    if (!rst_core_ni) begin
+      pwm_en_q  <= '0;
+      invert_q  <= '0;
+    end else begin
+      for (int unsigned ii = 0; ii < NOutputs; ii++) begin
+        if (reg2hw.pwm_en[ii].qe) pwm_en_q[ii] <= reg2hw.pwm_en[ii].q;
+      end
+      for (int unsigned ii = 0; ii < NOutputs; ii++) begin
+        if (reg2hw.invert[ii].qe) invert_q[ii] <= reg2hw.invert[ii].q;
+      end
+    end
+  end
+
   for (genvar ii = 0; ii < NOutputs; ii++) begin : gen_chan_clr
 
-    // Though it may be a bit overkill, we reset the internal blink counters whenever any channel
-    // specific parameters change.
+    // Reset the internal timing state whenever any channel specific parameters change.
+    //
+    // Note that since many channels share a single 'pwm_en' and 'invert' register pair,
+    // we perform this reset only when a channel becomes enabled (important for starting them
+    // synchronized) or its inversion state is modified.
 
-    assign clr_chan_cntr[ii] = reg2hw.pwm_en[ii].qe | reg2hw.invert[ii].qe |
+    assign clr_chan_cntr[ii] = (reg2hw.pwm_en[ii].qe & reg2hw.pwm_en[ii].q & ~pwm_en_q[ii]) |
+                               (reg2hw.invert[ii].qe & (reg2hw.invert[ii].q ^ invert_q[ii])) |
                                 reg2hw.pwm_param[ii].phase_delay.qe |
                                 reg2hw.pwm_param[ii].htbt_en.qe |
                                 reg2hw.pwm_param[ii].blink_en.qe |
