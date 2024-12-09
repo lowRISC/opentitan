@@ -195,7 +195,7 @@
           desc: '''SHA-2 enable.
 
                  If 0, the SHA engine will not initiate compression, this is used to stop operation of the SHA-2 engine until configuration has been done.
-                 When the SHA-2 engine is disabled the digest is cleared, and the digest can be written to from SW which enables restoring context (to support context switching).'''
+                 When the SHA-2 engine is disabled the digest is cleared.'''
           tags: [// don't enable hmac and sha data paths - we will do that in functional tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
@@ -376,7 +376,9 @@
       fields: [
         { bits: "0",
           name: "hmac_idle",
-          desc: "HMAC idle status."
+          desc: '''HMAC idle status.
+                When IDLE, the `DIGEST` and the `MSG_LENGTH_LOWER`/`MSG_LENGTH_UPPER` can be written to from SW which enables restoring context (to support context switching).
+                '''
           resval: "1"
         }
         { bits: "1",
@@ -462,7 +464,8 @@
               For SHA-2 384, {DIGEST12-DIGEST15} are truncated; they are irrelevant and should not be read out.
 
               The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
-              When `CFG.sha_en` is 0, these registers can be written to by software.
+              When `STATUS.hmac_idle` is 1, these registers may be written to by software.
+              Outside of this window, writes can cause unpredictable behavior.
               ''',
         count: "NumDigestWords",
         cname: "HMAC",
@@ -485,7 +488,8 @@
             Message is byte granularity.
             Lower 3 bits [2:0] are ignored.
 
-            When `CFG.sha_en` is 0, this register can be written by software.
+            When `STATUS.hmac_idle` is 1, this register may be written by software.
+            Outside of this window, writes can cause unpredictable behavior.
             ''',
       swaccess: "rw",
       hwaccess: "hrw",
@@ -498,7 +502,8 @@
     { name: "MSG_LENGTH_UPPER",
       desc: '''Received Message Length calculated by the HMAC in bits [63:32]
 
-            When `CFG.sha_en` is 0, this register can be written by software.
+            When `STATUS.hmac_idle` is 1, this register may be written by software.
+            Outside of this window, writes can cause unpredictable behavior.
             For SHA-2-2 256 computations, message length is 64-bit {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.f
             For SHA-2 384/512 message length is extended to 128-bit in line with [nist-fips-180-4] where the upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
             ''',
