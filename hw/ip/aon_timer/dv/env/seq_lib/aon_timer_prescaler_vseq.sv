@@ -32,12 +32,10 @@ function aon_timer_prescaler_vseq::new (string name="");
 endfunction : new
 
 task aon_timer_prescaler_vseq::body();
-
   aon_timer_init();
   prescaler_configure();
   wait_for_interrupt();
   aon_timer_shutdown();
-
 endtask : body
 
 task aon_timer_prescaler_vseq::prescaler_configure();
