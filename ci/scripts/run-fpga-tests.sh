@@ -47,6 +47,7 @@ ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga
 ci/bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface="$fpga" fpga get-sam3x-fw-version || true
 
 ci/bazelisk.sh test \
+    --run_under=//ci/scripts:run_test \
     --define DISABLE_VERILATOR_BUILD=true \
     --nokeep_going \
     --test_timeout_filters=short,moderate \
