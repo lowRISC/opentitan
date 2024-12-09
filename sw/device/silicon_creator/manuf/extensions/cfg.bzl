@@ -24,3 +24,5 @@ EXT_EARLGREY_SKUS = {
     #    "device_ext_libs": [<which device hooks extension libraries to use>]
     # }
 }
+
+EXT_SIGNED_PERSO_BINS = []

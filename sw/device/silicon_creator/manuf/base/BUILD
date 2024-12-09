@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@//rules:signing.bzl", "offline_presigning_artifacts", "offline_signature_attach")
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_SIGNED_PERSO_BINS",
+)
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
@@ -380,9 +384,8 @@ filegroup(
            [
                ":ft_fw_bundle_{}".format(sku)
                for sku in EARLGREY_SKUS.keys()
-           ] + [
-        "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
-    ],
+           ] + ["//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival"] +
+           EXT_SIGNED_PERSO_BINS,
 )
 
 [
