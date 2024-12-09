@@ -72,7 +72,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_otbn_irq_get_type(const dif_otbn_t *otbn, dif_otbn_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (otbn == NULL || type == NULL || irq == kDifOtbnIrqDone + 1) {
+  if (otbn == NULL || type == NULL || irq < 0 || irq > kDifOtbnIrqDone) {
     return kDifBadArg;
   }
 

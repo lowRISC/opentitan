@@ -88,7 +88,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_otp_ctrl_irq_get_type(const dif_otp_ctrl_t *otp_ctrl,
                                        dif_otp_ctrl_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (otp_ctrl == NULL || type == NULL || irq == kDifOtpCtrlIrqOtpError + 1) {
+  if (otp_ctrl == NULL || type == NULL || irq < 0 ||
+      irq > kDifOtpCtrlIrqOtpError) {
     return kDifBadArg;
   }
 

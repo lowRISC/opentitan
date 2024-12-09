@@ -72,8 +72,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sysrst_ctrl_irq_get_type(const dif_sysrst_ctrl_t *sysrst_ctrl,
                                           dif_sysrst_ctrl_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (sysrst_ctrl == NULL || type == NULL ||
-      irq == kDifSysrstCtrlIrqEventDetected + 1) {
+  if (sysrst_ctrl == NULL || type == NULL || irq < 0 ||
+      irq > kDifSysrstCtrlIrqEventDetected) {
     return kDifBadArg;
   }
 

@@ -79,7 +79,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_mbx_irq_get_type(const dif_mbx_t *mbx, dif_mbx_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (mbx == NULL || type == NULL || irq == kDifMbxIrqMbxError + 1) {
+  if (mbx == NULL || type == NULL || irq < 0 || irq > kDifMbxIrqMbxError) {
     return kDifBadArg;
   }
 

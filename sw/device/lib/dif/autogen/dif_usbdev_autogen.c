@@ -125,7 +125,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_usbdev_irq_get_type(const dif_usbdev_t *usbdev,
                                      dif_usbdev_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (usbdev == NULL || type == NULL || irq == kDifUsbdevIrqAvSetupEmpty + 1) {
+  if (usbdev == NULL || type == NULL || irq < 0 ||
+      irq > kDifUsbdevIrqAvSetupEmpty) {
     return kDifBadArg;
   }
 

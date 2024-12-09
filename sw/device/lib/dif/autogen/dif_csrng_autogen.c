@@ -84,7 +84,8 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_csrng_irq_get_type(const dif_csrng_t *csrng,
                                     dif_csrng_irq_t irq, dif_irq_type_t *type) {
-  if (csrng == NULL || type == NULL || irq == kDifCsrngIrqCsFatalErr + 1) {
+  if (csrng == NULL || type == NULL || irq < 0 ||
+      irq > kDifCsrngIrqCsFatalErr) {
     return kDifBadArg;
   }
 
