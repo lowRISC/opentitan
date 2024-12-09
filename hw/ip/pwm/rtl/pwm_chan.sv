@@ -39,6 +39,29 @@ module pwm_chan #(
   assign blink_mode = pwm_en_i & blink_en_i;
   assign htbt_mode = pwm_en_i & blink_en_i & htbt_en_i;
 
+  // When there is a non-zero phase delay we cannot use the `cycle_end_i` signal directly
+  // to switch to a new duty cycle because we could be asserting the pwm output at that
+  // instant, so we shall need to delay this signal.
+  logic dc_update_pending;
+  logic set_dc_update;
+  logic clr_dc_update;
+  logic update;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      dc_update_pending <= 1'b0;
+    end else if (clr_chan_cntr_i) begin
+      dc_update_pending <= 1'b0;
+    end else if (pwm_en_i) begin
+      dc_update_pending <= (dc_update_pending | set_dc_update) & ~clr_dc_update;
+    end
+  end
+  // We delay the update until the _next_ value of the phase counter passes the programmed phase
+  // delay. The new duty cycle could be zero, so we must know before the crossing point.
+  assign set_dc_update = (cycle_end_i & |phase_delay_masked);
+  assign clr_dc_update = (phase_ctr_next_i >= phase_delay_masked);
+  assign update = pwm_en_i & (|phase_delay_masked ? (dc_update_pending & clr_dc_update)
+                                                  : cycle_end_i);
+
   logic [CntDw-1:0] duty_cycle_actual;
   logic [CntDw-1:0] on_phase;
   logic [CntDw-1:0] off_phase;
@@ -50,20 +73,31 @@ module pwm_chan #(
   logic [CntDw-1:0] blink_ctr_d;
   logic [CntDw-1:0] duty_cycle_blink;
 
-  logic unused_sum;
-  logic [CntDw-1:0] blink_sum;
-  assign {unused_sum, blink_sum} = blink_param_x_i + blink_param_y_i + 1'b1;
+  // Record whether we're in the 'y' phase of regular blinking; heartbeat mode
+  // never leaves phase 'x'.
+  logic blink_y_phase_q;
+  logic blink_y_phase_d;
 
+  // Final pulse cycle within this blinking phase?
+  logic blink_end;
+  assign blink_end = ~|blink_ctr_q;
+
+  // Blink mode counts 'x'+1 pulse cycles and then, if heartbeat is disabled, 'y'+1 pulse cycles.
+  // Non-heartbeat alternates between duty cycles 'a' and 'b' whereas heartbeat mode oscillates
+  // linearly between the extremes of 'a' and 'b'.
   always_comb begin
     blink_ctr_d = blink_ctr_q;
+    blink_y_phase_d = blink_y_phase_q;
 
-    if (!(blink_en_i && !htbt_en_i) || clr_chan_cntr_i) begin
-      blink_ctr_d = 0;
-    end else if (cycle_end_i) begin
-      if (blink_ctr_q == blink_sum[CntDw-1:0]) begin
-        blink_ctr_d = 0;
+    if (clr_chan_cntr_i) begin
+      blink_ctr_d = blink_param_x_i;
+      blink_y_phase_d = 1'b0;
+    end else if (blink_mode & update) begin
+      if (blink_end) begin
+        blink_ctr_d = (blink_y_phase_q | htbt_en_i) ? blink_param_x_i : blink_param_y_i;
+        blink_y_phase_d = !(blink_y_phase_q | htbt_en_i);
       end else begin
-        blink_ctr_d = blink_ctr_q + 1;
+        blink_ctr_d = blink_ctr_q - 1;
       end
     end
   end
@@ -71,70 +105,39 @@ module pwm_chan #(
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       blink_ctr_q <= '0;
+      blink_y_phase_q <= 1'b0;
     end else begin
-      if (clr_chan_cntr_i) begin
-        blink_ctr_q <= '0;
-      end else if (blink_en_i && !htbt_en_i) begin
-        blink_ctr_q <= blink_ctr_d;
-      end
+      blink_ctr_q <= blink_ctr_d;
+      blink_y_phase_q <= blink_y_phase_d;
     end
   end
 
-  assign duty_cycle_blink = (blink_en_i && !htbt_en_i && (blink_ctr_q > blink_param_x_i)) ?
-                            duty_cycle_b_i : duty_cycle_a_i;
+  // In blinking mode the duty cycle toggles between 'a' and 'b', otherwise it is always 'a'.
+  assign duty_cycle_blink = (blink_en_i && blink_y_phase_q) ? duty_cycle_b_i : duty_cycle_a_i;
 
   // Heartbeat mode
-  logic [CntDw-1:0] htbt_ctr_q;
-  logic [CntDw-1:0] htbt_ctr_d;
   logic [CntDw-1:0] duty_cycle_htbt;
   logic [CntDw-1:0] dc_htbt_d;
   logic [CntDw-1:0] dc_htbt_q;
   logic dc_htbt_end;
-  logic dc_htbt_end_q;
-
-  always_comb begin
-    htbt_ctr_d = htbt_ctr_q;
-
-    if (!(blink_en_i && htbt_en_i) || clr_chan_cntr_i) begin
-      htbt_ctr_d = 0;
-    end else if (cycle_end_i) begin
-      if (htbt_ctr_q == blink_param_x_i) begin
-        htbt_ctr_d = 0;
-      end else begin
-        htbt_ctr_d = htbt_ctr_q + 1;
-      end
-    end
-  end
-
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      htbt_ctr_q <= '0;
-    end else begin
-      if (clr_chan_cntr_i) begin
-        htbt_ctr_q <= '0;
-      end else if (blink_en_i && htbt_en_i) begin
-        htbt_ctr_q <= htbt_ctr_d;
-      end
-    end
-  end
-  assign dc_htbt_end = cycle_end_i & (htbt_ctr_q == blink_param_x_i);
-  always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) begin
-      dc_htbt_end_q <= '0;
-    end else begin
-      dc_htbt_end_q <= dc_htbt_end;
-    end
-  end
+  // Asserted at the very end of the 'x' pulses cycles for which the heartbeat duty cycle
+  // remains unchanged; this is our signal to update the duty cycle in heartbeat mode.
+  assign dc_htbt_end = htbt_mode & update & blink_end;
 
   logic pattern_repeat;
   logic htbt_falling;
   logic dc_wrap;
   logic dc_wrap_q;
   logic pos_htbt;
-  logic neg_htbt;
+
+  // We support either 'a' or 'b' being the greater duty cycle.
   assign pos_htbt = (duty_cycle_a_i < duty_cycle_b_i);
   assign pattern_repeat = (duty_cycle_a_i == duty_cycle_b_i);
-  assign neg_htbt = !pos_htbt & !pattern_repeat;
+
+  logic [CntDw-1:0] dc_htbt_max;
+  logic [CntDw-1:0] dc_htbt_min;
+  assign dc_htbt_max = pos_htbt ? duty_cycle_b_i : duty_cycle_a_i;
+  assign dc_htbt_min = pos_htbt ? duty_cycle_a_i : duty_cycle_b_i;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -143,62 +146,55 @@ module pwm_chan #(
       // For proper initialization, set the initial htbt_falling whenever a register is updated,
       // as indicated by clr_chan_cntr_i
       htbt_falling <= !pos_htbt;
-    end else if (pos_htbt && ((dc_htbt_q >= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
-      htbt_falling <= 1'b1; // duty cycle counts down
-    end else if (pos_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
-      htbt_falling <= 1'b0; // duty cycle counts up
-    end else if (neg_htbt && ((dc_htbt_q <= duty_cycle_b_i) || (dc_wrap && dc_htbt_end))) begin
-      htbt_falling <= 1'b0; // duty cycle counts up
-    end else if (neg_htbt && (dc_htbt_q == duty_cycle_a_i) && dc_htbt_end_q) begin
-      htbt_falling <= 1'b1; // duty cycle counts down
-    end else begin
-      htbt_falling <= htbt_falling;
-    end
-  end
-
-  localparam int CntExtDw = CntDw + 1;
-  always_comb begin
-    dc_wrap   = 1'b0;
-    dc_htbt_d = dc_htbt_q;
-
-    if (htbt_ctr_q == blink_param_x_i) begin
-      if ((dc_htbt_q == duty_cycle_a_i) && pattern_repeat) begin
-        dc_htbt_d = duty_cycle_a_i;
-      end else if (htbt_falling) begin
-        {dc_wrap, dc_htbt_d} = (CntExtDw)'(dc_htbt_q) - (CntExtDw)'(blink_param_y_i) - 1'b1;
-      end else begin
-        {dc_wrap, dc_htbt_d} = (CntExtDw)'(dc_htbt_q) + (CntExtDw)'(blink_param_y_i) + 1'b1;
+    end else if (htbt_mode) begin
+      if (!htbt_falling && ((dc_htbt_q >= dc_htbt_max) || (dc_wrap && dc_htbt_end))) begin
+        htbt_falling <= 1'b1; // duty cycle counts down
+      end else if (htbt_falling && ((dc_htbt_q <= dc_htbt_min) || (dc_wrap && dc_htbt_end))) begin
+        htbt_falling <= 1'b0; // duty cycle counts up
       end
     end
   end
 
+  // Calculate the next duty cycle to be used in heartbeat mode.
+  localparam int CntExtDw = CntDw + 1;
+  always_comb begin
+    if (pattern_repeat) begin
+      {dc_wrap, dc_htbt_d} = {1'b0, duty_cycle_a_i};
+    end else if (htbt_falling) begin
+      {dc_wrap, dc_htbt_d} = {dc_wrap_q, dc_htbt_q} - (CntExtDw)'(blink_param_y_i) - 1'b1;
+    end else begin
+      {dc_wrap, dc_htbt_d} = {dc_wrap_q, dc_htbt_q} + (CntExtDw)'(blink_param_y_i) + 1'b1;
+    end
+  end
+
+  // Remember for 'x' pulse cycles whether an over/underflow occurred (dc_wrap was asserted).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dc_wrap_q <= 1'b0;
     end else if (clr_chan_cntr_i) begin
       dc_wrap_q <= 1'b0;
-    end else if ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) begin
-      // To pick the first dc_wrap pulse during the transition and set the correct duration of
-      // dc_wrap_q, pos_htbt and htbt_falling signals are involved
-      dc_wrap_q <= pos_htbt ? dc_wrap & ~htbt_falling : dc_wrap & htbt_falling;
-    end else begin
-      dc_wrap_q <= dc_wrap_q;
+    end else if (dc_htbt_end) begin
+      dc_wrap_q <= dc_wrap;
     end
   end
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       dc_htbt_q <= '0;
-    end else if (!htbt_en_i && dc_htbt_q != duty_cycle_a_i) begin
-      // the heart beat duty cycle is only changed when the heartbeat is not currently
-      // ticking.
+    end else if (clr_chan_cntr_i) begin
       dc_htbt_q <= duty_cycle_a_i;
-    end else begin
-      dc_htbt_q <= ((htbt_ctr_q == blink_param_x_i) && cycle_end_i) ? dc_htbt_d : dc_htbt_q;
+    end else if (dc_htbt_end) begin
+      // Note that although the duty cycle still advances in the event of wrapping, because of the
+      // nature of two's-complement arithmetic this is non-destructive, and the next update will
+      // have the opposite sign and thus reinstate the previous value.
+      dc_htbt_q <= dc_htbt_d;
     end
   end
 
+  // Under/overflowing duty cycles are clamped to min/max.
   assign duty_cycle_htbt = dc_wrap_q ? {CntDw{pos_htbt}} : dc_htbt_q;
 
+  // Select the appropriate duty cycle for the current operating mode.
   assign duty_cycle_actual = htbt_mode ? duty_cycle_htbt : duty_cycle_blink;
 
   // For cases when the desired duty_cycle does not line up with the chosen resolution

@@ -162,6 +162,7 @@ module pwm_core #(
       .blink_param_x_i  (reg2hw.blink_param[ii].x.q),
       .blink_param_y_i  (reg2hw.blink_param[ii].y.q),
       .phase_ctr_i      (phase_ctr_q),
+      .phase_ctr_next_i (phase_ctr_next),
       .cycle_end_i      (cycle_end),
       .clr_chan_cntr_i  (clr_chan_cntr[ii]),
       .dc_resn_i        (dc_resn),
