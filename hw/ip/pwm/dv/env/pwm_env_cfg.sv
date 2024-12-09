@@ -36,7 +36,6 @@ function void pwm_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
     m_pwm_monitor_cfg[i] = pwm_monitor_cfg::type_id::create($sformatf("m_pwm_monitor%0d_cfg", i));
     m_pwm_monitor_cfg[i].if_mode = Device;
     m_pwm_monitor_cfg[i].is_active = 0;
-    m_pwm_monitor_cfg[i].monitor_id = i;
   end
 
   // only support 1 outstanding TL items in tlul_adapter
