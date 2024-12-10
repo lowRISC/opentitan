@@ -1,6 +1,11 @@
 /* Copyright lowRISC contributors (OpenTitan project). */
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
+<%
+  gencmd_out = gencmd[2:].replace("//", " *")
+%>\
+/*${gencmd_out}
+ */
 <%!
 # TODO(#4709): Remove this function, once the old way of defining memories has been deprecated.
 def memory_to_flags(memory):
