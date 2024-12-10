@@ -413,7 +413,7 @@ For SHA-2 256 order of the 256-bit digest[255:0] = {DIGEST0, DIGEST1, DIGEST2, D
 For SHA-2 384, {DIGEST12-DIGEST15} are truncated; they are irrelevant and should not be read out.
 
 The digest gets cleared when `CFG.sha_en` transitions from 1 to 0.
-When `STATUS.hmac_idle` is 1, these registers can be written to by software.
+When `STATUS.hmac_idle` is 1, these registers can be written to by software. Outside of this window, writes can cause unpredictable results.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -455,7 +455,7 @@ Received Message Length calculated by the HMAC in bits [31:0]
 Message is byte granularity.
 Lower 3 bits [2:0] are ignored.
 
-When `STATUS.hmac_idle` is 1, this register can be written by software.
+When `STATUS.hmac_idle` is 1, this register can be written by software. Outside of this window, writes can cause unpredictable results.
 - Offset: `0xe4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -473,7 +473,7 @@ When `STATUS.hmac_idle` is 1, this register can be written by software.
 ## MSG_LENGTH_UPPER
 Received Message Length calculated by the HMAC in bits [63:32]
 
-When `STATUS.hmac_idle` is 1, this register can be written by software.
+When `STATUS.hmac_idle` is 1, this register can be written by software. Outside of this window, writes can cause unpredictable results.
 For SHA-2-2 256 computations, message length is 64-bit {MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.f
 For SHA-2 384/512 message length is extended to 128-bit in line with [nist-fips-180-4] where the upper 64 bits get zero-padded: {32'b0, 32'b0, MSG_LENGTH_UPPER, MSG_LENGTH_LOWER}.
 - Offset: `0xe8`
