@@ -73,8 +73,6 @@ install_fuzzing_python_deps(local_wheels_repo_target = "@ot_python_wheels//:sani
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
 rust_repos()
-load("//third_party/rust:deps.bzl", "rust_deps")
-rust_deps()
 
 # Shellcheck
 load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
