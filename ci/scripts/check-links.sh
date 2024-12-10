@@ -20,7 +20,7 @@ rm -f sw/vendor/eembc_coremark/docs/html/index/General2.html
     --exclude-path doc/rust_for_c_devs.md \
     --exclude-path hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md \
     || {
-      echo -n "##vso[task.logissue type=error]"
+      echo -n "::error::"
       echo "Link Check failed."
       exit 1
     }

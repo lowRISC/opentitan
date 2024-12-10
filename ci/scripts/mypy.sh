@@ -18,7 +18,7 @@ dirs_with_lint_makefile=(
 retcode=0
 for dir in "${dirs_with_lint_makefile[@]}"; do
     make -C "$dir" lint || {
-        echo -n "##vso[task.logissue type=error]"
+        echo -n "::error::"
         echo "Failed mypy check in ${dir}."
         retcode=1
     }
