@@ -24,13 +24,19 @@
       type:    "int",
       default: "${num_ranges}",
     },
+    { name:    "DenyCountWidth",
+      desc:    "Witdth of the deny counter",
+      type:    "int",
+      default: "8",
+      local:   "true"
+    },
   ],
   inter_signal_list: [
     { name:    "range_check_overwrite"
       type:    "uni",
       act:     "req",
       package: "prim_mubi_pkg",
-      struct:  "mubi4",
+      struct:  "mubi8",
       width:   "1"
       desc:    "Overwrites all ranges and let all requests pass through."
     },
