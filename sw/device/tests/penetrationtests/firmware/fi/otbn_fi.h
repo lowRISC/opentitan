@@ -61,6 +61,20 @@ status_t handle_otbn_fi_char_bn_sel(ujson_t *uj);
 status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj);
 
 /**
+ * otbn.fi.char.bne command handler.
+ *
+ * The goal of this test is to fault to BNE instruction such that the jump is
+ * not performed. Then, a counter gets incremented. When no effective fault
+ * occurs, the counter is 0.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bne(ujson_t *uj);
+
+/**
  * otbn.fi.char_dmem_access command handler.
  *
  * OTBN loads WDRs with words from DMEM. These values are stored in different
@@ -252,9 +266,9 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj);
 /**
  * otbn.fi.pc command handler.
  *
- * The goal of this test is to fault the OTBN program counter that is passed from
- * Ibex into OTBN. OTBN jumps to this PC. Manipulation can be detected by reading
- * the instruction counter.
+ * The goal of this test is to fault the OTBN program counter that is passed
+ * from Ibex into OTBN. OTBN jumps to this PC. Manipulation can be detected by
+ * reading the instruction counter.
  *
  * @param uj The received uJSON data.
  */
