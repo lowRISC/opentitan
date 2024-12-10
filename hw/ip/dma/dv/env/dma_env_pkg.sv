@@ -56,13 +56,6 @@ package dma_env_pkg;
   typedef virtual dma_sys_tl_if dma_sys_tl_vif;
   typedef class dma_scoreboard;
 
-  // DMAC data direction in hardware handshake mode
-  // enum values are based on dma hjson
-  typedef enum {
-    DmaRcvData = 0,
-    DmaSendData = 1
-  } dma_control_data_direction_e;
-
   typedef struct {
     asid_encoding_e src_id;
     asid_encoding_e dst_id;
