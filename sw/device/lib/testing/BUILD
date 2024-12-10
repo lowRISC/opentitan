@@ -14,7 +14,7 @@ cc_library(
     hdrs = ["//sw/device/lib/testing/autogen:isr_testutils_hdr"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:top_lib",
+        "//hw/top:devicetables",
         "//sw/device/lib/dif:all_difs",
         "//sw/device/lib/testing/test_framework:check",
     ],

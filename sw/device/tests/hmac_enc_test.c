@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "devicetables.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
@@ -12,17 +13,20 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "sw/device/lib/testing/autogen/isr_testutils.h"
 
-static plic_isr_ctx_t plic_ctx = {
-    .hart_id = kTopEarlgreyPlicTargetIbex0,
+enum {
+  kPlicTarget = 0,
 };
 
-static top_earlgrey_plic_peripheral_t peripheral_serviced;
+static const dt_hmac_t *kHmacDt = &kDtHmac[0];
+
+static plic_isr_ctx_t plic_ctx = {
+    .hart_id = kPlicTarget,
+};
+
 static dif_hmac_irq_t irq_serviced;
 static hmac_isr_ctx_t hmac_ctx = {
-    .plic_hmac_start_irq_id = kTopEarlgreyPlicIrqIdHmacHmacDone,
     .is_only_irq = false,
 };
 
@@ -41,17 +45,15 @@ static const dif_hmac_transaction_t kHmacTransactionConfig = {
  * overrides the default OTTF implementation.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  isr_testutils_hmac_isr(plic_ctx, hmac_ctx, /* mute_status_irq */ false,
-                         &peripheral_serviced, &irq_serviced);
+  isr_testutils_hmac_isr_try(plic_ctx, hmac_ctx, /* plic_id */ NULL,
+                             /* mute_status_irq */ false, &irq_serviced);
 }
 
 /**
  * Enables interrupts required by this test.
  */
 static void irqs_init(void) {
-  mmio_region_t base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR);
-  CHECK_DIF_OK(dif_rv_plic_init(base_addr, plic_ctx.rv_plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(&kDtRvPlic[0], plic_ctx.rv_plic));
 
   // Enable interrupts in HMAC IP.
   CHECK_DIF_OK(dif_hmac_irq_set_enabled(hmac_ctx.hmac, kDifHmacIrqHmacDone,
@@ -60,9 +62,10 @@ static void irqs_init(void) {
                                         kDifToggleEnabled));
 
   // Enable interrupts in PLIC.
-  rv_plic_testutils_irq_range_enable(plic_ctx.rv_plic, plic_ctx.hart_id,
-                                     kTopEarlgreyPlicIrqIdHmacHmacDone,
-                                     kTopEarlgreyPlicIrqIdHmacFifoEmpty);
+  rv_plic_testutils_irq_range_enable(
+      plic_ctx.rv_plic, plic_ctx.hart_id,
+      dt_hmac_irq_to_plic_id(kHmacDt, kDtHmacIrqHmacDone),
+      dt_hmac_irq_to_plic_id(kHmacDt, kDtHmacIrqFifoEmpty));
   // Enable interrupts in Ibex.
   irq_external_ctrl(true);
   irq_global_ctrl(true);
@@ -72,10 +75,9 @@ bool test_main(void) {
   dif_hmac_t hmac;
   dif_rv_plic_t plic;
   plic_ctx.rv_plic = &plic;
-  hmac_ctx.hmac = &hmac;
 
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
-  CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
+  CHECK_DIF_OK(dif_hmac_init_from_dt(kHmacDt, &hmac));
+  isr_testutils_hmac_init_from_dt(&hmac_ctx, &hmac, kHmacDt);
 
   irqs_init();
 
