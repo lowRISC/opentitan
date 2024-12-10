@@ -45,7 +45,7 @@ set -o pipefail
 git diff -z --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
   "${pathspec_args[@]}" | \
     xargs -0 -r $lintpy_cmd || {
-    echo -n "##vso[task.logissue type=error]"
+    echo -n "::error::"
     echo "Python lint failed."
     exit 1
 }

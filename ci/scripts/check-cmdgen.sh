@@ -9,7 +9,7 @@
 set -e
 
 ./util/cmdgen.py '**/*.md' || {
-  echo -n "##vso[task.logissue type=error]"
+  echo -n "::error::"
   echo "Documentation generated using CMDGEN blocks is not up to date."
   echo "Update blocks with: ./util/cmdgen.py -u '**/*.md'"
   exit 1
