@@ -50,7 +50,7 @@ otp_json(
 [
     otp_image(
         name = "otp_img_watchdog_enable_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_watchdog_enable"],
     )
     for lc_state, _ in get_lc_items()
@@ -109,7 +109,7 @@ WATCHDOG_TEST_CASES = {
 ]
 
 WATCHDOG_OTP = {
-    "disable": "//hw/ip/otp_ctrl/data:img_{}",
+    "disable": "//hw/top_earlgrey/data/otp:img_{}",
     "enable": ":otp_img_watchdog_enable_{}",
 }
 

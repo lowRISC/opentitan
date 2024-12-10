@@ -38,7 +38,7 @@ otp_json(
 # OTP images that enable the watchdog.
 otp_image(
     name = "otp_img_readback_enable",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_readback_enable"],
 )
 

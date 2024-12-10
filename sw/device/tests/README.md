@@ -45,6 +45,6 @@ For instructions on how to write a chip-level test, refer to the [on-device test
 ## Read More
 
 * [Build & Test Rules](../../../rules/opentitan/README.md)
-* [On-Device Test Framework (OTTF)](../lib//testing/test_framework/README.md)
-* [OTP Build and Test Infrastructure](../../../hw/ip/otp_ctrl/data/README.md)
+* [On-Device Test Framework (OTTF)](../lib/testing/test_framework/README.md)
+* [OTP Preload Image Generator](../../../util/design/README.md#otp_preload_image_generator)
 * [FPGA Bitstreams](../../../hw/bitstream/README.md)

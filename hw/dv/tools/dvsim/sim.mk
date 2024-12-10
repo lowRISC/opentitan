@@ -101,13 +101,13 @@ ifneq (${sw_images},)
 			echo "Building SW image \"$${bazel_label}\"."; \
 			bazel_airgapped_opts=""; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
-			bazel_opts+=" --//hw/ip/otp_ctrl/data:img_seed=${seed}"; \
+			bazel_opts+=" --//util/design/data:img_seed=${seed}"; \
 			if [[ "${build_seed}" != "None" ]]; then \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:lc_seed=${build_seed}"; \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:otp_seed=${build_seed}"; \
+				bazel_opts+=" --//util/design/data:lc_seed=${build_seed}"; \
+				bazel_opts+=" --//util/design/data:otp_seed=${build_seed}"; \
 			fi; \
 			if [[ -n $${BAZEL_OTP_DATA_PERM_FLAG} ]]; then \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
+				bazel_opts+=" --//util/design/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
 			fi; \
 			if [[ $${OT_AIRGAPPED} != true ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \

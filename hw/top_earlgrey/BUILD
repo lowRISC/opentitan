@@ -91,7 +91,7 @@ fpga_cw310(
     base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
     openocd_adapter_config = "//third_party/openocd:jtag_olimex_cfg",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",
@@ -156,7 +156,7 @@ fpga_cw310(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_hyper310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
     param = {
         "interface": "hyper310",
@@ -212,7 +212,7 @@ fpga_cw310(
     # binary.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = "fpga_cw310_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     tags = ["cw310_sival"],
 )
@@ -231,7 +231,7 @@ fpga_cw310(
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
     ],
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
     tags = ["cw310_sival_rom_ext"],
@@ -296,7 +296,7 @@ fpga_cw340(
     base = ":fpga_cw340",
     base_bitstream = "//hw/bitstream/cw340:bitstream",
     exec_env = "fpga_cw340_test_rom",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
     rom_mmi = "//hw/bitstream/cw340:rom_mmi",
@@ -317,7 +317,7 @@ fpga_cw340(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw340_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     rom = "//sw/device/silicon_creator/rom:mask_rom",
     rom_mmi = "//hw/bitstream/cw340:rom_mmi",
@@ -368,7 +368,7 @@ fpga_cw340(
     # binary.
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = "fpga_cw340_sival",
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     tags = ["cw340_sival"],
 )
@@ -387,7 +387,7 @@ fpga_cw340(
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw340",
     ],
-    otp = "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_img_prod_manuf_personalized",
+    otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
     rsa_key = {"//sw/device/silicon_creator/rom_ext/keys/fake:rom_ext_prod_private_key_0": "prod_key_0"},
     tags = ["cw340_sival_rom_ext"],
@@ -489,7 +489,7 @@ sim_verilator(
         "//sw/device/lib/arch:sim_verilator",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
@@ -549,10 +549,10 @@ sim_dv(
         "//sw/device/lib/arch:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
-    otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
-    otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
+    otp_data_perm = "//util/design/data:data_perm",
+    otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    otp_seed = "//util/design/data:otp_seed",
     rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
 )
 

@@ -54,6 +54,13 @@ class TemplateParameter(BaseParam):
 
 
 def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
+    """Check and parse the parameter in raw.
+
+    raw must be a dictionary with specific keys. The type must be valid,
+    and the hjson value itself must translate to a valid python object of
+    the required type. For 'object' types we just check the value can be
+    de-serialized by hjson. Perhaps this could perform a type-check instead.
+    """
     rd = check_keys(raw, where, ['name', 'desc', 'type'], ['default'])
 
     name = check_str(rd['name'], 'name field of ' + where)
@@ -74,7 +81,8 @@ def _parse_template_parameter(where: str, raw: object) -> TemplateParameter:
     r_default = rd.get('default')
     param_type: Union[bool, int, str, Dict[str, Any]]
     if param_type == 'bool':
-        default = check_bool(r_default, f'default field of {name}, (a boolean parameter)')
+        default = check_bool(r_default,
+                             f'default field of {name}, (a boolean parameter)')
     elif param_type == 'int':
         default = check_int(
             r_default, f'default field of {name}, (an integer parameter)')
@@ -220,8 +228,6 @@ class IpConfig:
         Returns the parameter values in typed form if successful, and throws
         a ValueError otherwise.
         """
-        VALID_PARAM_TYPES = ('bool', 'string', 'int', 'object')
-
         param_values_typed = {}
         for key, value in param_values.items():
             if not isinstance(key, str):
@@ -235,10 +241,11 @@ class IpConfig:
                     "valid parameter.")
 
             param_type = template_params[key].param_type
-            if param_type not in VALID_PARAM_TYPES:
+            if param_type not in TemplateParameter.VALID_PARAM_TYPES:
                 raise ValueError(
                     f"Unknown template parameter type {param_type!r}. "
-                    "Allowed types: " + ', '.join(VALID_PARAM_TYPES))
+                    "Allowed types: "
+                    ', '.join(TemplateParameter.VALID_PARAM_TYPES))
 
             if param_type == 'bool':
                 param_value_typed = check_bool(
