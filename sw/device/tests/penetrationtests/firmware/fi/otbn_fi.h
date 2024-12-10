@@ -48,6 +48,19 @@ status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj);
 status_t handle_otbn_fi_char_bn_sel(ujson_t *uj);
 
 /**
+ * otbn.fi.char.bn_wsrr command handler.
+ *
+ * The goal of this test is to manipulate the BN.WSRR instruction or the content
+ * of the registers.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj);
+
+/**
  * otbn.fi.char_dmem_access command handler.
  *
  * OTBN loads WDRs with words from DMEM. These values are stored in different
