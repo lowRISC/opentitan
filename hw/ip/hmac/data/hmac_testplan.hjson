@@ -150,6 +150,14 @@
       stage: V3
       tests: ["hmac_smoke"]
     }
+    {
+      name: stress_reset
+      desc: '''Run multiple hmac_long_msg sequences with random on-the-fly reset to ensure that all
+            FSM transitions are exercised.
+            '''
+      stage: V3
+      tests: ["hmac_stress_reset"]
+    }
   ]
 
   covergroups: [

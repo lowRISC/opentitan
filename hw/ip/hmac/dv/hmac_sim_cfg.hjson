@@ -64,6 +64,11 @@
     }
 
     {
+      name: hmac_stress_reset
+      uvm_test_seq: hmac_stress_reset_vseq
+    }
+
+    {
       name: hmac_back_pressure
       uvm_test_seq: hmac_back_pressure_vseq
       run_opts: ["+zero_delays=1"]
