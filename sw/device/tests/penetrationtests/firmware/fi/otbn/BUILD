@@ -35,6 +35,13 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_char_bne",
+    srcs = [
+        "otbn_char_bne.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_dmem_access",
     srcs = [
         "otbn_char_dmem_access.s",
