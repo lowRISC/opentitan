@@ -16,7 +16,7 @@ filesets:
       - lowrisc:dv:usb20_usbdpi
       - lowrisc:dv_dpi_c:usbdpi
       - lowrisc:dv_dpi_sv:usbdpi
-      - lowrisc:prim_generic:usb_diff_rx
+      - lowrisc:prim:usb_diff_rx
       - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
