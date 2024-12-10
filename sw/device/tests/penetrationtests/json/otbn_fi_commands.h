@@ -15,6 +15,7 @@ extern "C" {
     value(_, CharBeq) \
     value(_, CharBnRshi) \
     value(_, CharBnSel) \
+    value(_, CharBnWsrr) \
     value(_, CharDmemAccess) \
     value(_, CharHardwareDmemOpLoop) \
     value(_, CharHardwareRegOpLoop) \
