@@ -103,6 +103,44 @@ typedef struct plic_isr_ctx {
       top_${top_name}_plic_peripheral_t *peripheral_serviced,
       dif_${ip.name_snake}_irq_t *irq_serviced);
 
+    /**
+     * Try to services a(n) ${ip.name_snake} IRQ.
+     *
+     * This function tries to service a(n) ${ip.name_snake} IRQ.
+     * If `plic_id` is `NULL`, or if `*plic_id==0` then this function will
+     * claim the IRQ at the PLIC. Otherwise, it will try to service the
+     * IRQ with provided PLIC ID in `*plic_id`.
+     *
+     * If the IRQ is not a(n) ${ip.name_snake} IRQ then this function will
+     * return `false`. It will NOT complete the IRQ at the PLIC.
+     *
+     * If the IRQ is indeed a(n) ${ip.name_snake} IRQ: If `irq_serviced` is
+     * not `NULL` then `*irq_serviced` will be set to the ${ip.name_snake}
+     * IRQ that was serviced (unless). If the IRQ is of event type then
+     * it will be acknowledge. If the IRQ is of status type and `mute_status_irq`
+     * is true then the IRQ will be disabled. If the context's `is_only_irq`
+     * is set to true, this function will `CHECK()` that no other IRQ is pending
+     * in this peripheral. Finally, the IRQ will be completed at the PLIC and this
+     * function will return true.
+     *
+     * @param plic_ctx A PLIC ISR context handle.
+     * @param ${ip.name_snake}_ctx A(n) ${ip.name_snake} ISR context handle.
+     * @param[in,out] plic_id PLIC ID of the IRQ.
+    % if ip.has_status_type_irqs():
+     * @param mute_status_irq set to true to disable the serviced status type IRQ.
+    % endif
+     * @param[out] irq_serviced Out param for the IRQ that was serviced.
+     * @return
+     */
+    bool isr_testutils_${ip.name_snake}_isr_try(
+      plic_isr_ctx_t plic_ctx,
+      ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,
+      dif_rv_plic_irq_id_t *plic_id,
+    % if ip.has_status_type_irqs():
+      bool mute_status_irq,
+    % endif
+      dif_${ip.name_snake}_irq_t *irq_serviced);
+
   % endif
 % endfor
 
