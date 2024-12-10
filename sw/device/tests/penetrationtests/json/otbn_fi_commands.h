@@ -16,6 +16,7 @@ extern "C" {
     value(_, CharHardwareDmemOpLoop) \
     value(_, CharHardwareRegOpLoop) \
     value(_, CharJal) \
+    value(_, CharLw) \
     value(_, CharMem) \
     value(_, CharRF) \
     value(_, CharUnrolledDmemOpLoop) \
@@ -91,6 +92,14 @@ UJSON_SERDE_STRUCT(OtbnFiRfCharOutput, otbn_fi_rf_char_t, OTBNFI_RF_CHAR_OUTPUT)
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(OtbnFiResultCntOutput, otbn_fi_result_cnt_t, OTBNFI_RESULT_CNT_OUTPUT);
+
+#define OTBNFI_RESULT_ARRAY(field, string) \
+    field(result, uint32_t, 32) \
+    field(insn_cnt, uint32_t) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiResultArray, otbn_fi_result_array_t, OTBNFI_RESULT_ARRAY);
 
 // clang-format on
 
