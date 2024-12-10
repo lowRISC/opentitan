@@ -14,10 +14,10 @@ rust_binary(
     deps = [
         "//sw/host/opentitanlib",
         "//sw/host/provisioning/ujson_lib",
-        "//third_party/rust/crates:anyhow",
-        "//third_party/rust/crates:clap",
-        "//third_party/rust/crates:humantime",
-        "//third_party/rust/crates:log",
+        "@crate_index//:anyhow",
+        "@crate_index//:clap",
+        "@crate_index//:humantime",
+        "@crate_index//:log",
         "@crate_index//:object",
     ],
 )
