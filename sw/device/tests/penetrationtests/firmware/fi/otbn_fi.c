@@ -1284,6 +1284,70 @@ status_t handle_otbn_fi_load_integrity(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_fi_pc(ujson_t *uj) {
+  // Get OTBN program counter from host.
+  otbn_fi_pc_t uj_data;
+  TRY(ujson_deserialize_otbn_fi_pc_t(uj, &uj_data));
+  
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Initialize OTBN app, load it, and get interface to OTBN data memory.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_pc);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_pc, pc);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_pc, pc_out);
+  const otbn_app_t kOtbnAppPc = OTBN_APP_T_INIT(otbn_pc);
+  static const otbn_addr_t kOtbnPc = OTBN_ADDR_T_INIT(otbn_pc, pc);
+  static const otbn_addr_t kOtbnPcOut = OTBN_ADDR_T_INIT(otbn_pc, pc_out);
+  dif_otbn_status_t otbn_status;
+
+  // Load app.
+  otbn_load_app(kOtbnAppPc);
+
+  // FI code target.
+  pentest_set_trigger_high();
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnPc, &uj_data.pc, sizeof(uj_data.pc)));
+  otbn_execute();
+  // Wait until is started before deasserting the trigger.
+  bool is_running = false;
+  while(!is_running) {
+    TRY(dif_otbn_get_status(&otbn, &otbn_status));
+    if (otbn_status != kDifOtbnStatusIdle) {
+      is_running = true;
+    }
+  }
+  pentest_set_trigger_low();
+  otbn_busy_wait_for_done();
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read pc_out from OTBN data memory.
+  otbn_fi_pc_out_t uj_output;
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnPcOut, &uj_output.pc_otbn, sizeof(uj_output.pc_otbn)));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnPc, &uj_output.pc_dmem, sizeof(uj_output.pc_dmem)));
+
+  // Read OTBN instruction counter.
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send back to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_pc_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
@@ -1324,6 +1388,8 @@ status_t handle_otbn_fi(ujson_t *uj) {
       return handle_otbn_fi_key_sideload(uj);
     case kOtbnFiSubcommandLoadIntegrity:
       return handle_otbn_fi_load_integrity(uj);
+    case kOtbnFiSubcommandPC:
+      return handle_otbn_fi_pc(uj);
     default:
       LOG_ERROR("Unrecognized OTBN FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
