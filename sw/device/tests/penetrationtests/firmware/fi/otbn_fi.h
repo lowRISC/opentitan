@@ -23,6 +23,18 @@
 status_t handle_otbn_fi_char_beq(ujson_t *uj);
 
 /**
+ * otbn.fi.char.bn_rshi command handler.
+ *
+ * The goal of this test is to manipulate the BN.RSHI instruction.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj);
+
+/**
  * otbn.fi.char.bn_sel command handler.
  *
  * The goal of this test is to manipulate the carry flag or the BN.SEL
