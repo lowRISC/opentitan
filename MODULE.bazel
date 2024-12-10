@@ -5,3 +5,5 @@
 module(name = "lowrisc_opentitan")
 
 bazel_dep(name = "platforms", version = "0.0.11")
+
+include("//third_party/rust:rust.MODULE.bazel")

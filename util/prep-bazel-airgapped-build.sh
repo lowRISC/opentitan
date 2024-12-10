@@ -153,11 +153,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @riscv-compliance//... \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \
-    @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_host_tools//... \
-    @rust_analyzer_host_tools//... \
-    @rust_host__x86_64-unknown-linux-gnu__nightly_tools//... \
-    @rust_tock__riscv32imc-unknown-none-elf__nightly_tools//...
+    @cmake-3.23.2-linux-x86_64//...
   cp -R "$(${BAZELISK} info output_base)"/external/${BAZEL_PYTHON_WHEEL_REPO} \
     ${BAZEL_AIRGAPPED_DIR}/
   ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
