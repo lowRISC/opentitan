@@ -144,34 +144,65 @@
     }
     {
       name: chip_sw_aes_prng_reseed
-      desc: '''Verify that PRNG reseeding is triggered
-
-            This test should start encryption, disable the EDN, and verify that the
-            encryption stalls when reseed is required. Afterwards it should verify that AES
-            finishes encryption after EDN is re-enabled.
+      desc: ''' Verify that the AES module halts when a PRNG reseed is
+            required but the entropy complex is disabled, and resumes
+            encryption once the entropy complex is re-enabled.
 
             Procedure:
-            -Configure encryption using the ECB mode, desired key length, and set the engine to
-            automatic operation.
-                -Set the mask_reseeding to once per 64 blocks (kDifAesReseedPer64Block)
-            -Using dif_aes_process_data() encrypt some number of blocks (fewer than 64).
-            -Disable the EDN using dif_edn_stop().
-            -Encrypt more blocks and verify that encryption stalls after 64 blocks.
-                -Once the first 64 blocks are encrypted, a reseed request will be sent to EDN.
-                Since the EDN should be disabled at this point, this should cause encryption
-                to stall.
-            -Re-enable EDN. In order to do this it is required to first disable and re-enable the
-             CSRNG. In order to re-enable CSRNG, it is required to first disable and re-enable
-             the entropy source. The following sequence of steps should be used:
-                -Disable CSRNG
-                -Disable Entropy Source
-                -Enable Entropy Source
-                -Enable CSRNG
-                -Enable EDN
-            -Verify that the AES completes encryption of the remaining blocks.
+            - After proper initialization of the AES and entropy modules,
+              configure the AES encryption operation to process a number of
+              blocks with:
+              - Operation: Encrypt
+              - Mode: ECB
+              - Key Length: 128 bits
+              - Key Provider: Software-provided key
+              - Manual Operation: Disabled (Automatic operation)
+              - Mask Reseeding: Reseed per 64 blocks
+                (`kDifAesReseedPer64Block`)
+              - Reseed on Key Change: Enabled
+              - Force Masks: Disabled
 
-            -Repeat the test for a reseed rate kDifAesReseedPer8kBlock and a message longer than 8K
-            blocks.
+            - Generate AES key.
+
+            - Initialize the AES module and start the AES operation using
+              `dif_aes_start()`.
+
+            - Process blocks using the following steps:
+              - Disable entropy for a block fewer than 64.
+              - For each block,
+                  - Continue encrypting blocks (fewer than 64 blocks)
+                  - Once processing reaches the block where the entropy complex
+                    is disabled
+                    - Disable the entire entropy complex using
+                      `entropy_testutils_stop_all()`.
+                    - This will halt the AES module when a PRNG reseed is
+                      required (i.e after 64 blocks).
+                  - Re-enable the entropy complex to resume encryption:
+                    - Verify that the AES module is halted by checking that
+                      `kDifAesStatusOutputValid` is not set for the 63rd block
+                    - Re-enable the entropy complex using
+                      `entropy_testutils_auto_mode_init()`.
+                    - Wait for some time for the entropy complex to stabilize.
+                    - Wait for the AES module to produce output valid
+                      (`kDifAesStatusOutputValid`).
+                    - Read the encrypted output data using
+                      `dif_aes_read_output()`.
+
+            - Finish the AES encryption operation by calling `dif_aes_end()`.
+
+            - Verify that the AES module is idle at the end of the encryption
+              operation (`kDifAesStatusIdle`).
+            - Repeat the test for a reseed rate kDifAesReseedPer8kBlock and
+              a message longer than 8K blocks.
+
+            Expected Outcome:
+            - The AES module halts when a PRNG reseed is required but the
+              entropy complex is disabled.
+            - After re-enabling the entropy complex, the AES module resumes
+              encryption and produces the expected output.
+            - The test verifies that the AES module correctly handles halting
+              and resuming based on the availability of entropy and the
+              configured mask reseeding rate.
             '''
       features: [
         "AES.MODE.ECB",
@@ -180,32 +211,54 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_aes_prng_reseed"]
+      bazel: ["//sw/device/tests:aes_prng_reseed_test"]
     }
     {
       name: chip_sw_aes_force_prng_reseed
-      desc: '''Verify that when KEY_TOUCH_FORCES_RESEED is set, the PRNG reseed is
-               triggered every time a key changes
+      desc: '''Verify that the AES module stalls/halts when the entropy
+            complex is disabled before starting encryption and enables
+            output of encryption once the entropy complex is re-enabled.
 
             Procedure:
-            -Configures the auxiliary options for AES to enable KEY_TOUCH_FORCES_RESEED
-            -Disable the EDN using dif_edn_stop()
-            -Configure the encryption operation, mode, key length, and set the engine to manual
-             operation.
-            -Set up encryption using aes_testutils_setup_encryption()
-              -At this point dif_aes_start() will write the key register which will trigger reseed
-               request. This request will stall the encryption until EDN is re-enabled.
-            -Verify that the encryption stalls.
-            -Re-enable EDN. In order to do this it is required to first disable and re-enable the
-             CSRNG. In order to re-enable CSRNG, it is required to first disable and re-enable
-             the entropy source. The following sequence of steps should be used:
-                -Disable CSRNG
-                -Disable Entropy Source
-                -Enable Entropy Source
-                -Enable CSRNG
-                -Enable EDN
-            -Verify that the AES completes encryption.
+            - After proper initialization of AES and entropy modules, disable
+              the entire entropy complex using `entropy_testutils_stop_all()`.
+              - Configure the AES encryption operation to process some number of
+                blocks with:
+                - Operation: Encrypt
+                - Mode: ECB
+                - Key Length: 128 bits
+                - Key Provider: Software-provided key
+                - Manual Operation: Enabled
+                - Mask Reseeding: Reseed per block
+                - Reseed on Key Change: Enabled (When KEY_TOUCH_FORCES_RESEED is
+                  set, the PRNG reseed is triggered every time a key changes)
+                - Force Masks: Enabled
+              - Generate AES key.
+              - At this point dif_aes_start() will write the key register which
+                will trigger reseed request.
+              - This request will stall the output of the encrypted data until
+                entropy is re-enabled.
+              - Verify that the AES module is halted by checking that
+                `kDifAesStatusOutputValid` is not set.
+              - Re-enable the entropy complex using
+                `entropy_testutils_auto_mode_init()`.
+              - Wait for some time for the entropy complex to stabilize.
+              - Wait for the AES module to produce output valid
+                (`kDifAesStatusOutputValid`).
+              - Read the encrypted output data using `dif_aes_read_output()`.
+              - Process all the blocks and ensure AES completes encryption
+                operation.
+                - Verify that the AES module is idle at the end of encryption
+                  operation (`kDifAesStatusIdle`).
+
+              Expected Outcome:
+              - The AES module halts output when the entropy complex is disabled
+                before starting encryption.
+              - After re-enabling the entropy complex, the AES module resumes
+                encryption and produces the expected output.
+              - The test verifies that the AES module correctly handles halting
+                and resuming based on the availability of entropy.
             '''
       features: [
         "AES.MODE.ECB",
@@ -214,8 +267,8 @@
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
-      tests: []
-      bazel: []
+      tests: ["chip_sw_aes_force_prng_reseed"]
+      bazel: ["//sw/device/tests:aes_force_prng_reseed_test"]
     }
     {
       name: chip_sw_aes_idle
