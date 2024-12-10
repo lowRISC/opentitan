@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -56,7 +57,7 @@ static status_t peripheral_handles_init(void) {
  * Print data stored in flash info page 0 to console for manual verification
  * purposes during silicon bring-up.
  */
-static status_t print_flash_info_0_data_to_console(void) {
+static status_t read_and_print_flash_info_0_data(void) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
@@ -80,6 +81,13 @@ static status_t print_flash_info_0_data_to_console(void) {
   }
 
   return OK_STATUS();
+}
+
+static void manually_init_ast(uint32_t *data) {
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
+                     data[i]);
+  }
 }
 
 /**
@@ -110,9 +118,10 @@ bool test_main(void) {
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
 
-  // Print flash data to console (for manual verification purposes) and perform
-  // provisioning operations.
-  CHECK_STATUS_OK(print_flash_info_0_data_to_console());
+  // Read and log flash data to console (for manual verification purposes),
+  // manually init AST, and perform provisioning operations.
+  CHECK_STATUS_OK(read_and_print_flash_info_0_data());
+  manually_init_ast(ast_cfg_data);
   CHECK_STATUS_OK(provision(&uj));
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission

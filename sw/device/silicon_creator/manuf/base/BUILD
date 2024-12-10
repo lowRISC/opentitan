@@ -191,6 +191,7 @@ opentitan_test(
             ":flash_info_permissions",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/crypto/drivers:entropy",
             "//sw/device/lib/dif:flash_ctrl",
