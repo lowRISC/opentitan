@@ -114,3 +114,11 @@ crate.annotation(
     repositories = ["crate_index"],
 )
 use_repo(crate, "crate_index")
+
+# Tock crates (must be separated to avoid them depending on `std`):
+crate.from_cargo(
+    name = "tock_index",
+    cargo_lockfile = "//third_party/tock:Cargo.lock",
+    manifests = ["//third_party/tock:Cargo.toml"],
+)
+use_repo(crate, "tock_index")
