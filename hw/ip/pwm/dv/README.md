@@ -73,11 +73,11 @@ which provides the ability to drive and independently monitor random traffic via
 TL host interface into PWM device.
 
 ### PWM monitor
-Because the DUT does require any response a full agent is not needed.
+Because the DUT does not receive any input stimuli, a full agent is not needed.
 Instead a PWM monitor has been developed.
 It will capture all traffic on the PWM channel and each pulse in a pwm sequence item for later analysis in the scoreboard.
 For each pulse a number of features are captured such as:
-* pulse length in number of clk's
+* pulse length in number of clock cycles.
 * number of active cycles
 * number of inactive cycles
 * relative delay to be used for phase calculation
@@ -93,9 +93,9 @@ It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/s
 All test sequences reside in `hw/ip/pwm/dv/env/seq_lib`.
 The `pwm_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `pwm_base_vseq`.
-It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
+It provides commonly-used handles, variables, functions and tasks that the test sequences can simple use / call.
 
-Some of the most commonly used tasks / functions are as follows:
+Some of the most commonly-used tasks / functions are as follows:
 * set_reg_en(pwm_status_e state): enable registers for writing
 * set_cfg_reg(cfg_reg_t cfg_reg): program global configuration  (ClkDiv/DcResn/CntrEn))
 * set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables): used to enable and disable the different channels

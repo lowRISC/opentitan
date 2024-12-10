@@ -137,8 +137,8 @@ endfunction
 
 function dc_blink_t pwm_base_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
   dc_blink_t blink;
-  blink.B = $urandom_range(1, int'(MAX_16) - duty_cycle.A);
-  blink.A = $urandom_range(1, int'(MAX_16) - blink.B);
+  blink.B = $urandom_range(0, int'(MAX_16));
+  blink.A = $urandom_range(0, int'(MAX_16));
   return blink;
 endfunction
 
@@ -159,8 +159,11 @@ task pwm_base_vseq::low_power_mode(bit enable, uint cycles);
 endtask
 
 task pwm_base_vseq::shutdown_dut();
-  // shutdown dut to make last item finish gracefully
-  `uvm_info(`gfn, $sformatf("disabling channel"), UVM_HIGH)
+  // Disable all PWM outputs.
+  `uvm_info(`gfn, $sformatf("Disabling all channels"), UVM_HIGH)
   set_ch_enables(32'h0);
+  // Stop the phase counter.
+  ral.cfg.cntr_en.set(1'b0);
+  csr_update(ral.cfg);
   dut_shutdown();
 endtask

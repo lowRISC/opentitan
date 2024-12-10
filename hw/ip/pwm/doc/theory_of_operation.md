@@ -13,11 +13,11 @@ There is no clock frequency requirement between TL-UL and PWM clocks.
 ### Phase and Duty Cycle Representation
 
 The PWM IP creates series of pulses with the desired on-off duty cycle.
-The duty cycle, DC, is typically expressed a fraction of pulse duration, <i>d</i>, over the period between pulses, <i>T</i>:
+The duty cycle, DC, is typically expressed as a fraction of pulse duration, <i>d</i>, over the period between pulses, <i>T</i>:
 
 $$DC\equiv d/T.$$
 
-Since 0&lt;<i>d</i>&lt;<i>T</i>, the duty cycle ranges from 0 to 1.
+Since 0&le;<i>d</i>&le;<i>T</i>, the duty cycle ranges from 0 to 1.
 
 The PWM IP can control the duty cycle in a number of ways:
 - The PWM can be programmed to generate pulses at a firmware-defined duty cycle.
@@ -40,7 +40,7 @@ $$DC(x)=\frac{x}{2^{16}}.$$
 Thus the allowed duty cycle in principle ranges from 0 to 99.998% (i.e. <nobr>1-(&frac12;)<sup>16</sup></nobr>).
 
 However, the actual phase resolution may be smaller.
-In order to support faster pulse rates, the phase resolution can be set to less than 16-bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of <nobr>2<sup>-([`CFG.DC_RESN`](registers.md#cfg)+1)</sup></nobr>.
+In order to support faster pulse rates, the phase resolution can be set to less than 16 bits, in which case the observed duty cycle will be rounded down to the next lowest multiple of <nobr>2<sup>-([`CFG.DC_RESN`](registers.md#cfg)+1)</sup></nobr>.
 In other words, the [`CFG.DC_RESN`](registers.md#cfg) register effectively limits the duty cycle resolution, such that only the <nobr>[`CFG.DC_RESN`](registers.md#cfg)+1</nobr> most significant bits are relevant:
 
 $$DC(x; \textrm{DC_RESN})=\frac{\textrm{MSB}(x; \textrm{DC_RESN}+1)}{2^{(\textrm{DC_RESN}+1)}},$$
@@ -50,8 +50,8 @@ where here we use the notation MSB(<i>x</i>; <i>y</i>), to mean the <i>y</i> mos
 ### PWM Phase Counter
 
 The IP maintains a single phase counter that is shared by all outputs.
-As we discuss in the next section, each channel has a comparator which compares these values to the current duty cycle and phase value and generates the appropriate pulse.
-Since all phase or duty cycle related quantities are represented as 16-bit fixed point fractions-regardless of whether they are calculated by the PWM IP or determined by firmware-the phase counter is also a 16-bit quantity.
+As we discuss in the next section, each channel has a comparator which compares this value to the current duty cycle and phase value and generates the appropriate pulse.
+Since all phase or duty cycle related quantities are represented as 16-bit fixed point fractions - regardless of whether they are calculated by the PWM IP or determined by firmware - the phase counter is also a 16-bit quantity.
 
 Each PWM pulse cycle is divided into <nobr>2<sup>DC_RESN+1</sup></nobr> beats.
 During each beat, the 16-bit phase counter increments by 2<sup>(16-DC_RESN-1)</sup> (modulo 65536).
@@ -152,7 +152,7 @@ There are two other modes which allow for programmably-timed duty cycle modulati
 - In heartbeat mode, the duty cycle linearly transitions from [`DUTY_CYCLE_0.A_0`](registers.md#duty_cycle) to [`DUTY_CYCLE_0.B_0`](registers.md#duty_cycle) and back, via a regularly-timed sequence of duty cycle increments or decrements.
 
 In both modes the timing and control of the blinking or transition is controlled by the register fields [`BLINK_PARAM_0.X_0`](registers.md#blink_param) and [`BLINK_PARAM_0.Y_0`](registers.md#blink_param).
-However in either mode, the interpretation of these fields is different.
+However, in each mode the interpretation of these fields is different.
 
 Note that changes to the [`BLINK_PARAM_0`](registers.md#blink_param) register or to the register field [`PWM_PARAM_0.HTBT_EN_0`](registers.md#pwm_param) only take effect when the [`PWM_PARAM_0.BLINK_EN_0`](registers.md#pwm_param) is deasserted.
 Both of the blink modes make use of a 16-bit internal blink counter (one per channel).
