@@ -89,20 +89,6 @@ def rust_repos(rules_rust = None, serde_annotate = None, rules_rust_bindgen = No
     # RULES_RUST_BINDGEN_LIBSTDCXX_DIR to the location of the library.
     rust_bindgen_libstdcxx(name = "bindgen_libstdcxx_linux")
 
-    # We use forked/patched Rust Bazel rules to enable caching repository rules
-    # required for air-gapped Bazel builds. See lowRISC/opentitan:#15300 for
-    # more details.
-    http_archive_or_local(
-        name = "rules_rust",
-        local = rules_rust,
-        integrity = "sha256-CeF7R8AVBGVjGqMZ8nQnYKQ+3tqy6cAS+R0K4u/wImg=",
-        urls = ["https://github.com/bazelbuild/rules_rust/releases/download/0.59.2/rules_rust-0.59.2.tar.gz"],
-        patches = [
-            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
-            "@lowrisc_opentitan//third_party/rust/patches:rules_rust.experimental.patch",
-        ],
-    )
-
     http_archive_or_local(
         name = "rules_rust_bindgen",
         local = rules_rust_bindgen,
