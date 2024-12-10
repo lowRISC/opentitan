@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:hmac_test
       - lowrisc:dv:hmac_sva
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:i2c_test
       - lowrisc:dv:i2c_sva
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
       - tb/i2c_port_conv.sv

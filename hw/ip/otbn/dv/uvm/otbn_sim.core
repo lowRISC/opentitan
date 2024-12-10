@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:otbn_sva
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:ip:edn_pkg
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
     file_type: systemVerilogSource

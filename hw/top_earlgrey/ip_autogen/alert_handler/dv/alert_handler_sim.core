@@ -15,6 +15,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_tb:0.1
       - lowrisc:dv:alert_handler_cov
       - lowrisc:opentitan:top_earlgrey_alert_handler_sva:0.1
+      - lowrisc:prim_generic:all
     file_type: systemVerilogSource
 
 targets:
