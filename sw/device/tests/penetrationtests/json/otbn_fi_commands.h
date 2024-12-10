@@ -29,7 +29,8 @@ extern "C" {
     value(_, Init) \
     value(_, InitKeyMgr) \
     value(_, KeySideload)  \
-    value(_, LoadIntegrity)
+    value(_, LoadIntegrity) \
+    value(_, PC)
 UJSON_SERDE_ENUM(OtbnFiSubcommand, otbn_fi_subcommand_t, OTBNFI_SUBCOMMAND);
 
 #define OTBNFI_LOOP_COUNTER_OUTPUT(field, string) \
@@ -117,6 +118,19 @@ UJSON_SERDE_STRUCT(OtbnFiBigNum, otbn_fi_big_num_t, OTBNFI_BIG_NUM);
     field(err_ibx, uint32_t) \
     field(alerts, uint32_t, 3)
 UJSON_SERDE_STRUCT(OtbnFiBigNumOutput, otbn_fi_big_num_out_t, OTBNFI_BIG_NUM_OUTPUT);
+
+#define OTBNFI_PC(field, string) \
+    field(pc, uint32_t)
+UJSON_SERDE_STRUCT(OtbnFiPc, otbn_fi_pc_t, OTBNFI_PC);
+
+#define OTBNFI_PC_OUTPUT(field, string) \
+    field(pc_dmem, uint32_t) \
+    field(pc_otbn, uint32_t) \
+    field(insn_cnt, uint32_t) \
+    field(err_otbn, uint32_t) \
+    field(err_ibx, uint32_t) \
+    field(alerts, uint32_t, 3)
+UJSON_SERDE_STRUCT(OtbnFiPcOutput, otbn_fi_pc_out_t, OTBNFI_PC_OUTPUT);
 
 // clang-format on
 
