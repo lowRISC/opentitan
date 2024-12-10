@@ -16,7 +16,7 @@
   cip_id:             "36",
   design_spec:        "../doc"
   dv_doc:             "../doc/dv"
-  version:            "0.1.0"
+  version:            "1.0.0"
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   scan: "true"        // Enable `scanmode_i` port
