@@ -321,22 +321,39 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
         "intr_enable", "intr_state", "alert_test", "status": begin
           // Do nothing
         end
+        "msg_length_upper", "msg_length_lower": begin
+          // Predict updated value coming from write iff SHA core is disabled.
+          do_predict = !sha_en;
+          // TODO
+          // Sample when a message length write is happening while SHA core is enabled and when
+          // the written value is different from the mirrored value, to be sure this is a valid
+          // attempt.
+          // if (cfg.en_cov) begin
+          //   if (sha_en && (csr_name == "msg_length_lower") &&
+          //       (item.a_data !== `gmv(ral.msg_length_lower))) begin
+          //         cov.sample_dig_during_not_idle(.msg_len_lower(1), .msg_len_upper(0));
+          //       end
+          //   if (sha_en && (csr_name == "msg_length_upper") &&
+          //       (item.a_data !== `gmv(ral.msg_length_upper))) begin
+          //     cov.sample_dig_during_not_idle(.msg_len_lower(0), .msg_len_upper(1));
+          //   end
+          // end
+        end
         "digest_0", "digest_1", "digest_2", "digest_3", "digest_4", "digest_5", "digest_6",
         "digest_7", "digest_8", "digest_9", "digest_10", "digest_11", "digest_12", "digest_13",
-        "digest_14", "digest_15", "msg_length_upper", "msg_length_lower": begin
+        "digest_14", "digest_15": begin
+          bit [TL_DW-1:0] mirrored_digest;
           // Predict updated value coming from write iff SHA core is disabled.
           do_predict = !sha_en;
           // Sample when a message length write is happening while SHA core is enabled and when
           // the written value is different from the mirrored value, to be sure this is a valid
           // attempt.
           if (cfg.en_cov) begin
-            if (sha_en && (csr_name == "msg_length_lower") &&
-                (item.a_data !== `gmv(ral.msg_length_lower))) begin
-                  cov.wr_msg_len_during_sha_en_cg.sample(.msg_len_lower(1), .msg_len_upper(0));
-                end
-            if (sha_en && (csr_name == "msg_length_upper") &&
-                (item.a_data !== `gmv(ral.msg_length_upper))) begin
-              cov.wr_msg_len_during_sha_en_cg.sample(.msg_len_lower(0), .msg_len_upper(1));
+            for (int digest_i=0; digest_i<16; digest_i++) begin
+              mirrored_digest = get_reg_fld_mirror_value(ral, $sformatf("digest_%0d", digest_i));
+              if (!hmac_idle && (item.a_data !== mirrored_digest)) begin
+                cov.wr_digest_during_not_idle_cg.sample(digest_i);
+              end
             end
           end
         end

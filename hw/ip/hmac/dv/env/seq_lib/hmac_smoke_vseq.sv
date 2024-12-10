@@ -109,6 +109,17 @@ task hmac_smoke_vseq::body();
               .key_length(key_length), .intr_fifo_empty_en(intr_fifo_empty_en),
               .intr_hmac_done_en(intr_hmac_done_en), .intr_hmac_err_en(intr_hmac_err_en));
 
+    // Spawn a thread to test register write access when HMAC is not in IDLE after a random delay.
+    // Only do this if not already ongoing from the previous loop.
+    if (!try_wr_ctx_ongoing) begin
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks($urandom_range(100, 10_000));
+          try_wr_ctx_when_not_idle();
+        end
+      join_none
+    end
+
     // always start off the transaction by first clearing cfg.wipe_secret_triggered flag
     // and update the exp digest val in scb with last digest
     clear_wipe_secret();
@@ -190,22 +201,6 @@ task hmac_smoke_vseq::body();
         trigger_hash_when_active();
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg)
         wr_msg(msg);
-      end
-
-      // Try to write message length registers with a random value to test if ignored when SHA core
-      // is enabled.
-      if (sha_en && $urandom_range(0, 1)) begin
-        bit [2*TL_DW-1:0] rand_vector;
-        // Should be done that way as SV built-in functions are providing 32-bits values and the
-        // message length vector size can evolve.
-        for (int i=0; i<$size(rand_vector); i++) begin
-          rand_vector[i] = $urandom_range(0, 1);
-        end
-        csr_wr_msg_length(rand_vector);
-        // Trigger a read as the SCB will check register values against expected to be sure it
-        // hasn't been updated and will also sample the state for fcov
-        rd_msg_length();
-        `uvm_info(`gfn, $sformatf("attempt to write message length as sha_en=0"), UVM_MEDIUM)
       end
 
       // msg stream in finished, start hash

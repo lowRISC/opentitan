@@ -103,11 +103,15 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
     msg_len_upper_cross: cross hmac_en, msg_len_upper_cp;
   endgroup : msg_len_cg
 
-  covergroup wr_msg_len_during_sha_en_cg with function sample (logic msg_len_lower,
-                                                               logic msg_len_upper);
+  covergroup wr_msg_len_during_not_idle_cg with function sample (logic msg_len_lower,
+                                                                 logic msg_len_upper);
     msg_len_lower_cp: coverpoint msg_len_lower {bins true = {1'b1};}
     msg_len_upper_cp: coverpoint msg_len_upper {bins true = {1'b1};}
-  endgroup : wr_msg_len_during_sha_en_cg
+  endgroup : wr_msg_len_during_not_idle_cg
+
+  covergroup wr_digest_during_not_idle_cg with function sample (int idx);
+    cp: coverpoint idx {bins idx[] = {[0:15]};}
+  endgroup : wr_digest_during_not_idle_cg
 
   covergroup wr_config_during_hash_cg with function sample (logic wr_config_during_hash);
     cp: coverpoint wr_config_during_hash {bins true = {1'b1};}
@@ -151,21 +155,31 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
+
+  // // Class specific methods
+  // extern function void sample_digest_during_not_idle(logic [15:0] digest);
 endclass : hmac_env_cov
 
 
 function hmac_env_cov::new(string name, uvm_component parent);
   super.new(name, parent);
-  cfg_cg                      = new();
-  status_cg                   = new();
-  msg_len_cg                  = new();
-  err_code_cg                 = new();
-  wr_msg_len_during_sha_en_cg = new();
-  wr_config_during_hash_cg    = new();
-  wr_key_during_hash_cg       = new();
-  wr_key_during_sha_only_cg   = new();
-  wr_msg_during_hash_cg       = new();
-  trig_rst_during_hash_cg     = new();
-  rd_digest_during_hmac_en_cg = new();
-  save_and_restore_cg         = new();
+  cfg_cg                        = new();
+  status_cg                     = new();
+  msg_len_cg                    = new();
+  err_code_cg                   = new();
+  wr_msg_len_during_not_idle_cg = new();
+  wr_digest_during_not_idle_cg  = new();
+  wr_config_during_hash_cg      = new();
+  wr_key_during_hash_cg         = new();
+  wr_key_during_sha_only_cg     = new();
+  wr_msg_during_hash_cg         = new();
+  trig_rst_during_hash_cg       = new();
+  rd_digest_during_hmac_en_cg   = new();
+  save_and_restore_cg           = new();
 endfunction : new
+
+// function void hmac_env_cov::sample_digest_during_not_idle(int digest_idx);
+//   for (int idx=0; idx<16; idx++) begin
+//     wr_digest_during_not_idle_cg.sample(idx, digest[idx]);
+//   end
+// endfunction : sample_digest_during_not_idle
