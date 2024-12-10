@@ -1,0 +1,26 @@
+From a730b803e5182c1b1b95e11a966b2f5b44c942d9 Mon Sep 17 00:00:00 2001
+From: Hugo McNally <hugo.mcnally@gmail.com>
+Date: Tue, 10 Dec 2024 06:03:14 +0000
+Subject: [PATCH 2/2] [hw] Removed references to non virtual primitive cores.
+
+Signed-off-by: Hugo McNally <hugo.mcnally@gmail.com>
+---
+ .../dv/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.core        | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.core b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.core
+index df81ec5dd3..cf48598fe0 100644
+--- a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.core
++++ b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.core
+@@ -8,7 +8,7 @@ description: "Single-port RAM which allows a bound interface to inject errors"
+ filesets:
+   files_rtl:
+     depend:
+-      - lowrisc:prim_generic:ram_1p
++      - lowrisc:prim:ram_1p
+       - lowrisc:prim:assert
+     files:
+       - prim_badbit_ram_1p.sv
+-- 
+2.43.0
+

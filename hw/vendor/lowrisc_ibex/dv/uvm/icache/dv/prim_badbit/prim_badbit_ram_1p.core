@@ -8,7 +8,7 @@ description: "Single-port RAM which allows a bound interface to inject errors"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim_generic:ram_1p
+      - lowrisc:prim:ram_1p
       - lowrisc:prim:assert
     files:
       - prim_badbit_ram_1p.sv
