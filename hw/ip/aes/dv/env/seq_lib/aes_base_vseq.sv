@@ -503,7 +503,7 @@ class aes_base_vseq extends cip_base_vseq #(
 
   // the index of multi-reg is at the last char of the name
   virtual function int get_multireg_idx(string name);
-    string s = name.getc(name.len - 1);
+    string s = string'(name.getc(name.len - 1));
     return s.atoi();
   endfunction
 
