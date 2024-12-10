@@ -4,6 +4,8 @@
 
 # Dependencies:
 bazel_dep(name = "rules_rust", version = "0.59.2")
+bazel_dep(name = "rules_rust_bindgen", version = "0.59.2")
+bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
 single_version_override(
@@ -11,6 +13,15 @@ single_version_override(
     patches = [
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
         "@lowrisc_opentitan//third_party/rust/patches:rules_rust.experimental.patch",
+    ],
+    version = "0.59.2",
+)
+
+single_version_override(
+    module_name = "rules_rust_bindgen",
+    patches = [
+        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+        "@lowrisc_opentitan//third_party/rust/patches:rules_rust.transition.patch",
     ],
     version = "0.59.2",
 )
@@ -122,3 +133,14 @@ crate.from_cargo(
     manifests = ["//third_party/tock:Cargo.toml"],
 )
 use_repo(crate, "tock_index")
+
+# Rust bindgen toolchain:
+register_toolchains("//third_party/rust:bindgen_toolchain")
+
+# LLVM toolchain used by bindgen for `libclang` (not for device software):
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_versions = {"": "10.0.0"},
+)
+use_repo(llvm, "llvm_toolchain_llvm")
