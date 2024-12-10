@@ -12,13 +12,13 @@ set -e
 . util/build_consts.sh
 
 # Cleaning is necessary for the find commands below to work correctly
-ci/bazelisk.sh clean
+./bazelisk.sh clean
 
 # Build the modified EB software.
 ./hw/top_englishbreakfast/util/prepare_sw.py -b
 
 # Build some other dependencies.
-ci/bazelisk.sh build  \
+./bazelisk.sh build  \
     --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_ \
     --features=-rv32_bitmanip \
     //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
