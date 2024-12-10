@@ -41,6 +41,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   local uvm_event         hash_continue = new();
   local bit               save_ctx_ongoing;
   local bit               sar_ongoing;
+  bit                     try_wr_ctx_ongoing = 0;
 
   // Constraints
   extern constraint wr_addr_c;
@@ -98,6 +99,7 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   extern task sar_different_context();
   extern task save_and_restore_cfg(bit save_current_cfg, bit restore_previous_cfg);
   extern function int wait_cycles_with_no_outstanding_accesses();
+  extern task try_wr_ctx_when_not_idle();
 endclass : hmac_base_vseq
 
 
@@ -817,3 +819,36 @@ endtask : save_and_restore_cfg
 function int hmac_base_vseq::wait_cycles_with_no_outstanding_accesses();
   return 1_000_000;
 endfunction : wait_cycles_with_no_outstanding_accesses
+
+task hmac_base_vseq::try_wr_ctx_when_not_idle();
+  bit [2*TL_DW-1:0] rand_msg_length;
+  bit [TL_DW-1:0]   rand_digest[16];
+
+  try_wr_ctx_ongoing = 1;
+
+  // Try to write message length and digest registers with random values to test if ignored when
+  // HMAC is not in IDLE state.
+  wait(!cfg.hmac_vif.is_idle());
+
+  // Should be done that way as SV built-in functions are providing 32-bits values and the
+  // message length vector size can evolve.
+  for (int i=0; i<$size(rand_msg_length); i++) begin
+    rand_msg_length[i] = $urandom_range(0, 1);
+  end
+  csr_wr_msg_length(rand_msg_length);
+  // Trigger a read as the SCB will check register values against expected to be sure it
+  // hasn't been updated and will also sample the state for fcov
+  rd_msg_length();
+  `uvm_info(`gfn, $sformatf("attempt to write message length while HMAC is not IDLE"), UVM_MEDIUM)
+
+  // Do similar operation for the digest regsiters
+  for (int i=0; i<16; i++) begin
+    rand_digest[i] = $urandom;
+  end
+  csr_wr_digest(rand_digest);
+  // Trigger a read as the SCB will check register values against expected to be sure it
+  // hasn't been updated and will also sample the state for fcov
+  rd_digest();
+  `uvm_info(`gfn, $sformatf("attempt to write digests while HMAC is not IDLE"), UVM_MEDIUM)
+  try_wr_ctx_ongoing = 0;
+endtask : try_wr_ctx_when_not_idle
