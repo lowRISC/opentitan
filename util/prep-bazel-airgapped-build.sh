@@ -141,8 +141,6 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @bindgen_clang_linux//... \
-    @rules_rust_bindgen__bindgen-0.69.1//... \
     @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_platform//... \
@@ -151,10 +149,6 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @rules_foreign_cc//toolchains/... \
     @ninja_1.11.0_linux//... \
     @cmake-3.23.2-linux-x86_64//... \
-    @rustfmt_nightly-2024-07-25__x86_64-unknown-linux-gnu_tools//... \
-    @rust_analyzer_1.71.1_tools//... \
-    @rust_linux_x86_64__x86_64-unknown-linux-gnu__nightly_tools//... \
-    @rust_linux_x86_64__riscv32imc-unknown-none-elf__nightly_tools//...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
   mkdir -p ${BAZEL_AIRGAPPED_DIR}/${BAZEL_BITSTREAMS_CACHEDIR}

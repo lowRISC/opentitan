@@ -29,11 +29,11 @@ use cryptotest_commands::ecdsa_commands::{
 };
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -449,7 +449,8 @@ fn run_ecdsa_testcase(
     .send(spi_console)?;
     let success = match operation {
         CryptotestEcdsaOperation::Sign => {
-            let mut output_signature = CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false)?;
+            let mut output_signature =
+                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false)?;
             // Truncate signature values to correct size for curve and convert to big-endian
             output_signature.r.truncate(output_signature.r_len);
             output_signature.s.truncate(output_signature.s_len);
