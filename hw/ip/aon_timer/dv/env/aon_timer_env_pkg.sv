@@ -31,6 +31,8 @@ package aon_timer_env_pkg;
   `include "aon_timer_env_cfg.sv"
   `include "aon_timer_env_cov.sv"
   `include "aon_timer_virtual_sequencer.sv"
+  `include "timed_reg.sv"
+  `include "aon_timer_intr_timed_regs.sv"
   `include "aon_timer_scoreboard.sv"
   `include "aon_timer_env.sv"
   `include "aon_timer_vseq_list.sv"
