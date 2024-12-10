@@ -16,7 +16,7 @@ class rom_ctrl_base_vseq extends cip_base_vseq #(
   `uvm_object_new
 
   virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
+    super.dut_init(reset_kind);
     // Disable intr test since no interrupts
     do_clear_all_interrupts = 1'b0;
   endtask
