@@ -42,6 +42,13 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_char_dmem_write",
+    srcs = [
+        "otbn_char_dmem_write.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_hardware_dmem_op_loop",
     srcs = [
         "otbn_char_hardware_dmem_op_loop.s",

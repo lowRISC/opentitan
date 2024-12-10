@@ -82,6 +82,7 @@ uint32_t key_share_1_l_ref, key_share_1_h_ref;
 // NOP macros.
 #define NOP1 "addi x0, x0, 0\n"
 #define NOP10 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1 NOP1
+#define NOP30 NOP10 NOP10 NOP10
 #define NOP100 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10 NOP10
 
 // Reference values.
@@ -412,6 +413,196 @@ status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   uj_output.err_ibx = err_ibx;
   memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
   RESP_OK(ujson_serialize_otbn_fi_data_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
+status_t handle_otbn_fi_char_dmem_write(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Config for the otbn.fi.char_rf test.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_dmem_write);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_dmem_write, mem);
+
+  static const otbn_app_t kOtbnAppCharDmemWrite =
+      OTBN_APP_T_INIT(otbn_char_dmem_write);
+  static const otbn_addr_t kOtbnVarCharDmemWriteMem =
+      OTBN_ADDR_T_INIT(otbn_char_dmem_write, mem);
+
+  // Init application and load reference values into DMEM.
+  otbn_load_app(kOtbnAppCharDmemWrite);
+  // FI code target.
+  pentest_set_trigger_high();
+  asm volatile(NOP30);
+  // Unrolled instruction sequence.
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem),
+      ref_values[0]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 4),
+      ref_values[1]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 8),
+      ref_values[2]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 12),
+      ref_values[3]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 16),
+      ref_values[4]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 20),
+      ref_values[5]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 24),
+      ref_values[6]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 28),
+      ref_values[7]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 32),
+      ref_values[8]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 36),
+      ref_values[9]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 40),
+      ref_values[10]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 44),
+      ref_values[11]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 48),
+      ref_values[12]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 52),
+      ref_values[13]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 56),
+      ref_values[14]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 60),
+      ref_values[15]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 64),
+      ref_values[16]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 68),
+      ref_values[17]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 72),
+      ref_values[18]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 76),
+      ref_values[19]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 80),
+      ref_values[20]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 84),
+      ref_values[21]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 88),
+      ref_values[22]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 92),
+      ref_values[23]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 96),
+      ref_values[24]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 100),
+      ref_values[25]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 104),
+      ref_values[26]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 108),
+      ref_values[27]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 112),
+      ref_values[28]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 116),
+      ref_values[29]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 120),
+      ref_values[30]);
+  mmio_region_write32(
+      otbn.base_addr,
+      (ptrdiff_t)(OTBN_DMEM_REG_OFFSET + kOtbnVarCharDmemWriteMem + 124),
+      ref_values[31]);
+  asm volatile(NOP10);
+  pentest_set_trigger_low();
+
+  // Execute OTBN application.
+  otbn_execute();
+  otbn_busy_wait_for_done();
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Compare reference values.
+  otbn_fi_result_array_t uj_output;
+  uint32_t res_values[ARRAYSIZE(ref_values)];
+  memset(res_values, 0, sizeof(res_values));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnVarCharDmemWriteMem, res_values,
+                         sizeof(res_values)));
+  for (size_t it = 0; it < ARRAYSIZE(ref_values); it++) {
+    uj_output.result[it] = res_values[it] ^ ref_values[it];
+  }
+
+  // Read OTBN instruction counter.
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send result & ERR_STATUS to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_result_array_t, uj, &uj_output);
 
   return OK_STATUS();
 }
@@ -1107,6 +1298,8 @@ status_t handle_otbn_fi(ujson_t *uj) {
       return handle_otbn_fi_char_bn_wsrr(uj);
     case kOtbnFiSubcommandCharDmemAccess:
       return handle_otbn_fi_char_dmem_access(uj);
+    case kOtbnFiSubcommandCharDmemWrite:
+      return handle_otbn_fi_char_dmem_write(uj);
     case kOtbnFiSubcommandCharHardwareDmemOpLoop:
       return handle_otbn_fi_char_hardware_dmem_op_loop(uj);
     case kOtbnFiSubcommandCharHardwareRegOpLoop:
