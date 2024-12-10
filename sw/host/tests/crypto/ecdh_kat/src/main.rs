@@ -17,11 +17,11 @@ use cryptotest_commands::ecdh_commands::{
     CryptotestEcdhPrivateKey,
 };
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::console::spi::SpiConsoleDevice;
 use p256::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP256;
 use p256::U256;
 use p384::elliptic_curve::scalar::ScalarPrimitive as ScalarPrimitiveP384;
@@ -234,7 +234,13 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdh_test in &ecdh_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdh_testcase(ecdh_test, opts, &spi_console_device, &mut fail_counter, &mut failures)?;
+            run_ecdh_testcase(
+                ecdh_test,
+                opts,
+                &spi_console_device,
+                &mut fail_counter,
+                &mut failures,
+            )?;
         }
     }
     assert_eq!(
