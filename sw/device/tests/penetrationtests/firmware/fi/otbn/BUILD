@@ -14,6 +14,13 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_char_bn_rshi",
+    srcs = [
+        "otbn_char_bn_rshi.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_bn_sel",
     srcs = [
         "otbn_char_bn_sel.s",
