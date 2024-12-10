@@ -3,3 +3,5 @@
 # SPDX-License-Identifier: Apache-2.0
 
 module(name = "lowrisc_opentitan")
+
+include("//third_party/rust:rust.MODULE.bazel")
