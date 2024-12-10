@@ -20,6 +20,18 @@ ${autogen_banner}
 
 % for ip in ips_with_difs:
   % if ip.irqs:
+
+    void isr_testutils_${ip.name_snake}_init_from_dt(
+      ${ip.name_snake}_isr_ctx_t *ctx,
+      dif_${ip.name_snake}_t *dif,
+      const dt_${ip.name_snake}_t *dt) {
+
+      ctx->${ip.name_snake} = dif;
+      // The DT guarantees that IRQs indices in the enum are numbered from 0.
+      dt_${ip.name_snake}_irq_t irq = 0;
+      ctx->plic_${ip.name_snake}_start_irq_id = dt_${ip.name_snake}_irq_to_plic_id(dt, irq);
+    }
+
     void isr_testutils_${ip.name_snake}_isr(
       plic_isr_ctx_t plic_ctx,
       ${ip.name_snake}_isr_ctx_t ${ip.name_snake}_ctx,

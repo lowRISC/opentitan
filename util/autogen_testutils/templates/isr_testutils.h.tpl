@@ -22,7 +22,7 @@ ${autogen_banner}
   % endif
 % endfor
 
-#include "hw/top_${top_name}/sw/autogen/top_${top_name}.h" // Generated.
+#include "devicetables.h" // Generated.
 
 /**
  * A handle to a PLIC ISR context struct.
@@ -67,6 +67,22 @@ typedef struct plic_isr_ctx {
 
 % for ip in ips_with_difs:
   % if ip.irqs:
+   /**
+     * Initialize an ${ip.name_snake} ISR context handle from a DT object.
+     *
+     * This function will only initilize the `${ip.name_snake}` and
+     * `plic_${ip.name_snake}_start_irq_id` field of the context.
+     *
+     * @param[in,out] ${ip.name_snake}_ctx A(n) ${ip.name_snake} ISR context handle.
+     * @param dif A(n) ${ip.name_snake} DIF object.
+     * @param dt A(n) ${ip.name_snake} DT object.
+     */
+    void isr_testutils_${ip.name_snake}_init_from_dt(
+      ${ip.name_snake}_isr_ctx_t *ctx,
+      dif_${ip.name_snake}_t *dif,
+      const dt_${ip.name_snake}_t *dt);
+
+
     /**
      * Services an ${ip.name_snake} IRQ.
      *
