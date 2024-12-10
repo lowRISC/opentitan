@@ -18,11 +18,11 @@ use cryptotest_commands::sphincsplus_commands::{
 };
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
@@ -139,7 +139,12 @@ fn test_sphincsplus(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for sphincsplus_test in &sphincsplus_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_sphincsplus_testcase(sphincsplus_test, opts, &spi_console_device, &mut fail_counter)?;
+            run_sphincsplus_testcase(
+                sphincsplus_test,
+                opts,
+                &spi_console_device,
+                &mut fail_counter,
+            )?;
         }
     }
     assert_eq!(
