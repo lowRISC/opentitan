@@ -16,6 +16,7 @@ uv pip compile \
   --generate-hashes \
   --no-annotate \
   --no-header \
+  --python-version 3.8.2 \
   "$PYTHON_REQS_IN_FILE" \
   -o "$PYTHON_REQS_OUT_FILE"
 echo -e "\n$(cat "$PYTHON_REQS_OUT_FILE")" > "$PYTHON_REQS_OUT_FILE"

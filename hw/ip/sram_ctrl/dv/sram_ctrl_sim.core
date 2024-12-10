@@ -16,6 +16,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:sram_ctrl_test
       - lowrisc:dv:sram_ctrl_sva
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
       - cov/sram_ctrl_cov_bind.sv

@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:pattgen_test
       - lowrisc:dv:pattgen_sva
       - lowrisc:dv:pattgen_cov
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
     file_type: systemVerilogSource

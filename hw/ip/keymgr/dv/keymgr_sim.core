@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:keymgr_test
       - lowrisc:dv:keymgr_sva
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
       - cov/keymgr_cov_bind.sv

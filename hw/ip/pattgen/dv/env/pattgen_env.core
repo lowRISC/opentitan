@@ -37,6 +37,7 @@ generate:
     parameters:
       name: pattgen
       ip_hjson: ../../data/pattgen.hjson
+    position: prepend
 
 targets:
   default:

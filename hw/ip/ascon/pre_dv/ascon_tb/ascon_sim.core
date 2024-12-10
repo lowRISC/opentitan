@@ -17,6 +17,7 @@ filesets:
   files_dv_verilator:
     depend:
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:prim_generic:all
     files:
       - cpp/ascon_tb.cc
     file_type: cppSource

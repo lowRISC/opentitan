@@ -183,16 +183,21 @@ cython==3.0.1 \
 distro==1.8.0 \
     --hash=sha256:02e111d1dc6a50abb8eed6bf31c3e48ed8b0830d1ea2a1b78c61765c2513fdd8 \
     --hash=sha256:99522ca3e365cac527b44bde033f64c6945d90eb9f769703caaec52b09bbd3ff
-edalize @ https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip \
-    --hash=sha256:da816ef1040d8063d4aa7377ef1fea33f0bffeca1f79a68b7a8930ef9d90c7c8
+edalize==0.6.0 \
+    --hash=sha256:9fe1ddbf0d860d78e437dbd3bc951bda616e4f79803a189a4c64f7a828ca9162 \
+    --hash=sha256:dab4b602faee41028924a73a97917f4911c676a5cfadcee5548ac38168f70034
 enlighten==1.10.2 \
     --hash=sha256:7a5b83cd0f4d095e59d80c648ebb5f7ffca0cd8bcf7ae6639828ee1ad000632a \
     --hash=sha256:b237fe562b320bf9f1d4bb76d0c98e0daf914372a76ab87c35cd02f57aa9d8c1
+fastjsonschema==2.20.0 \
+    --hash=sha256:3d48fc5300ee96f5d116f10fe6f28d938e6008f59a6a025c2649475b87f76a23 \
+    --hash=sha256:5875f0b0fa7a0043a91e93a9b8f793bcbbba9691e7fd83dca95c28ba26d21f0a
 flake8==7.1.1 \
     --hash=sha256:049d058491e228e03e67b390f311bbf88fce2dbaa8fa673e7aea87b7198b8d38 \
     --hash=sha256:597477df7860daa5aa0fdd84bf5208a043ab96b8e96ab708770ae0364dd03213
-fusesoc @ https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip \
-    --hash=sha256:6d1d9b202748d160bc6da70ea8cf7a700ca80e1e7e4a78cbc1ec039bde595c65
+fusesoc==2.4 \
+    --hash=sha256:6fecf1ef2e39d6ad38ddb3dc294bcfde302686e627c14359c52444129b246bb1 \
+    --hash=sha256:a9392dc0be5d1dcc54ed7b20f247bb8d5a9665c90775952cd5129e398487fa96
 gitdb==4.0.10 \
     --hash=sha256:6eb990b69df4e15bad899ea868dc46572c3f75339735663b81de79b06f17eb9a \
     --hash=sha256:c286cf298426064079ed96a9e4a9d39e7f3e9bf15ba60701e95f5492f28415c7
@@ -220,6 +225,9 @@ jinja2==3.1.2 \
 jsonschema==4.17.3 \
     --hash=sha256:0f864437ab8b6076ba6707453ef8f98a6a0d512a80e93f8abdb676f737ecb60d \
     --hash=sha256:a870ad254da1a8ca84b6a2905cac29d265f805acc57af304784962a2aa6508f6
+jsonschema2md==0.9.0 \
+    --hash=sha256:3ef34181679c48bbd1ac228ad1d6441051ceef58ba90cba6b931d0368e00ec77 \
+    --hash=sha256:b6b7ae067c355c887949646296fb04375f6e995d862cbe7ae81a34f085a63a67
 libclang==16.0.0 \
     --hash=sha256:2adce42ae652f312245b8f4eda6f30b4076fb61f7619f2dfd0a0c31dee4c32b9 \
     --hash=sha256:65258a6bb3e7dc31dc9b26f8d42f53c9d3b959643ade291fcd1aef4855303ca6 \
