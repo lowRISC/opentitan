@@ -8,7 +8,7 @@
 set -e
 
 util/verible-format.py --allowlist || {
-  echo -n "##vso[task.logissue type=error]"
+  echo -n "::error::"
   echo "Verilog format with Verible failed. Run 'util/verible-format.py' to check and fix all errors."
   echo "This flow is currently experimental and failures can be ignored."
   exit 1
