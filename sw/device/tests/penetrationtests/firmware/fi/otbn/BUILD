@@ -110,3 +110,10 @@ otbn_binary(
         "otbn_load_integrity.s",
     ],
 )
+
+otbn_binary(
+    name = "otbn_pc",
+    srcs = [
+        "otbn_pc.s",
+    ],
+)
