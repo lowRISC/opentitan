@@ -267,16 +267,17 @@ static void check_sram_data(scramble_test_frame *mem_frame) {
 
   // Decide whether to perform ECC error count checks after memory is scrambled.
   //
-  // This is not done on FPGAs because the interrupt handler that counts them
-  // does not currently trigger on our FPGA platforms.
-  // See #20119 for more details.
+  // This is not done on CW305/CW310 FPGAs because interrupts for ECC errors are
+  // only triggered when the SecureIbex parameter is enabled. This parameter is
+  // disabled for these boards due to resource constraints. On CW340 and the
+  // other targets, this parameter is enabled.
   bool check_ecc_errors = false;
   switch (kDeviceType) {
     case kDeviceFpgaCw305:
     case kDeviceFpgaCw310:
-    case kDeviceFpgaCw340:
       check_ecc_errors = false;
       break;
+    case kDeviceFpgaCw340:
     case kDeviceSilicon:
     case kDeviceSimDV:
     case kDeviceSimVerilator:
