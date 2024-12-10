@@ -31,6 +31,7 @@
               "{conn_csvs_dir}/clkmgr_secure.csv",
               "{conn_csvs_dir}/clkmgr_timers.csv",
               "{conn_csvs_dir}/clkmgr_trans.csv",
+              "{conn_csvs_dir}/flash_ctrl.csv",
               "{conn_csvs_dir}/jtag.csv",
               "{conn_csvs_dir}/lc_ctrl_broadcast.csv",
               "{conn_csvs_dir}/otp_lc_vendor_test.csv",
