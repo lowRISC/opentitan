@@ -23,7 +23,8 @@ from typing import Dict, Set
 # The schema version used for legacy cache entries, JSON files missing a version
 # entry, and entries that use a higher version of the schema than supported here
 # (attempted in case there is forwards compatibility).
-MANIFEST_SCHEMA_VERSION = 2
+MANIFEST_SCHEMA_VERSION_MIN = 2
+MANIFEST_SCHEMA_VERSION_MAX = 3
 
 # Default location of the bitstreams cache.
 CACHE_DIR = '~/.cache/opentitan-bitstreams'
@@ -37,18 +38,15 @@ MANIFESTS_DIR = os.path.dirname(__file__) if __file__ else os.path.dirname(sys.a
 KNOWN_DESIGNS = {
     "chip_earlgrey_cw310": {
         "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom",
-        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi",
-        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi",
+        "mmi": "@//hw/bitstream/vivado:cw310_mmi",
     },
     "chip_earlgrey_cw310_hyperdebug": {
         "bitstream": "@//hw/bitstream/vivado:fpga_cw310_test_rom_hyp",
-        "rom_mmi": "@//hw/bitstream/vivado:rom_mmi_hyp",
-        "otp_mmi": "@//hw/bitstream/vivado:otp_mmi_hyp",
+        "mmi": "@//hw/bitstream/vivado:cw310_hyperdebug_mmi",
     },
     "chip_earlgrey_cw340": {
         "bitstream": "@//hw/bitstream/vivado:fpga_cw340_test_rom",
-        "rom_mmi": "@//hw/bitstream/vivado:fpga_cw340_rom_mmi",
-        "otp_mmi": "@//hw/bitstream/vivado:fpga_cw340_otp_mmi",
+        "mmi": "@//hw/bitstream/vivado:cw340_mmi",
     },
 }
 
@@ -276,7 +274,7 @@ class BitstreamCache(object):
         if not os.path.exists(self.latest_update):
             self.Touch(key)
 
-    def _GenerateLegacyManifest(self, key: str, files: [str]) -> Dict:
+    def _GenerateMemoryMapFromV2(self, key: str, mmi_v2: Dict) -> Dict:
         """Generate a manifest for old cache entries without them.
 
         Args:
@@ -285,59 +283,75 @@ class BitstreamCache(object):
         Returns:
             A dictionary mapping file paths to manifest entries
         """
-        legacy_files = {
-            "chip_earlgrey_cw310": {
-                "build_id": key,
-                "bitstream": {
-                    "file": "lowrisc_systems_chip_earlgrey_cw310_0.1.bit.orig",
-                    "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                },
-                "memory_map_info": {
-                    "otp": {
-                        "file": "otp.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                    },
-                    "rom": {
-                        "file": "rom.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310",
-                    },
-                },
-            },
-            "chip_earlgrey_cw310_hyperdebug": {
-                "build_id": key,
-                "bitstream": {
-                    "file": "chip_earlgrey_cw310_hyperdebug/"
-                            "lowrisc_systems_chip_earlgrey_cw310_hyperdebug_0.1.bit",
-                    "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                },
-                "memory_map_info": {
-                    "otp": {
-                        "file": "chip_earlgrey_cw310_hyperdebug/otp.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                    },
-                    "rom": {
-                        "file": "chip_earlgrey_cw310_hyperdebug/rom.mmi",
-                        "build_target": "//hw/bitstream/vivado:fpga_cw310_hyperdebug",
-                    },
-                },
-            },
+        filepath = None
+        memories = []
+        cache_path = os.path.join("cache", key)
+        merged_tree = None
+        merged_root = None
+        for memory, info in mmi_v2.items():
+            mmi_path = os.path.join(cache_path, info["file"])
+            mmi_tree = xml.etree.ElementTree.parse(mmi_path)
+            mmi_root = mmi_tree.getroot()
+            assert mmi_root.tag == "MemInfo"
+            processor_elem = mmi_root.findall("Processor")
+            assert len(processor_elem) == 1
+            processor_elem = processor_elem[0]
+            # Adjust the Processor element's InstPath to use the memory ID
+            processor_elem.attrib["InstPath"] = memory
+            memories.append(memory)
+
+            if filepath is None:
+                filepath = os.path.dirname(mmi_path)
+                filepath = os.path.join(filepath, "memories.mmi")
+            if merged_root is None:
+                merged_tree = mmi_tree
+                merged_root = mmi_root
+                continue
+            else:
+                merged_root.append(processor_elem)
+
+        # The Config element must be at the end
+        config_elem = merged_root.findall("Config")
+        assert len(config_elem) == 1
+        config_elem = config_elem[0]
+        merged_root.remove(config_elem)
+        merged_root.append(config_elem)
+
+        # Write the merged XML file
+        merged_tree.write(filepath)
+
+        # Rewrite memory map info in v3 format
+        memory_map_info = {
+            "file": os.path.relpath(filepath, cache_path),
+            "memories": memories,
         }
-        designs = collections.defaultdict(dict)
+        return memory_map_info
 
-        for design, metadata in legacy_files.items():
-            design_is_present = True
-            required_files = [metadata["bitstream"]["file"]]
-            for mmi in metadata["memory_map_info"].values():
-                required_files.append(mmi["file"])
-            for required_file in required_files:
-                if os.path.join("cache", key, required_file) not in files:
-                    design_is_present = False
-                    break
-            if design_is_present:
-                designs[design] = metadata
+    def _GenerateV3ManifestFromV2(self, key: str, manifest: Dict) -> Dict:
+        """Generate a manifest for cache entries in old v2 format.
 
-        manifest = {"schema_version": MANIFEST_SCHEMA_VERSION,
-                    "designs": designs}
+        Aggregates MMI files into one merged file, per v3 requirements.
+
+        Args:
+            manifest: The v2 manifest in the cache entry
+        Returns:
+            An updated manifest Dict with v3 memory map info
+        """
+        try:
+            import jsonschema
+        except ImportError:
+            logging.warning("jsonschema not found, skipping schema validation")
+        else:
+            schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest_v2.schema.json")
+            with open(schema_path) as schema_file:
+                schema = json.load(schema_file)
+            jsonschema.validate(manifest, schema)
+
+        for design, metadata in manifest["designs"].items():
+            memory_map_info = metadata["memory_map_info"]
+            memory_map_info = self._GenerateMemoryMapFromV2(key, memory_map_info)
+            metadata["memory_map_info"] = memory_map_info
+        manifest["schema_version"] = 3
         return manifest
 
     def GetFromCache(self, key: str) -> (Dict, Path):
@@ -354,20 +368,16 @@ class BitstreamCache(object):
             files = self._GetFromLocal(key)
 
         manifest_path = os.path.join("cache", key, "manifest.json")
-        if manifest_path not in files:
-            logging.warning("No manifest found."
-                            " Attempting to generate manifest from legacy file"
-                            " paths.")
-            return (self._GenerateLegacyManifest(key, files), None)
-
         with open(manifest_path, "r") as manifest_file:
             manifest = json.load(manifest_file)
 
-        if "schema_version" not in manifest:
-            logging.error("schema is missing a version number."
-                          " Generating legacy manifest instead...")
-            return (self._GenerateLegacyManifest(key, files), None)
+        assert "schema_version" in manifest
+        schema_version = int(manifest["schema_version"])
+        assert schema_version >= MANIFEST_SCHEMA_VERSION_MIN
+        assert schema_version <= MANIFEST_SCHEMA_VERSION_MAX
 
+        if schema_version == 2:
+            return (self._GenerateV3ManifestFromV2(key, manifest), None)
         return (manifest, manifest_path)
 
     @staticmethod
@@ -379,43 +389,27 @@ class BitstreamCache(object):
         with open(path, "w") as manifest_file:
             json.dump(contents, manifest_file, indent=True)
 
-    def _ConstructBazelString(self, build_file: Path, key: str) -> str:
-        # If `key` passed in is "latest", this updates the `key` to be the hash
-        # that "latest" points to.
-        if key == 'latest':
-            key = self.available['latest']
-
-        (manifest, manifest_path) = self.GetFromCache(key)
-
-        # Schema version 1 was never used and is not valid
-        if manifest["schema_version"] <= 1:
-            msg_template = "Invalid schema_version {} found in manifest"
-            raise Exception(msg_template.format(manifest["schema_version"]))
-
+    def _ConstructBazelString(self, build_file: Path, key: str, manifest: Dict,
+                              manifest_path: Path) -> str:
         designs = collections.defaultdict(dict)
-        if manifest["schema_version"] > MANIFEST_SCHEMA_VERSION:
-            logging.warning("Warning: Manifest is newer than available schemas")
-            logging.warning("Will try parsing an available schema with highest version")
-            manifest["schema_version"] = MANIFEST_SCHEMA_VERSION
 
-        if manifest["schema_version"] == 2:
-            # Attempt to check the schema if `jsonschema` is available.
-            try:
-                import jsonschema
-            except ImportError:
-                logging.warning("jsonschema not found, skipping schema validation")
-            else:
-                schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
-                with open(schema_path) as schema_file:
-                    schema = json.load(schema_file)
-                jsonschema.validate(manifest, schema)
+        # Attempt to check the schema if `jsonschema` is available.
+        try:
+            import jsonschema
+        except ImportError:
+            logging.warning("jsonschema not found, skipping schema validation")
+        else:
+            schema_path = os.path.join(MANIFESTS_DIR, "bitstreams_manifest.schema.json")
+            with open(schema_path) as schema_file:
+                schema = json.load(schema_file)
+            jsonschema.validate(manifest, schema)
 
-            for design_name, metadata in manifest["designs"].items():
-                design = collections.defaultdict(dict)
-                design["bitstream"] = metadata["bitstream"]["file"]
-                for mmi_id, mmi_entry in metadata["memory_map_info"].items():
-                    design[mmi_id + "_mmi"] = mmi_entry["file"]
-                designs[design_name] = design
+        for design_name, metadata in manifest["designs"].items():
+            design = collections.defaultdict(dict)
+            design["bitstream"] = metadata["bitstream"]["file"]
+            design["mmi"] = metadata["memory_map_info"]["file"]
+            # What to do about the memory list?
+            designs[design_name] = design
 
         bazel_lines = [
             '# This file was autogenerated. Do not edit!',
@@ -474,14 +468,6 @@ class BitstreamCache(object):
 
                 bazel_lines += filegroup_lines(target_name, target_file)
 
-        if manifest_path is None:
-            # Write substitute manifest if none came with the cache entry.
-            manifest_path = os.path.join(cache_base_dir,
-                                         "substitute_manifest.json")
-            abs_manifest_path = os.path.join(self.cachedir,
-                                             "substitute_manifest.json")
-            self._WriteSubstituteManifest(manifest, abs_manifest_path)
-
         bazel_lines += filegroup_lines("manifest", manifest_path)
 
         for design_name in sorted(KNOWN_DESIGNS.keys()):
@@ -501,12 +487,25 @@ class BitstreamCache(object):
         Returns:
             Either `key` or the corresponding commit hash if `key` is 'latest'.
         """
-        with open(build_file, 'wt') as f:
-            f.write(self._ConstructBazelString(build_file, key))
+        # If `key` passed in is "latest", this updates the `key` to be the hash
+        # that "latest" points to.
+        if key == 'latest':
+            key = self.available['latest']
 
-        if key != 'latest':
-            return key
-        return self.available[key]
+        (manifest, manifest_path) = self.GetFromCache(key)
+
+        if manifest_path is None:
+            # Write substitute manifest if none came with the cache entry.
+            manifest_path = os.path.join("cache", key,
+                                         "substitute_manifest.json")
+            abs_manifest_path = os.path.join(self.cachedir, key,
+                                             "substitute_manifest.json")
+            self._WriteSubstituteManifest(manifest, abs_manifest_path)
+
+        with open(build_file, 'wt') as f:
+            f.write(self._ConstructBazelString(build_file, key, manifest, manifest_path))
+
+        return key
 
 
 def main(argv):

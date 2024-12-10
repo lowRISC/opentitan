@@ -106,7 +106,4 @@ BITSTREAM_FNAME="lowrisc_systems_chip_${FLAVOUR}_${TARGET}_0.1.bit"
 BITSTREAM_PATH="$OBJ_DIR/hw/synth-vivado/$BITSTREAM_FNAME"
 cp "$BITSTREAM_PATH" "$TOPLEVEL_BIN_DIR"
 
-cp "$OBJ_DIR/hw/synth-vivado/rom.mmi" "$TOPLEVEL_BIN_DIR"
-if [ $HAS_OTP == 1 ]; then
-    cp "$OBJ_DIR/hw/synth-vivado/otp.mmi" "$TOPLEVEL_BIN_DIR"
-fi
+cp "$OBJ_DIR/hw/synth-vivado/memories.mmi" "$TOPLEVEL_BIN_DIR"
