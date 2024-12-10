@@ -12,7 +12,7 @@
 set -e
 
 if [ -f .bazelrc-site ]; then
-    echo -n "##vso[task.logissue type=error]"
+    echo -n "::error::"
     echo "The .bazelrc-site file should not appear in a clean checkout"
     exit 1
 fi

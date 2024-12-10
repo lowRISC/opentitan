@@ -28,7 +28,7 @@ git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
         ':!signing/softhsm/tokens/*' \
         ':!*/vendor/*' | \
     xargs -r util/fix_trailing_whitespace.py --dry-run || {
-    echo -n "##vso[task.logissue type=error]"
+    echo -n "::error::"
     echo "Whitespace check failed. Please run util/fix_trailing_whitespace.py on the above files."
     exit 1
 }

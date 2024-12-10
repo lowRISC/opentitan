@@ -32,7 +32,7 @@ set -o pipefail
 done)| \
     xargs -r ./bazelisk.sh test //quality:license_check --test_output=streamed || {
 
-    echo >&2 -n "##vso[task.logissue type=error]"
+    echo >&2 -n "::error::"
     echo >&2 "Licence header check failed."
     exit 1
 }
