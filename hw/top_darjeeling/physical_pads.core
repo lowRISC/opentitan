@@ -18,9 +18,6 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
-    files:
-      # - lint/physical_pads.vlt
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
