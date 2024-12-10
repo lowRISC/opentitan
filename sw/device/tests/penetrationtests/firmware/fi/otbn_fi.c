@@ -150,6 +150,65 @@ status_t clear_otbn_load_checksum(void) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
+  // Get big number (2x256 bit).
+  otbn_fi_big_num_t uj_data;
+  TRY(ujson_deserialize_otbn_fi_big_num_t(uj, &uj_data));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Initialize OTBN app, load it, and get interface to OTBN data memory.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_bn_sel);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_sel, big_num);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_bn_sel, big_num_out);
+  const otbn_app_t kOtbnAppCharBnSel = OTBN_APP_T_INIT(otbn_char_bn_sel);
+  static const otbn_addr_t kOtbnAppCharBnSelBigNum =
+      OTBN_ADDR_T_INIT(otbn_char_bn_sel, big_num);
+  static const otbn_addr_t kOtbnAppCharBnSelBigNumOut =
+      OTBN_ADDR_T_INIT(otbn_char_bn_sel, big_num_out);
+
+  // Load app and write received big_num into DMEM.
+  otbn_load_app(kOtbnAppCharBnSel);
+  TRY(dif_otbn_dmem_write(&otbn, kOtbnAppCharBnSelBigNum, uj_data.big_num,
+                          sizeof(uj_data.big_num)));
+
+  // FI code target.
+  pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read big_num_out from OTBN data memory.
+  otbn_fi_big_num_out_t uj_output;
+  memset(uj_output.big_num, 0, sizeof(uj_output.big_num));
+  TRY(dif_otbn_dmem_read(&otbn, kOtbnAppCharBnSelBigNumOut, uj_output.big_num,
+                         sizeof(uj_output.big_num)));
+
+  // Read OTBN instruction counter.
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send back to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_big_num_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_fi_char_dmem_access(ujson_t *uj) {
   // Clear registered alerts in alert handler.
   pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
@@ -880,6 +939,8 @@ status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
+    case kOtbnFiSubcommandCharBnSel:
+      return handle_otbn_fi_char_bn_sel(uj);
     case kOtbnFiSubcommandCharDmemAccess:
       return handle_otbn_fi_char_dmem_access(uj);
     case kOtbnFiSubcommandCharHardwareDmemOpLoop:
