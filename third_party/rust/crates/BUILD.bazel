@@ -523,6 +523,12 @@ alias(
     tags = ["manual"],
 )
 
+alias(
+    name = "zeroize",
+    actual = "@crate_index__zeroize-1.8.1//:zeroize",
+    tags = ["manual"],
+)
+
 # Binaries
 alias(
     name = "mdbook__mdbook",

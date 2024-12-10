@@ -1,0 +1,22 @@
+diff --git a/cryptoki/src/object.rs b/cryptoki/src/object.rs
+index 19c74de..f85ac60 100644
+--- a/cryptoki/src/object.rs
++++ b/cryptoki/src/object.rs
+@@ -1007,6 +1007,9 @@ impl ObjectClass {
+     /// An OTP key object
+     pub const OTP_KEY: ObjectClass = ObjectClass { val: CKO_OTP_KEY };
+ 
++    /// A profile object
++    pub const PROFILE: ObjectClass = ObjectClass { val: 9 };
++
+     pub(crate) fn stringify(class: CK_OBJECT_CLASS) -> String {
+         match class {
+             CKO_DATA => String::from(stringify!(CKO_DATA)),
+@@ -1057,6 +1060,7 @@ impl TryFrom<CK_OBJECT_CLASS> for ObjectClass {
+             CKO_DOMAIN_PARAMETERS => Ok(ObjectClass::DOMAIN_PARAMETERS),
+             CKO_MECHANISM => Ok(ObjectClass::MECHANISM),
+             CKO_OTP_KEY => Ok(ObjectClass::OTP_KEY),
++            9 => Ok(ObjectClass::PROFILE),
+ 
+             _ => {
+                 error!("Object class {} is not supported.", object_class);

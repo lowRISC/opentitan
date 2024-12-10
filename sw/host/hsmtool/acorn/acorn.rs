@@ -3,10 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use bitflags::bitflags;
 use libloading::Library;
 use std::ffi::{CStr, CString};
 use thiserror::Error;
+
+use crate::{GenerateFlags, KeyEntry, KeyInfo, SpxInterface};
 
 #[derive(Error, Debug)]
 pub enum AcornError {
@@ -106,56 +107,21 @@ impl AcornLibrary {
     }
 }
 
-#[derive(Debug, Default)]
-pub struct KeyEntry {
-    /// Alias of the key.
-    pub alias: String,
-    /// Unique identifier for the key.
-    pub hash: Option<String>,
-    /// Algorithm to be used with the key.
-    pub algorithm: String,
-    /// Opaque representation of the private key material.
-    pub private_blob: Vec<u8>,
-    /// Exported private key material (only when GenerateFlags::EXPORT_PRIVATE is set).
-    pub private_key: Vec<u8>,
-}
-
-#[derive(Debug, Default)]
-pub struct KeyInfo {
-    /// Unique identifier for the key.
-    pub hash: String,
-    /// Algorithm to be used with the key.
-    pub algorithm: String,
-    /// Public key material.
-    pub public_key: Vec<u8>,
-    /// Opaque representation of the private key material.
-    pub private_blob: Vec<u8>,
-}
-
 pub struct Acorn {
     lib: AcornLibrary,
 }
 
-bitflags! {
-    #[derive(Debug)]
-    pub struct GenerateFlags: u32 {
-        const NONE = 0;
-        const OVERWRITE = 1 << acorn_bindgen::acorn_enum_generateFlags_acorn_enum_generateFlags_overwrite;
-        const EXPORT_PRIVATE = 1 << acorn_bindgen::acorn_enum_generateFlags_acorn_enum_generateFlags_exportPrivate;
-    }
-}
-
 impl Acorn {
-    pub fn new<P>(path: P) -> Result<Self>
+    pub fn new<P>(path: P) -> Result<Box<Self>>
     where
         P: AsRef<std::ffi::OsStr>,
     {
         let lib = AcornLibrary::new(path)?;
-        Ok(Acorn { lib })
+        Ok(Box::new(Acorn { lib }))
     }
 
     /// Get the version of the acorn host software.
-    pub fn get_version(&self) -> Result<String> {
+    pub fn get_host_version(&self) -> Result<String> {
         let mut rsp = acorn_bindgen::acorn_response_getVersion::default();
         let mut err = std::ptr::null_mut::<std::ffi::c_char>();
         // SAFETY: The arguments to `getVersion` are of the correct type.
@@ -202,34 +168,6 @@ impl Acorn {
                 .see_getVersion
                 .as_ref()
                 .expect("free.see_getVersion"))(std::ptr::null_mut(), &mut rsp);
-            result
-        }
-    }
-
-    pub fn list_keys(&self) -> Result<Vec<KeyEntry>> {
-        let mut rsp = acorn_bindgen::acorn_response_list::default();
-        let mut err = std::ptr::null_mut::<std::ffi::c_char>();
-        // SAFETY: The entries returned by `list` are copied into rust types.
-        // The memory allocated by the acorn library is freed by the acorn library's
-        // free function.
-        unsafe {
-            let result =
-                if (self.lib.func.list.as_ref().expect("func.list"))(&mut rsp, &mut err) == 0 {
-                    let entries = std::slice::from_raw_parts(rsp.entries, rsp.n_entries as usize);
-                    let entries = entries
-                        .iter()
-                        .map(|e| KeyEntry {
-                            alias: rust_string(e.alias),
-                            hash: None,
-                            algorithm: rust_string(e.algorithm),
-                            ..Default::default()
-                        })
-                        .collect::<Vec<_>>();
-                    Ok(entries)
-                } else {
-                    Err(AcornError::Message(rust_string(err)).into())
-                };
-            (self.lib.free.list.as_ref().expect("free.list"))(std::ptr::null_mut(), &mut rsp);
             result
         }
     }
@@ -298,8 +236,46 @@ impl Acorn {
             result
         }
     }
+}
 
-    pub fn get_key_info(&self, alias: &str) -> Result<KeyInfo> {
+impl SpxInterface for Acorn {
+    fn get_version(&self) -> Result<String> {
+        Ok(format!(
+            "{} (see: {})",
+            self.get_host_version()?,
+            self.get_see_version()?
+        ))
+    }
+
+    fn list_keys(&self) -> Result<Vec<KeyEntry>> {
+        let mut rsp = acorn_bindgen::acorn_response_list::default();
+        let mut err = std::ptr::null_mut::<std::ffi::c_char>();
+        // SAFETY: The entries returned by `list` are copied into rust types.
+        // The memory allocated by the acorn library is freed by the acorn library's
+        // free function.
+        unsafe {
+            let result =
+                if (self.lib.func.list.as_ref().expect("func.list"))(&mut rsp, &mut err) == 0 {
+                    let entries = std::slice::from_raw_parts(rsp.entries, rsp.n_entries as usize);
+                    let entries = entries
+                        .iter()
+                        .map(|e| KeyEntry {
+                            alias: rust_string(e.alias),
+                            hash: None,
+                            algorithm: rust_string(e.algorithm),
+                            ..Default::default()
+                        })
+                        .collect::<Vec<_>>();
+                    Ok(entries)
+                } else {
+                    Err(AcornError::Message(rust_string(err)).into())
+                };
+            (self.lib.free.list.as_ref().expect("free.list"))(std::ptr::null_mut(), &mut rsp);
+            result
+        }
+    }
+
+    fn get_key_info(&self, alias: &str) -> Result<KeyInfo> {
         let alias = CString::new(alias)?;
         // SAFETY: The data returned by `get_key_info` are copied into rust data types.
         // The memory allocated by the acorn library is freed by the acorn library's
@@ -334,7 +310,7 @@ impl Acorn {
         }
     }
 
-    pub fn generate_key(
+    fn generate_key(
         &self,
         alias: &str,
         algorithm: &str,
@@ -389,7 +365,7 @@ impl Acorn {
         }
     }
 
-    pub fn import_keypair(
+    fn import_keypair(
         &self,
         alias: &str,
         algorithm: &str,
@@ -453,12 +429,7 @@ impl Acorn {
         }
     }
 
-    pub fn sign(
-        &self,
-        alias: Option<&str>,
-        key_hash: Option<&str>,
-        message: &[u8],
-    ) -> Result<Vec<u8>> {
+    fn sign(&self, alias: Option<&str>, key_hash: Option<&str>, message: &[u8]) -> Result<Vec<u8>> {
         let alias = alias.map(CString::new).transpose()?;
         let key_hash = key_hash.map(CString::new).transpose()?;
         // SAFETY: The signature returned by `sign` is copied into a rust Vec.
@@ -496,7 +467,7 @@ impl Acorn {
         }
     }
 
-    pub fn verify(
+    fn verify(
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,

@@ -36,4 +36,8 @@ pub enum HsmError {
     DerError(String),
     #[error("This operation requires the acorn library")]
     AcornUnavailable,
+    #[error("Parse error: {0}")]
+    ParseError(String),
+    #[error("Unknown application: {0}")]
+    UnknownApplication(String),
 }
