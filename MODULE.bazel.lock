@@ -661,7 +661,7 @@
     "@@rules_rust~//rust:extensions.bzl%rust": {
       "general": {
         "bzlTransitiveDigest": "3kp+qh/wX08yLWZTHbZNMqxUc7ZUx0tjbO+uPeHjcBE=",
-        "usagesDigest": "bRz6c7S/zYSSjrLfB7HzICTFcYxE0YgH9y7nwRQw1jc=",
+        "usagesDigest": "DFfyTLTu+V4oenDem1ScSH0EDkubPH84llaMeRSo2Qw=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
