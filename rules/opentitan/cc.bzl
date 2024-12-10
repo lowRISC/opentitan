@@ -186,7 +186,7 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
     if manifest and ctx.attr.immutable_rom_ext_enabled:
-        manifest = update_manifest(ctx, manifest, elf, exec_env._update_manifest_json)
+        manifest = update_manifest(ctx, manifest, elf, exec_env)
 
     if (manifest or rsa_key) and kind != "ram":
         if not (manifest and (rsa_key or ecdsa_key)):
