@@ -93,6 +93,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_hardware_dmem_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_hardware_reg_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_jal",
+        "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_lw",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_rf",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_dmem_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_reg_op_loop",
