@@ -74,6 +74,17 @@ status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj);
 status_t handle_otbn_fi_char_dmem_access(ujson_t *uj);
 
 /**
+ * otbn.fi.char_dmem_write command handler.
+ *
+ * Inject faults during Ibex writes data to DMEM.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_dmem_write(ujson_t *uj);
+
+/**
  * otbn.fi.char.hardware.dmem.op.loop command handler.
  *
  * This FI penetration tests executes the following instructions on OTBN:
