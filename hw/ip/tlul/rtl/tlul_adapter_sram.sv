@@ -388,7 +388,7 @@ module tlul_adapter_sram
   //    Generate request only when no internal error occurs. If error occurs, the request should be
   //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
-  assign req_o       = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
+  assign req_o       = reqfifo_wready & ~error_internal;
   assign req_type_o  = tl_i_int.a_user.instr_type;
   assign we_o        = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
   assign addr_o      = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
@@ -682,4 +682,7 @@ module tlul_adapter_sram
   `ASSERT_KNOWN(TlOutValidKnown_A, tl_o.d_valid)
   `ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
 
+  // If tl_i_int.a_valid is low, this will be seen in u_err and tlul_error comes out from it. Then
+  // tlul_error will become visible to error_det and then error_internal.
+  `ASSERT(NotAValidImpliesErr, !tl_i_int.a_valid -> error_internal)
 endmodule
