@@ -250,6 +250,17 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj);
 status_t handle_otbn_fi_load_integrity(ujson_t *uj);
 
 /**
+ * otbn.fi.pc command handler.
+ *
+ * The goal of this test is to fault the OTBN program counter that is passed from
+ * Ibex into OTBN. OTBN jumps to this PC. Manipulation can be detected by reading
+ * the instruction counter.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_pc(ujson_t *uj);
+
+/**
  * OTBN FI command handler.
  *
  * Command handler for the OTBN FI command.
