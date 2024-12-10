@@ -18,6 +18,7 @@ filesets:
       - lowrisc:dv:otbn_memutil
       - lowrisc:dv_verilator:memutil_verilator
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:prim_generic:all
     files:
       - otbn_top_sim.cc: { file_type: cppSource }
       - otbn_top_sim.sv: { file_type: systemVerilogSource }

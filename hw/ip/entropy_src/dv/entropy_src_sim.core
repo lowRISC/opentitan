@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:entropy_src_sva
       - lowrisc:dv:entropy_src_cov
       - lowrisc:dv:digestpp_dpi:0.1
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
