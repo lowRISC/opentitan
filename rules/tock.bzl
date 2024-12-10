@@ -137,7 +137,8 @@ def _tock_image_impl(ctx):
 
         ctx.actions.run_shell(
             outputs = [output_image],
-            inputs = [input_image, tab, ctx.executable._tockloader],
+            inputs = [input_image, tab],
+            tools = [ctx.executable._tockloader],
             command = "\
               cp {} {} &&\
               chmod +rw {} &&\
