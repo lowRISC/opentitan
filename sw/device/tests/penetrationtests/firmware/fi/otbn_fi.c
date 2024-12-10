@@ -150,6 +150,53 @@ status_t clear_otbn_load_checksum(void) {
   return OK_STATUS();
 }
 
+status_t handle_otbn_fi_char_beq(ujson_t *uj) {
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+
+  // Initialize OTBN app, load it, and get interface to OTBN data memory.
+  OTBN_DECLARE_APP_SYMBOLS(otbn_char_beq);
+  OTBN_DECLARE_SYMBOL_ADDR(otbn_char_beq, res);
+  const otbn_app_t kOtbnAppCharBeq = OTBN_APP_T_INIT(otbn_char_beq);
+  static const otbn_addr_t kOtbnAppCharBeqRes =
+      OTBN_ADDR_T_INIT(otbn_char_beq, res);
+  otbn_load_app(kOtbnAppCharBeq);
+
+  // FI code target.
+  pentest_set_trigger_high();
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+
+  // Read counter (x1) from OTBN data memory.
+  otbn_fi_result_cnt_t uj_output;
+  uj_output.result = 0;
+  otbn_dmem_read(1, kOtbnAppCharBeqRes, &uj_output.result);
+
+  // Read OTBN instruction counter.
+  TRY(dif_otbn_get_insn_cnt(&otbn, &uj_output.insn_cnt));
+
+  // Read ERR_STATUS register from OTBN.
+  dif_otbn_err_bits_t err_otbn;
+  read_otbn_err_bits(&err_otbn);
+
+  // Read ERR_STATUS register from Ibex.
+  dif_rv_core_ibex_error_status_t err_ibx;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &err_ibx));
+
+  // Clear OTBN memory.
+  TRY(clear_otbn());
+
+  // Send back to host.
+  uj_output.err_otbn = err_otbn;
+  uj_output.err_ibx = err_ibx;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  RESP_OK(ujson_serialize_otbn_fi_result_cnt_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_fi_char_bn_sel(ujson_t *uj) {
   // Get big number (2x256 bit).
   otbn_fi_big_num_t uj_data;
@@ -939,6 +986,8 @@ status_t handle_otbn_fi(ujson_t *uj) {
   otbn_fi_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_fi_subcommand_t(uj, &cmd));
   switch (cmd) {
+    case kOtbnFiSubcommandCharBeq:
+      return handle_otbn_fi_char_beq(uj);
     case kOtbnFiSubcommandCharBnSel:
       return handle_otbn_fi_char_bn_sel(uj);
     case kOtbnFiSubcommandCharDmemAccess:
