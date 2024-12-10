@@ -6,3 +6,4 @@ util/lowrisc_misc-linters
 bazel-airgapped
 # Temporary ignore vendored Rust crates until they are removed:
 third_party/rust/crates
+third_party/tock/crates
