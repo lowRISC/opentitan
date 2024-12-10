@@ -104,6 +104,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_unrolled_reg_op_loop",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_key_sideload",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_load_integrity",
+        "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_pc",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:otbn_fi_commands",
     ],
