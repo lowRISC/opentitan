@@ -558,6 +558,11 @@ task hmac_base_vseq::save_and_restore();
   // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
   // or 1024 bits SHA-2 384/512)
   sar_window.wait_trigger();
+
+  // Insert random delay to mimic the SW accesses which can take some time because of potential
+  // incoming interrupts.
+  cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
+
   randcase
     1:  sar_stop_and_continue();
     1:  sar_same_context();
