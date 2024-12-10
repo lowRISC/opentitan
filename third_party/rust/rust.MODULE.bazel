@@ -4,6 +4,7 @@
 
 # Dependencies:
 bazel_dep(name = "rules_rust", version = "0.49.3")
+bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
 single_version_override(
@@ -101,3 +102,14 @@ crate.from_cargo(
     manifests = ["//third_party/tock:Cargo.toml"],
 )
 use_repo(crate, "tock_index")
+
+# Rust bindgen toolchain:
+register_toolchains("//third_party/rust:bindgen_toolchain")
+
+# LLVM toolchain used by bindgen for `libclang` (not for device software):
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_versions = {"": "10.0.0"},
+)
+use_repo(llvm, "llvm_toolchain_llvm")
