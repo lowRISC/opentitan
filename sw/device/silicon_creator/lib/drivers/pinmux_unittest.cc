@@ -125,5 +125,13 @@ TEST_F(InitTest, WithoutBootstrap) {
   pinmux_init();
 }
 
+TEST_F(InitTest, Uart0TxOnly) {
+  // The outputs that will be configured.
+  EXPECT_ABS_WRITE32(RegOutSel(kTopEarlgreyPinmuxMioOutIoc4),
+                     kTopEarlgreyPinmuxOutselUart0Tx);
+
+  pinmux_init_uart0_tx();
+}
+
 }  // namespace
 }  // namespace pinmux_unittest
