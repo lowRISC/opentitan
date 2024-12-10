@@ -169,21 +169,22 @@ def manifest(d):
     _manifest(**d)
     return d["name"]
 
-def update_manifest(ctx, manifest, elf, update_manifest_json_tool):
+def update_manifest(ctx, manifest, elf, exec_env):
     """Update the `manuf_state_creator` field in a ROM_EXT manifest.
 
     Args:
         ctx: The rule context.
         manifest: The input JSON manifest file.
         elf: The input ROM_EXT ELF file.
-        update_manifest_json_tool: The path to the `update-manifest-json` tool.
+        exec_env: An ExecEnvInfo provider.
 
     Returns:
         The updated JSON manifest file.
     """
     output_file = ctx.actions.declare_file(
-        "{}.{}.with_manuf_state_creator_updated.json".format(
+        "{}_{}.{}.with_manuf_state_creator_updated.json".format(
             ctx.attr.name,
+            exec_env.exec_env,
             paths.split_extension(manifest.basename)[0],
         ),
     )
@@ -195,6 +196,6 @@ def update_manifest(ctx, manifest, elf, update_manifest_json_tool):
         outputs = [output_file],
         inputs = [manifest, elf],
         arguments = [args],
-        executable = update_manifest_json_tool,
+        executable = exec_env._update_manifest_json,
     )
     return output_file
