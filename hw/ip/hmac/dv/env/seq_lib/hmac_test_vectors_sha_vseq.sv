@@ -140,10 +140,7 @@ task hmac_test_vectors_sha_vseq::body();
   end else if (digest_size_arg == "SHA2_512") begin
     digest_size = SHA2_512;
     vector_list = vector_list_512;
-  // TODO (issue #22932): after merged with this PR #23771, a simple "else" could be used as
-  // hmac_en condition won't be there anymore
-  end else if (digest_size_arg != "SHA2_256" && digest_size_arg != "SHA2_384" &&
-               digest_size_arg != "SHA2_512") begin
+  end else begin
     `uvm_fatal(`gfn, {"Digest size is not recognized, please use command-line argument as: ",
                       "sha2_digest_size=SHA2_256/SHA2_384/SHA2_512 or don't pass this argument"})
   end

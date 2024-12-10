@@ -208,7 +208,6 @@ task hmac_smoke_vseq::body();
       // the wait_clk below is implemented to avoid checking intr_state during this period of time
       // for such corner cases, because it is hard to align the scb with the fifo_empty interrupt.
       // Since prim_packer can hold more data, the ignored period of time is extended by * 2.
-      // TODO revisit this and understand why this particular delay is selected
       if (`gmv(ral.cfg.digest_size) == SHA2_256) begin
         key_process_cycles = HMAC_KEY_PROCESS_CYCLES_256;
       end else begin

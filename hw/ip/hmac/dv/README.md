@@ -79,11 +79,9 @@ Some of the most commonly used tasks / functions are as follows:
 * `save_and_restore`: execute Save and Restore as described in the [SW Guide](https://opentitan.org/book/hw/ip/hmac/doc/programmers_guide.html#saving-and-restoring-the-context)
 
 ##### Standard test vectors
-Besides constrained random test sequences, HMAC test sequences also include standard SHA-2 256 and
-HMAC test vectors from [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs)
-and [IETF](https://tools.ietf.org/html/rfc4868) to test SHA-2 256/384/512 and HMAC using SHA-2 256/(384/512 TODO #22932))
-with 256-bit keys. The standard test vectors provide messages, keys (for the keyed HMAC tests only), and expected
-results. The expected results are used to verify the DUT outputs.
+Besides constrained random test sequences, HMAC test sequences also include standard SHA-2 256 and HMAC test vectors from [NIST](https://csrc.nist.gov/Projects/Cryptographic-Algorithm-Validation-Program/Secure-Hashing#shavs) and [IETF](https://tools.ietf.org/html/rfc4868) to test SHA-2 256/384/512 and HMAC using SHA-2 256/384/512 with 256-bit keys.
+The standard test vectors provide messages, keys (for the keyed HMAC tests only), and expected results.
+The expected results are used to verify the DUT outputs.
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop
