@@ -17,11 +17,11 @@ use cryptotest_commands::hash_commands::{
 };
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
 use opentitanlib::uart::console::UartConsole;
-use opentitanlib::console::spi::SpiConsoleDevice;
 
 #[derive(Debug, Parser)]
 struct Opts {
