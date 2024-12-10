@@ -9,7 +9,7 @@
 set -eo pipefail
 
 mapfile -t files < <(
-    ci/bazelisk.sh query '
+    ./bazelisk.sh query '
         kind("source file",
             deps(labels(srcs,
                 kind(asm_source_with_coverage, //sw/...)
@@ -23,7 +23,7 @@ if [[ "${#files[@]}" -ne 0 ]]; then
     for path in "${files[@]}"; do
         echo "${path}"
     done
-    ci/bazelisk.sh run //util/coverage/asm:instrument -- \
+    ./bazelisk.sh run //util/coverage/asm:instrument -- \
         --files "${files[@]}" "$@"
 else
     echo "No instrumented asm source file"
