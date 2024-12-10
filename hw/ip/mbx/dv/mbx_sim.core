@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:mbx_test
       - lowrisc:dv:mbx_sva
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
     file_type: systemVerilogSource

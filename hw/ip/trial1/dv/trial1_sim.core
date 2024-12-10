@@ -18,6 +18,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_test_status
+      - lowrisc:prim_generic:all
     files:
       - bus_pkg.sv
       - trial1_test.sv

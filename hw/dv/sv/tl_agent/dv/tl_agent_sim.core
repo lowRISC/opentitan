@@ -8,6 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:tl_agent_test
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

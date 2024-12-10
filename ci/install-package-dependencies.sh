@@ -81,6 +81,7 @@ xargs sudo $APT_CMD install -y <"$ci_reqs"
 # appropriate bin directory to the PATH
 export PATH=$HOME/.local/bin:$PATH
 
+sudo python3 -m pip uninstall fusesoc -y
 python3 -m pip install --user -r python-requirements.txt --require-hashes
 
 # Install Verible

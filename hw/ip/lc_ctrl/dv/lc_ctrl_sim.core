@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:lc_ctrl_sva
       - lowrisc:dv:lc_ctrl_cov
       - lowrisc:tlul:jtag_dtm
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
     file_type: systemVerilogSource

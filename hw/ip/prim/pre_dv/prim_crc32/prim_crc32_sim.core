@@ -12,6 +12,7 @@ filesets:
   files_verilator:
     depend:
       - lowrisc:dv_verilator:simutil_verilator
+      - lowrisc:prim_generic:all
     files:
       - prim_crc32_sim.cc: { file_type: cppSource }
       - prim_crc32_sim.sv: { file_type: systemVerilogSource }
