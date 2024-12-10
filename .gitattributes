@@ -26,6 +26,3 @@ sw/**/*.md  doc
 sw/**/*.svg doc
 sw/**/*.jpg doc
 sw/**/*.png doc
-
-# Generated lock files
-MODULE.bazel.lock linguist-generated=true
