@@ -61,8 +61,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_alert_handler_irq_get_type(
     const dif_alert_handler_t *alert_handler, dif_alert_handler_irq_t irq,
     dif_irq_type_t *type) {
-  if (alert_handler == NULL || type == NULL ||
-      irq == kDifAlertHandlerIrqClassd + 1) {
+  if (alert_handler == NULL || type == NULL || irq < 0 ||
+      irq > kDifAlertHandlerIrqClassd) {
     return kDifBadArg;
   }
 

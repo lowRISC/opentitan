@@ -95,7 +95,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_uart_irq_get_type(const dif_uart_t *uart, dif_uart_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (uart == NULL || type == NULL || irq == kDifUartIrqTxEmpty + 1) {
+  if (uart == NULL || type == NULL || irq < 0 || irq > kDifUartIrqTxEmpty) {
     return kDifBadArg;
   }
 

@@ -204,11 +204,13 @@ dif_result_t dif_${ip.name_snake}_init(
     % if ip.irqs[-1].width == 1:
       if (${ip.name_snake} == NULL ||
           type == NULL ||
-          irq == kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel} + 1) {
+          irq < 0 ||
+          irq > kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}) {
     % else:
       if (${ip.name_snake} == NULL ||
           type == NULL ||
-          irq == kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[-1].width - 1} + 1) {
+          irq < 0 ||
+          irq > kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[-1].width - 1}) {
     % endif
       return kDifBadArg;
     }

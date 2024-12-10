@@ -113,7 +113,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_i2c_irq_get_type(const dif_i2c_t *i2c, dif_i2c_irq_t irq,
                                   dif_irq_type_t *type) {
-  if (i2c == NULL || type == NULL || irq == kDifI2cIrqHostTimeout + 1) {
+  if (i2c == NULL || type == NULL || irq < 0 || irq > kDifI2cIrqHostTimeout) {
     return kDifBadArg;
   }
 
