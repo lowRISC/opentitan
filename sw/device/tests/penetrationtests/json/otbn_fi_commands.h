@@ -13,6 +13,7 @@ extern "C" {
 
 #define OTBNFI_SUBCOMMAND(_, value) \
     value(_, CharBeq) \
+    value(_, CharBnRshi) \
     value(_, CharBnSel) \
     value(_, CharDmemAccess) \
     value(_, CharHardwareDmemOpLoop) \
