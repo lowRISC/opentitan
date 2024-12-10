@@ -70,6 +70,15 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj);
 status_t handle_otbn_fi_char_jal(ujson_t *uj);
 
 /**
+ * otbn.fi.char.lw command handler.
+ *
+ * The goal of this test is to manipulate LW instructions using FI.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_lw(ujson_t *uj);
+
+/**
  * otbn.fi.char_mem command handler.
  *
  * Initializes IMEM and DMEM of OTBN with a fixed pattern. Inject a fault and
