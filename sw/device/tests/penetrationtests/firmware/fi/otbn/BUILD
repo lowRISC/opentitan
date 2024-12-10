@@ -35,6 +35,13 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_char_lw",
+    srcs = [
+        "otbn_char_lw.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_rf",
     srcs = [
         "otbn_char_rf.s",
