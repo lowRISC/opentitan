@@ -28,6 +28,13 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_char_bn_wsrr",
+    srcs = [
+        "otbn_char_bn_wsrr.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_dmem_access",
     srcs = [
         "otbn_char_dmem_access.s",
