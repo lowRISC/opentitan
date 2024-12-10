@@ -9,6 +9,20 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
+ * otbn.fi.char.beq command handler.
+ *
+ * The goal of this test is to fault to BEQ instruction such that the jump is
+ * not performed. Then, a counter gets incremented. When no effective fault
+ * occurs, the counter is 0.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_beq(ujson_t *uj);
+
+/**
  * otbn.fi.char.bn_sel command handler.
  *
  * The goal of this test is to manipulate the carry flag or the BN.SEL

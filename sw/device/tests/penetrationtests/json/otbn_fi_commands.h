@@ -12,6 +12,7 @@ extern "C" {
 // clang-format off
 
 #define OTBNFI_SUBCOMMAND(_, value) \
+    value(_, CharBeq) \
     value(_, CharBnSel) \
     value(_, CharDmemAccess) \
     value(_, CharHardwareDmemOpLoop) \

@@ -89,6 +89,7 @@ cc_library(
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
         "//sw/device/lib/ujson",
+        "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_beq",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_bn_sel",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_dmem_access",
         "//sw/device/tests/penetrationtests/firmware/fi/otbn:otbn_char_hardware_dmem_op_loop",
