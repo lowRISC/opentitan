@@ -75,7 +75,7 @@
     }
     NumRstReqs: 2
     wait_for_external_reset: true
-    NumRomInputs: 2
+    NumRomInputs: 3
     topname: darjeeling
   }
 }
