@@ -11,7 +11,7 @@ ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 # This should match the version in bazelish.sh.
-ARG BAZELISK_VERSION=v1.11.0
+ARG BAZELISK_VERSION=v1.24.1
 # This should match the version in ci/install-package-dependencies.sh
 ARG GCC_VERSION=9
 # This should match the version of the lowRISC RISC-V toolchain.
