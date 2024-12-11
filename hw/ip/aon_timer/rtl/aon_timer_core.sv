@@ -45,6 +45,8 @@ module aon_timer_core import aon_timer_reg_pkg::*; (
   always_ff @(posedge clk_aon_i or negedge rst_aon_ni) begin
     if (!rst_aon_ni) begin
       prescale_count_q <= 12'h000;
+    end else if (reg2hw_i.wkup_ctrl.prescaler.qe) begin
+      prescale_count_q <= 12'h000;
     end else if (prescale_en) begin
       prescale_count_q <= prescale_count_d;
     end
