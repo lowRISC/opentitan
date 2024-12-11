@@ -24,17 +24,36 @@ package csr_utils_pkg;
   int               max_outstanding_accesses    = 100;
   uvm_reg_frontdoor default_user_frontdoor      = null;
 
-  function automatic void increment_outstanding_access();
+  // Arbitration for CSR accesses. This can be used before randomising and starting a CSR sequence.
+  // The motivation is that we want several CSR accesses actually in flight at once (to test e.g. TL
+  // arbitration in the design) but we also want a timeout (to spot if the bus locks up for some
+  // reason).
+  //
+  // Since we don't want the timeout to depend on the total queue of CSR accesses, we do this in a
+  // sequence by claiming slots inside the outstanding_accesses increment/decrement. We only try to
+  // actually start the CSR access sequence (and start a timer) when we have a slot.
+  semaphore         access_slots = null;
+
+  // The number of CSR accesses to allow to be enqueued in parallel. This is the size of the
+  // access_slots semaphore: see the documentation for that variable for more information.
+  uint              num_access_slots = 32;
+
+  task automatic increment_outstanding_access();
     outstanding_accesses++;
     `uvm_info("csr_utils_pkg", $sformatf("increment_outstanding_access %0d", outstanding_accesses),
               UVM_HIGH)
-  endfunction
+    if (access_slots == null) begin
+      access_slots = new(num_access_slots);
+    end
+    access_slots.get(1);
+  endtask
 
-  function automatic void decrement_outstanding_access();
+  task automatic decrement_outstanding_access();
+    access_slots.put(1);
     outstanding_accesses--;
     `uvm_info("csr_utils_pkg", $sformatf("decrement_outstanding_access %0d", outstanding_accesses),
               UVM_HIGH)
-  endfunction
+  endtask
 
   task automatic wait_no_outstanding_access();
     wait(outstanding_accesses == 0);
