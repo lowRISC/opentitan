@@ -16,6 +16,10 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
   int               min_req_delay = 0;
   int               max_req_delay = 10;
 
+  // The number of requests that have been started so far in body(). Even if there is contention for
+  // the sequencer, this will only be incremented when a sequence item gets granted.
+  int unsigned      reqs_started = 0;
+
   `uvm_object_param_utils(tl_host_seq #(REQ_T))
   `uvm_object_new
 
@@ -58,6 +62,7 @@ class tl_host_seq #(type REQ_T = tl_seq_item) extends tl_host_base_seq #(REQ_T);
           req = REQ::type_id::create("req");
           pre_start_item(req);
           start_item(req);
+          reqs_started++;
           randomize_req(req, i);
           post_randomize_req(req, i);
           pending_req.push_back(req); // in case of device same cycle response
