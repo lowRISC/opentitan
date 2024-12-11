@@ -158,6 +158,7 @@
         { bits: "12:1",
           name: "prescaler",
           desc: "Pre-scaler value for wakeup timer count",
+          hwqe: "true",
         }
       ],
     },

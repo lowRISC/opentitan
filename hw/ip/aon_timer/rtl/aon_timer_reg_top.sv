@@ -598,6 +598,17 @@ module aon_timer_reg_top (
 
 
   // R[wkup_ctrl]: V(False)
+  logic wkup_ctrl_qe;
+  logic [1:0] wkup_ctrl_flds_we;
+  prim_flop #(
+    .Width(1),
+    .ResetValue(0)
+  ) u_wkup_ctrl0_qe (
+    .clk_i(clk_aon_i),
+    .rst_ni(rst_aon_ni),
+    .d_i(&wkup_ctrl_flds_we),
+    .q_o(wkup_ctrl_qe)
+  );
   //   F[enable]: 0:0
   prim_subreg #(
     .DW      (1),
@@ -617,7 +628,7 @@ module aon_timer_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_ctrl_flds_we[0]),
     .q      (reg2hw.wkup_ctrl.enable.q),
     .ds     (),
 
@@ -644,13 +655,14 @@ module aon_timer_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (wkup_ctrl_flds_we[1]),
     .q      (reg2hw.wkup_ctrl.prescaler.q),
     .ds     (),
 
     // to register interface (read)
     .qs     (aon_wkup_ctrl_prescaler_qs_int)
   );
+  assign reg2hw.wkup_ctrl.prescaler.qe = wkup_ctrl_qe;
 
 
   // R[wkup_thold_hi]: V(False)

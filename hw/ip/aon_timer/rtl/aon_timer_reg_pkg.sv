@@ -24,6 +24,7 @@ package aon_timer_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [11:0] q;
+      logic        qe;
     } prescaler;
     struct packed {
       logic        q;
@@ -124,8 +125,8 @@ package aon_timer_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    aon_timer_reg2hw_alert_test_reg_t alert_test; // [247:246]
-    aon_timer_reg2hw_wkup_ctrl_reg_t wkup_ctrl; // [245:233]
+    aon_timer_reg2hw_alert_test_reg_t alert_test; // [248:247]
+    aon_timer_reg2hw_wkup_ctrl_reg_t wkup_ctrl; // [246:233]
     aon_timer_reg2hw_wkup_thold_hi_reg_t wkup_thold_hi; // [232:201]
     aon_timer_reg2hw_wkup_thold_lo_reg_t wkup_thold_lo; // [200:169]
     aon_timer_reg2hw_wkup_count_hi_reg_t wkup_count_hi; // [168:137]
