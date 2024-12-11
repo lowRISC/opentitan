@@ -23,7 +23,7 @@ use opentitanlib::backend;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;
 use opentitanlib::test_utils::init::InitializeTest;
-use opentitanlib::test_utils::lc::read_lc_state;
+use opentitanlib::test_utils::lc::{read_device_id, read_lc_state};
 use opentitanlib::test_utils::load_sram_program::SramProgramParams;
 use ujson_lib::provisioning_data::{ManufCertgenInputs, ManufFtIndividualizeData};
 use util_lib::{
@@ -254,6 +254,7 @@ fn main() -> Result<()> {
         | DifLcCtrlState::TestUnlocked5
         | DifLcCtrlState::TestUnlocked6
         | DifLcCtrlState::TestUnlocked7 => {
+            // Run FT individualize.
             response.lc_state.individualize = Some(response.lc_state.unlocked);
             let t0 = Instant::now();
             run_sram_ft_individualize(
@@ -266,6 +267,8 @@ fn main() -> Result<()> {
                 &spi_console_device,
             )?;
             response.stats.log_elapsed_time("ft-individualize", t0);
+
+            // Perform test exit.
             let t0 = Instant::now();
             test_exit(
                 &transport,
@@ -313,6 +316,22 @@ fn main() -> Result<()> {
     } else {
         serde_json::to_string(&response)?
     };
+
+    // Extract final device ID.
+    let mut final_device_id = read_device_id(
+        &transport,
+        &opts.init.jtag_params,
+        opts.init.bootstrap.options.reset_delay,
+    )?;
+
+    // Convert final device ID to a big-endian string.
+    final_device_id.reverse();
+    response.device_id = final_device_id
+        .iter()
+        .map(|v| format!("{v:08X}"))
+        .collect::<Vec<String>>()
+        .join("");
+
     println!("PROVISIONING_DATA: {doc}");
 
     Ok(())

@@ -142,28 +142,26 @@ class DeviceId():
         # Build full device ID.
         self.device_id = (self.sku_specific << 128) | self._base_uid
 
-    def update_base_id(self, other: "DeviceId") -> None:
-        """Updates the base unique ID with another DeviceId object.
+    def update_din(self, other: "DeviceIdentificationNumber") -> None:
+        """Updates the DIN component of the device ID with another DIN object.
 
-        Updates the base_id with another DeviceId object's base_id as well as
-        the HW origin, SiliconCreator ID, and Product ID.
+        Updates the DeviceIdentificationNumber (DIN) component of the device ID.
 
         Args:
-            other: The other DeviceId object to update with.
+            other: The other DeviceIdentificationNumber object to update with.
         """
-        self.si_creator_id = other.si_creator_id
-        self.product_id = other.product_id
-        self._hw_origin = other._hw_origin
+        self.din = other
 
-        self.din = other.din
-        self._base_uid = other._base_uid
+        # Build base unique ID.
+        self._base_uid = util.bytes_to_int(
+            struct.pack("<IQI", self._hw_origin, self.din.to_int(), 0))
         self.device_id = (self.sku_specific << 128) | self._base_uid
 
     @staticmethod
     def from_hexstr(hexstr: str) -> "DeviceId":
         """Creates a DeviceId object from a hex string."""
-        cp_device_id = util.parse_hexstring_to_int(hexstr)
-        return DeviceId.from_int(cp_device_id)
+        device_id_int = util.parse_hexstring_to_int(hexstr)
+        return DeviceId.from_int(device_id_int)
 
     @staticmethod
     def from_int(device_id: int) -> "DeviceId":
