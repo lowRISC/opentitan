@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 
 #include "flash_ctrl_regs.h"
-#include "hw/ip/otp_ctrl/data/otp_ctrl_regs.h"
+#include "otp_ctrl_regs.h"
 
 enum {
   /*

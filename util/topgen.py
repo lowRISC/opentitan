@@ -1248,6 +1248,8 @@ def main():
         ]
         for idx, path in enumerate(out_paths):
             # C Header + C File + Clang-format file
+            gencmd_c = warnhdr + GENCMD.format(top_name=top_name)
+            gencmd_bzl = gencmd_c.replace("//", "#")
 
             # "clang-format" -> "sw/autogen/.clang-format"
             cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
@@ -1265,7 +1267,8 @@ def main():
             cheader_path = cformat_dir / f"{top_name}.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
                             cheader_path,
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
 
             # Save the relative header path into `c_helper`
             rel_header_path = cheader_path.relative_to(root_paths[idx])
@@ -1274,18 +1277,37 @@ def main():
             # "toplevel.c.tpl" -> "sw/autogen/{top_name}.c"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
                             cformat_dir / f"{top_name}.c",
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
 
             # "toplevel_memory.ld.tpl" -> "sw/autogen/{top_name}_memory.ld"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
                             cformat_dir / f"{top_name}_memory.ld",
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
 
             # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}_memory.h"
             memory_cheader_path = cformat_dir / f"{top_name}_memory.h"
             render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
                             memory_cheader_path,
-                            helper=c_helper)
+                            helper=c_helper,
+                            gencmd=gencmd_c)
+
+            # "toplevel_BUILD.h.tpl" -> "sw/autogen/BUILD"
+            memory_cheader_path = cformat_dir / "BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_BUILD.tpl",
+                            memory_cheader_path,
+                            helper=c_helper,
+                            gencmd=gencmd_bzl)
+
+            # "data_BUILD.h.tpl" -> "data/autogen/BUILD"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
+                            path / "data" / "autogen" / "BUILD",
+                            gencmd=gencmd_bzl)
+            # "data_defs.tpl" -> "data/autogen/defs.bzl"
+            render_template(TOPGEN_TEMPLATE_PATH / "data_defs.tpl",
+                            path / "data" / "autogen" / "defs.bzl",
+                            gencmd=gencmd_bzl)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
