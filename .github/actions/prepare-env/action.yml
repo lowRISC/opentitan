@@ -87,9 +87,24 @@ runs:
     # This can't be Workload Identity Federation because Bazel performance using WIF is terrible.
     # This needs access to secrets and thus doesn't work for pull request.
     - uses: google-github-actions/auth@v2
+      id: google_auth
       if: github.event_name != 'pull_request'
       with:
         credentials_json: '${{ inputs.service_account_json }}'
+
+    # The above action creates a credential file in workspace and it doesn't provide a way to configure
+    # it. This influences with a few scripts that assume clean workspace, and introduce security risk
+    # that it may be exposed when uploading to buckets.
+    - name: Move Google credentials out from workspace
+      if: github.event_name != 'pull_request'
+      run: |
+        SOURCE=${{ steps.google_auth.outputs.credentials_file_path }}
+        TARGET=${{ runner.temp }}/$(basename "$SOURCE")
+        mv $SOURCE $TARGET
+        echo "CLOUDSDK_AUTH_CREDENTIAL_FILE_OVERRIDE=$TARGET" >> $GITHUB_ENV
+        echo "GOOGLE_APPLICATION_CREDENTIALS=$TARGET" >> $GITHUB_ENV
+        echo "GOOGLE_GHA_CREDS_PATH=$TARGET" >> $GITHUB_ENV
+      shell: bash
 
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
