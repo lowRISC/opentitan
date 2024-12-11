@@ -24,7 +24,7 @@ task pwm_smoke_vseq::body();
   set_cfg_reg(10, 1, 1);
 
   set_duty_cycle(.channel(0), .A(16'hC000), .B(16'h4000));
-  set_blink(.channel(0), .A(0), .B(0));
+  set_blink(.channel(0), .X(0), .Y(0));
   set_param(0, pwm_param);
 
   // enable channel 0

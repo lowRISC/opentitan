@@ -22,7 +22,7 @@ class pwm_base_vseq extends cip_base_vseq #(
   extern task rand_pwm_cfg_reg();
 
   // Use a CSR write to set the INVERT bits as requested.
-  extern task set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] enables);
+  extern task set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
 
   // Use a CSR write to set the PWM_EN bits as requested.
   extern task set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
@@ -31,20 +31,16 @@ class pwm_base_vseq extends cip_base_vseq #(
   extern task set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
 
   // Use a CSR write to set BLINK_PARAM for the given channel
-  extern task set_blink(int unsigned channel, bit [15:0] A, bit [15:0] B);
+  extern task set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
 
   // Use a CSR write to set PWM_PARAM for the given channel.
   extern task set_param(int unsigned channel, param_reg_t value);
 
-  // Return a randomized duty cycle where both fields are nonzero.
-  extern virtual function dc_blink_t rand_pwm_duty_cycle();
+  // Return a randomized duty cycle.
+  extern virtual function duty_cycle_t rand_pwm_duty_cycle();
 
-  // Return a randomized blink duty cycle where both fields are nonzero.
-  //
-  // Also ensure that the sum of A and B for the blink duty cycle fits in 16 bits. Similarly, ensure
-  // that BLINK.B + DUTY_CYCLE.A fits in 16 bits (taking the channel's duty cycle as an argument).
-  // This is to prevent counter overflow in both cases.
-  extern virtual function dc_blink_t rand_pwm_blink(dc_blink_t duty_cycle);
+  // Return a randomized blink duty cycle.
+  extern virtual function blink_param_t rand_pwm_blink();
 
   // Inject cycles of delay, disabling the main clock for a time in the middle if enable is true.
   extern task low_power_mode(bit enable, uint cycles);
@@ -91,10 +87,10 @@ task pwm_base_vseq::rand_pwm_cfg_reg();
   set_cfg_reg(ClkDiv, DcResn, CntrEn);
 endtask
 
-task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] enables);
-  csr_wr(.ptr(ral.invert[0]), .value(enables));
-  foreach (enables[ii]) begin
-    cfg.m_pwm_monitor_cfg[ii].invert = enables[ii];
+task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
+  csr_wr(.ptr(ral.invert[0]), .value(invert));
+  foreach (invert[ii]) begin
+    cfg.m_pwm_monitor_cfg[ii].invert = invert[ii];
   end
 endtask
 
@@ -112,10 +108,10 @@ task pwm_base_vseq::set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0
   csr_update(ral.duty_cycle[channel]);
 endtask
 
-task pwm_base_vseq::set_blink(int unsigned channel, bit [15:0] A, bit [15:0] B);
+task pwm_base_vseq::set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
   `DV_CHECK_FATAL(channel < NOutputs)
 
-  ral.blink_param[channel].set({B, A});
+  ral.blink_param[channel].set({Y, X});
   csr_update(ral.blink_param[channel]);
 endtask
 
@@ -128,17 +124,17 @@ task pwm_base_vseq::set_param(int unsigned channel, param_reg_t value);
   csr_update(ral.pwm_param[channel]);
 endtask // set_param
 
-function dc_blink_t pwm_base_vseq::rand_pwm_duty_cycle();
-  dc_blink_t value;
-  value.A = $urandom_range(1, int'(MAX_16));
-  value.B = $urandom_range(1, int'(MAX_16));
+function duty_cycle_t pwm_base_vseq::rand_pwm_duty_cycle();
+  duty_cycle_t value;
+  value.A = $urandom_range(0, int'(MAX_16));
+  value.B = $urandom_range(0, int'(MAX_16));
   return value;
 endfunction
 
-function dc_blink_t pwm_base_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
-  dc_blink_t blink;
-  blink.B = $urandom_range(0, int'(MAX_16));
-  blink.A = $urandom_range(0, int'(MAX_16));
+function blink_param_t pwm_base_vseq::rand_pwm_blink();
+  blink_param_t blink;
+  blink.X = $urandom_range(0, int'(MAX_16));
+  blink.Y = $urandom_range(0, int'(MAX_16));
   return blink;
 endfunction
 

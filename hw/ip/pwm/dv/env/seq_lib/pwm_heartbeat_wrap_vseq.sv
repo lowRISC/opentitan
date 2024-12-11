@@ -15,12 +15,12 @@ class pwm_heartbeat_wrap_vseq extends pwm_rand_output_vseq;
   // This overrides a function from pwm_base_vseq. We want to choose a "maximal" duty cycle, where A
   // and B are near the endpoints of the 16 bit data type (to make it likely that the increment will
   // wrap).
-  extern function dc_blink_t rand_pwm_duty_cycle();
+  extern function duty_cycle_t rand_pwm_duty_cycle();
 
-  // This overrides a function from pwm_base_vseq. We want to choose a large value for blink.B. This
+  // This overrides a function from pwm_base_vseq. We want to choose a large value for blink.Y. This
   // is used as the increment for the duty cycle in heartbeat mode and we want to get through the 16
   // bit range quickly.
-  extern function dc_blink_t rand_pwm_blink(dc_blink_t duty_cycle);
+  extern function blink_param_t rand_pwm_blink();
 endclass
 
 constraint pwm_heartbeat_wrap_vseq::with_heartbeat_c {
@@ -31,8 +31,8 @@ function pwm_heartbeat_wrap_vseq::new (string name);
   super.new(name);
 endfunction
 
-function dc_blink_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
-  dc_blink_t ret;
+function duty_cycle_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
+  duty_cycle_t ret;
   int low_delta = $urandom_range(0, 100), high_delta = $urandom_range(0, 100);
   bit a_lt_b = $urandom_range(0, 1);
 
@@ -41,10 +41,11 @@ function dc_blink_t pwm_heartbeat_wrap_vseq::rand_pwm_duty_cycle();
   return ret;
 endfunction
 
-function dc_blink_t pwm_heartbeat_wrap_vseq::rand_pwm_blink(dc_blink_t duty_cycle);
-  dc_blink_t ret = super.rand_pwm_blink(duty_cycle);
+function blink_param_t pwm_heartbeat_wrap_vseq::rand_pwm_blink();
+  blink_param_t ret = super.rand_pwm_blink();
 
-  // Make sure that ret.B is large
-  ret.B |= 16'hf000;
+  // Make sure that ret.Y is large to exercise the saturation behavior
+  // (the DUT shall never use a duty cycle that has over/underflowed the 16-bit range).
+  ret.Y |= 16'hf000;
   return ret;
 endfunction
