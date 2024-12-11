@@ -82,6 +82,11 @@
     {
       name: "{name}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
+      // We max. do 25*32768 write and 25*32768 read operations. Each operation
+      // takes roughly 1000ns, resulting in 1638400ns for the read/write
+      // operations. Add some buffer for setting up the test and requesting
+      // new scrambling keys.
+      run_opts: ["+test_timeout_ns=2000000000"]
     }
     {
       name: "{name}_stress_pipeline"
