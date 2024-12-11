@@ -20,36 +20,36 @@ Each FSM is essentially three nested counters, with one counter to control the c
 
 Each FSM consists of
 - Inputs:
-    - `clk_io`, `reset`, `enable`, `clk_pre_divide`, `pattern`, `pattern_size`, `polarity`,  and `n_repeats`
+    - `clk_i`, `rst_ni`, `enable`, `prediv`, `data`, `len`, `polarity`, `reps`, `inactive_level_pcl` and `inactive_level_pda`.
 - Outputs:
     - `pda` and `pcl`
 - a single state variable with three states `IDLE`, `ACTIVE`, and `END`,
-- a clock-divide counter, `clk_div`,
-- a single clock-divide flop, `clk_int`, and
-- two additional internal counters `bit_ctr` and `repeat_ctr`.
+- a clock-divide counter, `clk_cnt`,
+- a single clock-divide flop, `pcl_int`, and
+- two additional internal counters `bit_cnt` and `rep_cnt`.
 
 Each FSM is disabled when `enable` is low.
 Disabling the FSM is equivalent to an FSM reset, and both operations place the FSM in the `IDLE` state.
 While in `IDLE`, the other state machine registers assume their default states:
-The internal counters, the clock-divide, `bit_ctr` and `repeat_ctr` all reset to 0, as does `clk_int`.
+The internal counters, the clock-divide, `bit_cnt` and `rep_cnt` all reset to 0, as does `pcl_int`.
 
 Once the FSM is enabled, it transitions to the `ACTIVE` state.
-The clock-divide counter `clk_div` increments every cycle, except when it overflows matching the value applied to the `clk_pre_divide` input.
-Then `clk_div` resets to 0, toggling `clk_int` in the process.
+The clock-divide counter `clk_cnt` increments every cycle, except when it return to zero upon matching the value applied to the `prediv` input.
+At this point, `pcl_int` is toggled.
 Two overflow events result in a complete clock cycle, resulting in an internal clock frequency of:
 $$f_{pclx}=\frac{f_\textrm{I/O clk}}{2(\textrm{CLK_RATIO}+1)}$$
 
-The FSM clock output, `pcl`, is directly driven by `clk_int`, unless the `polarity` input is high, in which case `pcl` is inverted from `clk_int`.
+The FSM clock output, `pcl`, is directly driven by `pcl_int`, unless the `polarity` input is high, in which case `pcl` is inverted from `pcl_int`.
 
-The `bit_ctr` counter increments on every falling edge of `clk_int`, until it overflows at the pattern length based on the `pattern_size` input.
+The `bit_cnt` counter increments on every falling edge of `pcl_int`, until it returns to zero at the pattern length based on the `len` input.
 
-In the `ACTIVE` state, the FSM `pda` output is driven by a multiplexer, connected to the `pattern` input.
-The value of `bit_ctr` selects the bit value from the appropriate sequence position, via this multiplexor.
+In the `ACTIVE` state, the FSM `pda` output is driven by a multiplexer, connected to the `data` input.
+The value of `bit_cnt` selects the bit value from the appropriate sequence position, via this multiplexor.
 
-Finally whenever `bit_ctr` overflows and reverts to zero, the `repeat_ctr` increments, and the pattern starts again.
-Finally `repeat_ctr` overflows to zero as it reaches the input value `n_repeats`.
-When this overflow occurs, the FSM transitions to the `END` state.
-All counters halt, the `pda` data lines reset to zero, and an interrupt event is sent out to signal completion.
+Whenever `bit_cnt` returns to zero, the repetition counter `rep_cnt` increments, and the pattern starts again.
+Finally, `rep_cnt` returns to zero upon reaching the input value `reps`.
+When this reset occurs, the FSM transitions to the `END` state.
+All counters halt, the `pda` data line returns to its inactive state as specified by `inactive_level_pda`, the `pcl` clock line similarly assumes `inactive_level_pcl` and an interrupt event is sent out to signal completion.
 
 The entire sequence can be restarted either by resetting or disabling and re-enabling the FSM.
 
@@ -57,4 +57,4 @@ The entire sequence can be restarted either by resetting or disabling and re-ena
 
 The pattern generator HWIP provides two interrupt pins, `done_ch0` and `done_ch1`, which indicate the completion of pattern generation on the output channels.
 These interrupts can be enabled/disabled by setting/un-setting the corresponding bits of the [`INTR_ENABLE`](registers.md#intr_enable) register.
-To clear the interrupts, bit `1` must be written the corresponding bits of [`INTR_STATE`](registers.md#intr_state) register
+To clear the interrupts, a value of `1` must be written to the corresponding bits of the [`INTR_STATE`](registers.md#intr_state) register.
