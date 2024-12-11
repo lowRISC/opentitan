@@ -162,6 +162,8 @@
                      "-show tests",
                      // Enable union mode of flexible merging for covergroups.
                      "-flex_merge union",
+                     // Tests marked as "fail" are ignored for coverage score computation.
+                     "-skip_failed_test",
                      // Use cov_db_dirs var for dir args; append -dir in front of each
                      "{eval_cmd} echo {cov_db_dirs} | sed -E 's/(\\S+)/-dir \\1/g'",
                      "-dbname {cov_merge_db_dir}"]
