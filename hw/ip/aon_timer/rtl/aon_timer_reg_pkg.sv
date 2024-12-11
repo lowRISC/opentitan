@@ -24,6 +24,7 @@ package aon_timer_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [11:0] q;
+      logic        qe;
     } prescaler;
     struct packed {
       logic        q;
