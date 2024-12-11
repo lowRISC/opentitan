@@ -28,22 +28,28 @@
  * @param[in]  x11: pointer to temp reg, must be set to 2
  *
  * clobbered registers: x8, x21, w0, w2
- * clobbered Flag Groups: none
+ * clobbered Flag Groups: FG1
  */
 sel_sqr_or_sqrmul:
   /* iterate over all limbs */
-  loop      x30, 4
+  loop      x30, 8
     /* load limb from dmem */
     bn.lid    x9, 0(x21)
 
     /* load limb from regfile buffer */
     bn.movr   x11, x8++
 
-    /* conditional select: w0 = FG0.C?w[x8+i]:dmem[x21+i] */
-    bn.sel    w0, w2, w3, C
+    /* randomize dmem with value from URND (one extra dummy call to clear) */
+    bn.addi   w31, w31, 0, FG1 /* dummy */
+    bn.wsrr   w0, URND
+    bn.sid    x0, 0(x21)
 
-    /* store selected limb to dmem */
+    /* select a limb and store to dmem */
+    bn.sel    w0, w2, w3, FG0.C
     bn.sid    x0, 0(x21++)
+
+    /* dummy call to clear */
+    bn.addi   w31, w31, 0, FG1
 
   ret
 
