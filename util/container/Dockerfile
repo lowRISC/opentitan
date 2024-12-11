@@ -12,8 +12,6 @@ ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
 # This should match the version in bazelish.sh.
 ARG BAZELISK_VERSION=v1.24.1
-# This should match the version in ci/install-package-dependencies.sh
-ARG GCC_VERSION=9
 # This should match the version of the lowRISC RISC-V toolchain.
 ARG CLANG_VERSION=16
 
@@ -23,7 +21,6 @@ ARG VERILATOR_VERSION
 ARG VERIBLE_VERSION
 ARG RISCV_TOOLCHAIN_TAR_VERSION
 ARG BAZELISK_VERSION
-ARG GCC_VERSION
 ARG CLANG_VERSION
 
 LABEL version="1.0"
@@ -65,13 +62,6 @@ RUN sed -i -e '/^$/d' -e '/^#/d' -e 's/#.*//' /tmp/apt-requirements.txt \
         software-properties-common \
     && apt-get clean; \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* /usr/share/doc/*
-
-# Install the CI version of gcc and g++
-RUN add-apt-repository ppa:ubuntu-toolchain-r/test \
-    && apt-get update \
-    && apt-get install -y gcc-${GCC_VERSION} g++-${GCC_VERSION} \
-    && update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-${GCC_VERSION} 90 \
-    && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-${GCC_VERSION} 90
 
 # RISC-V device toolchain
 COPY util/get-toolchain.py /tmp/get-toolchain.py
