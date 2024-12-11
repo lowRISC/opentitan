@@ -149,6 +149,7 @@
       desc: "Wakeup Timer Control register",
       swaccess: "rw",
       hwaccess: "hro",
+      hwqe: "true",
       async: "clk_aon_i",
       fields: [
         { bits: "0",
