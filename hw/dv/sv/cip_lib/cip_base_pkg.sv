@@ -63,6 +63,10 @@ package cip_base_pkg;
     uvm_mem mems[$];
     reg_block.get_memories(mems);
 
+    has_mem_byte_access_err = 0;
+    has_wo_mem              = 0;
+    has_ro_mem              = 0;
+
     foreach (mems[i]) begin
       dv_base_mem dv_mem;
       `downcast(dv_mem, mems[i], , , msg_id)
