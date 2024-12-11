@@ -21,11 +21,11 @@ register reading and writing. Directly accessing this variable is discouraged. I
 the following methods are used to control this variable to keep track of non-blocking
 accesses made in the testbench:
 ```systemverilog
-  function automatic void increment_outstanding_access();
+  task automatic increment_outstanding_access();
     outstanding_accesses++;
   endfunction
 
-  function automatic void decrement_outstanding_access();
+  task automatic decrement_outstanding_access();
     outstanding_accesses--;
   endfunction
 
