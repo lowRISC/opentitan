@@ -1,7 +1,7 @@
 CAPI=2:
-#Copyright lowRISC contributors (OpenTitan project).
-#Licensed under the Apache License, Version 2.0, see LICENSE for details.
-#SPDX - License - Identifier : Apache - 2.0
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:dv:cryptoc_dpi:0.1"
 description: "SHA / HASH Crypto implementations in C from Chromium open source repo"
 filesets:

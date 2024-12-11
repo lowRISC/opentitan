@@ -1,3 +1,7 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
 ## Partially based on https://github.com/newaetech/chipwhisperer/blob/develop/hardware/victims/cw305_artixtarget/fpga/common/cw305_main.xdc
 ## Tested with a A100T FPGA configuration.
 

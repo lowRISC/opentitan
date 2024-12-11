@@ -6,6 +6,7 @@
 # Version 1.1: Minor modifications to run with Python >= 3.5
 # Version 1.2: Remove string to int conversions
 #
+# SPDX-License-Identifier: MIT
 # =============================================================================
 # Copyright (c) 2008 Christophe Oosterlynck <christophe.oosterlynck_AT_gmail.com>
 #                    & NXP ( Philippe Teuwen <philippe.teuwen_AT_nxp.com> )
