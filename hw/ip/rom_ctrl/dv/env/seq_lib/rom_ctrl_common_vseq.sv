@@ -150,13 +150,15 @@ class rom_ctrl_common_vseq extends rom_ctrl_base_vseq;
       wait_while_reading_low();
     end
 
-    // Zero the contents of the rom_ctrl sram request fifos if we're about to do fault injection on
-    // their counters. This avoids a problem where we generate a spurious request when the FIFO was
-    // actually empty and lots of signals in the design become X. This will let the fifos error
-    // signal stuck at X. Zeroing the backing memory avoids that problem.
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_reqfifo", 2);
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_sramreqfifo", 2);
-
+    // If do_apply_reset is true then super.dut_init just applied a reset and the rom_ctrl sram
+    // request fifos will be empty. We might be about to do fault injection on those fifos' counters
+    // which will generate spurious requests. But we don't want the request data to be X (because it
+    // will cause the fifos' error signals to get stuck at X). Write some arbitrary rubbish to the
+    // contents.
+    if (do_apply_reset) begin
+      splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_reqfifo", 2);
+      splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_sramreqfifo", 2);
+    end
   endtask
 
   // This task is defined in cip_base_vseq. It tries to run some TL accesses and injects integrity
