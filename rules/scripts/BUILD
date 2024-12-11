@@ -11,9 +11,9 @@ exports_files(glob(["**"]))
 
 py_library(
     name = "bitstreams_workspace",
-    srcs = [
-        "bitstreams_workspace.py",
-    ],
+    srcs = ["bitstreams_workspace.py"],
+    data = [":bitstreams_manifest_schema"],
+    imports = ["."],
     deps = [
         requirement("jsonschema"),
     ],
@@ -26,12 +26,8 @@ filegroup(
 
 py_test(
     name = "bitstreams_workspace_test",
-    srcs = [
-        "bitstreams_workspace_test.py",
-    ],
-    deps = [
-        ":bitstreams_workspace",
-    ],
+    srcs = ["bitstreams_workspace_test.py"],
+    deps = [":bitstreams_workspace"],
 )
 
 sh_binary(

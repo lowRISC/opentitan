@@ -241,7 +241,7 @@ class TestCommon(unittest.TestCase):
         mock_objs_fn.assert_called_once_with(out_dir / "merged.so", obj_files)
         self.assertEqual(
             calls_run[1][0],
-            (common.BAZEL, "query", AnyStringWith(bazel_test_type.value)))
+            (common.BAZEL, "query", AnyStringWith(bazel_test_type)))
         mock_test_targets_fn.assert_called_once_with(test_targets_all)
         self.assertEqual(
             calls_run[2][0],

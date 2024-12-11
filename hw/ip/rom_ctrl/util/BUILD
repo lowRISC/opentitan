@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 py_library(
     name = "mem",
     srcs = ["mem.py"],
+    imports = ["."],
     deps = [
         "//util/design:secded_gen",
         requirement("pyelftools"),

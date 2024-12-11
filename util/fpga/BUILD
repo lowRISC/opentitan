@@ -19,14 +19,15 @@ py_library(
 py_binary(
     name = "bitstream_bisect",
     srcs = ["bitstream_bisect.py"],
+    imports = ["."],
     deps = [":bitstream_bisect_support"],
 )
 
 py_test(
     name = "bitstream_bisect_test",
-    srcs = [
-        "bitstream_bisect.py",
-        "bitstream_bisect_test.py",
+    srcs = ["bitstream_bisect_test.py"],
+    deps = [
+        ":bitstream_bisect",
+        ":bitstream_bisect_support",
     ],
-    deps = [":bitstream_bisect_support"],
 )
