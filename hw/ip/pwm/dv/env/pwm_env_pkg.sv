@@ -50,10 +50,17 @@ package pwm_env_pkg;
     bit [15:0]   PhaseDelay;
   } param_reg_t;
 
+  // Duty cycles (DUTY_CYCLE_i register).
   typedef struct packed {
     bit [15:0]   B;
     bit [15:0]   A;
-  } dc_blink_t;
+  } duty_cycle_t;
+
+  // Blink mode parameters (BLINK_PARAM_i register).
+  typedef struct packed {
+    bit [15:0]   Y;
+    bit [15:0]   X;
+  } blink_param_t;
 
   // the index of multi-reg is at the last char of the name
   function automatic int get_multireg_idx(string name);

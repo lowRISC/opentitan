@@ -37,13 +37,11 @@ task pwm_rand_output_vseq::body();
 
   // Set random dc and params for all channels
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
-    dc_blink_t blink, duty_cycle;
-
-    duty_cycle = rand_pwm_duty_cycle();
-    blink = rand_pwm_blink(duty_cycle);
+    duty_cycle_t duty_cycle = rand_pwm_duty_cycle();
+    blink_param_t blink = rand_pwm_blink();
 
     set_duty_cycle(i, .A(duty_cycle.A), .B(duty_cycle.B));
-    set_blink(i, .A(blink.A), .B(blink.B));
+    set_blink(i, .X(blink.X), .Y(blink.Y));
     set_param(i, rand_reg_param);
   end
 

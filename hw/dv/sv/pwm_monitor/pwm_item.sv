@@ -5,7 +5,7 @@
 class pwm_item extends uvm_sequence_item;
 
   int monitor_id    = 0; // for debugging purpose only
-  int period        = 0; // clks in a beat
+  int period        = 0; // clks in a pulse cycle
   int duty_cycle    = 0; // high vs low cnt
   int active_cnt    = 0; // number of clocks pwm was high
   int inactive_cnt  = 0; // number of clocks pwm was low

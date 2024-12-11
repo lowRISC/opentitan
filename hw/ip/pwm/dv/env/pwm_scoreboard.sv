@@ -26,9 +26,9 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
   // global settings
   bit                               regwen                   =  0;
+  cfg_reg_t                         next_cfg                 = '0;
   cfg_reg_t                         channel_cfg              = '0;
   bit [PWM_NUM_CHANNELS-1:0]        channel_en               = '0;
-  bit [PWM_NUM_CHANNELS-1:0]        prev_channel_en          = '0;
   bit [PWM_NUM_CHANNELS-1:0]        invert                   = '0;
   state_e                           blink_state[PWM_NUM_CHANNELS] = '{default:CycleA};
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
@@ -38,8 +38,8 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   // bit 16 is added for overflow
   bit [16:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
-  dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
-  dc_blink_t                        blink[PWM_NUM_CHANNELS];
+  duty_cycle_t                      duty_cycle[PWM_NUM_CHANNELS];
+  blink_param_t                     blink[PWM_NUM_CHANNELS];
   uint                              initial_dc[PWM_NUM_CHANNELS]   = '{default:0};
   string                            txt                      ="";
 
@@ -137,26 +137,32 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     "pwm_en": begin
       channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
       foreach(channel_en[ii]) begin
-      bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
-        if (pwm_en)begin
+        bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
+        if (pwm_en) begin
           `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
           blink_state[ii] = CycleA;
         end
-        txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+        txt = $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]);
         if (cfg.en_cov) begin
           cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
                                  $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
         end
        end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
-        txt = "";
-        prev_channel_en = channel_en;
       end
 
     "cfg": begin
-        channel_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
-        channel_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
-        channel_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
+        next_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
+        next_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
+        next_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
+        // Channel configuration is accepted only when phase counter becomes enabled.
+        if (next_cfg.CntrEn & ~channel_cfg.CntrEn) begin
+          channel_cfg.ClkDiv = next_cfg.ClkDiv;
+          channel_cfg.DcResn = next_cfg.DcResn;
+        end
+        // Enable bit is always accepted; it must be possible to enable/disable the phase counter
+        // at any point in its operation.
+        channel_cfg.CntrEn = next_cfg.CntrEn;
         `uvm_info(`gfn,
                   $sformatf("PWM global cfg: \n Clk Div: %0h, \n Dc Resn: %0h, \n Cntr en: %0b:",
                             channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn), UVM_HIGH)
@@ -182,9 +188,9 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
         channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
         txt = $sformatf("\n Setting Param for channel[%d]", idx);
-        txt = { txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
-        txt = {txt,  $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
-        txt = {txt,  $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
+        txt = {txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
+        txt = {txt, $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
+        txt = {txt, $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
         `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
       end
 
@@ -208,11 +214,11 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       "blink_param_4",
       "blink_param_5": begin
         int idx = get_multireg_idx(csr_name);
-        blink[idx].A = get_field_val(ral.blink_param[idx].x, item.a_data);
-        blink[idx].B = get_field_val(ral.blink_param[idx].y, item.a_data);
+        blink[idx].X = get_field_val(ral.blink_param[idx].x, item.a_data);
+        blink[idx].Y = get_field_val(ral.blink_param[idx].y, item.a_data);
         `uvm_info(`gfn, $sformatf("\n Setting channel[%d] Blink X:%0h Y:%0h",
-                                  idx, blink[idx].A ,blink[idx].B), UVM_HIGH)
-        blink_cnt[idx] = blink[idx].A;
+                                  idx, blink[idx].X ,blink[idx].Y), UVM_HIGH)
+        blink_cnt[idx] = blink[idx].X;
       end
 
       default: begin
@@ -235,8 +241,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
        channel_param[ii].HtbtEn,
        duty_cycle[ii].A,
        duty_cycle[ii].B,
-       blink[ii].A,
-       blink[ii].B);
+       blink[ii].X,
+       blink[ii].Y);
     end
   end
 
@@ -326,11 +332,11 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
         if (blink_cnt[channel] == 0) begin
           if (blink_state[channel] == CycleB) begin
             blink_state[channel] = CycleA;
-            blink_cnt[channel] = blink[channel].A;
+            blink_cnt[channel] = blink[channel].X;
             int_dc[channel] = duty_cycle[channel].A;
           end else begin
             blink_state[channel] = CycleB;
-            blink_cnt[channel]   = blink[channel].B;
+            blink_cnt[channel]   = blink[channel].Y;
             int_dc[channel] = duty_cycle[channel].B;
           end
           ignore_state_change[channel] = SettleTime ;
@@ -349,11 +355,11 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
             // current duty cycle
             int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : duty_cycle[channel].A;
             // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
-            if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
+            if (subcycle_cnt[channel] == (blink[channel].X + 1)) begin
               // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
-              int_dc[channel] = (dc_mod == 1'b0) ?
-                (int_dc[channel] - (blink[channel].B + 1)) :
-                (int_dc[channel] + (blink[channel].B + 1));
+              int_dc[channel] = (dc_mod == LargeA) ?
+                (int_dc[channel] - (blink[channel].Y + 1)) :
+                (int_dc[channel] + (blink[channel].Y + 1));
               // reset subcycle_cnt after increment (decrement)
               subcycle_cnt[channel] = LocalCount;
               ignore_state_change[channel] = SettleTime ;
@@ -387,10 +393,10 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
             endcase
           end
           CycleB: begin
-            if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
-              int_dc[channel] = (dc_mod == 1'b1) ?
-                (int_dc[channel] - (blink[channel].B + 1'b1)) :
-                (int_dc[channel] + (blink[channel].B + 1'b1));
+            if (subcycle_cnt[channel] == (blink[channel].X + 1'b1)) begin
+              int_dc[channel] = (dc_mod == LargeB) ?
+                (int_dc[channel] - (blink[channel].Y + 1'b1)) :
+                (int_dc[channel] + (blink[channel].Y + 1'b1));
               subcycle_cnt[channel] = LocalCount;
               ignore_state_change[channel] = SettleTime ;
               initial_dc[channel]++;
@@ -431,22 +437,22 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
       end
     endcase
   end else int_dc[channel] = duty_cycle[channel].A;
-  if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
+  if ( subcycle_cnt[channel] == blink[channel].X + 1'b1 ) begin
     ignore_state_change[channel] = SettleTime ;
   end
 
-  // Overflow condition  check
+  // Overflow condition check
   if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B > duty_cycle[channel].A)) begin
       if (cfg.en_cov) begin
         cov.dc_uf_ovf_tb_cg.sample(channel, int_dc[channel][16]);
       end
       int_dc[channel][15:0] = 16'hFFFF;
       initial_dc[channel] = LocalCount;
-      if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
+      if (subcycle_cnt[channel] == (blink[channel].X + 1'b1)) begin
           // This calculation is done to bring back previous state of DC before overflow occurs
           // Instead of int_dc[channel] = int_dc[channel] - blink[channel].B + 1'b1 ;
           int_dc[channel][15:0] = duty_cycle[channel].A + 1 +
-            (((16'hFFFF - duty_cycle[channel].A )/(blink[channel].B + 1'b1)))*blink[channel].B;
+            (((16'hFFFF - duty_cycle[channel].A )/(blink[channel].Y + 1'b1)))*blink[channel].Y;
           int_dc[channel][16]   = 0 ;
           subcycle_cnt[channel] = LocalCount;
       end
@@ -457,7 +463,7 @@ task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
       if (cfg.en_cov) begin
         cov.dc_uf_ovf_tb_cg.sample(channel, ~int_dc[channel][16]);
       end
-      int_dc[channel] = int_dc[channel] + blink[channel].B + 1'b1 ;
+      int_dc[channel] = int_dc[channel] + blink[channel].Y + 1'b1 ;
       int_dc[channel][16] = 0 ;
       subcycle_cnt[channel] = LocalCount;
       blink_state[channel] = CycleB;

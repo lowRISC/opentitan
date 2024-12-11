@@ -69,7 +69,7 @@ task pwm_perf_vseq::body();
 
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
     set_duty_cycle(i, .A(rand_dc), .B(rand_dc));
-    set_blink(i, .A(rand_blink), .B(rand_blink));
+    set_blink(i, .X(rand_blink), .Y(rand_blink));
 
     pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
     pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
