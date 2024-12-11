@@ -265,9 +265,22 @@ class cip_base_vseq #(
         data  == local::data;)
 
     csr_utils_pkg::increment_outstanding_access();
-    `DV_SPINWAIT(`uvm_send_pri(tl_seq, 100),
-                 $sformatf("Timeout waiting tl_access : addr=0x%0h", addr),
-                 tl_access_timeout_ns)
+    fork begin : isolation_fork
+      fork
+        `uvm_send_pri(tl_seq, 100)
+        begin
+          // Wait until the sequence actually gets allocated to the sequencer. If a vast number of
+          // TL operations have been enqueued in parallel, this might take a while. Since we're
+          // using tl_host_single_seq, we expect to send exactly one item and the sequence's
+          // reqs_started counter will become 1 when that item starts on the relevant bus.
+          wait(tl_seq.reqs_started);
+
+          // Now wait a bounded time to check that the bus hasn't locked up for some reason.
+          #(tl_access_timeout_ns * 1ns);
+        end
+      join_any
+      disable fork;
+    end join
     csr_utils_pkg::decrement_outstanding_access();
 
     rsp = tl_seq.rsp;
