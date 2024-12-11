@@ -22,6 +22,9 @@ class spi_item extends uvm_sequence_item;
   rand int read_pipeline_mode;
   rand bit terminated_before_dummy_cycles;
   rand bit terminated_before_read_pipeline;
+  // Used by the driver in conjunction with 'read_pipeline_mode' to determine
+  // whether a read_pipeline delay is needed
+  rand bit cmd_in_mbx;
 
   // for dummy transaction
   rand uint dummy_sck_cnt;
@@ -85,6 +88,7 @@ class spi_item extends uvm_sequence_item;
     `uvm_field_int(read_pipeline_mode,           UVM_DEFAULT)
     `uvm_field_int(terminated_before_dummy_cycles, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_int(terminated_before_read_pipeline, UVM_DEFAULT | UVM_NOCOMPARE)
+    `uvm_field_int(cmd_in_mbx, UVM_DEFAULT | UVM_NOCOMPARE)
     `uvm_field_queue_int(plain_data_q,           UVM_DEFAULT)
   `uvm_object_utils_end
 
