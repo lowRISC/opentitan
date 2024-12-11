@@ -57,7 +57,7 @@ static status_t peripheral_handles_init(void) {
  * Print data stored in flash info page 0 to console for manual verification
  * purposes during silicon bring-up.
  */
-static status_t read_and_print_flash_info_0_data(void) {
+static status_t read_and_print_flash_and_ast_data(void) {
   uint32_t byte_address = 0;
   TRY(flash_ctrl_testutils_info_region_setup_properties(
       &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
@@ -72,22 +72,22 @@ static status_t read_and_print_flash_info_0_data(void) {
     LOG_INFO("0x%08x", cp_device_id[i]);
   }
 
-  LOG_INFO("AST Calibration Values:");
+  LOG_INFO("AST Calibration Values (in flash):");
   TRY(manuf_flash_info_field_read(
       &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
       kFlashInfoAstCalibrationDataSizeIn32BitWords));
   for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%08x", ast_cfg_data[i]);
+    LOG_INFO("Word %d = 0x%08x", i, ast_cfg_data[i]);
+  }
+
+  LOG_INFO("AST Calibration Values (in CSRs):");
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    LOG_INFO(
+        "Word %d = 0x%08x", i,
+        abs_mmio_read32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t)));
   }
 
   return OK_STATUS();
-}
-
-static void manually_init_ast(uint32_t *data) {
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    abs_mmio_write32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t),
-                     data[i]);
-  }
 }
 
 /**
@@ -103,10 +103,10 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
                                         kFlashInfoPage0Permissions,
                                         in_data.device_id));
-  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
-  TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
+  TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+  TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
   LOG_INFO("FT SRAM provisioning done.");
   return OK_STATUS();
 }
@@ -118,10 +118,9 @@ bool test_main(void) {
   ottf_console_init();
   ujson_t uj = ujson_ottf_console();
 
-  // Read and log flash data to console (for manual verification purposes),
-  // manually init AST, and perform provisioning operations.
-  CHECK_STATUS_OK(read_and_print_flash_info_0_data());
-  manually_init_ast(ast_cfg_data);
+  // Read and log flash and AST data to console (for manual verification
+  // purposes), and perform provisioning operations.
+  CHECK_STATUS_OK(read_and_print_flash_and_ast_data());
   CHECK_STATUS_OK(provision(&uj));
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission
