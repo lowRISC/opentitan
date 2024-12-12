@@ -113,7 +113,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdRvCoreIbexRecovHwErr] = kTopDarjeelingAlertPeripheralRvCoreIbex,
 };
 
-
 /**
  * PLIC Interrupt Source to Peripheral Map
  *

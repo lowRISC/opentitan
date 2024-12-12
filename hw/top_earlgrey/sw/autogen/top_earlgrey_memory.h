@@ -19,8 +19,6 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 /**
  * Memory base for sram_ctrl_ret_aon_ram_ret_aon in top earlgrey.
  */
