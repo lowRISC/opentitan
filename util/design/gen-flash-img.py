@@ -21,11 +21,11 @@ from typing import List
 
 import hjson
 from pyfinite import ffield
-from util.design.lib.common import (inverse_permute_bits,
-                                    validate_data_perm_option,
-                                    vmem_permutation_string)
-from util.design.lib.OtpMemMap import OtpMemMap
-from util.design.lib.Present import Present
+from lib.OtpMemMap import OtpMemMap
+from lib.common import (inverse_permute_bits,
+                        validate_data_perm_option,
+                        vmem_permutation_string)
+from lib.Present import Present
 
 import prince
 import secded_gen
