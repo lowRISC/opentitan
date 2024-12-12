@@ -6,9 +6,11 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/abs_mmio.h"
+#include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
@@ -30,6 +32,7 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
                         .console.base_addr = TOP_EARLGREY_SPI_DEVICE_BASE_ADDR,
                         .console.test_may_clobber = false, );
 
+static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl_state;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
@@ -38,10 +41,16 @@ static manuf_ft_individualize_data_t in_data;
 static uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
 static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 
+// Switching to external clocks causes the clocks to be unstable for some time.
+// This is used to delay further action when the switch happens.
+static const int kSettleDelayMicros = 200;
+
 /**
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
+  TRY(dif_clkmgr_init(mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR),
+                      &clkmgr));
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
@@ -89,6 +98,13 @@ static status_t read_and_print_flash_and_ast_data(void) {
   return OK_STATUS();
 }
 
+// For passing into `IBEX_SPIN_FOR`.
+static bool did_extclk_settle(const dif_clkmgr_t *clkmgr) {
+  bool status;
+  CHECK_DIF_OK(dif_clkmgr_external_clock_is_settled(clkmgr, &status));
+  return status;
+}
+
 /**
  * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg and RotCreatorAuth{Codesign,State}
  * partitions.
@@ -97,8 +113,19 @@ static status_t read_and_print_flash_and_ast_data(void) {
  * all fields can be programmed until the personalization stage.
  */
 static status_t provision(ujson_t *uj) {
+  // Get host data.
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
+
+  // Enable external clock on silicon platforms if requested.
+  if (kDeviceType == kDeviceSilicon && in_data.use_ext_clk) {
+    CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr,
+                                                       /*is_low_speed=*/true));
+    IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
+    LOG_INFO("External clock enabled.");
+  }
+
+  // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
                                         kFlashInfoPage0Permissions,
@@ -111,6 +138,7 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
   LOG_INFO("Writing CREATOR_SW_CFG OTP partition ...");
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
+
   LOG_INFO("FT SRAM provisioning done.");
   return OK_STATUS();
 }
@@ -124,6 +152,8 @@ bool test_main(void) {
   // Read and log flash and AST data to console (for manual verification
   // purposes), and perform provisioning operations.
   CHECK_STATUS_OK(read_and_print_flash_and_ast_data());
+
+  // Perform provisioning operations.
   CHECK_STATUS_OK(provision(&uj));
 
   // Halt the CPU here to enable JTAG to perform an LC transition to mission
