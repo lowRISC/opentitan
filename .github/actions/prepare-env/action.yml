@@ -106,6 +106,9 @@ runs:
         echo "GOOGLE_GHA_CREDS_PATH=$TARGET" >> $GITHUB_ENV
       shell: bash
 
+    - uses: google-github-actions/setup-gcloud@v2
+      if: github.event_name != 'pull_request'
+
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
       run: |

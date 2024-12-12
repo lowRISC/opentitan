@@ -35,12 +35,10 @@ jobs:
           fetch-depth: 0 # Required for the bitstream cache to work.
           ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
 
-      - name: Install dependencies
+      - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-
-      - uses: google-github-actions/setup-gcloud@v2
 
       - name: Update hyperdebug
         # We run the update command twice to workaround an issue with udev on the container.
@@ -104,12 +102,10 @@ jobs:
           fetch-depth: 0 # Required for the bitstream cache to work.
           ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
 
-      - name: Install dependencies
+      - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-
-      - uses: google-github-actions/setup-gcloud@v2
 
       - name: Update hyperdebug
         # We run the update command twice to workaround an issue with udev on the container.
@@ -173,12 +169,10 @@ jobs:
           fetch-depth: 0 # Required for the bitstream cache to work.
           ref: ${{ inputs.branch || 'earlgrey_1.0.0' }} # Schedule only work on the default branch, but we want to run on a different branch.
 
-      - name: Install dependencies
+      - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
-
-      - uses: google-github-actions/setup-gcloud@v2
 
       - name: Update hyperdebug
         # We run the update command twice to workaround an issue with udev on the container.
