@@ -45,6 +45,7 @@ use core::convert::TryFrom;
     size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
+
 /// Peripheral base address for ${if_desc} in top ${top["name"]}.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -58,7 +59,6 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 /// address between #${base_addr_name} and
 /// `${base_addr_name} + ${size_bytes_name}`.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-
 % endfor
 % for name, region in helper.memories():
 <%
@@ -69,13 +69,15 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
     size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
+
 /// Memory base address for ${name} in top ${top["name"]}.
 pub const ${base_addr_name}: usize = ${hex_base_addr};
 
 /// Memory size for ${name} in top ${top["name"]}.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-
 % endfor
+% if helper.addr_space == helper.default_addr_space:
+
 /// PLIC Interrupt Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
@@ -178,6 +180,7 @@ ${helper.clkmgr_gateable_clocks.render()}
 /// The Software has partial control over these clocks. It can ask them to stop,
 /// but the clock manager is in control of whether the clock actually is stopped.
 ${helper.clkmgr_hintable_clocks.render()}
+% endif
 % endif
 % for (subspace_name, description, subspace_range) in helper.subranges:
 

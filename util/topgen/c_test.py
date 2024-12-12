@@ -60,8 +60,8 @@ class AlertTestPeripheral(TestPeripheral):
 
 
 class TopGenCTest(TopGenC):
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock]):
-        super().__init__(top_info, name_to_block)
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], addr_space: str):
+        super().__init__(top_info, name_to_block, addr_space)
 
         self.irq_peripherals = self._get_irq_peripherals()
         # Only generate alert_handler and mappings if there is an alert_handler
@@ -69,6 +69,10 @@ class TopGenCTest(TopGenC):
             self.alert_peripherals = self._get_alert_peripherals()
 
     def _get_irq_peripherals(self):
+        # TODO: Topgen should support interrupt domains in different address spaces
+        if self.addr_space != self.default_addr_space:
+            return []
+
         irq_peripherals = []
         self.devices()
         for entry in self.top['module']:
@@ -136,8 +140,12 @@ class TopGenCTest(TopGenC):
         return irq_peripherals
 
     def _get_alert_peripherals(self):
+        # Alert peripherals are only considered in the default address space
+        if self.addr_space != self.default_addr_space:
+            return []
+
         alert_peripherals = []
-        self.devices()
+        device_regions = self.all_device_regions()
         for entry in self.top['module']:
             inst_name = entry['name']
             if inst_name not in self.top["alert_module"]:
@@ -150,7 +158,7 @@ class TopGenCTest(TopGenC):
                 if item['name'] == inst_name:
                     name = item['type']
 
-                    regions = self.device_regions[inst_name]
+                    regions = device_regions[inst_name]
                     if "core" in regions:
                         if_name = "core"
                     elif "regs" in regions:

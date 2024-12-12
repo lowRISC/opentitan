@@ -186,6 +186,7 @@
   // host in that address space--Access privileges are separate from addresses.
   addr_spaces: [
     { name: "hart",
+      default: true
       desc: "The main address space, shared between the CPU and DM"
       subspaces: [
         { name: "mmio",
