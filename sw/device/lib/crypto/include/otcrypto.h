@@ -6,6 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_OTCRYPTO_H_
 
 #include "aes.h"
+#include "aes_gcm.h"
 #include "datatypes.h"
 #include "drbg.h"
 #include "ecc_p256.h"
