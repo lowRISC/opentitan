@@ -27,6 +27,7 @@ py_binary(
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_map",
         "//util/design/lib:present",
+        "//util/topgen",
         requirement("pyfinite"),
     ],
 )
@@ -52,6 +53,16 @@ py_binary(
     deps = [
         "//util/design/lib:common",
         "//util/design/lib:otp_mem_img",
+        requirement("hjson"),
+    ],
+)
+
+py_binary(
+    name = "gen-otp-mmap",
+    srcs = ["gen-otp-mmap.py"],
+    deps = [
+        "//util/design/lib:common",
+        "//util/design/lib:otp_mem_map",
         requirement("hjson"),
     ],
 )
