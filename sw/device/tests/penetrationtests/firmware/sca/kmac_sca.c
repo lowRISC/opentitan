@@ -12,8 +12,7 @@
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
 #include "sw/device/sca/lib/prng.h"
-#include "sw/device/sca/lib/sca.h"
-#include "sw/device/tests/penetrationtests/firmware/lib/sca_lib.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -224,7 +223,7 @@ static kmac_sca_error_t kmac_msg_start(
   mmio_region_write32(kmac.base_addr, KMAC_KEY_LEN_REG_OFFSET, key_len);
   for (int i = 0; i < ARRAYSIZE(k->share0); ++i) {
     // Run LFSR for 32 steps to ensure that all state bits are updated.
-    const uint32_t a = sca_next_lfsr(32, kScaLfsrMasking);
+    const uint32_t a = pentest_next_lfsr(32, kPentestLfsrMasking);
     mmio_region_write32(kmac.base_addr,
                         KMAC_KEY_SHARE0_0_REG_OFFSET +
                             (ptrdiff_t)i * (ptrdiff_t)sizeof(uint32_t),
@@ -445,7 +444,7 @@ kmac_sca_error_t kmac_get_digest(uint32_t *out, size_t len) {
  *
  * This function configures KMAC to use software entropy.
  */
-status_t handle_kmac_sca_init(ujson_t *uj) {
+status_t handle_kmac_pentest_init(ujson_t *uj) {
   // Read mode. FPGA or discrete.
   cryptotest_kmac_sca_fpga_mode_t uj_data;
   TRY(ujson_deserialize_cryptotest_kmac_sca_fpga_mode_t(uj, &uj_data));
@@ -453,7 +452,8 @@ status_t handle_kmac_sca_init(ujson_t *uj) {
     fpga_mode = true;
   }
   // Setup the trigger.
-  sca_init(kScaTriggerSourceKmac, kScaPeripheralIoDiv4 | kScaPeripheralKmac);
+  pentest_init(kPentestTriggerSourceKmac,
+               kPentestPeripheralIoDiv4 | kPentestPeripheralKmac);
   TRY(dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
 
   dif_kmac_config_t config = (dif_kmac_config_t){
@@ -472,9 +472,14 @@ status_t handle_kmac_sca_init(ujson_t *uj) {
 
   // Disable the instruction cache and dummy instructions for better SCA
   // measurements.
-  sca_configure_cpu();
+  pentest_configure_cpu();
 
-  return OK_STATUS(0);
+  // Read device ID and return to host.
+  penetrationtest_device_id_t uj_output;
+  TRY(pentest_read_device_id(uj_output.device_id));
+  RESP_OK(ujson_serialize_penetrationtest_device_id_t, uj, &uj_output);
+
+  return OK_STATUS();
 }
 
 /**
@@ -504,7 +509,7 @@ status_t handle_kmac_sca_set_key(ujson_t *uj) {
   };
   memcpy(kmac_key.share0, uj_key.key, kKeyLength);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -540,8 +545,8 @@ static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
   if (fpga_mode == false) {
     // Start command. On the chip, we need to first issue a START command
     // before writing to the message FIFO.
-    sca_call_and_sleep(kmac_start_cmd, kIbexLoadHashPrefixKeySleepCycles,
-                       false);
+    pentest_call_and_sleep(kmac_start_cmd, kIbexLoadHashPrefixKeySleepCycles,
+                           false, false);
   }
 
   // Write data to message FIFO.
@@ -555,12 +560,13 @@ static kmac_sca_error_t sha3_ujson_absorb(const uint8_t *msg, size_t msg_len) {
     // configured to start operation 320 cycles after receiving the START and
     // PROC commands. This allows Ibex to go to sleep in order to not disturb
     // the capture.
-    sca_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, false);
+    pentest_call_and_sleep(kmac_start_process_cmd, kIbexSha3SleepCycles, false,
+                           false);
   } else {
     // On the chip, issue a PROCESS command to start operation and put Ibex
     // into sleep.
-    sca_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles,
-                       false);
+    pentest_call_and_sleep(kmac_process_cmd, kIbexLoadHashMessageSleepCycles,
+                           false, false);
   }
 
   return kmacScaOk;
@@ -588,11 +594,11 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
   }
 
   // Ungate the capture trigger signal and then start the operation.
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   if (sha3_ujson_absorb(uj_msg.msg, uj_msg.msg_length) != kmacScaOk) {
     return ABORTED();
   }
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Check KMAC has finished processing the message.
   kmac_msg_done();
@@ -611,7 +617,7 @@ status_t handle_kmac_sca_single_absorb(ujson_t *uj) {
   // another absorb.
   kmac_reset();
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -633,7 +639,7 @@ status_t handle_kmac_sca_fixed_key_set(ujson_t *uj) {
 
   memcpy(key_fixed, uj_key.key, uj_key.key_length);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -674,11 +680,11 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
     kmac_reset();
     memcpy(kmac_key.share0, kmac_batch_keys[i], kKeyLength);
 
-    sca_set_trigger_high();
+    pentest_set_trigger_high();
     if (sha3_ujson_absorb(batch_messages[i], kMessageLength) != kmacScaOk) {
       return ABORTED();
     }
-    sca_set_trigger_low();
+    pentest_set_trigger_low();
 
     kmac_msg_done();
     if (kmac_get_digest(out, kDigestLength) != kmacScaOk) {
@@ -697,7 +703,7 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
   memcpy(uj_output.batch_digest, (uint8_t *)batch_digest, kDigestLength * 4);
   RESP_OK(ujson_serialize_cryptotest_kmac_sca_batch_digest_t, uj, &uj_output);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -710,12 +716,12 @@ status_t handle_kmac_sca_batch(ujson_t *uj) {
  *
  * @param uj The received uJSON data.
  */
-status_t handle_kmac_sca_seed_lfsr(ujson_t *uj) {
+status_t handle_kmac_pentest_seed_lfsr(ujson_t *uj) {
   cryptotest_kmac_sca_lfsr_t uj_lfsr_data;
   TRY(ujson_deserialize_cryptotest_kmac_sca_lfsr_t(uj, &uj_lfsr_data));
-  sca_seed_lfsr(read_32(uj_lfsr_data.seed), kScaLfsrMasking);
+  pentest_seed_lfsr(read_32(uj_lfsr_data.seed), kPentestLfsrMasking);
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -730,7 +736,7 @@ status_t handle_kmac_sca(ujson_t *uj) {
   TRY(ujson_deserialize_kmac_sca_subcommand_t(uj, &cmd));
   switch (cmd) {
     case kKmacScaSubcommandInit:
-      return handle_kmac_sca_init(uj);
+      return handle_kmac_pentest_init(uj);
     case kKmacScaSubcommandSetKey:
       return handle_kmac_sca_set_key(uj);
     case kKmacScaSubcommandSingleAbsorb:
@@ -740,10 +746,10 @@ status_t handle_kmac_sca(ujson_t *uj) {
     case kKmacScaSubcommandFixedKeySet:
       return handle_kmac_sca_fixed_key_set(uj);
     case kKmacScaSubcommandSeedLfsr:
-      return handle_kmac_sca_seed_lfsr(uj);
+      return handle_kmac_pentest_seed_lfsr(uj);
     default:
       LOG_ERROR("Unrecognized KMAC SCA FI subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
