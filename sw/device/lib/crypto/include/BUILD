@@ -24,6 +24,7 @@ cc_library(
     name = "crypto_hdrs",
     hdrs = [
         "aes.h",
+        "aes_gcm.h",
         "datatypes.h",
         "drbg.h",
         "ecc_p256.h",
@@ -51,6 +52,7 @@ cc_library(
     name = "exported_headers_for_test",
     hdrs = [
         "aes.h",
+        "aes_gcm.h",
         "datatypes.h",
         "drbg.h",
         "ecc_p256.h",
