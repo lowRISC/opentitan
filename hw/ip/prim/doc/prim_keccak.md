@@ -2,11 +2,11 @@
 
 # Overview
 
-`prim_keccak` is a single round implementation of the permutation stage in [SHA3 algorithm][fibs-pub-202].
+`prim_keccak` is a single round implementation of the Keccak_p permutation stage in [SHA3 algorithm][fibs-pub-202].
 Keccak primitive module assumes the number of rounds is less than or equal to 12 + 2L.
 It supports all combinations of the data width described in the [spec][fibs-pub-202].
-This implementation is not currently hardened against side-channel or fault injection attacks.
-It implements the Keccak_p function.
+Note that this implementation does not include any countermeasures for security hardening against implementation attacks.
+Please refer to the [`keccak_2share` module](https://github.com/lowRISC/opentitan/blob/master/hw/ip/kmac/rtl/keccak_2share.sv) for the side-channel-hardened implementation used in the [hardened KMAC hardware IP block](../../kmac/README.md).
 
 [fibs-pub-202]: https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf
 
