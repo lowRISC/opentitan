@@ -1308,7 +1308,7 @@
     {
       name: chip_sw_alert_handler_escalation
       uvm_test_seq: chip_sw_alert_handler_escalation_vseq
-      sw_images: ["//sw/device/tests/sim_dv:alert_handler_escalation_test:1:new_rules"]
+      sw_images: ["//sw/device/tests:alert_handler_escalation_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       // Disable scoreboard to avoid incorrect alert prediction from the alert_monitor. Due to the
       // cross-domain alert senders and receivers, the monitor from the chip level did not support

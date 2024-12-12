@@ -43,7 +43,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_alert_handler_escalation"]
-      bazel: []
+      bazel: ["//sw/device/tests:alert_handler_escalation_test"]
       otp_mutate: true
       host_support: true
     }
