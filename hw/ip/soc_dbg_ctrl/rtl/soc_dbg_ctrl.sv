@@ -40,7 +40,7 @@ module soc_dbg_ctrl
 );
   soc_dbg_ctrl_core_reg2hw_t core_reg2hw;
   soc_dbg_ctrl_core_hw2reg_t core_hw2reg;
-  so_cdbg_ctrl_jtag_reg2hw_t jtag_reg2hw;
+  soc_dbg_ctrl_jtag_reg2hw_t jtag_reg2hw;
   soc_dbg_ctrl_jtag_hw2reg_t jtag_hw2reg;
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -119,7 +119,8 @@ module soc_dbg_ctrl
 
   logic not_valid;
   assign not_valid =
-    prim_mubi_pkg::mubi4_test_false_strict(core_reg2hw.debug_policy_valid_shadowed.d);
+    prim_mubi_pkg::mubi4_test_false_strict(
+      prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_valid_shadowed.q));
 
   // SEC_CM: DEBUG_POLICY_CATEGORY.CONFIG.SHADOW
   prim_subreg_shadow #(
@@ -179,7 +180,7 @@ module soc_dbg_ctrl
     soc_dbg_policy_d = soc_dbg_policy_q;
 
     unique case (soc_dbg_state_i)
-      lc_ctrl_state_pkg::Soc_DbgStBlank: begin
+      lc_ctrl_state_pkg::SocDbgStBlank: begin
         if (lc_tx_test_true_strict(lc_dft_en_i) || lc_tx_test_true_strict(lc_hw_debug_en_i)) begin
           soc_dbg_policy_d.category = DbgCategory4;
         end else begin
@@ -189,7 +190,7 @@ module soc_dbg_ctrl
         soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
       end
 
-      lc_ctrl_state_pkg::Soc_DbgStPreProd: begin
+      lc_ctrl_state_pkg::SocDbgStPreProd: begin
         soc_dbg_policy_d.category = DbgCategory4;
         soc_dbg_policy_d.valid    = prim_mubi_pkg::mubi4_bool_to_mubi(boot_status_i.lc_done);
         soc_dbg_policy_d.relocked = prim_mubi_pkg::MuBi4False;
@@ -197,10 +198,11 @@ module soc_dbg_ctrl
 
       // In Soc_DbgStProd, the debug policy is driven by the RoT according to the negotiated or
       // authorized policy
-      lc_ctrl_state_pkg::Soc_DbgStProd: begin
-        soc_dbg_policy_d.category = core_reg2hw.debug_policy_category_shadowed.q;
-        soc_dbg_policy_d.valid    = core_reg2hw.debug_policy_valid_shadowed.d;
-        soc_dbg_policy_d.relocked = core_reg2hw.debug_policy_relocked.q;
+      lc_ctrl_state_pkg::SocDbgStProd: begin
+        soc_dbg_policy_d.category = dbg_category_e'(core_reg2hw.debug_policy_category_shadowed.q);
+        soc_dbg_policy_d.valid    =
+          prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_valid_shadowed.q);
+        soc_dbg_policy_d.relocked = prim_mubi_pkg::mubi4_t'(core_reg2hw.debug_policy_relocked.q);
       end
 
       default: begin
@@ -247,6 +249,8 @@ module soc_dbg_ctrl
   // The status register is written by IBEX firmware and is reflected into the JTAG status register.
   // The JTAG user shall query this status register.
   assign jtag_hw2reg.jtag_status = soc_dbg_ctrl_hw2reg_jtag_status_reg_t'(core_reg2hw.status);
+
+  halt_state_e halt_state_d, halt_state_q;
 
   always_comb  begin
     jtag_hw2reg.jtag_boot_status = '0;
@@ -305,8 +309,6 @@ module soc_dbg_ctrl
     .d_i(halt_cpu_boot_i),
     .q_o(halt_cpu_boot_sync)
   );
-
-  halt_state_e halt_state_d, halt_state_q;
 
   always_comb begin
     // Default assignments
@@ -372,10 +374,7 @@ module soc_dbg_ctrl
 
   logic unused_signals;
   assign unused_signals = ^{boot_status_i.clk_status,
-                            boot_status_i.cpu_fetch_en,
                             boot_status_i.light_reset_req,
-                            boot_status_i.otp_done,
-                            boot_status_i.rom_ctrl_status,
                             boot_status_i.strap_sampled};
 
   //////////////////////////////////////////////////////////////////////////////////////////////////

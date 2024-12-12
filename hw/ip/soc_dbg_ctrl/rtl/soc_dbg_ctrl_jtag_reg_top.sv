@@ -139,9 +139,9 @@ module soc_dbg_ctrl_jtag_reg_top (
   logic jtag_boot_status_otp_done_qs;
   logic jtag_boot_status_lc_done_qs;
   logic jtag_boot_status_cpu_fetch_en_qs;
-  logic [6:0] jtag_boot_status_halt_fsm_state_qs;
-  logic [2:0] jtag_boot_status_rom_ctrl_done_qs;
-  logic [2:0] jtag_boot_status_rom_ctrl_good_qs;
+  logic [5:0] jtag_boot_status_halt_fsm_state_qs;
+  logic [2:0] jtag_boot_status_boot_greenlight_done_qs;
+  logic [2:0] jtag_boot_status_boot_greenlight_good_qs;
   logic jtag_trace_soc_dbg_state_re;
   logic [31:0] jtag_trace_soc_dbg_state_qs;
 
@@ -411,9 +411,9 @@ module soc_dbg_ctrl_jtag_reg_top (
     .qs     (jtag_boot_status_cpu_fetch_en_qs)
   );
 
-  //   F[halt_fsm_state]: 11:5
+  //   F[halt_fsm_state]: 10:5
   prim_subreg_ext #(
-    .DW    (7)
+    .DW    (6)
   ) u_jtag_boot_status_halt_fsm_state (
     .re     (jtag_boot_status_re),
     .we     (1'b0),
@@ -426,34 +426,34 @@ module soc_dbg_ctrl_jtag_reg_top (
     .qs     (jtag_boot_status_halt_fsm_state_qs)
   );
 
-  //   F[rom_ctrl_done]: 14:12
+  //   F[boot_greenlight_done]: 13:11
   prim_subreg_ext #(
     .DW    (3)
-  ) u_jtag_boot_status_rom_ctrl_done (
+  ) u_jtag_boot_status_boot_greenlight_done (
     .re     (jtag_boot_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.jtag_boot_status.rom_ctrl_done.d),
+    .d      (hw2reg.jtag_boot_status.boot_greenlight_done.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (jtag_boot_status_rom_ctrl_done_qs)
+    .qs     (jtag_boot_status_boot_greenlight_done_qs)
   );
 
-  //   F[rom_ctrl_good]: 17:15
+  //   F[boot_greenlight_good]: 16:14
   prim_subreg_ext #(
     .DW    (3)
-  ) u_jtag_boot_status_rom_ctrl_good (
+  ) u_jtag_boot_status_boot_greenlight_good (
     .re     (jtag_boot_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.jtag_boot_status.rom_ctrl_good.d),
+    .d      (hw2reg.jtag_boot_status.boot_greenlight_good.d),
     .qre    (),
     .qe     (),
     .q      (),
     .ds     (),
-    .qs     (jtag_boot_status_rom_ctrl_good_qs)
+    .qs     (jtag_boot_status_boot_greenlight_good_qs)
   );
 
 
@@ -548,9 +548,9 @@ module soc_dbg_ctrl_jtag_reg_top (
         reg_rdata_next[2] = jtag_boot_status_otp_done_qs;
         reg_rdata_next[3] = jtag_boot_status_lc_done_qs;
         reg_rdata_next[4] = jtag_boot_status_cpu_fetch_en_qs;
-        reg_rdata_next[11:5] = jtag_boot_status_halt_fsm_state_qs;
-        reg_rdata_next[14:12] = jtag_boot_status_rom_ctrl_done_qs;
-        reg_rdata_next[17:15] = jtag_boot_status_rom_ctrl_good_qs;
+        reg_rdata_next[10:5] = jtag_boot_status_halt_fsm_state_qs;
+        reg_rdata_next[13:11] = jtag_boot_status_boot_greenlight_done_qs;
+        reg_rdata_next[16:14] = jtag_boot_status_boot_greenlight_good_qs;
       end
 
       addr_hit[5]: begin

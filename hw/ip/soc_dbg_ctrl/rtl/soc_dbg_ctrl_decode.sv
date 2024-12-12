@@ -68,18 +68,21 @@ module soc_dbg_ctrl_decode #(
   end
 
   // Sample the debug policy on the rising edge of valid
-  soc_dbg_ctrl_pkg::dbg_category_e debug_category_q;
+  logic [$bits(soc_dbg_ctrl_pkg::dbg_category_e)-1:0] debug_category_logic_q;
 
   prim_flop_en #(
-    .Width($bits(dbg_category_e)),
+    .Width($bits(soc_dbg_ctrl_pkg::dbg_category_e)),
     .ResetValue({soc_dbg_ctrl_pkg::DbgCategoryLocked})
   ) u_sampled_policy (
     .clk_i  ( clk_i                         ),
     .rst_ni ( rst_ni                        ),
     .en_i   ( valid_rising                  ),
     .d_i    ( soc_dbg_policy_bus_i.category ),
-    .q_o    ( debug_category_q              )
+    .q_o    ( debug_category_logic_q        )
   );
+
+  soc_dbg_ctrl_pkg::dbg_category_e debug_category_q;
+  assign debug_category_q = soc_dbg_ctrl_pkg::dbg_category_e'(debug_category_logic_q);
 
   // Output the decoded logic
   assign relocked_o = valid_decoded & relocked_decoded;

@@ -407,14 +407,14 @@
                   '''
             resval: "0"
           }
-          { bits: "11:5"
+          { bits: "10:5"
             name: "halt_fsm_state"
             desc: '''
                   The state of the halt state FSM.
                   '''
             resval: "0"
           }
-          { bits: "14:12"
+          { bits: "13:11"
             name: "boot_greenlight_done"
             desc: '''
                   Green lights for the boot process: _done_ indication coming from
@@ -426,7 +426,7 @@
                   '''
             resval: "0"
           }
-          { bits: "17:15"
+          { bits: "16:14"
             name: "boot_greenlight_good"
             desc: '''
                   Green lights status for the boot process: _good_ indication coming from
