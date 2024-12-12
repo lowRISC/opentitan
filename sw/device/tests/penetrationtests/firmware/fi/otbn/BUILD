@@ -7,9 +7,51 @@ load("//rules:otbn.bzl", "otbn_binary")
 package(default_visibility = ["//visibility:public"])
 
 otbn_binary(
+    name = "otbn_char_beq",
+    srcs = [
+        "otbn_char_beq.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_bn_rshi",
+    srcs = [
+        "otbn_char_bn_rshi.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_bn_sel",
+    srcs = [
+        "otbn_char_bn_sel.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_bn_wsrr",
+    srcs = [
+        "otbn_char_bn_wsrr.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_bne",
+    srcs = [
+        "otbn_char_bne.s",
+    ],
+)
+
+otbn_binary(
     name = "otbn_char_dmem_access",
     srcs = [
         "otbn_char_dmem_access.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_dmem_write",
+    srcs = [
+        "otbn_char_dmem_write.s",
     ],
 )
 
@@ -31,6 +73,13 @@ otbn_binary(
     name = "otbn_char_jal",
     srcs = [
         "otbn_char_jal.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_char_lw",
+    srcs = [
+        "otbn_char_lw.s",
     ],
 )
 
@@ -66,5 +115,12 @@ otbn_binary(
     name = "otbn_load_integrity",
     srcs = [
         "otbn_load_integrity.s",
+    ],
+)
+
+otbn_binary(
+    name = "otbn_pc",
+    srcs = [
+        "otbn_pc.s",
     ],
 )
