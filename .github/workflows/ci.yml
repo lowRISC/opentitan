@@ -358,7 +358,6 @@ jobs:
             --stamp-file $PWD/bazel-out/volatile-status.txt \
             --out $PWD/build-bin/bitstream-cache \
             $PWD/build-bin/**/manifest.json
-      - uses: google-github-actions/setup-gcloud@v2
       - name: Upload bitstreams to GCP bucket
         run: |
           BUCKET_URI=gs://opentitan-bitstreams/${{ github.ref_name }}
