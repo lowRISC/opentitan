@@ -5,6 +5,8 @@
 #include "sw/device/lib/crypto/include/key_transport.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -83,8 +85,8 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_kwp_wrapped_len(
-    const otcrypto_key_config_t config, size_t *wrapped_num_words) {
+otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
+                                           size_t *wrapped_num_words) {
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
@@ -159,9 +161,9 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_aes_kwp_wrap(
-    const otcrypto_blinded_key_t *key_to_wrap,
-    const otcrypto_blinded_key_t *key_kek, otcrypto_word32_buf_t wrapped_key) {
+otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
+                                    const otcrypto_blinded_key_t *key_kek,
+                                    otcrypto_word32_buf_t wrapped_key) {
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -177,7 +179,7 @@ otcrypto_status_t otcrypto_aes_kwp_wrap(
 
   // Check the length of the output buffer.
   size_t exp_len;
-  HARDENED_TRY(otcrypto_aes_kwp_wrapped_len(key_to_wrap->config, &exp_len));
+  HARDENED_TRY(otcrypto_wrapped_key_len(key_to_wrap->config, &exp_len));
   if (wrapped_key.len != exp_len) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -213,10 +215,10 @@ otcrypto_status_t otcrypto_aes_kwp_wrap(
   return aes_kwp_wrap(kek, plaintext, sizeof(plaintext), wrapped_key.data);
 }
 
-otcrypto_status_t otcrypto_aes_kwp_unwrap(
-    otcrypto_const_word32_buf_t wrapped_key,
-    const otcrypto_blinded_key_t *key_kek, hardened_bool_t *success,
-    otcrypto_blinded_key_t *unwrapped_key) {
+otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
+                                      const otcrypto_blinded_key_t *key_kek,
+                                      hardened_bool_t *success,
+                                      otcrypto_blinded_key_t *unwrapped_key) {
   *success = kHardenedBoolFalse;
 
   if (wrapped_key.data == NULL || key_kek == NULL || key_kek->keyblob == NULL ||
