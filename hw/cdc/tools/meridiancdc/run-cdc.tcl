@@ -96,7 +96,7 @@ set REPORT_DIR reports
 file mkdir $REPORT_DIR
 
 # Report setup check results.
-report_policy {ALL} -verbose -output $REPORT_DIR/setup_checks.rpt
+report_policy {ALL} -scenario {sdc env} -verbose -output $REPORT_DIR/setup_checks.rpt
 
 # Run CDC verification.
 verify_cdc
