@@ -1,3 +1,21 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_GCM_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_GCM_H_
+
+#include "datatypes.h"
+
+/**
+ * @file
+ * @brief AES-GCM operations for the OpenTitan cryptography library.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
 /**
  * Enum to denote the AES-GCM tag length.
  *
@@ -236,3 +254,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     otcrypto_aes_gcm_context_t *ctx, otcrypto_const_word32_buf_t auth_tag,
     otcrypto_aes_gcm_tag_len_t tag_len, otcrypto_byte_buf_t plaintext,
     size_t *plaintext_bytes_written, hardened_bool_t *success);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_AES_GCM_H_
