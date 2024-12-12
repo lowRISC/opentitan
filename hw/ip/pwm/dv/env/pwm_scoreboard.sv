@@ -266,8 +266,10 @@ endfunction
 task pwm_scoreboard::compare_trans(int channel);
   pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
   pwm_item input_item   = new($sformatf("input_item_%0d", channel));
-  string txt            = "";
-  int    p = 0;
+  // Count of predictions made.
+  int unsigned predicted = 0;
+  // Count of ignored sequence items.
+  int unsigned ignored = 0;
 
   forever begin
     // as this DUT signals needs to be evaluated over time they are only evaluated when the channel
@@ -283,26 +285,41 @@ task pwm_scoreboard::compare_trans(int channel);
     end else begin
       item_fifo[channel].get(input_item);
       generate_exp_item(compare_item, channel);
+      // TODO: It should be possible to do a much better job of predicting these now.
       // After the state has switched to different state, settings will change
       // Comparison ignored till two pulses
       if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
-        // ignore items when resolution would round the duty cycle to 0 or 100
-        if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
-           && (input_item.period == compare_item.period)) begin
+        // TODO: Stop rejecting/ignoring items?
+        // ignore items when resolution would round the duty cycle to 0 or 100 because these are
+        // presently not reported by the monitor.
+        if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)) begin
           if(!input_item.compare(compare_item)) begin
             `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                                      channel, compare_item.sprint()),UVM_HIGH)
+                                      channel, compare_item.sprint()), UVM_HIGH)
             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                                      channel, input_item.sprint()),UVM_HIGH)
+                                      channel, input_item.sprint()), UVM_HIGH)
           end else begin
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel), UVM_HIGH)
             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                                      channel, compare_item.sprint()),UVM_HIGH)
+                                      channel, compare_item.sprint()), UVM_HIGH)
             `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                                      channel, input_item.sprint()),UVM_HIGH)
+                                      channel, input_item.sprint()), UVM_HIGH)
           end
+        end else begin
+          // It's important to be able to see what we're ignoring!
+          `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] IGNORED EXPECTATION %s",
+                                    channel, compare_item.sprint()), UVM_MEDIUM)
+          `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                                    channel, input_item.sprint()), UVM_MEDIUM)
+          ignored++;
         end
+      end else begin
+        ignored++;
+      end
+      predicted++;
+      if (|predicted) begin
+        `uvm_info(`gfn, $sformatf("Ignored %0d%% so far", (ignored * 100) / predicted), UVM_LOW)
       end
       ignore_state_change[channel] -= 1 ;
     end
