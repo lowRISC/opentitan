@@ -9,10 +9,20 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
+ * edn.sca.bus_data_batch command handler.
+ *
+ * Batch version of edn.sca.bus_data with random data.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_edn_sca_bus_data_batch(ujson_t *uj);
+
+/**
  * edn.sca.bus_data command handler.
  *
  * The goal of this penetration test is to capture traces when
- * the EDN generated random data and transfers it to Ibex.
+ * randomness is transported over the bus to Ibex.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
@@ -20,32 +30,12 @@
 status_t handle_edn_sca_bus_data(ujson_t *uj);
 
 /**
- * edn.sca.bus_data_batch_fvsr command handler.
- *
- * Batch version of edn.sca.bus_data with FvsR data.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_edn_sca_bus_data_batch_fvsr(ujson_t *uj);
-
-/**
- * edn.sca.bus_data_batch_random command handler.
- *
- * Batch version of edn.sca.bus_data with random data.
- *
- * @param uj An initialized uJSON context.
- * @return OK or error.
- */
-status_t handle_edn_sca_bus_data_batch_random(ujson_t *uj);
-
-/**
  * Initializes the trigger and configures the device for the EDN SCA test.
  *
  * @param uj An initialized uJSON context.
  * @return OK or error.
  */
-status_t handle_edn_pentest_init(ujson_t *uj);
+status_t handle_edn_sca_init(ujson_t *uj);
 
 /**
  * EDN SCA command handler.
