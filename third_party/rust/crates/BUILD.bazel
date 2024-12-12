@@ -158,6 +158,12 @@ alias(
 )
 
 alias(
+    name = "embedded-hal",
+    actual = "@crate_index__embedded-hal-1.0.0//:embedded_hal",
+    tags = ["manual"],
+)
+
+alias(
     name = "env_logger",
     actual = "@crate_index__env_logger-0.10.0//:env_logger",
     tags = ["manual"],
@@ -178,6 +184,18 @@ alias(
 alias(
     name = "ftdi",
     actual = "@crate_index__ftdi-0.1.3//:ftdi",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ftdi-embedded-hal",
+    actual = "@crate_index__ftdi-embedded-hal-0.22.0//:ftdi_embedded_hal",
+    tags = ["manual"],
+)
+
+alias(
+    name = "ftdi-mpsse",
+    actual = "@crate_index__ftdi-mpsse-0.1.1//:ftdi_mpsse",
     tags = ["manual"],
 )
 
