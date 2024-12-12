@@ -1,3 +1,25 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/crypto/include/aes_gcm.h"
+
+#include "sw/device/lib/base/hardened.h"
+#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/base/math.h"
+#include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/aes_gcm.h"
+#include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('a', 'g', 'c')
+
 // Check GHASH context size against the underlying implementation.
 static_assert(sizeof(otcrypto_aes_gcm_context_t) >= sizeof(aes_gcm_context_t),
               "Size of AES-GCM context object for top-level API must be at "
