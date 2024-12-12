@@ -100,12 +100,17 @@ static status_t read_and_print_flash_and_ast_data(void) {
 static status_t provision(ujson_t *uj) {
   LOG_INFO("Waiting for FT SRAM provisioning data ...");
   TRY(ujson_deserialize_manuf_ft_individualize_data_t(uj, &in_data));
+  LOG_INFO("Writing HW_CFG* OTP partitions ...");
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
                                         kFlashInfoPage0Permissions,
                                         in_data.device_id));
+  LOG_INFO("Writing ROT_CREATOR_AUTH_CODESIGN OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
+  LOG_INFO("Writing ROT_CREATOR_AUTH_STATE OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
+  LOG_INFO("Writing OWNER_SW_CFG OTP partition ...");
   TRY(manuf_individualize_device_owner_sw_cfg(&otp_ctrl));
+  LOG_INFO("Writing CREATOR_SW_CFG OTP partition ...");
   TRY(manuf_individualize_device_creator_sw_cfg(&otp_ctrl, &flash_ctrl_state));
   LOG_INFO("FT SRAM provisioning done.");
   return OK_STATUS();
