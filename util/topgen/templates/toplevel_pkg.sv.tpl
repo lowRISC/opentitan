@@ -6,9 +6,10 @@ ${gencmd}
 import topgen.lib as lib
 import topgen.lib as lib
 
+addr_space_suffix = "" if helper.addr_space == helper.default_addr_space else "_" + helper.addr_space
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 %>\
-package top_${top["name"]}_pkg;
+package top_${top["name"]}${addr_space_suffix}_pkg;
 % for (inst_name, if_name), region in helper.devices():
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
@@ -101,6 +102,7 @@ package top_${top["name"]}_pkg;
   // Number of LPGs for incoming alert group ${alert_group}
   parameter int unsigned NIncomingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
 % endfor
+% if helper.addr_space == helper.default_addr_space:
 
   // Enumeration of alert modules
   typedef enum int unsigned {
@@ -214,5 +216,6 @@ package top_${top["name"]}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
+% endif
 
 endpackage

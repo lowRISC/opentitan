@@ -24,8 +24,6 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 /**
  * Memory base for flash_ctrl_eflash in top englishbreakfast.
  */

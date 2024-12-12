@@ -24,8 +24,6 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 /**
  * Memory base for soc_proxy_ctn in top darjeeling.
  */
