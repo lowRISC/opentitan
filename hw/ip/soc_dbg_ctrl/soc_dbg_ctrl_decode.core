@@ -7,7 +7,7 @@ description: "SoC Debug Control Decode Module"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:socdbg_ctrl_pkg
+      - lowrisc:ip:soc_dbg_ctrl_pkg
     files:
       - rtl/soc_dbg_ctrl_decode.sv
     file_type: systemVerilogSource
@@ -18,7 +18,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/socdbg_ctrl.vlt
+      - lint/soc_dbg_ctrl.vlt
     file_type: vlt
 
   files_ascentlint_waiver:
@@ -27,7 +27,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/socdbg_ctrl.waiver
+      - lint/soc_dbg_ctrl.waiver
     file_type: waiver
 
   files_veriblelint_waiver:

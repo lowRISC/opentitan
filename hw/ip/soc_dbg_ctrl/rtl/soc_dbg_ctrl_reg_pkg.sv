@@ -198,14 +198,14 @@ package soc_dbg_ctrl_reg_pkg;
       logic        d;
     } cpu_fetch_en;
     struct packed {
-      logic [6:0]  d;
+      logic [5:0]  d;
     } halt_fsm_state;
     struct packed {
       logic [2:0]  d;
-    } rom_ctrl_done;
+    } boot_greenlight_done;
     struct packed {
       logic [2:0]  d;
-    } rom_ctrl_good;
+    } boot_greenlight_good;
   } soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t;
 
   typedef struct packed {
@@ -220,11 +220,11 @@ package soc_dbg_ctrl_reg_pkg;
   // HW -> register type for jtag interface
   typedef struct packed {
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_category_reg_t
-        jtag_trace_debug_policy_category; // [72:65]
+        jtag_trace_debug_policy_category; // [71:64]
     soc_dbg_ctrl_hw2reg_jtag_trace_debug_policy_valid_relocked_reg_t
-        jtag_trace_debug_policy_valid_relocked; // [64:55]
-    soc_dbg_ctrl_hw2reg_jtag_status_reg_t jtag_status; // [54:50]
-    soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t jtag_boot_status; // [49:32]
+        jtag_trace_debug_policy_valid_relocked; // [63:54]
+    soc_dbg_ctrl_hw2reg_jtag_status_reg_t jtag_status; // [53:49]
+    soc_dbg_ctrl_hw2reg_jtag_boot_status_reg_t jtag_boot_status; // [48:32]
     soc_dbg_ctrl_hw2reg_jtag_trace_soc_dbg_state_reg_t jtag_trace_soc_dbg_state; // [31:0]
   } soc_dbg_ctrl_jtag_hw2reg_t;
 
@@ -243,15 +243,15 @@ package soc_dbg_ctrl_reg_pkg;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_WINDOW_CLOSED_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_UNLOCK_SUCCESS_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_STATUS_AUTH_UNLOCK_FAILED_RESVAL = 1'h 0;
-  parameter logic [17:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_RESVAL = 18'h 0;
+  parameter logic [16:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_RESVAL = 17'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_MAIN_CLK_STATUS_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_IO_CLK_STATUS_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_OTP_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_LC_DONE_RESVAL = 1'h 0;
   parameter logic [0:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_CPU_FETCH_EN_RESVAL = 1'h 0;
-  parameter logic [6:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_HALT_FSM_STATE_RESVAL = 7'h 0;
-  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_ROM_CTRL_DONE_RESVAL = 3'h 0;
-  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_ROM_CTRL_GOOD_RESVAL = 3'h 0;
+  parameter logic [5:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_HALT_FSM_STATE_RESVAL = 6'h 0;
+  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_BOOT_GREENLIGHT_DONE_RESVAL = 3'h 0;
+  parameter logic [2:0] SOC_DBG_CTRL_JTAG_BOOT_STATUS_BOOT_GREENLIGHT_GOOD_RESVAL = 3'h 0;
   parameter logic [31:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_RESVAL = 32'h 0;
   parameter logic [31:0] SOC_DBG_CTRL_JTAG_TRACE_SOC_DBG_STATE_SOC_DBG_STATE_RESVAL = 32'h 0;
 
