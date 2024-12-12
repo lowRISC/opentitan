@@ -25,12 +25,14 @@ PROVISIONING_EXT_RUNFILES=$TEST_TMPDIR/runfiles/provisioning_exts
     $TEST_TMPDIR/runfiles/lowrisc_opentitan/external/provisioning_exts
 
 # Run tool. The path to the --sku-config parameter is relative to the
-# runfiles-dir.
+# runfiles-dir. Note: "use-ext-clk" flag on FPGA does nothing, but this tests
+# the flag can be piped through to the test harness.
 $PYTHON ${ORCHESTRATOR_PATH} \
   --sku-config=sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=hyper310 \
+  --use-ext-clk \
   --non-interactive \
   --runfiles-dir=$TEST_TMPDIR/runfiles/lowrisc_opentitan \
   --db-path=$TEST_TMPDIR/registry.sqlite
