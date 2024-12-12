@@ -4,7 +4,12 @@
 
 load("@bazel_skylib//rules:common_settings.bzl", "string_flag")
 load("//rules/opentitan:hw.bzl", "describe_top", "select_top_ld", "select_top_lib")
-load("//hw/top:defs.bzl", "ALL_TOPS", "ALL_TOP_NAMES")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOPS", "ALL_TOP_NAMES", "opentitan_require_ip")
+load(
+    "//rules:autogen.bzl",
+    "opentitan_ip_c_header",
+    "opentitan_ip_rust_header",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -79,3 +84,25 @@ alias(
         for top in ALL_TOP_NAMES
     }),
 )
+
+# C register headers for all IPs.
+[
+    opentitan_ip_c_header(
+        name = "{}_c_regs".format(ip),
+        ip = ip,
+        target_compatible_with = opentitan_require_ip(ip),
+        top = ":top_desc",
+    )
+    for ip in ALL_IP_NAMES
+]
+
+# Rust register headers for all IPs.
+[
+    opentitan_ip_rust_header(
+        name = "{}_rust_regs".format(ip),
+        ip = ip,
+        target_compatible_with = opentitan_require_ip(ip),
+        top = ":top_desc",
+    )
+    for ip in ALL_IP_NAMES
+]
