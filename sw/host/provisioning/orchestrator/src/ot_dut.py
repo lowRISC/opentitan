@@ -56,6 +56,7 @@ class OtDut():
     test_unlock_token: str
     test_exit_token: str
     fpga: str
+    use_ext_clk: bool
     require_confirmation: bool = True
 
     def _make_log_dir(self) -> None:
@@ -274,6 +275,10 @@ class OtDut():
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
+
+            # Enable external clock if requested.
+            if self.use_ext_clk:
+                cmd += " --use-ext-clk-during-individualize"
 
             # Get user confirmation before running command.
             logging.info(f"Running command: {cmd}")

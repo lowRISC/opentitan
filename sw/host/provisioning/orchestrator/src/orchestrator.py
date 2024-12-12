@@ -98,6 +98,12 @@ def main(args_in):
         help="Run flow on FPGA (instead of silicon).",
     )
     parser.add_argument(
+        "--use-ext-clk",
+        action="store_true",
+        default=False,
+        help="Use external clock during FT individualize step.",
+    )
+    parser.add_argument(
         "--non-interactive",
         action="store_true",
         default=False,
@@ -152,6 +158,7 @@ def main(args_in):
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
+                use_ext_clk=args.use_ext_clk,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
     if args.cp_only:
