@@ -46,6 +46,7 @@ extern "C" {
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_symmetric_keygen(
     otcrypto_const_byte_buf_t perso_string, otcrypto_blinded_key_t *key);
 
@@ -71,9 +72,80 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  * @param[out] key Destination blinded key struct.
  * @return The result of the operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
                                          const uint32_t salt[7],
                                          otcrypto_blinded_key_t *key);
+
+/**
+ * Returns the length that the blinded key will have once wrapped.
+ *
+ * @param config Key configuration.
+ * @param[out] wrapped_num_words Number of 32b words for the wrapped key.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
+                                           size_t *wrapped_num_words);
+
+/**
+ * Wraps (encrypts) a secret key.
+ *
+ * The key wrap function uses AES-KWP (key wrapping with padding), an
+ * authenticated encryption mode designed for encrypting key material.
+ *
+ * The caller should allocate space for the `wrapped_key` buffer according to
+ * `otcrypto_wrapped_key_len`, and set the length of expected output in the
+ * `len` field of `wrapped_key`. If the user-set length and the output length
+ * do not match, an error message will be returned.
+ *
+ * The blinded key struct to wrap must be 32-bit aligned.
+ *
+ * @param key_to_wrap Blinded key that will be encrypted.
+ * @param key_kek AES-KWP key used to encrypt `key_to_wrap`.
+ * @param[out] wrapped_key Encrypted key data.
+ * @return Result of the wrap operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
+                                    const otcrypto_blinded_key_t *key_kek,
+                                    otcrypto_word32_buf_t wrapped_key);
+
+/**
+ * Unwraps (decrypts) a secret key.
+ *
+ * The key unwrap function uses AES-KWP (key wrapping with padding), an
+ * authenticated encryption mode designed for encrypting key material.
+ *
+ * The caller must allocate space for the keyblob and set the keyblob-length
+ * and keyblob fields in `unwrapped_key` accordingly. If there is not enough
+ * space in the keyblob, this function will return an error. Too much space in
+ * the keyblob is okay; this function will write to the first part of the
+ * keyblob buffer and set the keyblob length field to the correct exact value
+ * for the unwrapped key, at which point it is safe to check the new length and
+ * free the remaining keyblob memory. It is always safe to allocate a keyblob
+ * the same size as the wrapped key; this will always be enough space by
+ * definition.
+ *
+ * The caller does not need to populate the blinded key configuration, since
+ * this information is encrypted along with the key.  However, the caller may
+ * want to check that the configuration matches expectations.
+ *
+ * An OK status from this function does NOT necessarily mean that unwrapping
+ * succeeded; the caller must check both the returned status and the `success`
+ * parameter before reading the unwrapped key.
+ *
+ * @param wrapped_key Encrypted key data.
+ * @param key_kek AES-KWP key used to decrypt `wrapped_key`.
+ * @param[out] success Whether the wrapped key was valid.
+ * @param[out] unwrapped_key Decrypted key data.
+ * @return Result of the aes-kwp unwrap operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_key_unwrap(otcrypto_const_word32_buf_t wrapped_key,
+                                      const otcrypto_blinded_key_t *key_kek,
+                                      hardened_bool_t *success,
+                                      otcrypto_blinded_key_t *unwrapped_key);
 
 /**
  * Creates a blinded key struct from masked key material.
@@ -92,6 +164,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
  * @param[out] blinded_key Generated blinded key struct.
  * @return Result of the blinded key import operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_import_blinded_key(
     const otcrypto_const_word32_buf_t key_share0,
     const otcrypto_const_word32_buf_t key_share1,
@@ -112,6 +185,7 @@ otcrypto_status_t otcrypto_import_blinded_key(
  * @param[out] key_share1 Second share of the blinded key.
  * @return Result of the blinded key export operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_export_blinded_key(
     const otcrypto_blinded_key_t blinded_key, otcrypto_word32_buf_t key_share0,
     otcrypto_word32_buf_t key_share1);
