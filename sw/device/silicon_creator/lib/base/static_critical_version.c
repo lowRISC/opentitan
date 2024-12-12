@@ -14,4 +14,4 @@
  * populated by the ROM before the jump to ROM_EXT.
  */
 OT_SET_BSS_SECTION(".static_critical.version",
-                   uint32_t static_critical_version;)
+                   OT_USED uint32_t static_critical_version;)
