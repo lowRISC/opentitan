@@ -44,9 +44,6 @@ runs:
         # In case this is from a re-run
         overwrite: true
 
-    - uses: google-github-actions/setup-gcloud@v2
-      if: inputs.bucket-destination != ''
-
     - name: Upload report to Google Cloud
       if: inputs.bucket-destination != ''
       shell: bash
