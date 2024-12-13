@@ -8,3 +8,13 @@ bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "rules_cc", version = "0.0.15")
 
 include("//third_party/rust:rust.MODULE.bazel")
+
+include("//third_party/python:python.MODULE.bazel")
+
+include("//third_party/lint:lint.MODULE.bazel")
+
+include("//third_party/google:google.MODULE.bazel")
+
+bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
+
+bitstreams_repo(name = "bitstreams")
