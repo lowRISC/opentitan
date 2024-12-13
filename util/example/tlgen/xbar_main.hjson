@@ -22,6 +22,7 @@
       type:  "host",
       clock: "clk_main_i",
       reset: "rst_main_ni",
+      addr_space: "hart",
 
       xbar: false
       pipeline: false
@@ -30,6 +31,7 @@
       type:  "host",
       clock: "clk_periph_i",
       reset: "rst_periph_ni",
+      addr_space: "hart",
 
       xbar: false
       pipeline: false
@@ -38,9 +40,9 @@
       type:  "host",
       clock: "clk_jtag_i",
       reset: "rst_jtag_ni",
+      addr_space: "hart",
 
       xbar: false
-      pipeline_byp: false
     },
     { name:  "rom",
       type:  "device",
@@ -48,7 +50,9 @@
       reset: "rst_main_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x00000000",
+        base_addrs: {
+          hart: 0x00000000
+        },
         size_byte: "0x10000",   // 64kB
       }]
     },
@@ -58,7 +62,9 @@
       reset: "rst_jtag_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x10040000",
+        base_addrs: {
+          hart: 0x10040000
+        },
         size_byte: "0x1000"
       }]
     },
@@ -68,7 +74,9 @@
       reset: "rst_main_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x10000000",
+        base_addrs: {
+          hart: 0x10000000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -77,7 +85,9 @@
       // clock is omitted --> use default clock
       xbar: false
       addr_range: [{
-        base_addr: "0x10080000",
+        base_addrs: {
+          hart: 0x10080000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -87,7 +97,9 @@
       reset: "rst_periph_ni",
       xbar: false
       addr_range: [{
-        base_addr: "0x40000000",
+        base_addrs: {
+          hart: 0x40000000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -97,7 +109,9 @@
       reset: "rst_periph_ni",
       xbar: false
       addr_range: [{
-        base_addr: "0x40010000",
+        base_addrs: {
+          hart: 0x40010000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -107,7 +121,9 @@
       reset: "rst_periph_ni",
       xbar: false
       addr_range: [{
-        base_addr: "0x40020000",
+        base_addrs: {
+          hart: 0x40020000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -117,7 +133,9 @@
       reset: "rst_periph_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x40030000",
+        base_addrs: {
+          hart: 0x40030000
+        },
         size_byte: "0x10000",
       }]
     },
@@ -127,7 +145,9 @@
       reset: "rst_main_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x50000000",
+        base_addrs: {
+          hart: 0x50000000
+        },
         size_byte: "0x1000"
       }]
     },
@@ -137,7 +157,9 @@
       reset: "rst_main_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x50010000",
+        base_addrs: {
+          hart: 0x50010000
+        },
         size_byte: "0x1000"
       }]
     },
@@ -147,7 +169,9 @@
       reset: "rst_main_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x50020000",
+        base_addrs: {
+          hart: 0x50020000
+        },
         size_byte: "0x1000"
       }]
     },
@@ -159,7 +183,9 @@
       reset: "rst_crypt_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x60000000",
+        base_addrs: {
+          hart: 0x60000000
+        },
         size_byte: "0x8000"
       }]
     },
@@ -169,7 +195,9 @@
       reset: "rst_crypt_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x60010000",
+        base_addrs: {
+          hart: 0x60010000
+        },
         size_byte: "0x10000"
       }]
     },
@@ -179,7 +207,9 @@
       reset: "rst_crypt_ni",
       xbar:  false
       addr_range: [{
-        base_addr: "0x60080000",
+        base_addrs: {
+          hart: 0x60080000
+        },
         size_byte: "0x20000"
       }]
     },
