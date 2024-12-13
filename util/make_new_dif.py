@@ -101,6 +101,7 @@ def main():
         sys.exit(1)
     ipgen_modules = lib.get_ipgen_modules(topcfg)
     reggen_top_modules = lib.get_top_reggen_modules(topcfg)
+    all_modules = [m['type'] for m in topcfg['module']]
 
     # Check for regeneration mode (used in CI check:
     # ci/scripts/check-generated.sh)
@@ -115,6 +116,9 @@ def main():
             # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
             # case snake mode (i.e., uart).
             ip_name_snake = Path(autogen_src_filename).stem[4:-8]
+            # Only considers IPs for that particular top.
+            if ip_name_snake not in all_modules:
+                continue
             # NOTE: ip.name_long_* not needed for auto-generated files which
             # are the only files (re-)generated in regen mode.
             ips.append(
