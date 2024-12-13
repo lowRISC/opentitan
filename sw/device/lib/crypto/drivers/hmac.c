@@ -67,6 +67,15 @@ OT_ASSERT_ENUM_VALUE(HMAC_DIGEST_15_REG_OFFSET, HMAC_DIGEST_14_REG_OFFSET + 4);
 enum {
   /* The beginning of the address space of HMAC. */
   kHmacBaseAddr = TOP_EARLGREY_HMAC_BASE_ADDR,
+  /* Timeout value for the polling
+   * As min 3 clock cycles are required to perform a read access to the STATUS
+   * hmac_idle register. And as we should observe 240 cycles (80 for the inner
+   * key, 80 for the outer key, and 80 for the result of the first round), plus
+   * 80 for msg itself -> 360 cycles in total as max (when HMAC is enabled).
+   * Which means, 360/3=120 loops before having the IDLE state.
+   * Let's take a large margin and consider that 200 loops are enough.
+   */
+  kNumIterTimeout = 200,
 };
 
 /**
@@ -74,8 +83,6 @@ enum {
  *
  * It returns error if HMAC HWIP becomes idle without firing `hmac_done`
  * interrupt.
- *
- * TODO(#23191): It might be beneficial to have a timeout value for the polling.
  *
  * @return Result of the operation.
  */
@@ -85,8 +92,13 @@ static status_t hmac_idle_wait(void) {
   // Initialize `status_reg = 0` so that the loop starts with the assumption
   // that HMAC HWIP is not idle.
   uint32_t status_reg = 0;
+  uint32_t attempt_cnt = 0;
   while (bitfield_bit32_read(status_reg, HMAC_STATUS_HMAC_IDLE_BIT) == 0) {
     status_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_STATUS_REG_OFFSET);
+    attempt_cnt++;
+    if (attempt_cnt >= kNumIterTimeout) {
+      return OTCRYPTO_FATAL_ERR;
+    }
   }
 
   // Verify that HMAC HWIP raises `hmac_done` bit.
