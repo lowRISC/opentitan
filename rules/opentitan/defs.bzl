@@ -69,6 +69,10 @@ load(
     "ALL_TOPS",
     "opentitan_select_top",
 )
+load(
+    "@provisioning_exts//:cfg.bzl",
+    "EXT_EXEC_ENV_SILICON_ROM_EXT",
+)
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
@@ -123,7 +127,7 @@ EARLGREY_TEST_ENVS = {
 # The default set of test environments for Earlgrey.
 EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
     "//hw/top_earlgrey:silicon_owner_sival_rom_ext": None,
-}
+} | EXT_EXEC_ENV_SILICON_ROM_EXT
 
 # All CW340 test environments for Earlgrey.
 EARLGREY_CW340_TEST_ENVS = {
