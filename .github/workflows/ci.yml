@@ -313,7 +313,7 @@ jobs:
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   chip_englishbreakfast_cw305:
     name: CW305's Bitstream
-    runs-on: ubuntu-22.04-bitstream
+    runs-on: ubuntu-22.04-vivado
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
