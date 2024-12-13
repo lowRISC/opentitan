@@ -26,6 +26,7 @@ use ftdi_embedded_hal as ftdi_hal;
 
 pub mod chip;
 pub mod gpio;
+pub mod spi;
 
 #[derive(Default)]
 struct Inner {
@@ -116,7 +117,13 @@ impl<C: Chip> Transport for Ftdi<C> {
     }
 
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
-        Err(TransportError::UnsupportedOperation.into())
+        let spi_cs = gpio::Pin::open::<C>(&self.ftdi_interfaces, "bdbus3".to_string())?;
+        spi_cs.set_mode(PinMode::PushPull)?;
+        let mut inner = self.inner.borrow_mut();
+        if inner.spi.is_none() {
+            inner.spi = Some(Rc::new(spi::Spi::open(&self.ftdi_interfaces, spi_cs)?));
+        }
+        Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
     fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
