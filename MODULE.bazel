@@ -4,6 +4,18 @@
 
 module(name = "lowrisc_opentitan")
 
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.11")
 
 include("//third_party/rust:rust.MODULE.bazel")
+
+# Dev dependencies:
+bazel_dep(
+    name = "lowrisc_misc_linters",
+    dev_dependency = True,
+)
+git_override(
+    module_name = "lowrisc_misc_linters",
+    commit = "c49d1dc0cb9ea1f09de0750c696b9cee0e01833e",
+    remote = "https://github.com/lowRISC/misc-linters",
+)
