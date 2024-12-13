@@ -196,15 +196,6 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_final }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_final }}
 
-### AES-KWP
-
-Key Wrap with Padding (KWP) mode is used for the protection of cryptographic keys.
-AES-KWP is specified in [NIST SP800-38F][kwp-spec].
-
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrapped_len }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrap }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_unwrap }}
-
 ## Hash functions
 
 OpenTitan's [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 384, 512\] cryptographic hash functions, and the extendable-output functions of variable digest length SHAKE\[128, 256\] and cSHAKE\[128, 256\].
@@ -524,6 +515,15 @@ See the [key data structures](#key-data-structures) section for more details.
 ### Package hardware-backed keys
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
+
+### Wrap and unwrap keys
+
+Secret keys can be encrypted (e.g. for storage) using the key wrap/unwrap routines.
+We use AES Key Wrapping with Padding (KWP), which is specified in [NIST SP800-38F][kwp-spec].
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_wrapped_key_len }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_key_wrap }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_key_unwrap }}
 
 ### Import Symmetric Keys
 
