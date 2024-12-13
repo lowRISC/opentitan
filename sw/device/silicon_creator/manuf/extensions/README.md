@@ -2,6 +2,7 @@
 
 Provisioning an Earlgrey chip requires executing code on devivce during two core
 phases:
+
 1. Chip Probe (CP): when the wafer is still intact, and
 2. Final Test (FT): when each chip has been packaged and loaded into a socket.
 For the most part, the CP process is the same across all Earlgrey chips,
@@ -31,6 +32,12 @@ repo called `@provisioning_exts`.
 
 To define additional OTP configurations downstream, one must add OTP targets
 to the `EXT_EARLGREY_OTP_CFGS` and `EXT_EARLGREY_SKUS` dictionaries in their
+downstream `@provisioning_exts` Bazel repo.
+
+## Execution Environments
+
+To define additional execution environments downstream, add `exec_env`
+compatible entries to the `EXT_EXEC_ENV_SILICON_ROM_EXT` dictionary in the
 downstream `@provisioning_exts` Bazel repo.
 
 ## Personalization Firmware
