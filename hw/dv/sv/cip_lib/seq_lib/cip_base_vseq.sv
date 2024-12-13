@@ -764,12 +764,13 @@ class cip_base_vseq #(
                 @(cfg.clk_rst_vif.rst_n);
               end else begin
                 // If we aren't in reset for some other reason then we want to inject one ourselves
-                // now. Unless can_reset_with_csr_accesses is true, check that there are no CSR
+                // now. Unless can_reset_with_csr_accesses is true, wait until there are no CSR
                 // requests in flight as we trigger the reset. If any exist, they won't manage to
                 // complete (because apply_resets_concurrently will kill the task that is driving
                 // them) and everything will end up out of sync.
-                `DV_CHECK(cfg.can_reset_with_csr_accesses || !has_outstanding_access(),
-                          "Trying to trigger a reset with outstanding CSR items.")
+                if (!cfg.can_reset_with_csr_accesses) begin
+                  wait_no_outstanding_access();
+                end
 
                 ongoing_reset = 1'b1;
                 `uvm_info(`gfn, $sformatf("\nIssuing reset for run %0d/%0d", i, num_times), UVM_LOW)
