@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Dependencies:
-bazel_dep(name = "rules_python", version = "0.39.0")
+bazel_dep(name = "rules_python", version = "1.2.0")
 
 # Python toolchain:
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
