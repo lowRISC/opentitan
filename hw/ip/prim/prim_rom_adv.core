@@ -14,7 +14,17 @@ filesets:
       - rtl/prim_rom_adv.sv
     file_type: systemVerilogSource
 
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+      - lowrisc:lint:comportable
+    files:
+      - lint/prim_rom_adv.waiver
+    file_type: waiver
+
 targets:
   default:
     filesets:
+      - tool_ascentlint  ? (files_ascentlint_waiver)
       - files_rtl
