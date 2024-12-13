@@ -155,6 +155,8 @@ module ibex_riscv_compliance (
       .DbgTriggerEn     (DbgTriggerEn      ),
       .SecureIbex       (SecureIbex        ),
       .ICacheScramble   (ICacheScramble    ),
+      .DmBaseAddr       (32'h00000000      ),
+      .DmAddrMask       (32'h00000003      ),
       .DmHaltAddr       (32'h00000000      ),
       .DmExceptionAddr  (32'h00000000      )
     ) u_top (

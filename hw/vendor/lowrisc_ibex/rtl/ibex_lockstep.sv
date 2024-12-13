@@ -40,6 +40,8 @@ module ibex_lockstep import ibex_pkg::*; #(
   parameter int unsigned            RegFileDataWidth  = 32,
   parameter bit                     MemECC            = 1'b0,
   parameter int unsigned            MemDataWidth      = MemECC ? 32 + 7 : 32,
+  parameter int unsigned            DmBaseAddr        = 32'h1A110000,
+  parameter int unsigned            DmAddrMask        = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr        = 32'h1A110800,
   parameter int unsigned            DmExceptionAddr   = 32'h1A110808
 ) (
@@ -377,6 +379,8 @@ module ibex_lockstep import ibex_pkg::*; #(
     .RegFileDataWidth  ( RegFileDataWidth  ),
     .MemECC            ( MemECC            ),
     .MemDataWidth      ( MemDataWidth      ),
+    .DmBaseAddr        ( DmBaseAddr        ),
+    .DmAddrMask        ( DmAddrMask        ),
     .DmHaltAddr        ( DmHaltAddr        ),
     .DmExceptionAddr   ( DmExceptionAddr   )
   ) u_shadow_core (

@@ -52,3 +52,9 @@ By default all PMP CSRs (include ``mseccfg``) are reset to 0.
 Some applications may want other reset values.
 Default reset values are defined in :file:`ibex_pkg.sv`.
 An implementation can either modify this file or pass custom reset values as a module parameter.
+
+Debug Mode
+----------
+
+In debug mode, the PMP allows all accesses to addresses of the Debug Module, as defined by the `DmBaseAddr` and `DmAddrMask` module parameters.
+This is mandated by the RISC-V Debug Specification (v1.0.0).
