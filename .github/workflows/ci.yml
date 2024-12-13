@@ -138,10 +138,10 @@ jobs:
       - name: Build documentation
         run: util/site/build-docs.sh build
       - name: Upload files
-        if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
+        if: ${{ github.event_name != 'pull_request' && github.ref_name == 'earlgrey_1.0.0' }}
         run: |
           echo "::group::Upload all uncompressed files"
-          gcloud storage cp -R --gzip-in-flight=js,css,html "build-site/*" gs://$BUCKET
+          gcloud storage cp -R --gzip-in-flight=js,css,html "build-site/*" gs://$BUCKET/earlgrey_1.0.0
           echo "::endgroup::"
 
           # This script compresses the searchindex files, replacing the originals in-place.
@@ -160,7 +160,7 @@ jobs:
                      --content-encoding=br \
                      --content-type=application/json \
                      -R \
-                     "$f" "gs://$BUCKET/${dir}/"
+                     "$f" "gs://$BUCKET/earlgrey_1.0.0/${dir}/"
           done
 
   airgapped_build:
