@@ -7,8 +7,8 @@
   patch_dir: "patches/lowrisc_ibex",
 
   upstream: {
-    url: "https://github.com/lowRISC/ibex.git",
-    rev: "master",
+    url: "https://github.com/andreaskurth/ibex.git",
+    rev: "debug-mode-pmp",
   },
 
   mapping: [
