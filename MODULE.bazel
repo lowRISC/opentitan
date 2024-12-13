@@ -4,6 +4,24 @@
 
 module(name = "lowrisc_opentitan")
 
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.11")
+
+# Dev dependencies:
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.4.0",
+    dev_dependency = True,
+)
+bazel_dep(
+    name = "lowrisc_misc_linters",
+    dev_dependency = True,
+)
+archive_override(
+    module_name = "lowrisc_misc_linters",
+    integrity = "sha256-Nl/mfYFo/uGg/DrqS7gFiL9yHcT8g7QEY7CetQiXzaM=",
+    strip_prefix = "misc-linters-20240823_01",
+    urls = ["https://github.com/lowRISC/misc-linters/archive/refs/tags/20240823_01.tar.gz"],
+)
 
 include("//third_party/rust:rust.MODULE.bazel")
