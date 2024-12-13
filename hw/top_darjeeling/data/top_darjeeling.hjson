@@ -321,6 +321,7 @@
         core: {hart: "0x30130000"},
         prim: {hart: "0x30138000"},
       }
+      attr: "ipgen",
     },
     { name: "lc_ctrl",
       type: "lc_ctrl",
