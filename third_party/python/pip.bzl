@@ -3,11 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@rules_python//python:pip.bzl", "pip_parse")
-load("@python3//:defs.bzl", "interpreter")
 
 def pip_deps():
     pip_parse(
         name = "ot_python_deps",
-        python_interpreter_target = interpreter,
+        python_interpreter_target = "@python3_host//:python",
         requirements_lock = "@lowrisc_opentitan//:python-requirements.txt",
     )
