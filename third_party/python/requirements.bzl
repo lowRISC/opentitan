@@ -360,7 +360,7 @@ _config = {
     "isolated": True,
     "pip_data_exclude": [],
     "python_interpreter": "python3",
-    "python_interpreter_target": "@python3_x86_64-unknown-linux-gnu//:bin/python3",
+    "python_interpreter_target": "@python3_host//:python",
     "quiet": True,
     "repo": "ot_python_deps_vendored",
     "repo_prefix": "ot_python_deps_vendored_",
