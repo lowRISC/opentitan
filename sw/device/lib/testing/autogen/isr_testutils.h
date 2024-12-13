@@ -17,7 +17,6 @@
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_csrng.h"
-#include "sw/device/lib/dif/dif_dma.h"
 #include "sw/device/lib/dif/dif_edn.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
@@ -25,9 +24,7 @@
 #include "sw/device/lib/dif/dif_hmac.h"
 #include "sw/device/lib/dif/dif_i2c.h"
 #include "sw/device/lib/dif/dif_keymgr.h"
-#include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_mbx.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_pattgen.h"
@@ -144,28 +141,6 @@ typedef struct csrng_isr_ctx {
    */
   bool is_only_irq;
 } csrng_isr_ctx_t;
-
-/**
- * A handle to a dma ISR context struct.
- */
-typedef struct dma_isr_ctx {
-  /**
-   * A handle to a dma.
-   */
-  dif_dma_t *dma;
-  /**
-   * The PLIC IRQ ID where this dma instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_dma_start_irq_id;
-  /**
-   * The dma IRQ that is expected to be encountered in the ISR.
-   */
-  dif_dma_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} dma_isr_ctx_t;
 
 /**
  * A handle to a edn ISR context struct.
@@ -322,28 +297,6 @@ typedef struct keymgr_isr_ctx {
 } keymgr_isr_ctx_t;
 
 /**
- * A handle to a keymgr_dpe ISR context struct.
- */
-typedef struct keymgr_dpe_isr_ctx {
-  /**
-   * A handle to a keymgr_dpe.
-   */
-  dif_keymgr_dpe_t *keymgr_dpe;
-  /**
-   * The PLIC IRQ ID where this keymgr_dpe instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_keymgr_dpe_start_irq_id;
-  /**
-   * The keymgr_dpe IRQ that is expected to be encountered in the ISR.
-   */
-  dif_keymgr_dpe_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} keymgr_dpe_isr_ctx_t;
-
-/**
  * A handle to a kmac ISR context struct.
  */
 typedef struct kmac_isr_ctx {
@@ -364,28 +317,6 @@ typedef struct kmac_isr_ctx {
    */
   bool is_only_irq;
 } kmac_isr_ctx_t;
-
-/**
- * A handle to a mbx ISR context struct.
- */
-typedef struct mbx_isr_ctx {
-  /**
-   * A handle to a mbx.
-   */
-  dif_mbx_t *mbx;
-  /**
-   * The PLIC IRQ ID where this mbx instance's IRQs start.
-   */
-  dif_rv_plic_irq_id_t plic_mbx_start_irq_id;
-  /**
-   * The mbx IRQ that is expected to be encountered in the ISR.
-   */
-  dif_mbx_irq_t expected_irq;
-  /**
-   * Whether or not a single IRQ is expected to be encountered in the ISR.
-   */
-  bool is_only_irq;
-} mbx_isr_ctx_t;
 
 /**
  * A handle to a otbn ISR context struct.
@@ -687,21 +618,6 @@ void isr_testutils_csrng_isr(
     dif_csrng_irq_t *irq_serviced);
 
 /**
- * Services an dma IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param dma_ctx A(n) dma ISR context handle.
- * @param mute_status_irq set to true to disable the serviced status type IRQ.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_dma_isr(plic_isr_ctx_t plic_ctx, dma_isr_ctx_t dma_ctx,
-                           bool mute_status_irq,
-                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                           dif_dma_irq_t *irq_serviced);
-
-/**
  * Services an edn IRQ.
  *
  * @param plic_ctx A PLIC ISR context handle.
@@ -801,20 +717,6 @@ void isr_testutils_keymgr_isr(
     dif_keymgr_irq_t *irq_serviced);
 
 /**
- * Services an keymgr_dpe IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param keymgr_dpe_ctx A(n) keymgr_dpe ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_keymgr_dpe_isr(
-    plic_isr_ctx_t plic_ctx, keymgr_dpe_isr_ctx_t keymgr_dpe_ctx,
-    top_earlgrey_plic_peripheral_t *peripheral_serviced,
-    dif_keymgr_dpe_irq_t *irq_serviced);
-
-/**
  * Services an kmac IRQ.
  *
  * @param plic_ctx A PLIC ISR context handle.
@@ -828,19 +730,6 @@ void isr_testutils_kmac_isr(plic_isr_ctx_t plic_ctx, kmac_isr_ctx_t kmac_ctx,
                             bool mute_status_irq,
                             top_earlgrey_plic_peripheral_t *peripheral_serviced,
                             dif_kmac_irq_t *irq_serviced);
-
-/**
- * Services an mbx IRQ.
- *
- * @param plic_ctx A PLIC ISR context handle.
- * @param mbx_ctx A(n) mbx ISR context handle.
- * @param[out] peripheral_serviced Out param for the peripheral that was
- * serviced.
- * @param[out] irq_serviced Out param for the IRQ that was serviced.
- */
-void isr_testutils_mbx_isr(plic_isr_ctx_t plic_ctx, mbx_isr_ctx_t mbx_ctx,
-                           top_earlgrey_plic_peripheral_t *peripheral_serviced,
-                           dif_mbx_irq_t *irq_serviced);
 
 /**
  * Services an otbn IRQ.
