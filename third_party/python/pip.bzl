@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@python3//:defs.bzl", "interpreter")
 load("@rules_python//python:pip.bzl", "pip_parse")
 
 _WHEEL_BUILD_FILE_CONTENTS = """\
@@ -112,7 +111,7 @@ pip_wheel = repository_rule(
     implementation = _pip_wheel_impl,
     attrs = {
         "python_interpreter": attr.label(
-            default = interpreter,
+            default = "@python3_host//:python",
             allow_single_file = True,
             doc = "Python interpreter to use.",
         ),
@@ -146,6 +145,6 @@ def pip_deps():
     )
     pip_parse(
         name = "ot_python_deps",
-        python_interpreter_target = interpreter,
+        python_interpreter_target = "@python3_host//:python",
         requirements_lock = "@lowrisc_opentitan//:python-requirements.txt",
     )
