@@ -8,7 +8,7 @@
 // Preamble:
 `define AD_LENGTH 20
 `define DATA_LENGTH 60
-`define NUM_REQUESTS 370
+`define NUM_REQUESTS 349
 
 `define REQUESTS bus_request_t requests[`NUM_REQUESTS] = '{                                         \
                                                                                                     \
@@ -59,7 +59,6 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_INIT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h92e9fffe),                                             \
@@ -98,7 +97,7 @@
       32'(16)      << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hcefaedfe),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'hefbeadde),                                                \
@@ -117,7 +116,7 @@
       32'(4)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hd2daadab),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h00000000),                                                \
@@ -136,7 +135,7 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'h253231d9),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'he50684f8),                                                \
@@ -149,21 +148,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write plaintext block 2 into the data registers */               \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'h53a9a786),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'hdaf73415),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h3d304c2e),                                                \
@@ -175,21 +162,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write plaintext block 3 into the data registers */               \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'h950c3c1c),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h53096895),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h240ecf2f),                                                \
@@ -214,7 +189,7 @@
       32'(12)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hf5ed6ab1),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h57e60daa),                                                \
@@ -299,7 +274,6 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_INIT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h92e9fffe),                                             \
@@ -338,7 +312,7 @@
       32'(16)      << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hcefaedfe),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'hefbeadde),                                                \
@@ -357,7 +331,7 @@
       32'(4)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hd2daadab),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h00000000),                                                \
@@ -376,7 +350,7 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hc21e8342),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h24747721),                                                \
@@ -389,21 +363,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write ciphertext block 2 into the data registers */              \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'h2f21aae3),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'he0a4022c),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h237ec135),                                                \
@@ -415,21 +377,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write ciphertext block 3 into the data registers */              \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'hb214d521),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h1c936654),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h5a6a8f7d),                                                \
@@ -539,7 +489,6 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_INIT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h92e9fffe),                                             \
@@ -578,7 +527,7 @@
       32'(16)      << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hcefaedfe),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'hefbeadde),                                                \
@@ -701,7 +650,7 @@
       32'(4)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                         \
       32'(GCM_AAD) << AES_CTRL_GCM_PHASE_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hd2daadab),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h00000000),                                                \
@@ -733,21 +682,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write plaintext block 2 into the data registers */               \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'h53a9a786),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'hdaf73415),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h3d304c2e),                                                \
@@ -759,21 +696,9 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Config GCM in `TEXT` mode and write plaintext block 3 into the data registers */               \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  write_request(                                                                                    \
-      AES_CTRL_GCM_SHADOWED_OFFSET,                                                                 \
-      32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
-      32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
-  ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
-                                                                                                    \
   write_request(AES_DATA_IN_0_OFFSET, 32'h950c3c1c),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h53096895),                                                \
   write_request(AES_DATA_IN_2_OFFSET, 32'h240ecf2f),                                                \
@@ -798,7 +723,7 @@
       32'(12)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_TEXT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   write_request(AES_DATA_IN_0_OFFSET, 32'hf5ed6ab1),                                                \
   write_request(AES_DATA_IN_1_OFFSET, 32'h57e60daa),                                                \

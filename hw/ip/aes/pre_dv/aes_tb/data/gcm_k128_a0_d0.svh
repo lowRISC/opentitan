@@ -8,7 +8,7 @@
 // Preamble:
 `define AD_LENGTH 0
 `define DATA_LENGTH 0
-`define NUM_REQUESTS 42
+`define NUM_REQUESTS 41
 
 `define REQUESTS bus_request_t requests[`NUM_REQUESTS] = '{                                         \
   c_dpi_load('{                                                                                     \
@@ -54,7 +54,6 @@
       32'(16)       << AES_CTRL_GCM_NUM_VALID_BYTES_OFFSET |                                        \
       32'(GCM_INIT) << AES_CTRL_GCM_PHASE_OFFSET                                                    \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h00000000),                                             \
