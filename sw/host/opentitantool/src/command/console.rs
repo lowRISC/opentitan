@@ -135,4 +135,12 @@ impl CommandDispatch for Console {
             }
         }
     }
+
+    /// For optiimzation.  Indicates that this command expects other invocations of
+    /// `opentitantool` to run during the lifespan of the `run()` function above.  Returning
+    /// `false` here will prevent opentitanlib from keeping USB handles open for the duration of
+    /// the `run()` call.
+    fn exclusive_use_of_transport(&self) -> bool {
+        false
+    }
 }
