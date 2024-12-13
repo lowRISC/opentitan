@@ -57,13 +57,3 @@ def google_repos(
         sha256 = "2a4d07cd64b0719b39a7c12218a3e507672b82a97b98c6a89d38565894cf7c51",
         url = "https://github.com/bazelbuild/rules_foreign_cc/archive/refs/tags/0.9.0.tar.gz",
     )
-
-def fuzzing_repos():
-    http_archive_or_local(
-        name = "rules_fuzzing",
-        sha256 = "e6bc219bfac9e1f83b327dd090f728a9f973ee99b9b5d8e5a184a2732ef08623",
-        strip_prefix = "rules_fuzzing-0.5.2",
-        urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.2/rules_fuzzing-0.5.2.zip"],
-        patches = [Label("//third_party/google:no-hash-python-packages.patch")],
-        patch_args = ["-p1"],
-    )
