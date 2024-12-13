@@ -8,7 +8,7 @@
 // Preamble:
 `define AD_LENGTH 0
 `define DATA_LENGTH 64
-`define NUM_REQUESTS 1982
+`define NUM_REQUESTS 1922
 
 `define REQUESTS bus_request_t requests[`NUM_REQUESTS] = '{                                         \
                                                                                                     \
@@ -49,7 +49,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -68,7 +67,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -82,7 +81,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -96,7 +95,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -110,7 +109,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -124,7 +123,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-128 Encryption                                                  **/                   \
@@ -163,7 +161,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -189,7 +186,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -203,7 +200,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -217,7 +214,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -231,7 +228,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -245,7 +242,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-128 Encryption                                                  **/                   \
@@ -284,7 +280,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -310,7 +305,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -324,7 +319,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -338,7 +333,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -352,7 +347,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -366,7 +361,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-128 Encryption                                                  **/                   \
@@ -405,7 +399,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -431,7 +424,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -445,7 +438,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -459,7 +452,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -473,7 +466,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -487,7 +480,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-128 Encryption                                                  **/                   \
@@ -526,7 +518,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -552,7 +543,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -566,7 +557,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -580,7 +571,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -594,7 +585,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -608,7 +599,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-128 Decryption                                                  **/                   \
@@ -647,7 +637,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -666,7 +655,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hb47bd73a),                                                \
@@ -680,7 +669,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h85d5d3f5),                                                \
@@ -694,7 +683,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7fcdb143),                                                \
@@ -708,7 +697,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h5e780c7b),                                                \
@@ -722,7 +711,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-128 Decryption                                                  **/                   \
@@ -761,7 +749,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -787,7 +774,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hacab4976),                                                \
@@ -801,7 +788,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h9bcb8650),                                                \
@@ -815,7 +802,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hb8d6be73),                                                \
@@ -829,7 +816,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'ha1caf13f),                                                \
@@ -843,7 +830,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-128 Decryption                                                  **/                   \
@@ -882,7 +868,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -908,7 +893,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h2ed93f3b),                                                \
@@ -922,7 +907,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h3745a6c8),                                                \
@@ -936,7 +921,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h671f7526),                                                \
@@ -950,7 +935,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h35054bc0),                                                \
@@ -964,7 +949,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-128 Decryption                                                  **/                   \
@@ -1003,7 +987,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -1029,7 +1012,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h2ed93f3b),                                                \
@@ -1043,7 +1026,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h8d508977),                                                \
@@ -1057,7 +1040,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h1e054097),                                                \
@@ -1071,7 +1054,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h28654c30),                                                \
@@ -1085,7 +1068,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-128 Decryption                                                  **/                   \
@@ -1124,7 +1106,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h16157e2b),                                             \
@@ -1150,7 +1131,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h91614d87),                                                \
@@ -1164,7 +1145,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h6bf60698),                                                \
@@ -1178,7 +1159,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h3edfe45a),                                                \
@@ -1192,7 +1173,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hda1d031e),                                                \
@@ -1206,7 +1187,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-192 Encryption                                                  **/                   \
@@ -1245,7 +1225,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1264,7 +1243,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -1278,7 +1257,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -1292,7 +1271,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -1306,7 +1285,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -1320,7 +1299,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-192 Encryption                                                  **/                   \
@@ -1359,7 +1337,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1385,7 +1362,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -1399,7 +1376,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -1413,7 +1390,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -1427,7 +1404,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -1441,7 +1418,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-192 Encryption                                                  **/                   \
@@ -1480,7 +1456,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1506,7 +1481,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -1520,7 +1495,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -1534,7 +1509,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -1548,7 +1523,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -1562,7 +1537,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-192 Encryption                                                  **/                   \
@@ -1601,7 +1575,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1627,7 +1600,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -1641,7 +1614,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -1655,7 +1628,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -1669,7 +1642,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -1683,7 +1656,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-192 Encryption                                                  **/                   \
@@ -1722,7 +1694,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1748,7 +1719,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -1762,7 +1733,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -1776,7 +1747,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -1790,7 +1761,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -1804,7 +1775,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-192 Decryption                                                  **/                   \
@@ -1843,7 +1813,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1862,7 +1831,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h1d4f33bd),                                                \
@@ -1876,7 +1845,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h84044197),                                                \
@@ -1890,7 +1859,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h22fd7aef),                                                \
@@ -1904,7 +1873,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hba414b9a),                                                \
@@ -1918,7 +1887,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-192 Decryption                                                  **/                   \
@@ -1957,7 +1925,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -1983,7 +1950,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hecee4eef),                                                \
@@ -1997,7 +1964,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'ha9add9b4),                                                \
@@ -2011,7 +1978,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h20241b57),                                                \
@@ -2025,7 +1992,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h79e2b008),                                                \
@@ -2039,7 +2006,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-192 Decryption                                                  **/                   \
@@ -2078,7 +2044,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -2104,7 +2069,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h6f0dc8cd),                                                \
@@ -2118,7 +2083,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7f7fce67),                                                \
@@ -2132,7 +2097,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h1d8a1e2e),                                                \
@@ -2146,7 +2111,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h9c9f5fc0),                                                \
@@ -2160,7 +2125,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-192 Decryption                                                  **/                   \
@@ -2199,7 +2163,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -2225,7 +2188,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h6f0dc8cd),                                                \
@@ -2239,7 +2202,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h8d8bc2fc),                                                \
@@ -2253,7 +2216,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hea9a9a8d),                                                \
@@ -2267,7 +2230,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h08209f6d),                                                \
@@ -2281,7 +2244,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-192 Decryption                                                  **/                   \
@@ -2320,7 +2282,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'hf7b0738e),                                             \
@@ -2346,7 +2307,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h2493bc1a),                                                \
@@ -2360,7 +2321,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hec390309),                                                \
@@ -2374,7 +2335,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h6bb2361e),                                                \
@@ -2388,7 +2349,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write CT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hf6a7784f),                                                \
@@ -2402,7 +2363,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-256 Encryption                                                  **/                   \
@@ -2441,7 +2401,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -2460,7 +2419,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -2474,7 +2433,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -2488,7 +2447,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -2502,7 +2461,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -2516,7 +2475,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-256 Encryption                                                  **/                   \
@@ -2555,7 +2513,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -2581,7 +2538,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -2595,7 +2552,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -2609,7 +2566,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -2623,7 +2580,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -2637,7 +2594,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-256 Encryption                                                  **/                   \
@@ -2676,7 +2632,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -2702,7 +2657,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -2716,7 +2671,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -2730,7 +2685,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -2744,7 +2699,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -2758,7 +2713,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-256 Encryption                                                  **/                   \
@@ -2797,7 +2751,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -2823,7 +2776,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -2837,7 +2790,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -2851,7 +2804,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -2865,7 +2818,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -2879,7 +2832,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-256 Encryption                                                  **/                   \
@@ -2918,7 +2870,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_ENC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -2944,7 +2895,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7393172a),                                                \
@@ -2958,7 +2909,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h578a2dae),                                                \
@@ -2972,7 +2923,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h461cc830),                                                \
@@ -2986,7 +2937,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h45249ff6),                                                \
@@ -3000,7 +2951,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-ECB-256 Decryption                                                  **/                   \
@@ -3039,7 +2989,6 @@
       32'(AES_ECB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -3058,7 +3007,7 @@
   write_request(AES_KEY_SHARE1_5_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_6_OFFSET, 32'h00000000),                                             \
   write_request(AES_KEY_SHARE1_7_OFFSET, 32'h00000000),                                             \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hbdd1eef3),                                                \
@@ -3072,7 +3021,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h10cb1c59),                                                \
@@ -3086,7 +3035,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hb921edb6),                                                \
@@ -3100,7 +3049,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7a4b3023),                                                \
@@ -3114,7 +3063,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CBC-256 Decryption                                                  **/                   \
@@ -3153,7 +3101,6 @@
       32'(AES_CBC) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -3179,7 +3126,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h044c8cf5),                                                \
@@ -3193,7 +3140,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h964efc9c),                                                \
@@ -3207,7 +3154,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h6933f239),                                                \
@@ -3221,7 +3168,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'he205ebb2),                                                \
@@ -3235,7 +3182,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CFB-256 Decryption                                                  **/                   \
@@ -3274,7 +3220,6 @@
       32'(AES_CFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -3300,7 +3245,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hbf847edc),                                                \
@@ -3314,7 +3259,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h14edff39),                                                \
@@ -3328,7 +3273,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h241310df),                                                \
@@ -3342,7 +3287,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h7485a375),                                                \
@@ -3356,7 +3301,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-OFB-256 Decryption                                                  **/                   \
@@ -3395,7 +3339,6 @@
       32'(AES_OFB) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -3421,7 +3364,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h267ae2f9),                                                \
@@ -3435,7 +3378,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h67dceb4f),                                                \
@@ -3449,7 +3392,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'ha047ab71),                                                \
@@ -3463,7 +3406,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h1d142601),                                                \
@@ -3477,7 +3420,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /*****************************************************************************/                   \
   /** AES-CTR-256 Decryption                                                  **/                   \
@@ -3516,7 +3458,6 @@
       32'(AES_CTR) << AES_CTRL_MODE_OFFSET             |                                            \
       32'(AES_DEC) << AES_CTRL_OPERATION_OFFSET                                                     \
   ),                                                                                                \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Write key registers */                                                                         \
   write_request(AES_KEY_SHARE0_0_OFFSET, 32'h10eb3d60),                                             \
@@ -3542,7 +3483,7 @@
   write_request(AES_IV_1_OFFSET, 32'h07060504),                                                     \
   write_request(AES_IV_2_OFFSET, 32'h0b0a0908),                                                     \
   write_request(AES_IV_3_OFFSET, 32'h0f0e0d0c),                                                     \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 1 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h13c31e60),                                                \
@@ -3556,7 +3497,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 2 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hcae343f4),                                                \
@@ -3570,7 +3511,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 3 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'hda30092b),                                                \
@@ -3584,7 +3525,7 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
+  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_INPUT_READY_OFFSET),                      \
                                                                                                     \
   /* Write PT Block 4 */                                                                            \
   write_request(AES_DATA_IN_0_OFFSET, 32'h8dc5c9df),                                                \
@@ -3598,7 +3539,6 @@
   read_request(AES_DATA_OUT_1_OFFSET),                                                              \
   read_request(AES_DATA_OUT_2_OFFSET),                                                              \
   read_request(AES_DATA_OUT_3_OFFSET),                                                              \
-  read_request(AES_STATUS_OFFSET, 32'(1'b1) << AES_STATUS_IDLE_OFFSET),                             \
                                                                                                     \
   /* Read Caliptra-specific register */                                                             \
   read_caliptra(CALIPTRA_NAME_0_OFFSET),                                                            \
