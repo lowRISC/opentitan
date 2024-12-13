@@ -130,6 +130,8 @@ module top_earlgrey #(
   parameter bit RvCoreIbexDbgTriggerEn = 1,
   parameter int RvCoreIbexDbgHwBreakNum = 4,
   parameter bit RvCoreIbexSecureIbex = 1,
+  parameter int unsigned RvCoreIbexDmBaseAddr = tl_main_pkg::ADDR_SPACE_RV_DM__MEM,
+  parameter int unsigned RvCoreIbexDmAddrMask = tl_main_pkg::ADDR_MASK_RV_DM__MEM,
   parameter int unsigned RvCoreIbexDmHaltAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
@@ -2664,6 +2666,8 @@ module top_earlgrey #(
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
     .DbgHwBreakNum(RvCoreIbexDbgHwBreakNum),
     .SecureIbex(RvCoreIbexSecureIbex),
+    .DmBaseAddr(RvCoreIbexDmBaseAddr),
+    .DmAddrMask(RvCoreIbexDmAddrMask),
     .DmHaltAddr(RvCoreIbexDmHaltAddr),
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
