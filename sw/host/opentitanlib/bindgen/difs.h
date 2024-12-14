@@ -16,6 +16,7 @@
 #include "lc_ctrl_regs.h"    // Generated.
 #include "otp_ctrl_regs.h"   // Generated.
 #include "rstmgr_regs.h"     // Generated.
+#include "sram_ctrl_regs.h"  // Generated.
 #include "uart_regs.h"       // Generated.
 
 #else

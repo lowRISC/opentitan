@@ -16,6 +16,7 @@ use object::{Object, ObjectSection, ObjectSegment, SectionKind};
 use serde::{Deserialize, Serialize};
 use thiserror::Error;
 
+use crate::chip::boolean::MultiBitBool4;
 use crate::impl_serializable_error;
 use crate::io::jtag::{Jtag, RiscvCsr, RiscvGpr, RiscvReg};
 use crate::util::parse_int::ParseInt;
@@ -385,6 +386,20 @@ pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     Ok(())
 }
 
+/// Set up the sram_ctrl to execute code.
+pub fn prepare_sram_ctrl(jtag: &mut dyn Jtag) -> Result<()> {
+    const SRAM_CTRL_EXEC_REG_OFFSET: u32 = (top_earlgrey::SRAM_CTRL_MAIN_REGS_BASE_ADDR as u32)
+        + bindgen::dif::SRAM_CTRL_EXEC_REG_OFFSET;
+    log::info!("Enabling execution from SRAM.");
+    let mut sram_ctrl_exec = [0];
+    jtag.read_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &mut sram_ctrl_exec)?;
+    log::info!("Old value of sram_exec_en: {:x}", sram_ctrl_exec[0]);
+    sram_ctrl_exec[0] = u8::from(MultiBitBool4::True) as u32;
+    jtag.write_memory32(SRAM_CTRL_EXEC_REG_OFFSET, &sram_ctrl_exec)?;
+    log::info!("New value of sram_exec_en: {:x}", sram_ctrl_exec[0]);
+    Ok(())
+}
+
 /// Execute an already loaded SRAM program. It takes care of setting up the ePMP.
 pub fn execute_sram_program(
     jtag: &mut dyn Jtag,
@@ -392,6 +407,7 @@ pub fn execute_sram_program(
     exec_mode: ExecutionMode,
 ) -> Result<ExecutionResult> {
     prepare_epmp(jtag)?;
+    prepare_sram_ctrl(jtag)?;
     // To avoid unexpected behaviors, we always make sure that the return address
     // points to an invalid address.
     let ret_addr = 0xdeadbeefu32;
