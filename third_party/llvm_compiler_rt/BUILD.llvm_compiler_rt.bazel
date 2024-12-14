@@ -26,7 +26,10 @@ cc_library(
     name = "hdrs",
     srcs = [
         "include/profile/InstrProfData.inc",
+    ],
+    hdrs = [
         "lib/profile/InstrProfiling.h",
     ],
+    include_prefix = "external/llvm_compiler_rt",
     includes = ["include"],
 )
