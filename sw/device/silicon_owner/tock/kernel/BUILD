@@ -10,18 +10,9 @@ load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 package(default_visibility = ["//visibility:public"])
 
 ld_library(
-    name = "kernel_layout",
-    includes = [
-        "@tock//boards:kernel_layout",
-    ],
-)
-
-ld_library(
     name = "layout",
+    includes = ["@tock//boards:kernel_layout"],
     script = "layout.ld",
-    deps = [
-        ":kernel_layout",
-    ],
 )
 
 cc_library(
