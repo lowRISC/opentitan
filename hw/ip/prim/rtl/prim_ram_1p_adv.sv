@@ -17,6 +17,7 @@
 
 module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   parameter  int Depth                = 512,
+  parameter  int InstDepth            = Depth,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
   parameter      MemInitFile          = "", // VMEM file to initialize the memory with
@@ -32,25 +33,27 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   // since this results in a more compact and faster implementation.
   parameter bit HammingECC            = 0,
 
-  localparam int Aw                   = prim_util_pkg::vbits(Depth)
+  localparam int Aw                   = prim_util_pkg::vbits(Depth),
+  // Compute RAM tiling
+  localparam int NumRamInst           = $ceil(Depth / InstDepth)
 ) (
   input clk_i,
   input rst_ni,
 
-  input                      req_i,
-  input                      write_i,
-  input        [Aw-1:0]      addr_i,
-  input        [Width-1:0]   wdata_i,
-  input        [Width-1:0]   wmask_i,
-  output logic [Width-1:0]   rdata_o,
-  output logic               rvalid_o, // read response (rdata_o) is valid
-  output logic [1:0]         rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
+  input                               req_i,
+  input                               write_i,
+  input        [Aw-1:0]               addr_i,
+  input        [Width-1:0]            wdata_i,
+  input        [Width-1:0]            wmask_i,
+  output logic [Width-1:0]            rdata_o,
+  output logic                        rvalid_o, // read response (rdata_o) is valid
+  output logic [1:0]                  rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input ram_1p_cfg_t         cfg_i,
+  input ram_1p_cfg_t [NumRamInst-1:0] cfg_i,
 
   // When detecting multi-bit encoding errors, raise alert.
-  output logic               alert_o
+  output logic                        alert_o
 );
 
   import prim_mubi_pkg::mubi4_t;
