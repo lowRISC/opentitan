@@ -173,6 +173,14 @@ def elaborate_instance(instance, block: IpBlock):
         if isinstance(s['width'], Parameter):
             for p in instance["param_list"]:
                 if p['name'] == s['width'].name:
+                    # When mangling the name, we first need to deep copy the param. Parameters in
+                    # signals have a reference to a parameter. If we have multiple instances of the
+                    # same IP, then their signals would reference the same single parameter. If we
+                    # would mangle that directly, we all signals of all IPs would reference to that
+                    # single mangled paramter. Since parameters are instance dependent, that would
+                    # fail. Therefore, copy the parameter first to have a unique paramter for that
+                    # particular signal and instance, which is safe to mangle.
+                    s['width'] = deepcopy(s['width'])
                     s['width'].name_top = p['name_top']
 
     # An instance must either have a 'base_addr' address or a 'base_addrs'

@@ -96,12 +96,14 @@ class Parameter(BaseParam):
         self.default = default
         self.local = local
         self.expose = expose
+        self.name_top = None
 
     def as_dict(self) -> Dict[str, object]:
         rd = super().as_dict()
         rd['default'] = self.default
         rd['local'] = 'true' if self.local else 'false'
         rd['expose'] = 'true' if self.expose else 'false'
+        rd['name_top'] = self.name_top
         return rd
 
 
