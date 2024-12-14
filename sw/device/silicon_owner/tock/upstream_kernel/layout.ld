@@ -52,6 +52,4 @@ SECTIONS {
 }
 
 ASSERT (((_etext - _manifest) > 0), "Error: PMP and Flash protection setup assumes _etext follows _manifest");
-/* TODO(cfrantz): Fix the ld_library rule to allow include paths and avoid  */
-/* having to specify an `external` path here */
-INCLUDE external/tock/boards/kernel_layout.ld
+INCLUDE kernel_layout.ld
