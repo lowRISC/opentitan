@@ -778,8 +778,19 @@ def check_intermodule(topcfg: Dict, prefix: str) -> int:
             err, rsp_struct = check_intermodule_field(rsp_struct)
             error += err
 
-            total_width += rsp_struct["width"]
-            widths.append(rsp_struct["width"])
+            if isinstance(rsp_struct["width"], Parameter):
+                param = rsp_struct["width"]
+                if param.expose:
+                    # If it's a top-level exposed parameter, we need to find definition from there
+                    module = lib.get_module_by_name(topcfg, req_m)
+                    width = int(module['param_decl'].get(param.name, rsp_struct["width"].default))
+                else:
+                    width = int(req_struct["width"].default)
+            else:
+                width = rsp_struct["width"]
+
+            total_width += width
+            widths.append(width)
 
             # Type check
             # If no package was declared, it is declared with an empty string
