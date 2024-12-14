@@ -158,6 +158,13 @@
       default: "'0"
       package: "prim_ram_1p_pkg"
     },
+    { struct:  "ram_1p_cfg_rsp"
+      type:    "uni"
+      name:    "cfg_rsp"
+      act:     "req"
+      default: "'0"
+      package: "prim_ram_1p_pkg"
+    },
     // Broadcast from LC
     { struct:  "lc_tx"
       type:    "uni"

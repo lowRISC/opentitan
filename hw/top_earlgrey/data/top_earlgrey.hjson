@@ -1076,7 +1076,8 @@
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
                                    'otp_ctrl.obs_ctrl'],
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
+      'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
+                                   'otbn.ram_cfg_dmem',
                                    'i2c0.ram_cfg',
                                    'i2c1.ram_cfg',
                                    'i2c2.ram_cfg',

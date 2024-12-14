@@ -17,25 +17,26 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                  | Package::Struct             | Type    | Act   |   Width | Description                                                                                        |
-|:---------------------------|:----------------------------|:--------|:------|--------:|:---------------------------------------------------------------------------------------------------|
-| usb_rx_d                   | logic                       | uni     | rcv   |       1 | USB RX data from an external differential receiver, if available                                   |
-| usb_tx_d                   | logic                       | uni     | req   |       1 | USB transmit data value (not used if usb_tx_se0 is set)                                            |
-| usb_tx_se0                 | logic                       | uni     | req   |       1 | Force transmission of a USB single-ended zero (i.e. both D+ and D- are low) regardless of usb_tx_d |
-| usb_tx_use_d_se0           | logic                       | uni     | req   |       1 | Use the usb_tx_d and usb_tx_se0 TX interface, instead of usb_dp_o and usb_dn_o                     |
-| usb_dp_pullup              | logic                       | uni     | req   |       1 | USB D+ pullup control                                                                              |
-| usb_dn_pullup              | logic                       | uni     | req   |       1 | USB D- pullup control                                                                              |
-| usb_rx_enable              | logic                       | uni     | req   |       1 | USB differential receiver enable                                                                   |
-| usb_ref_val                | logic                       | uni     | req   |       1 | This indicates that USB timing reference signal 'usb_ref_pulse' is valid                           |
-| usb_ref_pulse              | logic                       | uni     | req   |       1 | USB timing reference signal. This signal pulses for a single 48MHz clock every 1ms USB frame       |
-| usb_aon_suspend_req        | logic                       | uni     | req   |       1 | Request to activate the AON/Wake module and take control of the USB pullups                        |
-| usb_aon_wake_ack           | logic                       | uni     | req   |       1 | Acknowledge a wake signal from the AON/Wake and relinquish control of the USB pullups              |
-| usb_aon_bus_reset          | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that a USB Bus Reset occurred                             |
-| usb_aon_sense_lost         | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that the VBUS/SENSE signal became deasserted              |
-| usb_aon_bus_not_idle       | logic                       | uni     | rcv   |       1 | Indicates that the reason for waking was that the USB is in a non-idle state                       |
-| usb_aon_wake_detect_active | logic                       | uni     | rcv   |       1 | Indicates that the external AON/Wake module is active and controlling the USB pullups              |
-| ram_cfg                    | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |                                                                                                    |
-| tl                         | tlul_pkg::tl                | req_rsp | rsp   |       1 |                                                                                                    |
+| Port Name                  | Package::Struct                 | Type    | Act   |   Width | Description                                                                                        |
+|:---------------------------|:--------------------------------|:--------|:------|--------:|:---------------------------------------------------------------------------------------------------|
+| usb_rx_d                   | logic                           | uni     | rcv   |       1 | USB RX data from an external differential receiver, if available                                   |
+| usb_tx_d                   | logic                           | uni     | req   |       1 | USB transmit data value (not used if usb_tx_se0 is set)                                            |
+| usb_tx_se0                 | logic                           | uni     | req   |       1 | Force transmission of a USB single-ended zero (i.e. both D+ and D- are low) regardless of usb_tx_d |
+| usb_tx_use_d_se0           | logic                           | uni     | req   |       1 | Use the usb_tx_d and usb_tx_se0 TX interface, instead of usb_dp_o and usb_dn_o                     |
+| usb_dp_pullup              | logic                           | uni     | req   |       1 | USB D+ pullup control                                                                              |
+| usb_dn_pullup              | logic                           | uni     | req   |       1 | USB D- pullup control                                                                              |
+| usb_rx_enable              | logic                           | uni     | req   |       1 | USB differential receiver enable                                                                   |
+| usb_ref_val                | logic                           | uni     | req   |       1 | This indicates that USB timing reference signal 'usb_ref_pulse' is valid                           |
+| usb_ref_pulse              | logic                           | uni     | req   |       1 | USB timing reference signal. This signal pulses for a single 48MHz clock every 1ms USB frame       |
+| usb_aon_suspend_req        | logic                           | uni     | req   |       1 | Request to activate the AON/Wake module and take control of the USB pullups                        |
+| usb_aon_wake_ack           | logic                           | uni     | req   |       1 | Acknowledge a wake signal from the AON/Wake and relinquish control of the USB pullups              |
+| usb_aon_bus_reset          | logic                           | uni     | rcv   |       1 | Indicates that the reason for waking was that a USB Bus Reset occurred                             |
+| usb_aon_sense_lost         | logic                           | uni     | rcv   |       1 | Indicates that the reason for waking was that the VBUS/SENSE signal became deasserted              |
+| usb_aon_bus_not_idle       | logic                           | uni     | rcv   |       1 | Indicates that the reason for waking was that the USB is in a non-idle state                       |
+| usb_aon_wake_detect_active | logic                           | uni     | rcv   |       1 | Indicates that the external AON/Wake module is active and controlling the USB pullups              |
+| ram_cfg                    | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |                                                                                                    |
+| ram_cfg_rsp                | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |                                                                                                    |
+| tl                         | tlul_pkg::tl                    | req_rsp | rsp   |       1 |                                                                                                    |
 
 ## Interrupts
 

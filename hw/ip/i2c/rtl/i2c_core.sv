@@ -8,35 +8,36 @@ module i2c_core import i2c_pkg::*;
 #(
   parameter int unsigned InputDelayCycles = 0
 ) (
-  input                               clk_i,
-  input                               rst_ni,
-  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+  input                                    clk_i,
+  input                                    rst_ni,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
 
-  input i2c_reg_pkg::i2c_reg2hw_t  reg2hw,
-  output i2c_reg_pkg::i2c_hw2reg_t hw2reg,
+  input i2c_reg_pkg::i2c_reg2hw_t          reg2hw,
+  output i2c_reg_pkg::i2c_hw2reg_t         hw2reg,
 
-  input                            scl_i,
-  output logic                     scl_o,
-  input                            sda_i,
-  output logic                     sda_o,
+  input                                    scl_i,
+  output logic                             scl_o,
+  input                                    sda_i,
+  output logic                             sda_o,
 
-  output logic                     lsio_trigger_o,
+  output logic                             lsio_trigger_o,
 
-  output logic                     intr_fmt_threshold_o,
-  output logic                     intr_rx_threshold_o,
-  output logic                     intr_acq_threshold_o,
-  output logic                     intr_rx_overflow_o,
-  output logic                     intr_controller_halt_o,
-  output logic                     intr_scl_interference_o,
-  output logic                     intr_sda_interference_o,
-  output logic                     intr_stretch_timeout_o,
-  output logic                     intr_sda_unstable_o,
-  output logic                     intr_cmd_complete_o,
-  output logic                     intr_tx_stretch_o,
-  output logic                     intr_tx_threshold_o,
-  output logic                     intr_acq_stretch_o,
-  output logic                     intr_unexp_stop_o,
-  output logic                     intr_host_timeout_o
+  output logic                             intr_fmt_threshold_o,
+  output logic                             intr_rx_threshold_o,
+  output logic                             intr_acq_threshold_o,
+  output logic                             intr_rx_overflow_o,
+  output logic                             intr_controller_halt_o,
+  output logic                             intr_scl_interference_o,
+  output logic                             intr_sda_interference_o,
+  output logic                             intr_stretch_timeout_o,
+  output logic                             intr_sda_unstable_o,
+  output logic                             intr_cmd_complete_o,
+  output logic                             intr_tx_stretch_o,
+  output logic                             intr_tx_threshold_o,
+  output logic                             intr_acq_stretch_o,
+  output logic                             intr_unexp_stop_o,
+  output logic                             intr_host_timeout_o
 );
 
   import i2c_reg_pkg::FifoDepth;
@@ -374,6 +375,7 @@ module i2c_core import i2c_pkg::*;
     .clk_i,
     .rst_ni,
     .ram_cfg_i,
+    .ram_cfg_rsp_o,
 
     .fmt_fifo_clr_i   (i2c_fifo_fmtrst),
     .fmt_fifo_depth_o (fmt_fifo_depth),

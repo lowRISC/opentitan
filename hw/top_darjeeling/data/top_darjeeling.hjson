@@ -1112,7 +1112,8 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['otp_ctrl.obs_ctrl']
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
+      'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
+                                   'otbn.ram_cfg_dmem',
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
                                    'sram_ctrl_mbox.cfg',
@@ -1306,6 +1307,12 @@
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',
+        'i2c0.ram_cfg_rsp'                : 'i2c_ram_1p_cfg_rsp',
+        'sram_ctrl_ret_aon.cfg_rsp'       : 'sram_ctrl_ret_aon_ram_1p_cfg_rsp',
+        'sram_ctrl_main.cfg_rsp'          : 'sram_ctrl_main_ram_1p_cfg_rsp',
+        'sram_ctrl_mbox.cfg_rsp'          : 'sram_ctrl_mbox_ram_1p_cfg_rsp',
+        'otbn.ram_cfg_rsp_imem'           : 'otbn_imem_ram_1p_cfg_rsp',
+        'otbn.ram_cfg_rsp_dmem'           : 'otbn_dmem_ram_1p_cfg_rsp',
         'pwrmgr_aon.boot_status'          : 'pwrmgr_boot_status',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',
