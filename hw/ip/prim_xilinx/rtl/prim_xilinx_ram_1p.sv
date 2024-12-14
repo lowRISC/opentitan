@@ -22,7 +22,8 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
   input  logic [Width-1:0] wdata_i,
   input  logic [Width-1:0] wmask_i,
   output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
-  input ram_1p_cfg_t       cfg_i
+  input ram_1p_cfg_t       cfg_i,
+  output ram_1p_cfg_rsp_t  cfg_rsp_o
 );
 
   localparam int PrimMaxWidth = prim_xilinx_pkg::get_ram_max_width(Width, Depth);
@@ -42,6 +43,7 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
     logic unused_cfg_i;
     assign unused_cfg_i = cfg_i;
+    assign cfg_rsp_o.done = 1'b0;
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
       localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;

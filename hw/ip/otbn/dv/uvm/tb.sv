@@ -108,7 +108,10 @@ module tb;
     .lc_rma_req_i    (escalate_if.req),
     .lc_rma_ack_o    (escalate_if.ack),
 
-    .ram_cfg_i('0),
+    .ram_cfg_imem_i('0),
+    .ram_cfg_dmem_i('0),
+    .ram_cfg_rsp_imem_o(),
+    .ram_cfg_rsp_dmem_o(),
 
     .clk_edn_i (edn_clk),
     .rst_edn_ni(edn_rst_n),

@@ -22,7 +22,8 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   input  logic [Width-1:0] wdata_i,
   input  logic [Width-1:0] wmask_i,
   output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
-  input ram_1p_cfg_t       cfg_i
+  input  ram_1p_cfg_t      cfg_i,
+  output ram_1p_cfg_rsp_t  cfg_rsp_o
 );
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
@@ -40,6 +41,7 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
 
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
+  assign cfg_rsp_o.done = 1'b0;
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
