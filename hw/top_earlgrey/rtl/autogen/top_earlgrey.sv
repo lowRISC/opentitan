@@ -1293,6 +1293,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
@@ -1338,6 +1339,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
       .tl_i(i2c1_tl_req),
       .tl_o(i2c1_tl_rsp),
@@ -1383,6 +1385,7 @@ module top_earlgrey #(
 
       // Inter-module signals
       .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
       .tl_i(i2c2_tl_req),
       .tl_o(i2c2_tl_rsp),
@@ -1735,6 +1738,7 @@ module top_earlgrey #(
       .usb_aon_bus_not_idle_i(usbdev_usb_aon_bus_not_idle),
       .usb_aon_wake_detect_active_i(pinmux_aon_usbdev_wake_detect_active),
       .ram_cfg_i(ast_usb_ram_1p_cfg),
+      .ram_cfg_rsp_o(),
       .tl_i(usbdev_tl_req),
       .tl_o(usbdev_tl_rsp),
 
@@ -2118,6 +2122,7 @@ module top_earlgrey #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
       .cfg_i(ast_ram_1p_cfg),
+      .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
@@ -2393,7 +2398,10 @@ module top_earlgrey #(
       .edn_urnd_o(edn0_edn_req[6]),
       .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
-      .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_imem_i(ast_ram_1p_cfg),
+      .ram_cfg_dmem_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_imem_o(),
+      .ram_cfg_rsp_dmem_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(lc_ctrl_lc_flash_rma_ack[1]),
@@ -2596,6 +2604,7 @@ module top_earlgrey #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
       .cfg_i(ast_ram_1p_cfg),
+      .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),

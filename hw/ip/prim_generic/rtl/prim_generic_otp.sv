@@ -383,6 +383,7 @@ module prim_generic_otp
     .rvalid_o ( rvalid                 ),
     .rerror_o (                        ),
     .cfg_i    ( '0                     ),
+    .cfg_rsp_o(                        ),
     .alert_o  (                        )
   );
 

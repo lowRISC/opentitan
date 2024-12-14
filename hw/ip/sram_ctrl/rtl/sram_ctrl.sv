@@ -56,7 +56,8 @@ module sram_ctrl
   output otp_ctrl_pkg::sram_otp_key_req_t            sram_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t            sram_otp_key_i,
   // config
-  input  prim_ram_1p_pkg::ram_1p_cfg_t               cfg_i
+  input   prim_ram_1p_pkg::ram_1p_cfg_t              cfg_i,
+  output  prim_ram_1p_pkg::ram_1p_cfg_rsp_t          cfg_rsp_o
 );
 
   import lc_ctrl_pkg::lc_tx_t;
@@ -564,6 +565,7 @@ module sram_ctrl
     .rerror_o         ( ),
     .raddr_o          ( ),
     .cfg_i,
+    .cfg_rsp_o,
     .wr_collision_o   (sram_wr_collision),
     .write_pending_o  (sram_wpending),
     .alert_o          (sram_alert)

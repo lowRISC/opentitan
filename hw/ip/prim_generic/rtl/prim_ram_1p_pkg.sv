@@ -16,6 +16,10 @@ package prim_ram_1p_pkg;
     cfg_t rf_cfg;   // configuration for regfile
   } ram_1p_cfg_t;
 
+  typedef struct packed {
+    logic done;
+  } ram_1p_cfg_rsp_t;
+
   parameter ram_1p_cfg_t RAM_1P_CFG_DEFAULT = '0;
 
 endpackage // prim_ram_1p_pkg
