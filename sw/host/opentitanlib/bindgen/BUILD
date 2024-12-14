@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("@rules_rust//rust:defs.bzl", "rust_library", "rust_test")
+load("@rules_rust//rust:defs.bzl", "rust_library")
 load("@rules_rust_bindgen//:defs.bzl", "rust_bindgen", "rust_bindgen_library")
 
 package(default_visibility = ["//visibility:public"])
@@ -16,6 +16,7 @@ _ENGLISH_BREAKFAST_DEPS = [
     "//sw/device/lib/dif:lc_ctrl",
     "//sw/device/lib/dif:otp_ctrl",
     "//sw/device/lib/dif:rstmgr",
+    "//sw/device/lib/dif:sram_ctrl",
     "//sw/device/lib/dif:uart",
 ]
 
