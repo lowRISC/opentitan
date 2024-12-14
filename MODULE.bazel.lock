@@ -553,7 +553,7 @@
     "@@rules_python~//python/extensions:pip.bzl%pip": {
       "general": {
         "bzlTransitiveDigest": "a64iDP+vh2xxxY4fPc7D+oc9BXL1gBFPT+2WNArJ6ks=",
-        "usagesDigest": "vj+HnqVWEbCajG7O8oxkLORzhBsa2rfrwdiYLX/tDvM=",
+        "usagesDigest": "R04gaDO0PO9K4A8KAmZmt1IKyrEKqacH6XwJISjcOcQ=",
         "recordedFileInputs": {
           "@@rules_python~//tools/publish/requirements_linux.txt": "d576e0d8542df61396a9b38deeaa183c24135ed5e8e73bb9622f298f2671811e",
           "@@lowrisc_misc_linters~//requirements.txt": "c6970973760040a085c07efdfd08dcadb7e052a18efa51f88a3eb19ab9f787c7",
@@ -3454,7 +3454,7 @@
           "@@//third_party/rust/Cargo.lock": "18e7bab3feba348ad70ccce9888b8e41b05cc15fb6a0abda2c5bb027f4e31997",
           "@@//third_party/tock/Cargo.lock": "b5a7a833ae205f1e3697a510e97e3185b44b195d7a22879b4669bff95febd5c8",
           "@@//third_party/tock/Cargo.toml": "5a939bd934aef4775b65a82e678f1180ec00aa78cf214f6052cc82353c975cc4",
-          "@@//MODULE.bazel": "84dfca96ef19c9765531584eabe282639ed7b79909cd8eb8429965ee89ada4d2",
+          "@@//MODULE.bazel": "073e6dcb762b93cb1efd98f53b12c03193f5d58c97a79f81bc7263ed6053d77d",
           "@@//third_party/rust/Cargo.toml": "2fbe1a86bcee488ed55298ff7aa0b08965e9f57bc922f7edbc2386443f95c32b",
           "@@rules_rust~~rust_host_tools~rust_host_tools//WORKSPACE.bazel": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
