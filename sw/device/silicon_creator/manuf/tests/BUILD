@@ -156,7 +156,6 @@ opentitan_test(
 )
 
 # This is the same as rom_with_fake_keys_otp_test_unlocked* but with ROM execution disabled.
-# TODO(#21204): Enable configuration of ROT AUTH partitions in CP stage.
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
@@ -216,6 +215,28 @@ cc_library(
     ],
 )
 
+# Execution from SRAM is always enabled by default in TEST_UNLOCKED* LC states
+# unless HW_CFG1 OTP partition has the EN_SRAM_IFETCH field set to True. In that
+# case, the EXEC CSR in the sram_ctrl controls SRAM execution enablement.
+# Therefore, we want to test with the HW_CFG1 partition programmed with
+# EN_SRAM_IFETCH set to True.
+[
+    otp_image(
+        name = "otp_img_sram_exec_en_test_unlocked{}".format(i),
+        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
+        overlays = [
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
+            "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
+            "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
+            "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
+            "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
+            "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
+        ],
+        visibility = ["//visibility:private"],
+    )
+    for i in range(0, 8)
+]
+
 # We are using a bitstream with ROM execution disabled so the contents of flash
 # does not matter but opentitan_test() is unhappy if we don't provide one.
 # Additionally, ROM execution is disabled in the OTP image we use so we do not
@@ -231,7 +252,7 @@ cc_library(
         },
         fpga = fpga_params(
             needs_jtag = True,
-            otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
+            otp = ":otp_img_sram_exec_en_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
