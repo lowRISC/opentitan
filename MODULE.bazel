@@ -6,6 +6,7 @@ module(name = "lowrisc_opentitan")
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
 bazel_dep(name = "platforms", version = "0.0.11")
+bazel_dep(name = "rules_cc", version = "0.1.1")
 
 # Dev dependencies:
 bazel_dep(
