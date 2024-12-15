@@ -1118,7 +1118,8 @@
                                    'sram_ctrl_ret_aon.cfg',
                                    'sram_ctrl_mbox.cfg',
                                    'rv_core_ibex.ram_cfg'],
-      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
+      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg_sys2spi',
+                                   'spi_device.ram_cfg_spi2sys']
       'ast.rom_cfg'             : ['rom_ctrl0.rom_cfg',
                                    'rom_ctrl1.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
@@ -1313,6 +1314,8 @@
         'sram_ctrl_mbox.cfg_rsp'          : 'sram_ctrl_mbox_ram_1p_cfg_rsp',
         'otbn.ram_cfg_rsp_imem'           : 'otbn_imem_ram_1p_cfg_rsp',
         'otbn.ram_cfg_rsp_dmem'           : 'otbn_dmem_ram_1p_cfg_rsp',
+        'spi_device.ram_cfg_rsp_sys2spi'  : 'spi_device_ram_2p_cfg_rsp_sys2spi',
+        'spi_device.ram_cfg_rsp_spi2sys'  : 'spi_device_ram_2p_cfg_rsp_spi2sys',
         'pwrmgr_aon.boot_status'          : 'pwrmgr_boot_status',
         'clkmgr_aon.jitter_en'            : 'clk_main_jitter_en',
         'clkmgr_aon.io_clk_byp_req'       : 'io_clk_byp_req',

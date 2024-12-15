@@ -1084,7 +1084,8 @@
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
                                    'rv_core_ibex.ram_cfg'],
-      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
+      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg_sys2spi',
+                                   'spi_device.ram_cfg_spi2sys']
       'ast.usb_ram_1p_cfg'      : ['usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],

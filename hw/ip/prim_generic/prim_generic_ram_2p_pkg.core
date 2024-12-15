@@ -3,8 +3,11 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:ram_2p_pkg"
+name: "lowrisc:prim_generic:ram_2p_pkg"
 description: "Ram 2p package"
+virtual:
+  - "lowrisc:prim:ram_2p_pkg"
+
 filesets:
   files_rtl:
     files:
