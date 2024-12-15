@@ -53,7 +53,12 @@ module spi_device
   output logic intr_tpm_rdfifo_drop_o,
 
   // Memory configuration
-  input prim_ram_2p_pkg::ram_2p_cfg_t ram_cfg_i,
+  // When using a dual port RAM primitive only this RAM config port is used
+  input  prim_ram_2p_pkg::ram_2p_cfg_t     ram_cfg_sys2spi_i,
+  output prim_ram_2p_pkg::ram_2p_cfg_rsp_t ram_cfg_rsp_sys2spi_o,
+  // When using a 1R1W RAM primitive, both RAM config ports are used
+  input  prim_ram_2p_pkg::ram_2p_cfg_t     ram_cfg_spi2sys_i,
+  output prim_ram_2p_pkg::ram_2p_cfg_rsp_t ram_cfg_rsp_spi2sys_o,
 
   // External clock sensor
   output logic sck_monitor_o,
@@ -1815,31 +1820,34 @@ module spi_device
     .EnableInputPipeline (0),
     .EnableOutputPipeline(0)
   ) u_spid_dpram (
-    .clk_sys_i      (clk_i),
-    .rst_sys_ni     (rst_ni),
+    .clk_sys_i         (clk_i),
+    .rst_sys_ni        (rst_ni),
 
-    .clk_spi_i      (clk_spi_in_buf),
-    .rst_spi_ni     (spi_dpram_rst_n),
+    .clk_spi_i         (clk_spi_in_buf),
+    .rst_spi_ni        (spi_dpram_rst_n),
 
-    .sys_req_i      (mem_a_req),
-    .sys_write_i    (mem_a_write),
-    .sys_addr_i     (mem_a_addr),
-    .sys_wdata_i    (mem_a_wdata),
-    .sys_wmask_i    (mem_a_wmask),
-    .sys_rvalid_o   (mem_a_rvalid),
-    .sys_rdata_o    (mem_a_rdata),
-    .sys_rerror_o   (mem_a_rerror),
+    .sys_req_i         (mem_a_req),
+    .sys_write_i       (mem_a_write),
+    .sys_addr_i        (mem_a_addr),
+    .sys_wdata_i       (mem_a_wdata),
+    .sys_wmask_i       (mem_a_wmask),
+    .sys_rvalid_o      (mem_a_rvalid),
+    .sys_rdata_o       (mem_a_rdata),
+    .sys_rerror_o      (mem_a_rerror),
 
-    .spi_req_i      (mem_b_req),
-    .spi_write_i    (mem_b_write),
-    .spi_addr_i     (mem_b_addr),
-    .spi_wdata_i    (mem_b_wdata),
-    .spi_wmask_i    (mem_b_wmask),
-    .spi_rvalid_o   (mem_b_rvalid),
-    .spi_rdata_o    (mem_b_rdata),
-    .spi_rerror_o   (mem_b_rerror),
+    .spi_req_i         (mem_b_req),
+    .spi_write_i       (mem_b_write),
+    .spi_addr_i        (mem_b_addr),
+    .spi_wdata_i       (mem_b_wdata),
+    .spi_wmask_i       (mem_b_wmask),
+    .spi_rvalid_o      (mem_b_rvalid),
+    .spi_rdata_o       (mem_b_rdata),
+    .spi_rerror_o      (mem_b_rerror),
 
-    .cfg_i          (ram_cfg_i)
+    .cfg_sys2spi_i     (ram_cfg_sys2spi_i),
+    .cfg_rsp_sys2spi_o (ram_cfg_rsp_sys2spi_o),
+    .cfg_spi2sys_i     (ram_cfg_spi2sys_i),
+    .cfg_rsp_spi2sys_o (ram_cfg_rsp_spi2sys_o)
   );
 
   // Register module

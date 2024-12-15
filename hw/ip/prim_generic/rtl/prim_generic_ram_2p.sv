@@ -32,7 +32,8 @@ module prim_generic_ram_2p import prim_ram_2p_pkg::*; #(
   input  logic [Width-1:0] b_wmask_i,
   output logic [Width-1:0] b_rdata_o,
 
-  input ram_2p_cfg_t       cfg_i
+  input  ram_2p_cfg_t      cfg_i,
+  output ram_2p_cfg_rsp_t  cfg_rsp_o
 );
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
@@ -47,6 +48,7 @@ module prim_generic_ram_2p import prim_ram_2p_pkg::*; #(
 
   logic unused_cfg;
   assign unused_cfg = ^cfg_i;
+  assign cfg_rsp_o.done = 1'b0;
 
   // Width of internal write mask. Note *_wmask_i input into the module is always assumed
   // to be the full bit mask.
