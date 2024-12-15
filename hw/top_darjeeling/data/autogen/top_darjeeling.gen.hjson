@@ -740,7 +740,7 @@
       inter_signal_list:
       [
         {
-          name: ram_cfg
+          name: ram_cfg_sys2spi
           struct: ram_2p_cfg
           package: prim_ram_2p_pkg
           type: uni
@@ -749,6 +749,46 @@
           inst_name: spi_device
           default: ""
           top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_sys2spi
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          default: ""
+          external: true
+          top_signame: spi_device_ram_2p_cfg_rsp_sys2spi
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ram_cfg_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: spi_device
+          default: ""
+          top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          default: ""
+          external: true
+          top_signame: spi_device_ram_2p_cfg_rsp_spi2sys
+          conn_type: false
           index: -1
         }
         {
@@ -9436,7 +9476,8 @@
       ]
       ast.spi_ram_2p_cfg:
       [
-        spi_device.ram_cfg
+        spi_device.ram_cfg_sys2spi
+        spi_device.ram_cfg_spi2sys
       ]
       ast.rom_cfg:
       [
@@ -10081,6 +10122,8 @@
       sram_ctrl_mbox.cfg_rsp: sram_ctrl_mbox_ram_1p_cfg_rsp
       otbn.ram_cfg_rsp_imem: otbn_imem_ram_1p_cfg_rsp
       otbn.ram_cfg_rsp_dmem: otbn_dmem_ram_1p_cfg_rsp
+      spi_device.ram_cfg_rsp_sys2spi: spi_device_ram_2p_cfg_rsp_sys2spi
+      spi_device.ram_cfg_rsp_spi2sys: spi_device_ram_2p_cfg_rsp_spi2sys
       pwrmgr_aon.boot_status: pwrmgr_boot_status
       clkmgr_aon.jitter_en: clk_main_jitter_en
       clkmgr_aon.io_clk_byp_req: io_clk_byp_req
@@ -18316,7 +18359,7 @@
         index: -1
       }
       {
-        name: ram_cfg
+        name: ram_cfg_sys2spi
         struct: ram_2p_cfg
         package: prim_ram_2p_pkg
         type: uni
@@ -18325,6 +18368,46 @@
         inst_name: spi_device
         default: ""
         top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_sys2spi
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        default: ""
+        external: true
+        top_signame: spi_device_ram_2p_cfg_rsp_sys2spi
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ram_cfg_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: spi_device
+        default: ""
+        top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        default: ""
+        external: true
+        top_signame: spi_device_ram_2p_cfg_rsp_spi2sys
+        conn_type: false
         index: -1
       }
       {
@@ -24567,6 +24650,30 @@
         conn_type: false
         index: -1
         netname: otbn_dmem_ram_1p_cfg_rsp
+      }
+      {
+        package: prim_ram_2p_pkg
+        struct: ram_2p_cfg
+        signame: spi_device_ram_2p_cfg_rsp_sys2spi_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: spi_device_ram_2p_cfg_rsp_sys2spi
+      }
+      {
+        package: prim_ram_2p_pkg
+        struct: ram_2p_cfg
+        signame: spi_device_ram_2p_cfg_rsp_spi2sys_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: spi_device_ram_2p_cfg_rsp_spi2sys
       }
       {
         package: pwrmgr_pkg

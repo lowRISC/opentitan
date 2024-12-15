@@ -989,7 +989,7 @@
       inter_signal_list:
       [
         {
-          name: ram_cfg
+          name: ram_cfg_sys2spi
           struct: ram_2p_cfg
           package: prim_ram_2p_pkg
           type: uni
@@ -998,6 +998,38 @@
           inst_name: spi_device
           default: ""
           top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_sys2spi
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          index: -1
+        }
+        {
+          name: ram_cfg_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: spi_device
+          default: ""
+          top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
           index: -1
         }
         {
@@ -9153,7 +9185,8 @@
       ]
       ast.spi_ram_2p_cfg:
       [
-        spi_device.ram_cfg
+        spi_device.ram_cfg_sys2spi
+        spi_device.ram_cfg_spi2sys
       ]
       ast.usb_ram_1p_cfg:
       [
@@ -17331,7 +17364,7 @@
         index: -1
       }
       {
-        name: ram_cfg
+        name: ram_cfg_sys2spi
         struct: ram_2p_cfg
         package: prim_ram_2p_pkg
         type: uni
@@ -17340,6 +17373,38 @@
         inst_name: spi_device
         default: ""
         top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_sys2spi
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        index: -1
+      }
+      {
+        name: ram_cfg_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: spi_device
+        default: ""
+        top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
         index: -1
       }
       {

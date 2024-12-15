@@ -1241,7 +1241,10 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[5:5] ),
 
       // Inter-module signals
-      .ram_cfg_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_sys2spi_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_sys2spi_o(),
+      .ram_cfg_spi2sys_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_spi2sys_o(),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),

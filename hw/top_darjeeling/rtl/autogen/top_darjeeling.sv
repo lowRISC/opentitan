@@ -171,6 +171,8 @@ module top_darjeeling #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       sram_ctrl_mbox_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_1p_cfg_rsp_o,
+  output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_sys2spi_o,
+  output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_spi2sys_o,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
@@ -1048,7 +1050,10 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
-      .ram_cfg_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_sys2spi_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_sys2spi_o(spi_device_ram_2p_cfg_rsp_sys2spi_o),
+      .ram_cfg_spi2sys_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_spi2sys_o(spi_device_ram_2p_cfg_rsp_spi2sys_o),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),
