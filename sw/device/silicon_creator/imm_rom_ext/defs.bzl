@@ -11,12 +11,32 @@ DEFAULT_EXEC_ENV = [
 ]
 
 # The target list should contian prebuilt artifacts and run-time build targets.
-IMM_ROM_EXT_SECTIONS = {
+SLOT_A_IMM_ROM_EXT_SECTIONS = {
     "main": [
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_fpga_cw310",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_fpga_cw340",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_sim_dv_base",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_sim_verilator_base",
-        "//sw/device/silicon_creator/imm_rom_ext:main_section_silicon_creator",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_silicon_creator",
+    ],
+}
+
+SLOT_B_IMM_ROM_EXT_SECTIONS = {
+    "main": [
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_silicon_creator",
+    ],
+}
+
+SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS = {
+    "main": [
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_silicon_creator",
     ],
 }
