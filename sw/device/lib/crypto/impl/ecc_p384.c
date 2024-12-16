@@ -1,3 +1,18 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/crypto/include/ecc_p384.h"
+
+#include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/ecc/p384.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('p', '3', '8')
 
 otcrypto_status_t otcrypto_ecdsa_p384_keygen(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
@@ -55,7 +70,7 @@ static status_t internal_p384_keygen_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(sideload_key_seed(private_key));
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
     return p384_sideload_keygen_start();
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -262,7 +277,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(sideload_key_seed(private_key));
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
     return p384_ecdsa_sideload_sign_start(message_digest.data);
   }
 
@@ -423,7 +438,7 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
-    HARDENED_TRY(sideload_key_seed(private_key));
+    HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
     return p384_sideload_ecdh_start(pk);
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);

@@ -248,7 +248,6 @@ cc_library(
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl:aes",
-        "//sw/device/lib/crypto/impl:ecc",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",

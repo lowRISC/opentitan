@@ -1,21 +1,30 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_X25519_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_X25519_H_
+
+#include "datatypes.h"
 
 /**
- * Generates a new key pair for X25519 key exchange.
- *
- * Computes the private scalar (d) and public key (Q) based on
- * Curve25519.
- *
- * No `domain_parameter` is needed and is automatically set for X25519.
+ * @file
+ * @brief X25519 operations for OpenTitan cryptography library.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
+/**
+ * Generates a key pair for X25519.
  *
  * The caller should allocate and partially populate the blinded key struct,
  * including populating the key configuration and allocating space for the
- * keyblob. The caller should indicate the length of the allocated keyblob;
- * this function will return an error if the keyblob length does not match
- * expectations. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle as returned by `otcrypto_hw_backed_key`. For
- * non-hardware-backed keys, the keyblob should be twice the length of the key.
- * The value in the `checksum` field of the blinded key struct will be
- * populated by the key generation function.
+ * keyblob. For a hardware-backed key, use the private key handle returned by
+ * `otcrypto_hw_backed_key`. Otherwise, the mode should indicate X25519 and the
+ * keyblob should be 80 bytes. The value in the `checksum` field of the blinded
+ * key struct will be populated by the key generation function.
  *
  * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
@@ -26,7 +35,7 @@ otcrypto_status_t otcrypto_x25519_keygen(otcrypto_blinded_key_t *private_key,
                                          otcrypto_unblinded_key_t *public_key);
 
 /**
- * Performs the X25519 Diffie Hellman shared secret generation.
+ * Elliptic-curve Diffie Hellman shared secret generation with Curve25519.
  *
  * @param private_key Pointer to blinded private key (u-coordinate).
  * @param public_key Pointer to the public scalar from the sender.
@@ -39,15 +48,9 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
                                   otcrypto_blinded_key_t *shared_secret);
 
 /**
- * Starts the asynchronous key generation for X25519.
+ * Starts asynchronous key generation for X25519.
  *
- * Initializes OTBN and begins generating an X25519 key pair. The caller
- * should set the `config` field of `private_key` with their desired key
- * configuration options. If the key is hardware-backed, the caller should pass
- * a fully populated private key handle such as the kind returned by
- * `otcrypto_hw_backed_key`.
- *
- * No `domain_parameter` is needed and is automatically set for X25519.
+ * See `otcrypto_x25519_keygen` for requirements on input values.
  *
  * @param private_key Destination structure for private key, or key handle.
  * @return Result of asynchronous X25519 keygen start operation.
@@ -59,29 +62,25 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 /**
  * Finalizes the asynchronous key generation for X25519.
  *
- * Returns `kOtcryptoStatusValueOk` and copies private key (d) and public key
- * (Q), if the OTBN status is done, or `kOtcryptoStatusValueAsyncIncomplete`
- * if the OTBN is busy or `kOtcryptoStatusValueInternalError` if there is an
- * error.
+ * See `otcrypto_x25519_keygen` for requirements on input values.
  *
- * The caller must ensure that `config` matches the key configuration initially
- * passed to the `_start` complement of this function.
+ * May block until the operation is complete.
+ *
+ * The caller should ensure that the private key configuration matches that
+ * passed to the `_start` function.
  *
  * @param[out] private_key Pointer to the blinded private key struct.
  * @param[out] public_key Pointer to the unblinded public key struct.
- * @return Result of asynchronous X25519 keygen finalize operation.
+ * @return Result of asynchronous ECDSA keygen finalize operation.
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key);
 
 /**
- * Starts the asynchronous X25519 Diffie Hellman shared secret
- * generation.
+ * Starts asynchronous shared secret generation for X25519.
  *
- * Initializes OTBN and starts the OTBN routine to perform Diffie
- * Hellman shared secret generation based on Curve25519. The
- * domain parameter is automatically set for X25519 API.
+ * See `otcrypto_x25519` for requirements on input values.
  *
  * @param private_key Pointer to the blinded private key (u-coordinate).
  * @param public_key Pointer to the public scalar from the sender.
@@ -93,12 +92,11 @@ otcrypto_status_t otcrypto_x25519_async_start(
     const otcrypto_unblinded_key_t *public_key);
 
 /**
- * Finalizes the asynchronous X25519 Diffie Hellman shared secret
- * generation.
+ * Finalizes asynchronous shared secret generation for X25519.
  *
- * Returns `kOtcryptoStatusValueOk` and copies `shared_secret` if the OTBN
- * status is done, or `kOtcryptoStatusValueAsyncIncomplete` if the OTBN
- * is busy or `kOtcryptoStatusValueInternalError` if there is an error.
+ * See `otcrypto_x25519` for requirements on input values.
+ *
+ * May block until the operation is complete.
  *
  * @param[out] shared_secret Pointer to shared secret key (u-coordinate).
  * @return Result of async X25519 finalize operation.
@@ -106,3 +104,9 @@ otcrypto_status_t otcrypto_x25519_async_start(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_X25519_H_

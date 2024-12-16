@@ -6,7 +6,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/ecc.h"
+#include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"

@@ -211,7 +211,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -230,7 +230,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -250,7 +250,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -272,7 +272,7 @@ opentitan_test(
     deps = [
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -299,7 +299,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
@@ -330,7 +330,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
@@ -354,7 +354,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/runtime:log",
@@ -377,7 +377,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:otbn",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:keyblob",
