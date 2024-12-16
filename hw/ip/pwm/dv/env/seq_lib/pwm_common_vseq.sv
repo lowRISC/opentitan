@@ -21,4 +21,10 @@ constraint pwm_common_vseq::num_trans_c {
 
 task pwm_common_vseq::body();
   run_common_vseq_wrapper(num_trans);
+
+  // Explicitly shut down the dut after running pwm_common_vseq. This shouldn't really matter except
+  // that the stress_all_with_rand_reset sequence won't "tidy up" after the last sequence if it
+  // happens to get killed and our monitor will not allow the test to end because the pwm is still
+  // active.
+  shutdown_dut();
 endtask

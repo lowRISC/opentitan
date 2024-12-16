@@ -6,8 +6,6 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   `uvm_object_utils_begin(pwm_env_cfg)
   `uvm_object_utils_end
 
-  `uvm_object_new
-
   // configs
   pwm_monitor_cfg       m_pwm_monitor_cfg[PWM_NUM_CHANNELS];
 
@@ -20,12 +18,19 @@ class pwm_env_cfg extends cip_base_env_cfg #(.RAL_T(pwm_reg_block));
   rand int unsigned clk_scale;
   constraint clk_scale_c { clk_scale inside {[256:1024]}; }
 
+  extern function new (string name="");
+
   // Method from dv_base_env_cfg. Construct RAL models and fill in monitor configs.
   extern virtual function void initialize(bit [31:0] csr_base_addr = '1);
 
   // Return the scaled frequency in MHz for the core
   extern virtual function int get_clk_core_freq();
 endclass : pwm_env_cfg
+
+function pwm_env_cfg::new (string name="");
+  super.new(name);
+  can_reset_with_csr_accesses = 1'b1;
+endfunction
 
 function void pwm_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   list_of_alerts = pwm_env_pkg::LIST_OF_ALERTS;
