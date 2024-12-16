@@ -5,7 +5,12 @@
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//sw/device/silicon_creator/imm_rom_ext:utils.bzl", "imm_rom_ext_section")
+load("//sw/device/silicon_creator/imm_rom_ext:defs.bzl", "DEFAULT_EXEC_ENV")
+load(
+    "//sw/device/silicon_creator/imm_rom_ext:utils.bzl",
+    "create_imm_rom_ext_targets",
+)
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -57,13 +62,7 @@ cc_library(
 
 opentitan_binary(
     name = "main_binaries",
-    # TODO(#24368): Support multiple executing environments. Currently all
-    # environments derive the same binary so only one environment is kept here,
-    # but we need to support multiple executing environments and make sure
-    # ROM_EXT targets choose the matched environment when linking IMM_ROM_EXT.
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw340",
-    ],
+    exec_env = DEFAULT_EXEC_ENV,
     linker_script = ":ld_hello_world",
     deps = [
         ":main_lib",
@@ -71,10 +70,14 @@ opentitan_binary(
     ],
 )
 
-imm_rom_ext_section(
-    name = "main_section",
-    srcs = [":main_binaries"],
-)
+[
+    create_imm_rom_ext_targets(
+        src = ":main_binaries",
+        base_name = "main_section",
+        exec_env = env,
+    )
+    for env in DEFAULT_EXEC_ENV
+]
 
 ld_library(
     name = "ld_hello_world",
@@ -102,10 +105,6 @@ cc_library(
 
 opentitan_binary(
     name = "hello_world_binaries",
-    # TODO(#24368): Support multiple executing environments. Currently all
-    # environments derive the same binary so only one environment is kept here,
-    # but we need to support multiple executing environments and make sure
-    # ROM_EXT targets choose the matched environment when linking IMM_ROM_EXT.
     exec_env = [
         "//hw/top_earlgrey:fpga_cw340",
     ],
@@ -114,9 +113,4 @@ opentitan_binary(
         ":hello_world",
         "//sw/device/lib/crt",
     ],
-)
-
-imm_rom_ext_section(
-    name = "hello_world_section",
-    srcs = [":hello_world_binaries"],
 )
