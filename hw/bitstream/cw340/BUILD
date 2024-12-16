@@ -29,7 +29,7 @@ filegroup(
     testonly = True,
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_mmi"],
+        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:cw340_mmi"],
         "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
         "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
     }),
