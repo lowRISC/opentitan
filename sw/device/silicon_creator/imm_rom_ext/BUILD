@@ -57,6 +57,7 @@ ld_library(
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
         "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
     ],
 )
 
@@ -69,6 +70,7 @@ cc_library(
     hdrs = ["hello_world.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//sw/device/silicon_creator/lib/base:static_critical",
         "//sw/device/silicon_creator/lib/drivers:uart",
     ],
 )
@@ -85,6 +87,7 @@ opentitan_binary(
     linker_script = ":ld_hello_world",
     deps = [
         ":hello_world",
+        "//sw/device/lib/crt",
     ],
 )
 
