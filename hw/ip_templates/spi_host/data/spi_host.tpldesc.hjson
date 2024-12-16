@@ -1,0 +1,25 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name:    "module_instance_name"
+      desc:    "instance name in case there are multiple SPI host instances."
+      type:    "string"
+      default: "spi_host"
+    }
+    {
+      name:    "num_cs",
+      desc:    "The number of active-low chip select (cs_n) lines to create.",
+      type:    "int",
+      default: "8",
+    }
+  ]
+}
