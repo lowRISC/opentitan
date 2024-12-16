@@ -154,7 +154,7 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
@@ -163,7 +163,7 @@ opentitan_test(
     run_in_ci = EARLGREY_TEST_ENVS.keys() + [
         "//hw/top_earlgrey:fpga_cw310_sival",
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw310_rom_ext",
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext",
     ],
     deps = [
         "//hw/ip/aes:model",
