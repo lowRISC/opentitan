@@ -8,6 +8,10 @@ load(
     "autogen_hjson_rust_header",
 )
 load(
+    "//rules:manifest.bzl",
+    "manifest",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
@@ -60,6 +64,14 @@ filegroup(
         "//hw/top_earlgrey/sw:all_files",
     ],
 )
+
+# The following definition is used to define a null manifest in the signing
+# configuration for execution environments (exec_env) and opentitan_test
+# and opentitan_binary rules. When building the binaries, if the manifest equals
+# to this null manifest, then the signing will be skipped.
+CLEAR_MANIFEST = manifest(d = {
+    "name": "none_manifest",
+})
 
 ###########################################################################
 # FPGA CW310 Environments
