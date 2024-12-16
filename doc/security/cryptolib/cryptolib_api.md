@@ -132,7 +132,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_eddsa_sign_mode }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_eddsa_sign_mode }}
 
 #### Hash data structures
 
@@ -364,78 +364,95 @@ The two curves are birationally equivalent, in mathematical terms, so it is poss
 
 For ECDSA, the cryptography library supports keypair generation, signing, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
 
 #### ECDH
 
 For ECDH (elliptic-curve Diffie-Hellman) key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256 }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384 }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256 }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384 }}
 
 #### Ed25519
 
 For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify }}
 
 #### X25519
 
 For x25519 key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519 }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519 }}
 
 ### ECC Asynchronous API
 
 #### ECDSA
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p384_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_p256_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_finalize }}
 
 #### ECDH
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p256_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_p384_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_finalize }}
 
 #### Ed25519
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_finalize }}
 
 #### X25519
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_finalize }}
 
 ## Deterministic random bit generation
 
