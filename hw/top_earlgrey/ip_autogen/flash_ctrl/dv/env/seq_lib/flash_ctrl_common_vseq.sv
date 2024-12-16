@@ -51,8 +51,6 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
     disable_fi_for_prim_count("*u_tl_adapter_eflash*u_rspfifo*u_fifo_cnt");
     disable_fi_for_prim_count("*u_tl_adapter_eflash*u_reqfifo*u_fifo_cnt");
     disable_fi_for_prim_count("*u_tl_adapter_eflash*u_sramreqfifo*u_fifo_cnt");
-    disable_fi_for_prim_count("*u_to_rd_fifo*u_reqfifo*u_fifo_cnt");
-    disable_fi_for_prim_count("*u_to_rd_fifo*u_sramreqfifo*u_fifo_cnt");
 
     super.dut_init(reset_kind);
   endtask // dut_init

@@ -18,7 +18,8 @@ package sec_cm_pkg;
     SecCmPrimCount,
     SecCmPrimSparseFsmFlop,
     SecCmPrimDoubleLfsr,
-    SecCmPrimOnehot
+    SecCmPrimOnehot,
+    SecCmSingletonFifo
   } sec_cm_type_e;
 
   `include "sec_cm_base_if_proxy.sv"
