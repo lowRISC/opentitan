@@ -434,15 +434,15 @@ jobs:
 
   execute_rom_ext_fpga_tests_cw310:
     name: CW310 ROM_EXT Tests
-    needs: chip_earlgrey_cw310
+    needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       job_name: execute_rom_ext_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
-      interface: cw310
-      tag_filters: cw310_rom_ext
+      interface: hyper310
+      tag_filters: hyper310_rom_ext
 
   execute_sival_fpga_tests_cw310:
     name: CW310 SiVal Tests
