@@ -237,3 +237,9 @@ status_t keyblob_key_unmask(const otcrypto_blinded_key_t *key,
   }
   return OTCRYPTO_OK;
 }
+
+status_t keyblob_sideload_key_otbn(const otcrypto_blinded_key_t *key) {
+  keymgr_diversification_t diversification;
+  HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
+  return keymgr_generate_key_otbn(diversification);
+}

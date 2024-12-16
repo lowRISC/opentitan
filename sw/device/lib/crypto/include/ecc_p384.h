@@ -1,4 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_P384_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_P384_H_
+
+#include "datatypes.h"
+
+/**
+ * @file
+ * @brief P-384 elliptic curve operations for OpenTitan cryptography library.
+ *
+ * Includes ECDSA and ECDH.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 /**
  * Generates a key pair for ECDSA with curve P-384.
@@ -133,7 +151,6 @@ otcrypto_status_t otcrypto_ecdsa_p384_keygen_async_finalize(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
- * @param elliptic_curve Pointer to the elliptic curve to be used.
  * @return Result of async ECDSA start operation.
  */
 OT_WARN_UNUSED_RESULT
@@ -177,6 +194,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
  * See `otcrypto_ecdsa_p384_verify` for requirements on input values.
  *
  * May block until the operation is complete.
+ *
+ * The caller must check the `verification_result` parameter, NOT only the
+ * returned status code, to know if the signature passed verification. The
+ * status code, as for other operations, only indicates whether errors were
+ * encountered, and may return OK even when the signature is invalid.
  *
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of async ECDSA verify finalize operation.
@@ -243,3 +265,9 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_ECC_P384_H_
