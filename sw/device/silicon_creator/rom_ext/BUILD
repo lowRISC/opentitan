@@ -242,7 +242,7 @@ manifest(d = {
             "minsize",
             "use_lld",
         ],
-        immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+        immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS[slot]["main"],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -272,7 +272,7 @@ opentitan_binary(
         "minsize",
         "use_lld",
     ],
-    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["a"]["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     deps = [
@@ -311,7 +311,7 @@ opentitan_binary(
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
         ],
     )
-    for name, imm_rom_ext_sections in IMM_ROM_EXT_SECTIONS.items()
+    for name, imm_rom_ext_sections in IMM_ROM_EXT_SECTIONS["virtual"].items()
 ]
 
 manifest(d = {
@@ -334,7 +334,7 @@ opentitan_binary(
         "minsize",
         "use_lld",
     ],
-    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["a"]["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
     deps = [
