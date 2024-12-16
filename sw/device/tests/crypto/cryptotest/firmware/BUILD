@@ -35,10 +35,10 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
@@ -54,7 +54,8 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
-        "//sw/device/lib/crypto/impl:ecc",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:ecc_p384",
         "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
