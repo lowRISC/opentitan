@@ -216,6 +216,17 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_dm/lint/{tool}"
              },
+             {    name: spi_host
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_spi_host
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/top_earlgrey/ip_autogen/spi_host/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
              {    name: top_earlgrey_rv_plic
                   fusesoc_core: lowrisc:opentitan:top_earlgrey_rv_plic
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -230,11 +241,6 @@
                   fusesoc_core: lowrisc:ip:spi_device
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/spi_device/lint/{tool}"
-             },
-             {    name: spi_host
-                  fusesoc_core: lowrisc:ip:spi_host
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/spi_host/lint/{tool}"
              },
              {    name: sram_ctrl
                   fusesoc_core: lowrisc:ip:sram_ctrl

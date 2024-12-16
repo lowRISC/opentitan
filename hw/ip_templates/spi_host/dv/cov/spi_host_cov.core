@@ -9,7 +9,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:dv_utils
-      - lowrisc:ip:spi_host
+      - lowrisc:ip_interfaces:spi_host
     files:
       - spi_host_cov_if.sv
       - spi_host_cov_bind.sv

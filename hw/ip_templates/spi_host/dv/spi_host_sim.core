@@ -8,7 +8,7 @@ description: "SPI_HOST DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:spi_host:1.0
+      - lowrisc:ip_interfaces:spi_host
 
   files_dv:
     depend:

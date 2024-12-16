@@ -47,7 +47,6 @@
              "{proj_root}/hw/ip/rom_ctrl/dv/rom_ctrl_64kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_dm/dv/rv_dm_use_jtag_interface_sim_cfg.hjson",
              "{proj_root}/hw/ip/rv_timer/dv/rv_timer_sim_cfg.hjson",
-             "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_2p_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
@@ -62,6 +61,7 @@
              "{proj_root}/hw/top_earlgrey/ip_autogen/pwrmgr/dv/pwrmgr_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/dv/rstmgr_cnsty_chk/rstmgr_cnsty_chk_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip_autogen/rstmgr/dv/rstmgr_sim_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip_autogen/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_main/dv/autogen/xbar_main_sim_cfg.hjson",
              "{proj_root}/hw/top_earlgrey/ip/xbar_peri/dv/autogen/xbar_peri_sim_cfg.hjson",
              // Top level.

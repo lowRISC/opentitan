@@ -9,7 +9,7 @@
 # Overview
 
 This document specifies SPI_HOST hardware IP (HWIP) functionality.
-This module conforms to the [Comportable guideline for peripheral functionality.](../../../doc/contributing/hw/comportability/README.md)
+This module conforms to the [Comportable guideline for peripheral functionality.](https://opentitan.org/book/doc/contributing/hw/comportability).
 See that document for integration overview within the broader top-level system.
 
 ## Features
@@ -32,7 +32,7 @@ See that document for integration overview within the broader top-level system.
    - Additional support for "Full-cycle" SPI transactions, wherein data can be read a full SPI Clock cycle after the active edge (as opposed to one half cycle as is typical for SPI interfaces)
 - Single Transfer Rate (STR) only (i.e. data received on multiple lines, but only on one clock edge)
    - *No support* for Dual Transfer Rate (DTR)
-- Pass-through mode for coordination with [SPI_DEVICE IP](../spi_device/README.md)
+- Pass-through mode for coordination with [SPI_DEVICE IP](../../../ip/spi_device/README.md)
 - Automatic control of chip select lines
 - Condensed interrupt footprint: Two lines for two distinct interrupt classes: "error" and "spi_event"
    - Fine-grain interrupt masking supplied by secondary enable registers

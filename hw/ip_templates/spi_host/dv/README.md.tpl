@@ -1,44 +1,44 @@
-# SPI_HOST DV Document
+${"#"} SPI_HOST DV Document
 
-## Goals
+${"##"} Goals
 * **DV**
   * Verify all SPI_HOST IP features by running dynamic simulations with a SV/UVM based testbench
   * Develop and run tests that exercise all testpoints in the [testplan](#testplan) below towards closing code and functional coverage on the IP and all of its sub-modules
 * **FPV**
   * Verify TileLink device protocol compliance with an SVA based testbench
 
-## Current status
-* [Design & verification stage](../../../README.md)
-  * [HW development stages](../../../../doc/project_governance/development_stages.md)
+${"##"} Current status
+* [Design & verification stage](../../../../README.md)
+  * [HW development stages](../../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/spi_host/dv/latest/report.html)
 
-## Design features
+${"##"} Design features
 For detailed information on SPI_HOST design features, please see the
 [SPI_HOST HWIP technical specification](../README.md).
 
-## Testbench architecture
+${"##"} Testbench architecture
 SPI_HOST testbench has been constructed based on the
-[CIP testbench architecture](../../../dv/sv/cip_lib/README.md).
+[CIP testbench architecture](../../../../dv/sv/cip_lib/README.md).
 
-### Block diagram
+${"###"} Block diagram
 ![Block diagram](./doc/tb.svg)
 
-### Top level testbench
-Top level testbench is located at `hw/ip/spi_host/dv/tb/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip/spi_host/rtl/spi_host.sv`.
+${"###"} Top level testbench
+Top level testbench is located at `hw/ip_templates/spi_host/dv/tb/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip_templates/spi_host/rtl/spi_host.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
-* [TileLink host interface](../../../dv/sv/tl_agent/README.md)
+* [Clock and reset interface](../../../../dv/sv/common_ifs/README.md)
+* [TileLink host interface](../../../../dv/sv/tl_agent/README.md)
 * SPI_HOST IOs
-* Interrupts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
-* Alerts ([`pins_if`](../../../dv/sv/common_ifs/README.md))
+* Interrupts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
+* Alerts ([`pins_if`](../../../../dv/sv/common_ifs/README.md))
 
-### Common DV utility components
+${"###"} Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
-* [common_ifs](../../../dv/sv/common_ifs/README.md)
-* [dv_utils_pkg](../../../dv/sv/dv_utils/README.md)
-* [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
+* [common_ifs](../../../../dv/sv/common_ifs/README.md)
+* [dv_utils_pkg](../../../../dv/sv/dv_utils/README.md)
+* [csr_utils_pkg](../../../../dv/sv/csr_utils/README.md)
 
-### Compile-time configurations
+${"###"} Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 ```systemverilog
   // sets the number of spi devices
@@ -47,7 +47,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
 Endianness implemented and verified is only Little Endian with ByteOrder set to 1
 
-### Global types & methods
+${"###"} Global types & methods
 All common types and methods defined at the package level can be found in
 `spi_host_env_pkg`. Some of them in use are:
 ```systemverilog
@@ -167,13 +167,13 @@ All common types and methods defined at the package level can be found in
   } spi_host_intr_test_t;
 ```
 
-### TL_agent
+${"###"} TL_agent
 SPI_HOST testbench instantiates (already handled in CIP base env)
-[tl_agent](../../../dv/sv/tl_agent/README.md)
+[tl_agent](../../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via TL host interface into SPI_HOST device.
 Transactions will be sampled by the monitor and passed on to the predictor in the scoreboard.
 
-###  SPI Agent
+${"###"}  SPI Agent
 SPI agent is configured to work in device mode.
 The Agent will decode the SPI transactions send by the DUT and respond with random data to any read command received.
 Write data is discarded.
@@ -193,14 +193,14 @@ The agent monitor will capture both the outgoing host transactions where it crea
 and the incoming device transactions where it will capture the response items and forward them to another tlm_analysis_port in the host scoreboard.
 
 
-### UVM RAL Model
-The SPI_HOST RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
+${"###"} UVM RAL Model
+The SPI_HOST RAL model is created with the [`ralgen`](../../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
-It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+It can be created manually by invoking [`regtool`](../../../../../util/reggen/doc/setup_and_use.md):
 
-### Stimulus strategy
-#### Test sequences
-All test sequences reside in `hw/ip/spi_host/dv/env/seq_lib`.
+${"###"} Stimulus strategy
+${"####"} Test sequences
+All test sequences reside in `hw/ip_templates/spi_host/dv/env/seq_lib`.
 The `spi_host_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 On top of `spi_host_base_vseq` is `spi_host_tx_rx_vseq` which form more complex task from the basic tasks in the base vseq.
 All test sequences are extended from `spi_host_tx_rx_vseq`.
@@ -219,13 +219,13 @@ Some of the most commonly used tasks / functions are as follows:
   Will handle the sequence of writing potential data to the tx fifo and then configuring the DUT to transmit it
   in correct order.
 
-#### Functional coverage
+${"####"} Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
 The list of functional coverpoints can be found under covergroups in the [testplan](#testplan)
 
 
-### Self-checking strategy
-#### Scoreboard
+${"###"} Self-checking strategy
+${"####"} Scoreboard
 The `spi_host_scoreboard` is primarily used for end to end checking.
 It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
 
@@ -254,18 +254,18 @@ When the scoreboard receives an item on the `tl_d_chan_fifo` it will match the d
 This way both outgoing and incoming transactions are validated independently of each other.
 
 
-#### Assertions
-* TLUL assertions: The `tb/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+${"####"} Assertions
+* TLUL assertions: The `tb/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 
-## Building and running tests
-We are using our in-house developed [regression tool](../../../../util/dvsim/README.md) for building and running our tests and regressions.
+${"##"} Building and running tests
+We are using our in-house developed [regression tool](../../../../../util/dvsim/README.md) for building and running our tests and regressions.
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson -i spi_host_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/top_${topname}/ip_autogen/spi_host/dv/spi_host_sim_cfg.hjson -i spi_host_smoke
 ```
 
-## Testplan
+${"##"} Testplan
 [Testplan](../data/spi_host_testplan.hjson)

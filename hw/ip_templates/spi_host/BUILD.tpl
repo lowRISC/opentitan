@@ -13,14 +13,14 @@ load(
 autogen_hjson_c_header(
     name = "spi_host_c_regs",
     srcs = [
-        "spi_host.hjson",
+        "data/spi_host.hjson",
     ],
 )
 
 autogen_hjson_rust_header(
     name = "spi_host_rust_regs",
     srcs = [
-        "spi_host.hjson",
+        "data/spi_host.hjson",
     ],
 )
 

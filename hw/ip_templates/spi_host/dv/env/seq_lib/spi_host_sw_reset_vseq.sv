@@ -5,7 +5,7 @@
 // Trigger a software reset (CONTROL.SW_RST) randomly during an ongoing transaction
 
 // - Check rx and tx queues are empty post SW_RST application
-// From Documentation (hw/ip/spi_host/data/spi_host.hjson):
+// From Documentation (hw/ip_templates/spi_host/data/spi_host.hjson):
 // >  In the current implementation, the CDC FIFOs are drained (not reset).
 // >  Therefore, software must confirm that both FIFO's are empty before releasing the IP from reset
 //
