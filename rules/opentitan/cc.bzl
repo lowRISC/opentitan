@@ -182,6 +182,9 @@ def _build_binary(ctx, exec_env, name, deps, kind):
     )
 
     manifest = get_fallback(ctx, "file.manifest", exec_env)
+    if manifest and str(manifest.owner) == "@@//hw/top_earlgrey:none_manifest":
+        manifest = None
+
     ecdsa_key = get_fallback(ctx, "attr.ecdsa_key", exec_env)
     rsa_key = get_fallback(ctx, "attr.rsa_key", exec_env)
     spx_key = get_fallback(ctx, "attr.spx_key", exec_env)
@@ -226,10 +229,20 @@ def _opentitan_binary(ctx):
     providers = []
     default_info = []
     groups = {}
-    for exec_env in ctx.attr.exec_env:
-        exec_env = exec_env[ExecEnvInfo]
+    for exec_env_target in ctx.attr.exec_env:
+        exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
+
+        imm_rom_ext_deps = []
+        for dep in ctx.attr.immutable_rom_ext_sections:
+            if exec_env_target.label.name not in dep.label.name:
+                continue
+            imm_rom_ext_deps.append(dep)
+        if ctx.attr.immutable_rom_ext_sections and len(imm_rom_ext_deps) != 1:
+            fail("When building for exec_env {}, found zero or more than one immutable ROM_EXT sections to link: {}".format(imm_rom_ext_deps, exec_env_target))
+        deps += imm_rom_ext_deps
+
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(kind = kind, **provides))
@@ -328,6 +341,10 @@ common_binary_attrs = {
     "immutable_rom_ext_enabled": attr.bool(
         doc = "Indicates whether the binary is intended for a chip with the immutable ROM_EXT feature enabled.",
         default = False,
+    ),
+    "immutable_rom_ext_sections": attr.label_list(
+        providers = [CcInfo],
+        doc = "The list of immutable ROM_EXT sections to be linked in to the binary target.  Only the deps matched with the specific exec_env will be kept.",
     ),
 }
 

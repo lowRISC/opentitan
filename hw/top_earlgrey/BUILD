@@ -3,6 +3,10 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "//rules:manifest.bzl",
+    "manifest",
+)
+load(
     "//rules/opentitan:defs.bzl",
     "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -26,6 +30,14 @@ filegroup(
         "//hw/top_earlgrey/sw:all_files",
     ],
 )
+
+# The following definition is used to define a null manifest in the signing
+# configuration for execution environments (exec_env) and opentitan_test
+# and opentitan_binary rules. When building the binaries, if the manifest equals
+# to this null manifest, then the signing will be skipped.
+CLEAR_MANIFEST = manifest(d = {
+    "name": "none_manifest",
+})
 
 ###########################################################################
 # FPGA CW310 Environments
