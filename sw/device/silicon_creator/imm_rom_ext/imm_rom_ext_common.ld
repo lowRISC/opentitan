@@ -7,18 +7,6 @@
  * script only works for hello-world IMM_ROM_EXT.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
-
-/**
- * Symbols to be used in the setup of the address translation for IMM_ROM_EXT.
- */
-
-MEMORY {
-  imm_rom_ext_virtual(rx) : ORIGIN = ORIGIN(rom_ext_virtual) + 0x400, LENGTH = 0x80000 - 0x400
-}
-
-REGION_ALIAS("rom_ext_flash", imm_rom_ext_virtual);
-
 OUTPUT_ARCH(riscv)
 
 /**

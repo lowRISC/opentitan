@@ -14,7 +14,9 @@ load(
 )
 load(
     "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "IMM_ROM_EXT_SECTIONS",
+    "SLOT_A_IMM_ROM_EXT_SECTIONS",
+    "SLOT_B_IMM_ROM_EXT_SECTIONS",
+    "SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -290,7 +292,7 @@ opentitan_binary(
         "minsize",
         "use_lld",
     ],
-    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+    immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -319,7 +321,7 @@ opentitan_binary(
         "minsize",
         "use_lld",
     ],
-    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+    immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -348,7 +350,7 @@ opentitan_binary(
         "minsize",
         "use_lld",
     ],
-    immutable_rom_ext_sections = IMM_ROM_EXT_SECTIONS["main"],
+    immutable_rom_ext_sections = SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
     deps = [
@@ -387,7 +389,7 @@ opentitan_binary(
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
         ],
     )
-    for name, imm_rom_ext_sections in IMM_ROM_EXT_SECTIONS.items()
+    for name, imm_rom_ext_sections in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS.items()
 ]
 
 manifest(d = {
