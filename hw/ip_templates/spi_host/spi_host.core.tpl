@@ -2,8 +2,10 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:spi_host:1.0"
-description: "SPI_HOST DV"
+name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:1.0")}
+description: "SPI Host Core"
+virtual:
+  - lowrisc:ip_interfaces:spi_host
 
 filesets:
   files_rtl:
@@ -14,7 +16,8 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device_pkg
     files:
-      - rtl/spi_host_reg_pkg.sv
+      - rtl/${module_instance_name}_reg_pkg.sv
+      - rtl/${module_instance_name}_reg_top.sv
       - rtl/spi_host_cmd_pkg.sv
       - rtl/spi_host_shift_register.sv
       - rtl/spi_host_byte_select.sv
@@ -23,9 +26,8 @@ filesets:
       - rtl/spi_host_core.sv
       - rtl/spi_host_command_queue.sv
       - rtl/spi_host_data_fifos.sv
-      - rtl/spi_host_reg_top.sv
       - rtl/spi_host_window.sv
-      - rtl/spi_host.sv
+      - rtl/${module_instance_name}.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

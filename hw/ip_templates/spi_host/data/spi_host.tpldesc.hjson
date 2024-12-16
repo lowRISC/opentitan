@@ -19,7 +19,7 @@
       name:    "num_cs",
       desc:    "The number of active-low chip select (cs_n) lines to create.",
       type:    "int",
-      default: "8",
+      default: "1",
     }
   ]
 }

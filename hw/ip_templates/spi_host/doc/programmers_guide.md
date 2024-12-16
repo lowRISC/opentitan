@@ -40,7 +40,7 @@ At reset all fields in `ERROR_ENABLE` are set, indicating that all error classes
 - The [`EVENT_ENABLE`](registers.md#event_enable) register should be configured to select which classes of event assert the [`SPI_EVENT`](interfaces.md#interrupts) irq for interrupt driven I/O (e.g. "FIFO empty", "FIFO at the watermark level", or "ready for next command segment").
 At reset all fields in this register are cleared, meaning all event interrupts are disabled, and thus all transactions must be managed by polling the status register.
    - When using the FIFO watermarks to send interrupts, the watermark levels must be set via the [`CONTROL.RX_WATERMARK`](registers.md#control) and [`CONTROL.TX_WATERMARK`](registers.md#control) fields.
-   - **N.B.** While the interrupt is named `SPI_EVENT`, it is signalled as [CIP Status-Type](../../../../doc/contributing/hw/comportability/README.md#cip-interrupt-types) for the purpose of software handling.
+   - **N.B.** While the interrupt is named `SPI_EVENT`, it is signalled as [CIP Status-Type](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#cip-interrupt-types) for the purpose of software handling.
 
 - The event and error interrupts must finally be enabled using the [`INTR_ENABLE`](registers.md#intr_enable) register.
 
@@ -177,4 +177,4 @@ In the event of an error the SPI_HOST IP can be reset under software control usi
 
 ## Device Interface Functions (DIFs)
 
-- [Device Interface Functions](../../../../sw/device/lib/dif/dif_spi_host.h)
+- [Device Interface Functions](../../../../../sw/device/lib/dif/dif_spi_host.h)

@@ -18,10 +18,10 @@
   fusesoc_core: lowrisc:dv:spi_host_sim:1.0
 
   // Testplan hjson file.
-  testplan: "{proj_root}/hw/ip/spi_host/data/spi_host_testplan.hjson"
+  testplan: "{self_dir}/../data/spi_host_testplan.hjson"
 
   // RAL spec - used to generate the RAL model.
-  ral_spec: "{proj_root}/hw/ip/spi_host/data/spi_host.hjson"
+  ral_spec: "{self_dir}/../data/spi_host.hjson"
 
   // Import additional common sim cfg files.
   import_cfgs: [// Project wide common sim cfg file
@@ -40,7 +40,7 @@
   sim_tops: ["spi_host_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Coverage exclusion
-  xcelium_cov_refine_files: ["{proj_root}/hw/ip/spi_host/dv/cov/spi_host_unr_excl.vRefine"]
+  xcelium_cov_refine_files: ["{self_dir}/cov/spi_host_unr_excl.vRefine"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 50

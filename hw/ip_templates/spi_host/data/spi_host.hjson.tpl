@@ -66,7 +66,7 @@
     { name: "NumCS",
       desc: "The number of active-low chip select (cs_n) lines to create.",
       type: "int",
-      default: "1"
+      default: "${num_cs}"
     },
     { name: "TxDepth",
       desc: "The size of the Tx FIFO (in words)",
@@ -90,7 +90,7 @@
     },
     { name:  "csb"
       desc:  '''Chip Select# (One hot, active low).  The size of this port should match NumCS.'''
-      width: "1"
+      width: "${num_cs}"
     }
   ],
   available_inout_list: [
