@@ -41,7 +41,6 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
         REPO_TOP / "hw/ip/rv_dm/data/rv_dm.hjson",
         REPO_TOP / "hw/ip/rv_core_ibex/data/rv_core_ibex.hjson",
         REPO_TOP / "hw/ip/rv_timer/data/rv_timer.hjson",
-        REPO_TOP / "hw/ip/spi_host/data/spi_host.hjson",
         REPO_TOP / "hw/ip/spi_device/data/spi_device.hjson",
         REPO_TOP / "hw/ip/sram_ctrl/data/sram_ctrl.hjson",
         REPO_TOP / "hw/ip/sysrst_ctrl/data/sysrst_ctrl.hjson",
@@ -68,6 +67,10 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
         (
             REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
             REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/",
+        ),
+        (
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/spi_host/data/spi_host.hjson",
+            REPO_TOP / "hw/top_earlgrey/ip_autogen/spi_host/",
         ),
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
         REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",

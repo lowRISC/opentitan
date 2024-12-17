@@ -74,16 +74,6 @@
         "data_file": "hw/ip/entropy_src/data/entropy_src.hjson",
         "report": "/hw/ip/entropy_src/dv"
     },
-    "spi-host-0": {
-        "name": "SPI Host",
-        "data_file": "hw/ip/spi_host/data/spi_host.hjson",
-        "report": "/hw/ip/spi_host/dv"
-    },
-    "spi-host-1": {
-        "name": "SPI Host",
-        "data_file": "hw/ip/spi_host/data/spi_host.hjson",
-        "report": "/hw/ip/spi_host/dv"
-    },
     "usb": {
         "name": "USB",
         "data_file": "hw/ip/usbdev/data/usbdev.hjson",
