@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def github_tools_repos():
+github_tools = module_extension(
+    implementation = lambda _: _github_tools_repos(),
+)
+
+def _github_tools_repos():
     http_archive(
         name = "com_github_gh",
         url = "https://github.com/cli/cli/releases/download/v2.13.0/gh_2.13.0_linux_amd64.tar.gz",

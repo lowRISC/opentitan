@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def llvm_compiler_rt_repos():
+llvm_compiler_rt = module_extension(
+    implementation = lambda _: _llvm_compiler_rt_repos(),
+)
+
+def _llvm_compiler_rt_repos():
     http_archive(
         name = "llvm_compiler_rt",
         build_file = Label("//third_party/llvm_compiler_rt:BUILD.llvm_compiler_rt.bazel"),

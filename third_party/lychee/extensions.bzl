@@ -2,9 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:repo.bzl", "http_archive_or_local")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def lychee_repos(local = None):
+lychee = module_extension(
+    implementation = lambda _: _lychee_repos(),
+)
+
+def _lychee_repos():
     LYCHEE_VERSION = "v0.14.3"
 
     url = "/".join([
@@ -13,10 +17,9 @@ def lychee_repos(local = None):
         "lychee-{}-x86_64-unknown-linux-gnu.tar.gz".format(LYCHEE_VERSION),
     ])
 
-    http_archive_or_local(
+    http_archive(
         name = "lychee",
         url = url,
-        local = local,
         build_file_content = """
 package(default_visibility = ["//visibility:public"])
 exports_files(glob(["**"]))
