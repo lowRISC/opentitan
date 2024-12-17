@@ -365,6 +365,7 @@
       base_addr: {
         hart: "0x30300000",
       },
+      attr: "ipgen",
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",

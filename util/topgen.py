@@ -510,6 +510,19 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     ipgen_render("flash_ctrl", topname, params, out_path)
 
 
+# generate spi_ost with ipgen
+def generate_spi_host(topcfg: Dict[str, object], out_path: Path) -> None:
+    log.info("Generating spi_host with ipgen")
+    topname = topcfg["name"]
+
+    # OpenTitan internal SPI host instances only have 1 CS line
+    params = {
+        "num_cs": 1
+    }
+
+    ipgen_render("spi_host", topname, params, out_path)
+
+
 # generate ac_range_check with ipgen
 def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
     # Not all tops have an ac range check instance
@@ -731,7 +744,8 @@ def _process_top(
         # pre-defined area already.
         log.info("Appending {}".format(ip))
         ip_hjson = out_path / "ip_autogen" / ip / "data" / f"{ip}.hjson"
-        ips.append(ip_hjson)
+        if ip_hjson not in ips:
+            ips.append(ip_hjson)
 
     for ip, reggen_only in top_only_dict.items():
         log.info("Appending {}".format(ip))
@@ -781,7 +795,7 @@ def _process_top(
                 name_to_hjson[ip_name] = ip_desc_file
                 ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
             else:
-                log.error(f"Descrition file not found: {ip_desc_file}")
+                log.error(f"Description file not found: {ip_desc_file}")
                 raise SystemExit(sys.exc_info()[1])
 
     except ValueError:
@@ -790,8 +804,8 @@ def _process_top(
     name_to_block: Dict[str, IpBlock] = {}
     for block in ip_objs:
         lblock = block.name.lower()
-        assert lblock not in name_to_block
-        name_to_block[lblock] = block
+        if lblock not in name_to_block:
+            name_to_block[lblock] = block
 
     # Read in alias files one-by-one, peek inside to figure out which IP block
     # they belong to and apply the alias file to that IP block.
@@ -862,6 +876,10 @@ def _process_top(
     # Generate rstmgr if there is an instance
     if lib.find_module(completecfg['module'], 'rstmgr'):
         generate_rstmgr(completecfg, out_path)
+
+    # Generate spi_host
+    if lib.find_module(completecfg['module'], 'spi_host'):
+        generate_spi_host(completecfg, out_path)
 
     # Generate ac_range_check
     generate_ac_range_check(completecfg, out_path)

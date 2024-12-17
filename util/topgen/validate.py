@@ -630,7 +630,7 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
+def check_clocks_resets(top, ipobjs, xbarobjs, xbar_idxs):
 
     error = 0
 
@@ -644,11 +644,13 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['name'].lower()
+        ipcfg_type = ipcfg['type'].lower()
+        ipobj = next(ip for ip in ipobjs if ip.name == ipcfg_type)
+        assert ipobj
+
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets,
-                                unmanaged_reset_nets)
-        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
-                                unmanaged_clock_srcs)
+        error += validate_reset(ipcfg, ipobj, reset_nets, unmanaged_reset_nets)
+        error += validate_clock(ipcfg, ipobj, clock_srcs, unmanaged_clock_srcs)
 
         if error:
             log.error("module clock/reset checking failed")
@@ -898,7 +900,7 @@ def validate_top(top, ipobjs, xbarobjs):
     error += check_modules(top, component)
 
     # MODULE  check
-    err, ip_idxs = check_target(top, ipobjs, Target(TargetType.MODULE))
+    err, _ = check_target(top, ipobjs, Target(TargetType.MODULE))
     error += err
 
     # XBAR check
@@ -912,7 +914,7 @@ def validate_top(top, ipobjs, xbarobjs):
     check_power_domains(top)
 
     # Clock / Reset check
-    error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
+    error += check_clocks_resets(top, ipobjs, xbarobjs, xbar_idxs)
 
     # RV_PLIC check
 

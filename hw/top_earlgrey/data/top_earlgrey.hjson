@@ -442,6 +442,7 @@
       base_addr: {
         hart: "0x40300000",
       },
+      attr: "ipgen",
     },
     { name: "spi_host1",
       type: "spi_host",
@@ -451,6 +452,7 @@
       base_addr: {
         hart: "0x40310000",
       },
+      attr: "ipgen",
     },
     { name: "usbdev",
       type: "usbdev",
