@@ -7,13 +7,6 @@
 
 workspace(name = "lowrisc_opentitan")
 
-# Google/Bazel dependencies.  This needs to be after Python initialization
-# so that our preferred python configuration takes precedence.
-load("//third_party/google:repos.bzl", "google_repos")
-google_repos()
-load("//third_party/google:deps.bzl", "google_deps")
-google_deps()
-
 # CRT is the Compiler Repository Toolkit.  It contains the configuration for
 # the windows compiler.
 load("//third_party/crt:repos.bzl", "crt_repos")
