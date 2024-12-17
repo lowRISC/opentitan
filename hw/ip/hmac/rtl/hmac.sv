@@ -935,6 +935,11 @@ module hmac
   `ASSERT(ValidHmacEnConditionAssert,
           hmac_en != $past(hmac_en) |-> !in_process && !initiated)
 
+  // When wipe_secret is high, sensitive internal variables are cleared by extending the wipe
+  // value specifed in the register
+  `ASSERT(WipeSecretKeyAssert,
+          wipe_secret |=> (secret_key == {($bits(secret_key)/$bits(wipe_v)){$past(wipe_v)}}))
+
   // All outputs should be known value after reset
   `ASSERT_KNOWN(IntrHmacDoneOKnown, intr_hmac_done_o)
   `ASSERT_KNOWN(IntrFifoEmptyOKnown, intr_fifo_empty_o)
