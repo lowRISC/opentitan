@@ -26,9 +26,9 @@ class SkuConfig:
     target_lc_state: str  # valid: must be in ["dev", "prod", "prod_end"]
     otp: str  # valid: any string
     perso_bin: str  # valid: any string
-    dice_ca: Optional[OrderedDict]  # valid: see CaConfig
-    ext_ca: Optional[OrderedDict]  # valid: see CaConfig
     token_encrypt_key: str
+    dice_ca: Optional[OrderedDict]  # valid: see CaConfig
+    ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
 
     def __post_init__(self):
         # Load CA configs.
