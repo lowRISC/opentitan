@@ -150,6 +150,9 @@ dif_result_t dif_sram_ctrl_scramble(const dif_sram_ctrl_t *sram_ctrl);
  *       C runtime can be invalidated by the call to this function, and must be
  *       re-configured prior to any C code execution.
  *
+ * Note: during an ongoing memory initialization, the hardware ignores the key
+ *       request.
+ *
  * @param sram_ctrl A SRAM Controller handle.
  * @return The result of the operation.
  */
@@ -169,6 +172,9 @@ dif_result_t dif_sram_ctrl_request_new_key(const dif_sram_ctrl_t *sram_ctrl);
  * Note: when dealing with the Main RAM, additional implication is that the
  *       C runtime can be invalidated by the call to this function, and must be
  *       re-configured prior to any C code execution.
+ *
+ * Note: during this memory initialization, the hardware ignores key requests
+ *       that are issued while this operation is pending.
  *
  * @param sram_ctrl A SRAM Controller handle.
  * @return The result of the operation.
