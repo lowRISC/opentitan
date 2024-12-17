@@ -6,6 +6,7 @@ module(name = "lowrisc_opentitan")
 
 # Dependencies:
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
 
 # Dev dependencies:
 bazel_dep(
@@ -20,8 +21,6 @@ include("//third_party/rust:rust.MODULE.bazel")
 include("//third_party/python:python.MODULE.bazel")
 
 include("//third_party/lint:lint.MODULE.bazel")
-
-include("//third_party/google:google.MODULE.bazel")
 
 # Repository rules:
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
