@@ -2,14 +2,17 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:repo.bzl", "http_archive_or_local")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def shellcheck_repos(local = None):
+shellcheck = module_extension(
+    implementation = lambda _: _shellcheck_repos(),
+)
+
+def _shellcheck_repos():
     SHELLCHECK_VERSION = "v0.9.0"
 
-    http_archive_or_local(
+    http_archive(
         name = "shellcheck",
-        local = local,
         url = "https://github.com/koalaman/shellcheck/releases/download/{version}/shellcheck-{version}.linux.x86_64.tar.xz".format(
             version = SHELLCHECK_VERSION,
         ),

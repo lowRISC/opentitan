@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def xkcp_repos():
+xkcp = module_extension(
+    implementation = lambda _: _xkcp_repos(),
+)
+
+def _xkcp_repos():
     http_archive(
         name = "xkcp",
         build_file = Label("//third_party/xkcp:BUILD.xkcp.bazel"),
