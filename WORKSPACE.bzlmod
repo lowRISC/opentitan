@@ -18,75 +18,6 @@ crt_deps()
 load("@crt//config:registration.bzl", "crt_register_toolchains")
 crt_register_toolchains(riscv32 = True)
 
-# Tools for release automation
-load("//third_party/github:repos.bzl", "github_tools_repos")
-github_tools_repos()
-
-# Lychee link checker.
-load("//third_party/lychee:repos.bzl", "lychee_repos")
-lychee_repos()
-
-# Rust Toolchain + crates.io Dependencies
-load("//third_party/rust:repos.bzl", "rust_repos")
-rust_repos()
-
-# Shellcheck
-load("//third_party/shellcheck:repos.bzl", "shellcheck_repos")
-shellcheck_repos()
-
-# Tock dependencies.
-load("//third_party/tock:repos.bzl", tock_repos="tock_repos")
-tock_repos(
-    # For developing tock/libtock along side OpenTitan, set these parameters
-    # to your local checkout of tock and libtock-rs respectively.
-    #tock = "../tock",
-    #libtock = "../libtock-rs",
-)
-
-# OpenOCD
-load("//third_party/openocd:repos.bzl", "openocd_repos")
-openocd_repos()
-
-# FreeRTOS; used by the OTTF
-load("//third_party/freertos:repos.bzl", "freertos_repos")
-freertos_repos()
-
-# LLVM Compiler Runtime for Profiling
-load("//third_party/llvm_compiler_rt:repos.bzl", "llvm_compiler_rt_repos")
-llvm_compiler_rt_repos()
-
-# RISC-V Compliance Tests
-load("//third_party/riscv-compliance:repos.bzl", "riscv_compliance_repos")
-riscv_compliance_repos()
-
-# CoreMark benchmark
-load("//third_party/coremark:repos.bzl", "coremark_repos")
-coremark_repos()
-
-# The standard Keccak algorithms
-load("//third_party/xkcp:repos.bzl", "xkcp_repos")
-xkcp_repos()
-
-# HSM related repositories (SoftHSM2, etc)
-load("//third_party/hsm:repos.bzl", "hsm_repos")
-hsm_repos()
-
-# NIST CAVP Test Vectors
-load("//third_party/nist_cavp_testvectors:repos.bzl", "nist_cavp_repos")
-nist_cavp_repos()
-
-# Wycheproof Test Vectors
-load("//third_party/wycheproof:repos.bzl", "wycheproof_repos")
-wycheproof_repos()
-
-# SPHINCS+ Test Vectors
-load("//third_party/sphincsplus:repos.bzl", "sphincsplus_repos")
-sphincsplus_repos()
-
-# CBOR reader & writer from open-dice
-load("//third_party/open-dice:repos.bzl", "open_dice_repos")
-open_dice_repos()
-
 # Setup for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
 load("//rules:hooks_setup.bzl", "hooks_setup", "provisioning_exts_setup", "secure_hooks_setup")
@@ -116,10 +47,6 @@ provisioning_exts_repo(name = "provisioning_exts")
 # The nonhermetic_repo imports environment variables needed to run vivado.
 load("//rules:nonhermetic.bzl", "nonhermetic_repo")
 nonhermetic_repo(name = "nonhermetic")
-
-# Binary firmware image for HyperDebug
-load("//third_party/hyperdebug:repos.bzl", "hyperdebug_repos")
-hyperdebug_repos()
 
 register_toolchains(
     "//rules/opentitan:localtools",

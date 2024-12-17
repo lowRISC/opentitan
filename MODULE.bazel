@@ -39,3 +39,73 @@ include("//third_party/python:python.MODULE.bazel")
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
 
 bitstreams_repo(name = "bitstreams")
+
+# Source repositories (not Bazel-aware):
+github_tools = use_extension("//third_party/github:extensions.bzl", "github_tools")
+use_repo(github_tools, "com_github_gh")
+
+lychee = use_extension("//third_party/lychee:extensions.bzl", "lychee")
+use_repo(lychee, "lychee")
+
+serde_annotate = use_extension("//third_party/rust:extensions.bzl", "serde_annotate")
+use_repo(serde_annotate, "lowrisc_serde_annotate")
+
+shellcheck = use_extension("//third_party/shellcheck:extensions.bzl", "shellcheck")
+use_repo(shellcheck, "shellcheck")
+
+tock = use_extension("//third_party/tock:extensions.bzl", "tock")
+use_repo(tock, "elf2tab", "libtock", "tock")
+
+openocd = use_extension("//third_party/openocd:extensions.bzl", "openocd")
+use_repo(openocd, "openocd")
+
+freertos = use_extension("//third_party/freertos:extensions.bzl", "freertos")
+use_repo(freertos, "freertos")
+
+llvm_compiler_rt = use_extension("//third_party/llvm_compiler_rt:extensions.bzl", "llvm_compiler_rt")
+use_repo(llvm_compiler_rt, "llvm_compiler_rt")
+
+riscv_compliance = use_extension("//third_party/riscv-compliance:extensions.bzl", "riscv_compliance")
+use_repo(riscv_compliance, "riscv-compliance")
+
+coremark = use_extension("//third_party/coremark:extensions.bzl", "coremark")
+use_repo(coremark, "coremark")
+
+xkcp = use_extension("//third_party/xkcp:extensions.bzl", "xkcp")
+use_repo(xkcp, "xkcp")
+
+hsm = use_extension("//third_party/hsm:extensions.bzl", "hsm")
+use_repo(hsm, "cloud_kms_hsm", "sc_hsm", "softhsm2")
+
+nist_cavp = use_extension("//third_party/nist_cavp_testvectors:extensions.bzl", "nist_cavp")
+use_repo(
+    nist_cavp,
+    "nist_cavp_aes_gcm",
+    "nist_cavp_aes_kat",
+    "nist_cavp_aes_kw_sp_800_38f",
+    "nist_cavp_drbg_sp_800_90a_root",
+    "nist_cavp_ecdh_sp_800_56a",
+    "nist_cavp_ecdsa_fips_186_4",
+    "nist_cavp_hmac_fips_198_1",
+    "nist_cavp_rsa_fips_186_3",
+    "nist_cavp_sha2_fips_180_4",
+    "nist_cavp_sha3_fips_202",
+    "nist_cavp_shake_fips_202",
+)
+
+wycheproof = use_extension("//third_party/wycheproof:extensions.bzl", "wycheproof")
+use_repo(wycheproof, "wycheproof")
+
+sphincsplus = use_extension("//third_party/sphincsplus:extensions.bzl", "sphincsplus")
+use_repo(
+    sphincsplus,
+    "sphincsplus_fips205_ipd",
+    "sphincsplus_sha256_kat",
+    "sphincsplus_shake256_kat",
+)
+
+open_dice = use_extension("//third_party/open-dice:extensions.bzl", "open_dice")
+use_repo(open_dice, "open-dice")
+
+hyperdebug = use_extension("//third_party/hyperdebug:extensions.bzl", "hyperdebug")
+use_repo(hyperdebug, "hyperdebug_firmware")
