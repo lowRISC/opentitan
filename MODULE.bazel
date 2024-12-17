@@ -5,6 +5,7 @@
 module(name = "lowrisc_opentitan")
 
 bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "buildifier_prebuilt", version = "6.4.0")
 
 include("//third_party/rust:rust.MODULE.bazel")
 
