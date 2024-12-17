@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def coremark_repos():
+coremark = module_extension(
+    implementation = lambda _: _coremark_repos(),
+)
+
+def _coremark_repos():
     http_archive(
         name = "coremark",
         build_file = Label("//third_party/coremark:BUILD.coremark.bazel"),

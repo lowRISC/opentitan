@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def wycheproof_repos():
+wycheproof = module_extension(
+    implementation = lambda _: _wycheproof_repos(),
+)
+
+def _wycheproof_repos():
     http_archive(
         name = "wycheproof",
         build_file = Label("//third_party/wycheproof:BUILD.wycheproof_common.bazel"),
