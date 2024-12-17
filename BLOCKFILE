@@ -61,7 +61,6 @@ hw/ip/rv_core_ibex/rtl/*
 hw/ip/rv_dm/rtl/*
 hw/ip/rv_timer/rtl/*
 hw/ip/spi_device/rtl/*
-hw/ip/spi_host/rtl/*
 hw/ip/sram_ctrl/rtl/*
 hw/ip/sysrst_ctrl/rtl/*
 hw/ip/tlul/rtl/*
@@ -117,6 +116,7 @@ hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
 hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson
+hw/top_earlgrey/ip_autogen/spi_host/data/spi_host.hjson
 
 hw/top_earlgrey/data/top_earlgrey.hjson
 hw/top_earlgrey/data/xbar_main.hjson
