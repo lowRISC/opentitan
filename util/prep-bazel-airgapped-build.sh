@@ -145,10 +145,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @lowrisc_rv32imcb_files//... \
     @local_config_platform//... \
     @python3_toolchains//... \
-    @riscv-compliance//... \
-    @rules_foreign_cc//toolchains/... \
-    @ninja_1.11.0_linux//... \
-    @cmake-3.23.2-linux-x86_64//...
+    @riscv-compliance//...
   ${BAZELISK} vendor --vendor_dir=${BAZEL_AIRGAPPED_DIR}/${BAZEL_VENDORDIR} //...
   # We don't need all bitstreams in the cache, we just need the latest one so
   # that the cache is "initialized" and "offline" mode will work correctly.
