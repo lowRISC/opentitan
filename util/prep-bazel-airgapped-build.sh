@@ -142,7 +142,6 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @go_sdk//... \
     @lowrisc_rv32imcb_files//... \
     @local_config_platform//... \
     @ot_python_wheels//... \
