@@ -58,8 +58,8 @@ mkdir -p ${ORCHESTRATOR_RUN_DIR}
 cd ${ORCHESTRATOR_RUN_DIR}
 cp ${REPO_TOP}/bazel-bin/sw/host/provisioning/orchestrator/src/orchestrator.zip .
 
-
 export ORCHESTRATOR_ZIP="${ORCHESTRATOR_RUN_DIR}/orchestrator.zip"
+unzip ${ORCHESTRATOR_ZIP} "runfiles/sc_hsm/*"
 
 # Run tool. The path to the --sku-config parameter is relative to the
 # workspace root.
