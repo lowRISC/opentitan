@@ -644,7 +644,7 @@ module aon_timer_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (),
+    .qe     (reg2hw.wkup_ctrl.prescaler.qe),
     .q      (reg2hw.wkup_ctrl.prescaler.q),
     .ds     (),
 
