@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def freertos_repos():
+freertos = module_extension(
+    implementation = lambda _: _freertos_repos(),
+)
+
+def _freertos_repos():
     http_archive(
         name = "freertos",
         build_file = Label("//third_party/freertos:BUILD.freertos.bazel"),

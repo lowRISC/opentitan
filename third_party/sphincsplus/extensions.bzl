@@ -2,10 +2,13 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:repo.bzl", "http_archive_or_local")
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def sphincsplus_repos(local = None):
+sphincsplus = module_extension(
+    implementation = lambda _: _sphincsplus_repos(),
+)
+
+def _sphincsplus_repos(local = None):
     http_archive(
         name = "sphincsplus_shake256_kat",
         build_file = Label("@lowrisc_opentitan//third_party/sphincsplus:BUILD.sphincsplus_common.bazel"),
@@ -28,9 +31,8 @@ def sphincsplus_repos(local = None):
             "https://storage.googleapis.com/ot-crypto-test-vectors/sphincsplus/sphincsplus_sha256_128s_fips205-ipd.zip",
         ],
     )
-    http_archive_or_local(
+    http_archive(
         name = "sphincsplus_fips205_ipd",
-        local = local,
         url = "https://github.com/sphincs/sphincsplus/archive/129b72c80e122a22a61f71b5d2b042770890ccee.tar.gz",
         strip_prefix = "sphincsplus-129b72c80e122a22a61f71b5d2b042770890ccee/ref",
         build_file = "@lowrisc_opentitan//third_party/sphincsplus:BUILD.sphincsplus.bazel",

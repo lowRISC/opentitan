@@ -2,13 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:repo.bzl", "http_archive_or_local")
+load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def openocd_repos(local = None):
+openocd = module_extension(
+    implementation = lambda _: _openocd_repos(),
+)
+
+def _openocd_repos():
     OPENOCD_VERSION = "0.12.0"
-    http_archive_or_local(
+    http_archive(
         name = "openocd",
-        local = local,
         urls = [
             # The sourceforge URL is the canonical one, but the site is not reliable and slow to download.
             # Prefer to use Debian mirror of the tar ball and have sourceforge as backup.
