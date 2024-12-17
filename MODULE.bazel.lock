@@ -4584,7 +4584,7 @@
           "@@//third_party/rust/Cargo.lock": "18e7bab3feba348ad70ccce9888b8e41b05cc15fb6a0abda2c5bb027f4e31997",
           "@@//third_party/tock/Cargo.lock": "b5a7a833ae205f1e3697a510e97e3185b44b195d7a22879b4669bff95febd5c8",
           "@@//third_party/tock/Cargo.toml": "5a939bd934aef4775b65a82e678f1180ec00aa78cf214f6052cc82353c975cc4",
-          "@@//MODULE.bazel": "51690bc1883ae24f745d9c973e9a1d0b1fd9381ef0de1f584a2ee80f05baac70",
+          "@@//MODULE.bazel": "d9ae86ae5f45fc5015424b4c6aa4a975f24a7ef2ce98c186a1ec9f28331b7368",
           "@@//third_party/rust/Cargo.toml": "2fbe1a86bcee488ed55298ff7aa0b08965e9f57bc922f7edbc2386443f95c32b",
           "@@rules_rust~~rust_host_tools~rust_host_tools//WORKSPACE.bazel": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
