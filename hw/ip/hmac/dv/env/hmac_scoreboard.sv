@@ -629,6 +629,12 @@ task hmac_scoreboard::hmac_process_fifo_status();
     hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
     hmac_fifo_empty = hmac_fifo_depth == 0;
 
+    // Check whether FIFO full should be cleared (for another reason than the emptiness)
+    if (hmac_start_posedge || hmac_process_posedge || hmac_stopped_posedge ||
+        hmac_continue_posedge) begin
+      fifo_full_detected = 0;
+    end
+
     // The FIFO empty interrupt is raised only if the message FIFO is actually writable by
     // software, i.e., if all of the following conditions are met:
     //   1- The HMAC block is not running in HMAC mode and performing the second round of
@@ -653,11 +659,11 @@ task hmac_scoreboard::hmac_process_fifo_status();
       end
     join_none
 
+    // Reset full flag when emptiness has been reached
+    if (hmac_fifo_empty) begin
+      fifo_full_detected = 0;
     // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
     // have the priority in case full is set at the same moment
-    if (hmac_fifo_empty || hmac_start_posedge || hmac_process_posedge ||
-        hmac_stopped_posedge || hmac_continue_posedge) begin
-      fifo_full_detected = 0;
     end else if (hmac_fifo_full) begin
       fifo_full_detected = 1;
     end
