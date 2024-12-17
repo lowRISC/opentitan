@@ -113,7 +113,6 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
   uvm_reg csr;
   string  csr_name;
   bit     do_read_check           = 1'b1;
-  bit     do_cycle_accurate_check = 1'b1;
   bit     write                   = item.is_write();
   bit [TL_AW-1:0] addr_mask       = ral.get_addr_mask();
   uvm_reg_addr_t  csr_addr        = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
@@ -373,9 +372,9 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
     // Update expected status register
     if (csr_name == "status") begin
       hmac_status_data = (hmac_idle       << HmacStaIdle)         |
-                          (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
-                          (hmac_fifo_full  << HmacStaMsgFifoFull)  |
-                          (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
+                         (hmac_fifo_empty << HmacStaMsgFifoEmpty) |
+                         (hmac_fifo_full  << HmacStaMsgFifoFull)  |
+                         (hmac_fifo_depth << HmacStaMsgFifoDepthLsb);
       void'(ral.status.predict(.value(hmac_status_data), .kind(UVM_PREDICT_READ)));
     // Update expected FIFO Empty interrupt register
     end else if (csr_name == "intr_state") begin
@@ -390,9 +389,6 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
   if (!write) begin
     case (csr_name)
       "intr_state": begin
-        if (!do_cycle_accurate_check) begin
-          do_read_check = 0;
-        end
         if (cfg.en_cov) begin
           bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
           hmac_intr_e     intr;
@@ -482,8 +478,21 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
         return;
       end
       "status": begin
-        if (!do_cycle_accurate_check || cfg.sar_skip_ctxt) begin
+        bit [5:0] rd_fifo_depth = item.d_data[HmacStaMsgFifoDepthMsb:HmacStaMsgFifoDepthLsb];
+        if (cfg.sar_skip_ctxt) begin
           do_read_check = 0;
+        end else begin
+          // We don't really need to be cycle accurate for this status register, instead we
+          // tolerate +1
+          if ((`gmv(ral.status.fifo_depth)   != rd_fifo_depth) &&
+              (`gmv(ral.status.fifo_depth)+1 != rd_fifo_depth)) begin
+            `uvm_error(`gfn, $sformatf({"Check failed, read status.fifo_depth is not matching ",
+                "expected value, not even with tolerance of +1: got 0x%0d but exp 0x%0h"},
+                rd_fifo_depth, `gmv(ral.status.fifo_depth)))
+          // Update the expected value to the read value to get the check pass
+          end else begin
+            void'(ral.status.fifo_depth.predict(.value(rd_fifo_depth), .kind(UVM_PREDICT_READ)));
+          end
         end
         if (cfg.en_cov) cov.status_cg.sample(item.d_data, `gmv(ral.cfg));
       end
@@ -598,7 +607,7 @@ task hmac_scoreboard::hmac_process_fifo_wr();
       if ((hmac_wr_cnt - hmac_rd_cnt) == HMAC_MSG_FIFO_DEPTH_WR) begin
         wait((hmac_wr_cnt - hmac_rd_cnt) < HMAC_MSG_FIFO_DEPTH_WR);
       end
-      @(negedge cfg.clk_rst_vif.clk);
+      cfg.clk_rst_vif.wait_n_clks(1);
       if (!hmac_stopped) begin
         hmac_wr_cnt++;
         `uvm_info(`gfn, $sformatf("increase wr cnt %0d", hmac_wr_cnt), UVM_HIGH)
@@ -611,60 +620,74 @@ endtask : hmac_process_fifo_wr
 task hmac_scoreboard::hmac_process_fifo_status();
   bit pre_fifo_empty_intr;
   forever @(hmac_wr_cnt, hmac_rd_cnt, hmac_process, hmac_start, hmac_stopped, hmac_continue) begin
-    // Store hmac_process and hmac_start to be able to detect when it goes up, as it could remain
-    // up for a while
-    bit hmac_process_posedge  = hmac_process & ~hmac_process_last;
-    bit hmac_start_posedge    = hmac_start & ~hmac_start_last;
-    bit hmac_stopped_posedge  = hmac_stopped & ~hmac_stopped_last;
-    bit hmac_continue_posedge = hmac_continue & ~hmac_continue_last;
+    // Spawn a thread as an event from the list above might occur during the time we wait
+    // for the clock cycle (later in this thread).
+    fork begin
+      // Store hmac_process and hmac_start to be able to detect when it goes up, as it could remain
+      // up for a while
+      bit hmac_process_posedge  = hmac_process & ~hmac_process_last;
+      bit hmac_start_posedge    = hmac_start & ~hmac_start_last;
+      bit hmac_stopped_posedge  = hmac_stopped & ~hmac_stopped_last;
+      bit hmac_continue_posedge = hmac_continue & ~hmac_continue_last;
 
-    // Store last value to be able to detect signal change
-    hmac_process_last  = hmac_process;
-    hmac_stopped_last  = hmac_stopped;
-    hmac_start_last    = hmac_start;
-    hmac_continue_last = hmac_continue;
+      // Store last value to be able to detect signal change
+      hmac_process_last  = hmac_process;
+      hmac_stopped_last  = hmac_stopped;
+      hmac_start_last    = hmac_start;
+      hmac_continue_last = hmac_continue;
 
-    // when hmac_wr_cnt and hmac_rd_cnt update at the same time, wait the clock rising edge
-    // to guarantee get both update and at the same time as the DUT
-    cfg.clk_rst_vif.wait_clks(1);
+      // When hmac_wr_cnt and hmac_rd_cnt update at the same time, wait for the clock rising edge
+      // to guarantee both get updated and at the same time as the DUT
+      cfg.clk_rst_vif.wait_clks(1);
 
-    // Compute FIFO level flags
-    hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
-    hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
-    hmac_fifo_empty = hmac_fifo_depth == 0;
+      // Compute FIFO level flags
+      hmac_fifo_depth = hmac_wr_cnt - hmac_rd_cnt;
+      hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
+      hmac_fifo_empty = hmac_fifo_depth == 0;
 
-    // The FIFO empty interrupt is raised only if the message FIFO is actually writable by
-    // software, i.e., if all of the following conditions are met:
-    //   1- The HMAC block is not running in HMAC mode and performing the second round of
-    //      computing the final hash of the outer key as well as the result of the first round
-    //      using the inner key.
-    //   2- Software has not yet written the Process or Stop command to finish the hashing
-    //      operation.
-    //   3- The message FIFO must also have been full previously. Otherwise, the hardware empties
-    //      the FIFO faster than software can fill it and there is no point in interrupting the
-    //      software to inform it about the message FIFO being empty.
-    if (fifo_full_detected && hmac_fifo_empty) begin
-      pre_fifo_empty_intr = 1;
-    end else begin
-      pre_fifo_empty_intr = 0;
-    end
-
-    // Delay FIFO empty signal to be aligned with the DUT behavior
-    fork
-      begin
-        cfg.clk_rst_vif.wait_clks(1);
-        fifo_empty_intr = pre_fifo_empty_intr;
+      // Check whether FIFO full should be cleared (for another reason than the emptiness)
+      if (hmac_start_posedge || hmac_process_posedge || hmac_stopped_posedge ||
+          hmac_continue_posedge) begin
+        fifo_full_detected = 0;
       end
-    join_none
 
-    // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
-    // have the priority in case full is set at the same moment
-    if (hmac_fifo_empty || hmac_start_posedge || hmac_process_posedge ||
-        hmac_stopped_posedge || hmac_continue_posedge) begin
-      fifo_full_detected = 0;
-    end else if (hmac_fifo_full) begin
-      fifo_full_detected = 1;
-    end
+      // The FIFO empty interrupt is raised only if the message FIFO is actually writable by
+      // software, i.e., if all of the following conditions are met:
+      //   1- The HMAC block is not running in HMAC mode and performing the second round of
+      //      computing the final hash of the outer key as well as the result of the first round
+      //      using the inner key.
+      //   2- Software has not yet written the Process or Stop command to finish the hashing
+      //      operation.
+      //   3- The message FIFO must also have been full previously. Otherwise, the hardware empties
+      //      the FIFO faster than software can fill it and there is no point in interrupting the
+      //      software to inform it about the message FIFO being empty.
+      if (fifo_full_detected && hmac_fifo_empty) begin
+        pre_fifo_empty_intr = 1;
+      end else begin
+        pre_fifo_empty_intr = 0;
+      end
+
+      // Delay FIFO empty signal to be aligned with the DUT behavior
+      fork
+        begin
+          cfg.clk_rst_vif.wait_clks(1);
+          fifo_empty_intr = pre_fifo_empty_intr;
+        end
+      join_none
+
+      // Ensures that FIFO levels have been updated as a read and write may have race conditions
+      // and 2 processes are spawned in parallel. And wait on the second negative edge to be sure
+      // that empty/full flags will be up to date.
+      cfg.clk_rst_vif.wait_n_clks(2);
+      // Reset full flag when emptiness has been reached
+      if (hmac_fifo_empty) begin
+        fifo_full_detected = 0;
+      // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
+      // have the priority in case full is set at the same moment
+      end else if (hmac_fifo_full) begin
+        fifo_full_detected = 1;
+      end
+    end join_none
   end
 endtask : hmac_process_fifo_status
 
