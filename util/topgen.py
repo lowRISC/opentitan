@@ -649,29 +649,33 @@ def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
         with rendered_path.open(mode="w", encoding="UTF-8") as fout:
             fout.write(template_contents)
 
-    # The Rust file needs some complex information, so we initialize this
-    # object to store it.
-    rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
-
-    rust_files = [("toplevel_mod.rs.tpl", "mod.rs"),
-                  ("toplevel.rs.tpl", f"top_{topname}.rs")]
-
     # Create Rust output directory
     rsformat_dir = out_path / "sw/autogen/chip/"
     rsformat_dir.mkdir(parents=True, exist_ok=True)
 
     # Generating Rust device description for external sw usage
-    for (template, source) in rust_files:
-        render_template(topgen_template_path / template,
-                        rsformat_dir / source,
+    render_template(topgen_template_path / 'toplevel_mod.rs.tpl',
+                    rsformat_dir / 'mod.rs')
+
+    for addr_space in completecfg['addr_spaces']:
+        default_addr_space = addr_space.get('default', False)
+        addr_space_suffix = lib.get_addr_space_suffix(addr_space)
+
+        # The Rust file needs some complex information, so we initialize this
+        # object to store it.
+        rs_helper = TopGenRust(completecfg, name_to_block, addr_space['name'], version_stamp)
+
+        render_template(topgen_template_path / 'toplevel.rs.tpl',
+                        rsformat_dir / f"top_{topname}{addr_space_suffix}.rs",
                         helper=rs_helper)
 
-    # Generate Rust host-side files
-    rsformat_dir = src_tree_top / "sw/host/opentitanlib/src/chip/autogen"
-    rsformat_dir.mkdir(parents=True, exist_ok=True)
-    render_template(topgen_template_path / "host_toplevel.rs.tpl",
-                    rsformat_dir / f"{topname}.rs",
-                    helper=rs_helper)
+        if default_addr_space:
+            # Generate Rust host-side files
+            rsformat_dir = src_tree_top / 'sw/host/opentitanlib/src/chip/autogen'
+            rsformat_dir.mkdir(parents=True, exist_ok=True)
+            render_template(topgen_template_path / 'host_toplevel.rs.tpl',
+                            rsformat_dir / f"{topname}.rs",
+                            helper=rs_helper)
 
 
 def _process_top(
@@ -1209,7 +1213,7 @@ def main():
                 fout.write(template_contents)
 
         # Header for SV files
-        gencmd = warnhdr + """//
+        gencmd_sv = warnhdr + """//
 // util/topgen.py -t hw/{top_name}/data/{top_name}.hjson \\
 //                -o hw/{top_name}/ \\
 //                --rnd_cnst_seed \\
@@ -1223,7 +1227,7 @@ def main():
         # "toplevel.sv.tpl" -> "rtl/autogen/{top_name}.sv"
         render_template(top_template_path / "toplevel.sv.tpl",
                         out_path / "rtl" / "autogen" / f"{top_name}.sv",
-                        gencmd=gencmd)
+                        gencmd=gencmd_sv)
 
         # Multiple chip-levels (ASIC, FPGA, Verilator, etc)
         for target in topcfg["targets"]:
@@ -1231,73 +1235,91 @@ def main():
             render_template(top_template_path / "chiplevel.sv.tpl",
                             out_path /
                             f"rtl/autogen/chip_{topname}_{target_name}.sv",
-                            gencmd=gencmd,
+                            gencmd=gencmd_sv,
                             target=target)
-
-        # The C / SV file needs some complex information, so we initialize this
-        # object to store it.
-        c_helper = TopGenCTest(completecfg, name_to_block)
-
-        # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}_pkg.sv"
-        render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
-                        out_path / "rtl" / "autogen" / f"{top_name}_pkg.sv",
-                        helper=c_helper,
-                        gencmd=gencmd)
 
         # compile-time random netlist constants
         render_template(TOPGEN_TEMPLATE_PATH / "toplevel_rnd_cnst_pkg.sv.tpl",
                         out_path / f"rtl/autogen/{top_name}_rnd_cnst_pkg.sv",
-                        gencmd=gencmd)
+                        gencmd=gencmd_sv)
 
-        # Since SW does not use FuseSoC and instead expects those files always
-        # to be in hw/top_{topname}/sw/autogen, we currently create these files
-        # twice:
-        # - Once under out_path/sw/autogen
-        # - Once under hw/top_{topname}/sw/autogen
-        root_paths = [out_path.resolve(), SRCTREE_TOP]
-        out_paths = [
-            out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
-        ]
-        for idx, path in enumerate(out_paths):
-            # C Header + C File + Clang-format file
+        for addr_space in topcfg['addr_spaces']:
+            default_addr_space = addr_space.get('default', False)
+            addr_space_suffix = lib.get_addr_space_suffix(addr_space)
 
-            # "clang-format" -> "sw/autogen/.clang-format"
-            cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
-            cformat_dir = path / "sw" / "autogen"
-            cformat_dir.mkdir(parents=True, exist_ok=True)
-            cformat_path = cformat_dir / ".clang-format"
-            cformat_path.write_text(cformat_tplpath.read_text())
+            # The C / SV file needs some complex information, so we initialize this
+            # object to store it.
+            c_helper = TopGenCTest(completecfg, name_to_block, addr_space['name'])
 
-            # Save the header macro prefix into `c_helper`
-            rel_header_dir = cformat_dir.relative_to(root_paths[idx])
-            c_helper.header_macro_prefix = (
-                "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
+            # "toplevel_pkg.sv.tpl" -> "rtl/autogen/{top_name}{addr_space_suffix}_pkg.sv"
+            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_pkg.sv.tpl",
+                            out_path / "rtl" / "autogen" / f"{top_name}{addr_space_suffix}_pkg.sv",
+                            helper=c_helper,
+                            gencmd=gencmd_sv)
 
-            # "{top_name}.h.tpl" -> "sw/autogen/{top_name}.h"
-            cheader_path = cformat_dir / f"{top_name}.h"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
-                            cheader_path,
-                            helper=c_helper)
+            # Since SW does not use FuseSoC and instead expects those files always
+            # to be in hw/top_{topname}/sw/autogen, we currently create these files
+            # twice:
+            # - Once under out_path/sw/autogen
+            # - Once under hw/top_{topname}/sw/autogen
+            root_paths = [out_path.resolve(), SRCTREE_TOP]
+            out_paths = [
+                out_path.resolve(), (SRCTREE_TOP / "hw" / top_name).resolve()
+            ]
+            for idx, path in enumerate(out_paths):
+                # C Header + C File + Clang-format file
 
-            # Save the relative header path into `c_helper`
-            rel_header_path = cheader_path.relative_to(root_paths[idx])
-            c_helper.header_path = str(rel_header_path)
+                # "clang-format" -> "sw/autogen/.clang-format"
+                cformat_tplpath = TOPGEN_TEMPLATE_PATH / "clang-format"
+                cformat_dir = path / "sw" / "autogen"
+                cformat_dir.mkdir(parents=True, exist_ok=True)
+                cformat_path = cformat_dir / ".clang-format"
+                cformat_path.write_text(cformat_tplpath.read_text())
 
-            # "toplevel.c.tpl" -> "sw/autogen/{top_name}.c"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
-                            cformat_dir / f"{top_name}.c",
-                            helper=c_helper)
+                # Save the header macro prefix into `c_helper`
+                rel_header_dir = cformat_dir.relative_to(root_paths[idx])
+                c_helper.header_macro_prefix = (
+                    "OPENTITAN_" + str(rel_header_dir).replace("/", "_").upper())
 
-            # "toplevel_memory.ld.tpl" -> "sw/autogen/{top_name}_memory.ld"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
-                            cformat_dir / f"{top_name}_memory.ld",
-                            helper=c_helper)
+                # "{top_name}.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}.h"
+                cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}.h"
+                render_template(TOPGEN_TEMPLATE_PATH / "toplevel.h.tpl",
+                                cheader_path,
+                                helper=c_helper)
 
-            # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}_memory.h"
-            memory_cheader_path = cformat_dir / f"{top_name}_memory.h"
-            render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
-                            memory_cheader_path,
-                            helper=c_helper)
+                # Save the relative header path into `c_helper`
+                rel_header_path = cheader_path.relative_to(root_paths[idx])
+                c_helper.header_path = str(rel_header_path)
+
+                # "toplevel.c.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}.c"
+                render_template(TOPGEN_TEMPLATE_PATH / "toplevel.c.tpl",
+                                cformat_dir / f"{top_name}{addr_space_suffix}.c",
+                                helper=c_helper)
+
+                # "toplevel_memory.h.tpl" -> "sw/autogen/{top_name}{addr_space_suffix}_memory.h"
+                memory_cheader_path = cformat_dir / f"{top_name}{addr_space_suffix}_memory.h"
+                render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.h.tpl",
+                                memory_cheader_path,
+                                helper=c_helper)
+
+                if default_addr_space:
+                    # "toplevel_memory.ld.tpl" ->
+                    #   "sw/autogen/{top_name}{addr_space_suffix}_memory.ld"
+                    render_template(TOPGEN_TEMPLATE_PATH / "toplevel_memory.ld.tpl",
+                                    cformat_dir / f"{top_name}{addr_space_suffix}_memory.ld",
+                                    helper=c_helper)
+
+                    # Auto-generate tests in "sw/device/tests/autogen" area.
+                    gencmd = warnhdr + GENCMD.format(top_name=top_name)
+                    for fname in ["plic_all_irqs_test.c", "alert_test.c", "BUILD"]:
+                        outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
+                        render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+                                        outfile,
+                                        helper=c_helper,
+                                        gencmd=gencmd)
+
+                    # generate documentation for toplevel
+                    gen_top_docs(completecfg, c_helper, out_path)
 
         # generate chip level xbar and alert_handler TB
         tb_files = [
@@ -1311,7 +1333,7 @@ def main():
             template_contents = generate_top(completecfg,
                                              name_to_block,
                                              str(xbar_chip_data_path),
-                                             gencmd=gencmd)
+                                             gencmd=gencmd_sv)
 
             rendered_dir = out_path / "dv/autogen"
             rendered_dir.mkdir(parents=True, exist_ok=True)

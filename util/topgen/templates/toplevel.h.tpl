@@ -10,10 +10,15 @@ has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 has_rstmgr = lib.find_module(top['module'], 'rstmgr')
+
+if helper.addr_space == helper.default_addr_space:
+    header_suffix = top["name"].upper()
+else:
+    header_suffix = "_".join([top["name"], helper.addr_space]).upper()
 %>\
 
-#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
-#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
+#ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_H_
+#define ${helper.header_macro_prefix}_TOP_${header_suffix}_H_
 
 /**
  * @file
@@ -91,6 +96,7 @@ extern "C" {
 #define ${size_bytes_name} ${hex_size_bytes}
 
 % endfor
+% if helper.addr_space == helper.default_addr_space:
 
 /**
  * PLIC Interrupt Source Peripheral.
@@ -230,6 +236,7 @@ ${helper.clkmgr_gateable_clocks.render()}
  */
 ${helper.clkmgr_hintable_clocks.render()}
 % endif
+% endif
 % for (subspace_name, description, subspace_range) in helper.subranges:
 
 /**
@@ -248,4 +255,4 @@ ${helper.clkmgr_hintable_clocks.render()}
 }  // extern "C"
 #endif
 
-#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${header_suffix}_H_

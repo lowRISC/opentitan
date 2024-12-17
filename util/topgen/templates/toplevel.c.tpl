@@ -8,7 +8,8 @@ has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name
 %>\
 
 #include "${helper.header_path}"
-% if has_alert_handler:
+% if helper.addr_space == helper.default_addr_space:
+  % if has_alert_handler:
 
 /**
  * Alert Handler Alert Source to Peripheral Map
@@ -26,3 +27,4 @@ ${helper.alert_mapping.render_definition()}
  * `${helper.plic_sources.name.as_c_type()}`.
  */
 ${helper.plic_mapping.render_definition()}
+% endif
