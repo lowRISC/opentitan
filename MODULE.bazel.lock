@@ -13833,7 +13833,7 @@
     "@@toolchains_llvm~//toolchain/extensions:llvm.bzl%llvm": {
       "general": {
         "bzlTransitiveDigest": "y9h5L2NtWbogyWSOJgqnUaU50MTPWAW+waelXSirMVg=",
-        "usagesDigest": "VkFLWYT36e0E0cIEzYI8Sea6Ww4GK5ceD6oJqC8Xof8=",
+        "usagesDigest": "rLVMj6eOgABtP4ips+cZcV7gYaHOzFZuze2E/BeOZH0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -13882,9 +13882,17 @@
                 "": "10.0.0"
               },
               "netrc": "",
-              "sha256": {},
-              "strip_prefix": {},
-              "urls": {}
+              "sha256": {
+                "": "b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843"
+              },
+              "strip_prefix": {
+                "": "clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04"
+              },
+              "urls": {
+                "": [
+                  "https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"
+                ]
+              }
             }
           }
         },
