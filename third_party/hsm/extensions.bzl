@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def hsm_repos():
+hsm = module_extension(
+    implementation = lambda _: _hsm_repos(),
+)
+
+def _hsm_repos():
     http_archive(
         name = "softhsm2",
         build_file = Label("//third_party/hsm:BUILD.softhsm2.bazel"),

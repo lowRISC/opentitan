@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def nist_cavp_repos():
+nist_cavp = module_extension(
+    implementation = lambda _: _nist_cavp_repos(),
+)
+
+def _nist_cavp_repos():
     """Load NIST CAVP test vectors
 
     The NIST website that serves the test vectors (csrc.nist.gov) is sometimes
