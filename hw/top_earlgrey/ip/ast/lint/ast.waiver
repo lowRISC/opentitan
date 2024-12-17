@@ -129,7 +129,7 @@ waive -rules CLOCK_USE -location {ast.sv} \
       -comment {This is a valid clock signal and the connection is ok here.}
 
 waive -rules CLOCK_USE -location {ast.sv} \
-      -regexp {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_generic_flop.sv} \
+      -regexp {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_flop.sv} \
       -comment {This is a valid clock signal and the connection is ok here.}
 
 waive -rules INV_CLOCK -location {ast.sv rglts_pdm_3p3v.sv} \
@@ -229,19 +229,19 @@ waive -rules RESET_DRIVER -location {ast.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
-      -regexp {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
-      -regexp {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast.sv} \
-      -regexp {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'rst_da_n' is driven by instance 'u_rst_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_da_n' is driven by instance 'u_rst_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
@@ -253,11 +253,11 @@ waive -rules RESET_DRIVER -location {usb_clk.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_generic_flop' at prim_generic_flop.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_flop' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'rst_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
@@ -265,7 +265,7 @@ waive -rules RESET_DRIVER -location {usb_clk.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {usb_clk.sv} \
-      -regexp {'rst_usb_n' is driven by instance 'u_rst_ast_usb_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_usb_n' is driven by instance 'u_rst_ast_usb_da' of module 'prim_flop_2sync', and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
@@ -273,11 +273,7 @@ waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_flop' by port 'gen_generic.u_impl_generic.q_o[0]' at prim_flop.sv} \
-      -comment {This is reset generation logic, hence reset muxes are allowed.}
-
-waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
-      -regexp {'q_o[0]' driven in module 'prim_generic_flop' at prim_generic_flop.sv} \
+      -regexp {'q_o[0]' driven in module 'prim_flop' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_DRIVER -location {ast_clks_byp.sv} \
@@ -309,7 +305,7 @@ waive -rules RESET_MUX -location {rglts_pdm_3p3v.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {usb_clk.sv} \
-      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_MUX -location {ast_clks_byp.sv} \
@@ -357,11 +353,11 @@ waive -rules RESET_USE -location {aon_clk.sv io_clk.sv sys_clk.sv usb_clk.sv} \
       -comment {This is reset / clock generation logic, hence special reset usage is allowed.}
 
 waive -rules RESET_USE -location {ast.sv} \
-      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules RESET_USE -location {usb_clk.sv} \
-      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_generic_flop.sv} \
+      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
       -comment {This is reset generation logic, hence reset muxes are allowed.}
 
 waive -rules TRI_DRIVER -location {ast.sv} \
