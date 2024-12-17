@@ -178,6 +178,18 @@ module prim_sha2 import prim_sha2_pkg::*;
     // assign digest to output
     assign digest_o = digest_q;
 
+    `ifndef SYNTHESIS
+
+    // When wipe_secret is triggered, clear sensitive internal variables by extending the wipe
+    // value specifed in the register
+    `ASSERT(WipeHashAssert,
+            wipe_secret_i |=> (hash_q == {($bits(hash_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+    `ASSERT(WipeMsgSchArrAssert,
+            wipe_secret_i |=> (w_q == {($bits(w_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+    `ASSERT(WipeDigestAssert,
+            wipe_secret_i |=> (digest_q == {($bits(digest_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+
+    `endif // SYNTHESIS
   end else begin : gen_256 // MultimodeEn = 0
     // datapath signal definitions for SHA-2 256 only
     sha_word32_t        shaf_rdata256;
@@ -264,6 +276,19 @@ module prim_sha2 import prim_sha2_pkg::*;
       assign digest_o[i][31:0]  = digest256_q[i];
       assign digest_o[i][63:32] = 32'b0;
     end
+
+    `ifndef SYNTHESIS
+
+    // When wipe_secret is triggered, clear sensitive internal variables by extending the wipe
+    // value specifed in the register
+    `ASSERT(WipeHashAssert,
+      wipe_secret_i |=> (hash256_q == {($bits(hash256_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+    `ASSERT(WipeMsgSchArrAssert,
+      wipe_secret_i |=> (w256_q == {($bits(w256_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+    `ASSERT(WipeDigestAssert,
+      wipe_secret_i |=> (digest256_q == {($bits(digest256_q)/$bits(wipe_v_i)){$past(wipe_v_i)}}))
+
+    `endif // SYNTHESIS
   end
 
   // compute round counter (shared)
