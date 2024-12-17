@@ -32,7 +32,6 @@ filegroup(
         "//hw/ip/rv_dm:all_files",
         "//hw/ip/rv_timer:all_files",
         "//hw/ip/spi_device:all_files",
-        "//hw/ip/spi_host:all_files",
         "//hw/ip/sram_ctrl:all_files",
         "//hw/ip/sysrst_ctrl:all_files",
         "//hw/ip/tlul:all_files",

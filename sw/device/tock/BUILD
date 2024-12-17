@@ -29,7 +29,6 @@ filegroup(
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_rust_regs",
         "//hw/ip/rv_timer/data:rv_timer_rust_regs",
         "//hw/ip/spi_device/data:spi_device_rust_regs",
-        "//hw/ip/spi_host/data:spi_host_rust_regs",
         "//hw/ip/sram_ctrl/data:sram_ctrl_rust_regs",
         "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_rust_regs",
         "//hw/ip/uart/data:uart_rust_regs",
@@ -50,6 +49,7 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_rust_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_rust_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_rust_regs",
+        "//hw/top_earlgrey/ip_autogen/spi_host:spi_host_rust_regs",
     ],
     output_group = "tock",
 )
