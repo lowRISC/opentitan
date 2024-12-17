@@ -48,8 +48,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey:alert_handler_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [
@@ -91,9 +91,9 @@ opentitan_test(
     deps = [
         ":alert",
         ":rstmgr",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -110,9 +110,9 @@ cc_library(
         ":flash_ctrl",
         ":lifecycle",
         ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -148,7 +148,7 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -466,7 +466,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -491,7 +491,7 @@ cc_library(
     hdrs = ["pinmux.h"],
     deps = [
         "//hw/ip/gpio/data:gpio_c_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -582,8 +582,8 @@ dual_cc_library(
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:hardened",
             "//hw/ip/entropy_src/data:entropy_src_c_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:crc32",
         ],
@@ -606,8 +606,8 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":rnd"),
         ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/base:abs_mmio",
@@ -663,7 +663,7 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
@@ -747,7 +747,7 @@ cc_library(
     deps = [
         ":pwrmgr",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
@@ -763,7 +763,7 @@ cc_test(
     deps = [
         ":watchdog",
         "//hw/ip/aon_timer/data:aon_timer_c_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
@@ -859,8 +859,8 @@ cc_library(
     deps = [
         ":lifecycle",
         ":otp",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -874,8 +874,8 @@ cc_test(
     srcs = ["sensor_ctrl_unittest.cc"],
     deps = [
         ":sensor_ctrl",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "@googletest//:gtest_main",
     ],

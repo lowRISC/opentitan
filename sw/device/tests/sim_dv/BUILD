@@ -536,7 +536,7 @@ opentitan_test(
     srcs = ["sram_ctrl_execution_main_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:macros",
@@ -793,8 +793,8 @@ opentitan_test(
     srcs = ["inject_scramble_seed.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -817,7 +817,7 @@ opentitan_test(
     srcs = ["exit_test_unlocked_bootstrap.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",

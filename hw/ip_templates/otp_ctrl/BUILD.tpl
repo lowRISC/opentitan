@@ -13,14 +13,14 @@ load(
 autogen_hjson_c_header(
     name = "otp_ctrl_c_regs",
     srcs = [
-        "data/otp_ctrl.hjson",
+        "//hw/top_${topname}/ip_autogen/otp_ctrl/data:otp_ctrl.hjson",
     ],
 )
 
 autogen_hjson_rust_header(
     name = "otp_ctrl_rust_regs",
     srcs = [
-        "data/otp_ctrl.hjson",
+        "//hw/top_${topname}/ip_autogen/otp_ctrl/data:otp_ctrl.hjson",
     ],
 )
 
