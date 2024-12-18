@@ -165,7 +165,7 @@ ifneq (${sw_images},)
 					`# Bazel 6 cquery outputs repository targets in canonical format (@//blabla) whereas bazel 5 does not, ` \
 					`# so we use a custom starlark printer to remove in leading @ when needed.` \
 					--starlark:expr='str(target.label)[1:] if str(target.label).startswith("@//") else target.label'); do \
-					if [[ $$dep == //hw/ip/otp_ctrl/data* ]] || \
+					if [[ $$dep == //hw/top_*/ip_autogen/otp_ctrl/data* ]] || \
 					  ([[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]); then \
 						for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${dep} \
 							--ui_event_filters=-info \
