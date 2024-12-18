@@ -32,7 +32,7 @@
       otp_mutate: true
       lc_states: ["RAW"]
       tests: []
-      bazel: []
+      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest"]
     }
 
     {
