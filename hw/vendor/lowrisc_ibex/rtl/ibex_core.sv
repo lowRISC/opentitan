@@ -44,6 +44,8 @@ module ibex_core import ibex_pkg::*; #(
   parameter int unsigned            RegFileDataWidth = 32,
   parameter bit                     MemECC           = 1'b0,
   parameter int unsigned            MemDataWidth     = MemECC ? 32 + 7 : 32,
+  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
+  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr       = 32'h1A110800,
   parameter int unsigned            DmExceptionAddr  = 32'h1A110808
 ) (
@@ -1177,6 +1179,8 @@ module ibex_core import ibex_pkg::*; #(
     assign pmp_priv_lvl[PMP_D]  = priv_mode_lsu;
 
     ibex_pmp #(
+      .DmBaseAddr    (DmBaseAddr),
+      .DmAddrMask    (DmAddrMask),
       .PMPGranularity(PMPGranularity),
       .PMPNumChan    (PMPNumChan),
       .PMPNumRegions (PMPNumRegions)
@@ -1185,6 +1189,7 @@ module ibex_core import ibex_pkg::*; #(
       .csr_pmp_cfg_i    (csr_pmp_cfg),
       .csr_pmp_addr_i   (csr_pmp_addr),
       .csr_pmp_mseccfg_i(csr_pmp_mseccfg),
+      .debug_mode_i     (debug_mode),
       .priv_mode_i      (pmp_priv_lvl),
       // Access checking channels
       .pmp_req_addr_i   (pmp_req_addr),

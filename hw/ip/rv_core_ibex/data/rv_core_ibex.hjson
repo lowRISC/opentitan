@@ -19,7 +19,7 @@
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
   dv_doc:             "../doc/dv",
-  version:            "2.0.0",
+  version:            "2.1.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",
@@ -398,6 +398,22 @@
       local:   "false"
       expose:  "true"
     },
+
+    { name:    "DmBaseAddr"
+      type:    "int unsigned"
+      default: "437321728" //"32'h1A110000"
+      desc:    "Base address of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
+
+    { name:    "DmAddrMask"
+      type:    "int unsigned"
+      default: "4095" //"32'h00000FFF"
+      desc:    "Adress mask of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
 
     { name:    "DmHaltAddr"
       type:    "int unsigned"
