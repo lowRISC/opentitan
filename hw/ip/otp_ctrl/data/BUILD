@@ -481,6 +481,15 @@ otp_image(
     src = ":otp_json_raw",
 )
 
+otp_image(
+    name = "img_test_unlocked0_rom_exec_en",
+    src = ":otp_json_test_unlocked0",
+    overlays = [
+        ":otp_json_secret0",
+        ":otp_json_creator_sw_cfg_test_unlocked",
+    ],
+)
+
 [
     # TEST_UNLOCKED images are expected to only have the SECRET0 partition
     # configured, as well as ROM execution enabled in the CREATOR_SW partition.

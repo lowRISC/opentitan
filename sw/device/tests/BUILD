@@ -2046,6 +2046,31 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "otp_ctrl_rot_auth_config_test",
+    srcs = ["otp_ctrl_rot_auth_config_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+    },
+    deps = [
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/crypto/impl:hash",
+        "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/lib/testing/test_framework:ottf_test_config",
+        "//sw/device/lib/testing/test_framework:status",
+        "//sw/device/silicon_creator/manuf/lib:otp_img_types",
+        "//sw/device/silicon_creator/manuf/lib:util",
+    ],
+)
+
+opentitan_test(
     name = "keymgr_sideload_aes_test",
     srcs = ["keymgr_sideload_aes_test.c"],
     exec_env = dicts.add(
