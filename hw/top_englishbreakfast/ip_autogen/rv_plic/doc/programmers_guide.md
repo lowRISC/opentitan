@@ -6,7 +6,7 @@ After reset, RV_PLIC doesn't generate any interrupts to any targets even if
 interrupt sources are set, as all priorities and thresholds are 0 by default and
 all ``IE`` values are 0. Software should configure the above three registers.
 
-[`PRIO0`](../data/rv_plic.hjson#prio0) .. [`PRIO31`](../data/rv_plic.hjson#prio1) registers are unique. So, only one of the targets
+[`PRIO0`](../data/rv_plic.hjson#prio_0) .. [`PRIO31`](../data/rv_plic.hjson#prio_1) registers are unique. So, only one of the targets
 shall configure them.
 
 ```c

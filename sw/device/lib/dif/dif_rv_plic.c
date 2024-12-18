@@ -14,7 +14,7 @@
 #include "rv_plic_regs.h"  // Generated.
 
 const uint32_t kDifRvPlicMinPriority = 0;
-const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO0_PRIO0_MASK;
+const uint32_t kDifRvPlicMaxPriority = RV_PLIC_PRIO_0_PRIO_0_MASK;
 
 /**
  * PLIC register info.
@@ -106,14 +106,14 @@ static plic_reg_info_t plic_irq_pending_reg_info(dif_rv_plic_irq_id_t irq) {
 }
 
 /**
- * Get a PRIO register offset (PRIO0, PRIO1, ...) from an IRQ source ID.
+ * Get a PRIO register offset (PRIO_0, PRIO_1, ...) from an IRQ source ID.
  *
  * There is one PRIO register per IRQ source, this function calculates the IRQ
  * source specific PRIO register offset.
  */
 static ptrdiff_t plic_priority_reg_offset(dif_rv_plic_irq_id_t irq) {
   ptrdiff_t offset = (ptrdiff_t)(irq * sizeof(uint32_t));
-  return RV_PLIC_PRIO0_REG_OFFSET + offset;
+  return RV_PLIC_PRIO_0_REG_OFFSET + offset;
 }
 
 dif_result_t dif_rv_plic_reset(const dif_rv_plic_t *plic) {
