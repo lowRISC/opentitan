@@ -1,7 +1,7 @@
 # If a PR changes a file that matches a pattern in this file it will be blocked
 # from merged by CI. The patterns as glob-like patterns matched using python
 # fnmatch. In particular note there is no special handling for '/' so '*' can
-# match multiple directory levels e.g. 'this/is/*/a/path' matches both
+# match multiple directory levels e.g. 'this/is/a/*/path' matches both
 # 'this/is/a/foo/path' and 'this/is/a/foo/bar/path'.
 #
 # Anyone on the COMMITTERS list can authorize a change by adding a comment
@@ -49,7 +49,6 @@ hw/ip/keymgr/rtl/*
 hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
-hw/ip/otp_ctrl/rtl/*
 hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
