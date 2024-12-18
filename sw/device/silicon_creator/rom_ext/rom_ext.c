@@ -619,19 +619,23 @@ void rom_ext_main(void) {
   shutdown_finalize(error);
 }
 
+OT_USED
 void rom_ext_interrupt_handler(void) { shutdown_finalize(rom_ext_irq_error()); }
 
 // We only need a single handler for all ROM_EXT interrupts, but we want to
 // keep distinct symbols to make writing tests easier.  In the ROM_EXT,
 // alias all interrupt handler symbols to the single handler.
+OT_USED
 OT_ALIAS("rom_ext_interrupt_handler")
 void rom_ext_exception_handler(void);
 
+OT_USED
 OT_ALIAS("rom_ext_interrupt_handler")
 void rom_ext_nmi_handler(void);
 
 // A no-op immutable rom_ext fallback to avoid breaking tests before the
 // proper bazel target is ready.
 // TODO(opentitan#24368): Remove this nop fallback.
+OT_USED
 OT_SECTION(".rom_ext_immutable.fallback")
 void imm_rom_ext_placeholder(void) {}
