@@ -1,0 +1,416 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "spi_host"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "spi_host_sec_cm_testplan.hjson"],
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            SPI_HOST smoke test in which random (rd/wr) transactions are sent to the DUT and
+            received asynchronously with scoreboard checks.
+
+            Stimulus:
+              - Enable spi_host ip
+              - Write data in standard mode - and read it back
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+            '''
+      stage: V1
+      tests: ["spi_host_smoke"]
+    }
+    {
+      name: performance
+      desc: '''
+            Send/receive transactions at max bandwidth
+
+            Stimulus:
+              - Program the content of timing fields of CONFIGOPTS to the min values
+              - Programming TX1_CNT and TXN_CNT to issue read/write back-to-back transactions
+              - Read/write rx_fifo/tx_fifo as soon as possible (avoid stalling transactions)
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+            '''
+      stage: V2
+      tests: ["spi_host_performance"]
+    }
+    {
+      name: error_event_intr
+      desc: '''
+            This test includes multi tasks which verify error/event interrupt assertion
+            (except TX OVERFLOW error interrupt is verified in separate test)
+
+            Stimulus:
+              - Program ERROR_ENABLE/EVENT_ENABLE register to enable
+                corresponding error/event interrupt assertion
+              - Program transaction with proper constraints to assert error/event interrupts
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure the matching between the bit-field values of ERROR_STATUS
+                and ERROR_ENABLE respectively once the error interrupt pin is asserted
+              - Ensure the matching between the bit-field values of ERROR_ENABLE
+                once the event interrupt pin is asserted
+            '''
+      stage: V2
+      tests: ["spi_host_overflow_underflow", "spi_host_error_cmd", "spi_host_event"]
+    }
+    {
+      name: clock_rate
+      desc: '''
+            Stimulus:
+              - select different settings for:
+              * CONFIGOPTS_0.CSNIDLE_0
+              * CONFIGOPTS_0.CSNLEAD_0
+              * CONFIGOPTS_0.CSNTRAIL_0
+
+            Checking:
+              - verify that merging of commands work correctly
+              - verify that the DUT can handle different sck -> cs_n timings
+            '''
+      stage: V2
+      tests: ["spi_host_speed"]
+    }
+    {
+      name: speed
+      desc: '''
+            Stimulus:
+              - randomly select the DUT to run single/dual/quad mode
+
+            Checking:
+              - verify that all speeds are supported
+            '''
+      stage: V2
+      tests: ["spi_host_speed"]
+    }
+    {
+      name: chip_select_timing
+      desc: '''
+            Stimulus:
+              - Randomly select a setting for the 16bit clock divider
+
+            Checking:
+              - Check that the DUT operates correctly under different SPI clock speeds
+            '''
+      stage: V2
+      tests: ["spi_host_speed"]
+    }
+    {
+      name: sw_reset
+      desc: '''
+            verify software reset behavior
+
+            Stimulus:
+              - Reset the spi_host randomly
+                after a random number of data shows up on fifos
+
+            Checking:
+              - Ensure that reads to RXDATA register yield 0s after the rx_fifo is reset
+              - Ensure that transactions are dropped in both the scoreboard and spi_agent monitor
+                after the tx_fifo or spi_fsm is reset
+            '''
+      stage: V2
+      tests: ["spi_host_sw_reset"]
+    }
+    {
+      name: passthrough_mode
+      desc: '''
+            - Verify the function of spi_host in passthrough_mode
+
+            Stimulus:
+              - Enable Passthrough Mode
+            Checking:
+              - Ensure Host to Device and Device to Host paths are switched to Passthrough ports
+      '''
+      stage: V2
+      tests: ["spi_host_passthrough_mode"]
+    }
+    {
+      name: cpol_cpha
+      desc: '''
+            Stimulus:
+              - Randomly chip select for different polarity / phase
+
+            Checking:
+              - Check that the DUT operates correctly under different cs_n settings
+            '''
+      stage: V2
+      tests: ["spi_host_speed"]
+    }
+    {
+      name: full_cycle
+      desc: '''
+            Stimulus:
+              - randomly select FULLCYC to be set
+
+            Checking:
+              - Check that the data can be read one full cycle after the data was asserted
+            '''
+      stage: V2
+      tests: ["spi_host_speed"]
+    }
+    {
+      name: duplex
+      desc: '''
+            Stimulus:
+              - in standard mode set the DUT to run full duplex
+
+            Checking:
+              - verify that the DUT support both half and full duplex in standard mode.
+            '''
+      stage: V2
+      tests: ["spi_host_smoke"]
+    }
+    {
+      name: tx_rx_only
+      desc: '''
+            Stimulus:
+              - in standard mode enable tx only and have the env send garbage back
+              - in standard mode enable rx only and have the env ignore the incoming data
+
+            Checking:
+              - verify that the DUT ignores rx line when in tx only mode
+              - verify that the DUT does not drain the tx fifo in rx only mode
+            '''
+      stage: V2
+      tests: ["spi_host_smoke"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            Support vseq (context) switching with random reset in between.
+
+            Stimulus:
+              - Combine the above sequences in one test to run sequentially
+                except csr sequence and (requires zero_delays)
+              - Randomly add reset between each sequence
+
+            Checking:
+              - Ensure transactions are transmitted/received correctly
+              - Ensure reset is handled correctly
+            '''
+      stage: V2
+      tests: ["spi_host_stress_all"]
+    }
+    {
+      name: spien
+      desc: '''
+            Check that with mid-transaction writes to CONTROL.SPIEN, the block behaves according
+            to the documentation.
+            - Writing a zero to this register temporarily suspends any previously
+              submitted transactions.
+            - If the block is re-enabled by writing a one to CONTROL.SPIEN, any previously
+              executing commands will continue from wherever they left off.
+
+            Stimulus:
+              - Issue a transaction
+              - De-assert CONTROL.SPIEN after the command byte is receieved
+              - Re-assert after a randomized delay
+            Checking:
+              - Ensure transactions are transmitted/received correctly, even with a large
+                temporary suspension in the middle.
+            '''
+      stage: V2
+      tests: ["spi_host_spien"]
+    }
+    {
+      name: stall
+      desc: '''
+            Stimulus:
+              - Ongoing transaction has stalled due to lack of available space in the RX FIFO
+                and continues when RX fifo is cleared
+              - Ongoing transaction has stalled due to lack of data in the TX FIFO
+                and continues when data is provided in TX FIFO
+
+            Checking:
+              - Ensure Rxstall occurs and recovers
+              - Ensure Txstall occurs and recovers
+            '''
+      stage: V2
+      tests: ["spi_host_status_stall"]
+    }
+    {
+      name: Idlecsbactive
+      desc: '''
+            Stimulus:
+              - Pause next segment availability and idly wait for next command
+
+            Checking:
+              - Ensure transactions goes through even with a segment pause and idle wait
+                in the state IdleCsbActive
+            '''
+      stage: V2
+      tests: ["spi_host_idlecsbactive"]
+    }
+    {
+      name: data_fifo_status
+      desc: '''
+            Ensure we are modelling the Fifo depths, to ensure we can compare against predictions
+            of their state, particularly current depth.
+            - TXDATA
+              Push on CSR writes, Pop on submitting new word to ByteSel/SR
+            - RXDATA
+              Push on new word from SR/ByteMerge, Pop on CSR read
+
+            Stimulus:
+              - Create transactions that Pop/Push to the data fifos
+              - Readback the queue depths at various points during active and after completed
+                transactions.
+
+            Checking:
+              - Ensure rx/tx_qd and rx/tx_full/empty match predictions.
+            '''
+      stage: V2
+      tests: ["spi_host_overflow_underflow"]
+    }
+    {
+      name: winbond
+      desc: '''
+          Replace SPI agent with the Winbond Flash model
+
+          Stimulus:
+            - constraint the Sequence to create welformed transactions that the model understands
+
+          Checking:
+            - Verify the DUT against the WindBond bfm by making the spi agent passive
+              to verify that we comply with the spi targeted for opentitan
+            '''
+      stage: V3
+      tests: []
+    }
+  ]
+  covergroups: [
+    {
+      name: tx_fifo_overflow_cg
+      desc: '''
+            Collect coverage to verify that an attempt was made to overflow the TX FIFO
+            by attempting to write to a full FIFO
+            '''
+    }
+    {
+      name: rx_fifo_underflow_cg
+      desc: '''
+            Collect coverage to verify that an attempt was made to underflow the RX FIFO
+            by attempting to read from an empty FIFO
+            '''
+    }
+    {
+      name: config_opts_cg
+      desc: '''
+            Collect coverage on the config opts register, some important crosses:
+
+            -  CPOL and CPHA, check all 4 combinations are tested
+            -  CSNLEAD, CSNTRAIL and CSNIDLE
+            '''
+    }
+    {
+      name: unaligned_data_cg
+      desc: '''
+            Collect coverage the alignment of writes to the data window
+            to verify that all possible alignments was seen
+            '''
+    }
+    {
+      name: duplex_cg
+      desc: '''
+            Collect coverage that we verified both duplex and half duplex
+            '''
+    }
+    {
+      name: control_cg
+      desc: '''
+            Collect coverage on the control register to make sure all options are excercised
+            - Tx and RX water mark should have a bin for min value, max value
+              and one for everything in between
+            '''
+    }
+    {
+      name: status_cg
+      desc: '''
+            Collect coverage on the status register to make sure all scenarios are checked
+            '''
+    }
+    {
+      name: csid_cg
+      desc: '''
+            Collect coverage that different IDs are used.
+            '''
+    }
+    {
+      name: command_cg
+      desc: '''
+            Collect coverage that different commant settings, important cross:
+
+            - Direction and SPEED
+            - CSAAT and SPEED
+            '''
+    }
+    {
+      name: error_en_cg
+      desc: '''
+            Collect coverage that all possible errors was enabled
+            '''
+    }
+    {
+      name: error_status_cg
+      desc: '''
+            Collect coverage that all possible errors was seen
+            '''
+    }
+    {
+      name: event_en_cg
+      desc: '''
+            Collect coverage that all events was enabled and seen
+            '''
+    }
+    {
+      name: interrupt_cg
+      desc: '''
+            Collect coverage that all types of interrupt was seen
+            - check that we see all scenarios that can cause an interrupt and that the interrupts is fired.
+            - also check we can clear the interrupt
+
+            (Coverage gathered in base class :: intr_test_cg)
+            '''
+    }
+    {
+      name: different_ch_settings_cg
+      desc: '''
+            - Check that multiple end points was running at different speeds concurrently.
+            - Collect coverage that multiple SPI endpoints was run with different config opts
+            '''
+    }
+    {
+      name: num_segment_cg
+      desc: '''
+            - Check that the DUT only transmits what is in a command even if more segments are in the TX FIFO
+            '''
+    }
+    {
+      name: segment_speed_cg
+      desc: '''
+            - Check that we test with transactions that uses different speeds
+              i.e first segment in standard mode, followed by segments in dual or quad mode
+            '''
+    }
+    {
+      name: passthrough_cg
+      desc: '''
+            Check that the pass through data is transmitted instead of the data in the tx fifo.
+
+            - Cover that passthrough is activated when a normal transaction is in progress.
+            - Cover that data on the passthrough interface is ignored while passthroug disabled.
+
+            '''
+    }
+  ]
+}

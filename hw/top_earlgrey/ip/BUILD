@@ -17,5 +17,6 @@ filegroup(
         "//hw/top_earlgrey/ip_autogen/pinmux:all_files",
         "//hw/top_earlgrey/ip_autogen/pwrmgr:all_files",
         "//hw/top_earlgrey/ip_autogen/rstmgr:all_files",
+        "//hw/top_earlgrey/ip_autogen/spi_host:all_files",
     ],
 )

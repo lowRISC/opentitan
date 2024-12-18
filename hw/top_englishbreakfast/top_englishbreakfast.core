@@ -24,7 +24,6 @@ filesets:
       - lowrisc:ip:gpio
       - lowrisc:ip:rv_timer
       - lowrisc:ip:spi_device
-      - lowrisc:ip:spi_host
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:hmac
@@ -41,6 +40,7 @@ filesets:
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:opentitan:top_englishbreakfast_rstmgr
       - lowrisc:opentitan:top_englishbreakfast_rv_plic
+      - lowrisc:opentitan:top_englishbreakfast_spi_host
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
 
