@@ -27,6 +27,7 @@ class gpio_env_cfg extends cip_base_env_cfg #(
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
+    can_reset_with_csr_accesses = 1;
   endfunction : initialize
 
 endclass
