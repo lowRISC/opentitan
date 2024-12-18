@@ -125,6 +125,7 @@ Ibus address controls write enable.  Once set to 0, it can longer be configured 
 Enable Ibus address matching
 - Reset default: `0x0`
 - Reset mask: `0x1`
+- Register enable: [`IBUS_REGWEN`](#ibus_regwen)
 
 ### Instances
 
@@ -163,6 +164,7 @@ Enable Ibus address matching
   If the user were to translate the 0x8001-th 64KB block, the value programmed would be 0x8001_7FFF.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`IBUS_REGWEN`](#ibus_regwen)
 
 ### Instances
 
@@ -190,6 +192,7 @@ Enable Ibus address matching
   address bits that select which 64KB to be translated.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`IBUS_REGWEN`](#ibus_regwen)
 
 ### Instances
 
@@ -246,6 +249,7 @@ Ibus address controls write enable.  Once set to 0, it can longer be configured 
 Enable dbus address matching
 - Reset default: `0x0`
 - Reset mask: `0x1`
+- Register enable: [`DBUS_REGWEN`](#dbus_regwen)
 
 ### Instances
 
@@ -270,6 +274,7 @@ Enable dbus address matching
 See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`DBUS_REGWEN`](#dbus_regwen)
 
 ### Instances
 
@@ -293,6 +298,7 @@ See [`IBUS_ADDR_MATCHING_0`](#ibus_addr_matching_0) for detailed description.
 See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`DBUS_REGWEN`](#dbus_regwen)
 
 ### Instances
 

@@ -128,6 +128,30 @@ def multireg_is_compact(mreg: MultiRegister, width: int) -> bool:
     return mreg.compact and (mreg.reg.fields[0].bits.msb + 1) <= width // 2
 
 
+def describe_reg_hdr(output: TextIO, reg: Register, with_offset: bool) -> None:
+    '''Write a header for the register description.
+
+    If with_offset is True, this includes the offset of the register. (Set it
+    to False if printing a MultiRegister)
+    '''
+    regwen_str = ""
+    if reg.regwen is not None:
+        regwen_url = "#" + reg.regwen.lower()
+        regwen_str = list_item("Register enable: " +
+                               url(mono(reg.regwen), regwen_url))
+
+    offset_str = (list_item("Offset: " + mono(f"{reg.offset:#x}"))
+                  if with_offset else "")
+    output.write(
+        title(reg.name, 2) +
+        regref_to_link(reg.desc) +
+        "\n" +
+        offset_str +
+        list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
+        list_item("Reset mask: " + mono(f"{reg.resmask:#x}")) +
+        regwen_str)
+
+
 def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: int) -> None:
     # Check whether this is a compacted multireg, in which case we cannot use
     # the general definition of the first register as an example for all other instances.
@@ -140,13 +164,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: 
     reg_def = mreg.reg
 
     # Information
-    output.write(
-        title(reg_def.name, 2) +
-        regref_to_link(reg_def.desc) +
-        "\n" +
-        list_item("Reset default: " + mono(f"{reg_def.resval:#x}")) +
-        list_item("Reset mask: " + mono(f"{reg_def.resmask:#x}"))
-    )
+    describe_reg_hdr(output, reg_def, False)
 
     # Instances
     output.write("\n" + title("Instances", 3))
@@ -166,18 +184,7 @@ def gen_md_multiregister(output: TextIO, mreg: MultiRegister, comp: str, width: 
 
 
 def gen_md_register(output: TextIO, reg: Register, comp: str, width: int) -> None:
-    output.write(
-        title(reg.name, 2) +
-        regref_to_link(reg.desc) +
-        "\n" +
-        list_item("Offset: " + mono(f"{reg.offset:#x}")) +
-        list_item("Reset default: " + mono(f"{reg.resval:#x}")) +
-        list_item("Reset mask: " + mono(f"{reg.resmask:#x}"))
-    )
-    if reg.regwen is not None:
-        output.write(
-            list_item("Register enable: " + url(mono(reg.regwen), "#" + reg.regwen.lower()))
-        )
+    describe_reg_hdr(output, reg, True)
 
     # Fields
     output.write("\n" + title("Fields", 3))
