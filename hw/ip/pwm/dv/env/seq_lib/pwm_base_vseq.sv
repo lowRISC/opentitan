@@ -71,13 +71,21 @@ task pwm_base_vseq::apply_resets_concurrently(int reset_duration_ps = 0);
 endtask
 
 task pwm_base_vseq::set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
+  `uvm_info(`gfn, $sformatf("ClkDiv 0x%0x DcResn 0x%0x En %0d", ClkDiv, DcResn, CntrEn), UVM_HIGH)
+  // Supply the configuration to each of the monitors in advance of the register update.
+  foreach (cfg.m_pwm_monitor_cfg[i]) begin
+    cfg.m_pwm_monitor_cfg[i].resolution = DcResn;
+    cfg.m_pwm_monitor_cfg[i].clk_div = ClkDiv;
+    // Monitors continue to operate for disabled channels too, to ensure that they do not produce
+    // unintended traffic.
+    cfg.m_pwm_monitor_cfg[i].active = CntrEn;
+  end
   ral.cfg.clk_div.set(ClkDiv);
   ral.cfg.dc_resn.set(DcResn);
   ral.cfg.cntr_en.set(CntrEn);
+  // The monitors detect the (re)starting of the phase counter and use this cue to collect the
+  // configuration supplied above.
   csr_update(ral.cfg);
-  foreach(cfg.m_pwm_monitor_cfg[i]) begin
-    cfg.m_pwm_monitor_cfg[i].resolution = DcResn;
-  end
 endtask
 
 task pwm_base_vseq::rand_pwm_cfg_reg();
@@ -88,6 +96,7 @@ task pwm_base_vseq::rand_pwm_cfg_reg();
 endtask
 
 task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
+  `uvm_info(`gfn, $sformatf("Invert 0x%0x", invert), UVM_HIGH)
   csr_wr(.ptr(ral.invert[0]), .value(invert));
   foreach (invert[ii]) begin
     cfg.m_pwm_monitor_cfg[ii].invert = invert[ii];
@@ -95,15 +104,14 @@ task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
 endtask
 
 task pwm_base_vseq::set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
+  `uvm_info(`gfn, $sformatf("Channel enables  0x%0x", enables), UVM_HIGH)
   csr_wr(.ptr(ral.pwm_en[0]), .value(enables));
-  foreach (enables[ii]) begin
-    cfg.m_pwm_monitor_cfg[ii].active = enables[ii];
-  end
 endtask
 
 task pwm_base_vseq::set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
   `DV_CHECK_FATAL(channel < NOutputs)
 
+  `uvm_info(`gfn, $sformatf("Channel %0d Duty cycles A 0x%0x B 0x%0x", channel, A, B), UVM_HIGH)
   ral.duty_cycle[channel].set({B, A});
   csr_update(ral.duty_cycle[channel]);
 endtask
@@ -111,6 +119,7 @@ endtask
 task pwm_base_vseq::set_blink(int unsigned channel, bit [15:0] X, bit [15:0] Y);
   `DV_CHECK_FATAL(channel < NOutputs)
 
+  `uvm_info(`gfn, $sformatf("Channel %0d Blink params X 0x%0x Y 0x%0x", channel, X, Y), UVM_HIGH)
   ral.blink_param[channel].set({Y, X});
   csr_update(ral.blink_param[channel]);
 endtask
@@ -138,28 +147,36 @@ function blink_param_t pwm_base_vseq::rand_pwm_blink();
   return blink;
 endfunction
 
+// The PWM outputs are required to keep running with the chip in low power mode, meaning that the
+// monitor and scoreboard must continue to match predictions successfully when the TL-UL clock is
+// not running.
 task pwm_base_vseq::low_power_mode(bit enable, uint cycles);
   if (enable) begin
-    `uvm_info(`gfn, "Running in low power mode...", UVM_HIGH)
+    int unsigned sleep_cycles = $urandom_range(10, cycles / 4);
+    `uvm_info(`gfn, "Running in low power mode...", UVM_MEDIUM)
     cfg.clk_rst_vif.wait_clks(cycles/2);
-    // in the middle of test turn off tl_ul clk to observe that
-    // the output does not change
+    // In the middle of the test turn off the TL-UL clk to observe that the PWM outputs continue.
+    // as intended.
+    `uvm_info(`gfn, "Stopping TL-UL clock", UVM_MEDIUM)
     cfg.clk_rst_vif.stop_clk();
-    // use core clk to determine when to turn tl_ul clk back on
-    cfg.clk_rst_core_vif.wait_clks(1);
+    // Use core clk to determine when to turn the TL-UL clk back on.
+    cfg.clk_rst_core_vif.wait_clks(sleep_cycles);
+    `uvm_info(`gfn, "Resuming TL-UL clock", UVM_MEDIUM)
     cfg.clk_rst_vif.start_clk();
-    cfg.clk_rst_vif.wait_clks(cycles/2);
+    cfg.clk_rst_vif.wait_clks(cycles / 2 - sleep_cycles);
   end else begin
     cfg.clk_rst_vif.wait_clks(cycles);
   end
 endtask
 
 task pwm_base_vseq::shutdown_dut();
+  // Stop the phase counter _before_ we disable the channels because the scoreboard and the DUT
+  // are notified of the channel disabling at different times, leading to a potential prediction
+  // mismatch.
+  set_cfg_reg(0, 0, 1'b0);
   // Disable all PWM outputs.
   `uvm_info(`gfn, $sformatf("Disabling all channels"), UVM_HIGH)
   set_ch_enables(32'h0);
-  // Stop the phase counter.
-  ral.cfg.cntr_en.set(1'b0);
-  csr_update(ral.cfg);
   dut_shutdown();
+  `uvm_info(`gfn, $sformatf("Completed DUT shutdown"), UVM_MEDIUM)
 endtask

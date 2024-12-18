@@ -15,6 +15,9 @@ module tb;
   `include "dv_macros.svh"
   `include "prim_assert.sv"
 
+  // Core logic within the DUT.
+  `define DUT_CORE dut.u_pwm_core
+
   localparam PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
 
   wire clk;
@@ -52,7 +55,11 @@ module tb;
   `ASSERT(PwmEnTiedHigh_A, cio_pwm_en == '1, clk, rst_n)
 
   for (genvar n = 0; n < PWM_NUM_CHANNELS; n++) begin: gen_pwm_if_conn
-    pwm_if pwm_if(.clk(clk_core), .rst_n(rst_core_n), .pwm(cio_pwm[n]));
+    // Unfortunately we need to know when the internal phase counter starts because a channel
+    // becoming enabled has an arbitrary phase relationship to the shared phase counter within the
+    // core logic.
+    pwm_if pwm_if(.clk(clk_core), .rst_n(rst_core_n), .start_cntr(`DUT_CORE.clr_phase_cntr),
+                  .pwm(cio_pwm[n]));
 
     initial begin
       uvm_config_db#(virtual pwm_if)::set(null, $sformatf("*.env.m_pwm_monitor%0d*", n), "vif",

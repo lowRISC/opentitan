@@ -12,9 +12,6 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   // The blink threshold used for all channels
   rand bit [15:0]  rand_blink;
 
-  // A param_reg_t value to configure each channel
-  rand param_reg_t pwm_param[PWM_NUM_CHANNELS];
-
   // Either enable all channels or none of them. Similarly for inverting channels.
   extern constraint rand_chan_c;
   extern constraint rand_invert_c;
@@ -23,7 +20,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   // pwm_rand_output_vseq that uses low power mode less often)
   extern constraint low_power_c;
 
-  // Constrain phase delay to be minimal or maximal
+  // Constrain phase delays to be minimal or maximal
   extern constraint phase_delay_c;
 
   // The duty cycle and the threshold for the heartbeat blink counter should be minimal or maximal,
@@ -48,7 +45,9 @@ constraint pwm_perf_vseq::low_power_c {
 }
 
 constraint pwm_perf_vseq::phase_delay_c {
-  rand_reg_param.PhaseDelay dist {MAX_16 :/ 1, 0 :/ 1};
+  foreach (pwm_param[ii]) {
+    pwm_param[ii].PhaseDelay dist {MAX_16 :/ 1, 0 :/ 1};
+  }
 }
 
 constraint pwm_perf_vseq::rand_dc_c {
@@ -70,9 +69,6 @@ task pwm_perf_vseq::body();
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
     set_duty_cycle(i, .A(rand_dc), .B(rand_dc));
     set_blink(i, .X(rand_blink), .Y(rand_blink));
-
-    pwm_param[i].HtbtEn = rand_reg_param.HtbtEn;
-    pwm_param[i].BlinkEn = rand_reg_param.BlinkEn;
     set_param(i, pwm_param[i]);
   end
 

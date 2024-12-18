@@ -6,8 +6,8 @@
 class pwm_rand_output_vseq extends pwm_base_vseq;
   `uvm_object_utils(pwm_rand_output_vseq)
 
-  // A parameter used for pwm_param for each channel
-  rand param_reg_t rand_reg_param;
+  // Configuration for each channel in turn.
+  rand param_reg_t [PWM_NUM_CHANNELS-1:0] pwm_param;
 
   // Enable and invert bits for each channel
   rand bit [PWM_NUM_CHANNELS-1:0] rand_chan;
@@ -33,7 +33,6 @@ endfunction
 
 task pwm_rand_output_vseq::body();
   set_ch_enables(32'h0);
-  rand_pwm_cfg_reg();
 
   // Set random dc and params for all channels
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
@@ -42,10 +41,13 @@ task pwm_rand_output_vseq::body();
 
     set_duty_cycle(i, .A(duty_cycle.A), .B(duty_cycle.B));
     set_blink(i, .X(blink.X), .Y(blink.Y));
-    set_param(i, rand_reg_param);
+    set_param(i, pwm_param[i]);
   end
-
   set_ch_invert(rand_invert);
+
+  // Start the phase counter.
+  rand_pwm_cfg_reg();
+  // Enable the channels.
   set_ch_enables(rand_chan);
 
   low_power_mode(low_power, NUM_CYCLES);
