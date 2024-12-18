@@ -14,7 +14,7 @@ import hjson
 
 from device_id import DeviceId, DeviceIdentificationNumber
 from sku_config import SkuConfig
-from util import confirm, format_hex, run, resolve_runfile
+from util import confirm, format_hex, resolve_runfile, run
 
 # FPGA bitstream.
 _FPGA_UNIVERSAL_SPLICE_BITSTREAM = "hw/bitstream/universal/splice.bit"
@@ -245,8 +245,9 @@ class OtDut():
         # Write CA configs to a JSON tmpfile.
         ca_config_dict = {
             "dice": self.sku_config.dice_ca.to_dict_entry(),
-            "ext": self.sku_config.ext_ca.to_dict_entry(),
         }
+        if self.sku_config.ext_ca:
+            ca_config_dict["ext"] = self.sku_config.ext_ca.to_dict_entry()
 
         with tempfile.NamedTemporaryFile(mode="w+") as ca_config_file:
             json.dump(ca_config_dict, ca_config_file)
