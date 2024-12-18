@@ -311,6 +311,7 @@ opentitan_binary(
             CONST.LCV.PROD,
         ),
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
