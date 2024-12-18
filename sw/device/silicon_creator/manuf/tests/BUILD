@@ -225,6 +225,7 @@ cc_library(
         name = "manuf_sram_program_crc_{}_functest".format(lc_state.lower()),
         srcs = ["sram_empty_functest.c"],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },

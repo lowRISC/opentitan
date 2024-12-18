@@ -530,7 +530,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: []
+      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_sram_program_crc_test_unlocked0_functest"]
     }
   ]
 }
