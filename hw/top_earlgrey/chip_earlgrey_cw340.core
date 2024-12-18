@@ -44,6 +44,10 @@ filesets:
       - lowrisc:lint:comportable
     file_type: waiver
 
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
+
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
   # directory. It's best to pass it as absolute path when invoking fusesoc, e.g.
@@ -104,6 +108,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     parameters:
       - SYNTHESIS=true
       - AST_BYPASS_CLK=true

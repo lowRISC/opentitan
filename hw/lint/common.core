@@ -6,15 +6,11 @@ name: "lowrisc:lint:common:0.1"
 description: "Common waivers"
 filesets:
   files_verilator:
-    depend:
-      - lowrisc:prim_generic:all
     files:
       - tools/verilator/common.vlt
     file_type: vlt
 
   files_ascentlint:
-    depend:
-      - lowrisc:prim_generic:all
     files:
       - tools/ascentlint/common.waiver: {file_type: waiver}
       - tools/ascentlint/ascentlint-config.tcl: {file_type: tclSource}

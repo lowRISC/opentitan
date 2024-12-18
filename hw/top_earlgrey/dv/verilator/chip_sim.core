@@ -30,6 +30,10 @@ filesets:
       - chip_sim_tb.sv: { file_type: systemVerilogSource }
       - chip_sim_tb.cc: { file_type: cppSource }
 
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
+
 parameters:
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
@@ -126,6 +130,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     tools:
       verilator:
         mode: lint-only
