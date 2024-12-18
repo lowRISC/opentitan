@@ -8,7 +8,7 @@ description: "prim"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
+      - lowrisc:tlul:headers
       - lowrisc:prim:ram_1p
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
