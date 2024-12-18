@@ -64,6 +64,7 @@ Moreover, Bazel automatically connects to the simulated UART (via `opentitantool
 For example, to run the UART smoke test on Verilator simulated hardware, and see the output in real time, use
 ```console
 cd $REPO_TOP
+touch WORKSPACE
 bazel test --test_output=streamed //sw/device/tests:uart_smoketest_sim_verilator
 ```
 or
