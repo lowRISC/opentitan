@@ -141,6 +141,7 @@ def main():
         'ip_autogen/alert_handler/data/alert_handler.hjson',
         'ip_autogen/clkmgr/data/clkmgr.hjson',
         'ip_autogen/flash_ctrl/data/flash_ctrl.hjson',
+        'ip_autogen/otp_ctrl/data/otp_ctrl.hjson',
         'ip_autogen/pinmux/data/pinmux.hjson',
         'ip_autogen/pwrmgr/data/pwrmgr.hjson',
         'ip_autogen/rstmgr/data/rstmgr.hjson',
