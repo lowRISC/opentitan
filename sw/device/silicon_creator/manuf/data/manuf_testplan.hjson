@@ -59,6 +59,13 @@
       otp_mutate: true
       lc_states: ["TEST_UNLOCKED", "DEV", "PROD", "PROD_END", "RMA"]
       tests: []
+      bazel: [
+        "sw/device/silicon_creator/manuf/tests:manuf_scrap_functest_test_unlocked0"
+        "sw/device/silicon_creator/manuf/tests:manuf_scrap_functest_dev"
+        "sw/device/silicon_creator/manuf/tests:manuf_scrap_functest_prod"
+        "sw/device/silicon_creator/manuf/tests:manuf_scrap_functest_prod_end"
+        "sw/device/silicon_creator/manuf/tests:manuf_scrap_functest_rma"
+      ]
     }
 
     {
