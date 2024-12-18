@@ -53,7 +53,7 @@ impl Dispatch for Generate {
 
         Ok(Box::new(BasicResult {
             success: true,
-            id: AttrData::Str(key.hash.expect("key hash")),
+            id: key.hash.map_or(AttrData::None, AttrData::Str),
             label: AttrData::Str(key.alias),
             value: None,
             error: None,
