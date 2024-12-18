@@ -274,6 +274,7 @@ MANUF_PERSONALIZED = MANUF_INDIVIDUALIZED + [
 otp_image_consts(
     name = "otp_consts_c_file",
     src = "//hw/top_earlgrey/data/otp:otp_json_baseline",
+    mmap_def = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
     # Do not add additional overlays here. Update the `MANUF_SW_INITIALIZED`
     # OTP profile instead.
     overlays = MANUF_SW_INITIALIZED + OTP_SIGVERIFY_FAKE_KEYS,
