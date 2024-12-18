@@ -43,14 +43,14 @@ impl Dispatch for Sign {
         hsm: &Module,
         _session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
-        let acorn = hsm.acorn.as_ref().ok_or(HsmError::AcornUnavailable)?;
+        let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let data = helper::read_file(&self.input)?;
         let data = self
             .format
             .spx_prepare(self.domain, &data, self.little_endian)?;
-        let result = acorn.sign(self.label.as_deref(), self.id.as_deref(), &data)?;
+        let result = spx.sign(self.label.as_deref(), self.id.as_deref(), &data)?;
         helper::write_file(&self.output, &result)?;
         Ok(Box::<BasicResult>::default())
     }

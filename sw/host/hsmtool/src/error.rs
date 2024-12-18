@@ -34,8 +34,8 @@ pub enum HsmError {
     FilePermissionError(u32),
     #[error("DER error: {0}")]
     DerError(String),
-    #[error("This operation requires the acorn library")]
-    AcornUnavailable,
+    #[error("This operation requires an spx module")]
+    SpxUnavailable,
     #[error("Parse error: {0}")]
     ParseError(String),
     #[error("Unknown application: {0}")]
