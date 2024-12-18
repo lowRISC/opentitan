@@ -52,7 +52,7 @@ def main():
            "-t", files_data + topname + ".hjson",
            "-o", files_out]
     try:
-        print("Running topgen.")
+        print(f"Running topgen with command: {' '.join(cmd)}")
         subprocess.run(cmd,
                        check=True,
                        stdout=subprocess.PIPE,
@@ -117,6 +117,7 @@ def main():
                     'lowrisc:constants:top_pkg',
                     'lowrisc:prim:util',
                     'lowrisc:ip:lc_ctrl_pkg',
+                    'lowrisc:ip:otp_ctrl_pkg',
                     'lowrisc:ip_interfaces:clkmgr_pkg',
                     'lowrisc:ip_interfaces:flash_ctrl_pkg',
                     'lowrisc:ip_interfaces:pwrmgr_pkg',
@@ -155,6 +156,7 @@ def main():
             },
         },
     }
+    print(f"Printing core file to {core_filepath}")
     write_core(core_filepath, generated_core)
 
     return 0
