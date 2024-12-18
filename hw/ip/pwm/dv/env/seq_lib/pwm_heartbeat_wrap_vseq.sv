@@ -24,7 +24,9 @@ class pwm_heartbeat_wrap_vseq extends pwm_rand_output_vseq;
 endclass
 
 constraint pwm_heartbeat_wrap_vseq::with_heartbeat_c {
-  rand_reg_param.HtbtEn == 1'b1;
+  foreach (pwm_param[ii]) {
+    pwm_param[ii].HtbtEn == 1'b1;
+  }
 }
 
 function pwm_heartbeat_wrap_vseq::new (string name);
