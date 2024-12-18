@@ -8,6 +8,8 @@ description: "Clock manager registers"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
       - lowrisc:prim:assert
       - lowrisc:prim:mubi_pkg
