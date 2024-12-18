@@ -220,7 +220,7 @@
                 // 2. Run opentitantool
                 //
                 //    opentitantool --rcfile="" otp alert-digest \
-                //        hw/ip/otp_ctrl/data/otp_ctrl_img_owner_sw_cfg.hjson
+                //        hw/top_darjeeling/data/otp/otp_ctrl_img_owner_sw_cfg.hjson
                 //
                 //    and enter the new values in this file.
                 {
