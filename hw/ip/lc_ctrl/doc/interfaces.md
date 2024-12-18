@@ -153,7 +153,7 @@ See also [power manager documentation](../../../top_earlgrey/ip_autogen/pwrmgr/R
 
 #### OTP Interfaces
 
-All interfaces to and from OTP are explained in detail in the [OTP Specification Document](../../otp_ctrl/README.md#life-cycle-interfaces).
+All interfaces to and from OTP are explained in detail in the OTP Specification Document (for example, see [earlgrey's OTP specification](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md#life-cycle-interfaces)).
 
 #### KMAC Interface
 

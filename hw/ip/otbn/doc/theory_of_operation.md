@@ -412,9 +412,9 @@ this code is not re-computed within the memory block.
 Before being stored in SRAM, the data word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm](#memory-scrambling).
 The scrambling is reversed on a read.
 
-The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../../otp_ctrl/README.md).
+The ephemeral memory scrambling key and the nonce are provided by the OTP block.
 They are set once when OTBN block is reset, and changed whenever a [secure wipe](#data-memory-dmem-secure-wipe) of the data memory is performed.
-
+For example, see earlgrey's [OTP block](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#scrambling-key-derivation).
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
 A further check must be performed when the data is consumed.
@@ -428,7 +428,7 @@ this code is not re-computed within the memory block.
 Before being stored in SRAM, the instruction word with the attached Integrity Protection Code, as well as the address are scrambled according to the [memory scrambling algorithm](#memory-scrambling).
 The scrambling is reversed on a read.
 
-The ephemeral memory scrambling key and the nonce are provided by the [OTP block](../../otp_ctrl/README.md).
+The ephemeral memory scrambling key and the nonce are provided by the OTP block (for example, see earlgrey's [scrambling specification](../../../top_earlgrey/ip_autogen/otp_ctrl/doc/theory_of_operation.md#scrambling-key-derivation)).
 They are set once when OTBN block is reset, and changed whenever a [secure wipe](#instruction-memory-imem-secure-wipe) of the instruction memory is performed.
 
 The Integrity Protection Code is checked on every memory read, even though the code remains attached to the data.
