@@ -9,9 +9,8 @@ virtual:
 
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:opentitan:top_earlgrey_pwrmgr_reg
     files:
+      - rtl/pwrmgr_reg_pkg.sv
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource
 

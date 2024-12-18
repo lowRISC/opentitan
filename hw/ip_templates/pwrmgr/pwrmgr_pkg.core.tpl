@@ -9,12 +9,12 @@ virtual:
 
 filesets:
   files_rtl:
-    depend:
-      - ${instance_vlnv("lowrisc:ip:pwrmgr_reg")}
   % if wait_for_external_reset:
+    depend:
       - lowrisc:ip:rom_ctrl_pkg
   % endif
     files:
+      - rtl/pwrmgr_reg_pkg.sv
       - rtl/pwrmgr_pkg.sv
     file_type: systemVerilogSource
 
