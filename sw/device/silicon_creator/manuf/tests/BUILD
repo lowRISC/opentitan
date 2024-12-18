@@ -116,6 +116,7 @@ opentitan_test(
     name = "manuf_cp_unlock_raw_functest",
     srcs = ["//sw/device/silicon_creator/rom/e2e:empty_test.c"],
     exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
