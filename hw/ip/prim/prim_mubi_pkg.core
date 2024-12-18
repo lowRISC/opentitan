@@ -2,40 +2,33 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-
-name: "lowrisc:prim_generic:flash"
-description: "prim"
-virtual:
-  - lowrisc:prim:flash
-
+#
+# ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+# PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+#
+#    util/design/gen-mubi.py
+#
+name: "lowrisc:prim:mubi_pkg:0.1"
+description: "Multibit types and functions"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
-      - lowrisc:prim:ram_1p
-      - "fileset_partner  ? (partner:systems:ast_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
-      - lowrisc:ip_interfaces:flash_ctrl_pkg
-      - lowrisc:ip:flash_ctrl_prim_reg_top
+      - lowrisc:prim:assert
     files:
-      - rtl/prim_generic_flash_bank.sv
-      - rtl/prim_flash.sv
+      - rtl/prim_mubi_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
-      - lint/prim_generic_flash.vlt
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/prim_generic_flash.waiver
+      - lint/prim_mubi.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
@@ -44,7 +37,7 @@ filesets:
       - lowrisc:lint:common
 
 targets:
-  default:
+  default: &default_target
     filesets:
       - tool_verilator   ? (files_verilator_waiver)
       - tool_ascentlint  ? (files_ascentlint_waiver)

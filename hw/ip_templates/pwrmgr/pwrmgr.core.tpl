@@ -12,6 +12,7 @@ filesets:
     depend:
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
       - ${instance_vlnv("lowrisc:ip:pwrmgr_reg:0.1")}
+      - lowrisc:ip:rom_ctrl_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:pwrmgr_component
     file_type: systemVerilogSource
