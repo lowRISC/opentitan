@@ -44,6 +44,10 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
+        ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         # In order to prevent the linker from prematurely discarding symbols, we
         # need to give the CRT library last.
@@ -73,6 +77,10 @@ manifest(d = {
             "//hw/top_earlgrey:silicon_creator",
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
+        ],
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
         ],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = [

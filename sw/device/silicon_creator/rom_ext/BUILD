@@ -222,6 +222,10 @@ manifest(d = {
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
+        extra_bazel_features = [
+            "minsize",
+            "use_lld",
+        ],
         linker_script = ":ld_slot_{}".format(slot),
         manifest = ":manifest",
         spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -246,6 +250,10 @@ opentitan_binary(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
+    ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
@@ -273,6 +281,10 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+    ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
     ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
