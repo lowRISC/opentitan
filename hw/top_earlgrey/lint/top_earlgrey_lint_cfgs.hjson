@@ -147,9 +147,9 @@
                   rel_path: "hw/ip/otbn/lint/{tool}"
              },
              {    name: otp_ctrl
-                  fusesoc_core: lowrisc:ip:otp_ctrl
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_otp_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/otp_ctrl/lint/{tool}"
+                  rel_path: "hw/top_earlgrey/ip_autogen/otp_ctrl/lint/{tool}"
                   overrides: [
                     {
                       name: design_level
