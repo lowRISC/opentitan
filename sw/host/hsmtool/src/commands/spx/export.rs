@@ -24,8 +24,8 @@ pub struct Export {
 }
 
 impl Export {
-    fn export(&self, acorn: &dyn SpxInterface) -> Result<()> {
-        let key = acorn.get_key_info(&self.label)?;
+    fn export(&self, spx: &dyn SpxInterface) -> Result<()> {
+        let key = spx.get_key_info(&self.label)?;
         let algorithm = SphincsPlus::from_str(&key.algorithm)?;
         let pk = SpxPublicKey::from_bytes(algorithm, &key.public_key)?;
         pk.write_pem_file(&self.filename)?;
@@ -41,9 +41,9 @@ impl Dispatch for Export {
         hsm: &Module,
         _session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
-        let acorn = hsm.acorn.as_deref().ok_or(HsmError::AcornUnavailable)?;
+        let spx = hsm.spx.as_deref().ok_or(HsmError::SpxUnavailable)?;
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
-        self.export(acorn)?;
+        self.export(spx)?;
         Ok(Box::<BasicResult>::default())
     }
 }
