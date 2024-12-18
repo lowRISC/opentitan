@@ -1,0 +1,44 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_xilinx:ram_1p"
+description: "Single port RAM"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:ram_1p_pkg
+      # Note that prim_xilinx_pkg is a virtual core that the top should provide.
+      # It maps parameters to instructions for how to split memories into
+      # logical groups of bits. See prim_xilinx_default_pkg for an example.
+      - lowrisc:prim_xilinx:prim_xilinx_pkg
+      - lowrisc:prim_generic:ram_1p
+      - lowrisc:prim:util_memload
+    files:
+      - rtl/prim_xilinx_ram_1p.sv
+    file_type: systemVerilogSource
+
+  files_verilator_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
+  files_ascentlint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
+  files_veriblelint_waiver:
+    depend:
+      # common waivers
+      - lowrisc:lint:common
+
+targets:
+  default:
+    filesets:
+      - tool_verilator   ? (files_verilator_waiver)
+      - tool_ascentlint  ? (files_ascentlint_waiver)
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl

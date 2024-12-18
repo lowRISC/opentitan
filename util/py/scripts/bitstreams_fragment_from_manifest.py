@@ -51,13 +51,12 @@ def main(argv):
     if (args.create_symlinks):
         os.symlink(bitstream, os.path.join(args.out, bitstream_renamed))
 
-    # Replace the MMI paths.
-    for mmi in metadata['memory_map_info'].values():
-        mmi_file = os.path.join(manifest_dir, mmi['file'])
-        mmi_renamed = os.path.join(args.design, os.path.basename(mmi_file))
-        mmi['file'] = mmi_renamed
-        if (args.create_symlinks):
-            os.symlink(mmi_file, os.path.join(args.out, mmi_renamed))
+    # Replace the MMI path.
+    mmi_file = os.path.join(manifest_dir, metadata['memory_map_info']['file'])
+    mmi_renamed = os.path.join(args.design, os.path.basename(mmi_file))
+    metadata['memory_map_info']['file'] = mmi_renamed
+    if (args.create_symlinks):
+        os.symlink(mmi_file, os.path.join(args.out, mmi_renamed))
 
     # Dump the manifest to the specified location.
     manifest_path = os.path.join(args.out, 'manifest.json')
