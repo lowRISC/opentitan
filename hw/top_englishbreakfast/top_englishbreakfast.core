@@ -30,13 +30,13 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
-      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main
       - lowrisc:top_englishbreakfast:xbar_peri
       - lowrisc:opentitan:top_englishbreakfast_clkmgr
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl
+      - lowrisc:opentitan:top_englishbreakfast_otp_ctrl
       - lowrisc:opentitan:top_englishbreakfast_pinmux
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr
       - lowrisc:opentitan:top_englishbreakfast_rstmgr
