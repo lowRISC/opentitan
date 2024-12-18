@@ -19,10 +19,11 @@ PER_DEVICE_DEPS = {
 }
 
 def _opentitan_transition_impl(settings, attr):
+    features = settings["//command_line_option:features"] + attr.extra_bazel_features
     return {
         "//command_line_option:platforms": attr.platform,
         "//command_line_option:copt": settings["//command_line_option:copt"],
-        "//command_line_option:features": settings["//command_line_option:features"],
+        "//command_line_option:features": features,
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
@@ -58,6 +59,8 @@ def rv_rule(**kwargs):
     attrs = kwargs.pop("attrs", {})
     if "platform" not in attrs:
         attrs["platform"] = attr.string(default = OPENTITAN_PLATFORM)
+    if "extra_bazel_features" not in attrs:
+        attrs["extra_bazel_features"] = attr.string_list(default = [])
     attrs["_allowlist_function_transition"] = attr.label(
         default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
     )
