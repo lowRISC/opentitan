@@ -10,6 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
     files:
       - rtl/rstmgr_reg_pkg.sv
