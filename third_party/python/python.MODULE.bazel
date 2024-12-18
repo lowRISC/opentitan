@@ -33,6 +33,11 @@ use_repo(pip, "ot_python_deps")
 # List of dependencies that need to used during the loading phase
 # by repository rules.
 REPO_RULES_PIP_DEPS = [
+    # Direct dependencies:
+    "jsonschema",  # In rules/scripts/bitstreams_workspace.py
+    # Transitive dependencies:
+    "attrs",  # For jsonschema
+    "pyrsistent",  # For jsonschema
 ]
 
 # Ask bazel to use all repositories created by rules_python so we
