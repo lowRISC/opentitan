@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip_interfaces:flash_ctrl_pkg
+      - lowrisc:prim:subreg
     files:
       - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource

@@ -10,9 +10,10 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
+      - lowrisc:opentitan:top_darjeeling_rstmgr_pkg
     files:
-      - rtl/rstmgr_reg_pkg.sv
       - rtl/rstmgr_reg_top.sv
     file_type: systemVerilogSource
 

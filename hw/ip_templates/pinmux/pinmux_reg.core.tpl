@@ -10,6 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
     files:
       - rtl/pinmux_reg_pkg.sv
