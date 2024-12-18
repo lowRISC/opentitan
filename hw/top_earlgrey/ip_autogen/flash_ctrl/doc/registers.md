@@ -485,6 +485,7 @@ Region register write enable.  Once set to 0, it can longer be configured to 1
 Memory property configuration for data partition
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`REGION_CFG_REGWEN`](#region_cfg_regwen)
 
 ### Instances
 
@@ -521,6 +522,7 @@ Memory property configuration for data partition
 Memory base and size configuration for data partition
 - Reset default: `0x0`
 - Reset mask: `0x7ffff`
+- Register enable: [`REGION_CFG_REGWEN`](#region_cfg_regwen)
 
 ### Instances
 
@@ -616,6 +618,7 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK0_INFO0_REGWEN`](#bank0_info0_regwen)
 
 ### Instances
 
@@ -687,6 +690,7 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK0_INFO1_REGWEN`](#bank0_info1_regwen)
 
 ### Instances
 
@@ -750,6 +754,7 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK0_INFO2_REGWEN`](#bank0_info2_regwen)
 
 ### Instances
 
@@ -822,6 +827,7 @@ Info0 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK1_INFO0_REGWEN`](#bank1_info0_regwen)
 
 ### Instances
 
@@ -893,6 +899,7 @@ Info1 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK1_INFO1_REGWEN`](#bank1_info1_regwen)
 
 ### Instances
 
@@ -956,6 +963,7 @@ Info2 page write enable.  Once set to 0, it can longer be configured to 1
   Unlike data partition, each page is individually configured.
 - Reset default: `0x9999999`
 - Reset mask: `0xfffffff`
+- Register enable: [`BANK1_INFO2_REGWEN`](#bank1_info2_regwen)
 
 ### Instances
 

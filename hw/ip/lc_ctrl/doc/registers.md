@@ -283,6 +283,7 @@ In order to have exclusive access to this register, SW must first claim the asso
 hardware mutex via [`CLAIM_TRANSITION_IF.`](#claim_transition_if)
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`TRANSITION_REGWEN`](#transition_regwen)
 
 ### Instances
 

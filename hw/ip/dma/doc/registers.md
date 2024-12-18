@@ -682,6 +682,7 @@ Bus selection bit where the clearing command should be performed."
 Destination address for interrupt source clearing write.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 
@@ -714,6 +715,7 @@ Destination address for interrupt source clearing write.
 Write value for interrupt clearing write.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 

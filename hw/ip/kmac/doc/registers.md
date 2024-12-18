@@ -585,6 +585,7 @@ Current KMAC supports up to 512 bit secret key. It is the sw
 responsibility to keep upper bits of the secret key to 0.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 
@@ -633,6 +634,7 @@ Current KMAC supports up to 512 bit secret key. It is the sw
 responsibility to keep upper bits of the secret key to 0.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 
@@ -723,6 +725,7 @@ If the engine computes the hash, it discards any attempts to update the secret k
 and report an error.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 

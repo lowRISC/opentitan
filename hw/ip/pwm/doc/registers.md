@@ -151,6 +151,7 @@ Invert the PWM output for each channel
 Basic PWM Channel Parameters
 - Reset default: `0x0`
 - Reset mask: `0xc000ffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 
@@ -204,6 +205,7 @@ Phase delay of the PWM leading edge, in units of 2^(-16) PWM
 Controls the duty_cycle of each channel.
 - Reset default: `0x7fff7fff`
 - Reset mask: `0xffffffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 
@@ -246,6 +248,7 @@ The initial duty cycle for PWM output, in units
 Hardware controlled blink/heartbeat parameters.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 

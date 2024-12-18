@@ -287,6 +287,7 @@ When a particular bit value is 0, the corresponding module is held in reset.
 When a particular bit value is 1, the corresponding module is not held in reset.
 - Reset default: `0x1`
 - Reset mask: `0x1`
+- Register enable: [`SW_RST_REGWEN`](#sw_rst_regwen)
 
 ### Instances
 
