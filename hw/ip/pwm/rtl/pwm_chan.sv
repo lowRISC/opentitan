@@ -120,7 +120,7 @@ module pwm_chan #(
   logic [CntDw-1:0] dc_htbt_d;
   logic [CntDw-1:0] dc_htbt_q;
   logic dc_htbt_end;
-  // Asserted at the very end of the 'x' pulses cycles for which the heartbeat duty cycle
+  // Asserted at the very end of the 'x' pulse cycles for which the heartbeat duty cycle
   // remains unchanged; this is our signal to update the duty cycle in heartbeat mode.
   assign dc_htbt_end = htbt_mode & update & blink_end;
 
@@ -130,7 +130,9 @@ module pwm_chan #(
   logic dc_wrap_q;
   logic pos_htbt;
 
-  // We support either 'a' or 'b' being the greater duty cycle.
+  // We support either 'a' or 'b' being the greater duty cycle; the heartbeat shall rise/fall from
+  // the initial duty cycle ('a') to/beyond the target value 'b' before then falling/rising back
+  // to that initial value.
   assign pos_htbt = (duty_cycle_a_i < duty_cycle_b_i);
   assign pattern_repeat = (duty_cycle_a_i == duty_cycle_b_i);
 
@@ -139,6 +141,17 @@ module pwm_chan #(
   assign dc_htbt_max = pos_htbt ? duty_cycle_b_i : duty_cycle_a_i;
   assign dc_htbt_min = pos_htbt ? duty_cycle_a_i : duty_cycle_b_i;
 
+  logic htbt_too_high;
+  logic htbt_too_low;
+  assign htbt_too_high = !htbt_falling & (dc_htbt_q >= dc_htbt_max);
+  assign htbt_too_low  =  htbt_falling & (dc_htbt_q <= dc_htbt_min);
+
+  // Does the heartbeat need to change direction for the next interval of 'x' pulse cycles?
+  // - overflow/underflow of the 16-bit range
+  // - too high or too low (at/beyond target or has returned to initial value)
+  logic htbt_reverse;
+  assign htbt_reverse = |{htbt_too_high, htbt_too_low, dc_wrap_q};
+
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       htbt_falling <= '0;
@@ -146,12 +159,8 @@ module pwm_chan #(
       // For proper initialization, set the initial htbt_falling whenever a register is updated,
       // as indicated by clr_chan_cntr_i
       htbt_falling <= !pos_htbt;
-    end else if (htbt_mode) begin
-      if (!htbt_falling && ((dc_htbt_q >= dc_htbt_max) || (dc_wrap && dc_htbt_end))) begin
-        htbt_falling <= 1'b1; // duty cycle counts down
-      end else if (htbt_falling && ((dc_htbt_q <= dc_htbt_min) || (dc_wrap && dc_htbt_end))) begin
-        htbt_falling <= 1'b0; // duty cycle counts up
-      end
+    end else if (dc_htbt_end & htbt_reverse) begin  // Reversing direction?
+      htbt_falling <= !htbt_falling;
     end
   end
 
@@ -160,7 +169,7 @@ module pwm_chan #(
   always_comb begin
     if (pattern_repeat) begin
       {dc_wrap, dc_htbt_d} = {1'b0, duty_cycle_a_i};
-    end else if (htbt_falling) begin
+    end else if (htbt_falling ^ htbt_reverse) begin
       {dc_wrap, dc_htbt_d} = {dc_wrap_q, dc_htbt_q} - (CntExtDw)'(blink_param_y_i) - 1'b1;
     end else begin
       {dc_wrap, dc_htbt_d} = {dc_wrap_q, dc_htbt_q} + (CntExtDw)'(blink_param_y_i) + 1'b1;
