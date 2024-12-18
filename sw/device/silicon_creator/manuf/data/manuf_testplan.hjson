@@ -109,7 +109,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: []
+      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_ast_test_execution_test_unlocked0_functest"]
     }
 
     {

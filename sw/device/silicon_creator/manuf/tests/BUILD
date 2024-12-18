@@ -394,6 +394,7 @@ opentitan_binary(
         name = "manuf_cp_ast_test_execution_{}_functest".format(lc_state.lower()),
         srcs = ["idle_functest.c"],
         exec_env = {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
         },
         fpga = fpga_params(
