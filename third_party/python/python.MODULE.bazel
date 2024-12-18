@@ -29,3 +29,32 @@ pip.parse(
     requirements_lock = "//:python-requirements.txt",
 )
 use_repo(pip, "ot_python_deps")
+
+# List of dependencies that need to used during the loading phase
+# by repository rules.
+REPO_RULES_PIP_DEPS = [
+]
+
+# Ask bazel to use all repositories created by rules_python so we
+# can access them directly.
+[
+    use_repo(pip, "ot_python_deps_39_{}".format(pkg))
+    for pkg in REPO_RULES_PIP_DEPS
+]
+
+# Call an extension that will create a repository handling all of
+# the nasty details so we can run the python interpreter during
+# the loading phase with the dependencies from pip.
+ot_py_for_repo = use_extension("//third_party/python:extension.bzl", "ot_py_for_repo")
+ot_py_for_repo.register(
+    repo_name = "ot_py_for_repo",
+    python = "@python3_host//:python",
+    packages = [
+        "@ot_python_deps_39_{}//:BUILD.bazel".format(pkg)
+        for pkg in REPO_RULES_PIP_DEPS
+    ],
+)
+
+# The following repository has a python interpreter at //:python
+# that will handle dependencies correctly.
+use_repo(ot_py_for_repo, "ot_py_for_repo")
