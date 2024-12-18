@@ -337,8 +337,13 @@ module prim_sha2_pad import prim_sha2_pkg::*;
       end
     endcase
 
-    if (!sha_en_i)    st_d = StIdle;
-    else if (hash_go) st_d = StFifoReceive;
+    if (!sha_en_i) begin
+      st_d = StIdle;
+    // We do not allow the cancellation of an ongoing padding operation, i.e., reverting back to the
+    // `StFifoReceive` state while being in the states `StPad80`, `StPad00`, `StLenHi` or `StLenLo`.
+    end else if (hash_go && (st_q inside {StIdle, StFifoReceive})) begin
+      st_d = StFifoReceive;
+    end
   end
 
   // tx_count
