@@ -877,6 +877,22 @@
       reseed: 1
     }
     {
+      name: chip_sw_otp_ctrl_rot_auth_config
+      uvm_test_seq: chip_sw_rom_e2e_jtag_inject_vseq
+      sw_images: [
+        "//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty:4",
+        "//sw/device/tests:otp_ctrl_rot_auth_config_test:5",
+      ]
+      en_run_modes: ["sw_test_mode_mask_rom"]
+      run_opts: [
+        "+sw_test_timeout_ns=160_000_000",
+        "+use_jtag_dmi=1",
+        "+use_otp_image=OtpTypeCustom",
+      ]
+      reseed: 1
+      run_timeout_mins: 240
+    }
+    {
       name: chip_sw_otp_ctrl_ecc_error_vendor_test
       uvm_test_seq: chip_sw_otp_ctrl_vendor_test_ecc_error_vseq
       sw_images: ["//sw/device/tests/sim_dv:otp_ctrl_vendor_test_ecc_error_test:1:new_rules"]
