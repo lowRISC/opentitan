@@ -380,6 +380,7 @@ filegroup(
         exec_env = {
             "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         fpga = fpga_params(
