@@ -42,7 +42,6 @@ tock = module_extension(
 def _tock_repos():
     bare_repository(
         name = "tock",
-        local = None,
         strip_prefix = "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
         url = "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
         sha256 = "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
@@ -154,7 +153,6 @@ def _tock_repos():
 
     bare_repository(
         name = "libtock",
-        local = None,
         strip_prefix = "libtock-rs-a2c6ad80648e3ba073e7433b4330706df052a6ae",
         url = "https://github.com/tock/libtock-rs/archive/a2c6ad80648e3ba073e7433b4330706df052a6ae.tar.gz",
         sha256 = "888d1925cd760e818385d13187286d6b87f763c548a4dc1bb26e55786dc95636",
