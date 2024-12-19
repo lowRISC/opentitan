@@ -42,6 +42,11 @@ filegroup(
 )
 
 filegroup(
+    name = "owner_key_pub",
+    srcs = ["owner_ecdsa_p256.pub.der"],
+)
+
+filegroup(
     name = "activate_key",
     srcs = ["activate_ecdsa_p256.der"],
 )
@@ -49,4 +54,14 @@ filegroup(
 filegroup(
     name = "unlock_key",
     srcs = ["unlock_ecdsa_p256.der"],
+)
+
+filegroup(
+    name = "app_prod",
+    srcs = ["app_prod_key_rsa_3072_exp_f4.der"],
+)
+
+filegroup(
+    name = "app_prod_pub",
+    srcs = ["app_prod_key_rsa_3072_exp_f4.pub.der"],
 )
