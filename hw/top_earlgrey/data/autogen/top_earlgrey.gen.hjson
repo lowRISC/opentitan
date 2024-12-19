@@ -5156,6 +5156,24 @@
           default: 4096
         }
         {
+          name: InstSize
+          desc: Memory size of a single RAM tile (in bytes).
+          type: int
+          default: "4096"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonInstSize
+        }
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          type: int
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonNumRamInst
+        }
+        {
           name: InstrExec
           desc: Support execution from SRAM
           type: bit
@@ -5194,10 +5212,22 @@
           package: prim_ram_1p_pkg
           type: uni
           act: rcv
-          width: 1
+          width:
+          {
+            name: NumRamInst
+            desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: SramCtrlRetAonNumRamInst
+          }
           default: "'0"
           inst_name: sram_ctrl_ret_aon
-          top_signame: ast_ram_1p_cfg
+          external: true
+          top_signame: sram_ctrl_ret_aon_cfg
+          conn_type: false
           index: -1
         }
         {
@@ -7971,6 +8001,24 @@
           default: 131072
         }
         {
+          name: InstSize
+          desc: Memory size of a single RAM tile (in bytes).
+          type: int
+          default: "4096"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainInstSize
+        }
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          type: int
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainNumRamInst
+        }
+        {
           name: InstrExec
           desc: Support execution from SRAM
           type: bit
@@ -8009,10 +8057,22 @@
           package: prim_ram_1p_pkg
           type: uni
           act: rcv
-          width: 1
+          width:
+          {
+            name: NumRamInst
+            desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: SramCtrlMainNumRamInst
+          }
           default: "'0"
           inst_name: sram_ctrl_main
-          top_signame: ast_ram_1p_cfg
+          external: true
+          top_signame: sram_ctrl_main_cfg
+          conn_type: false
           index: -1
         }
         {
@@ -9032,8 +9092,6 @@
         i2c0.ram_cfg
         i2c1.ram_cfg
         i2c2.ram_cfg
-        sram_ctrl_main.cfg
-        sram_ctrl_ret_aon.cfg
         rv_core_ibex.ram_cfg
       ]
       ast.spi_ram_2p_cfg:
@@ -9628,6 +9686,8 @@
       ast.lc_dft_en: ""
       ast.obs_ctrl: obs_ctrl
       ast.ram_1p_cfg: ram_1p_cfg
+      sram_ctrl_main.cfg: sram_ctrl_main_cfg
+      sram_ctrl_ret_aon.cfg: sram_ctrl_ret_aon_cfg
       ast.spi_ram_2p_cfg: spi_ram_2p_cfg
       ast.usb_ram_1p_cfg: usb_ram_1p_cfg
       ast.rom_cfg: rom_cfg
@@ -19859,10 +19919,22 @@
         package: prim_ram_1p_pkg
         type: uni
         act: rcv
-        width: 1
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlRetAonNumRamInst
+        }
         default: "'0"
         inst_name: sram_ctrl_ret_aon
-        top_signame: ast_ram_1p_cfg
+        external: true
+        top_signame: sram_ctrl_ret_aon_cfg
+        conn_type: false
         index: -1
       }
       {
@@ -21304,10 +21376,22 @@
         package: prim_ram_1p_pkg
         type: uni
         act: rcv
-        width: 1
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlMainNumRamInst
+        }
         default: "'0"
         inst_name: sram_ctrl_main
-        top_signame: ast_ram_1p_cfg
+        external: true
+        top_signame: sram_ctrl_main_cfg
+        conn_type: false
         index: -1
       }
       {
@@ -22566,6 +22650,50 @@
         conn_type: true
         index: -1
         netname: ast_ram_1p_cfg
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: sram_ctrl_main_cfg_i
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlMainNumRamInst
+        }
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_main_cfg
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: sram_ctrl_ret_aon_cfg_i
+        width:
+        {
+          name: NumRamInst
+          desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: SramCtrlRetAonNumRamInst
+        }
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: sram_ctrl_ret_aon_cfg
       }
       {
         package: prim_ram_2p_pkg

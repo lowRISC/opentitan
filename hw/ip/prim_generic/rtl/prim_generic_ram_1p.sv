@@ -9,20 +9,24 @@
 module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   parameter  int Width           = 32, // bit
   parameter  int Depth           = 128,
+  parameter  int InstDepth       = Depth,
   parameter  int DataBitsPerMask = 1, // Number of data bits per bit of write mask
   parameter      MemInitFile     = "", // VMEM file to initialize the memory with
 
-  localparam int Aw              = $clog2(Depth)  // derived parameter
+  localparam int Aw              = $clog2(Depth),  // derived parameter
+  // Compute RAM tiling
+  localparam int NumRamInst      = $ceil(Depth / InstDepth)
 ) (
-  input  logic             clk_i,
+  input  logic                        clk_i,
 
-  input  logic             req_i,
-  input  logic             write_i,
-  input  logic [Aw-1:0]    addr_i,
-  input  logic [Width-1:0] wdata_i,
-  input  logic [Width-1:0] wmask_i,
-  output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
-  input ram_1p_cfg_t       cfg_i
+  input  logic                        req_i,
+  input  logic                        write_i,
+  input  logic [Aw-1:0]               addr_i,
+  input  logic [Width-1:0]            wdata_i,
+  input  logic [Width-1:0]            wmask_i,
+  output logic [Width-1:0]            rdata_o, // Read data. Data is returned one cycle after req_i
+                                               // is high.
+  input ram_1p_cfg_t [NumRamInst-1:0] cfg_i
 );
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
