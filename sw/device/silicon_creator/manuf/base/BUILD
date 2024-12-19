@@ -356,10 +356,11 @@ manifest(d = {
 ]
 
 _FT_PROVISIONING_CMD_ARGS = """
-  --elf={sram_ft_individualize}
-  --bootstrap={ft_personalize}
-  --second-bootstrap={bundle}
-  --ca-config={ca_config}
+  --elf={{sram_ft_individualize}}
+  --bootstrap={{ft_personalize}}
+  --second-bootstrap={{bundle}}
+  --ca-config={{ca_config}}
+  --owner-success-text="{owner_fw_boot_str}"
 """ + FT_PROVISIONING_INPUTS
 
 _FT_PROVISIONING_HARNESS = "//sw/host/provisioning/ft:ft_{}"
@@ -435,7 +436,9 @@ filegroup(
                 "lc_test_locked0",
                 "manuf",
             ] + (["manual"] if config.get("offline", False) else []),
-            test_cmd = _FT_PROVISIONING_CMD_ARGS,
+            test_cmd = _FT_PROVISIONING_CMD_ARGS.format(
+                owner_fw_boot_str = config.get("owner_fw_boot_str", ""),
+            ),
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
         silicon = silicon_params(
@@ -458,7 +461,9 @@ filegroup(
             owner_slot_b = OWNER_SLOTS["b"],
             rom_ext_slot_a = SLOTS["a"],
             rom_ext_slot_b = SLOTS["b"],
-            test_cmd = _FT_PROVISIONING_CMD_ARGS,
+            test_cmd = _FT_PROVISIONING_CMD_ARGS.format(
+                owner_fw_boot_str = config.get("owner_fw_boot_str", ""),
+            ),
             test_harness = _FT_PROVISIONING_HARNESS.format(sku),
         ),
     )
