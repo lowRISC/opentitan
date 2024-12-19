@@ -25,7 +25,7 @@
                "--flag=fileset_{design_level}",
                "--target={flow}",
                "--tool={tool}",
-               "--build-root={build_dir}",
+               "--work-root={build_dir}/fusesoc-work",
                "{fusesoc_core}"]
 
   // Determines which message severities to print into report summaries.

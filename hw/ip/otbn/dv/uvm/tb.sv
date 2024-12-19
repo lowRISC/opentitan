@@ -343,7 +343,7 @@ module tb;
     // Note that n_bits is the number of bits in the memory, including ECC check bits.
     imem_util = new(.name ("imem_util"),
                     .path ({"tb.dut.u_imem.u_prim_ram_1p_adv.",
-                            "u_mem.gen_generic.u_impl_generic.mem"}),
+                            "u_mem.mem"}),
                     .depth (ImemSizeByte / 4),
                     .n_bits (ImemSizeByte / 4 * 39),
                     .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
@@ -351,7 +351,7 @@ module tb;
     // DMEM is twice as big as the bus-accessible part
     dmem_util = new(.name ("dmem_util"),
                     .path ({"tb.dut.u_dmem.u_prim_ram_1p_adv.",
-                            "u_mem.gen_generic.u_impl_generic.mem"}),
+                            "u_mem.mem"}),
                     .depth (DmemSizeByte / 32),
                     .n_bits (DmemSizeByte / 32 * 312),
                     .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));

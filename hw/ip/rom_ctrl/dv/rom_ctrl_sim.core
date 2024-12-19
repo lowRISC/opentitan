@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:rom_ctrl_test
       - lowrisc:dv:rom_ctrl_sva
       - lowrisc:dv:rom_ctrl_cov
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
     file_type: systemVerilogSource

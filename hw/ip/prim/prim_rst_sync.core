@@ -8,9 +8,7 @@ description: "Primitive Reset synchronizer"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:prim_pkg
-      # Needed because the generic prim_flop_2sync has a
-      # dependency on prim:flop.
+      - lowrisc:prim:clock_mux2
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:mubi
       - lowrisc:prim:cdc_rand_delay

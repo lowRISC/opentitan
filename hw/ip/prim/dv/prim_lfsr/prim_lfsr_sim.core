@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:dv_utils
       - lowrisc:dv:dv_test_status
       - lowrisc:dv:common_ifs
+      - lowrisc:prim_generic:all
     files:
       - prim_lfsr_tb.sv
     file_type: systemVerilogSource
