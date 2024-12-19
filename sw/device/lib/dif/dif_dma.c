@@ -25,24 +25,44 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
     return kDifBadArg;
   }
 
+  // Source address.
   mmio_region_write32(dma->base_addr, DMA_SRC_ADDR_LO_REG_OFFSET,
                       transaction.source.address & UINT32_MAX);
   mmio_region_write32(dma->base_addr, DMA_SRC_ADDR_HI_REG_OFFSET,
                       transaction.source.address >> (sizeof(uint32_t) * 8));
 
+  // Destination address.
   mmio_region_write32(dma->base_addr, DMA_DST_ADDR_LO_REG_OFFSET,
                       transaction.destination.address & UINT32_MAX);
   mmio_region_write32(
       dma->base_addr, DMA_DST_ADDR_HI_REG_OFFSET,
       transaction.destination.address >> (sizeof(uint32_t) * 8));
 
+  // Source configuration.
   uint32_t reg = 0;
+  reg = bitfield_bit32_write(reg, DMA_SRC_CONFIG_WRAP_BIT,
+                             transaction.src_config.wrap);
+  reg = bitfield_bit32_write(reg, DMA_SRC_CONFIG_INCREMENT_BIT,
+                             transaction.src_config.increment);
+  mmio_region_write32(dma->base_addr, DMA_SRC_CONFIG_REG_OFFSET, reg);
+
+  // Destination configuration.
+  reg = 0;
+  reg = bitfield_bit32_write(reg, DMA_DST_CONFIG_WRAP_BIT,
+                             transaction.dst_config.wrap);
+  reg = bitfield_bit32_write(reg, DMA_DST_CONFIG_INCREMENT_BIT,
+                             transaction.dst_config.increment);
+  mmio_region_write32(dma->base_addr, DMA_DST_CONFIG_REG_OFFSET, reg);
+
+  // Address Space IDs.
+  reg = 0;
   reg = bitfield_field32_write(reg, DMA_ADDR_SPACE_ID_SRC_ASID_FIELD,
                                transaction.source.asid);
   reg = bitfield_field32_write(reg, DMA_ADDR_SPACE_ID_DST_ASID_FIELD,
                                transaction.destination.asid);
   mmio_region_write32(dma->base_addr, DMA_ADDR_SPACE_ID_REG_OFFSET, reg);
 
+  // Transfer quantities.
   mmio_region_write32(dma->base_addr, DMA_CHUNK_DATA_SIZE_REG_OFFSET,
                       transaction.chunk_size);
   mmio_region_write32(dma->base_addr, DMA_TOTAL_DATA_SIZE_REG_OFFSET,
@@ -53,8 +73,7 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
   return kDifOk;
 }
 
-dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
-                                      dif_dma_handshake_t handshake) {
+dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma) {
   if (dma == NULL) {
     return kDifBadArg;
   }
@@ -62,13 +81,6 @@ dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
   uint32_t reg = mmio_region_read32(dma->base_addr, DMA_CONTROL_REG_OFFSET);
   reg = bitfield_bit32_write(reg, DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT,
                              true);
-  reg = bitfield_bit32_write(reg, DMA_CONTROL_FIFO_AUTO_INCREMENT_ENABLE_BIT,
-                             handshake.fifo_auto_increment);
-  reg = bitfield_bit32_write(
-      reg, DMA_CONTROL_MEMORY_BUFFER_AUTO_INCREMENT_ENABLE_BIT,
-      handshake.memory_auto_increment);
-  reg = bitfield_bit32_write(reg, DMA_CONTROL_DATA_DIRECTION_BIT,
-                             handshake.direction_from_mem_to_fifo);
   mmio_region_write32(dma->base_addr, DMA_CONTROL_REG_OFFSET, reg);
   return kDifOk;
 }
