@@ -38,4 +38,3 @@ def opentitan_top(name, hjson, top_lib, top_ld, ips):
         top_ld = top_ld,
         ips = ips,
     )
-
