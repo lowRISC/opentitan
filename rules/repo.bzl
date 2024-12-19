@@ -27,23 +27,11 @@ def http_archive_or_local(local = None, **kwargs):
         )
 
 def _bare_repository_impl(rctx):
-    if rctx.attr.local:
-        # Although not particularly well documented, the `get_child` function will only add
-        # the workspace for relative paths, and simply ignore it if given an absolute path.
-        path = rctx.workspace_root.get_child(rctx.attr.local)
-
-        # NOTE By default, Bazel will automatically watch those directories and refetch
-        # the repository if they change.
-        for child in path.readdir():
-            rctx.symlink(child, child.basename)
-    elif rctx.attr.url:
-        rctx.download_and_extract(
-            url = rctx.attr.url,
-            sha256 = rctx.attr.sha256,
-            stripPrefix = rctx.attr.strip_prefix,
-        )
-    else:
-        fail("Specify a `url` or `local` path")
+    rctx.download_and_extract(
+        url = rctx.attr.url,
+        sha256 = rctx.attr.sha256,
+        stripPrefix = rctx.attr.strip_prefix,
+    )
 
     for rpath, lpath in rctx.attr.additional_files.items():
         rctx.symlink(rctx.path(lpath), rpath)
@@ -53,10 +41,12 @@ def _bare_repository_impl(rctx):
 bare_repository = repository_rule(
     implementation = _bare_repository_impl,
     attrs = {
-        "url": attr.string(doc = "Location of an archive file (exclusive with `local`)."),
+        "url": attr.string(
+            mandatory = True,
+            doc = "Location of an archive file (exclusive with `local`).",
+        ),
         "sha256": attr.string(doc = "SHA256 of the archive."),
         "strip_prefix": attr.string(doc = "Prefix to strip when extracting the archive."),
-        "local": attr.string(doc = "Path to a local subdirectory (exclusive with `url`)."),
         "additional_files": attr.string_dict(
             doc = "Additional files to place in the repository (mapping repo filename to local file).",
         ),
