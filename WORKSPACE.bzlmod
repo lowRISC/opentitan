@@ -47,12 +47,6 @@ tock_repos(
 load("//third_party/openocd:repos.bzl", "openocd_repos")
 openocd_repos()
 
-# Protobuf Toolchain
-load("//third_party/protobuf:repos.bzl", "protobuf_repos")
-protobuf_repos()
-load("//third_party/protobuf:deps.bzl", "protobuf_deps")
-protobuf_deps()
-
 # FreeRTOS; used by the OTTF
 load("//third_party/freertos:repos.bzl", "freertos_repos")
 freertos_repos()
