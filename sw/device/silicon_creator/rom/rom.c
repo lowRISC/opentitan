@@ -776,15 +776,15 @@ static const size_t kRomStateCnt = kRomStateCnt_;
  * Table of ROM states.
  *
  * Encoding generated with:
- * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 32 \
+ * $ ./util/design/sparse-fsm-encode.py -d 6 -m 4 -n 16 \
  *     -s 519644925 --language=c
  */
 // clang-format off
 #define ROM_STATES(X)                                                 \
-  X(kRomStateInit,           0x5616ae08, rom_state_init, NULL)        \
-  X(kRomStateBootstrapCheck, 0x0a9243ab, rom_state_bootstrap_check, &bootstrap_request) \
-  X(kRomStateBootstrap,      0xd0a0ff08, rom_state_bootstrap, &bootstrap_request) \
-  X(kRomStateBootRomExt,     0xed14f55f, rom_state_boot_rom_ext, NULL)
+  X(kRomStateInit,           0x5616, rom_state_init, NULL)        \
+  X(kRomStateBootstrapCheck, 0x0a92, rom_state_bootstrap_check, &bootstrap_request) \
+  X(kRomStateBootstrap,      0xd0a0, rom_state_bootstrap, &bootstrap_request) \
+  X(kRomStateBootRomExt,     0xed14, rom_state_boot_rom_ext, NULL)
 // clang-format on
 
 ROM_STATE_INIT_TABLE(rom_states, kRomStateCnt_, ROM_STATES);
@@ -848,5 +848,6 @@ rom_state_boot_rom_ext(void *arg, uint32_t *next_state) {
 
 void rom_main(void) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
-  shutdown_finalize(rom_state_fsm(rom_states, kRomStateCnt, kRomStateInit));
+  shutdown_finalize(
+      rom_state_fsm(rom_states, kRomStateCnt, kRomStateInit, rom_states_cfi));
 }
