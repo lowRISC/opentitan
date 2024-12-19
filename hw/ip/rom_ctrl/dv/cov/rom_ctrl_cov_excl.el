@@ -39,6 +39,16 @@ Block 1 "3318159292" "data_o = 39'(data_i);"
 INSTANCE: tb.dut.u_tl_adapter_rom.u_tlul_data_integ_enc_instr.u_data_gen
 Block 1 "3318159292" "data_o = 39'(data_i);"
 
+INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic
+ANNOTATION: "cfg_i is tied to rom_cfg_i in rom_ctrl.sv which is wired to a constant"
+Block 1 "118728425" "assign unused_cfg = (^cfg_i);"
+
+INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_seed_anchor.u_secure_anchor_buf.gen_generic.u_impl_generic
+ANNOTATION: "u_seed_anchor inputs are tied to parameters. Therefore this continuous assignment
+             cannot see execution"
+Block 1 "2421449832" "assign inv = (~in_i);"
+Block 2 "1991008127" "assign out_o = (~inv);"
+
 INSTANCE: tb.dut.u_tl_adapter_rom
 // wr_attr_error and wr_vld_error both depend on a_opcode != Get. wr_attr_error can exist without
 //wr_vld_error but ErrOnWrite is wired to 1 inside the instantiation of tlul_adapter_sram in
