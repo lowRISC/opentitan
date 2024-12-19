@@ -42,7 +42,8 @@
   reseed: 50
 
   // Add specific exclusion files.
-  vcs_cov_excl_files: ["{proj_root}/hw/ip/aon_timer/dv/cov/aon_timer_unr_excl.el"]
+  vcs_cov_excl_files: ["{proj_root}/hw/ip/aon_timer/dv/cov/aon_timer_unr_excl.el",
+                       "{proj_root}/hw/ip/aon_timer/dv/cov/aon_timer_unr_manually_excluded_excl.el"]
 
   // Default UVM test and seq class name.
   uvm_test: aon_timer_base_test
