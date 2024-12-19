@@ -24,6 +24,13 @@ def hsm_repos():
         sha256 = "707fca9df630708e0e59a7d4a8a7a016c56c83a585957f0fd9f806c0762f1944",
     )
     http_archive(
+        name = "opensc",
+        build_file = Label("//third_party/hsm:BUILD.opensc.bazel"),
+        url = "https://github.com/OpenSC/OpenSC/archive/refs/tags/0.26.0.tar.gz",
+        strip_prefix = "OpenSC-0.26.0",
+        sha256 = "c692ac7639fa398f7f07b1070ea5358344000d49d08dcb825296d4cec94c6b1f",
+    )
+    http_archive(
         name = "cloud_kms_hsm",
         build_file = Label("//third_party/hsm:BUILD.cloud_kms_hsm.bazel"),
         url = "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/pkcs11-v1.2/libkmsp11-1.2-linux-amd64.tar.gz",
