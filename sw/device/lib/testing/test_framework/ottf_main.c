@@ -7,9 +7,8 @@
 #include <assert.h>
 #include <stddef.h>
 
-#include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/queue.h"
-#include "external/freertos/include/task.h"
+#include "FreeRTOS.h"
+#include "queue.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -27,6 +26,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "task.h"
 
 // TODO: make this toplevel agnostic.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
