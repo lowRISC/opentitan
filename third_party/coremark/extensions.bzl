@@ -18,8 +18,8 @@ def _coremark_repos():
             "https://github.com/eembc/coremark/archive/eefc986ebd3452d6adde22eafaff3e5c859f29e4.tar.gz",
         ],
         patches = [
-            Label("//third_party/coremark:use_ottf_main.patch"),
-            Label("//third_party/coremark:print_coremark_per_mhz.patch"),
+            Label("//third_party/coremark/patches:use_ottf_main.patch"),
+            Label("//third_party/coremark/patches:print_coremark_per_mhz.patch"),
         ],
         patch_args = ["-p1"],
     )
