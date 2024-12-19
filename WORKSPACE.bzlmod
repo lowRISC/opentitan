@@ -22,10 +22,6 @@ crt_register_toolchains(riscv32 = True)
 load("//third_party/github:repos.bzl", "github_tools_repos")
 github_tools_repos()
 
-# Various linters
-load("//third_party/lint:repos.bzl", "lint_repos")
-lint_repos()
-
 # Lychee link checker.
 load("//third_party/lychee:repos.bzl", "lychee_repos")
 lychee_repos()
