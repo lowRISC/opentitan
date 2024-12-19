@@ -26,6 +26,14 @@ def provisioning_exts_repo(name):
     )
 """
 
+_ROM_HOOKS_TEMPLATE = """
+def rom_hooks_repo(name):
+    native.local_repository(
+        name = name,
+        path = "{hooks_dir}",
+)
+"""
+
 _BUILD = """
 exports_files(glob(["**"]))
 """
@@ -76,4 +84,20 @@ provisioning_exts_setup = repository_rule(
         ),
     },
     environ = ["PROV_EXTS_DIR"],
+)
+
+def _rom_hooks_setup_impl(rctx):
+    rom_hooks_dir = rctx.os.environ.get("ROM_HOOKS_DIR", rctx.attr.dummy)
+    rctx.file("repos.bzl", _ROM_HOOKS_TEMPLATE.format(hooks_dir = rom_hooks_dir))
+    rctx.file("BUILD.bazel", _BUILD)
+
+rom_hooks_setup = repository_rule(
+    implementation = _rom_hooks_setup_impl,
+    attrs = {
+        "dummy": attr.string(
+            mandatory = True,
+            doc = "Location of the dummy ROM extensions directory.",
+        ),
+    },
+    environ = ["ROM_HOOKS_DIR"],
 )

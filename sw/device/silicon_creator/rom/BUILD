@@ -90,6 +90,7 @@ cc_library(
         "//sw/device/lib/base:csr",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
     ],
 )
 
@@ -135,6 +136,7 @@ cc_library(
         ":boot_policy_ptrs",
         ":bootstrap",
         ":rom_epmp",
+        ":rom_state",
         ":sigverify_keys_ecdsa_p256",
         ":sigverify_keys_spx",
         ":sigverify_otp_keys",
@@ -177,6 +179,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:uart",
         "//sw/device/silicon_creator/lib/drivers:watchdog",
         "//sw/device/silicon_creator/lib/sigverify",
+        "@rom_hooks",
     ],
 )
 
@@ -253,6 +256,20 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
+)
+
+cc_library(
+    name = "rom_state",
+    srcs = ["rom_state.c"],
+    hdrs = ["rom_state.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:shutdown",
+    ],
+    alwayslink = True,
 )
 
 opentitan_test(
