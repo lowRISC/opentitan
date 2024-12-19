@@ -38,7 +38,7 @@ def _sphincsplus_repos(local = None):
         build_file = "@lowrisc_opentitan//third_party/sphincsplus:BUILD.sphincsplus.bazel",
         sha256 = "b301faa7a42ef538323a732929d49341b1cbd8375f643f7d98ca32cd6efacc32",
         patches = [
-            Label("@lowrisc_opentitan//third_party/sphincsplus:sphincsplus-namespace.patch"),
+            Label("@lowrisc_opentitan//third_party/sphincsplus/patches:sphincsplus-namespace.patch"),
         ],
         patch_args = ["-p2"],
     )
