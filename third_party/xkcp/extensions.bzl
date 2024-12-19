@@ -19,8 +19,8 @@ def _xkcp_repos():
             "https://github.com/XKCP/XKCP/archive/56ae09923153c3e801a6891eb19e4a3b5bb6f6e2.tar.gz",
         ],
         patches = [
-            Label("//third_party/xkcp:add_config_header.patch"),
-            Label("//third_party/xkcp:add_main_license.patch"),
+            Label("//third_party/xkcp/patches:add_config_header.patch"),
+            Label("//third_party/xkcp/patches:add_main_license.patch"),
         ],
         patch_args = ["-p1"],
     )

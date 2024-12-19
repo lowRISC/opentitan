@@ -18,9 +18,9 @@ def _freertos_repos():
             "https://github.com/FreeRTOS/FreeRTOS-Kernel/archive/0b1e9d79c82c1bf00e93142f9d5b1b7b62446995.tar.gz",
         ],
         patches = [
-            Label("//third_party/freertos:0001-Remove-mtime-address-macros.patch"),
-            Label("//third_party/freertos:0002-Remove-references-to-stdlib.h.patch"),
-            Label("//third_party/freertos:0003-Replace-string.h-with-references-to-OT-memory.h.patch"),
+            Label("//third_party/freertos/patches:0001-Remove-mtime-address-macros.patch"),
+            Label("//third_party/freertos/patches:0002-Remove-references-to-stdlib.h.patch"),
+            Label("//third_party/freertos/patches:0003-Replace-string.h-with-references-to-OT-memory.h.patch"),
         ],
         patch_args = ["-p1"],
     )

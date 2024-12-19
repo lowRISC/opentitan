@@ -16,7 +16,7 @@ def _open_dice_repos():
         urls = ["https://github.com/google/open-dice/archive/cf3f4cc7a3506a33ee3a437544ef6f40056b3563.zip"],
         sha256 = "d7ce830111451afe2a255cac3b750f82e50efe2aaf6bac0b076881c964cfe78d",
         patches = [
-            Label("//third_party/open-dice:Add-a-local-strlen-implementation.patch"),
+            Label("//third_party/open-dice/patches:Add-a-local-strlen-implementation.patch"),
         ],
         patch_args = ["-p1"],
     )
