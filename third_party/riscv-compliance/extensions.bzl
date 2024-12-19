@@ -18,7 +18,7 @@ def _riscv_compliance_repos():
             "https://github.com/riscv/riscv-compliance/archive/2636302c27557b42d99bed7e0537beffdf8e1ab4.tar.gz",
         ],
         patches = [
-            Label("//third_party/riscv-compliance:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"),
+            Label("//third_party/riscv-compliance/patches:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"),
         ],
         patch_args = ["-p1"],
     )

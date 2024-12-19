@@ -614,7 +614,7 @@
     },
     "//third_party/openocd:extensions.bzl%openocd": {
       "general": {
-        "bzlTransitiveDigest": "l5MEHQifrShllgIds01fPKYZEF4zYajzohBzWgzsKPU=",
+        "bzlTransitiveDigest": "2eeMsIQtcbolmQMIoVKJgBFOnDb3HmVUb5IMMUl1daI=",
         "usagesDigest": "gXMbnbxNBTg41VMJTLfBtmRVZ3szz+CcSyKiAFRilWQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -632,9 +632,9 @@
               "build_file": "@@//third_party/openocd:BUILD.openocd.bazel",
               "sha256": "af254788be98861f2bd9103fe6e60a774ec96a8c374744eef9197f6043075afa",
               "patches": [
-                "@@//third_party/openocd:calloc_transpose.patch",
-                "@@//third_party/openocd:reset_on_dmi_op_error.patch",
-                "@@//third_party/openocd:string_truncate_build_error.patch"
+                "@@//third_party/openocd/patches:calloc_transpose.patch",
+                "@@//third_party/openocd/patches:reset_on_dmi_op_error.patch",
+                "@@//third_party/openocd/patches:string_truncate_build_error.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -749,7 +749,7 @@
     },
     "//third_party/sphincsplus:extensions.bzl%sphincsplus": {
       "general": {
-        "bzlTransitiveDigest": "EpuqZN0OW8qwjX/Wl2Nh+WYdwRDNIzWaLUh3Vh7jCpc=",
+        "bzlTransitiveDigest": "485ueZ+12PKxYqfzXJys3RtLKOhMG13J3FG1gelEKfU=",
         "usagesDigest": "t8W6lQlG2im5bAEMpO63sMVuFLwNVvAkEO/SNLXXEnQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -786,7 +786,7 @@
               "build_file": "@@//third_party/sphincsplus:BUILD.sphincsplus.bazel",
               "sha256": "b301faa7a42ef538323a732929d49341b1cbd8375f643f7d98ca32cd6efacc32",
               "patches": [
-                "@@//third_party/sphincsplus:sphincsplus-namespace.patch"
+                "@@//third_party/sphincsplus/patches:sphincsplus-namespace.patch"
               ],
               "patch_args": [
                 "-p2"
