@@ -27,15 +27,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name          | Package::Struct             | Type    | Act   |   Width | Description   |
-|:-------------------|:----------------------------|:--------|:------|--------:|:--------------|
-| sram_otp_key       | otp_ctrl_pkg::sram_otp_key  | req_rsp | req   |       1 |               |
-| cfg                | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |               |
-| lc_escalate_en     | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| otp_en_sram_ifetch | prim_mubi_pkg::mubi8        | uni     | rcv   |       1 |               |
-| regs_tl            | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
-| ram_tl             | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name          | Package::Struct                 | Type    | Act   |   Width | Description   |
+|:-------------------|:--------------------------------|:--------|:------|--------:|:--------------|
+| sram_otp_key       | otp_ctrl_pkg::sram_otp_key      | req_rsp | req   |       1 |               |
+| cfg                | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |               |
+| cfg_rsp            | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |               |
+| lc_escalate_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   |       1 |               |
+| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   |       1 |               |
+| otp_en_sram_ifetch | prim_mubi_pkg::mubi8            | uni     | rcv   |       1 |               |
+| regs_tl            | tlul_pkg::tl                    | req_rsp | rsp   |       1 |               |
+| ram_tl             | tlul_pkg::tl                    | req_rsp | rsp   |       1 |               |
 
 ## Security Alerts
 

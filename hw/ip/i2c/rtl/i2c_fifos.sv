@@ -12,53 +12,54 @@ import i2c_reg_pkg::AcqFifoDepth;
   localparam int unsigned FifoDepthW = $clog2(FifoDepth + 1),
   localparam int unsigned AcqFifoDepthW = $clog2(AcqFifoDepth + 1)
 ) (
-  input  logic                         clk_i,
-  input  logic                         rst_ni,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+  input  logic                             clk_i,
+  input  logic                             rst_ni,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
 
-  input  logic                      fmt_fifo_clr_i,
-  output logic [FifoDepthW-1:0]     fmt_fifo_depth_o,
+  input  logic                             fmt_fifo_clr_i,
+  output logic [FifoDepthW-1:0]            fmt_fifo_depth_o,
   // FMT FIFO: writes controlled by CSR
-  input  logic                      fmt_fifo_wvalid_i,
-  output logic                      fmt_fifo_wready_o,
+  input  logic                             fmt_fifo_wvalid_i,
+  output logic                             fmt_fifo_wready_o,
   input  logic [FMT_FIFO_WIDTH-1:0] fmt_fifo_wdata_i,
   // FMT FIFO: reads controlled by FSM
-  output logic                      fmt_fifo_rvalid_o,
-  input  logic                      fmt_fifo_rready_i,
-  output logic [FMT_FIFO_WIDTH-1:0] fmt_fifo_rdata_o,
+  output logic                             fmt_fifo_rvalid_o,
+  input  logic                             fmt_fifo_rready_i,
+  output logic [FMT_FIFO_WIDTH-1:0]        fmt_fifo_rdata_o,
 
-  input  logic                      rx_fifo_clr_i,
-  output logic [FifoDepthW-1:0]     rx_fifo_depth_o,
+  input  logic                             rx_fifo_clr_i,
+  output logic [FifoDepthW-1:0]            rx_fifo_depth_o,
   // RX FIFO: writes controller by FSM
-  input  logic                      rx_fifo_wvalid_i,
-  output logic                      rx_fifo_wready_o,
-  input  logic [RX_FIFO_WIDTH-1:0]  rx_fifo_wdata_i,
+  input  logic                             rx_fifo_wvalid_i,
+  output logic                             rx_fifo_wready_o,
+  input  logic [RX_FIFO_WIDTH-1:0]         rx_fifo_wdata_i,
   // RX FIFO: reads controlled by CSR
-  output logic                      rx_fifo_rvalid_o,
-  input  logic                      rx_fifo_rready_i,
-  output logic [RX_FIFO_WIDTH-1:0]  rx_fifo_rdata_o,
+  output logic                             rx_fifo_rvalid_o,
+  input  logic                             rx_fifo_rready_i,
+  output logic [RX_FIFO_WIDTH-1:0]         rx_fifo_rdata_o,
 
-  input  logic                      tx_fifo_clr_i,
-  output logic [FifoDepthW-1:0]     tx_fifo_depth_o,
+  input  logic                             tx_fifo_clr_i,
+  output logic [FifoDepthW-1:0]            tx_fifo_depth_o,
   // TX FIFO: writes controlled by CSR
-  input  logic                      tx_fifo_wvalid_i,
-  output logic                      tx_fifo_wready_o,
-  input  logic [TX_FIFO_WIDTH-1:0]  tx_fifo_wdata_i,
+  input  logic                             tx_fifo_wvalid_i,
+  output logic                             tx_fifo_wready_o,
+  input  logic [TX_FIFO_WIDTH-1:0]         tx_fifo_wdata_i,
   // TX FIFO: reads controlled by FSM
-  output logic                      tx_fifo_rvalid_o,
-  input  logic                      tx_fifo_rready_i,
-  output logic [TX_FIFO_WIDTH-1:0]  tx_fifo_rdata_o,
+  output logic                             tx_fifo_rvalid_o,
+  input  logic                             tx_fifo_rready_i,
+  output logic [TX_FIFO_WIDTH-1:0]         tx_fifo_rdata_o,
 
-  input  logic                      acq_fifo_clr_i,
-  output logic [AcqFifoDepthW-1:0]  acq_fifo_depth_o,
+  input  logic                             acq_fifo_clr_i,
+  output logic [AcqFifoDepthW-1:0]         acq_fifo_depth_o,
   // ACQ FIFO: writes controlled by FSM
-  input  logic                      acq_fifo_wvalid_i,
-  output logic                      acq_fifo_wready_o,
-  input  logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_wdata_i,
+  input  logic                             acq_fifo_wvalid_i,
+  output logic                             acq_fifo_wready_o,
+  input  logic [ACQ_FIFO_WIDTH-1:0]        acq_fifo_wdata_i,
   // ACQ FIFO: reads controlled by CSR
-  output logic                      acq_fifo_rvalid_o,
-  input  logic                      acq_fifo_rready_i,
-  output logic [ACQ_FIFO_WIDTH-1:0] acq_fifo_rdata_o
+  output logic                             acq_fifo_rvalid_o,
+  input  logic                             acq_fifo_rready_i,
+  output logic [ACQ_FIFO_WIDTH-1:0]        acq_fifo_rdata_o
 );
 
   // RAM synthesis parameters
@@ -290,16 +291,17 @@ import i2c_reg_pkg::AcqFifoDepth;
   ) u_ram_1p (
     .clk_i,
     .rst_ni,
-    .req_i   (ram_req),
-    .write_i (ram_write),
-    .addr_i  (ram_addr),
-    .wdata_i (ram_wdata),
-    .wmask_i ('1),
-    .rdata_o (ram_rdata),
-    .rvalid_o(ram_rvalid),
-    .rerror_o(/* unused */),
-    .cfg_i   (ram_cfg_i),
-    .alert_o (/* unused */)
+    .req_i    (ram_req),
+    .write_i  (ram_write),
+    .addr_i   (ram_addr),
+    .wdata_i  (ram_wdata),
+    .wmask_i  ('1),
+    .rdata_o  (ram_rdata),
+    .rvalid_o (ram_rvalid),
+    .rerror_o (/* unused */),
+    .cfg_i    (ram_cfg_i),
+    .cfg_rsp_o(ram_cfg_rsp_o),
+    .alert_o  (/* unused */)
   );
   assign {ram_write, ram_addr, ram_wdata} = ram_arb_oup_data;
 

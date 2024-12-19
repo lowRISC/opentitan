@@ -47,7 +47,8 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   output logic [1:0]         rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input ram_1p_cfg_t         cfg_i,
+  input  ram_1p_cfg_t        cfg_i,
+  output ram_1p_cfg_rsp_t    cfg_rsp_o,
 
   // When detecting multi-bit encoding errors, raise alert.
   output logic               alert_o
@@ -117,7 +118,8 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
     .wdata_i  (wdata_q),
     .wmask_i  (wmask_q),
     .rdata_o  (rdata_sram),
-    .cfg_i
+    .cfg_i,
+    .cfg_rsp_o
   );
 
   assign rvalid_sram_d = mubi4_and_hi(req_q, mubi4_t'(~write_q));
