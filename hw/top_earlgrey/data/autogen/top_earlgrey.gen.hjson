@@ -989,7 +989,7 @@
       inter_signal_list:
       [
         {
-          name: ram_cfg
+          name: ram_cfg_sys2spi
           struct: ram_2p_cfg
           package: prim_ram_2p_pkg
           type: uni
@@ -998,6 +998,38 @@
           inst_name: spi_device
           default: ""
           top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_sys2spi
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
+          index: -1
+        }
+        {
+          name: ram_cfg_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: spi_device
+          default: ""
+          top_signame: ast_spi_ram_2p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_spi2sys
+          struct: ram_2p_cfg
+          package: prim_ram_2p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: spi_device
           index: -1
         }
         {
@@ -1116,6 +1148,16 @@
           index: -1
         }
         {
+          name: ram_cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c0
+          index: -1
+        }
+        {
           name: lsio_trigger
           desc:
             '''
@@ -1209,6 +1251,16 @@
           index: -1
         }
         {
+          name: ram_cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c1
+          index: -1
+        }
+        {
           name: lsio_trigger
           desc:
             '''
@@ -1299,6 +1351,16 @@
           inst_name: i2c2
           default: ""
           top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: i2c2
           index: -1
         }
         {
@@ -3105,6 +3167,16 @@
           inst_name: usbdev
           default: ""
           top_signame: ast_usb_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: usbdev
           index: -1
         }
         {
@@ -5201,6 +5273,17 @@
           index: -1
         }
         {
+          name: cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: sram_ctrl_ret_aon
+          index: -1
+        }
+        {
           name: lc_escalate_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -6909,7 +6992,7 @@
           index: 3
         }
         {
-          name: ram_cfg
+          name: ram_cfg_imem
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: uni
@@ -6918,6 +7001,38 @@
           inst_name: otbn
           default: ""
           top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_dmem
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: otbn
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_imem
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: otbn
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_dmem
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: otbn
           index: -1
         }
         {
@@ -8016,6 +8131,17 @@
           index: -1
         }
         {
+          name: cfg_rsp
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
           name: lc_escalate_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -9028,7 +9154,8 @@
       ]
       ast.ram_1p_cfg:
       [
-        otbn.ram_cfg
+        otbn.ram_cfg_imem
+        otbn.ram_cfg_dmem
         i2c0.ram_cfg
         i2c1.ram_cfg
         i2c2.ram_cfg
@@ -9038,7 +9165,8 @@
       ]
       ast.spi_ram_2p_cfg:
       [
-        spi_device.ram_cfg
+        spi_device.ram_cfg_sys2spi
+        spi_device.ram_cfg_spi2sys
       ]
       ast.usb_ram_1p_cfg:
       [
@@ -17216,7 +17344,7 @@
         index: -1
       }
       {
-        name: ram_cfg
+        name: ram_cfg_sys2spi
         struct: ram_2p_cfg
         package: prim_ram_2p_pkg
         type: uni
@@ -17225,6 +17353,38 @@
         inst_name: spi_device
         default: ""
         top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_sys2spi
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
+        index: -1
+      }
+      {
+        name: ram_cfg_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: spi_device
+        default: ""
+        top_signame: ast_spi_ram_2p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_spi2sys
+        struct: ram_2p_cfg
+        package: prim_ram_2p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: spi_device
         index: -1
       }
       {
@@ -17289,6 +17449,16 @@
         index: -1
       }
       {
+        name: ram_cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c0
+        index: -1
+      }
+      {
         name: lsio_trigger
         desc:
           '''
@@ -17328,6 +17498,16 @@
         index: -1
       }
       {
+        name: ram_cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c1
+        index: -1
+      }
+      {
         name: lsio_trigger
         desc:
           '''
@@ -17364,6 +17544,16 @@
         inst_name: i2c2
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: i2c2
         index: -1
       }
       {
@@ -18597,6 +18787,16 @@
         inst_name: usbdev
         default: ""
         top_signame: ast_usb_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: usbdev
         index: -1
       }
       {
@@ -19866,6 +20066,17 @@
         index: -1
       }
       {
+        name: cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: sram_ctrl_ret_aon
+        index: -1
+      }
+      {
         name: lc_escalate_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -20769,7 +20980,7 @@
         index: 3
       }
       {
-        name: ram_cfg
+        name: ram_cfg_imem
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: uni
@@ -20778,6 +20989,38 @@
         inst_name: otbn
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_dmem
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: otbn
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_imem
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: otbn
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_dmem
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: otbn
         index: -1
       }
       {
@@ -21308,6 +21551,17 @@
         default: "'0"
         inst_name: sram_ctrl_main
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: cfg_rsp
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: sram_ctrl_main
         index: -1
       }
       {

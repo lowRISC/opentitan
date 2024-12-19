@@ -276,6 +276,7 @@ module otbn_top_sim (
     .raddr_o          (                   ),
     .rerror_o         (                   ),
     .cfg_i            ( '0                ),
+    .cfg_rsp_o        (                   ),
 
     .wr_collision_o   (                   ),
     .write_pending_o  (                   ),
@@ -321,6 +322,7 @@ module otbn_top_sim (
     .raddr_o          (                         ),
     .rerror_o         (                         ),
     .cfg_i            ( '0                      ),
+    .cfg_rsp_o        (                         ),
 
     .wr_collision_o   (                         ),
     .write_pending_o  (                         ),

@@ -68,7 +68,8 @@ module usbdev
   output logic       usb_ref_pulse_o,
 
   // memory configuration
-  input prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t     ram_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t ram_cfg_rsp_o,
 
   // Interrupts
   output logic       intr_pkt_received_o, // Packet received
@@ -745,6 +746,7 @@ module usbdev
     assign sw_mem_a_rerror = '0;
 
     assign usb_mem_b_rdata = '0;
+    assign ram_cfg_rsp_o   = '0;
 
     logic unused_usb_mem_b_sigs;
     assign unused_usb_mem_b_sigs = ^{
@@ -862,6 +864,7 @@ module usbdev
       .rvalid_o   (mem_rvalid),
       .rerror_o   (mem_rerror),
       .cfg_i      (ram_cfg_i),
+      .cfg_rsp_o  (ram_cfg_rsp_o),
       .alert_o    ()
     );
   end : gen_no_stubbed_memory

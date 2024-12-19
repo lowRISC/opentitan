@@ -846,7 +846,8 @@ module tb;
     .b_rdata_o  (spi_mem_rdata),
     .b_rerror_o (spi_mem_rerror),
 
-    .cfg_i      ('0)
+    .cfg_i      ('0),
+    .cfg_rsp_o  ()
   );
 
 

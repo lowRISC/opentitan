@@ -58,7 +58,8 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
   output logic [1:0]       b_rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input ram_2p_cfg_t       cfg_i
+  input  ram_2p_cfg_t      cfg_i,
+  output ram_2p_cfg_rsp_t  cfg_rsp_o
 );
 
 
@@ -129,7 +130,8 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
     .b_wmask_i  (b_wmask_q),
     .b_rdata_o  (b_rdata_sram),
 
-    .cfg_i
+    .cfg_i,
+    .cfg_rsp_o
   );
 
   always_ff @(posedge clk_a_i or negedge rst_a_ni) begin
