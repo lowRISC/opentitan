@@ -47,6 +47,19 @@ TEST_P(ConfigureTest, Success) {
                  transaction.destination.address >> 32);
 
   EXPECT_WRITE32(
+      DMA_SRC_CONFIG_REG_OFFSET,
+      {
+          {DMA_SRC_CONFIG_INCREMENT_BIT, transaction.src_config.increment},
+          {DMA_SRC_CONFIG_WRAP_BIT, transaction.src_config.wrap},
+      });
+  EXPECT_WRITE32(
+      DMA_DST_CONFIG_REG_OFFSET,
+      {
+          {DMA_DST_CONFIG_INCREMENT_BIT, transaction.dst_config.increment},
+          {DMA_DST_CONFIG_WRAP_BIT, transaction.dst_config.wrap},
+      });
+
+  EXPECT_WRITE32(
       DMA_ADDR_SPACE_ID_REG_OFFSET,
       {
           {DMA_ADDR_SPACE_ID_SRC_ASID_OFFSET, transaction.source.asid},
@@ -75,6 +88,18 @@ INSTANTIATE_TEST_SUITE_P(
                     .address = 0x721F400F,
                     .asid = kDifDmaOpentitanInternalBus,
                 },
+            // Regular memory behavior.
+            .src_config =
+                {
+                    .wrap = 0,
+                    .increment = 1,
+                },
+            // Typical FIFO behavior.
+            .dst_config =
+                {
+                    .wrap = 1,
+                    .increment = 0,
+                },
             .chunk_size = 0x1,
             .total_size = 0x1,
             .width = kDifDmaTransWidth1Byte,
@@ -90,6 +115,18 @@ INSTANTIATE_TEST_SUITE_P(
                 {
                     .address = 0xD0CF2C50,
                     .asid = kDifDmaSoCControlRegisterBus,
+                },
+            // Typical FIFO behavior.
+            .src_config =
+                {
+                    .wrap = 1,
+                    .increment = 0,
+                },
+            // Regular memory behavior.
+            .dst_config =
+                {
+                    .wrap = 0,
+                    .increment = 1,
                 },
             .chunk_size = 0x2,
             .total_size = 0x2,
@@ -107,6 +144,18 @@ INSTANTIATE_TEST_SUITE_P(
                     .address = 0x32CD872A12225CCE,
                     .asid = kDifDmaSoCSystemBus,
                 },
+            // Regular memory behavior.
+            .src_config =
+                {
+                    .wrap = 0,
+                    .increment = 1,
+                },
+            // FIFO occupying a block of addresses.
+            .dst_config =
+                {
+                    .wrap = 1,
+                    .increment = 1,
+                },
             .chunk_size = 0x4,
             .total_size = 0x4,
             .width = kDifDmaTransWidth4Bytes,
@@ -123,8 +172,76 @@ INSTANTIATE_TEST_SUITE_P(
                     .address = 0x9ECFA11919F684D7,
                     .asid = kDifDmaOpentitanInternalBus,
                 },
+            // Regular memory behavior.
+            .src_config =
+                {
+                    .wrap = 0,
+                    .increment = 1,
+                },
+            // Regular memory behavior.
+            .dst_config =
+                {
+                    .wrap = 0,
+                    .increment = 1,
+                },
             .chunk_size = std::numeric_limits<uint32_t>::max(),
             .total_size = std::numeric_limits<uint32_t>::max(),
+            .width = kDifDmaTransWidth4Bytes,
+        },
+        // Test 4
+        {
+            .source =
+                {
+                    .address = 0x05BA857F8D9C0838,
+                    .asid = kDifDmaSoCControlRegisterBus,
+                },
+            .destination =
+                {
+                    .address = 0x32CD872A12225CCE,
+                    .asid = kDifDmaSoCSystemBus,
+                },
+            // Unusual addressing; FIFO-like but not wrapping.
+            .src_config =
+                {
+                    .wrap = 0,
+                    .increment = 0,
+                },
+            // Typical FIFO behavior.
+            .dst_config =
+                {
+                    .wrap = 1,
+                    .increment = 0,
+                },
+            .chunk_size = 0x4,
+            .total_size = 0x4,
+            .width = kDifDmaTransWidth4Bytes,
+        },
+        // Test 5
+        {
+            .source =
+                {
+                    .address = 0x05BA857F8D9C0838,
+                    .asid = kDifDmaSoCControlRegisterBus,
+                },
+            .destination =
+                {
+                    .address = 0x32CD872A12225CCE,
+                    .asid = kDifDmaSoCSystemBus,
+                },
+            // Chunk-based firmware-controlled transfer.
+            .src_config =
+                {
+                    .wrap = 1,
+                    .increment = 1,
+                },
+            // Unusual addressing; FIFO-like but not wrapping.
+            .dst_config =
+                {
+                    .wrap = 0,
+                    .increment = 0,
+                },
+            .chunk_size = 0x4,
+            .total_size = 0x4,
             .width = kDifDmaTransWidth4Bytes,
         },
     }}));
@@ -135,28 +252,22 @@ TEST_F(ConfigureTest, BadArg) {
 }
 
 // Handshake tests
-class HandshakeTest : public DmaTestInitialized,
-                      public testing::WithParamInterface<dif_dma_handshake_t> {
-};
+class HandshakeTest : public DmaTestInitialized {};
 
-TEST_P(HandshakeTest, EnableSuccess) {
-  dif_dma_handshake_t handshake = GetParam();
-  EXPECT_READ32(DMA_CONTROL_REG_OFFSET, 0);
+TEST_F(HandshakeTest, EnableSuccess) {
+  EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
+                {
+                    {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
+                });
   EXPECT_WRITE32(DMA_CONTROL_REG_OFFSET,
                  {
-                     {DMA_CONTROL_DATA_DIRECTION_BIT,
-                      handshake.direction_from_mem_to_fifo},
-                     {DMA_CONTROL_FIFO_AUTO_INCREMENT_ENABLE_BIT,
-                      handshake.fifo_auto_increment},
-                     {DMA_CONTROL_MEMORY_BUFFER_AUTO_INCREMENT_ENABLE_BIT,
-                      handshake.memory_auto_increment},
                      {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
                  });
 
-  EXPECT_DIF_OK(dif_dma_handshake_enable(&dma_, handshake));
+  EXPECT_DIF_OK(dif_dma_handshake_enable(&dma_));
 }
 
-TEST_P(HandshakeTest, DisableSuccess) {
+TEST_F(HandshakeTest, DisableSuccess) {
   EXPECT_READ32(DMA_CONTROL_REG_OFFSET,
                 {
                     {DMA_CONTROL_HARDWARE_HANDSHAKE_ENABLE_BIT, true},
@@ -169,20 +280,8 @@ TEST_P(HandshakeTest, DisableSuccess) {
   EXPECT_DIF_OK(dif_dma_handshake_disable(&dma_));
 }
 
-INSTANTIATE_TEST_SUITE_P(HandshakeTest, HandshakeTest,
-                         testing::ValuesIn(std::vector<dif_dma_handshake_t>{{
-                             {false, false, false},
-                             {false, false, true},
-                             {false, true, false},
-                             {false, true, true},
-                             {true, false, false},
-                             {true, true, false},
-                             {true, true, true},
-                         }}));
-
 TEST_F(HandshakeTest, EnableBadArg) {
-  dif_dma_handshake_t handshake;
-  EXPECT_DIF_BADARG(dif_dma_handshake_enable(nullptr, handshake));
+  EXPECT_DIF_BADARG(dif_dma_handshake_enable(nullptr));
 }
 
 TEST_F(HandshakeTest, DisableBadArg) {

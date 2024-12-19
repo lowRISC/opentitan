@@ -64,11 +64,23 @@ typedef struct dif_dma_transaction_address {
 } dif_dma_transaction_address_t;
 
 /**
+ * Addressing configuration.
+ */
+typedef struct dif_dma_address_config {
+  /* Address wraps after each chunk, so chunks overlap */
+  bool wrap;
+  /* Increment after each (partial-)word transfer */
+  bool increment;
+} dif_dma_address_config_t;
+
+/**
  * Parameters for a DMA Controller transaction.
  */
 typedef struct dif_dma_transaction {
   dif_dma_transaction_address_t source;
   dif_dma_transaction_address_t destination;
+  dif_dma_address_config_t src_config;
+  dif_dma_address_config_t dst_config;
   /* Chunk size (in bytes) of the data object to transferred.*/
   size_t chunk_size;
   /* Total size (in bytes) of the data object to transferred.*/
@@ -91,24 +103,6 @@ dif_result_t dif_dma_configure(const dif_dma_t *dma,
                                dif_dma_transaction_t transaction);
 
 /**
- * Parameters for a handshake mode transaction.
- */
-typedef struct dif_dma_handshake {
-  /* Auto Increments the memory buffer address register by total data size to
-   * point to the next memory buffer address.*/
-  bool memory_auto_increment;
-
-  /* If `true`, reads/writes from/to incremental addresses for FIFO data
-   * register addresses, otherwise uses the same address for subsequent
-   * transactions.*/
-  bool fifo_auto_increment;
-
-  /* If `true` move data from memory buffer to the LSIO FIFO, otherwise move
-   * data from the LSIO FIFO to the memory buffer.*/
-  bool direction_from_mem_to_fifo;
-} dif_dma_handshake_t;
-
-/**
  * Configures DMA Controller hardware handshake mode.
  *
  * This function should be called before `dif_dma_start`.
@@ -117,12 +111,10 @@ typedef struct dif_dma_handshake {
  * peripherals receiving data e.g. I3C receive buffer.
  *
  * @param dma A DMA Controller handle.
- * @param handshake Hardware handshake configuration parameters.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma,
-                                      dif_dma_handshake_t handshake);
+dif_result_t dif_dma_handshake_enable(const dif_dma_t *dma);
 
 /**
  * Disable DMA Controller hardware handshake mode.
@@ -234,6 +226,7 @@ typedef enum dif_dma_status_code {
  * Bitmask with the `dif_dma_status_code_t` values.
  */
 typedef uint32_t dif_dma_status_t;
+
 /**
  * Reads the DMA status.
  *
