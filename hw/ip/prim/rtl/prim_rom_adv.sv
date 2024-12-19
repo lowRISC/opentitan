@@ -30,6 +30,7 @@ module prim_rom_adv import prim_rom_pkg::*; #(
     .MemInitFile(MemInitFile)
   ) u_prim_rom (
     .clk_i,
+    .rst_ni,
     .req_i,
     .addr_i,
     .rdata_o,
