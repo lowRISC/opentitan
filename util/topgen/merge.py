@@ -173,6 +173,11 @@ def elaborate_instance(instance, block: IpBlock):
         if isinstance(s['width'], Parameter):
             for p in instance["param_list"]:
                 if p['name'] == s['width'].name:
+                    # When mangeling the name, we first need to deep copy the param. Otherwise, we
+                    # reference always the same single parameter. If there are multiple instances
+                    # having the same parameter, we would overwrite the previously mangled param
+                    # of another instance
+                    s['width'] = deepcopy(s['width'])
                     s['width'].name_top = p['name_top']
 
     # An instance must either have a 'base_addr' address or a 'base_addrs'
