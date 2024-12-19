@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-load(
     "//rules/opentitan:defs.bzl",
     "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -21,34 +16,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-autogen_hjson_c_header(
-    name = "rv_plic_c_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/rv_plic:data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_plic_rust_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/rv_plic:data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "alert_handler_c_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/alert_handler:data/alert_handler.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "alert_handler_rust_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/alert_handler:data/alert_handler.hjson",
-    ],
-)
 
 filegroup(
     name = "all_files",
