@@ -48,7 +48,7 @@
               "chip_sw_keymgr_key_derivation",
               "chip_sw_otbn_mem_scramble",
               "chip_sw_rv_core_ibex_icache_invalidate"]
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
     }
     {
       name: chip_sw_otp_ctrl_entropy
