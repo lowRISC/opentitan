@@ -92,7 +92,7 @@
       si_stage: SV1
       lc_states: ["PROD"]
       tests: ["chip_sw_lc_ctrl_transition"]
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
     }
     {
       name: chip_sw_otp_ctrl_program_error
