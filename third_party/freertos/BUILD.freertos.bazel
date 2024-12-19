@@ -7,13 +7,14 @@ package(default_visibility = ["//visibility:public"])
 cc_library(
     name = "portmacro",
     hdrs = ["portable/GCC/RISC-V/portmacro.h"],
+    include_prefix = "external/freertos",
     includes = ["portable/GCC/RISC-V"],
     target_compatible_with = ["@platforms//cpu:riscv32"],
 )
 
 cc_library(
     name = "hdrs",
-    srcs = [
+    hdrs = [
         "include/FreeRTOS.h",
         "include/StackMacros.h",
         "include/atomic.h",
@@ -33,6 +34,7 @@ cc_library(
         "include/task.h",
         "include/timers.h",
     ],
+    include_prefix = "external/freertos",
     includes = ["include"],
     deps = [
         ":portmacro",
