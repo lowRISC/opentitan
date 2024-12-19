@@ -44,7 +44,7 @@ impl FromStr for SpxModule {
 pub struct Module {
     pub pkcs11: Pkcs11,
     pub session: Option<Rc<Session>>,
-    pub acorn: Option<Box<dyn SpxInterface>>,
+    pub spx: Option<Box<dyn SpxInterface>>,
     pub token: Option<String>,
 }
 
@@ -55,7 +55,7 @@ impl Module {
         Ok(Module {
             pkcs11,
             session: None,
-            acorn: None,
+            spx: None,
             token: None,
         })
     }
@@ -72,7 +72,7 @@ impl Module {
                 SpxEf::new(session) as Box<dyn SpxInterface>
             }
         };
-        self.acorn = Some(module);
+        self.spx = Some(module);
         Ok(())
     }
 

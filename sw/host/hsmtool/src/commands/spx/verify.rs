@@ -42,7 +42,7 @@ impl Dispatch for Verify {
         hsm: &Module,
         _session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
-        let acorn = hsm.acorn.as_ref().ok_or(HsmError::AcornUnavailable)?;
+        let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let data = helper::read_file(&self.input)?;
@@ -50,7 +50,7 @@ impl Dispatch for Verify {
             .format
             .spx_prepare(self.domain, &data, self.little_endian)?;
         let signature = helper::read_file(&self.signature)?;
-        let result = acorn.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
+        let result = spx.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
         Ok(Box::new(BasicResult {
             success: result,
             error: if result {

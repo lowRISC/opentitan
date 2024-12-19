@@ -32,13 +32,13 @@ impl Dispatch for Import {
         hsm: &Module,
         _session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
-        let acorn = hsm.acorn.as_ref().ok_or(HsmError::AcornUnavailable)?;
+        let spx = hsm.spx.as_ref().ok_or(HsmError::SpxUnavailable)?;
         let token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let sk = SpxSecretKey::read_pem_file(&self.filename)?;
         let pk = SpxPublicKey::from(&sk);
 
-        let key = acorn.import_keypair(
+        let key = spx.import_keypair(
             &self.label,
             &sk.algorithm().to_string(),
             token,
@@ -48,7 +48,7 @@ impl Dispatch for Import {
         )?;
         Ok(Box::new(BasicResult {
             success: true,
-            id: AttrData::Str(key.hash.expect("key hash")),
+            id: key.hash.map_or(AttrData::None, AttrData::Str),
             label: AttrData::Str(key.alias),
             value: None,
             error: None,
