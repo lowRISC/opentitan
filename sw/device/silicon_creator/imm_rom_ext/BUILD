@@ -5,15 +5,25 @@
 load("@lowrisc_opentitan//rules/opentitan:transform.bzl", "obj_transform")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary")
 load("//rules:linker.bzl", "ld_library")
-load("//sw/device/silicon_creator/imm_rom_ext:utils.bzl", "imm_rom_ext_section")
+load("//sw/device/silicon_creator/imm_rom_ext:defs.bzl", "DEFAULT_EXEC_ENV")
+load(
+    "//sw/device/silicon_creator/imm_rom_ext:utils.bzl",
+    "create_imm_rom_ext_targets",
+)
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
     name = "main_lib",
-    srcs = ["imm_rom_ext.c"],
+    srcs = [
+        "imm_rom_ext.c",
+        "imm_rom_ext_start.S",
+    ],
     hdrs = ["imm_rom_ext.h"],
+    target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":imm_rom_ext_epmp",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -34,44 +44,112 @@ cc_library(
     ],
 )
 
-ld_library(
-    name = "ld_hello_world",
-    script = "hello_world.ld",
+cc_library(
+    name = "imm_rom_ext_epmp",
+    srcs = ["imm_rom_ext_epmp.c"],
+    hdrs = ["imm_rom_ext_epmp.h"],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
-        "//sw/device:info_sections",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:csr",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:epmp_state",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
 
-cc_library(
-    name = "hello_world",
-    srcs = [
-        "hello_world.c",
-        "hello_world_start.S",
-    ],
-    hdrs = ["hello_world.h"],
-    target_compatible_with = [OPENTITAN_CPU],
+ld_library(
+    name = "ld_common",
+    includes = ["imm_rom_ext_common.ld"],
     deps = [
-        "//sw/device/silicon_creator/lib/drivers:uart",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//sw/device:info_sections",
+        "//sw/device/silicon_creator/lib/base:static_critical_sections",
+    ],
+)
+
+ld_library(
+    name = "ld_slot_a",
+    script = "imm_rom_ext_slot_a.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ld_slot_b",
+    script = "imm_rom_ext_slot_b.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+    ],
+)
+
+ld_library(
+    name = "ld_slot_virtual",
+    script = "imm_rom_ext_slot_virtual.ld",
+    deps = [
+        ":ld_common",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ],
 )
 
 opentitan_binary(
-    name = "hello_world_binaries",
-    # TODO(#24368): Support multiple executing environments. Currently all
-    # environments derive the same binary so only one environment is kept here,
-    # but we need to support multiple executing environments and make sure
-    # ROM_EXT targets choose the matched environment when linking IMM_ROM_EXT.
-    exec_env = [
-        "//hw/top_earlgrey:fpga_cw340",
-    ],
-    linker_script = ":ld_hello_world",
+    name = "main_binaries_slot_a",
+    exec_env = DEFAULT_EXEC_ENV,
+    linker_script = ":ld_slot_a",
     deps = [
-        ":hello_world",
+        ":main_lib",
+        "//sw/device/lib/crt",
     ],
 )
 
-imm_rom_ext_section(
-    name = "hello_world_section",
-    srcs = [":hello_world_binaries"],
+[
+    create_imm_rom_ext_targets(
+        src = ":main_binaries_slot_a",
+        base_name = "main_section_slot_a",
+        exec_env = env,
+    )
+    for env in DEFAULT_EXEC_ENV
+]
+
+opentitan_binary(
+    name = "main_binaries_slot_b",
+    exec_env = DEFAULT_EXEC_ENV,
+    linker_script = ":ld_slot_b",
+    deps = [
+        ":main_lib",
+        "//sw/device/lib/crt",
+    ],
 )
+
+[
+    create_imm_rom_ext_targets(
+        src = ":main_binaries_slot_b",
+        base_name = "main_section_slot_b",
+        exec_env = env,
+    )
+    for env in DEFAULT_EXEC_ENV
+]
+
+opentitan_binary(
+    name = "main_binaries_slot_virtual",
+    exec_env = DEFAULT_EXEC_ENV,
+    linker_script = ":ld_slot_virtual",
+    deps = [
+        ":main_lib",
+        "//sw/device/lib/crt",
+    ],
+)
+
+[
+    create_imm_rom_ext_targets(
+        src = ":main_binaries_slot_virtual",
+        base_name = "main_section_slot_virtual",
+        exec_env = env,
+    )
+    for env in DEFAULT_EXEC_ENV
+]
