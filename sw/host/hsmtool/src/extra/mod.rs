@@ -3,5 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 mod spxef;
+mod spxkms;
 
 pub use spxef::SpxEf;
+pub use spxkms::SpxKms;
