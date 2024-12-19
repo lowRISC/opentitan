@@ -847,6 +847,6 @@ rom_state_boot_rom_ext(void *arg, uint32_t *next_state) {
 
 void rom_main(void) {
   CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomMain);
-  shutdown_finalize(
-      rom_state_fsm_walk(rom_states, kRomStateCnt, kRomStateInit));
+  shutdown_finalize(rom_state_fsm_walk(rom_states, kRomStateCnt, kRomStateInit,
+                                       rom_states_cfi));
 }
