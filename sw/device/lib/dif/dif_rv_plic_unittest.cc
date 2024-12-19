@@ -39,7 +39,7 @@ class ResetTest : public PlicTest {
   void ExpectReset() {
     // Priority registers.
     for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
-      ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
+      ptrdiff_t offset = RV_PLIC_PRIO_0_REG_OFFSET + (sizeof(uint32_t) * i);
       EXPECT_WRITE32(offset, 0);
     }
 
@@ -185,7 +185,7 @@ TEST_F(IrqPrioritySetTest, PriorityInvalid) {
 TEST_F(IrqPrioritySetTest, Success) {
   for (int i = 0; i < RV_PLIC_PARAM_NUM_SRC; ++i) {
     // Set expectations for every priority set call.
-    ptrdiff_t offset = RV_PLIC_PRIO0_REG_OFFSET + (sizeof(uint32_t) * i);
+    ptrdiff_t offset = RV_PLIC_PRIO_0_REG_OFFSET + (sizeof(uint32_t) * i);
     EXPECT_WRITE32(offset, kDifRvPlicMaxPriority);
 
     EXPECT_DIF_OK(

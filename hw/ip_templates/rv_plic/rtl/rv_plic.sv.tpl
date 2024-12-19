@@ -99,7 +99,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Priority //
   //////////////
 % for s in range(src):
-  assign prio[${s}] = reg2hw.prio${s}.q;
+  assign prio[${s}] = reg2hw.prio[${s}].q;
 % endfor
 
   //////////////////////
