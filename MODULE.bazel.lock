@@ -158,7 +158,7 @@
   "moduleExtensions": {
     "//third_party/coremark:extensions.bzl%coremark": {
       "general": {
-        "bzlTransitiveDigest": "oYo82g1v5+HVld/0IwdJ9ySQQ8T3TvFE4GeVWBErLKM=",
+        "bzlTransitiveDigest": "InK9o+8/hN6CwtLICnnFEg5vFlwmr2K0KmjQb+BFBkM=",
         "usagesDigest": "2Rw2u4BdMyaIwI4YT4ljG3LsOQ4DRpLCsRYOyCC9ZfQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -175,8 +175,8 @@
                 "https://github.com/eembc/coremark/archive/eefc986ebd3452d6adde22eafaff3e5c859f29e4.tar.gz"
               ],
               "patches": [
-                "@@//third_party/coremark:use_ottf_main.patch",
-                "@@//third_party/coremark:print_coremark_per_mhz.patch"
+                "@@//third_party/coremark/patches:use_ottf_main.patch",
+                "@@//third_party/coremark/patches:print_coremark_per_mhz.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -195,7 +195,7 @@
     },
     "//third_party/freertos:extensions.bzl%freertos": {
       "general": {
-        "bzlTransitiveDigest": "/FQJ+BTUkI8KVA6zH5bf9ISh+S5NtLe59qvFJ92eEYc=",
+        "bzlTransitiveDigest": "HXsre/mTrMiwKGsqg3aOscUQ2f8cFVXFlj6HV8OCHKE=",
         "usagesDigest": "LLGF1pNB1qTW2QYCRp1VH3TJcvhB6wtmdwscSSXF8YQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -212,9 +212,9 @@
                 "https://github.com/FreeRTOS/FreeRTOS-Kernel/archive/0b1e9d79c82c1bf00e93142f9d5b1b7b62446995.tar.gz"
               ],
               "patches": [
-                "@@//third_party/freertos:0001-Remove-mtime-address-macros.patch",
-                "@@//third_party/freertos:0002-Remove-references-to-stdlib.h.patch",
-                "@@//third_party/freertos:0003-Replace-string.h-with-references-to-OT-memory.h.patch"
+                "@@//third_party/freertos/patches:0001-Remove-mtime-address-macros.patch",
+                "@@//third_party/freertos/patches:0002-Remove-references-to-stdlib.h.patch",
+                "@@//third_party/freertos/patches:0003-Replace-string.h-with-references-to-OT-memory.h.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -261,7 +261,7 @@
     },
     "//third_party/hsm:extensions.bzl%hsm": {
       "general": {
-        "bzlTransitiveDigest": "/28QZ3I7tbfJDgaRxlh182/EMjZwJb/QORIxutd+Xes=",
+        "bzlTransitiveDigest": "6W3vfbA5zFrovVtLXWcpg+poqXT7e3Gsh1gi1C5z3nA=",
         "usagesDigest": "mu3b1NhkSkrsBm0cZ6CBA9ZVEvuZ6YymSKRyvB8ZrG0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -286,7 +286,7 @@
               "strip_prefix": "SoftHSMv2-4975c0df4c7090e97a3860ae21079a9597cfedc6",
               "sha256": "72cf979ec4f74ca4555861dcae45cf7d1b667cc2e4f3ee3fb26e6ff1b99aec95",
               "patches": [
-                "@@//third_party/hsm:0001-Disable-filename-logging.patch"
+                "@@//third_party/hsm/patches:0001-Disable-filename-logging.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -383,7 +383,7 @@
     },
     "//third_party/llvm_compiler_rt:extensions.bzl%llvm_compiler_rt": {
       "general": {
-        "bzlTransitiveDigest": "9by7wGNqZ6xTeVHbEPrcTWDSPfJ9nySxFHb5oN+PilM=",
+        "bzlTransitiveDigest": "fjl5zQ4kB7DmikP9ty9kgUykJKxg0y1gbKbrNP5fUGU=",
         "usagesDigest": "zPU6Y/UeGIc1XYL+S8s9utiQWrKdW0oDmXUJf+QpxLQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -400,8 +400,8 @@
                 "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.2/compiler-rt-16.0.2.src.tar.xz"
               ],
               "patches": [
-                "@@//third_party/llvm_compiler_rt:0001-Headers.patch",
-                "@@//third_party/llvm_compiler_rt:0002-invalid-data.patch"
+                "@@//third_party/llvm_compiler_rt/patches:0001-Headers.patch",
+                "@@//third_party/llvm_compiler_rt/patches:0002-invalid-data.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -600,7 +600,7 @@
     },
     "//third_party/open-dice:extensions.bzl%open_dice": {
       "general": {
-        "bzlTransitiveDigest": "CFBwD8rTE8Hk/R2huNOcNoh+1tuu3eRvYQ6N/QK5aHk=",
+        "bzlTransitiveDigest": "aWKdq1LJjyKY+Q2GJVzvgetfzDu1KODKYV2E2QYHwwU=",
         "usagesDigest": "JS7GxioQYipTmuvH3Q9liClSKpuPbE8hW9EyTeNJMo8=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -617,7 +617,7 @@
               ],
               "sha256": "d7ce830111451afe2a255cac3b750f82e50efe2aaf6bac0b076881c964cfe78d",
               "patches": [
-                "@@//third_party/open-dice:Add-a-local-strlen-implementation.patch"
+                "@@//third_party/open-dice/patches:Add-a-local-strlen-implementation.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -636,7 +636,7 @@
     },
     "//third_party/openocd:extensions.bzl%openocd": {
       "general": {
-        "bzlTransitiveDigest": "NeYzoVT+Zo4QwYxMzTAHqWUf18wgxqc2KzJTiMAGMo4=",
+        "bzlTransitiveDigest": "BV+++QVUqWJRUI8a6DAYdeNHXI1RQ17YnYlzoZVTwAU=",
         "usagesDigest": "HAzjsaERYt5w/T83F2veXDcpIVvq1S4fiAac6SBUTlM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -654,9 +654,9 @@
               "build_file": "@@//third_party/openocd:BUILD.openocd.bazel",
               "sha256": "af254788be98861f2bd9103fe6e60a774ec96a8c374744eef9197f6043075afa",
               "patches": [
-                "@@//third_party/openocd:calloc_transpose.patch",
-                "@@//third_party/openocd:reset_on_dmi_op_error.patch",
-                "@@//third_party/openocd:string_truncate_build_error.patch"
+                "@@//third_party/openocd/patches:calloc_transpose.patch",
+                "@@//third_party/openocd/patches:reset_on_dmi_op_error.patch",
+                "@@//third_party/openocd/patches:string_truncate_build_error.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -707,7 +707,7 @@
     },
     "//third_party/riscv-compliance:extensions.bzl%riscv_compliance": {
       "general": {
-        "bzlTransitiveDigest": "yy13CaTTAIrDakPXT4CFPd6k3fhD8hs/HK/1/HZDyYM=",
+        "bzlTransitiveDigest": "WTz1gDYhq81OZSrzxCIg9Wsoexw13Tg4dpoP1azL8oM=",
         "usagesDigest": "X4fjnmL/qLY3Umq+OyBElFJjNuEhyxpVugPcBohIft0=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -724,7 +724,7 @@
                 "https://github.com/riscv/riscv-compliance/archive/2636302c27557b42d99bed7e0537beffdf8e1ab4.tar.gz"
               ],
               "patches": [
-                "@@//third_party/riscv-compliance:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"
+                "@@//third_party/riscv-compliance/patches:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -798,7 +798,7 @@
     },
     "//third_party/sphincsplus:extensions.bzl%sphincsplus": {
       "general": {
-        "bzlTransitiveDigest": "Y7mumV4LHt9UQC3LPYPvQfsEdFHP8kGAkG4uiZUKgM4=",
+        "bzlTransitiveDigest": "NtOSMy259S2EXemRnRYvSxY5Bptk/tBtNFIOmFr6kaQ=",
         "usagesDigest": "Y9tt/cfxmAJXymZT4mCTnie92rzU5SphegIf6F+8AaM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -835,7 +835,7 @@
               "build_file": "@@//third_party/sphincsplus:BUILD.sphincsplus.bazel",
               "sha256": "b301faa7a42ef538323a732929d49341b1cbd8375f643f7d98ca32cd6efacc32",
               "patches": [
-                "@@//third_party/sphincsplus:sphincsplus-namespace.patch"
+                "@@//third_party/sphincsplus/patches:sphincsplus-namespace.patch"
               ],
               "patch_args": [
                 "-p2"
@@ -987,7 +987,7 @@
     },
     "//third_party/xkcp:extensions.bzl%xkcp": {
       "general": {
-        "bzlTransitiveDigest": "Dz8R8hb9r3rBc3oCTg9Wf9JSXuw7jfMvoUrEckHZJoU=",
+        "bzlTransitiveDigest": "hD9huPCM4xNamAFeas0rZQusg8jq3nyB0pdXYfi+NiM=",
         "usagesDigest": "qkYYTGDkeziq6h2yN6tT+eOx8e9MK0QFk+UIBidIGTE=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -1004,8 +1004,8 @@
                 "https://github.com/XKCP/XKCP/archive/56ae09923153c3e801a6891eb19e4a3b5bb6f6e2.tar.gz"
               ],
               "patches": [
-                "@@//third_party/xkcp:add_config_header.patch",
-                "@@//third_party/xkcp:add_main_license.patch"
+                "@@//third_party/xkcp/patches:add_config_header.patch",
+                "@@//third_party/xkcp/patches:add_main_license.patch"
               ],
               "patch_args": [
                 "-p1"

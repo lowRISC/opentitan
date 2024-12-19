@@ -18,8 +18,8 @@ def _llvm_compiler_rt_repos():
             "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.2/compiler-rt-16.0.2.src.tar.xz",
         ],
         patches = [
-            Label("//third_party/llvm_compiler_rt:0001-Headers.patch"),
-            Label("//third_party/llvm_compiler_rt:0002-invalid-data.patch"),
+            Label("//third_party/llvm_compiler_rt/patches:0001-Headers.patch"),
+            Label("//third_party/llvm_compiler_rt/patches:0002-invalid-data.patch"),
         ],
         patch_args = ["-p1"],
     )
