@@ -266,6 +266,7 @@ cc_library(
     deps = [
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:cfi",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib:shutdown",
     ],
