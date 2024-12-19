@@ -307,7 +307,7 @@
       otp_mutate: true
       lc_states: ["DEV", "PROD", "PROD_END"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/silicon_creator/manuf/lib:individualize_functest"]
     }
 
     {
