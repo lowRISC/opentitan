@@ -135,7 +135,7 @@
       otp_mutate: true
       lc_states: ["RAW", "TEST_UNLOCKED", "TEST_LOCKED", "DEV", "PROD", "PROD_END"]
       tests: ["chip_sw_lc_ctrl_transition"]
-      bazel: []
+      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_device_info_flash_wr_test_unlocked0_to_prod_functest"]
     }
     {
       name: chip_sw_lc_ctrl_key_div
