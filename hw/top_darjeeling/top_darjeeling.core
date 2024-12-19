@@ -17,7 +17,6 @@ filesets:
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device
-      - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
       - lowrisc:ip:pattgen
       - lowrisc:ip:aes
@@ -47,6 +46,7 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_rv_plic
       - lowrisc:opentitan:top_darjeeling_pinmux
       - lowrisc:opentitan:top_darjeeling_pwrmgr
+      - lowrisc:opentitan:top_darjeeling_spi_host
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

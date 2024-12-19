@@ -455,7 +455,6 @@ opentitan_test(
     deps = [
         "//hw/ip/i2c/data:i2c_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/usbdev/data:usbdev_c_regs",
         "//hw/top_earlgrey:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -3598,7 +3597,6 @@ opentitan_test(
     deps = [
         "//hw/ip/i2c/data:i2c_c_regs",
         "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/usbdev/data:usbdev_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
@@ -5041,7 +5039,6 @@ opentitan_test(
         "//hw/ip/kmac/data:kmac_c_regs",
         "//hw/ip/pattgen/data:pattgen_c_regs",
         "//hw/ip/pwm/data:pwm_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
         "//hw/ip/uart/data:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",

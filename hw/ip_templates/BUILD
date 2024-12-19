@@ -12,5 +12,6 @@ filegroup(
         "//hw/ip_templates/pinmux:all_files",
         "//hw/ip_templates/pwrmgr:all_files",
         "//hw/ip_templates/rstmgr:all_files",
+        "//hw/ip_templates/spi_host:all_files",
     ],
 )
