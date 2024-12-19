@@ -14,7 +14,7 @@ use std::rc::Rc;
 use std::str::FromStr;
 
 use crate::error::HsmError;
-use crate::spxef::SpxEf;
+use crate::extra::SpxEf;
 use acorn::{Acorn, SpxInterface};
 
 #[derive(Debug, Clone)]
