@@ -79,7 +79,7 @@ _MANUF_TEST_LOCKED_KEY = None
             changes_otp = True,
             lc_state = lc_state,  # will be expanded in test_cmd
             needs_jtag = True,
-            otp = "//hw/ip/otp_ctrl/data:img_{}".format(lc_state.lower()),
+            otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state.lower()),
             tags = ["manuf"],
             test_cmd = (
                 "" if (
@@ -118,12 +118,12 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_unlock_raw",
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -140,12 +140,12 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         needs_jtag = True,
-        otp = "//hw/ip/otp_ctrl/data:img_raw",
+        otp = "//hw/top_earlgrey/data/otp:img_raw",
         tags = ["manuf"],
         test_harness = "//sw/host/tests/manuf/manuf_cp_volatile_unlock_raw",
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -158,10 +158,10 @@ opentitan_test(
 [
     otp_image(
         name = "otp_img_rom_exec_disabled_test_unlocked{}".format(i),
-        src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked{}".format(i),
+        src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked{}".format(i),
         overlays = [
-            "//hw/ip/otp_ctrl/data:otp_json_fixed_secret0",
-            "//hw/ip/otp_ctrl/data:otp_json_exec_disabled",
+            "//hw/top_earlgrey/data/otp:otp_json_fixed_secret0",
+            "//hw/top_earlgrey/data/otp:otp_json_exec_disabled",
         ] + OTP_SIGVERIFY_FAKE_KEYS,
         visibility = ["//visibility:public"],
     )
@@ -185,7 +185,7 @@ opentitan_test(
             test_harness = "//sw/host/tests/manuf/manuf_cp_yield_test",
         ),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -276,7 +276,7 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
         ":test_wafer_auth_secret",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -370,7 +370,7 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -441,7 +441,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/manuf_cp_test_lock",
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -451,7 +451,7 @@ opentitan_test(
 
 otp_image(
     name = "otp_img_otp_ctrl_functest",
-    src = "//hw/ip/otp_ctrl/data:otp_json_test_unlocked0",
+    src = "//hw/top_earlgrey/data/otp:otp_json_test_unlocked0",
     visibility = ["//visibility:private"],
 )
 
@@ -469,7 +469,7 @@ opentitan_test(
         test_harness = "//sw/host/tests/manuf/otp_ctrl:otp_ctrl",
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",

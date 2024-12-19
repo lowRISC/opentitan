@@ -69,7 +69,7 @@ SEC_VERS = [
         ],
         manifest = ":manifest_sec_ver_{}".format(sec_ver),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -106,7 +106,7 @@ BOOT_POLICY_NEWER_CASES = [
 [
     otp_image(
         name = "otp_img_boot_policy_newer_{}".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS,
     )
     for lc_state, _ in get_lc_items()

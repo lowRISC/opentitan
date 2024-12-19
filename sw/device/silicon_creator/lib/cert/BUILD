@@ -166,7 +166,7 @@ cc_library(
         ":cbor",
         ":cert",
         ":cwt_template",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
         "//sw/device/silicon_creator/lib:otbn_boot_services",

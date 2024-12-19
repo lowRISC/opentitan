@@ -193,7 +193,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             s["name"],
         ),
         testonly = True,
-        src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+        src = "//hw/top_earlgrey/data/otp:otp_json_prod",
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_immutable_rom_ext_{}_{}".format(
                 t["name"],
@@ -230,7 +230,7 @@ manifest(d = {
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(s["slot"]),
         manifest = ":manifest",
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:status",
