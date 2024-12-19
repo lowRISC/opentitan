@@ -10,6 +10,8 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
     files:
       - rtl/clkmgr_reg_pkg.sv
