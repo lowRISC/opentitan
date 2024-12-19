@@ -5,13 +5,16 @@ CAPI=2:
 
 name: "lowrisc:prim_xilinx:pad_attr"
 description: "Pad attribute WARL module for Xilinx pads"
+virtual:
+  - lowrisc:prim:pad_attr
+
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:pad_wrapper_pkg
     files:
-      - rtl/prim_xilinx_pad_attr.sv
+      - rtl/prim_pad_attr.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -10,6 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
     files:
       - rtl/flash_ctrl_reg_pkg.sv

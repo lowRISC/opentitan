@@ -25,6 +25,8 @@ filesets:
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
+      # TODO: prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
     files:
@@ -67,6 +69,10 @@ filesets:
       - lint/otp_ctrl.vbl
     file_type: veribleLintWaiver
 
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -85,6 +91,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     parameters:
       - SYNTHESIS=true
     tools:

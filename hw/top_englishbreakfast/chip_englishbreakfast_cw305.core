@@ -8,11 +8,13 @@ description: "English Breakfast toplevel for the ChipWhisperer CW305 board"
 filesets:
   files_rtl_cw305:
     depend:
-      - lowrisc:prim_xilinx:prim_xilinx_default_pkg
+      - lowrisc:prim_xilinx:englishbreakfast_xilinx_prim_pkg
       - lowrisc:systems:top_englishbreakfast:0.1
       - lowrisc:systems:ast
       - lowrisc:systems:topgen
       - lowrisc:systems:padring
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx:all
     file_type: systemVerilogSource
 
   files_constraints:
