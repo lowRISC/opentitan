@@ -14,7 +14,7 @@ cc_library(
     srcs = ["imm_rom_ext.c"],
     hdrs = ["imm_rom_ext.h"],
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
