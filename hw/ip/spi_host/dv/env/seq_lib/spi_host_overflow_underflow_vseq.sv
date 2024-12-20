@@ -47,7 +47,7 @@ class spi_host_overflow_underflow_vseq extends spi_host_tx_rx_vseq;
     access_data_fifo(read_q, RxFifo, 1'b0); // attempting empty read error underflow
     check_error(ral.error_status.underflow,1);
 
-    csr_wr(.ptr(ral.configopts[0].clkdiv), .value(16'h28)); // clk div set to 20
+    csr_wr(.ptr(ral.configopts.clkdiv), .value(16'h28)); // clk div set to 20
 
     while (segms_words <= (SPI_HOST_TX_DEPTH + 1))  begin
       check_error(ral.error_status.overflow,0);
