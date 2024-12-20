@@ -10,11 +10,11 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
       - lowrisc:ip:tlul
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:prim:subreg
+      - lowrisc:tlul:headers
     files:
-      - rtl/pwrmgr_reg_pkg.sv
       - rtl/pwrmgr_reg_top.sv
     file_type: systemVerilogSource
 
