@@ -13,6 +13,7 @@ package otp_ctrl_part_pkg;
   import prim_util_pkg::vbits;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
+  import otp_ctrl_top_specific_pkg::*;
 
   ////////////////////////////////////
   // Scrambling Constants and Types //

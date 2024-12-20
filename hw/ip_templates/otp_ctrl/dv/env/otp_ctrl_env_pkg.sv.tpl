@@ -25,6 +25,7 @@ package otp_ctrl_env_pkg;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_top_specific_pkg::*;
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
