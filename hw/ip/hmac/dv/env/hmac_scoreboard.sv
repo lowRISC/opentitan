@@ -82,6 +82,8 @@ task hmac_scoreboard::run_phase(uvm_phase phase);
   wait(cfg.under_reset);
   forever begin
     wait(!cfg.under_reset);
+    cfg.clk_rst_vif.wait_clks(1);   // Wait one clock cycle to be sure IDLE state will be set
+    check_idle(1'b1);               // Check IDLE after a reset has occured
     // This isolation fork is needed to ensure that "disable fork" call won't kill any other
     // processes at the same level from the base classes
     fork begin : isolation_fork
