@@ -2,48 +2,39 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:tlul:adapter_sram:0.1"
-description: "TL-UL to SRAM adapter (device)"
-
+#
+# ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+# PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+#
+#    util/design/gen-mubi.py
+#
+name: "lowrisc:prim:mubi_pkg:0.1"
+description: "Multibit types and functions"
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:flop
-      - lowrisc:prim:sec_anchor
-      - lowrisc:prim:util
-      - lowrisc:tlul:common
     files:
-      - rtl/tlul_sram_byte.sv
-      - rtl/tlul_adapter_sram.sv
+      - rtl/prim_mubi_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-    files:
-      - lint/tlul_adapter_sram.vlt
-    file_type: vlt
 
   files_ascentlint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
     files:
-      - lint/tlul_adapter_sram.waiver
+      - lint/prim_mubi.waiver
     file_type: waiver
 
   files_veriblelint_waiver:
     depend:
       # common waivers
       - lowrisc:lint:common
-
-parameters:
-  SYNTHESIS:
-    datatype: bool
-    paramtype: vlogdefine
-
 
 targets:
   default: &default_target
@@ -52,15 +43,3 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: tlul_adapter_sram
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    parameters:
-      - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"

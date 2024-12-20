@@ -16,8 +16,8 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:buf
       - lowrisc:prim:flop
+      - lowrisc:prim:mubi_pkg
     files:
-      - rtl/prim_mubi_pkg.sv
 % for n in range(1, n_max_nibbles+1):
       - rtl/prim_mubi${4*n}_sender.sv
       - rtl/prim_mubi${4*n}_sync.sv
