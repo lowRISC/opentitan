@@ -1,0 +1,49 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  template_param_list: [
+    {
+      name: "topname"
+      desc: "Name of top-level design, e.g., 'darjeeling' or 'earlgrey'"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple RACL Ctrl instances"
+      type: "string"
+      default: "racl_ctrl"
+    }
+    {
+      name: "enable_shadow_reg"
+      desc: "Enable shadow reg protection for policy registers"
+      type: "bool"
+      default: true
+    }
+    {
+      name: "nr_role_bits"
+      desc: "Number of RACL bits used for roles"
+      type: "int"
+      default: "4"
+    }
+    {
+      name: "nr_ctn_uid_bits"
+      desc: "Number of CTN UID bits"
+      type: "int"
+      default: "8"
+    }
+    {
+      name: "nr_policies"
+      desc: "Number of policies"
+      type: "int"
+      default: "16"
+    }
+    {
+      name: "policies"
+      desc: "The RACL policies"
+      type: "object"
+      default: []
+    }
+  ]
+}
