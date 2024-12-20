@@ -37,6 +37,8 @@ module ibex_top import ibex_pkg::*; #(
   parameter int unsigned            ICacheScrNumPrinceRoundsHalf = 2,
   parameter lfsr_seed_t             RndCnstLfsrSeed              = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t             RndCnstLfsrPerm              = RndCnstLfsrPermDefault,
+  parameter int unsigned            DmBaseAddr                   = 32'h1A110000,
+  parameter int unsigned            DmAddrMask                   = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr                   = 32'h1A110800,
   parameter int unsigned            DmExceptionAddr              = 32'h1A110808,
   // Default seed and nonce for scrambling
@@ -313,6 +315,8 @@ module ibex_top import ibex_pkg::*; #(
     .RegFileDataWidth (RegFileDataWidth),
     .MemECC           (MemECC),
     .MemDataWidth     (MemDataWidth),
+    .DmBaseAddr       (DmBaseAddr),
+    .DmAddrMask       (DmAddrMask),
     .DmHaltAddr       (DmHaltAddr),
     .DmExceptionAddr  (DmExceptionAddr)
   ) u_ibex_core (
@@ -1016,6 +1020,8 @@ module ibex_top import ibex_pkg::*; #(
       .RegFileECC       (RegFileECC),
       .RegFileDataWidth (RegFileDataWidth),
       .MemECC           (MemECC),
+      .DmBaseAddr       (DmBaseAddr),
+      .DmAddrMask       (DmAddrMask),
       .DmHaltAddr       (DmHaltAddr),
       .DmExceptionAddr  (DmExceptionAddr)
     ) u_ibex_lockstep (
@@ -1119,6 +1125,10 @@ module ibex_top import ibex_pkg::*; #(
                                   icache_alert_major_internal;
   assign alert_major_bus_o      = core_alert_major_bus | lockstep_alert_major_bus;
   assign alert_minor_o          = core_alert_minor | lockstep_alert_minor;
+
+  // Parameter assertions
+  `ASSERT_INIT(DmHaltAddrInRange_A, (DmHaltAddr & ~DmAddrMask) == DmBaseAddr)
+  `ASSERT_INIT(DmExceptionAddrInRange_A, (DmExceptionAddr & ~DmAddrMask) == DmBaseAddr)
 
   // X checks for top-level outputs
   `ASSERT_KNOWN(IbexInstrReqX, instr_req_o)

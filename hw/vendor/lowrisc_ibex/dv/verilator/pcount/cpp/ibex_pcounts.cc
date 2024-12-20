@@ -53,10 +53,9 @@ static bool has_hpm_counter(int index) {
 
 std::string ibex_pcount_string(bool csv) {
   char separator = csv ? ',' : ':';
-  std::string::size_type longest_name_length;
+  std::string::size_type longest_name_length = 0;
 
   if (!csv) {
-    longest_name_length = 0;
     for (int i = 0; i < ibex_counter_names.size(); ++i) {
       if (has_hpm_counter(i)) {
         longest_name_length =

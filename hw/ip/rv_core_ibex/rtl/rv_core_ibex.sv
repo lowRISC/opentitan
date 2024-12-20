@@ -36,6 +36,8 @@ module rv_core_ibex
   parameter bit                     SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
+  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr       = 32'h1A110800,
   parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
   parameter bit                     PipeLine         = 1'b0,
@@ -409,6 +411,8 @@ module rv_core_ibex
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
     .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
     .RndCnstIbexNonce            ( RndCnstIbexNonceDefault  ),
+    .DmBaseAddr                  ( DmBaseAddr               ),
+    .DmAddrMask                  ( DmAddrMask               ),
     .DmHaltAddr                  ( DmHaltAddr               ),
     .DmExceptionAddr             ( DmExceptionAddr          )
   ) u_core (
