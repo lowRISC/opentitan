@@ -88,6 +88,10 @@ task hmac_scoreboard::run_phase(uvm_phase phase);
       fork
         begin : main_thread
           fork
+            begin
+              cfg.clk_rst_vif.wait_clks(1);   // Wait one clk cycle to be sure IDLE state is set
+              check_idle(1'b1);               // Check IDLE after a reset has occured
+            end
             hmac_process_fifo_status();
             hmac_process_fifo_wr();
             hmac_process_fifo_rd();
