@@ -27,6 +27,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
   parameter bit          ICacheScramble   = 1'b0,
   parameter lfsr_seed_t  RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t  RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
+  parameter int unsigned DmBaseAddr       = 32'h1A110000,
+  parameter int unsigned DmAddrMask       = 32'h00000FFF,
   parameter int unsigned DmHaltAddr       = 32'h1A110800,
   parameter int unsigned DmExceptionAddr  = 32'h1A110808
 ) (
@@ -184,6 +186,8 @@ module ibex_top_tracing import ibex_pkg::*; #(
     .ICacheScramble   ( ICacheScramble   ),
     .RndCnstLfsrSeed  ( RndCnstLfsrSeed  ),
     .RndCnstLfsrPerm  ( RndCnstLfsrPerm  ),
+    .DmBaseAddr       ( DmBaseAddr       ),
+    .DmAddrMask       ( DmAddrMask       ),
     .DmHaltAddr       ( DmHaltAddr       ),
     .DmExceptionAddr  ( DmExceptionAddr  )
   ) u_ibex_top (

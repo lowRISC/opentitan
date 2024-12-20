@@ -5,6 +5,8 @@
 `include "dv_fcov_macros.svh"
 
 module ibex_pmp #(
+  parameter int unsigned DmBaseAddr     = 32'h1A110000,
+  parameter int unsigned DmAddrMask     = 32'h00000FFF,
   // Granularity of NAPOT access,
   // 0 = No restriction, 1 = 8 byte, 2 = 16 byte, 3 = 32 byte, etc.
   parameter int unsigned PMPGranularity = 0,
@@ -17,6 +19,8 @@ module ibex_pmp #(
   input  ibex_pkg::pmp_cfg_t      csr_pmp_cfg_i     [PMPNumRegions],
   input  logic [33:0]             csr_pmp_addr_i    [PMPNumRegions],
   input  ibex_pkg::pmp_mseccfg_t  csr_pmp_mseccfg_i,
+
+  input  logic                    debug_mode_i,
 
   input  ibex_pkg::priv_lvl_e     priv_mode_i    [PMPNumChan],
   // Access checking channels
@@ -37,6 +41,7 @@ module ibex_pmp #(
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_match_all;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_basic_perm_check;
   logic [PMPNumChan-1:0][PMPNumRegions-1:0]   region_perm_check;
+  logic [PMPNumChan-1:0]                      debug_mode_allowed_access;
 
   ///////////////////////
   // Functions for PMP //
@@ -48,6 +53,7 @@ module ibex_pmp #(
   //                                                                                 |
   // region_match_all --------------------------------> access_fault_check <----------
   //                                                            |
+  // !debug_mode_allowed_access ------------------------------> &
   //                                                            \--> pmp_req_err_o
 
   // Compute permissions checks that apply when MSECCFG.MML is set. Added for Smepmp support.
@@ -226,9 +232,18 @@ module ibex_pmp #(
                              pmp_req_addr_i[c][PMPGranularity+2-1:0]};
     end
 
+    // Determine whether the core is in debug mode and the access is to an address in the range of
+    // the Debug Module. According to Section A.2 of the RISC-V Debug Specification, the PMP must
+    // not disallow fetches, loads, or stores in the address range associated with the Debug Module
+    // when the hart is in debug mode.
+    assign debug_mode_allowed_access[c] = debug_mode_i &
+                                          ((pmp_req_addr_i[c][31:0] & ~DmAddrMask) == DmBaseAddr);
+
     // Once the permission checks of the regions are done, decide if the access is
     // denied by figuring out the matching region and its permission check.
-    assign pmp_req_err_o[c] = access_fault_check(csr_pmp_mseccfg_i.mmwp,
+    // No error is raised if the access is allowed as Debug Module access (first term).
+    assign pmp_req_err_o[c] = ~debug_mode_allowed_access[c] &
+                              access_fault_check(csr_pmp_mseccfg_i.mmwp,
                                                  csr_pmp_mseccfg_i.mml,
                                                  pmp_req_type_i[c],
                                                  region_match_all[c],

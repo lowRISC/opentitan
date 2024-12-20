@@ -84,6 +84,8 @@ module core_ibex_tb_top;
   assign {scramble_key, scramble_nonce} = scrambling_key_if.d_data;
 
   ibex_top_tracing #(
+    .DmBaseAddr       (32'h`BOOT_ADDR       ),
+    .DmAddrMask       (32'h0000_0007        ),
     .DmHaltAddr       (32'h`BOOT_ADDR + 'h0 ),
     .DmExceptionAddr  (32'h`BOOT_ADDR + 'h4 ),
     .PMPEnable        (PMPEnable        ),
