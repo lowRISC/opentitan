@@ -433,6 +433,7 @@ class cip_base_vseq #(
     import dv_utils_pkg::interrupt_t;
     dv_base_reg intr_csrs[$];
     dv_base_reg intr_test_csrs[$];
+    dv_base_reg intr_state[$]; // convenience handle to intr_state regs
 
     foreach (all_csrs[i]) begin
       string csr_name = all_csrs[i].get_name();
@@ -444,6 +445,8 @@ class cip_base_vseq #(
       if (!uvm_re_match("intr_test*", csr_name)) begin
         intr_test_csrs.push_back(get_interrupt_csr(csr_name));
       end
+      if (!uvm_re_match("intr_state*", csr_name))
+        intr_state.push_back(get_interrupt_csr(csr_name));
     end
 
     num_times = num_times * intr_csrs.size();
@@ -457,13 +460,15 @@ class cip_base_vseq #(
       foreach (intr_csrs[i]) begin
         uvm_reg_data_t data = $urandom();
         `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
+        foreach(intr_state[i])
+          intr_state[i].wait_for_prediction();
         csr_wr(.ptr(intr_csrs[i]), .value(data));
       end
 
       // Read all intr related csr and check interrupt pins
       intr_csrs.shuffle();
       foreach (intr_csrs[i]) begin
-        uvm_reg_data_t exp_val = `gmv(intr_csrs[i]);
+        uvm_reg_data_t exp_val;
         uvm_reg_data_t act_val;
 
         interrupt_t irq_ro_mask = '0;
@@ -474,7 +479,16 @@ class cip_base_vseq #(
           irq_ro_mask = intr_csrs[i].get_ro_mask();
         end
 
-        exp_val &= ~irq_ro_mask;
+        // There may be a current intr_state access which impedes the TB from updating intr_state
+        // mirrored value. TB blocks here to ensure the predictions kick in time.
+        // We need to ensure the prediction has kicked in before we read the intr_state
+        // Users may set 'reg_name.predicting_value' before calling 'reg.predict' method, and
+        // unsetting it after 'reg.predict' returns to track whether a given reg is being predicted
+        foreach(intr_state[i])
+          intr_state[i].wait_for_prediction();
+        // we may need to update the exp_value here, since there may be a delay from the
+        // update above to ' exp_val'until here before we call the csr_rd
+        exp_val = `gmv(intr_csrs[i]) & ~irq_ro_mask;
 
         csr_rd(.ptr(intr_csrs[i]), .value(act_val));
         act_val &= ~irq_ro_mask;
@@ -491,7 +505,7 @@ class cip_base_vseq #(
           `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
         end // if (!uvm_re_match
       end // foreach (intr_csrs[i])
-    end // for (int trans = 1; ...
+    end
     // Write 0 to intr_test to clean up status interrupts, otherwise, status interrupts may remain
     // active. And writing any value to a status interrupt CSR (intr_state) can't clear its value.
     foreach (intr_test_csrs[i]) begin
