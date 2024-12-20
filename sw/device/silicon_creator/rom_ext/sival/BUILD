@@ -11,6 +11,11 @@ load(
     "ROM_EXT_VERSION",
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
+load(
+    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "SLOT_A_IMM_ROM_EXT_SECTIONS",
+    "SLOT_B_IMM_ROM_EXT_SECTIONS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -45,6 +50,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
+    immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
@@ -67,6 +73,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
+    immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
@@ -85,6 +92,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
+    immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     deps = [
@@ -101,6 +109,7 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
+    immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     deps = [
