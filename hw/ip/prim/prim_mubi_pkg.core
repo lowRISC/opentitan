@@ -8,21 +8,14 @@ CAPI=2:
 #
 #    util/design/gen-mubi.py
 #
-name: "lowrisc:prim:mubi:0.1"
+name: "lowrisc:prim:mubi_pkg:0.1"
 description: "Multibit types and functions"
 filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:buf
-      - lowrisc:prim:flop
-      - lowrisc:prim:mubi_pkg
     files:
-% for n in range(1, n_max_nibbles+1):
-      - rtl/prim_mubi${4*n}_sender.sv
-      - rtl/prim_mubi${4*n}_sync.sv
-      - rtl/prim_mubi${4*n}_dec.sv
-% endfor
+      - rtl/prim_mubi_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -50,14 +43,3 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    parameters:
-      - SYNTHESIS=true
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"
