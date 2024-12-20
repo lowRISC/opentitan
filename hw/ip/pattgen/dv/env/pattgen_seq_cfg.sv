@@ -36,8 +36,10 @@ class pattgen_seq_cfg extends uvm_object;
   // for error_vseq
   bit  error_injected_enb            = 1'b0;
   uint error_injected_pct            = 10;  // in percentage
-  uint data_top_pct                  = 10;
-  uint data_bottom_pct               = 80;
-  uint data_middle_pct               = 10;
+
+  // pattern data distribution (in percentages)
+  uint data_top_pct                  = 10; // all-high half-pattern
+  uint data_bottom_pct               = 10; // all-low half-pattern
+  uint data_middle_pct               = 80; // everything else
 
 endclass : pattgen_seq_cfg
