@@ -135,3 +135,20 @@ Condition 37 "2164803938" "(tl_i_int.a_valid & reqfifo_wready & ((~error_interna
 // rom_ctrl doesn't enable integrity errors, error_det comes out as error_internal directly from
 // u_sram_byte. But this makes req_o false and hence sram_ack false.
 Condition 43 "2041272341" "(sram_ack & ((~we_o))) 1 -1" (2 "10")
+
+INSTANCE: tb.dut
+// rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
+Toggle 0to1 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
+Toggle 1to0 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
+Toggle 0to1 rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
+Toggle 1to0 rom_cfg_i.cfg_en "logic rom_cfg_i.cfg_en"
+Toggle 0to1 rom_cfg_i.test "logic rom_cfg_i.test"
+Toggle 1to0 rom_cfg_i.test "logic rom_cfg_i.test"
+
+// The bits [63:39] of kmac_data_o.data are zero-expanded in rom_ctrl.sv
+Toggle 0to1 kmac_data_o.data [63:39] "logic kmac_data_o.data[63:0]"
+Toggle 1to0 kmac_data_o.data [63:39] "logic kmac_data_o.data[63:0]"
+
+// kmac_data_o.strb is assigned to 1's in rom_ctrl.sv
+Toggle 0to1 kmac_data_o.strb "logic kmac_data_o.strb[7:0]"
+Toggle 1to0 kmac_data_o.strb "logic kmac_data_o.strb[7:0]"
