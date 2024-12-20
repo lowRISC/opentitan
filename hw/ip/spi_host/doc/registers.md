@@ -171,17 +171,11 @@ Status register
 ## CONFIGOPTS
 Configuration options register.
 
-   Contains options for controlling each peripheral. One register per
-   cs_n line
+   Contains options for controlling the current peripheral.
+   Firmware needs to configure the options before the transfer.
+- Offset: `0x18`
 - Reset default: `0x0`
 - Reset mask: `0xefffffff`
-
-### Instances
-
-| Name       | Offset   |
-|:-----------|:---------|
-| CONFIGOPTS | 0x18     |
-
 
 ### Fields
 
@@ -202,52 +196,52 @@ Configuration options register.
 
 ### CONFIGOPTS . CPOL
 The polarity of the sck clock signal.  When CPOL is 0,
-   sck is low when idle, and emits high pulses.   When CPOL
-   is 1, sck is high when idle, and emits a series of low
-   pulses.
+    sck is low when idle, and emits high pulses.   When CPOL
+    is 1, sck is high when idle, and emits a series of low
+    pulses.
 
 ### CONFIGOPTS . CPHA
 The phase of the sck clock signal relative to the data. When
-   CPHA = 0, the data changes on the trailing edge of sck
-   and is typically sampled on the leading edge.  Conversely
-   if CPHA = 1 high, data lines change on the leading edge of
-   sck and are typically sampled on the trailing edge.
-   CPHA should be chosen to match the phase of the selected
-   device.  The sampling behavior is modified by the
-   [`CONFIGOPTS.FULLCYC`](#configopts) bit.
+    CPHA = 0, the data changes on the trailing edge of sck
+    and is typically sampled on the leading edge.  Conversely
+    if CPHA = 1 high, data lines change on the leading edge of
+    sck and are typically sampled on the trailing edge.
+    CPHA should be chosen to match the phase of the selected
+    device.  The sampling behavior is modified by the
+    [`CONFIGOPTS.FULLCYC`](#configopts) bit.
 
 ### CONFIGOPTS . FULLCYC
 Full cycle.  Modifies the CPHA sampling behaviour to allow
-   for longer device logic setup times.  Rather than sampling the SD
-   bus a half cycle after shifting out data, the data is sampled
-   a full cycle after shifting data out.  This means that if
-   CPHA = 0, data is shifted out on the trailing edge, and
-   sampled a full cycle later.  If CPHA = 1, data is shifted and
-   sampled with the trailing edge, also separated by a
-   full cycle.
+    for longer device logic setup times.  Rather than sampling the SD
+    bus a half cycle after shifting out data, the data is sampled
+    a full cycle after shifting data out.  This means that if
+    CPHA = 0, data is shifted out on the trailing edge, and
+    sampled a full cycle later.  If CPHA = 1, data is shifted and
+    sampled with the trailing edge, also separated by a
+    full cycle.
 
 ### CONFIGOPTS . CSNLEAD
 CS_N Leading Time.  Indicates the number of half sck cycles,
-   CSNLEAD+1, to leave between the falling edge of cs_n and
-   the first edge of sck.  Setting this register to zero
-   corresponds to the minimum delay of one-half sck cycle
+    CSNLEAD+1, to leave between the falling edge of cs_n and
+    the first edge of sck.  Setting this register to zero
+    corresponds to the minimum delay of one-half sck cycle
 
 ### CONFIGOPTS . CSNTRAIL
 CS_N Trailing Time.  Indicates the number of half sck cycles,
-   CSNTRAIL+1, to leave between last edge of sck and the rising
-   edge of cs_n. Setting this register to zero corresponds
-   to the minimum delay of one-half sck cycle.
+    CSNTRAIL+1, to leave between last edge of sck and the rising
+    edge of cs_n. Setting this register to zero corresponds
+    to the minimum delay of one-half sck cycle.
 
 ### CONFIGOPTS . CSNIDLE
 Minimum idle time between commands. Indicates the minimum
-   number of sck half-cycles to hold cs_n high between commands.
-   Setting this register to zero creates a minimally-wide CS_N-high
-   pulse of one-half sck cycle.
+    number of sck half-cycles to hold cs_n high between commands.
+    Setting this register to zero creates a minimally-wide CS_N-high
+    pulse of one-half sck cycle.
 
 ### CONFIGOPTS . CLKDIV
 Core clock divider.  Slows down subsequent SPI transactions by a
-   factor of (CLKDIV+1) relative to the core clock frequency.  The
-   period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`
+    factor of (CLKDIV+1) relative to the core clock frequency.  The
+    period of sck, T(sck) then becomes `2*(CLK_DIV+1)*T(core)`
 
 ## CSID
 Chip-Select ID

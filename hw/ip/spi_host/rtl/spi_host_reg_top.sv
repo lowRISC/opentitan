@@ -213,20 +213,20 @@ module spi_host_reg_top (
   logic status_active_qs;
   logic status_ready_qs;
   logic configopts_we;
-  logic [15:0] configopts_clkdiv_0_qs;
-  logic [15:0] configopts_clkdiv_0_wd;
-  logic [3:0] configopts_csnidle_0_qs;
-  logic [3:0] configopts_csnidle_0_wd;
-  logic [3:0] configopts_csntrail_0_qs;
-  logic [3:0] configopts_csntrail_0_wd;
-  logic [3:0] configopts_csnlead_0_qs;
-  logic [3:0] configopts_csnlead_0_wd;
-  logic configopts_fullcyc_0_qs;
-  logic configopts_fullcyc_0_wd;
-  logic configopts_cpha_0_qs;
-  logic configopts_cpha_0_wd;
-  logic configopts_cpol_0_qs;
-  logic configopts_cpol_0_wd;
+  logic [15:0] configopts_clkdiv_qs;
+  logic [15:0] configopts_clkdiv_wd;
+  logic [3:0] configopts_csnidle_qs;
+  logic [3:0] configopts_csnidle_wd;
+  logic [3:0] configopts_csntrail_qs;
+  logic [3:0] configopts_csntrail_wd;
+  logic [3:0] configopts_csnlead_qs;
+  logic [3:0] configopts_csnlead_wd;
+  logic configopts_fullcyc_qs;
+  logic configopts_fullcyc_wd;
+  logic configopts_cpha_qs;
+  logic configopts_cpha_wd;
+  logic configopts_cpol_qs;
+  logic configopts_cpol_wd;
   logic csid_we;
   logic [31:0] csid_qs;
   logic [31:0] csid_wd;
@@ -960,21 +960,20 @@ module spi_host_reg_top (
   );
 
 
-  // Subregister 0 of Multireg configopts
   // R[configopts]: V(False)
-  //   F[clkdiv_0]: 15:0
+  //   F[clkdiv]: 15:0
   prim_subreg #(
     .DW      (16),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (16'h0),
     .Mubi    (1'b0)
-  ) u_configopts_clkdiv_0 (
+  ) u_configopts_clkdiv (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_clkdiv_0_wd),
+    .wd     (configopts_clkdiv_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -982,26 +981,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].clkdiv.q),
+    .q      (reg2hw.configopts.clkdiv.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_clkdiv_0_qs)
+    .qs     (configopts_clkdiv_qs)
   );
 
-  //   F[csnidle_0]: 19:16
+  //   F[csnidle]: 19:16
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_configopts_csnidle_0 (
+  ) u_configopts_csnidle (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_csnidle_0_wd),
+    .wd     (configopts_csnidle_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1009,26 +1008,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csnidle.q),
+    .q      (reg2hw.configopts.csnidle.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_csnidle_0_qs)
+    .qs     (configopts_csnidle_qs)
   );
 
-  //   F[csntrail_0]: 23:20
+  //   F[csntrail]: 23:20
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_configopts_csntrail_0 (
+  ) u_configopts_csntrail (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_csntrail_0_wd),
+    .wd     (configopts_csntrail_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1036,26 +1035,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csntrail.q),
+    .q      (reg2hw.configopts.csntrail.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_csntrail_0_qs)
+    .qs     (configopts_csntrail_qs)
   );
 
-  //   F[csnlead_0]: 27:24
+  //   F[csnlead]: 27:24
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
-  ) u_configopts_csnlead_0 (
+  ) u_configopts_csnlead (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_csnlead_0_wd),
+    .wd     (configopts_csnlead_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1063,26 +1062,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].csnlead.q),
+    .q      (reg2hw.configopts.csnlead.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_csnlead_0_qs)
+    .qs     (configopts_csnlead_qs)
   );
 
-  //   F[fullcyc_0]: 29:29
+  //   F[fullcyc]: 29:29
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_configopts_fullcyc_0 (
+  ) u_configopts_fullcyc (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_fullcyc_0_wd),
+    .wd     (configopts_fullcyc_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1090,26 +1089,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].fullcyc.q),
+    .q      (reg2hw.configopts.fullcyc.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_fullcyc_0_qs)
+    .qs     (configopts_fullcyc_qs)
   );
 
-  //   F[cpha_0]: 30:30
+  //   F[cpha]: 30:30
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_configopts_cpha_0 (
+  ) u_configopts_cpha (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_cpha_0_wd),
+    .wd     (configopts_cpha_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1117,26 +1116,26 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].cpha.q),
+    .q      (reg2hw.configopts.cpha.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_cpha_0_qs)
+    .qs     (configopts_cpha_qs)
   );
 
-  //   F[cpol_0]: 31:31
+  //   F[cpol]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_configopts_cpol_0 (
+  ) u_configopts_cpol (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
 
     // from register interface
     .we     (configopts_we),
-    .wd     (configopts_cpol_0_wd),
+    .wd     (configopts_cpol_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -1144,11 +1143,11 @@ module spi_host_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.configopts[0].cpol.q),
+    .q      (reg2hw.configopts.cpol.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (configopts_cpol_0_qs)
+    .qs     (configopts_cpol_qs)
   );
 
 
@@ -1781,19 +1780,19 @@ module spi_host_reg_top (
   assign control_spien_wd = reg_wdata[31];
   assign configopts_we = addr_hit[6] & reg_we & !reg_error;
 
-  assign configopts_clkdiv_0_wd = reg_wdata[15:0];
+  assign configopts_clkdiv_wd = reg_wdata[15:0];
 
-  assign configopts_csnidle_0_wd = reg_wdata[19:16];
+  assign configopts_csnidle_wd = reg_wdata[19:16];
 
-  assign configopts_csntrail_0_wd = reg_wdata[23:20];
+  assign configopts_csntrail_wd = reg_wdata[23:20];
 
-  assign configopts_csnlead_0_wd = reg_wdata[27:24];
+  assign configopts_csnlead_wd = reg_wdata[27:24];
 
-  assign configopts_fullcyc_0_wd = reg_wdata[29];
+  assign configopts_fullcyc_wd = reg_wdata[29];
 
-  assign configopts_cpha_0_wd = reg_wdata[30];
+  assign configopts_cpha_wd = reg_wdata[30];
 
-  assign configopts_cpol_0_wd = reg_wdata[31];
+  assign configopts_cpol_wd = reg_wdata[31];
   assign csid_we = addr_hit[7] & reg_we & !reg_error;
 
   assign csid_wd = reg_wdata[31:0];
@@ -1910,13 +1909,13 @@ module spi_host_reg_top (
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[15:0] = configopts_clkdiv_0_qs;
-        reg_rdata_next[19:16] = configopts_csnidle_0_qs;
-        reg_rdata_next[23:20] = configopts_csntrail_0_qs;
-        reg_rdata_next[27:24] = configopts_csnlead_0_qs;
-        reg_rdata_next[29] = configopts_fullcyc_0_qs;
-        reg_rdata_next[30] = configopts_cpha_0_qs;
-        reg_rdata_next[31] = configopts_cpol_0_qs;
+        reg_rdata_next[15:0] = configopts_clkdiv_qs;
+        reg_rdata_next[19:16] = configopts_csnidle_qs;
+        reg_rdata_next[23:20] = configopts_csntrail_qs;
+        reg_rdata_next[27:24] = configopts_csnlead_qs;
+        reg_rdata_next[29] = configopts_fullcyc_qs;
+        reg_rdata_next[30] = configopts_cpha_qs;
+        reg_rdata_next[31] = configopts_cpol_qs;
       end
 
       addr_hit[7]: begin

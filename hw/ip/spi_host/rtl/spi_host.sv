@@ -216,25 +216,15 @@ module spi_host
   assign error_cmd_inval  = command_valid & ~command_busy &
                             (test_speed_inval | test_dir_inval);
 
-  spi_host_reg_pkg::spi_host_reg2hw_configopts_mreg_t configopts;
+  assign command.csid = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
 
-  if (NumCS == 1) begin : gen_single_device
-    assign configopts   = reg2hw.configopts[0];
-    assign command.csid = '0;
-  end else begin : gen_multiple_devices
-    logic [CSW-1:0] csid;
-    assign csid         = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
-    assign configopts   = reg2hw.configopts[csid];
-    assign command.csid = csid;
-  end : gen_multiple_devices
-
-  assign command.configopts.clkdiv   = configopts.clkdiv.q;
-  assign command.configopts.csnidle  = configopts.csnidle.q;
-  assign command.configopts.csnlead  = configopts.csnlead.q;
-  assign command.configopts.csntrail = configopts.csntrail.q;
-  assign command.configopts.full_cyc = configopts.fullcyc.q;
-  assign command.configopts.cpha     = configopts.cpha.q;
-  assign command.configopts.cpol     = configopts.cpol.q;
+  assign command.configopts.clkdiv   = reg2hw.configopts.clkdiv.q;
+  assign command.configopts.csnidle  = reg2hw.configopts.csnidle.q;
+  assign command.configopts.csnlead  = reg2hw.configopts.csnlead.q;
+  assign command.configopts.csntrail = reg2hw.configopts.csntrail.q;
+  assign command.configopts.full_cyc = reg2hw.configopts.fullcyc.q;
+  assign command.configopts.cpha     = reg2hw.configopts.cpha.q;
+  assign command.configopts.cpol     = reg2hw.configopts.cpol.q;
 
   assign command.segment.len         = reg2hw.command.len.q;
   assign command.segment.csaat       = reg2hw.command.csaat.q;

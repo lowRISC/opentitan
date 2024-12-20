@@ -7,23 +7,17 @@ class spi_host_smoke_vseq extends spi_host_tx_rx_vseq;
   `uvm_object_utils(spi_host_smoke_vseq)
   `uvm_object_new
 
- constraint spi_config_regs_c {
-      // configopts regs
-      foreach (spi_config_regs.cpol[i]) {spi_config_regs.cpol[i] == 1'b0;}
-      foreach (spi_config_regs.cpha[i]) {spi_config_regs.cpha[i] == 1'b0;}
-      foreach (spi_config_regs.csnlead[i]) {
-        spi_config_regs.csnlead[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
-      foreach (spi_config_regs.csntrail[i]) {
-        spi_config_regs.csntrail[i] == cfg.seq_cfg.host_spi_max_csn_latency;
-      }
+  constraint spi_config_regs_c {
+    // configopts regs
+    spi_config_regs.cpol == 1'b0;
+    spi_config_regs.cpha == 1'b0;
+    spi_config_regs.csnlead == cfg.seq_cfg.host_spi_max_csn_latency;
+    spi_config_regs.csntrail == cfg.seq_cfg.host_spi_max_csn_latency;
   }
 
- constraint spi_config_regs_clkdiv_c {
-   foreach (spi_config_regs.clkdiv[i]) {
-     spi_config_regs.clkdiv[i] <= cfg.seq_cfg.host_spi_middle_clkdiv;
-   }
- }
+  constraint spi_config_regs_clkdiv_c {
+    spi_config_regs.clkdiv <= cfg.seq_cfg.host_spi_middle_clkdiv;
+  }
 
 
   virtual task body();
