@@ -91,12 +91,12 @@ Condition 8 "2721421913" "(gen_normal_fifo.fifo_wptr == (gen_normal_fifo.fifo_rp
 ANNOTATION: "[UNR] this fifo can never be full, because transactions can drain into u_rspfifo"
 Condition 6 "342355206" "(((~gen_normal_fifo.full)) & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "01")
 
-CHECKSUM: "2574923469 3226983296"
+CHECKSUM: "432309571 1160560609"
 INSTANCE: tb.dut.u_tlul_adapter_sram.u_sram_byte
 ANNOTATION: "[UNR] this should not happen because the read latency of prim_ram_1p_scr is always 1 cycle"
-Branch 1 "4121297012" "gen_integ_handling.state_q" (4) "gen_integ_handling.state_q StWaitRd ,-,-,1,0,-"
+Branch 1 "2309313685" "gen_integ_handling.state_q" (11) "gen_integ_handling.state_q StWaitRd ,-,-,-,-,-,-,-,1,0,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-"
 ANNOTATION: "[UNR] this should not happen because prim_ram_1p_scr can always accept a read or write operation"
-Branch 1 "4121297012" "gen_integ_handling.state_q" (7) "gen_integ_handling.state_q StWriteCmd ,-,-,-,-,0"
+Branch 1 "2309313685" "gen_integ_handling.state_q" (14) "gen_integ_handling.state_q StWriteCmd ,-,-,-,-,-,-,-,-,-,0,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-"
 
 CHECKSUM: "835220981 2115631974"
 INSTANCE: tb.dut.u_tlul_adapter_sram.u_sramreqfifo
