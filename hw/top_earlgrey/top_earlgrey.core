@@ -35,7 +35,6 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:constants:jtag_id_pkg
       - lowrisc:constants:ibex_pmp_reset_pkg
-      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_earlgrey:xbar_main
@@ -43,10 +42,11 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler
       - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:opentitan:top_earlgrey_flash_ctrl
-      - lowrisc:opentitan:top_earlgrey_rstmgr
-      - lowrisc:opentitan:top_earlgrey_rv_plic
+      - lowrisc:opentitan:top_earlgrey_otp_ctrl
       - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:opentitan:top_earlgrey_pwrmgr
+      - lowrisc:opentitan:top_earlgrey_rstmgr
+      - lowrisc:opentitan:top_earlgrey_rv_plic
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
