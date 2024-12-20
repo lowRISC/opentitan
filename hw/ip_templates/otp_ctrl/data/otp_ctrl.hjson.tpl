@@ -124,19 +124,19 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "otp_ctrl_pkg::lfsr_seed_t"
+      type:      "otp_ctrl_top_specific_pkg::lfsr_seed_t"
       randcount: "40",
       randtype:  "data", // randomize randcount databits
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "otp_ctrl_pkg::lfsr_perm_t"
+      type:      "otp_ctrl_top_specific_pkg::lfsr_perm_t"
       randcount: "40",
       randtype:  "perm", // random permutation for randcount elements
     }
     { name:      "RndCnstScrmblKeyInit",
       desc:      "Compile-time random permutation for scrambling key/nonce register reset value",
-      type:      "otp_ctrl_pkg::scrmbl_key_init_t"
+      type:      "otp_ctrl_top_specific_pkg::scrmbl_key_init_t"
       randcount: "256",
       randtype:  "data", // random permutation for randcount elements
     }
