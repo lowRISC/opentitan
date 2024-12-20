@@ -38,3 +38,8 @@ sh_binary(
     name = "modid_check",
     srcs = ["modid_check.sh"],
 )
+
+sh_binary(
+    name = "run_and_capture",
+    srcs = ["run_and_capture.sh"],
+)
