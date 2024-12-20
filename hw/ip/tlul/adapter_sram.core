@@ -8,8 +8,10 @@ description: "TL-UL to SRAM adapter (device)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:util
       - lowrisc:prim:assert
+      - lowrisc:prim:flop
+      - lowrisc:prim:sec_anchor
+      - lowrisc:prim:util
       - lowrisc:tlul:common
     files:
       - rtl/tlul_sram_byte.sv
