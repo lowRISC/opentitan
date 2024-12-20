@@ -637,7 +637,19 @@ The individual bundled wires are associated with the fields rather than the full
 
 ### Error responses
 
-Writes and reads that target addresses that are not represented within the register list typically return an error.
+Writes and reads that target addresses that are not mapped within the register list may return an error.
+Whether an error is returned depends on the target address and the number of address bits used internally:
+* Accesses to unmapped target addresses that can be fully represented with the internally used address bits typically return an error.
+* Since excess address bits are stripped off during address decoding, other accesses are mapped to the internally available address space.
+  They typically return an error if the resulting address is not mapped.
+  If the resulting address is mapped, the request is forwarded to the corresponding register and no error is returned.
+
+For example, consider a module with registers in the address range `0x0` to `0x84` and that hence uses 8 address bits internally.
+* A request to address `0x88` can be represented using the 8 internal address bits but there is no register mapped at this address.
+  Typical implementations return an error for such a request.
+* In contrast, a request to address `0x184` is mapped to address `0x84` internally which is a valid address.
+  No error is returned for this request.
+
 Other error responses include for the following reasons:
 
 * TL-UL `a_opcode` illegal value
