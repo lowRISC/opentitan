@@ -10,9 +10,9 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 
 // TODO: make this toplevel agnostic.
-#include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/task.h"
-#include "external/freertos/portable/GCC/RISC-V/portmacro.h"
+#include "FreeRTOS.h"
+#include "portmacro.h"
+#include "task.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 

@@ -28,5 +28,8 @@ cc_library(
         "include/profile/InstrProfData.inc",
         "lib/profile/InstrProfiling.h",
     ],
-    includes = ["include"],
+    includes = [
+        "include",
+        "lib/profile",
+    ],
 )

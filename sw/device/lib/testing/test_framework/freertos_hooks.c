@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "external/freertos/include/FreeRTOS.h"
-#include "external/freertos/include/task.h"
+#include "FreeRTOS.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
+#include "task.h"
 
 // NOTE: the function names below do NOT, and cannot, conform to the style
 // guide, since they are specific implementations of FreeRTOS defined functions.

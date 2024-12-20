@@ -4,7 +4,11 @@
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
-def hyperdebug_repos():
+hyperdebug = module_extension(
+    implementation = lambda _: _hyperdebug_repos(),
+)
+
+def _hyperdebug_repos():
     http_archive(
         name = "hyperdebug_firmware",
         urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20241211_02/hyperdebug-firmware.tar.gz"],

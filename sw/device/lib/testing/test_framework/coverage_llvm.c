@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "external/llvm_compiler_rt/lib/profile/InstrProfiling.h"
+#include "InstrProfiling.h"
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
