@@ -104,7 +104,7 @@ module tb;
 
   // Instantitate the memory backdoor util instance.
   `define SRAM_CTRL_MEM_HIER \
-      tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.gen_generic.u_impl_generic.mem
+      tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.u_mem.mem
 
   initial begin
     mem_bkdr_util m_mem_bkdr_util;

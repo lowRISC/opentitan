@@ -13,7 +13,6 @@ filesets:
       - lowrisc:prim:util
       - lowrisc:prim:diff_decode # for prim_alert_sender/receiver
       - lowrisc:prim:pad_wrapper
-      - lowrisc:prim:prim_pkg
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:clock_inv
       - lowrisc:prim:buf

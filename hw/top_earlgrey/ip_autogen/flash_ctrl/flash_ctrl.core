@@ -21,6 +21,8 @@ filesets:
       - lowrisc:prim:lfsr
       - lowrisc:prim:secded
       - lowrisc:prim:sparse_fsm
+      # TODO: prim_legacy_pkg is deprecated
+      - lowrisc:prim:prim_legacy_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:opentitan:top_earlgrey_flash_ctrl_pkg
       - lowrisc:opentitan:top_earlgrey_flash_ctrl_reg
@@ -70,6 +72,10 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -88,6 +94,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     parameters:
       - SYNTHESIS=true
     tools:

@@ -1,0 +1,26 @@
+From 2cc68d159fab356d9462ad0b83714f6d5b5123d0 Mon Sep 17 00:00:00 2001
+From: Hugo McNally <hugo.mcnally@gmail.com>
+Date: Tue, 10 Dec 2024 06:02:11 +0000
+Subject: [PATCH 1/2] [dv] Added concrete prim implementation to all simulation
+ top levels
+
+Signed-off-by: Hugo McNally <hugo.mcnally@gmail.com>
+---
+ uvm/icache/dv/ibex_icache_sim.core | 1 +
+ 1 file changed, 1 insertion(+)
+
+diff --git a/uvm/icache/dv/ibex_icache_sim.core b/dv/uvm/icache/dv/ibex_icache_sim.core
+index 473007cf67..62ee146751 100644
+--- a/uvm/icache/dv/ibex_icache_sim.core
++++ b/uvm/icache/dv/ibex_icache_sim.core
+@@ -14,6 +14,7 @@ filesets:
+       - lowrisc:dv:ibex_icache_test
+       - lowrisc:dv:ibex_icache_fcov
+       - lowrisc:prim:ram_1p_scr
++      - lowrisc:prim_generic:all
+     files:
+       - tb/tb.sv
+     file_type: systemVerilogSource
+-- 
+2.43.0
+

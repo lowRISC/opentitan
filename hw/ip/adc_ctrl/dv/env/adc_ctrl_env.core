@@ -40,6 +40,7 @@ generate:
     parameters:
       name: adc_ctrl
       ip_hjson: ../../data/adc_ctrl.hjson
+    position: prepend
 
 targets:
   default:

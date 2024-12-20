@@ -14,6 +14,8 @@ filesets:
       - "fileset_partner ? (partner:systems:scan_role_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast)"
       - "!fileset_partner ? (lowrisc:systems:scan_role_pkg)"
+      - "!fileset_partner ? (lowrisc:prim:prim_legacy_pkg)"
+      - "!fileset_partner ? (lowrisc:prim_generic:all)"
     files:
       - rtl/autogen/chip_earlgrey_asic.sv
     file_type: systemVerilogSource
@@ -40,6 +42,10 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
 
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
+
 parameters:
   SYNTHESIS:
     datatype: bool
@@ -63,6 +69,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     parameters:
       - SYNTHESIS=true
     tools:

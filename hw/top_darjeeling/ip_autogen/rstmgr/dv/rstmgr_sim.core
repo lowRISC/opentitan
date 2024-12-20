@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:rstmgr_test
       - lowrisc:dv:rstmgr_sva
+      - lowrisc:prim_generic:all
     files:
       - tb.sv
       - cov/rstmgr_cov_bind.sv
