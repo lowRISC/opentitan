@@ -32,7 +32,7 @@
       otp_mutate: true
       lc_states: ["RAW"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_unlock_raw_functest"]
     }
 
     {
@@ -89,7 +89,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_yield_test_functest_test_unlocked0"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_yield_test_functest_test_unlocked0"]
     }
 
     {
@@ -116,7 +116,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_ast_test_execution_test_unlocked0_functest"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_ast_test_execution_test_unlocked0_functest"]
     }
 
     {
@@ -147,7 +147,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_device_info_flash_wr_test_unlocked0_to_prod_functest"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_device_info_flash_wr_test_unlocked0_to_prod_functest"]
     }
 
     {
@@ -188,7 +188,7 @@
       otp_mutate: true
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_cp_test_lock_functest"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_cp_test_lock_functest"]
     }
 
     {
@@ -530,7 +530,7 @@
       otp_mutate: false
       lc_states: ["TEST_UNLOCKED"]
       tests: []
-      bazel: ["sw/device/silicon_creator/manuf/tests:manuf_sram_program_crc_test_unlocked0_functest"]
+      bazel: ["//sw/device/silicon_creator/manuf/tests:manuf_sram_program_crc_test_unlocked0_functest"]
     }
   ]
 }
