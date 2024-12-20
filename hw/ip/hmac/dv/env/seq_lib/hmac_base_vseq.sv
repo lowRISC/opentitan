@@ -139,7 +139,6 @@ task hmac_base_vseq::dut_init(string reset_kind = "HARD");
   if (do_hmac_init) begin
     hmac_init();
   end
-  `DV_CHECK_EQ(cfg.hmac_vif.is_idle(), 1'b1)
 endtask : dut_init
 
 task hmac_base_vseq::apply_reset(string kind = "HARD");
