@@ -8991,6 +8991,15 @@
           name_top: RvCoreIbexICacheScramble
         }
         {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          type: int unsigned
+          default: 2
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexICacheNWays
+        }
+        {
           name: BranchPredictor
           desc: Branch predictor
           type: bit
@@ -9084,7 +9093,7 @@
           index: -1
         }
         {
-          name: ram_cfg
+          name: ram_cfg_icache_tag
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: uni
@@ -9093,6 +9102,66 @@
           inst_name: rv_core_ibex
           default: ""
           top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_icache_tag
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width:
+          {
+            name: ICacheNWays
+            desc: Number of instruction cache ways
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 2
+            local: true
+            expose: true
+            name_top: RvCoreIbexICacheNWays
+          }
+          inst_name: rv_core_ibex
+          default: ""
+          external: true
+          top_signame: rv_core_ibex_icache_tag_ram_1p_cfg_rsp
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ram_cfg_icache_data
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_icache_data
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width:
+          {
+            name: ICacheNWays
+            desc: Number of instruction cache ways
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 2
+            local: true
+            expose: true
+            name_top: RvCoreIbexICacheNWays
+          }
+          inst_name: rv_core_ibex
+          default: ""
+          external: true
+          top_signame: rv_core_ibex_icache_data_ram_1p_cfg_rsp
+          conn_type: false
           index: -1
         }
         {
@@ -9472,7 +9541,8 @@
         sram_ctrl_main.cfg
         sram_ctrl_ret_aon.cfg
         sram_ctrl_mbox.cfg
-        rv_core_ibex.ram_cfg
+        rv_core_ibex.ram_cfg_icache_tag
+        rv_core_ibex.ram_cfg_icache_data
       ]
       ast.spi_ram_2p_cfg:
       [
@@ -10122,6 +10192,8 @@
       sram_ctrl_mbox.cfg_rsp: sram_ctrl_mbox_ram_1p_cfg_rsp
       otbn.ram_cfg_rsp_imem: otbn_imem_ram_1p_cfg_rsp
       otbn.ram_cfg_rsp_dmem: otbn_dmem_ram_1p_cfg_rsp
+      rv_core_ibex.ram_cfg_rsp_icache_tag: rv_core_ibex_icache_tag_ram_1p_cfg_rsp
+      rv_core_ibex.ram_cfg_rsp_icache_data: rv_core_ibex_icache_data_ram_1p_cfg_rsp
       spi_device.ram_cfg_rsp_sys2spi: spi_device_ram_2p_cfg_rsp_sys2spi
       spi_device.ram_cfg_rsp_spi2sys: spi_device_ram_2p_cfg_rsp_spi2sys
       pwrmgr_aon.boot_status: pwrmgr_boot_status
@@ -23099,7 +23171,7 @@
         index: -1
       }
       {
-        name: ram_cfg
+        name: ram_cfg_icache_tag
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: uni
@@ -23108,6 +23180,66 @@
         inst_name: rv_core_ibex
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_icache_tag
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        inst_name: rv_core_ibex
+        default: ""
+        external: true
+        top_signame: rv_core_ibex_icache_tag_ram_1p_cfg_rsp
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ram_cfg_icache_data
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_icache_data
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        inst_name: rv_core_ibex
+        default: ""
+        external: true
+        top_signame: rv_core_ibex_icache_data_ram_1p_cfg_rsp
+        conn_type: false
         index: -1
       }
       {
@@ -24650,6 +24782,50 @@
         conn_type: false
         index: -1
         netname: otbn_dmem_ram_1p_cfg_rsp
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        signame: rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: rv_core_ibex_icache_tag_ram_1p_cfg_rsp
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        signame: rv_core_ibex_icache_data_ram_1p_cfg_rsp_o
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: rv_core_ibex_icache_data_ram_1p_cfg_rsp
       }
       {
         package: prim_ram_2p_pkg

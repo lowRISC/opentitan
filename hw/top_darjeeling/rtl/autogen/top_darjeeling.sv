@@ -171,6 +171,8 @@ module top_darjeeling #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       sram_ctrl_mbox_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_data_ram_1p_cfg_rsp_o,
   output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_sys2spi_o,
   output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_spi2sys_o,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
@@ -292,6 +294,7 @@ module top_darjeeling #(
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
+  localparam int unsigned RvCoreIbexICacheNWays = 2;
 
   // Signals
   logic [3:0] mio_p2d;
@@ -2505,6 +2508,7 @@ module top_darjeeling #(
     .ICache(RvCoreIbexICache),
     .ICacheECC(RvCoreIbexICacheECC),
     .ICacheScramble(RvCoreIbexICacheScramble),
+    .ICacheNWays(RvCoreIbexICacheNWays),
     .BranchPredictor(RvCoreIbexBranchPredictor),
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
     .DbgHwBreakNum(RvCoreIbexDbgHwBreakNum),
@@ -2524,7 +2528,10 @@ module top_darjeeling #(
 
       // Inter-module signals
       .rst_cpu_n_o(),
-      .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_tag_o(rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o),
+      .ram_cfg_icache_data_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_data_o(rv_core_ibex_icache_data_ram_1p_cfg_rsp_o),
       .hart_id_i(rv_core_ibex_hart_id),
       .boot_addr_i(rv_core_ibex_boot_addr),
       .irq_software_i(rv_plic_msip),

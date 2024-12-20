@@ -69,8 +69,31 @@
 
     { struct:  "ram_1p_cfg",
       type:    "uni",
-      name:    "ram_cfg",
+      name:    "ram_cfg_icache_tag",
       act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_tag",
+      width:   "ICacheNWays",
+      act:     "req",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg",
+      type:    "uni",
+      name:    "ram_cfg_icache_data",
+      act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_data",
+      width:   "ICacheNWays",
+      act:     "req",
       package: "prim_ram_1p_pkg",
     },
 
@@ -364,6 +387,14 @@
       default: "0"
       desc:    "Scramble instruction cach"
       local:   "false"
+      expose:  "true"
+    },
+
+    { name:    "ICacheNWays"
+      type:    "int unsigned"
+      default: "2"
+      desc:    "Number of instruction cache ways"
+      local:   "true"
       expose:  "true"
     },
 
