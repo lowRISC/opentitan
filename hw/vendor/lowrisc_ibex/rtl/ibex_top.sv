@@ -604,6 +604,7 @@ module ibex_top import ibex_pkg::*; #(
           .raddr_o          (),
           .rerror_o         (),
           .cfg_i            (ram_cfg_i),
+          .cfg_rsp_o        (),  // TODO: Implement in vendored code
           .wr_collision_o   (),
           .write_pending_o  (),
 
@@ -641,6 +642,7 @@ module ibex_top import ibex_pkg::*; #(
           .raddr_o          (),
           .rerror_o         (),
           .cfg_i            (ram_cfg_i),
+          .cfg_rsp_o        (),  // TODO: Implement in vendored code
           .wr_collision_o   (),
           .write_pending_o  (),
 
@@ -695,7 +697,8 @@ module ibex_top import ibex_pkg::*; #(
           .wmask_i     ({TagSizeECC{1'b1}}),
 
           .rdata_o     (ic_tag_rdata[way]),
-          .cfg_i       (ram_cfg_i)
+          .cfg_i       (ram_cfg_i),
+          .cfg_rsp_o   ()  // TODO: Implement in vendored code
         );
 
         // Data RAM instantiation
@@ -714,7 +717,8 @@ module ibex_top import ibex_pkg::*; #(
           .wmask_i     ({LineSizeECC{1'b1}}),
 
           .rdata_o     (ic_data_rdata[way]),
-          .cfg_i       (ram_cfg_i)
+          .cfg_i       (ram_cfg_i),
+          .cfg_rsp_o   ()  // TODO: Implement in vendored code
         );
 
         assign icache_tag_alert  = '{default:'b0};

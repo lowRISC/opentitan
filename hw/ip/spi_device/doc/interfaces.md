@@ -18,13 +18,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name   | Package::Struct             | Type    | Act   |   Width | Description   |
-|:------------|:----------------------------|:--------|:------|--------:|:--------------|
-| ram_cfg     | prim_ram_2p_pkg::ram_2p_cfg | uni     | rcv   |       1 |               |
-| passthrough | spi_device_pkg::passthrough | req_rsp | req   |       1 |               |
-| mbist_en    | logic                       | uni     | rcv   |       1 |               |
-| sck_monitor | logic                       | uni     | req   |       1 |               |
-| tl          | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name           | Package::Struct             | Type    | Act   |   Width | Description   |
+|:--------------------|:----------------------------|:--------|:------|--------:|:--------------|
+| ram_cfg_sys2spi     | prim_ram_2p_pkg::ram_2p_cfg | uni     | rcv   |       1 |               |
+| ram_cfg_rsp_sys2spi | prim_ram_2p_pkg::ram_2p_cfg | uni     | req   |       1 |               |
+| ram_cfg_spi2sys     | prim_ram_2p_pkg::ram_2p_cfg | uni     | rcv   |       1 |               |
+| ram_cfg_rsp_spi2sys | prim_ram_2p_pkg::ram_2p_cfg | uni     | req   |       1 |               |
+| passthrough         | spi_device_pkg::passthrough | req_rsp | req   |       1 |               |
+| mbist_en            | logic                       | uni     | rcv   |       1 |               |
+| sck_monitor         | logic                       | uni     | req   |       1 |               |
+| tl                  | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 

@@ -10,18 +10,21 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct             | Type    | Act   |   Width | Description   |
-|:---------------|:----------------------------|:--------|:------|--------:|:--------------|
-| otbn_otp_key   | otp_ctrl_pkg::otbn_otp_key  | req_rsp | req   |       1 |               |
-| edn_rnd        | edn_pkg::edn                | req_rsp | req   |       1 |               |
-| edn_urnd       | edn_pkg::edn                | req_rsp | req   |       1 |               |
-| idle           | prim_mubi_pkg::mubi4        | uni     | req   |       1 |               |
-| ram_cfg        | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |               |
-| lc_escalate_en | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| lc_rma_req     | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| lc_rma_ack     | lc_ctrl_pkg::lc_tx          | uni     | req   |       1 |               |
-| keymgr_key     | keymgr_pkg::otbn_key_req    | uni     | rcv   |       1 |               |
-| tl             | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name        | Package::Struct                 | Type    | Act   |   Width | Description   |
+|:-----------------|:--------------------------------|:--------|:------|--------:|:--------------|
+| otbn_otp_key     | otp_ctrl_pkg::otbn_otp_key      | req_rsp | req   |       1 |               |
+| edn_rnd          | edn_pkg::edn                    | req_rsp | req   |       1 |               |
+| edn_urnd         | edn_pkg::edn                    | req_rsp | req   |       1 |               |
+| idle             | prim_mubi_pkg::mubi4            | uni     | req   |       1 |               |
+| ram_cfg_imem     | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |               |
+| ram_cfg_dmem     | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |               |
+| ram_cfg_rsp_imem | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |               |
+| ram_cfg_rsp_dmem | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |               |
+| lc_escalate_en   | lc_ctrl_pkg::lc_tx              | uni     | rcv   |       1 |               |
+| lc_rma_req       | lc_ctrl_pkg::lc_tx              | uni     | rcv   |       1 |               |
+| lc_rma_ack       | lc_ctrl_pkg::lc_tx              | uni     | req   |       1 |               |
+| keymgr_key       | keymgr_pkg::otbn_key_req        | uni     | rcv   |       1 |               |
+| tl               | tlul_pkg::tl                    | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 
