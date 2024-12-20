@@ -7,7 +7,8 @@ description: "OTP_CTRL functional coverage and bind files"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:otp_ctrl
+      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:ip:otp_ctrl_top_specific_pkg
 
   files_dv:
     depend:

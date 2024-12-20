@@ -179,7 +179,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
     if (is_secret(addr) || is_sw_digest(addr)) csr_wr(ral.direct_access_wdata[1], wdata1);
 
     do_otp_wr = 1;
-    csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiWrite));
+    csr_wr(ral.direct_access_cmd, int'(otp_ctrl_top_specific_pkg::DaiWrite));
     `uvm_info(`gfn, $sformatf("DAI write, address %0h, data0 %0h data1 %0h, is_secret = %0b",
               addr, wdata0, wdata1, is_secret(addr)), UVM_DEBUG)
 
@@ -207,7 +207,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
 
     csr_wr(ral.direct_access_address, addr);
     do_otp_rd = 1;
-    csr_wr(ral.direct_access_cmd, int'(otp_ctrl_pkg::DaiRead));
+    csr_wr(ral.direct_access_cmd, int'(otp_ctrl_top_specific_pkg::DaiRead));
 
     if (cfg.zero_delays && is_valid_dai_op &&
         cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off) begin
@@ -238,7 +238,7 @@ class otp_ctrl_base_vseq extends cip_base_vseq #(
   virtual task cal_digest(int part_idx);
     bit [TL_DW-1:0] val;
     csr_wr(ral.direct_access_address, PART_BASE_ADDRS[part_idx]);
-    csr_wr(ral.direct_access_cmd, otp_ctrl_pkg::DaiDigest);
+    csr_wr(ral.direct_access_cmd, otp_ctrl_top_specific_pkg::DaiDigest);
 
     if (cfg.zero_delays && is_valid_dai_op &&
         cfg.otp_ctrl_vif.lc_escalate_en_i == lc_ctrl_pkg::Off) begin

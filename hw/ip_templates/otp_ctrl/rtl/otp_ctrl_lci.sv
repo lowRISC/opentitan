@@ -11,6 +11,7 @@ module otp_ctrl_lci
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_top_specific_pkg::*;
 #(
   // Lifecycle partition information
   parameter part_info_t Info = PartInfoDefault

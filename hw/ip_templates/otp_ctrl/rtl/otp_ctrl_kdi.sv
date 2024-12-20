@@ -11,6 +11,7 @@ module otp_ctrl_kdi
   import otp_ctrl_pkg::*;
   import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
+  import otp_ctrl_top_specific_pkg::*;
 #(
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
 ) (

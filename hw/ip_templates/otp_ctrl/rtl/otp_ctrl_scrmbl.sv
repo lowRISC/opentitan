@@ -72,6 +72,7 @@
 
 module otp_ctrl_scrmbl
   import otp_ctrl_pkg::*;
+  import otp_ctrl_top_specific_pkg::*;
   import otp_ctrl_part_pkg::*;
 (
   input                               clk_i,
