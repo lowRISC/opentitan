@@ -93,6 +93,7 @@ module sim_sram #(
       .DataBitsPerMask(WidthBytes)
     ) u_sram (
       .clk_i,
+      .rst_ni,
       .req_i  (sram_req),
       .write_i(sram_we),
       .addr_i (sram_addr),

@@ -15,6 +15,7 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,
+  input  logic             rst_ni,
 
   input  logic             req_i,
   input  logic             write_i,
@@ -41,8 +42,8 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
     logic wr_en;
     assign wr_en = write_i & wmask_i[0];
 
-    logic unused_cfg_i;
-    assign unused_cfg_i = cfg_i;
+    logic unused_signals;
+    assign unused_signals = ^{rst_ni, cfg_i};
     assign cfg_rsp_o.done = 1'b0;
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
