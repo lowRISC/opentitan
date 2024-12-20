@@ -7,3 +7,6 @@
 # The prim generic module does not make use of the IO ports
 waive -rules INOUT_AS_IN -location {prim_generic_flash.sv} \
       -regexp {Inout port 'flash_.*_io' has no driver}
+
+waive -rules {RESET_USE} -location {prim_generic_flash_bank.sv} -regexp {rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set at prim_generic_flash_bank.sv} \
+      -comment "rst_ni is the asynchronous reset of prim_ram_1p_adv. It's unused in the generic implementation, but other implementations may use it."

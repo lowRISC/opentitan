@@ -1,0 +1,35 @@
+From 3b121fa310582a7961b757fa9f870cff046679c1 Mon Sep 17 00:00:00 2001
+From: Robert Schilling <rschilling@rivosinc.com>
+Date: Mon, 23 Dec 2024 11:15:10 +0100
+Subject: [PATCH 1/1] [PATCH] Add rst to prim_ram_1p
+
+Signed-off-by: Robert Schilling <rschilling@rivosinc.com>
+---
+ uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
+
+diff --git a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
+index 7fa4678f..fef9e9a1 100644
+--- a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
++++ b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
+@@ -19,6 +19,7 @@ module prim_badbit_ram_1p #(
+   localparam int Aw              = $clog2(Depth)  // derived parameter
+ ) (
+   input  logic             clk_i,
++  input  logic             rst_ni,
+ 
+   input  logic             req_i,
+   input  logic             write_i,
+@@ -36,7 +37,8 @@ module prim_badbit_ram_1p #(
+     .DataBitsPerMask(DataBitsPerMask),
+     .MemInitFile    (MemInitFile)
+   ) u_mem (
+     .clk_i    (clk_i),
++    .rst_ni   (rst_ni),
+ 
+     .cfg_i    ('0),
+     .cfg_rsp_o(),
+     .req_i    (req_i),
+-- 
+2.47.0
+
