@@ -236,6 +236,7 @@ module top_earlgrey #(
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
+  localparam int unsigned RvCoreIbexICacheNWays = 2;
 
   // Signals
   logic [56:0] mio_p2d;
@@ -2672,6 +2673,7 @@ module top_earlgrey #(
     .ICache(RvCoreIbexICache),
     .ICacheECC(RvCoreIbexICacheECC),
     .ICacheScramble(RvCoreIbexICacheScramble),
+    .ICacheNWays(RvCoreIbexICacheNWays),
     .BranchPredictor(RvCoreIbexBranchPredictor),
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
     .DbgHwBreakNum(RvCoreIbexDbgHwBreakNum),
@@ -2689,7 +2691,10 @@ module top_earlgrey #(
 
       // Inter-module signals
       .rst_cpu_n_o(),
-      .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_tag_o(),
+      .ram_cfg_icache_data_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_data_o(),
       .hart_id_i(rv_core_ibex_hart_id),
       .boot_addr_i(rv_core_ibex_boot_addr),
       .irq_software_i(rv_plic_msip),

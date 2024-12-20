@@ -8693,6 +8693,15 @@
           name_top: RvCoreIbexICacheScramble
         }
         {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          type: int unsigned
+          default: 2
+          local: "true"
+          expose: "true"
+          name_top: RvCoreIbexICacheNWays
+        }
+        {
           name: BranchPredictor
           desc: Branch predictor
           type: bit
@@ -8768,7 +8777,7 @@
           index: -1
         }
         {
-          name: ram_cfg
+          name: ram_cfg_icache_tag
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: uni
@@ -8777,6 +8786,58 @@
           inst_name: rv_core_ibex
           default: ""
           top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_icache_tag
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width:
+          {
+            name: ICacheNWays
+            desc: Number of instruction cache ways
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 2
+            local: true
+            expose: true
+            name_top: RvCoreIbexICacheNWays
+          }
+          inst_name: rv_core_ibex
+          index: -1
+        }
+        {
+          name: ram_cfg_icache_data
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: rv_core_ibex
+          default: ""
+          top_signame: ast_ram_1p_cfg
+          index: -1
+        }
+        {
+          name: ram_cfg_rsp_icache_data
+          struct: ram_1p_cfg_rsp
+          package: prim_ram_1p_pkg
+          type: uni
+          act: req
+          width:
+          {
+            name: ICacheNWays
+            desc: Number of instruction cache ways
+            param_type: int unsigned
+            unpacked_dimensions: null
+            default: 2
+            local: true
+            expose: true
+            name_top: RvCoreIbexICacheNWays
+          }
+          inst_name: rv_core_ibex
           index: -1
         }
         {
@@ -9161,7 +9222,8 @@
         i2c2.ram_cfg
         sram_ctrl_main.cfg
         sram_ctrl_ret_aon.cfg
-        rv_core_ibex.ram_cfg
+        rv_core_ibex.ram_cfg_icache_tag
+        rv_core_ibex.ram_cfg_icache_data
       ]
       ast.spi_ram_2p_cfg:
       [
@@ -21714,7 +21776,7 @@
         index: -1
       }
       {
-        name: ram_cfg
+        name: ram_cfg_icache_tag
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: uni
@@ -21723,6 +21785,58 @@
         inst_name: rv_core_ibex
         default: ""
         top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_icache_tag
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        inst_name: rv_core_ibex
+        index: -1
+      }
+      {
+        name: ram_cfg_icache_data
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: rv_core_ibex
+        default: ""
+        top_signame: ast_ram_1p_cfg
+        index: -1
+      }
+      {
+        name: ram_cfg_rsp_icache_data
+        struct: ram_1p_cfg_rsp
+        package: prim_ram_1p_pkg
+        type: uni
+        act: req
+        width:
+        {
+          name: ICacheNWays
+          desc: Number of instruction cache ways
+          param_type: int unsigned
+          unpacked_dimensions: null
+          default: 2
+          local: true
+          expose: true
+          name_top: RvCoreIbexICacheNWays
+        }
+        inst_name: rv_core_ibex
         index: -1
       }
       {

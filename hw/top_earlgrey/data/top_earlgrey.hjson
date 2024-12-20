@@ -1083,7 +1083,8 @@
                                    'i2c2.ram_cfg',
                                    'sram_ctrl_main.cfg',
                                    'sram_ctrl_ret_aon.cfg',
-                                   'rv_core_ibex.ram_cfg'],
+                                   'rv_core_ibex.ram_cfg_icache_tag',
+                                   'rv_core_ibex.ram_cfg_icache_data'],
       'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg_sys2spi',
                                    'spi_device.ram_cfg_spi2sys']
       'ast.usb_ram_1p_cfg'      : ['usbdev.ram_cfg'],
