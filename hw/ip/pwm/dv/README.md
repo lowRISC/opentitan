@@ -65,7 +65,12 @@ parameter uint NUM_PWM_CHANNELS = 6;
   typedef struct packed {
     bit [15:0]   B;
     bit [15:0]   A;
-  } dc_blink_t;
+  } duty_cycle_t;
+
+  typedef struct packed {
+    bit [15:0]   Y;
+    bit [15:0]   X;
+  } blink_param_t;
 ```
 ### TL_agent
 PWM instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
@@ -99,8 +104,8 @@ Some of the most commonly-used tasks / functions are as follows:
 * set_reg_en(pwm_status_e state): enable registers for writing
 * set_cfg_reg(cfg_reg_t cfg_reg): program global configuration  (ClkDiv/DcResn/CntrEn))
 * set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables): used to enable and disable the different channels
-* set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value ,bit [3:0] resn) set the A and B values for channel
-* set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, dc_blink_t value): set X and Y value for pulse and heart bit
+* set_duty_cycle(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, duty_cycle_t value ,bit [3:0] resn) set the A and B values for channel
+* set_blink(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, blink_param_t value): set the X and Y values for blinking modes
 * set_param(bit [$bits(PWM_NUM_CHANNELS)-1:0] channel, param_reg_t value): set channel configuration (blink/heartbeat/phase)
 * shutdown_dut(): this will disable all channels as an indication for the scoreboard to verify all remaining items.
 
@@ -116,7 +121,7 @@ It creates the following analysis ports to retrieve the data monitored by corres
 * exp_item                   : It is used to store the expected item constructed from tl address and data channels.
 
 when a channel is configured to start sending pulses the first expected item is generated.
-Because of the way the PWM IP is design the first and the last pulse might not match the configuration settings.
+Because of the way the PWM IP is designed the first and the last pulse might not match the configuration settings.
 Therefore the scoreboard will wait until a channel is disabled before checking the output.
 Once a channel is disabled it will first discard the first two items received from the monitor.
 The is send because the channel was enabled and has no valid information.

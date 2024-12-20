@@ -16,8 +16,6 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   // type definitions
   typedef enum bit { CycleA = 1'b0, CycleB = 1'b1} state_e;
   typedef enum bit { LargeA = 1'b0, LargeB = 1'b1} dc_mod_e;
-  localparam int Init = 0;
-  localparam int LocalCount = 1;
 
   // Every time the state is changed either from A to B or B to A, the initial transaction checking
   // goes out of sync between checker and DUT. So, ignore_state_change is changed to 2 (SettleTime).
@@ -26,21 +24,19 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
   // global settings
   bit                               regwen                   =  0;
-  cfg_reg_t                         channel_cfg              = '0;
+  cfg_reg_t                         next_cfg                 = '0;
+  cfg_reg_t                         phase_cfg                = '0;
   bit [PWM_NUM_CHANNELS-1:0]        channel_en               = '0;
-  bit [PWM_NUM_CHANNELS-1:0]        prev_channel_en          = '0;
   bit [PWM_NUM_CHANNELS-1:0]        invert                   = '0;
+  bit [PWM_NUM_CHANNELS-1:0]        first_activation         = '1;
   state_e                           blink_state[PWM_NUM_CHANNELS] = '{default:CycleA};
   int                               blink_cnt[PWM_NUM_CHANNELS]   = '{default:0};
-  int                               ignore_start_pulse[PWM_NUM_CHANNELS]   = '{default:2};
-  int                               ignore_state_change[PWM_NUM_CHANNELS]   = '{default:0};
-  uint                              subcycle_cnt[PWM_NUM_CHANNELS]   = '{default:1};
+  int                               ignore_state_change[PWM_NUM_CHANNELS] = '{default:SettleTime};
   // bit 16 is added for overflow
   bit [16:0]                        int_dc[PWM_NUM_CHANNELS]   = '{default:0};
   param_reg_t                       channel_param[PWM_NUM_CHANNELS];
-  dc_blink_t                        duty_cycle[PWM_NUM_CHANNELS];
-  dc_blink_t                        blink[PWM_NUM_CHANNELS];
-  uint                              initial_dc[PWM_NUM_CHANNELS]   = '{default:0};
+  duty_cycle_t                      duty_cycle[PWM_NUM_CHANNELS];
+  blink_param_t                     blink[PWM_NUM_CHANNELS];
   string                            txt                      ="";
 
   // UVM phases
@@ -62,7 +58,7 @@ class pwm_scoreboard extends cip_base_scoreboard #(
 
   // Compute an expected pwm_item that we would like the monitor to see, based on the current
   // configuration registers.
-  extern task generate_exp_item(ref pwm_item item, input bit [PWM_NUM_CHANNELS-1:0] channel);
+  extern function void generate_exp_item(ref pwm_item item, input int unsigned channel);
 
 endclass : pwm_scoreboard
 
@@ -76,6 +72,7 @@ endfunction
 task pwm_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
 
+  // TODO: Decide whether we want to leave the processes running.
   forever begin
     `DV_SPINWAIT_EXIT(
       fork
@@ -130,36 +127,50 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     // for read, update predication at address phase and compare at data phase
     case (csr.get_name())
     "regwen": begin
-      regwen = item.a_data[0];
+      regwen = regwen & item.a_data[0];
       `uvm_info(`gfn, $sformatf("Register Write en: %0b", regwen), UVM_HIGH)
     end
 
     "pwm_en": begin
+      int unsigned prev_en = channel_en;
       channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
       foreach(channel_en[ii]) begin
-      bit pwm_en = get_field_val(ral.pwm_en[0].en[ii],item.a_data);
-        if (pwm_en)begin
-          `uvm_info(`gfn, $sformatf("detected toggle of channel[%d]", ii), UVM_HIGH)
+        if (channel_en[ii] & !prev_en[ii]) begin
+          `uvm_info(`gfn, $sformatf("detected enabling of channel[%d]", ii), UVM_HIGH)
+          // Set up the prediction state for this channel.
+          blink_cnt[ii] = blink[ii].X;
           blink_state[ii] = CycleA;
+          int_dc[ii] = duty_cycle[ii].A;
+
+          // Alas we presently must ignore the first couple of items because the PWM output is
+          // enabled with an arbitrary phase relationship to the shared phase counter.
+          ignore_state_change[ii] = SettleTime;
         end
-        txt = { txt, $sformatf("\n Channel[%d] : %0b",ii, channel_en[ii]) };
+        txt = $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]);
         if (cfg.en_cov) begin
           cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
                                  $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
         end
        end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
-        txt = "";
-        prev_channel_en = channel_en;
       end
 
     "cfg": begin
-        channel_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
-        channel_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
-        channel_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
+        next_cfg.ClkDiv = get_field_val(ral.cfg.clk_div, item.a_data);
+        next_cfg.DcResn = get_field_val(ral.cfg.dc_resn, item.a_data);
+        next_cfg.CntrEn = get_field_val(ral.cfg.cntr_en, item.a_data);
+        // Channel configuration is accepted only when phase counter becomes enabled.
+        if (next_cfg.CntrEn & ~phase_cfg.CntrEn) begin
+          phase_cfg.ClkDiv = next_cfg.ClkDiv;
+          phase_cfg.DcResn = next_cfg.DcResn;
+        end
+        // Enable bit is always accepted; it must be possible to enable/disable the phase counter
+        // at any point in its operation.
+        phase_cfg.CntrEn = next_cfg.CntrEn;
+        first_activation = '1;
         `uvm_info(`gfn,
                   $sformatf("PWM global cfg: \n Clk Div: %0h, \n Dc Resn: %0h, \n Cntr en: %0b:",
-                            channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn), UVM_HIGH)
+                            phase_cfg.ClkDiv, phase_cfg.DcResn, phase_cfg.CntrEn), UVM_HIGH)
       end
 
     "invert": begin
@@ -182,9 +193,9 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
         channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
         txt = $sformatf("\n Setting Param for channel[%d]", idx);
-        txt = { txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
-        txt = {txt,  $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
-        txt = {txt,  $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
+        txt = {txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
+        txt = {txt, $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
+        txt = {txt, $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
         `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
       end
 
@@ -208,11 +219,10 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       "blink_param_4",
       "blink_param_5": begin
         int idx = get_multireg_idx(csr_name);
-        blink[idx].A = get_field_val(ral.blink_param[idx].x, item.a_data);
-        blink[idx].B = get_field_val(ral.blink_param[idx].y, item.a_data);
+        blink[idx].X = get_field_val(ral.blink_param[idx].x, item.a_data);
+        blink[idx].Y = get_field_val(ral.blink_param[idx].y, item.a_data);
         `uvm_info(`gfn, $sformatf("\n Setting channel[%d] Blink X:%0h Y:%0h",
-                                  idx, blink[idx].A ,blink[idx].B), UVM_HIGH)
-        blink_cnt[idx] = blink[idx].A;
+                                  idx, blink[idx].X ,blink[idx].Y), UVM_HIGH)
       end
 
       default: begin
@@ -224,7 +234,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
   // Sample for coverage
   if (cfg.en_cov) begin
     cov.clock_cg.sample(cfg.get_clk_core_freq(), cfg.clk_rst_vif.clk_freq_mhz);
-    cov.cfg_cg.sample(channel_cfg.ClkDiv, channel_cfg.DcResn, channel_cfg.CntrEn);
+    cov.cfg_cg.sample(phase_cfg.ClkDiv, phase_cfg.DcResn, phase_cfg.CntrEn);
     foreach (channel_en[ii]) begin
      cov.pwm_chan_en_inv_cg.sample(channel_en, invert);
      cov.pwm_per_channel_cg.sample(
@@ -235,8 +245,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
        channel_param[ii].HtbtEn,
        duty_cycle[ii].A,
        duty_cycle[ii].B,
-       blink[ii].A,
-       blink[ii].B);
+       blink[ii].X,
+       blink[ii].Y);
     end
   end
 
@@ -260,224 +270,232 @@ endfunction
 task pwm_scoreboard::compare_trans(int channel);
   pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
   pwm_item input_item   = new($sformatf("input_item_%0d", channel));
-  string txt            = "";
-  int    p = 0;
+  // Count of predictions made.
+  int unsigned predicted = 0;
+  // Count of ignored sequence items.
+  int unsigned ignored = 0;
 
   forever begin
-    // as this DUT signals needs to be evaluated over time they are only evaluated when the channel
-    // is off. this way it is known what the first and last item are as they might deviate from the
-    // settings due to rounding and termination.
+    if (!cfg.under_reset) begin
+      item_fifo[channel].get(input_item);
+      generate_exp_item(compare_item, channel);
 
-    // The very first item will be when the monitor detects the first active edge
-    // it will have no information
-    // wait for the first expected item
-    if((ignore_start_pulse[channel] == 2 ) || ( ignore_start_pulse[channel] == 1 )) begin
-      item_fifo[channel].get(input_item);
-      generate_exp_item(compare_item, channel);
-    end else begin
-      item_fifo[channel].get(input_item);
-      generate_exp_item(compare_item, channel);
-      // After the state has switched to different state, settings will change
-      // Comparison ignored till two pulses
-      if(!((ignore_state_change[channel] == 2 ) || (ignore_state_change[channel] == 1 ))) begin
-        // ignore items when resolution would round the duty cycle to 0 or 100
-        if((compare_item.active_cnt != 0) && (compare_item.inactive_cnt != 0)
-           && (input_item.period == compare_item.period)) begin
-          if(!input_item.compare(compare_item)) begin
-            `uvm_error(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                                      channel, compare_item.sprint()),UVM_HIGH)
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                                      channel, input_item.sprint()),UVM_HIGH)
-          end else begin
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel),UVM_HIGH)
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
-                                      channel, compare_item.sprint()),UVM_HIGH)
-            `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
-                                      channel, input_item.sprint()),UVM_HIGH)
-          end
+      // TODO: We may always need to ignore the first detected sequence item after initialization,
+      // but we should probably permit only a single pulse cycle of leniency, and only for the
+      // first phase of blinking modes. Synchronize at the end of that phase.
+      if (ignore_state_change[channel] <= 0) begin
+        `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] EXPECTED CONTENT \n %s",
+                                  channel, compare_item.sprint()), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                                  channel, input_item.sprint()), UVM_MEDIUM)
+
+        if (!input_item.compare(compare_item)) begin
+          // Terminate at the first mismatch.
+          `uvm_fatal(`gfn, $sformatf("\n PWM :: Channel = [%0d] did not MATCH", channel))
+        end else begin
+          `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] MATCHED", channel), UVM_MEDIUM)
         end
+      end else begin
+        // It's important to be able to see what we're ignoring!
+        `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] IGNORED EXPECTATION %s",
+                                  channel, compare_item.sprint()), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("\n PWM :: Channel = [%0d] DUT CONTENT \n %s",
+                                  channel, input_item.sprint()), UVM_MEDIUM)
+        ignore_state_change[channel] -= 1 ;
+        ignored++;
       end
-      ignore_state_change[channel] -= 1 ;
+      predicted++;
+      if (|predicted) begin
+        `uvm_info(`gfn, $sformatf("Channel %0d ignored %0d%% so far", channel,
+                                  (ignored * 100) / predicted), UVM_MEDIUM)
+      end
+    end else begin
+      // Reset global state including regwen and phase counter.
+      regwen = 1'b1;
+      phase_cfg.ClkDiv = 'h8000;
+      phase_cfg.DcResn = 7;
+      channel_en[channel] = 1'b0;
+      invert[channel] = 'b0;
+      first_activation[channel] = 1'b1;
+      // Reset the channel configuration.
+      channel_param[channel].PhaseDelay = 'b0;
+      channel_param[channel].BlinkEn = 1'b0;
+      channel_param[channel].HtbtEn = 1'b0;
+      duty_cycle[channel].A = 'h7fff;
+      duty_cycle[channel].B = 'h7fff;
+      int_dc[channel] = 'h7fff;
+      blink[channel].X = 0;
+      blink[channel].Y = 0;
+      blink_cnt[channel] = 0;
+      blink_state[channel] = CycleA;
+      ignore_state_change[channel] = SettleTime;
+      // Wait until we exit reset.
+      cfg.clk_rst_vif.wait_clks(1);
     end
-    ignore_start_pulse[channel] -= 1 ;
   end
 endtask : compare_trans
 
-task pwm_scoreboard::generate_exp_item(ref pwm_item                     item,
-                                       input bit [PWM_NUM_CHANNELS-1:0] channel);
+function void pwm_scoreboard::generate_exp_item(ref pwm_item   item,
+                                                input int unsigned channel);
   uint beats_cycle     = 0;
   uint period          = 0;
-  uint high_cycles     = 0;
-  uint low_cycles      = 0;
-  uint phase_count     = 0;
-  dc_mod_e dc_mod;
+  uint active_cycles   = 0;
+  uint inactive_cycles = 0;
+  uint phase_delay;
+  // Expected duty cycle.
+  bit [16:0] dc = 0;
 
-  // compare duty cycle for modifier
-  dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
+  // Configured phase delay for this channel.
+  phase_delay = channel_param[channel].PhaseDelay;
 
-  if (channel_param[channel].BlinkEn) begin
+  if (!channel_en[channel]) begin
+    // If the channel is disabled it remains in its inactive state and phase has no meaning;
+    // we set it to zero because the `pwm_monitor` logic will be unable to measure the phase.
+    phase_delay = 0;
+  end else if (channel_param[channel].BlinkEn) begin
     // Unique case for violation report
     case (channel_param[channel].HtbtEn)
       1'b0: begin
         // When HTBT_EN is cleared, the standard blink behavior applies, meaning
         // that the output duty cycle alternates between DUTY_CYCLE.A for (BLINK_PARAM.X+1)
         // pulses and DUTY_CYCLE.B for (BLINK_PARAM.Y+1) pulses.
+        dc = (blink_state[channel] == CycleA) ? duty_cycle[channel].A : duty_cycle[channel].B;
+        // Advance the blink state.
         if (blink_cnt[channel] == 0) begin
           if (blink_state[channel] == CycleB) begin
             blink_state[channel] = CycleA;
-            blink_cnt[channel] = blink[channel].A;
-            int_dc[channel] = duty_cycle[channel].A;
+            blink_cnt[channel]   = blink[channel].X;
           end else begin
             blink_state[channel] = CycleB;
-            blink_cnt[channel]   = blink[channel].B;
-            int_dc[channel] = duty_cycle[channel].B;
+            blink_cnt[channel]   = blink[channel].Y;
           end
-          ignore_state_change[channel] = SettleTime ;
+          ignore_state_change[channel] = SettleTime;
         end else begin
-          int_dc[channel] = (blink_state[channel] == CycleA) ? duty_cycle[channel].A :
-            duty_cycle[channel].B;
-          blink_cnt[channel] -= 1;
+          blink_cnt[channel]--;
         end
       end
       1'b1: begin
+        dc_mod_e dc_mod = (duty_cycle[channel].A > duty_cycle[channel].B) ? LargeA : LargeB;
+
         // When HTBT_EN is set, the duty cycle increases (or decreases) linearly from
         // DUTY_CYCLE.A to DUTY_CYCLE.B and back, in steps of blink.B (BLINK_PARAM.Y+1) with an
         // increment (decrement) once every blink.A (BLINK_PARAM.X+1) PWM cycles.
-        case (blink_state[channel])
-          CycleA: begin
-            // current duty cycle
-            int_dc[channel] = (initial_dc[channel]) ? int_dc[channel] : duty_cycle[channel].A;
-            // when subcycle_cnt is equal to (BLINK_PARAM.X+1)
-            if (subcycle_cnt[channel] == (blink[channel].A + 1)) begin
+
+        // current duty cycle
+        dc = int_dc[channel];
+
+        if (blink_cnt[channel] == 0) begin
+          // Modify the duty cycle for the next interval of 'BLINK_PARAM.X+1' pulses cycles.
+          case (blink_state[channel])
+            CycleA: begin
               // increment (decrement) int_dc by (BLINK_PARAM.Y+1)
-              int_dc[channel] = (dc_mod == 1'b0) ?
-                (int_dc[channel] - (blink[channel].B + 1)) :
-                (int_dc[channel] + (blink[channel].B + 1));
-              // reset subcycle_cnt after increment (decrement)
-              subcycle_cnt[channel] = LocalCount;
-              ignore_state_change[channel] = SettleTime ;
-              initial_dc[channel]++;
-            end else begin
-              // else increment subcycle_cnt
-              subcycle_cnt[channel]++;
-              initial_dc[channel]++;
+              int_dc[channel] = (dc_mod == LargeA) ?
+                (int_dc[channel] - (blink[channel].Y + 1)) :
+                (int_dc[channel] + (blink[channel].Y + 1));
+              // enter CycleB when higher duty cycle is reached
+              case (dc_mod)
+                LargeA: begin
+                  if (int_dc[channel][16] || int_dc[channel] <= duty_cycle[channel].B) begin
+                    blink_state[channel] = CycleB;
+                  end
+                end
+                LargeB: begin
+                  if (int_dc[channel][16] || int_dc[channel] >= duty_cycle[channel].B) begin
+                    blink_state[channel] = CycleB;
+                  end
+                end
+                default: begin
+                  `uvm_info(`gfn, $sformatf("Error: Invalid: dc_mod == %s.", dc_mod), UVM_HIGH)
+                end
+              endcase
             end
-            // enter CycleB when duty cycle is reached
-            case (dc_mod)
-              LargeA: begin
-                if (int_dc[channel] <= duty_cycle[channel].B) begin
-                  blink_state[channel] = CycleB;
-                  subcycle_cnt[channel] = LocalCount;
-                  ignore_state_change[channel] = SettleTime ;
-                  initial_dc[channel] = Init;
+            CycleB: begin
+              int_dc[channel] = (dc_mod == LargeB) ?
+                (int_dc[channel] - (blink[channel].Y + 1)) :
+                (int_dc[channel] + (blink[channel].Y + 1));
+              case (dc_mod)
+                LargeB: begin
+                  if (int_dc[channel][16] || int_dc[channel] <= duty_cycle[channel].A) begin
+                    blink_state[channel] = CycleA;
+                  end
                 end
-              end
-              LargeB: begin
-                if (int_dc[channel] >= duty_cycle[channel].B) begin
-                  blink_state[channel] = CycleB;
-                  ignore_state_change[channel] = SettleTime ;
-                  subcycle_cnt[channel] = LocalCount;
-                  initial_dc[channel] = Init;
+                LargeA: begin
+                  if (int_dc[channel][16] || int_dc[channel] >= duty_cycle[channel].A) begin
+                    blink_state[channel] = CycleA;
+                  end
                 end
-              end
-              default: begin
-                `uvm_info(`gfn, $sformatf("Error: Invalid: dc_mod == %s.", dc_mod), UVM_HIGH)
-              end
-            endcase
-          end
-          CycleB: begin
-            if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
-              int_dc[channel] = (dc_mod == 1'b1) ?
-                (int_dc[channel] - (blink[channel].B + 1'b1)) :
-                (int_dc[channel] + (blink[channel].B + 1'b1));
-              subcycle_cnt[channel] = LocalCount;
-              ignore_state_change[channel] = SettleTime ;
-              initial_dc[channel]++;
-            end else begin
-              subcycle_cnt[channel]++;
-              initial_dc[channel]++;
+                default: begin
+                  `uvm_info(`gfn, $sformatf("Error: Invalid: dc_mod == %s.", dc_mod), UVM_HIGH)
+                end
+              endcase
             end
-            case (dc_mod)
-              LargeB: begin
-                if (int_dc[channel] <= duty_cycle[channel].A) begin
-                  blink_state[channel] = CycleA;
-                  ignore_state_change[channel] = SettleTime ;
-                  subcycle_cnt[channel] = LocalCount;
-                  initial_dc[channel] = Init;
-                end
-              end
-              LargeA: begin
-                if (int_dc[channel] >= duty_cycle[channel].A) begin
-                  blink_state[channel] = CycleA;
-                  ignore_state_change[channel] = SettleTime ;
-                  subcycle_cnt[channel] = LocalCount;
-                  initial_dc[channel] = Init;
-                end
-              end
-              default: begin
-                `uvm_info(`gfn, $sformatf("Error: Invalid: dc_mod == %s.", dc_mod), UVM_HIGH)
-              end
-            endcase
+            default: begin
+              blink_state[channel] = CycleA;
+            end
+          endcase
+          blink_cnt[channel] = blink[channel].X;
+          ignore_state_change[channel] = SettleTime;
+        end else begin
+          blink_cnt[channel]--;
+        end
+
+        if (dc_mod == LargeB) begin
+          // Overflow condition check
+          if (dc[16]) begin
+            if (cfg.en_cov) begin
+              cov.dc_uf_ovf_tb_cg.sample(channel, 1);
+            end
+            dc = 16'hffff;
           end
-          default: begin
-            blink_state[channel] = CycleA;
+        end else begin
+          // Underflow condition check
+          if (dc[16]) begin
+            if (cfg.en_cov) begin
+              cov.dc_uf_ovf_tb_cg.sample(channel, 0);
+            end
+            dc = 16'h0000;
           end
-        endcase
+        end
       end
       default: begin
         `uvm_info(`gfn, $sformatf("Error: Channel %d: HtbtEn == %b is not a valid state.",
           channel, channel_param[channel].HtbtEn), UVM_HIGH)
       end
     endcase
-  end else int_dc[channel] = duty_cycle[channel].A;
-  if ( subcycle_cnt[channel] == blink[channel].A + 1'b1 ) begin
-    ignore_state_change[channel] = SettleTime ;
+  end else begin
+    dc = duty_cycle[channel].A;
   end
 
-  // Overflow condition  check
-  if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B > duty_cycle[channel].A)) begin
-      if (cfg.en_cov) begin
-        cov.dc_uf_ovf_tb_cg.sample(channel, int_dc[channel][16]);
-      end
-      int_dc[channel][15:0] = 16'hFFFF;
-      initial_dc[channel] = LocalCount;
-      if (subcycle_cnt[channel] == (blink[channel].A + 1'b1)) begin
-          // This calculation is done to bring back previous state of DC before overflow occurs
-          // Instead of int_dc[channel] = int_dc[channel] - blink[channel].B + 1'b1 ;
-          int_dc[channel][15:0] = duty_cycle[channel].A + 1 +
-            (((16'hFFFF - duty_cycle[channel].A )/(blink[channel].B + 1'b1)))*blink[channel].B;
-          int_dc[channel][16]   = 0 ;
-          subcycle_cnt[channel] = LocalCount;
-      end
-      blink_state[channel] = CycleA;
-  end
-  // Underflow condition check
-  if ((int_dc[channel][16] == 1) && (duty_cycle[channel].B < duty_cycle[channel].A)) begin
-      if (cfg.en_cov) begin
-        cov.dc_uf_ovf_tb_cg.sample(channel, ~int_dc[channel][16]);
-      end
-      int_dc[channel] = int_dc[channel] + blink[channel].B + 1'b1 ;
-      int_dc[channel][16] = 0 ;
-      subcycle_cnt[channel] = LocalCount;
-      blink_state[channel] = CycleB;
-  end
-
-  beats_cycle = 2**(channel_cfg.DcResn + 1);
-  period      = beats_cycle * (channel_cfg.ClkDiv + 1);
-  high_cycles = (int_dc[channel][15:0] >> (16 - (channel_cfg.DcResn + 1)))
-                * (channel_cfg.ClkDiv + 1);
-  low_cycles  = period - high_cycles;
-  // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats, per beat the 16-bit phase counter
-  // increments by 2^(16-DC_RESN-1)(modulo 65536)
-  phase_count = (period / (2**(channel_cfg.DcResn + 1)) * (2**(16 - (channel_cfg.DcResn - 1))));
+  beats_cycle = 2**(phase_cfg.DcResn + 1);
+  period      = beats_cycle * (phase_cfg.ClkDiv + 1);
+  // This is the number of clock cycles within the pulse interval for which the output is asserted
+  // (normally this means the number of cycles for which it is high, but if `invert` is set then
+  //  it's the number of cycles for which the output is low).
+  active_cycles = (dc[15:0] >> (16 - (phase_cfg.DcResn + 1))) * (phase_cfg.ClkDiv + 1);
+  inactive_cycles = period - active_cycles;
 
   item.monitor_id      = channel;
   item.invert          = invert[channel];
   item.period          = period;
-  item.active_cnt      = high_cycles;
-  item.inactive_cnt    = low_cycles;
+  item.active_cnt      = active_cycles;
+  item.inactive_cnt    = inactive_cycles;
   item.duty_cycle      = item.get_duty_cycle();
-  item.phase           = (phase_count % 65536);
 
-endtask
+  // If this channel has never produced a transition to the active state then the `pwm_monitor` will
+  // not have been able to measure the phase.
+  if (first_activation[channel] && !active_cycles) begin
+    item.phase = pwm_item::PhaseUnknown;
+  end else begin
+    first_activation[channel] = 1'b0;
+
+    // Each PWM pulse cycle is divided into 2^DC_RESN+1 beats; per beat, the 16-bit phase counter
+    // increments by 2^(16-DC_RESN-1).
+    phase_delay = phase_delay & ~((16'h1 << (15 - phase_cfg.DcResn)) - 16'h1);
+
+    `uvm_info(`gfn, $sformatf("chan %d phase 0x%0x dcresn %0x mask %0x", channel,
+                              channel_param[channel].PhaseDelay, phase_cfg.DcResn,
+                              ~((16'h1 << (15 - phase_cfg.DcResn)) - 16'h1)), UVM_MEDIUM)
+    item.phase = phase_delay;
+  end
+
+endfunction
