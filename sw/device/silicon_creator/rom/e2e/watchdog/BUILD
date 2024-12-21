@@ -94,7 +94,7 @@ WATCHDOG_TEST_CASES = {
         ],
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
-            "//hw/ip/aon_timer/data:aon_timer_c_regs",
+            "//hw/top:aon_timer_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",

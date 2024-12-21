@@ -3,11 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
-    "//rules:autogen.bzl",
-    "autogen_hjson_c_header",
-    "autogen_hjson_rust_header",
-)
-load(
     "//rules/opentitan:defs.bzl",
     "CLEAR_KEY_SET",
     "DEFAULT_TEST_FAILURE_MSG",
@@ -21,34 +16,6 @@ load(
 )
 
 package(default_visibility = ["//visibility:public"])
-
-autogen_hjson_c_header(
-    name = "rv_plic_c_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/rv_plic:data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "rv_plic_rust_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/rv_plic:data/rv_plic.hjson",
-    ],
-)
-
-autogen_hjson_c_header(
-    name = "alert_handler_c_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/alert_handler:data/alert_handler.hjson",
-    ],
-)
-
-autogen_hjson_rust_header(
-    name = "alert_handler_rust_regs",
-    srcs = [
-        "//hw/top_earlgrey/ip_autogen/alert_handler:data/alert_handler.hjson",
-    ],
-)
 
 filegroup(
     name = "all_files",
@@ -72,7 +39,7 @@ fpga_cw310(
         "//sw/device/lib/arch:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -251,7 +218,7 @@ fpga_cw305(
         "//sw/device/lib/arch:fpga_cw305",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -284,7 +251,7 @@ fpga_cw340(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -417,7 +384,7 @@ silicon(
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = """
         --exec="transport init"
         --exec="bootstrap --clear-uart=true {firmware}"
@@ -486,7 +453,7 @@ sim_verilator(
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
     test_cmd = "testing-not-supported",
 )
 
@@ -549,7 +516,7 @@ sim_dv(
     otp_data_perm = "//hw/ip/otp_ctrl/data:data_perm",
     otp_mmap = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
     otp_seed = "//hw/ip/otp_ctrl/data:otp_seed",
-    rom_scramble_config = "//hw/top_earlgrey/data:autogen/top_earlgrey.gen.hjson",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
 )
 
 sim_dv(
