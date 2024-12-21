@@ -25,6 +25,7 @@
 
 module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   parameter  int Depth               = 16*1024, // Needs to be a power of 2 if NumAddrScrRounds > 0.
+  parameter  int InstDepth           = Depth,
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
   parameter  int DataBitsPerMask     = 8, // Needs to be set to 8 in case of byte parity.
   parameter  bit EnableParity        = 1, // Enable byte parity.
@@ -58,41 +59,43 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // use the same key, but they use a different IV
   localparam int DataKeyWidth        = 128,
   // Each 64 bit scrambling primitive requires a 64bit IV
-  localparam int NonceWidth          = 64 * NumParScr
+  localparam int NonceWidth          = 64 * NumParScr,
+  // Compute RAM tiling
+  localparam int NumRamInst          = int'($ceil(Depth / real'(InstDepth)))
 ) (
-  input                             clk_i,
-  input                             rst_ni,
+  input                                    clk_i,
+  input                                    rst_ni,
 
   // Key interface. Memory requests will not be granted if key_valid is set to 0.
-  input                             key_valid_i,
-  input        [DataKeyWidth-1:0]   key_i,
-  input        [NonceWidth-1:0]     nonce_i,
+  input                                    key_valid_i,
+  input        [DataKeyWidth-1:0]          key_i,
+  input        [NonceWidth-1:0]            nonce_i,
 
   // Interface to TL-UL SRAM adapter
-  input                             req_i,
-  output logic                      gnt_o,
-  input                             write_i,
-  input        [AddrWidth-1:0]      addr_i,
-  input        [Width-1:0]          wdata_i,
-  input        [Width-1:0]          wmask_i,  // Needs to be byte-aligned for parity
+  input                                    req_i,
+  output logic                             gnt_o,
+  input                                    write_i,
+  input        [AddrWidth-1:0]             addr_i,
+  input        [Width-1:0]                 wdata_i,
+  input        [Width-1:0]                 wmask_i,  // Needs to be byte-aligned for parity
   // On integrity errors, the primitive surpresses any real transaction to the memory.
-  input                             intg_error_i,
-  output logic [Width-1:0]          rdata_o,
-  output logic                      rvalid_o, // Read response (rdata_o) is valid
-  output logic [1:0]                rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
-  output logic [31:0]               raddr_o,  // Read address for error reporting.
+  input                                    intg_error_i,
+  output logic [Width-1:0]                 rdata_o,
+  output logic                             rvalid_o, // Read response (rdata_o) is valid
+  output logic [1:0]                       rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
+  output logic [31:0]                      raddr_o,  // Read address for error reporting.
 
   // config
-  input  ram_1p_cfg_t               cfg_i,
-  output ram_1p_cfg_rsp_t           cfg_rsp_o,
+  input  ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
+  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o,
 
 
   // Write currently pending inside this module.
-  output logic                      wr_collision_o,
-  output logic                      write_pending_o,
+  output logic                             wr_collision_o,
+  output logic                             write_pending_o,
 
   // When detecting multi-bit encoding errors, raise alert.
-  output logic                      alert_o
+  output logic                             alert_o
 );
 
   import prim_mubi_pkg::mubi4_t;
@@ -483,6 +486,7 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
   prim_ram_1p_adv #(
     .Depth(Depth),
+    .InstDepth(InstDepth),
     .Width(Width),
     .DataBitsPerMask(DataBitsPerMask),
     .EnableECC(1'b0),
