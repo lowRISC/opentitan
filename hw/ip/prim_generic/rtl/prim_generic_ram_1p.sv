@@ -14,15 +14,16 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
 
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
-  input  logic             clk_i,
+  input  logic                        clk_i,
 
-  input  logic             req_i,
-  input  logic             write_i,
-  input  logic [Aw-1:0]    addr_i,
-  input  logic [Width-1:0] wdata_i,
-  input  logic [Width-1:0] wmask_i,
-  output logic [Width-1:0] rdata_o, // Read data. Data is returned one cycle after req_i is high.
-  input ram_1p_cfg_t       cfg_i
+  input  logic                        req_i,
+  input  logic                        write_i,
+  input  logic [Aw-1:0]               addr_i,
+  input  logic [Width-1:0]            wdata_i,
+  input  logic [Width-1:0]            wmask_i,
+  output logic [Width-1:0]            rdata_o, // Read data. Data is returned one cycle after req_i
+                                               // is high.
+  input ram_1p_cfg_t                  cfg_i
 );
 
 // For certain synthesis experiments we compile the design with generic models to get an unmapped
