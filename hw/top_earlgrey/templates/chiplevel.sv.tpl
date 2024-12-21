@@ -1068,6 +1068,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
+    .sram_ctrl_main_cfg_i         ( '{ram_1p_cfg}              ),
+    .sram_ctrl_ret_aon_cfg_i      ( '{ram_1p_cfg}              ),
     .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
     .usb_ram_1p_cfg_i             ( usb_ram_1p_cfg             ),
 

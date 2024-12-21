@@ -47,6 +47,8 @@ module top_darjeeling #(
   // parameters for sensor_ctrl
   // parameters for soc_proxy
   // parameters for sram_ctrl_ret_aon
+  parameter int SramCtrlRetAonInstSize = 4096,
+  parameter int SramCtrlRetAonNumRamInst = 1,
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   // parameters for rv_dm
@@ -84,9 +86,13 @@ module top_darjeeling #(
   // parameters for edn0
   // parameters for edn1
   // parameters for sram_ctrl_main
+  parameter int SramCtrlMainInstSize = 4096,
+  parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   // parameters for sram_ctrl_mbox
+  parameter int SramCtrlMboxInstSize = 4096,
+  parameter int SramCtrlMboxNumRamInst = 1,
   parameter bit SramCtrlMboxInstrExec = 0,
   parameter int SramCtrlMboxNumPrinceRoundsHalf = 3,
   // parameters for rom_ctrl0
@@ -166,9 +172,9 @@ module top_darjeeling #(
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c_ram_1p_cfg_rsp_o,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       sram_ctrl_ret_aon_ram_1p_cfg_rsp_o,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       sram_ctrl_main_ram_1p_cfg_rsp_o,
-  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       sram_ctrl_mbox_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_1p_cfg_rsp_o,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o,
@@ -1655,6 +1661,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
+    .InstSize(SramCtrlRetAonInstSize),
+    .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
   ) u_sram_ctrl_ret_aon (
@@ -2020,6 +2028,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(65536),
+    .InstSize(SramCtrlMainInstSize),
+    .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
   ) u_sram_ctrl_main (
@@ -2053,6 +2063,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMboxLfsrPerm),
     .MemSizeRam(4096),
+    .InstSize(SramCtrlMboxInstSize),
+    .NumRamInst(SramCtrlMboxNumRamInst),
     .InstrExec(SramCtrlMboxInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf)
   ) u_sram_ctrl_mbox (
