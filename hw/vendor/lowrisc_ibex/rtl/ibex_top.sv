@@ -686,6 +686,7 @@ module ibex_top import ibex_pkg::*; #(
           .DataBitsPerMask  (TagSizeECC)
         ) tag_bank (
           .clk_i,
+          .rst_ni,
 
           .req_i       (ic_tag_req[way]),
 
@@ -705,6 +706,7 @@ module ibex_top import ibex_pkg::*; #(
           .DataBitsPerMask    (LineSizeECC)
         ) data_bank (
           .clk_i,
+          .rst_ni,
 
           .req_i       (ic_data_req[way]),
 
