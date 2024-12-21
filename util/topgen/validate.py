@@ -216,6 +216,10 @@ module_optional = {
     'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
                             'group'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
+    'racl_mappings': ['g', 'dict that maps an interface to its associated RACL mapping'],
+    'racl_mapping': ['s', 'A special case of racl_mappings. If specified, this is taken to '
+                          'represent a dict that associates all interfaces with the give mapping. '
+                          'It is an error to specify both this and racl_mappings.'],
 }
 
 module_added = {
