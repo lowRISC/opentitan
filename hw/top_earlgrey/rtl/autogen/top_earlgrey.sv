@@ -60,6 +60,8 @@ module top_earlgrey #(
   // parameters for aon_timer_aon
   // parameters for sensor_ctrl_aon
   // parameters for sram_ctrl_ret_aon
+  parameter int SramCtrlRetAonInstSize = 4096,
+  parameter int SramCtrlRetAonNumRamInst = 1,
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   // parameters for flash_ctrl
@@ -103,6 +105,8 @@ module top_earlgrey #(
   // parameters for edn0
   // parameters for edn1
   // parameters for sram_ctrl_main
+  parameter int SramCtrlMainInstSize = 131072,
+  parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 2,
   // parameters for rom_ctrl
@@ -160,6 +164,8 @@ module top_earlgrey #(
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       usb_ram_1p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
@@ -2115,6 +2121,8 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
+    .InstSize(SramCtrlRetAonInstSize),
+    .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
   ) u_sram_ctrl_ret_aon (
@@ -2125,7 +2133,7 @@ module top_earlgrey #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
-      .cfg_i(ast_ram_1p_cfg),
+      .cfg_i(sram_ctrl_ret_aon_cfg_i),
       .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
@@ -2597,6 +2605,8 @@ module top_earlgrey #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(131072),
+    .InstSize(SramCtrlMainInstSize),
+    .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
   ) u_sram_ctrl_main (
@@ -2607,7 +2617,7 @@ module top_earlgrey #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
-      .cfg_i(ast_ram_1p_cfg),
+      .cfg_i(sram_ctrl_main_cfg_i),
       .cfg_rsp_o(),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),

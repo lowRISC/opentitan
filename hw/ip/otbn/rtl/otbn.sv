@@ -336,6 +336,7 @@ module otbn
   prim_ram_1p_scr #(
     .Width          (39),
     .Depth          (ImemSizeWords),
+    .InstDepth      (ImemSizeWords),
     .DataBitsPerMask(39),
     .EnableParity   (0)
   ) u_imem (
@@ -551,6 +552,7 @@ module otbn
   prim_ram_1p_scr #(
     .Width             (ExtWLEN),
     .Depth             (DmemSizeWords),
+    .InstDepth         (DmemSizeWords),
     .DataBitsPerMask   (39),
     .EnableParity      (0),
     .ReplicateKeyStream(1)

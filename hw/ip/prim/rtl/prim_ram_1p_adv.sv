@@ -17,6 +17,9 @@
 
 module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   parameter  int Depth                = 512,
+  // Setting InstDepth to a smaller value than Depth enables RAM tiling. RAM is tiled to
+  // ceil(Depth/InstDepth) prim_ram_1p instances, each InstDepth deep.
+  parameter  int InstDepth            = Depth,
   parameter  int Width                = 32,
   parameter  int DataBitsPerMask      = 1,  // Number of data bits per bit of write mask
   parameter      MemInitFile          = "", // VMEM file to initialize the memory with
@@ -32,26 +35,29 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   // since this results in a more compact and faster implementation.
   parameter bit HammingECC            = 0,
 
-  localparam int Aw                   = prim_util_pkg::vbits(Depth)
+  localparam int Aw                   = prim_util_pkg::vbits(Depth),
+  // Compute RAM tiling
+  localparam int NumRamInst           = int'($ceil(Depth / real'(InstDepth))),
+  localparam int InstAw               = prim_util_pkg::vbits(InstDepth)
 ) (
   input clk_i,
   input rst_ni,
 
-  input                      req_i,
-  input                      write_i,
-  input        [Aw-1:0]      addr_i,
-  input        [Width-1:0]   wdata_i,
-  input        [Width-1:0]   wmask_i,
-  output logic [Width-1:0]   rdata_o,
-  output logic               rvalid_o, // read response (rdata_o) is valid
-  output logic [1:0]         rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
+  input                               req_i,
+  input                               write_i,
+  input        [Aw-1:0]               addr_i,
+  input        [Width-1:0]            wdata_i,
+  input        [Width-1:0]            wmask_i,
+  output logic [Width-1:0]            rdata_o,
+  output logic                        rvalid_o, // read response (rdata_o) is valid
+  output logic [1:0]                  rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
-  input  ram_1p_cfg_t        cfg_i,
-  output ram_1p_cfg_rsp_t    cfg_rsp_o,
+  input  ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
+  output ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o,
 
   // When detecting multi-bit encoding errors, raise alert.
-  output logic               alert_o
+  output logic                             alert_o
 );
 
   import prim_mubi_pkg::mubi4_t;
@@ -59,6 +65,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_invalid;
   import prim_mubi_pkg::mubi4_test_true_loose;
+  import prim_mubi_pkg::mubi4_test_true_strict;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4Width;
@@ -103,25 +110,80 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   assign req_q_b = mubi4_test_true_loose(req_q);
   assign write_q_b = mubi4_test_true_loose(write_q);
 
-  prim_ram_1p #(
-    .MemInitFile     (MemInitFile),
+  logic [NumRamInst-1:0] inst_req_d, inst_req_q, rvalid_inst;
+  logic [InstAw-1:0] inst_addr;
+  logic [NumRamInst-1:0] [Width-1:0] inst_rdata;
 
-    .Width           (TotalWidth),
-    .Depth           (Depth),
-    .DataBitsPerMask (LocalDataBitsPerMask)
-  ) u_mem (
-    .clk_i,
-    .rst_ni,
+  // The lower InstAw bits of the address are used to address within one RAM primitive
+  assign inst_addr = addr_q[InstAw-1:0];
 
-    .req_i    (req_q_b),
-    .write_i  (write_q_b),
-    .addr_i   (addr_q),
-    .wdata_i  (wdata_q),
-    .wmask_i  (wmask_q),
-    .rdata_o  (rdata_sram),
-    .cfg_i,
-    .cfg_rsp_o
-  );
+  // The upper bits Aw-1:InstAw of the address select which RAM instance is selected. A special case
+  // is needed when no tiling is performed and only a single RAM macro is instantiated. Here, we
+  // can directly use the request signal and no demuxing is needed.
+  if (NumRamInst == 1) begin : gen_single_inst_req
+    assign inst_req_d[0] = req_q_b;
+  end else begin : gen_multi_inst_req
+    always_comb begin
+      inst_req_d = '0;
+
+      for (int i = 0; i < NumRamInst; i++) begin
+        if (req_q_b && (i == addr_q[Aw-1:InstAw])) begin
+          inst_req_d[i] = 1'b1;
+        end
+      end
+    end
+  end
+
+  // Flop the instance request signal to know to know which
+  // tile to select for read data on the next cycle
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      inst_req_q <= '0;
+    end else begin
+      inst_req_q <= inst_req_d;
+    end
+  end
+
+  // Ensure that only one RAM instance gets activated
+  `ASSERT(OneHotInstReq_A, $onehot0(inst_req_d))
+
+  for (genvar i = 0; i < NumRamInst; i++) begin : gen_ram_inst
+    prim_ram_1p #(
+      .MemInitFile     (MemInitFile),
+
+      .Width           (TotalWidth),
+      .Depth           (InstDepth),
+      .DataBitsPerMask (LocalDataBitsPerMask)
+    ) u_mem (
+      .clk_i,
+      .rst_ni,
+
+      .req_i     (inst_req_d[i]),
+      .write_i   (write_q_b),
+      .addr_i    (inst_addr),
+      .wdata_i   (wdata_q),
+      .wmask_i   (wmask_q),
+      .rdata_o   (inst_rdata[i]),
+      .cfg_i     (cfg_i[i]),
+      .cfg_rsp_o (cfg_rsp_o[i])
+    );
+  end
+
+  // Mux output data
+  always_comb begin
+    rdata_sram = '0;
+
+    for (int i = 0; i < NumRamInst; i++) begin
+      // Determine which RAM tile we accessed based on the floped inst_req signal and we really
+      // got an rvalid. This determines if we mux the output data of that particular RAM tile.
+      rvalid_inst[i] = mubi4_test_true_strict(
+        mubi4_and_hi(mubi4_bool_to_mubi(inst_req_q[i]), rvalid_sram_q));
+
+      if(rvalid_inst[i]) begin
+        rdata_sram = inst_rdata[i];
+      end
+    end
+  end
 
   assign rvalid_sram_d = mubi4_and_hi(req_q, mubi4_t'(~write_q));
 
