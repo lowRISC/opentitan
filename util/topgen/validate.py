@@ -221,6 +221,10 @@ module_optional = {
     'template_type': ['s', 'Base template type of ipgen IPs'],
     'racl_group': ['s', 'Only valid for racl_ctrl IPs. Defines the RACL group this control IP is '
                         'associated to'],
+    'racl_mappings': ['g', 'dict that maps an interface to its associated RACL mapping'],
+    'racl_mapping': ['s', 'A special case of racl_mappings. If specified, this is taken to '
+                          'represent a dict that associates all interfaces with the give mapping. '
+                          'It is an error to specify both this and racl_mappings.'],
 }
 
 module_added = {
