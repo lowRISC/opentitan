@@ -248,6 +248,34 @@ def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
     for xbar in topcfg["xbar"]:
         autoconnect_xbar(topcfg, name_to_block, xbar)
 
+    # Auto connect RACL subscribing IPs to the associated racl_ctrl IP
+    if 'racl' in topcfg:
+        # Find the RACL control of the defined group. This currently only works for the default
+        # RACL ctrl module when there is a single instance. This limitation currently comes from
+        # ipgen and is tracked in #25673
+        racl_ctrl = lib.find_module(topcfg['module'], 'racl_ctrl')
+        if not racl_ctrl:
+            raise ValueError('No RACL Control module found')
+
+        # Determine all subscribing RACL modules
+        for m in topcfg['module']:
+            for racl_group in m.get('racl_mappings', {}).keys():
+                add_intermodule_connection(obj=topcfg,
+                                           req_m=racl_ctrl['name'],
+                                           req_s="racl_policies",
+                                           rsp_m=m['name'],
+                                           rsp_s="racl_policies")
+                add_intermodule_connection(obj=topcfg,
+                                           req_m=racl_ctrl['name'],
+                                           req_s="racl_error",
+                                           rsp_m=m['name'],
+                                           rsp_s="racl_error")
+                add_intermodule_connection(obj=topcfg,
+                                           req_m=racl_ctrl['name'],
+                                           req_s="racl_error_log",
+                                           rsp_m=m['name'],
+                                           rsp_s="racl_error_log")
+
 
 def _get_default_name(sig, suffix):
     """Generate default for a net if one does not already exist.

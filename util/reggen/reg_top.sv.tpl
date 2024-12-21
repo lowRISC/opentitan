@@ -120,8 +120,9 @@
 module ${mod_name}${' (' if not racl_support else ''}
 % if racl_support:
   # (
-    parameter bit EnableRacl   = 1'b0,
-    parameter bit RaclErrorRsp = 1'b1
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter int unsigned RaclPolicySelVec[${len(rb.flat_regs)}] = '{${len(rb.flat_regs)}{0}}
   ) (
 % endif
   input clk_i,
@@ -158,9 +159,8 @@ module ${mod_name}${' (' if not racl_support else ''}
 % if racl_support:
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  input  integer racl_policy_sel_vec_i[${len(rb.flat_regs)}],
-  output logic racl_error_o,
-  output top_racl_pkg::racl_error_log_t racl_error_log_o,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
 % endif
   // Integrity check errors
@@ -674,7 +674,7 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
     assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
 
     prim_onehot_enc #(
-      .OneHotWidth( $bits(prim_onehot_enc) )
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
     ) u_racl_role_encode (
       .in_i ( racl_role     ),
       .en_i ( 1'b1          ),
@@ -701,8 +701,8 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
     if (EnableRacl) begin : gen_racl_hit
     % for i,r in enumerate(regs_flat):
 <% slice = '{}'.format(i).rjust(max_regs_char) %>\
-      racl_addr_hit_read [${slice}] = addr_hit[${slice}] & (|(racl_policies_i[racl_policy_sel_vec_i[${slice}]].read_perm  & racl_role_vec));
-      racl_addr_hit_write[${slice}] = addr_hit[${slice}] & (|(racl_policies_i[racl_policy_sel_vec_i[${slice}]].write_perm & racl_role_vec));
+      racl_addr_hit_read [${slice}] = addr_hit[${slice}] & (|(racl_policies_i[RaclPolicySelVec[${slice}]].read_perm  & racl_role_vec));
+      racl_addr_hit_write[${slice}] = addr_hit[${slice}] & (|(racl_policies_i[RaclPolicySelVec[${slice}]].write_perm & racl_role_vec));
     % endfor
     end else begin : gen_no_racl
       racl_addr_hit_read  = addr_hit;
@@ -911,6 +911,10 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+% endif
+% if racl_support:
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 % endif
 % if rb.all_regs:
 

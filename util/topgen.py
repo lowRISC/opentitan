@@ -22,7 +22,7 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
 from design.lib.OtpMemMap import OtpMemMap
 from mako import exceptions
 from mako.template import Template
-from raclgen.lib import DEFAULT_RACL_CONFIG, parse_racl_config
+from raclgen.lib import DEFAULT_RACL_CONFIG, parse_racl_config, parse_racl_mapping
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
 from reggen.inter_signal import InterSignal
@@ -582,12 +582,22 @@ def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
 
 
 # Generate RACL collateral
-def generate_racl(topcfg: Dict[str, object], out_path: Path) -> None:
+def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
+                  out_path: Path) -> None:
     # Not all tops use RACL
     if 'racl_config' not in topcfg:
         return
 
+    # Read the top-level RACL information
     topcfg['racl'] = parse_racl_config(topcfg['racl_config'])
+
+    # Generate the RACL mappings for all subscribing IPs
+    for m in topcfg['module']:
+        for if_name, mapping_path in m.get('racl_mappings', {}).items():
+            m['racl_mappings'][if_name] = parse_racl_mapping(topcfg['racl'],
+                                                             mapping_path,
+                                                             if_name,
+                                                             name_to_block[m['type']])
 
     log.info('Generating RACL Control IP with ipgen')
     topname = topcfg['name']
@@ -973,7 +983,7 @@ def _process_top(
     generate_ac_range_check(completecfg, out_path)
 
     # Generate RACL collateral
-    generate_racl(completecfg, out_path)
+    generate_racl(completecfg, name_to_block, out_path)
 
     # Generate top only modules
     # These modules are not ipgen, but are not in hw/ip
@@ -1352,6 +1362,7 @@ def main():
         render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
                         out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
                         gencmd=gencmd_sv,
+                        topcfg=completecfg,
                         racl_config=racl_config)
 
         # The C / SV file needs some complex information, so we initialize this
