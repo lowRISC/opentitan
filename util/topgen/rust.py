@@ -11,7 +11,7 @@ from version_file import VersionInformation
 
 
 class TopGenRust(TopGen):
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], addr_space: str,
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock],
                  version_stamp: VersionInformation):
-        super().__init__(top_info, name_to_block, addr_space, RustEnum, RustArrayMapping)
+        super().__init__(top_info, name_to_block, RustEnum, RustArrayMapping)
         self.file_header = RustFileHeader(version_stamp)

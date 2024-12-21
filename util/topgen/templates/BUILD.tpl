@@ -6,9 +6,9 @@ ${gencmd.replace("//", "#")}
 <%
 import topgen.lib as lib
 
-irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals})
+irq_peripheral_names = sorted({p.name for p in helper.irq_peripherals[addr_space]})
 has_alert_handler = lib.find_module(top['module'], 'alert_handler')
-alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals}) if has_alert_handler else []
+alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals[addr_space]}) if has_alert_handler else []
 %>\
 load(
     "//rules/opentitan:defs.bzl",

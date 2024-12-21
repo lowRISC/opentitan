@@ -8,14 +8,10 @@ import topgen.lib as lib
 
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
-has_alert_handler = lib.find_module(top['module'], 'alert_handler')
+has_alert_handler = (len(helper.alert_peripherals[addr_space]) > 0)
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 has_rstmgr = lib.find_module(top['module'], 'rstmgr')
-
-if helper.addr_space == helper.default_addr_space:
-    header_suffix = top["name"].upper()
-else:
-    header_suffix = "_".join([top["name"], helper.addr_space]).upper()
+header_suffix = "_".join([top["name"], addr_space]).upper()
 %>\
 
 #ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_H_
@@ -47,7 +43,7 @@ else:
 extern "C" {
 #endif
 
-% for (inst_name, if_name), region in helper.devices():
+% for (inst_name, if_name), region in helper.devices(addr_space):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "0x{:X}u".format(region.base_addr)
@@ -77,7 +73,7 @@ extern "C" {
 
 % endfor
 
-% for name, region in helper.memories():
+% for name, region in helper.memories(addr_space):
 <%
     hex_base_addr = "0x{:X}u".format(region.base_addr)
     hex_size_bytes = "0x{:X}u".format(region.size_bytes)
@@ -97,7 +93,6 @@ extern "C" {
 #define ${size_bytes_name} ${hex_size_bytes}
 
 % endfor
-% if helper.addr_space == helper.default_addr_space:
 
 /**
  * PLIC Interrupt Source Peripheral.
@@ -237,8 +232,7 @@ ${helper.clkmgr_gateable_clocks.render()}
  */
 ${helper.clkmgr_hintable_clocks.render()}
 % endif
-% endif
-% for (subspace_name, description, subspace_range) in helper.subranges:
+% for (subspace_name, description, subspace_range) in helper.subranges[addr_space]:
 
 /**
  * ${subspace_name.upper()} Region

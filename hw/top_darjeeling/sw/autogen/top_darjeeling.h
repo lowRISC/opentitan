@@ -7,8 +7,8 @@
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 // -o hw/top_darjeeling
 
-#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_H_
-#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_H_
+#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_H_
+#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_H_
 
 /**
  * @file
@@ -1696,4 +1696,4 @@ typedef enum top_darjeeling_hintable_clocks {
 }  // extern "C"
 #endif
 
-#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_H_
+#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_H_
