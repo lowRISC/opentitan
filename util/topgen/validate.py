@@ -216,6 +216,9 @@ module_optional = {
     'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
                             'group'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
+    'racl_mapping': ['s', 'optional RACL mapping for that IP'],
+    'racl_mappings': ['g', 'dict of RACL mappings for all registers interfaces if there are more '
+                      'than one'],
 }
 
 module_added = {
