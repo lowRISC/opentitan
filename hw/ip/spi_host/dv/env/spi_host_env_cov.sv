@@ -7,7 +7,6 @@
  * only in build_phase can be defined here
  * Covergroups may also be wrapped inside helper classes if needed.
  */
-//TODO(#18886) we only support SPI_HOST_NUM_CS=1
 
 class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   `uvm_component_utils(spi_host_env_cov)
@@ -29,18 +28,18 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
   endgroup : rx_fifo_underflow_cg
 
   covergroup config_opts_cg with function sample(spi_host_configopts_t spi_configopts);
-    cpol_cp : coverpoint spi_configopts.cpol[SPI_HOST_NUM_CS-1]{ bins cpol[] = {[0:1]}; }
-    cpha_cp : coverpoint spi_configopts.cpha[SPI_HOST_NUM_CS-1]{ bins cpha[] = {[0:1]}; }
-    fullcyc_cp : coverpoint spi_configopts.fullcyc[SPI_HOST_NUM_CS-1]{
+    cpol_cp : coverpoint spi_configopts.cpol{ bins cpol[] = {[0:1]}; }
+    cpha_cp : coverpoint spi_configopts.cpha{ bins cpha[] = {[0:1]}; }
+    fullcyc_cp : coverpoint spi_configopts.fullcyc{
     bins fullcyc[] = {[0:1]};
     }
-    csnlead_cp : coverpoint spi_configopts.csnlead[SPI_HOST_NUM_CS-1]{
+    csnlead_cp : coverpoint spi_configopts.csnlead{
     bins csnlead[] = {[0:15]};
     }
-    csnidle_cp : coverpoint spi_configopts.csnidle[SPI_HOST_NUM_CS-1]{
+    csnidle_cp : coverpoint spi_configopts.csnidle{
     bins csnidle[] = {[0:15]};
     }
-    clkdiv_cp : coverpoint spi_configopts.clkdiv[SPI_HOST_NUM_CS-1]{
+    clkdiv_cp : coverpoint spi_configopts.clkdiv{
     // (Period) T_sck = 2*(clkdiv+1)*T_core
     // If clkdiv == 16'h00fe, F_sck = F_core / 254
     bins clk_div_zero = {0};
@@ -48,7 +47,7 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     bins clk_divm_upper_eight[30] = {[16'h00ff:16'hfffe]};
     bins clk_divm_max = {16'hffff};
     }
-    csntrail_cp : coverpoint spi_configopts.csntrail[SPI_HOST_NUM_CS-1]{
+    csntrail_cp : coverpoint spi_configopts.csntrail{
       bins csntrail[] = {[0:15]};
     }
     cpol_cpha_cross :  cross cpol_cp, cpha_cp;

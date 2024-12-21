@@ -95,7 +95,7 @@ package spi_host_reg_pkg;
     struct packed {
       logic [15:0] q;
     } clkdiv;
-  } spi_host_reg2hw_configopts_mreg_t;
+  } spi_host_reg2hw_configopts_reg_t;
 
   typedef struct packed {
     logic [31:0] q;
@@ -284,7 +284,7 @@ package spi_host_reg_pkg;
     spi_host_reg2hw_intr_test_reg_t intr_test; // [133:130]
     spi_host_reg2hw_alert_test_reg_t alert_test; // [129:128]
     spi_host_reg2hw_control_reg_t control; // [127:109]
-    spi_host_reg2hw_configopts_mreg_t [0:0] configopts; // [108:78]
+    spi_host_reg2hw_configopts_reg_t configopts; // [108:78]
     spi_host_reg2hw_csid_reg_t csid; // [77:46]
     spi_host_reg2hw_command_reg_t command; // [45:17]
     spi_host_reg2hw_error_enable_reg_t error_enable; // [16:12]

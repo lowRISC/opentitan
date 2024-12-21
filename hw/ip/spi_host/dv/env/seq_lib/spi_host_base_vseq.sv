@@ -49,40 +49,28 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   constraint spi_config_regs_c {
       // configopts regs
-      foreach (spi_config_regs.cpol[i]) {
-        spi_config_regs.cpol[i] dist {
-          1'b0 :/ 1,
-          1'b1 :/ 1
-        };
-      }
-      foreach (spi_config_regs.cpha[i]) {
-        spi_config_regs.cpha[i] dist {
-          1'b0 :/ 1,
-          1'b1 :/ 1
-        };
-      }
-      foreach (spi_config_regs.csnlead[i]) {
-        spi_config_regs.csnlead[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
-                                          cfg.seq_cfg.host_spi_max_csn_latency]};
-      }
-      foreach (spi_config_regs.csntrail[i]) {
-        spi_config_regs.csntrail[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
-                                           cfg.seq_cfg.host_spi_max_csn_latency]};
-      }
-      foreach (spi_config_regs.csnidle[i]) {
-        spi_config_regs.csnidle[i] inside {[cfg.seq_cfg.host_spi_min_csn_latency :
-                                          cfg.seq_cfg.host_spi_max_csn_latency]};
-      }
+      spi_config_regs.cpol dist {
+        1'b0 :/ 1,
+        1'b1 :/ 1
+      };
+      spi_config_regs.cpha dist {
+        1'b0 :/ 1,
+        1'b1 :/ 1
+      };
+      spi_config_regs.csnlead inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                       cfg.seq_cfg.host_spi_max_csn_latency]};
+      spi_config_regs.csntrail inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                        cfg.seq_cfg.host_spi_max_csn_latency]};
+      spi_config_regs.csnidle inside {[cfg.seq_cfg.host_spi_min_csn_latency :
+                                       cfg.seq_cfg.host_spi_max_csn_latency]};
   }
 
   // Separate constraint to allow easy override in child sequences
   constraint spi_config_regs_clkdiv_c {
-    foreach (spi_config_regs.clkdiv[i]) {
-      spi_config_regs.clkdiv[i] dist {
-        [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]      :/80,
-        [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv] :/20
-      };
-    }
+    spi_config_regs.clkdiv dist {
+      [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]      :/80,
+      [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv] :/20
+    };
   }
 
   constraint spi_ctrl_regs_c {
@@ -105,8 +93,7 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   function void post_randomize();
     super.post_randomize();
-    // We currently support 1 chip-select line only
-    case(spi_config_regs.clkdiv[0]) inside
+    case(spi_config_regs.clkdiv) inside
       // After randomization we set a different timeout based on the clock divider
       [cfg.seq_cfg.host_spi_min_clkdiv : cfg.seq_cfg.host_spi_lower_middle_clkdiv]: ; // no change
       [cfg.seq_cfg.host_spi_lower_middle_clkdiv+1 : cfg.seq_cfg.host_spi_middle_clkdiv]: begin
@@ -114,8 +101,8 @@ class spi_host_base_vseq extends cip_base_vseq #(
       end
       [cfg.seq_cfg.host_spi_middle_clkdiv+1 : 16'hFFF] : cfg.csr_spinwait_timeout_ns *= 5;
       [16'hFFF+1 : cfg.seq_cfg.host_spi_max_clkdiv] : cfg.csr_spinwait_timeout_ns *= 10;
-      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv[0]=0x%0x is out range",
-                                           spi_config_regs.clkdiv[0]))
+      default : `uvm_fatal(`gfn, $sformatf("spi_config_regs.clkdiv=0x%0x is out range",
+                                           spi_config_regs.clkdiv))
     endcase
   endfunction
 
@@ -248,16 +235,14 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   // CONFIGOPTS register fields
   virtual task program_configopt_regs();
-    for (int i = 0; i < SPI_HOST_NUM_CS; i++) begin
-      ral.configopts[i].cpol.set(spi_config_regs.cpol[0]);
-      ral.configopts[i].cpha.set(spi_config_regs.cpha[0]);
-      ral.configopts[i].fullcyc.set(spi_config_regs.fullcyc[0]);
-      ral.configopts[i].csnlead.set(spi_config_regs.csnlead[0]);
-      ral.configopts[i].csntrail.set(spi_config_regs.csntrail[0]);
-      ral.configopts[i].csnidle.set(spi_config_regs.csnidle[0]);
-      ral.configopts[i].clkdiv.set(spi_config_regs.clkdiv[0]);
-      csr_wr(ral.configopts[i], .value(ral.configopts[i].get()));
-    end
+    ral.configopts.cpol.set(spi_config_regs.cpol);
+    ral.configopts.cpha.set(spi_config_regs.cpha);
+    ral.configopts.fullcyc.set(spi_config_regs.fullcyc);
+    ral.configopts.csnlead.set(spi_config_regs.csnlead);
+    ral.configopts.csntrail.set(spi_config_regs.csntrail);
+    ral.configopts.csnidle.set(spi_config_regs.csnidle);
+    ral.configopts.clkdiv.set(spi_config_regs.clkdiv);
+    csr_wr(ral.configopts, .value(ral.configopts.get()));
   endtask : program_configopt_regs
 
 
@@ -351,15 +336,13 @@ class spi_host_base_vseq extends cip_base_vseq #(
 
   // update spi_agent registers
   virtual function void update_spi_agent_regs();
-    for (int i = 0; i < SPI_HOST_NUM_CS; i++) begin
-      cfg.m_spi_agent_cfg.sck_polarity[i] = spi_config_regs.cpol[i];
-      cfg.m_spi_agent_cfg.sck_phase[i]    = spi_config_regs.cpha[i];
-      cfg.m_spi_agent_cfg.full_cyc[i]      = spi_config_regs.fullcyc[i];
-      cfg.m_spi_agent_cfg.csn_lead[i]      = spi_config_regs.csnlead[i];
-    end
-    cfg.m_spi_agent_cfg.csid              = spi_host_ctrl_reg.csid;
-    cfg.m_spi_agent_cfg.spi_mode          = spi_host_command_reg.mode;
-    cfg.m_spi_agent_cfg.decode_commands   = 1'b1;
+    cfg.m_spi_agent_cfg.sck_polarity[0] = spi_config_regs.cpol;
+    cfg.m_spi_agent_cfg.sck_phase[0]    = spi_config_regs.cpha;
+    cfg.m_spi_agent_cfg.full_cyc[0]     = spi_config_regs.fullcyc;
+    cfg.m_spi_agent_cfg.csn_lead[0]     = spi_config_regs.csnlead;
+    cfg.m_spi_agent_cfg.csid            = spi_host_ctrl_reg.csid;
+    cfg.m_spi_agent_cfg.spi_mode        = spi_host_command_reg.mode;
+    cfg.m_spi_agent_cfg.decode_commands = 1'b1;
     print_spi_host_regs();
   endfunction : update_spi_agent_regs
 
@@ -376,16 +359,14 @@ class spi_host_base_vseq extends cip_base_vseq #(
       str = {str, $sformatf("\n    direction    %s",  spi_host_command_reg.direction.name())};
       str = {str, $sformatf("\n    csaat        %b",  spi_host_command_reg.csaat)};
       str = {str, $sformatf("\n    len          %0d", spi_host_command_reg.len)};
-      for (int i = 0; i < SPI_HOST_NUM_CS; i++) begin
-        str = {str, $sformatf("\n    config[%0d]", i)};
-        str = {str, $sformatf("\n      cpol       %b", spi_config_regs.cpol[i])};
-        str = {str, $sformatf("\n      cpha       %b", spi_config_regs.cpha[i])};
-        str = {str, $sformatf("\n      fullcyc    %b", spi_config_regs.fullcyc[i])};
-        str = {str, $sformatf("\n      csnlead    %0d", spi_config_regs.csnlead[i])};
-        str = {str, $sformatf("\n      csntrail   %0d", spi_config_regs.csntrail[i])};
-        str = {str, $sformatf("\n      csnidle    %0d", spi_config_regs.csnidle[i])};
-        str = {str, $sformatf("\n      clkdiv     %0d\n", spi_config_regs.clkdiv[i])};
-      end
+      str = {str, $sformatf("\n    config")};
+      str = {str, $sformatf("\n      cpol       %b", spi_config_regs.cpol)};
+      str = {str, $sformatf("\n      cpha       %b", spi_config_regs.cpha)};
+      str = {str, $sformatf("\n      fullcyc    %b", spi_config_regs.fullcyc)};
+      str = {str, $sformatf("\n      csnlead    %0d", spi_config_regs.csnlead)};
+      str = {str, $sformatf("\n      csntrail   %0d", spi_config_regs.csntrail)};
+      str = {str, $sformatf("\n      csnidle    %0d", spi_config_regs.csnidle)};
+      str = {str, $sformatf("\n      clkdiv     %0d\n", spi_config_regs.clkdiv)};
       `uvm_info(`gfn, str, UVM_LOW)
     end
   endfunction : print_spi_host_regs

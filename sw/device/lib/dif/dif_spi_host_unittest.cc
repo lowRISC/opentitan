@@ -130,13 +130,13 @@ TEST_F(ConfigTest, Default) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPHA_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPOL_BIT, false},
                  });
 
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
@@ -172,13 +172,13 @@ TEST_F(ConfigTest, ClockRate) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPHA_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPOL_BIT, false},
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
@@ -201,13 +201,13 @@ TEST_F(ConfigTest, ChipSelectOptions) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 1},
-                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 2},
-                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 3},
-                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_OFFSET, 1},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_OFFSET, 2},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_OFFSET, 3},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPHA_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPOL_BIT, false},
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
@@ -230,13 +230,13 @@ TEST_F(ConfigTest, SpiOptions) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, true},
-                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, true},
-                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, true},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_BIT, true},
+                     {SPI_HOST_CONFIGOPTS_CPHA_BIT, true},
+                     {SPI_HOST_CONFIGOPTS_CPOL_BIT, true},
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET, 0);
@@ -257,13 +257,13 @@ TEST_F(ConfigTest, SpiTxRxWatermark) {
   ExpectDeviceReset();
   EXPECT_WRITE32(SPI_HOST_CONFIGOPTS_REG_OFFSET,
                  {
-                     {SPI_HOST_CONFIGOPTS_CLKDIV_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNIDLE_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_CSNLEAD_0_OFFSET, 0},
-                     {SPI_HOST_CONFIGOPTS_FULLCYC_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPHA_0_BIT, false},
-                     {SPI_HOST_CONFIGOPTS_CPOL_0_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CLKDIV_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNIDLE_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNTRAIL_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_CSNLEAD_OFFSET, 0},
+                     {SPI_HOST_CONFIGOPTS_FULLCYC_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPHA_BIT, false},
+                     {SPI_HOST_CONFIGOPTS_CPOL_BIT, false},
                  });
   EXPECT_READ32(SPI_HOST_CONTROL_REG_OFFSET, 0);
   EXPECT_WRITE32(SPI_HOST_CONTROL_REG_OFFSET,
