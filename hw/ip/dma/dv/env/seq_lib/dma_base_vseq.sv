@@ -36,18 +36,24 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_host = dma_pull_seq #(.AddrWidth(HOST_ADDR_WIDTH))::type_id::create("seq_host");
     seq_sys  = dma_pull_seq #(.AddrWidth(SYS_ADDR_WIDTH))::type_id::create("seq_sys");
     // Create memory models
-    seq_host.fifo = dma_handshake_mode_fifo#(
+    seq_host.dst_fifo = dma_handshake_mode_fifo#(
                                 .AddrWidth(HOST_ADDR_WIDTH))::type_id::create("fifo_host");
-    seq_ctn.fifo = dma_handshake_mode_fifo#(
+    seq_ctn.dst_fifo = dma_handshake_mode_fifo#(
                                 .AddrWidth(CTN_ADDR_WIDTH))::type_id::create("fifo_ctn");
-    seq_sys.fifo = dma_handshake_mode_fifo#(
+    seq_sys.dst_fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(SYS_ADDR_WIDTH))::type_id::create("fifo_sys");
+    seq_host.src_fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(HOST_ADDR_WIDTH))::type_id::create("fifo_host");
+    seq_ctn.src_fifo = dma_handshake_mode_fifo#(
+                                .AddrWidth(CTN_ADDR_WIDTH))::type_id::create("fifo_ctn");
+    seq_sys.src_fifo = dma_handshake_mode_fifo#(
                                 .AddrWidth(SYS_ADDR_WIDTH))::type_id::create("fifo_sys");
     seq_host.mem = mem_model#(.AddrWidth(HOST_ADDR_WIDTH),
                                 .DataWidth(HOST_DATA_WIDTH))::type_id::create("mem_host");
     seq_ctn.mem = mem_model#(.AddrWidth(CTN_ADDR_WIDTH),
                                 .DataWidth(CTN_DATA_WIDTH))::type_id::create("mem_ctn");
     seq_sys.mem = mem_model#(.AddrWidth(SYS_ADDR_WIDTH),
-                               .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
+                                .DataWidth(SYS_DATA_WIDTH))::type_id::create("mem_sys");
 
     // System bus is currently unavailable and untestable withing this DV environment,
     // so activate additional constraints to prevent it causing test failures.
@@ -66,16 +72,24 @@ class dma_base_vseq extends cip_base_vseq #(
     cfg.mem_host = seq_host.mem;
     cfg.mem_sys = seq_sys.mem;
     // Assign dma_handshake_mode_fifo instance handle to config object
-    cfg.fifo_ctn = seq_ctn.fifo;
-    cfg.fifo_host = seq_host.fifo;
-    cfg.fifo_sys = seq_sys.fifo;
+    cfg.fifo_dst_ctn = seq_ctn.dst_fifo;
+    cfg.fifo_dst_host = seq_host.dst_fifo;
+    cfg.fifo_dst_sys = seq_sys.dst_fifo;
+    cfg.fifo_src_ctn = seq_ctn.src_fifo;
+    cfg.fifo_src_host = seq_host.src_fifo;
+    cfg.fifo_src_sys = seq_sys.src_fifo;
     // Initialize memory
     cfg.mem_host.init();
     cfg.mem_ctn.init();
     cfg.mem_sys.init();
-    cfg.fifo_host.init();
-    cfg.fifo_ctn.init();
-    cfg.fifo_sys.init();
+    // Initialize destination FIFOs
+    cfg.fifo_dst_host.init();
+    cfg.fifo_dst_ctn.init();
+    cfg.fifo_dst_sys.init();
+    // Initialize source FIFOs
+    cfg.fifo_src_host.init();
+    cfg.fifo_src_ctn.init();
+    cfg.fifo_src_sys.init();
   endfunction
 
   // When full testing of the Soc System bus has been waived at block level and we have only a
@@ -164,13 +178,13 @@ class dma_base_vseq extends cip_base_vseq #(
                                   input bit [31:0] offset, input bit [31:0] size);
     case (asid)
       OtInternalAddr: begin
-        cfg.fifo_host.populate_fifo(src_data, offset, size);
+        cfg.fifo_src_host.populate_fifo(src_data, offset, size);
       end
       SocControlAddr: begin
-        cfg.fifo_ctn.populate_fifo(src_data, offset, size);
+        cfg.fifo_src_ctn.populate_fifo(src_data, offset, size);
       end
       SocSystemAddr: begin
-        cfg.fifo_sys.populate_fifo(src_data, offset, size);
+        cfg.fifo_src_sys.populate_fifo(src_data, offset, size);
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
@@ -187,11 +201,10 @@ class dma_base_vseq extends cip_base_vseq #(
       // Supply a block of data for this transfer
       populate_src_fifo(dma_config.src_asid, cfg.src_data, offset, size);
     end else begin
-      // The source address depends upon the configuration; chunks may overlap each other for
+      // The source address depends upon the configuration; chunks may overlap each other.
       // hardware-handshaking mode.
       bit [63:0] src_addr = dma_config.src_addr;
-      if (!dma_config.handshake ||
-          (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+      if (!dma_config.src_chunk_wrap) begin
         src_addr += offset;
       end else begin
         src_addr += offset % dma_config.chunk_data_size;
@@ -202,24 +215,49 @@ class dma_base_vseq extends cip_base_vseq #(
     end
   endfunction
 
-  // Function to set dma_handshake_mode_fifo mode settings
-  function void set_model_fifo_mode(asid_encoding_e asid,
-                                    bit [63:0] start_addr = '0,
-                                    dma_transfer_width_e per_transfer_width,
-                                    bit [31:0] max_size);
+  // Function to set the transfer properties for a source FIFO.
+  function void set_model_src_fifo_mode(asid_encoding_e asid,
+                                        bit [63:0] start_addr = '0,
+                                        dma_transfer_width_e per_transfer_width,
+                                        bit [31:0] max_size);
     start_addr[1:0] = 2'd0; // Address generated by DMA is 4B aligned
     case (asid)
       OtInternalAddr: begin
-        cfg.fifo_host.enable_fifo(.fifo_base (start_addr), .per_transfer_width(per_transfer_width),
-                                  .max_size (max_size));
+        cfg.fifo_src_host.enable_fifo(.fifo_base(start_addr),
+                                      .per_transfer_width(per_transfer_width), .max_size(max_size));
       end
       SocControlAddr: begin
-        cfg.fifo_ctn.enable_fifo(.fifo_base (start_addr), .per_transfer_width(per_transfer_width),
-                                 .max_size (max_size));
+        cfg.fifo_src_ctn.enable_fifo(.fifo_base(start_addr),
+                                     .per_transfer_width(per_transfer_width), .max_size(max_size));
       end
       SocSystemAddr: begin
-        cfg.fifo_sys.enable_fifo(.fifo_base (start_addr), .per_transfer_width(per_transfer_width),
-                                 .max_size (max_size));
+        cfg.fifo_src_sys.enable_fifo(.fifo_base(start_addr),
+                                     .per_transfer_width(per_transfer_width), .max_size(max_size));
+      end
+      default: begin
+        `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
+      end
+    endcase
+  endfunction
+
+  // Function to set the transfer properties for a destination FIFO.
+  function void set_model_dst_fifo_mode(asid_encoding_e asid,
+                                        bit [63:0] start_addr = '0,
+                                        dma_transfer_width_e per_transfer_width,
+                                        bit [31:0] max_size);
+    start_addr[1:0] = 2'd0; // Address generated by DMA is 4B aligned
+    case (asid)
+      OtInternalAddr: begin
+        cfg.fifo_dst_host.enable_fifo(.fifo_base(start_addr),
+                                      .per_transfer_width(per_transfer_width), .max_size(max_size));
+      end
+      SocControlAddr: begin
+        cfg.fifo_dst_ctn.enable_fifo(.fifo_base(start_addr),
+                                     .per_transfer_width(per_transfer_width), .max_size(max_size));
+      end
+      SocSystemAddr: begin
+        cfg.fifo_dst_sys.enable_fifo(.fifo_base(start_addr),
+                                     .per_transfer_width(per_transfer_width), .max_size(max_size));
       end
       default: begin
         `uvm_error(`gfn, $sformatf("Unsupported Address space ID %d", asid))
@@ -244,14 +282,12 @@ class dma_base_vseq extends cip_base_vseq #(
     // Configure Source model
     if (dma_config.get_read_fifo_en()) begin
       // Enable read FIFO mode in models
-      set_model_fifo_mode(dma_config.src_asid, dma_config.src_addr, dma_config.per_transfer_width,
-                          chunk_size);
+      set_model_src_fifo_mode(dma_config.src_asid, dma_config.src_addr,
+                              dma_config.per_transfer_width, chunk_size);
     end else begin
-      // The source address depends upon the configuration; chunks may overlap each other for
-      // hardware-handshaking mode.
+      // The source address depends upon the configuration; chunks may overlap each other.
       bit [31:0] src_addr = dma_config.src_addr;
-      if (!dma_config.handshake ||
-          (dma_config.direction == DmaSendData && dma_config.auto_inc_buffer)) begin
+      if (!dma_config.src_chunk_wrap) begin
         src_addr += offset;
       end
     end
@@ -264,13 +300,13 @@ class dma_base_vseq extends cip_base_vseq #(
       // TODO: Presently there is no way to intervene and check per-chunk data, so gather it all
       // into a single large FIFO and the scoreboard will check it all at the end of the transfer.
       bit [31:0] max_size = chunk_size;
-      if (dma_config.handshake && dma_config.direction == DmaSendData) begin
+      if (dma_config.handshake) begin
         max_size = dma_config.total_data_size;
       end
 
       // Enable write FIFO mode in models
-      set_model_fifo_mode(dma_config.dst_asid, dma_config.dst_addr, dma_config.per_transfer_width,
-                          max_size);
+      set_model_dst_fifo_mode(dma_config.dst_asid, dma_config.dst_addr,
+                              dma_config.per_transfer_width, max_size);
     end
 
     // Return the updated byte offset within the transfer
@@ -300,6 +336,20 @@ class dma_base_vseq extends cip_base_vseq #(
     csr_wr(ral.dst_addr_hi, dst_addr[63:32]);
     `uvm_info(`gfn, $sformatf("DMA: Destination Address = 0x%016h", dst_addr), UVM_HIGH)
   endtask : set_dst_addr
+
+  // Task: Write to Source Configuration
+  task set_src_config(bit chunk_wrap, bit addr_inc);
+    ral.src_config.wrap.set(chunk_wrap);
+    ral.src_config.increment.set(addr_inc);
+    csr_update(ral.src_config);
+  endtask : set_src_config
+
+  // Task: Write to Destination Configuration
+  task set_dst_config(bit chunk_wrap, bit addr_inc);
+    ral.dst_config.wrap.set(chunk_wrap);
+    ral.dst_config.increment.set(addr_inc);
+    csr_update(ral.dst_config);
+  endtask : set_dst_config
 
   // Task: Set DMA Enabled Memory base and limit
   task set_dma_enabled_memory_range(bit [32:0] base, bit [31:0] limit, bit valid, mubi4_t lock);
@@ -364,6 +414,8 @@ class dma_base_vseq extends cip_base_vseq #(
     abort_pending = 1'b0;
     set_src_addr(dma_config.src_addr);
     set_dst_addr(dma_config.dst_addr);
+    set_src_config(dma_config.src_chunk_wrap, dma_config.src_addr_inc);
+    set_dst_config(dma_config.dst_chunk_wrap, dma_config.dst_addr_inc);
     set_addr_space_id(dma_config.src_asid, dma_config.dst_asid);
     set_total_size(dma_config.total_data_size);
     set_chunk_data_size(dma_config.chunk_data_size);
@@ -472,6 +524,12 @@ class dma_base_vseq extends cip_base_vseq #(
 
   // Task: Start TLUL Sequences
   virtual task start_device(ref dma_seq_item dma_config);
+    // Set fifo enable bit; the FIFO is used whenever address incrementing does not occur
+    // after each (partial-)word transfer; the normal memory model would not cope with that
+    // and would be continually losing data.
+    set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
+    set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
+
     if (dma_config.handshake) begin
       // Will the test sequence generate any interrupts?
       bit [31:0] fifo_interrupt_mask;
@@ -481,9 +539,6 @@ class dma_base_vseq extends cip_base_vseq #(
 
       `uvm_info(`gfn, $sformatf("FIFO interrupt enable mask = %0x ", fifo_interrupt_mask),
                 UVM_HIGH)
-      // Set fifo enable bit
-      set_seq_fifo_read_mode(dma_config.src_asid, dma_config.get_read_fifo_en());
-      set_seq_fifo_write_mode(dma_config.dst_asid, dma_config.get_write_fifo_en());
 
       // TODO: there may be some merit at some point to starting handshaking transfers when
       // interrupts cannot occur, but only if we're expecting to abort transfers, for example.
@@ -549,10 +604,14 @@ class dma_base_vseq extends cip_base_vseq #(
     seq_ctn.set_fifo_clear(0);
     seq_host.set_fifo_clear(0);
     seq_sys.set_fifo_clear(0);
-    // Disable FIFO
-    cfg.fifo_host.disable_fifo();
-    cfg.fifo_ctn.disable_fifo();
-    cfg.fifo_sys.disable_fifo();
+    // Disable destination FIFOs
+    cfg.fifo_dst_host.disable_fifo();
+    cfg.fifo_dst_ctn.disable_fifo();
+    cfg.fifo_dst_sys.disable_fifo();
+    // Disable source FIFOs
+    cfg.fifo_dst_host.disable_fifo();
+    cfg.fifo_dst_ctn.disable_fifo();
+    cfg.fifo_dst_sys.disable_fifo();
   endtask
 
   // Method to clear memory models of any content
@@ -568,28 +627,25 @@ class dma_base_vseq extends cip_base_vseq #(
   function void clear_fifo();
     // Clear FIFO contents
     `uvm_info(`gfn, $sformatf("Clearing FIFO contents"), UVM_MEDIUM)
-    cfg.fifo_host.init();
-    cfg.fifo_ctn.init();
-    cfg.fifo_sys.init();
+    cfg.fifo_dst_host.init();
+    cfg.fifo_dst_ctn.init();
+    cfg.fifo_dst_sys.init();
+    cfg.fifo_src_host.init();
+    cfg.fifo_src_ctn.init();
+    cfg.fifo_src_sys.init();
   endfunction
 
   // Task: Set the CONTROL register, optionally commencing a transfer.
   task set_control(opcode_e opcode,
                    bit initial_transfer,
                    bit handshake,
-                   bit auto_inc_buffer,
-                   bit auto_inc_fifo,
-                   bit data_direction,
                    bit go);   // Commence transfer?
     uvm_reg_data_t data = 0;
     string action;
 
     action = go ? "Executing" : "Setting";
-    `uvm_info(`gfn, $sformatf(
-              "DMA: %s CONTROL OpC=%d Initial=%d Handshake=%d inc_buffer=%d inc_fifo=%d dir=%d",
-                action, opcode, initial_transfer, handshake, auto_inc_buffer, auto_inc_fifo,
-                data_direction),
-              UVM_HIGH)
+    `uvm_info(`gfn, $sformatf("DMA: %s CONTROL OpC=%d Initial=%d Handshake=%d",
+                              action, opcode, initial_transfer, handshake), UVM_HIGH)
 
     // Exclusive access to CONTROL register
     // Note: a parallel thread may be attempting to Abort transfers using the CONTROL register.
@@ -602,11 +658,6 @@ class dma_base_vseq extends cip_base_vseq #(
     data = get_csr_val_with_updated_field(ral.control.opcode, data, int'(opcode));
     data = get_csr_val_with_updated_field(ral.control.initial_transfer, data, initial_transfer);
     data = get_csr_val_with_updated_field(ral.control.hardware_handshake_enable, data, handshake);
-    data = get_csr_val_with_updated_field(ral.control.memory_buffer_auto_increment_enable, data,
-                                          auto_inc_buffer);
-    data = get_csr_val_with_updated_field(ral.control.fifo_auto_increment_enable, data,
-                                          auto_inc_fifo);
-    data = get_csr_val_with_updated_field(ral.control.data_direction, data, data_direction);
     data = get_csr_val_with_updated_field(ral.control.abort, data, abort_pending);
     data = get_csr_val_with_updated_field(ral.control.go, data, 1'b0);
 
@@ -626,9 +677,6 @@ class dma_base_vseq extends cip_base_vseq #(
     set_control(dma_config.opcode,
                 initial_transfer,
                 dma_config.handshake,
-                dma_config.auto_inc_buffer,
-                dma_config.auto_inc_fifo,
-                dma_config.direction,
                 1'b1); // Go
   endtask
 

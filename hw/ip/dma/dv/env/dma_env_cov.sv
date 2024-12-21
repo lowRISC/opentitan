@@ -98,14 +98,13 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
 
   cp_handshake: coverpoint dma_config.handshake;
 
-  cp_data_direction: coverpoint dma_config.direction {
-    bins read_from_fifo = {DmaRcvData};
-    bins write_to_fifo = {DmaSendData};
-  }
+  cp_dst_chunk_wrap: coverpoint dma_config.dst_chunk_wrap;
 
-  cp_fifo_auto_inc: coverpoint dma_config.auto_inc_fifo;
+  cp_dst_addr_inc: coverpoint dma_config.dst_addr_inc;
 
-  cp_mem_buffer_auto_inc: coverpoint dma_config.auto_inc_buffer;
+  cp_src_chunk_wrap: coverpoint dma_config.src_chunk_wrap;
+
+  cp_src_addr_inc: coverpoint dma_config.src_addr_inc;
 
   cp_handshake_intr: coverpoint dma_config.handshake_intr_en;
 
@@ -119,52 +118,51 @@ covergroup dma_config_cg with function sample(dma_seq_item dma_config,
       cp_dst_addr,
       cp_dst_asid;
 
-  cr_opcode_X_src_asid_X_dst_asid_X_handshake_X_data_direction: cross
+  cr_opcode_X_src_asid_X_dst_asid_X_handshake: cross
       cp_opcode,
       cp_src_asid,
       cp_dst_asid,
-      cp_handshake,
-      cp_data_direction;
+      cp_handshake;
 
-  cr_opcode_X_chunk_data_size_X_src_asid_X_dst_asid_X_data_direction: cross
+  cr_opcode_X_chunk_data_size_X_src_asid_X_dst_asid: cross
       cp_opcode,
       cp_chunk_data_size,
       cp_src_asid,
-      cp_dst_asid,
-      cp_data_direction;
+      cp_dst_asid;
 
-  cr_opcode_X_total_data_size_X_transfer_width_X_data_direction: cross
+  cr_opcode_X_total_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
       cp_opcode,
       cp_total_data_size,
       cp_transfer_width,
-      cp_data_direction;
+      cp_src_asid,
+      cp_dst_asid;
 
-  cr_opcode_X_handshake_X_chunk_data_size_X_transfer_width_X_data_direction: cross
+  cr_opcode_X_handshake_X_chunk_data_size_X_transfer_width_X_src_asid_X_dst_asid: cross
       cp_opcode,
       cp_handshake,
       cp_chunk_data_size,
       cp_transfer_width,
-      cp_data_direction;
+      cp_src_asid,
+      cp_dst_asid;
 
-  cr_opcode_X_handshake_X_mem_buffer_auto_inc_X_fifo_auto_inc_X_data_direction: cross
+  cr_opcode_X_handshake_X_dst_addr_inc_X_dst_chunk_wrap_X_src_addr_inc_X_src_chunk_wrap: cross
       cp_opcode,
       cp_handshake,
-      cp_mem_buffer_auto_inc,
-      cp_fifo_auto_inc,
-      cp_data_direction;
+      cp_dst_chunk_wrap,
+      cp_dst_addr_inc,
+      cp_src_chunk_wrap,
+      cp_src_addr_inc;
 
-  cr_opcode_X_handshake_X_data_direction_X_initial_transfer: cross
+  cr_opcode_X_handshake_X_initial_transfer: cross
       cp_opcode,
       cp_handshake,
-      cp_data_direction,
       cp_initial_transfer;
 
-  cr_src_addr_X_dst_addr_X_mem_range_base_X_mem_range_limit_X_data_direction: cross
+  cr_src_addr_X_dst_addr_X_mem_range_base_X_mem_range_limit: cross
       cp_src_addr,
       cp_dst_addr,
       cp_mem_range_base,
-      cp_mem_range_limit,
-      cp_data_direction;
+      cp_mem_range_limit;
 
   cr_src_addr_alignment_X_dst_addr_alignment_X_total_data_size_alignment_X_transfer_width: cross
       cp_src_addr_alignment,
@@ -181,11 +179,10 @@ covergroup dma_tlul_error_cg with function sample(dma_seq_item dma_config,
 
   cp_tl_err_asid: coverpoint tl_err_asid;
 
-  cr_tl_err_asid_X_src_asid_X_dst_asid_X_direction: cross
+  cr_tl_err_asid_X_src_asid_X_dst_asid: cross
       cp_tl_err_asid,
       dma_config.src_asid,
-      dma_config.dst_asid,
-      dma_config.direction;
+      dma_config.dst_asid;
 
 endgroup
 
