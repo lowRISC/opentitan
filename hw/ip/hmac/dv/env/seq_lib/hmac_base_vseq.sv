@@ -713,7 +713,13 @@ task hmac_base_vseq::sar_different_context();
           csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
           // Check message length -> TODO (#23562) move to the SCB when removing sar_skip_ctxt
           csr_rd_msg_length(msg_length_rd);
-          `DV_CHECK_EQ(msg_length_rd, msg_length_rand+msg_b.size()*8)
+          // Check if reset hasn't been triggered before doing this check
+          // TODO (#25809) remove this from the seq when reset handled properly
+          if (cfg.under_reset) begin
+            return;
+          end else begin
+            `DV_CHECK_EQ(msg_length_rd, msg_length_rand+msg_b.size()*8)
+          end
         end
   endcase
   // Clear the interrupt.
