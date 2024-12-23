@@ -1,1 +1,0 @@
-../../top_earlgrey/rtl/physical_pads.sv

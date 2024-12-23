@@ -8,7 +8,7 @@ import topgen.lib as lib
 
 has_pwrmgr = lib.find_module(top['module'], 'pwrmgr')
 has_pinmux = lib.find_module(top['module'], 'pinmux')
-has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
+has_alert_handler = lib.find_module(top['module'], 'alert_handler')
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 has_rstmgr = lib.find_module(top['module'], 'rstmgr')
 %>\

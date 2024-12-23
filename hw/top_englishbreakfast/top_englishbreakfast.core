@@ -7,9 +7,8 @@ description: "Technology-independent English Breakfast toplevel"
 filesets:
   files_rtl_generic:
     depend:
-      - lowrisc:systems:topgen
-      - lowrisc:constants:top_earlgrey_top_pkg
-      - lowrisc:tlul:headers
+      - lowrisc:opentitan:top_englishbreakfast_pwrmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_alert_handler_pkg
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
@@ -30,6 +29,7 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
+      - lowrisc:constants:top_earlgrey_top_pkg
       - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
@@ -43,6 +43,12 @@ filesets:
       - lowrisc:opentitan:top_englishbreakfast_rv_plic
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
+      - lowrisc:tlul:headers
+      - lowrisc:systems:top_englishbreakfast_pkg
+    files:
+      - rtl/autogen/top_englishbreakfast_rnd_cnst_pkg.sv
+      - rtl/autogen/top_englishbreakfast.sv
+    file_type: systemVerilogSource
 
   files_verilator_waiver:
     depend:

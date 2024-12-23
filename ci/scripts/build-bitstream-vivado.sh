@@ -26,12 +26,10 @@ case x"$TOPLEVEL" in
     xtop_earlgrey)
         HAS_SCRAMBLED_ROM=1
         HAS_OTP=1
-        RUN_TOPGEN_FUSESOC=0
         ;;
     xtop_englishbreakfast)
         HAS_SCRAMBLED_ROM=0
         HAS_OTP=0
-        RUN_TOPGEN_FUSESOC=1
         ;;
     *)
         usage "Unknown toplevel: $TOPLEVEL"
@@ -86,17 +84,10 @@ else
     OTP_ARG=""
 fi
 
-if [ $RUN_TOPGEN_FUSESOC == 1 ]; then
-    util/topgen-fusesoc.py --files-root=. --topname="$TOPLEVEL"
-    FILESET=topgen
-else
-    FILESET=top
-fi
-
 CORE_NAME="lowrisc:systems:chip_${FLAVOUR}_${TARGET}"
 
 fusesoc --verbose --cores-root=. \
-  run --flag=fileset_$FILESET --target=synth --setup --build \
+  run --target=synth --setup --build \
   --build-root="$OBJ_DIR/hw" \
   "$CORE_NAME" \
   --BootRomInitFile="$BOOTROM_VMEM" \
