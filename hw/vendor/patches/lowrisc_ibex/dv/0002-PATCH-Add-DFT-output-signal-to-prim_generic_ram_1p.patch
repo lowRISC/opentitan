@@ -1,0 +1,42 @@
+From 57c780dfce477e3a8d5ff34e9022865209f2b42f Mon Sep 17 00:00:00 2001
+From: Robert Schilling <rschilling@rivosinc.com>
+Date: Mon, 23 Dec 2024 09:41:22 +0100
+Subject: [PATCH 1/1] [PATCH] Add DFT output signal to prim_generic_ram_1p
+
+Signed-off-by: Robert Schilling <rschilling@rivosinc.com>
+---
+ .../icache/dv/prim_badbit/prim_badbit_ram_1p.sv | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
+
+diff --git a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
+index 7fa4678f..23bd07fb 100644
+--- a/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
++++ b/uvm/icache/dv/prim_badbit/prim_badbit_ram_1p.sv
+@@ -36,15 +36,16 @@ module prim_badbit_ram_1p #(
+     .DataBitsPerMask(DataBitsPerMask),
+     .MemInitFile    (MemInitFile)
+   ) u_mem (
+-    .clk_i(clk_i),
++    .clk_i    (clk_i),
+ 
+-    .cfg_i  ('0),
+-    .req_i  (req_i),
+-    .write_i(write_i),
+-    .addr_i (addr_i),
+-    .wdata_i(wdata_i),
+-    .wmask_i(wmask_i),
+-    .rdata_o(sram_rdata)
++    .cfg_i    ('0),
++    .cfg_rsp_o(),
++    .req_i    (req_i),
++    .write_i  (write_i),
++    .addr_i   (addr_i),
++    .wdata_i  (wdata_i),
++    .wmask_i  (wmask_i),
++    .rdata_o  (sram_rdata)
+   );
+ 
+   // This module doesn't work with Verilator (because of the wired-or). Because we define the
+-- 
+2.47.0
+
