@@ -29,7 +29,7 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
 
       `DV_CHECK_RANDOMIZE_FATAL(this)
-      cfg.clk_rst_vif.wait_clks(delay);
+      cfg.clk_rst_vif.wait_clks_or_rst(delay);
 
       randcase
         // drive new gpio data in
@@ -42,7 +42,13 @@ class gpio_random_dout_din_vseq extends gpio_base_vseq;
           `DV_CHECK_STD_RANDOMIZE_FATAL(gpio_i)
           // drive gpio_vif after setting all output enables to 0's
           drive_gpio_in(gpio_i);
-          cfg.clk_rst_vif.wait_clks(1);
+
+          // Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
+          cfg.clk_rst_vif.wait_clks_or_rst(1);
+
+          // Skip if a reset is ongoing...
+          if (!cfg.clk_rst_vif.rst_n) break;
           // read data_in register
           csr_rd(.ptr(ral.data_in), .value(data_in));
         end
