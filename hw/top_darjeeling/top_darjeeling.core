@@ -89,7 +89,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/top_darjeeling.vbw
+      - lint/top_darjeeling.vbl
     file_type: veribleLintWaiver
 
 
