@@ -30,6 +30,12 @@ class sram_ctrl_base_vseq #(
   // enabled at the beginning of the test.
   bit init_w_readback = 1'b0;
 
+  // The extra cycles to wait after reset before starting any test, required
+  // to ensure that the tl_agent is properly emptied.
+  // TODO(lowRISC/opentitan#25757): Make sure that the tl_agent pipeline is emptied.
+  // Then, waiting these cycles is not required anymore.
+  int post_apply_reset_cycles = 1;
+
   constraint readback_en_c {
     soft readback_en inside {MuBi4True, MuBi4False};
   }
@@ -113,6 +119,11 @@ class sram_ctrl_base_vseq #(
     super.apply_resets_concurrently(cfg.otp_clk_rst_vif.clk_period_ps);
     cfg.otp_clk_rst_vif.drive_rst_pin(1);
     cfg.exec_vif.init();
+  endtask
+
+  task post_apply_reset(string reset_kind = "HARD");
+    super.post_apply_reset(reset_kind);
+    cfg.clk_rst_vif.wait_clks(post_apply_reset_cycles);
   endtask
 
   virtual task dut_shutdown();
