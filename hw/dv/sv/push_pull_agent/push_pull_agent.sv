@@ -41,13 +41,14 @@ class push_pull_agent #(
     end
   endfunction
 
-  virtual task run_phase(uvm_phase phase);
+  // TODO MVy: I think an agent is not supposed to have a run phase, this is an issue
+  virtual task run_main();
     push_pull_device_seq#(HostDataWidth, DeviceDataWidth) m_seq =
         push_pull_device_seq#(HostDataWidth, DeviceDataWidth)::type_id::create("m_seq", this);
     if (cfg.if_mode == dv_utils_pkg::Device && cfg.start_default_device_seq) begin
       uvm_config_db#(uvm_object_wrapper)::set(null, {sequencer.get_full_name(), ".run_phase"},
                                               "default_sequence", m_seq.get_type());
-      sequencer.start_phase_sequence(phase);
+      // sequencer.start_phase_sequence(phase);   // has been deprecated from UVM ref manual
     end
   endtask
 
