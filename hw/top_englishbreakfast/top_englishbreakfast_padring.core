@@ -1,0 +1,16 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_englishbreakfast_padring:0.1"
+description: "Chip-level padring instance"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:systems:top_earlgrey_padring
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

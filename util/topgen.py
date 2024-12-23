@@ -909,8 +909,7 @@ def _process_top(
 
     # Generate Alert Handler if there is an instance
     if not args.xbar_only:
-        if lib.find_module(completecfg['module'], 'alert_handler') or \
-           completecfg['name'] == 'englishbreakfast':
+        if lib.find_module(completecfg['module'], 'alert_handler'):
             generate_alert_handler(completecfg, out_path)
             if args.alert_handler_only:
                 sys.exit()

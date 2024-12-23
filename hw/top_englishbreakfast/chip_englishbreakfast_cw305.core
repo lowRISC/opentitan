@@ -10,9 +10,14 @@ filesets:
     depend:
       - lowrisc:prim_xilinx:prim_xilinx_default_pkg
       - lowrisc:systems:top_englishbreakfast:0.1
+      - lowrisc:systems:top_englishbreakfast_pkg
       - lowrisc:systems:top_earlgrey_ast
-      - lowrisc:systems:topgen
       - lowrisc:systems:top_earlgrey_padring
+      - lowrisc:systems:top_earlgrey_scan_role_pkg
+    files:
+      - rtl/clkgen_xil7series.sv
+      - rtl/usr_access_xil7series.sv
+      - rtl/autogen/chip_englishbreakfast_cw305.sv
     file_type: systemVerilogSource
 
   files_constraints:

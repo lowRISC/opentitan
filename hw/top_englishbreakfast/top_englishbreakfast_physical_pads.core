@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:systems:top_englishbreakfast_physical_pads:0.1"
+description: "Open-source place-holder for physical pads"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:systems:top_earlgrey_physical_pads
+      - lowrisc:prim:assert
+    files:
+      - rtl/physical_pads.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl

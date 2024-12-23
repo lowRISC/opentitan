@@ -5,7 +5,7 @@ ${gencmd}
 <%
 import topgen.lib as lib
 
-has_alert_handler = lib.find_module(top['module'], 'alert_handler') or top['name'] == 'englishbreakfast'
+has_alert_handler = lib.find_module(top['module'], 'alert_handler')
 %>\
 
 #include "${helper.header_path}"

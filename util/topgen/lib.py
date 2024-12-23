@@ -875,8 +875,7 @@ class TopGen:
         self._init_plic_mapping()
 
         # Only generate alert_handler and mappings if there is an alert_handler
-        if find_module(self.top['module'], 'alert_handler') or \
-           self.top['name'] == 'englishbreakfast':
+        if find_module(self.top['module'], 'alert_handler'):
             self._init_alert_mapping()
         # Only generate pinmux and pad mappings if there is a pinmux
         if find_module(self.top['module'], 'pinmux'):

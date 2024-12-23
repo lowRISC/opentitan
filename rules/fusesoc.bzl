@@ -66,10 +66,7 @@ def _fusesoc_build_impl(ctx):
         format_each = "--cores-root=%s",
     )
 
-    args.add_all([
-        "run",
-        "--flag=fileset_top",
-    ])
+    args.add("run")
     args.add(ctx.attr.target, format = "--target=%s")
     args.add_all([
         "--setup",
@@ -80,8 +77,6 @@ def _fusesoc_build_impl(ctx):
     args.add_all(ctx.attr.systems)
     args.add_all(flags)
 
-    # Note: the `fileset_top` flag used above is specific to the OpenTitan
-    # project to select the correct RTL fileset.
     ctx.actions.run(
         mnemonic = "FuseSoC",
         outputs = outputs,
