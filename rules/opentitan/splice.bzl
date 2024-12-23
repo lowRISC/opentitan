@@ -37,6 +37,8 @@ def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
 
 def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
     spliced = ctx.actions.declare_file("{}.bit".format(name))
+    stdout = ctx.actions.declare_file("{}.out.log".format(name))
+    stderr = ctx.actions.declare_file("{}.err.log".format(name))
 
     # Vivado's `updatemem` only accepts bitstream filenames that end with `.bit`.
     # If the filename doesn't have that extension, symlink to a name that does.
@@ -57,17 +59,20 @@ def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
 
     ctx.actions.run(
         mnemonic = "SpliceBitstream",
-        outputs = [spliced],
+        outputs = [spliced, stdout, stderr],
         inputs = [src, mmi, update],
-        arguments = [args],
-        executable = "updatemem",
+        arguments = ["updatemem", args],
+        executable = ctx.executable._run_script,
         use_default_shell_env = False,
         execution_requirements = {
             "no-sandbox": "",
         },
-        env = ENV,
+        env = ENV | {
+            "RUN_CAPTURE_STDOUT": stdout.path,
+            "RUN_CAPTURE_STDERR": stderr.path,
+        },
     )
-    return spliced
+    return spliced, stdout, stderr
 
 def update_usr_access(ctx, name, src, tool):
     """Updates the USR_ACCESS value in the bistream.
@@ -125,7 +130,7 @@ def _bitstream_splice_impl(ctx):
             tool = tc.tools.gen_mem_image,
             swap_nibbles = ctx.attr.swap_nibbles,
         )
-        src = vivado_updatemem(
+        src, rom_updatemem_stdout, rom_updatemem_stderr = vivado_updatemem(
             ctx = ctx,
             name = "{}-rom".format(ctx.label.name),
             src = src,
@@ -148,7 +153,7 @@ def _bitstream_splice_impl(ctx):
             tool = tc.tools.gen_mem_image,
             swap_nibbles = ctx.attr.swap_nibbles,
         )
-        src = vivado_updatemem(
+        src, otp_updatemem_stdout, otp_updatemem_stderr = vivado_updatemem(
             ctx = ctx,
             name = "{}-otp".format(ctx.label.name),
             src = src,
@@ -164,7 +169,15 @@ def _bitstream_splice_impl(ctx):
         src = src,
         tool = tc.tools.opentitantool,
     )
-    return DefaultInfo(files = depset([output]))
+    return [
+        DefaultInfo(files = depset([output])),
+        OutputGroupInfo(
+            rom_updatemem_stdout = depset([rom_updatemem_stdout]),
+            rom_updatemem_stderr = depset([rom_updatemem_stderr]),
+            otp_updatemem_stdout = depset([otp_updatemem_stdout]),
+            otp_updatemem_stderr = depset([otp_updatemem_stderr]),
+        ),
+    ]
 
 bitstream_splice_ = rule(
     implementation = _bitstream_splice_impl,
@@ -177,6 +190,7 @@ bitstream_splice_ = rule(
         "swap_nibbles": attr.bool(default = True, doc = "Swap nybbles while preparing the memory image"),
         "debug": attr.bool(default = False, doc = "Emit debug info while updating"),
         "skip": attr.bool(default = False, doc = "Skip splice and do not modify the bitstream"),
+        "_run_script": attr.label(default = "//rules/scripts:run_and_capture", executable = True, cfg = "exec", doc = "Path to runner script that captures the output"),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
