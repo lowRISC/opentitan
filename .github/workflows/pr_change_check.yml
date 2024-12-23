@@ -22,7 +22,9 @@ jobs:
         run: |
           pr_url="https://github.com/${{ github.repository }}/pull/${{ github.event.number }}"
           echo $pr_url
-          gh pr diff $pr_url --name-only > $HOME/changed_files
+          gh pr checkout $pr_url --name-only > $HOME/changed_files
+          BASE_BRANCH=$(gh pr view --json baseRefName --jq .baseRefName)
+          git diff --stat --name-only $BASE_BRANCH > $HOME/changed_files
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
