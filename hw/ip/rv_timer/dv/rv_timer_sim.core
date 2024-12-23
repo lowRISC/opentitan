@@ -13,6 +13,7 @@ filesets:
     depend:
       - lowrisc:dv:rv_timer_test
       - lowrisc:dv:rv_timer_sva
+      - lowrisc:prim_generic:all
     files:
       - tb/tb.sv
     file_type: systemVerilogSource

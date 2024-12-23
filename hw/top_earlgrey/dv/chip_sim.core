@@ -39,6 +39,8 @@ filesets:
       - lowrisc:dv_dpi_c:usbdpi
       - lowrisc:dv_dpi_sv:usbdpi
       - lowrisc:dv:usb20_usbdpi
+      # It may make sense to put this generic behind a flag
+      - lowrisc:prim_generic:all
     files:
       - tb/chip_hier_macros.svh: {is_include_file: true}
       - autogen/tb__xbar_connect.sv: {is_include_file: true}

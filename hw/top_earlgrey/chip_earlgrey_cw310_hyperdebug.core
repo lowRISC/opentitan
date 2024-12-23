@@ -13,6 +13,8 @@ filesets:
       - lowrisc:systems:ast
       - lowrisc:systems:padring
       - lowrisc:systems:scan_role_pkg
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx:all
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/usr_access_xil7series.sv
@@ -46,6 +48,10 @@ filesets:
     files:
       - lint/chip_earlgrey_cw310.waiver
     file_type: waiver
+
+  files_lint:
+    depend:
+      - lowrisc:prim_generic:all
 
 parameters:
   # XXX: This parameter needs to be absolute, or relative to the *.runs/synth_1
@@ -107,6 +113,8 @@ targets:
   lint:
     <<: *default_target
     default_tool: verilator
+    filesets_append:
+      - files_lint
     parameters:
       - SYNTHESIS=true
       - AST_BYPASS_CLK=true

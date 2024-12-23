@@ -1,0 +1,37 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_generic:all:0.1"
+description: "Technology-independent prim library"
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim_generic:and2
+      - lowrisc:prim_generic:buf
+      - lowrisc:prim_generic:clock_buf
+      - lowrisc:prim_generic:clock_div
+      - lowrisc:prim_generic:clock_gating
+      - lowrisc:prim_generic:clock_inv
+      - lowrisc:prim_generic:clock_mux2
+      - lowrisc:prim_generic:flash
+      - lowrisc:prim_generic:flop
+      - lowrisc:prim_generic:flop_2sync
+      - lowrisc:prim_generic:flop_en
+      - lowrisc:prim_generic:otp
+      - lowrisc:prim_generic:pad_attr
+      - lowrisc:prim_generic:pad_wrapper
+      - lowrisc:prim_generic:ram_1p
+      - lowrisc:prim_generic:ram_1r1w
+      - lowrisc:prim_generic:ram_2p
+      - lowrisc:prim_generic:rom
+      - lowrisc:prim_generic:usb_diff_rx
+      - lowrisc:prim_generic:xnor2
+      - lowrisc:prim_generic:xor2
+
+targets:
+  default:
+    filesets:
+      - files_rtl
