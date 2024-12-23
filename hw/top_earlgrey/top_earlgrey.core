@@ -89,7 +89,7 @@ filesets:
       - lowrisc:lint:common
       - lowrisc:lint:comportable
     files:
-      - lint/top_earlgrey.vbw
+      - lint/top_earlgrey.vbl
     file_type: veribleLintWaiver
 
 
