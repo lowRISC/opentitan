@@ -10,9 +10,9 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
+      - lowrisc:ip:tlul
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
     files:
-      - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_core_reg_top.sv
     file_type: systemVerilogSource
 
