@@ -26,4 +26,4 @@ ${helper.alert_mapping.render_definition()}
  * This array is a mapping from `${helper.plic_interrupts.name.as_c_type()}` to
  * `${helper.plic_sources.name.as_c_type()}`.
  */
-${helper.plic_mapping.render_definition()}
+${helper.plic_mapping.render_definition()}\

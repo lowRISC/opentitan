@@ -1302,7 +1302,7 @@
     {
       name: chip_sw_alert_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:alert_test:1:new_rules"]
+      sw_images: ["//hw/top_earlgrey/sw/autogen/tests:alert_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1718,19 +1718,19 @@
     {
       name: chip_plic_all_irqs_0
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_0:1:new_rules"]
+      sw_images: ["//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_0:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_plic_all_irqs_10
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_10:1:new_rules"]
+      sw_images: ["//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_10:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
       name: chip_plic_all_irqs_20
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests/autogen:plic_all_irqs_test_20:1:new_rules"]
+      sw_images: ["//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_20:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
