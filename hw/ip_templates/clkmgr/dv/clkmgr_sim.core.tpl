@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:clkmgr_sim:0.1" # TODO: needs templating
+name: ${instance_vlnv("lowrisc:dv:clkmgr_sim:0.1")}
 description: "CLKMGR DV sim target"
 filesets:
   files_rtl:
@@ -11,8 +11,8 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:clkmgr_test # TODO: needs templating
-      - lowrisc:dv:clkmgr_sva # TODO: needs templating
+      - ${instance_vlnv("lowrisc:dv:clkmgr_test")}
+      - ${instance_vlnv("lowrisc:dv:clkmgr_sva")}
     files:
       - tb.sv
       - cov/clkmgr_cov_bind.sv
