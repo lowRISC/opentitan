@@ -17,7 +17,7 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:mubi
       - lowrisc:prim:sparse_fsm
-      - lowrisc:ip_interfaces:alert_handler_reg
+      - ${instance_vlnv("lowrisc:ip:alert_handler_reg")}
     files:
       - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv
