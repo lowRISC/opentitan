@@ -25,25 +25,13 @@ filegroup(
 )
 
 filegroup(
-    name = "rom_mmi",
+    name = "mmi",
     testonly = True,
     srcs = select({
         "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_rom_mmi"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_rom_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_rom_mmi"],
-    }),
-    tags = ["manual"],
-)
-
-filegroup(
-    name = "otp_mmi",
-    testonly = True,
-    srcs = select({
-        "//hw/bitstream:bitstream_skip": ["//hw/bitstream/universal:none"],
-        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:fpga_cw340_otp_mmi"],
-        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_otp_mmi"],
-        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_otp_mmi"],
+        "//hw/bitstream:bitstream_vivado": ["//hw/bitstream/vivado:cw340_mmi"],
+        "//hw/bitstream:bitstream_gcp_splice": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
+        "//conditions:default": ["@bitstreams//:chip_earlgrey_cw340_mmi"],
     }),
     tags = ["manual"],
 )
@@ -54,7 +42,8 @@ bitstream_splice(
     testonly = True,
     src = ":bitstream",
     data = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw340_scr_vmem",
-    meminfo = ":rom_mmi",
+    instance = "rom",
+    meminfo = ":mmi",
     tags = ["manual"],
     update_usr_access = True,
 )
@@ -65,7 +54,8 @@ bitstream_splice(
     testonly = True,
     src = ":bitstream",
     data = "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_scr_vmem",
-    meminfo = ":rom_mmi",
+    instance = "rom",
+    meminfo = ":mmi",
     tags = ["manual"],
     update_usr_access = True,
 )
@@ -77,7 +67,8 @@ bitstream_splice(
         testonly = True,
         src = ":mask_rom",
         data = img_target,
-        meminfo = ":otp_mmi",
+        instance = "otp",
+        meminfo = ":mmi",
         tags = ["manual"],
         update_usr_access = True,
     )

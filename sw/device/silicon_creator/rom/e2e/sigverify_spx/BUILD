@@ -173,7 +173,8 @@ opentitan_binary(
             lc_state,
             t["name"],
         ),
-        meminfo = "//hw/bitstream:otp_mmi",
+        instance = "otp",
+        meminfo = "//hw/bitstream:cw310_mmi",
         update_usr_access = True,
         visibility = ["//visibility:private"],
     )

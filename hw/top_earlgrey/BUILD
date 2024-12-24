@@ -89,16 +89,15 @@ fpga_cw310(
     base = ":fpga_cw310",
     base_bitstream = "//hw/bitstream:bitstream",
     exec_env = "fpga_cw310_test_rom",
+    mmi = "//hw/bitstream:cw310_mmi",
     openocd_adapter_config = "//third_party/openocd:jtag_olimex_cfg",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_mmi = "//hw/bitstream:otp_mmi",
     param = {
         "interface": "cw310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     rom = "//sw/device/lib/testing/test_rom:test_rom",
-    rom_mmi = "//hw/bitstream:rom_mmi",
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -161,15 +160,14 @@ fpga_cw310(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_hyper310_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    mmi = "//hw/bitstream/hyperdebug:mmi",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_mmi = "//hw/bitstream/hyperdebug:otp_mmi",
     param = {
         "interface": "hyper310",
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    rom_mmi = "//hw/bitstream/hyperdebug:rom_mmi",
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -299,10 +297,9 @@ fpga_cw340(
     base = ":fpga_cw340",
     base_bitstream = "//hw/bitstream/cw340:bitstream",
     exec_env = "fpga_cw340_test_rom",
+    mmi = "//hw/bitstream/cw340:mmi",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
-    rom_mmi = "//hw/bitstream/cw340:rom_mmi",
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
@@ -320,10 +317,9 @@ fpga_cw340(
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw340_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    mmi = "//hw/bitstream/cw340:mmi",
     otp = "//hw/ip/otp_ctrl/data:img_rma",
-    otp_mmi = "//hw/bitstream/cw340:otp_mmi",
     rom = "//sw/device/silicon_creator/rom:mask_rom",
-    rom_mmi = "//hw/bitstream/cw340:rom_mmi",
     test_cmd = """
         --exec="transport init"
         --exec="fpga load-bitstream {bitstream}"
