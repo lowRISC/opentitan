@@ -14,7 +14,7 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
 
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
-  input  logic             clk_i,
+  input  logic                        clk_i,
 
   input  logic             req_i,
   input  logic             write_i,

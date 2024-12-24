@@ -79,6 +79,20 @@
       type:      "int",
       default:   "0x1000"
     },
+    { name:      "InstSize",
+      desc:      "Memory size of a single RAM tile (in bytes).",
+      type:      "int",
+      default:   "4096"
+      local:   "false"
+      expose:  "true"
+    },
+    { name:      "NumRamInst",
+      desc:      "Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .",
+      type:      "int",
+      default:   "1"
+      local:     "false"
+      expose:    "true"
+    },
     { name:      "InstrExec",
       desc:      "Support execution from SRAM",
       type:      "bit",
@@ -155,6 +169,7 @@
       type:    "uni"
       name:    "cfg"
       act:     "rcv"
+      width:   "NumRamInst",
       default: "'0"
       package: "prim_ram_1p_pkg"
     },
@@ -162,6 +177,7 @@
       type:    "uni"
       name:    "cfg_rsp"
       act:     "req"
+      width:   "NumRamInst",
       default: "'0"
       package: "prim_ram_1p_pkg"
     },
