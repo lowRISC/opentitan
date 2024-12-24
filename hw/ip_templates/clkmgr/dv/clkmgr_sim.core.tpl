@@ -7,7 +7,7 @@ description: "CLKMGR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:clkmgr
+      - ${instance_vlnv("lowrisc:ip:clkmgr")}
 
   files_dv:
     depend:

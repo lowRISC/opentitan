@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:clkmgr_pwrmgr_sva_if:0.1" # TODO: needs templating
-description: "CLKMGR to PWRMGR assertion interface."
+name: ${instance_vlnv("lowrisc:dv:clkmgr_test:0.1")}
+description: "CLKMGR DV UVM test"
 filesets:
   files_dv:
     depend:
-      - lowrisc:prim:assert
-      - lowrisc:prim:mubi
+      - ${instance_vlnv("lowrisc:dv:clkmgr_env")}
     files:
-      - clkmgr_pwrmgr_sva_if.sv
+      - clkmgr_test_pkg.sv
+      - clkmgr_base_test.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
