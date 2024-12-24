@@ -14,7 +14,9 @@ load(
 )
 load(
     "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
-    "IMM_ROM_EXT_TARGETS",
+    "SLOT_A_IMM_ROM_EXT_SECTIONS",
+    "SLOT_B_IMM_ROM_EXT_SECTIONS",
+    "SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS",
 )
 
 package(default_visibility = ["//visibility:public"])
@@ -233,7 +235,6 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:stdasm",
         "//sw/device/lib/runtime:hart",
-        "//sw/device/silicon_creator/imm_rom_ext:main_lib",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
@@ -287,6 +288,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
+    immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -311,6 +313,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
+    immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
@@ -335,6 +338,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
+    immutable_rom_ext_sections = SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
     deps = [
@@ -358,6 +362,7 @@ opentitan_binary(
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
+        immutable_rom_ext_sections = imm_rom_ext_sections,
         linker_script = ":ld_slot_virtual",
         manifest = ":manifest",
         deps = [
@@ -366,11 +371,9 @@ opentitan_binary(
             "//sw/device/silicon_creator/lib:manifest_def",
             "//sw/device/silicon_creator/lib/ownership:test_owner",
             "//sw/device/silicon_creator/lib/ownership/keys/fake",
-        ] + [
-            imm_rom_ext_target,
         ],
     )
-    for name, imm_rom_ext_target in IMM_ROM_EXT_TARGETS.items()
+    for name, imm_rom_ext_sections in SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS.items()
 ]
 
 manifest(d = {

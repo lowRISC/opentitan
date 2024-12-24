@@ -893,3 +893,13 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
+
+cc_test(
+    name = "epmp_unittest",
+    srcs = ["epmp_unittest.cc"],
+    deps = [
+        ":epmp",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
+)

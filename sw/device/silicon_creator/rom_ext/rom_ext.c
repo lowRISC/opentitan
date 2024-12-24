@@ -10,7 +10,6 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/runtime/hart.h"
-#include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
@@ -66,27 +65,6 @@ owner_config_t owner_config;
 
 // Owner application keys.
 owner_application_keyring_t keyring;
-
-// ePMP regions for important address spaces.
-const epmp_region_t kRamRegion = {
-    .start = TOP_EARLGREY_RAM_MAIN_BASE_ADDR,
-    .end = TOP_EARLGREY_RAM_MAIN_BASE_ADDR + TOP_EARLGREY_RAM_MAIN_SIZE_BYTES,
-};
-
-const epmp_region_t kMmioRegion = {
-    .start = TOP_EARLGREY_MMIO_BASE_ADDR,
-    .end = TOP_EARLGREY_MMIO_BASE_ADDR + TOP_EARLGREY_MMIO_SIZE_BYTES,
-};
-
-const epmp_region_t kRvDmRegion = {
-    .start = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR,
-    .end = TOP_EARLGREY_RV_DM_MEM_BASE_ADDR + TOP_EARLGREY_RV_DM_MEM_SIZE_BYTES,
-};
-
-const epmp_region_t kFlashRegion = {
-    .start = TOP_EARLGREY_EFLASH_BASE_ADDR,
-    .end = TOP_EARLGREY_EFLASH_BASE_ADDR + TOP_EARLGREY_EFLASH_SIZE_BYTES,
-};
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
@@ -158,7 +136,11 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  // TODO: Verify ePMP expectations from ROM.
+  // Reclaim entries 0 ~ 7 from ROM and IMM_ROM_EXT.
+  for (int8_t i = 7; i >= 0; --i) {
+    epmp_clear((uint8_t)i);
+  }
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Conditionally patch AST and check that it is in the expected state.
   HARDENED_RETURN_IF_ERROR(ast_patch(lc_state));
@@ -292,55 +274,8 @@ static rom_error_t rom_ext_boot(const manifest_t *manifest) {
   SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCreatorInfoPagesLockdown +
                            kOtpSecMmioCreatorSwCfgLockDown);
 
-  // ePMP region 15 gives read/write access to RAM.
-  epmp_set_napot(15, kRamRegion, kEpmpPermReadWrite);
+  epmp_clear_lock_bits();
 
-  // Reconfigure the ePMP MMIO region to be NAPOT region 14, thus freeing
-  // up an ePMP entry for use elsewhere.
-  epmp_set_napot(14, kMmioRegion, kEpmpPermReadWrite);
-
-  // ePMP region 13 allows RvDM access.
-  if (lc_state == kLcStateProd || lc_state == kLcStateProdEnd) {
-    // No RvDM access in Prod states, so we can clear the entry.
-    epmp_clear(13);
-  } else {
-    epmp_set_napot(13, kRvDmRegion, kEpmpPermReadWriteExecute);
-  }
-
-  // ePMP region 12 gives read access to all of flash for both M and U modes.
-  // The flash access was in ePMP region 5.  Clear it so it doesn't take
-  // priority over 12.
-  epmp_set_napot(12, kFlashRegion, kEpmpPermReadOnly);
-  epmp_clear(5);
-
-  // Move the ROM_EXT TOR region from entries 3/4/6 to 9/10/11.
-  // If the ROM_EXT is located in the virtual window, the ROM will have
-  // configured ePMP entry 6 as the read-only region over the entire
-  // window.
-  //
-  // If not using the virtual window, we move the ROM_EXT TOR region to
-  // ePMP entries 10/11.
-  // If using the virtual window, we move the ROM_EXT read-only region to
-  // ePMP entry 11 and move the TOR region to 9/10.
-  uint32_t start, end, vwindow;
-  CSR_READ(CSR_REG_PMPADDR3, &start);
-  CSR_READ(CSR_REG_PMPADDR4, &end);
-  CSR_READ(CSR_REG_PMPADDR6, &vwindow);
-  uint8_t rxindex = 10;
-  if (vwindow) {
-    rxindex = 9;
-    uint32_t size = 1 << bitfield_count_trailing_zeroes32(~vwindow);
-    vwindow = (vwindow & ~(size - 1)) << 2;
-    size <<= 3;
-
-    epmp_set_napot(11, (epmp_region_t){.start = vwindow, .end = vwindow + size},
-                   kEpmpPermReadOnly);
-  }
-  epmp_set_tor(rxindex, (epmp_region_t){.start = start << 2, .end = end << 2},
-               kEpmpPermReadExecute);
-  for (int8_t i = (int8_t)rxindex - 1; i >= 0; --i) {
-    epmp_clear((uint8_t)i);
-  }
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Configure address translation, compute the epmp regions and the entry
@@ -666,11 +601,6 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
 }
 
 void rom_ext_main(void) {
-  // TODO(opentitan#24368): Call immutable main in .rom_ext_immutable.
-  // The immutable rom_ext startup code is not ready yet, so we call it here
-  // to avoid breaking tests.
-  imm_rom_ext_main();
-
   rom_ext_check_rom_expectations();
   boot_data_t boot_data;
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
@@ -693,9 +623,3 @@ void rom_ext_exception_handler(void);
 
 OT_ALIAS("rom_ext_interrupt_handler")
 void rom_ext_nmi_handler(void);
-
-// A no-op immutable rom_ext fallback to avoid breaking tests before the
-// proper bazel target is ready.
-// TODO(opentitan#24368): Remove this nop fallback.
-OT_SECTION(".rom_ext_immutable.fallback")
-void imm_rom_ext_placeholder(void) {}
