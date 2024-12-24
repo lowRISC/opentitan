@@ -19,8 +19,9 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:clock_buf
       - lowrisc:prim:measure
+      - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip_interfaces:alert_handler_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
     files:
       - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv

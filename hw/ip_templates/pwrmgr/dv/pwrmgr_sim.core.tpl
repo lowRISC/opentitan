@@ -7,7 +7,7 @@ description: "PWRMGR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:pwrmgr
+      - ${instance_vlnv("lowrisc:ip:pwrmgr:0.1")}
   files_dv:
     depend:
       - ${instance_vlnv("lowrisc:dv:pwrmgr_test:0.1")}

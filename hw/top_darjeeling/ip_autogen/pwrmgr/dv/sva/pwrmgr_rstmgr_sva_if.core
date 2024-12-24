@@ -7,7 +7,7 @@ description: "PWRMGR to RSTMGR assertion interface."
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
       - lowrisc:prim:assert
     files:
       - pwrmgr_rstmgr_sva_if.sv

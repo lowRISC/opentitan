@@ -17,7 +17,7 @@ filesets:
 
   files_formal:
     depend:
-      - lowrisc:ip_interfaces:pwrmgr
+      - lowrisc:opentitan:top_earlgrey_pwrmgr:0.1
 
 generate:
   csr_assert_gen:

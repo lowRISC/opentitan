@@ -7,7 +7,7 @@ description: "PWRMGR to RSTMGR assertion interface."
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
       - lowrisc:prim:assert
     files:
       - pwrmgr_rstmgr_sva_if.sv

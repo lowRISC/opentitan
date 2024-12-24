@@ -9,7 +9,8 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:ip:rv_core_ibex_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}
