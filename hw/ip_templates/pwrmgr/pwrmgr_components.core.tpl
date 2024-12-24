@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pwrmgr_component:0.1" # TODO: needs templating
+name: ${instance_vlnv("lowrisc:ip:pwrmgr_component:0.1")}
 description: "Power manager RTL"
 
 filesets:
@@ -20,7 +20,7 @@ filesets:
       - lowrisc:prim:clock_buf
       - lowrisc:prim:measure
       - lowrisc:ip_interfaces:alert_handler_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
     files:
       - rtl/pwrmgr_cdc.sv
       - rtl/pwrmgr_slow_fsm.sv
