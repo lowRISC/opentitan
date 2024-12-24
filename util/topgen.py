@@ -1358,6 +1358,26 @@ def main():
                             helper=c_helper,
                             gencmd=gencmd_bzl)
 
+            # Auto-generate tests in "sw/device/tests/autogen" area.
+            for fname in ["plic_all_irqs_test.c", "BUILD"]:
+                # TODO(#25752): Delay generating tests until multi-top SW generation
+                # is designed and implemented.
+                if fname == "BUILD" and topname != "earlgrey":
+                    continue
+                outfile = cformat_dir / "tests" / fname
+                render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+                                outfile,
+                                helper=c_helper,
+                                gencmd=gencmd_c)
+
+            # Render alert tests only if there is really an alert handler
+            if lib.find_module(completecfg['module'], 'alert_handler'):
+                outfile = cformat_dir / "tests" / "alert_test.c"
+                render_template(TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
+                                outfile,
+                                helper=c_helper,
+                                gencmd=gencmd_c)
+
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
@@ -1394,23 +1414,6 @@ def main():
 
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
-
-        # Auto-generate tests in "sw/device/tests/autogen" area.
-        gencmd = warnhdr + GENCMD.format(top_name=top_name)
-        for fname in ["plic_all_irqs_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
-            render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
-                            outfile,
-                            helper=c_helper,
-                            gencmd=gencmd)
-
-        # Render alert tests only if there is really an alert handler
-        if lib.find_module(completecfg['module'], 'alert_handler'):
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / "alert_test.c"
-            render_template(TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
-                            outfile,
-                            helper=c_helper,
-                            gencmd=gencmd)
 
 
 if __name__ == "__main__":
