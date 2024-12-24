@@ -63,14 +63,13 @@ class BazelTool:
         bazel.try_escape_sandbox()
 
     def query_hjson_sources(self) -> list[Path]:
-        """Find hjson files associated with autogen_hjson_c_header targets."""
-        log.info("Querying Bazel for autogen_hjson_c_header srcs")
+        """Find hjson files associated with the top."""
+        log.info("Querying Bazel for IP hjson files")
         query_lines = run.run(
             "./bazelisk.sh",
             "cquery",
-            "labels(srcs, kind(autogen_hjson_c_header, //...))",
-            "--output=starlark",
-            "--starlark:expr='\\n'.join([f.path for f in target.files.to_list()])",
+            "labels(ip_hjson, //hw/top:top_earlgrey_desc)",
+            "--output=files",
         )
         return [Path(line) for line in query_lines]
 
@@ -255,7 +254,7 @@ def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
                 report_lines.append("Callsites where "
                                     f"[bold]{function_name}[/bold] " +
                                     "is called with hw-writable register " +
-                                    f"[purple]{register_token}[/purple]:")
+                                    f"[purple]{register_token}[/purple]: ")
                 report_lines.append("")
 
                 for loc in sorted(callsites, key=lambda c: c.path):

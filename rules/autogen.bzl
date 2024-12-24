@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
+load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo")
 
 """Autogeneration rules for OpenTitan.
 
@@ -11,35 +12,33 @@ used by the OpenTitan build, such as register definition files generated
 from hjson register descriptions.
 """
 
-def _hjson_c_header(ctx):
-    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else ctx.label.name.replace("_c_", "_"))
-    header = ctx.actions.declare_file("{}.h".format(output_stem))
-    node = []
-    if ctx.attr.node:
-        node.append("--node={}".format(ctx.attr.node))
+def _opentitan_ip_c_header_impl(ctx):
+    header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
+    top = ctx.attr.top[OpenTitanTopInfo]
+    if ctx.attr.ip not in top.ip_hjson:
+        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
+    hjson = top.ip_hjson[ctx.attr.ip]
 
     arguments = [
         "-D",
         "-q",
         "-o",
         header.path,
-    ] + node + [src.path for src in ctx.files.srcs]
+        hjson.path,
+    ]
+    inputs = [hjson]
 
-    # `inputs = ctx.files.srcs` will create `inputs` as an immutable list
-    # so need to unpack like this before appending the alias later
-    inputs = list(ctx.files.srcs)
-
-    # add path to an alias path if it's needed
-    if ctx.attr.alias:
+    # Add path to an alias path if it's needed.
+    if ctx.file.alias:
         alias = ctx.file.alias
 
-        # add the alias argument
+        # add the alias argument.
         arguments.extend([
             "--alias",
             alias.path,
         ])
 
-        # add the alias as an input file
+        # add the alias as an input file.
         inputs.append(alias)
 
     ctx.actions.run(
@@ -60,24 +59,16 @@ def _hjson_c_header(ctx):
         ),
     ]
 
-autogen_hjson_c_header = rule(
-    implementation = _hjson_c_header,
+opentitan_ip_c_header = rule(
+    implementation = _opentitan_ip_c_header_impl,
+    doc = "Generate the C headers for an IP block as used in a top",
     attrs = {
-        "srcs": attr.label_list(allow_files = True),
-        "node": attr.string(
-            doc = "Register block node to generate",
-        ),
+        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "ip": attr.string(doc = "Name of the IP block"),
         "alias": attr.label(
             mandatory = False,
             allow_single_file = True,
             doc = "A path to an alias file",
-        ),
-        "output_stem": attr.string(
-            doc = """
-                The name of the output file with no suffix.
-                This is optional, and if not given it will be set to the
-                target name replacing "_c_" by "_".
-                """,
         ),
         "_regtool": attr.label(
             default = "//util:regtool",
@@ -87,27 +78,28 @@ autogen_hjson_c_header = rule(
     },
 )
 
-def _hjson_rust_header(ctx):
-    node = []
-    if ctx.attr.node:
-        node.append("--node={}".format(ctx.attr.node))
+def _opentitan_ip_rust_header_impl(ctx):
+    tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
+    top = ctx.attr.top[OpenTitanTopInfo]
+    if ctx.attr.ip not in top.ip_hjson:
+        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
+    hjson = top.ip_hjson[ctx.attr.ip]
+
     stamp_args = []
     stamp_files = []
     if stamping_enabled(ctx):
         stamp_files = [ctx.version_file]
         stamp_args.append("--version-stamp={}".format(ctx.version_file.path))
 
-    output_stem = (ctx.attr.output_stem if ctx.attr.output_stem else ctx.label.name.replace("_rust_", "_"))
-    tock = ctx.actions.declare_file("{}.rs".format(output_stem))
     ctx.actions.run(
         outputs = [tock],
-        inputs = ctx.files.srcs + [ctx.executable._regtool] + stamp_files,
+        inputs = [hjson] + stamp_files,
         arguments = [
             "--tock",
             "-q",
             "-o",
             tock.path,
-        ] + stamp_args + node + [src.path for src in ctx.files.srcs],
+        ] + stamp_args + [hjson.path],
         executable = ctx.executable._regtool,
     )
 
@@ -118,20 +110,12 @@ def _hjson_rust_header(ctx):
         ),
     ]
 
-autogen_hjson_rust_header = rule(
-    implementation = _hjson_rust_header,
+opentitan_ip_rust_header = rule(
+    implementation = _opentitan_ip_rust_header_impl,
+    doc = "Generate the Rust headers for an IP block as used in a top",
     attrs = {
-        "srcs": attr.label_list(allow_files = True),
-        "node": attr.string(
-            doc = "Register block node to generate",
-        ),
-        "output_stem": attr.string(
-            doc = """
-                The name of the output file with no suffix.
-                This is optional, and if not given it will be set to the
-                target name replacing "_rust_" by "_".
-                """,
-        ),
+        "top": attr.label(providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "ip": attr.string(doc = "Name of the IP block"),
         "_regtool": attr.label(
             default = "//util:regtool",
             executable = True,
