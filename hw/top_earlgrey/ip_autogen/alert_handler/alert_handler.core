@@ -10,8 +10,8 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:top_earlgrey_alert_handler_component
-      - lowrisc:opentitan:top_earlgrey_alert_handler_reg:0.1
+      - lowrisc:opentitan:top_earlgrey_alert_handler_component
+      - lowrisc:opentitan:top_earlgrey_alert_handler_reg
     file_type: systemVerilogSource
 
 parameters:

@@ -2,12 +2,12 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_handler_cov" # TODO: needs templating
+name: ${instance_vlnv("lowrisc:dv:alert_handler_cov")}
 description: "ALERT_HANDLER cov bind files"
 filesets:
   files_dv:
     depend:
-      - lowrisc:ip:alert_handler_component  # import alert_pkg # TODO: needs templating
+      - ${instance_vlnv("lowrisc:ip:alert_handler_component")}  # import alert_pkg
       - lowrisc:dv:dv_utils
     files:
       - alert_handler_cov_bind.sv

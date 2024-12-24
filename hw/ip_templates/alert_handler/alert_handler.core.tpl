@@ -10,8 +10,8 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:alert_handler_component
-      - ${instance_vlnv("lowrisc:ip_interfaces:alert_handler_reg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:alert_handler_component")}
+      - ${instance_vlnv("lowrisc:ip:alert_handler_reg")}
     file_type: systemVerilogSource
 
 parameters:
