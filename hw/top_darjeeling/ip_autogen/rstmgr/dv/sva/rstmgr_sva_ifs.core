@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip_interfaces:rstmgr
+      - lowrisc:opentitan:top_darjeeling_rstmgr
       - lowrisc:opentitan:top_darjeeling_rstmgrpwrmgr_rstmgr_sva_if:0.1
 
     files:

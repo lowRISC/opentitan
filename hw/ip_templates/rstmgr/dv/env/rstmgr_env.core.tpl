@@ -7,13 +7,13 @@ description: "RSTMGR DV UVM environment"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:rstmgr
+      - ${instance_vlnv("lowrisc:ip:rstmgr")}
 
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip_interfaces:rstmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:rstmgr_pkg")}
 
     files:
       - rstmgr_env_pkg.sv

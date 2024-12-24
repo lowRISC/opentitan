@@ -8,7 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:mubi
-      - lowrisc:ip_interfaces:rstmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_rstmgr_pkg:0.1
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:opentitan:top_earlgrey_rstmgr_sva_ifs:0.1
 

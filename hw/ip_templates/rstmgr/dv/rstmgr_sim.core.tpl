@@ -7,7 +7,7 @@ description: "RSTMGR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:rstmgr
+      - ${instance_vlnv("lowrisc:ip:rstmgr")}
 
   files_dv:
     depend:

@@ -8,7 +8,7 @@ filesets:
   files_dv:
     depend:
       - lowrisc:prim:mubi
-      - lowrisc:ip_interfaces:rstmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:rstmgr_pkg:0.1")}
       - lowrisc:fpv:csr_assert_gen
       - ${instance_vlnv("lowrisc:dv:rstmgr_sva_ifs:0.1")}
 

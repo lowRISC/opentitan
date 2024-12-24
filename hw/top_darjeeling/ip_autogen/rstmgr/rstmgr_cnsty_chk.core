@@ -11,7 +11,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:sparse_fsm
       - lowrisc:ip:rv_core_ibex_pkg
-      - lowrisc:ip_interfaces:rstmgr_pkg
+      - lowrisc:opentitan:top_darjeeling_rstmgr_pkg
     files:
       - rtl/rstmgr_cnsty_chk.sv
     file_type: systemVerilogSource
