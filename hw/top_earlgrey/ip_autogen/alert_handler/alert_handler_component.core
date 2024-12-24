@@ -19,7 +19,6 @@ filesets:
       - lowrisc:prim:sparse_fsm
       - lowrisc:opentitan:top_earlgrey_alert_handler_reg
     files:
-      - rtl/alert_pkg.sv
       - rtl/alert_handler_reg_wrap.sv
       - rtl/alert_handler_lpg_ctrl.sv
       - rtl/alert_handler_class.sv

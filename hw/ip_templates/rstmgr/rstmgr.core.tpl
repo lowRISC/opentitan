@@ -10,7 +10,7 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}
+      - lowrisc:ip_interfaces:alert_handler_pkg
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
