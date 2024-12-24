@@ -2,20 +2,22 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_sim:0.1" # TODO: needs templating
-description: "RSTMGR DV sim target"
+name: ${instance_vlnv("lowrisc:dv:rstmgr_cnsty_chk_sim:0.1")}
+description: "Rstmgr_cnsty_chk DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:rstmgr
+      - ${instance_vlnv("lowrisc:ip:rstmgr_cnsty_chk")}
+      - lowrisc:dv:sec_cm
+    file_type: systemVerilogSource
 
   files_dv:
     depend:
-      - lowrisc:dv:rstmgr_test # TODO: needs templating
-      - lowrisc:dv:rstmgr_sva # TODO: needs templating
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_test_status
+      - lowrisc:dv:common_ifs
     files:
       - tb.sv
-      - cov/rstmgr_cov_bind.sv
     file_type: systemVerilogSource
 
 targets:

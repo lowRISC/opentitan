@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rstmgr_sva:0.1" # TODO: needs templating
+name: ${instance_vlnv("lowrisc:dv:rstmgr_sva:0.1")}
 description: "RSTMGR assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:prim:mubi
-      - lowrisc:ip_interfaces:rstmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:rstmgr_pkg")}
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:dv:rstmgr_sva_ifs # TODO: needs templating
+      - ${instance_vlnv("lowrisc:dv:rstmgr_sva_ifs")}
 
     files:
       - rstmgr_bind.sv
