@@ -12,7 +12,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:pinmux
+      - ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
       - lowrisc:fpv:csr_assert_gen
       - ${instance_vlnv("lowrisc:fpv:pinmux_common_fpv:0.1")}
       - lowrisc:systems:top_${topname}_pkg

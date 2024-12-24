@@ -12,7 +12,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:pinmux
+      - lowrisc:opentitan:top_darjeeling_pinmux:0.1
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:opentitan:top_darjeeling_pinmux_common_fpv:0.1
       - lowrisc:systems:top_darjeeling_pkg

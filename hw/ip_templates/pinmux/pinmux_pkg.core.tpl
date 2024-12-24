@@ -11,7 +11,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:pad_wrapper_pkg
-      - lowrisc:ip_interfaces:pinmux_reg
+      - ${instance_vlnv("lowrisc:ip:pinmux_reg")}
     files:
       - rtl/pinmux_pkg.sv
     file_type: systemVerilogSource

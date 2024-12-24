@@ -9,7 +9,7 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:pinmux
+      - ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
     files:
       - vip/pinmux_assert_fpv.sv
       - tb/pinmux_bind_fpv.sv
