@@ -6,8 +6,11 @@ CAPI=2:
 # XXX: This name is currently required as global identifier until we have
 # support for "interfaces" or a similar concept.
 # Tracked in https://github.com/olofk/fusesoc/issues/235
-name: "lowrisc:constants:ibex_pmp_reset_pkg"
+name: "lowrisc:constants:top_earlgrey_ibex_pmp_reset_pkg"
 description: "Top-level specific PMP reset settings"
+virtual:
+  - lowrisc:constants:ibex_pmp_reset_pkg
+
 filesets:
   files_rtl:
     depend:

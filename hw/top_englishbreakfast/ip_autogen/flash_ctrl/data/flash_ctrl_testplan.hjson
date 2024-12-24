@@ -1,0 +1,499 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name: "flash_ctrl"
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
+                     "flash_ctrl_sec_cm_testplan.hjson"]
+  testpoints: [
+    {
+      name: smoke
+      desc: '''
+            Randomly read, program or erase (page or a bank) a randomized chunk of flash memory.
+            Only the data partition is accessed. No extra features enabled. Flash memory is
+            invalidated and the targeted chunk is initialized with random data for reads and all 1s
+            for writes. Interrupts are not enabled, Completion is ascertained through polling. The
+            success of each operation is verified via backdoor.
+            '''
+      stage: V1
+      tests: ["flash_ctrl_smoke"]
+    }
+    {
+      name: smoke_hw
+      desc: '''
+            Perform host direct read on the single page of Data partition. First Flash memory is
+            initialized with random values and then it is being read directly by Host interface.
+            Finally, backdoor read is used for checking read data.
+            '''
+      stage: V1
+      tests: ["flash_ctrl_smoke_hw"]
+    }
+    {
+      name: sw_op
+      desc: '''
+            Perform flash protocol controller read, program and erase on the single page of one
+            bank within Data partition. Finally perform read on same location in order to test
+            if previous operation was done successfully.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_sw_op"]
+    }
+    {
+      name: host_read_direct
+      desc: '''
+            Perform back-to-back direct reads via Host in order to test bandwidth of hardware host
+            interface. In addition, perform stalls to test pipeline structure. Enable scramble to
+            test pipeline structure.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_host_dir_rd"]
+    }
+    {
+      name: rma_hw_if
+      desc: '''
+            Perform RMA entry requests and check afterwards that the  software has no access to
+            the Flash.  After RMA entry, verify that the content of the flash is wiped out.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_hw_rma", "flash_ctrl_hw_rma_reset", "flash_ctrl_lcmgr_intg"]
+    }
+    {
+      name: host_controller_arb
+      desc: '''
+            Perform operations via the Flash Software Interface, and at the same time invoke a
+            Hardware RMA operation. This verifies the arbitration within the Flash Protocol
+            Controller. The arbiter should allow any outstanding Software operations to complete
+            before the RMA starts. When the RMA completes the RMA FSM remains in its final state
+            until Reset and software access is blocked.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_host_ctrl_arb"]
+    }
+    {
+      name: erase_suspend
+      desc: '''
+            Perform erase suspend when erase is ongoing and also when erase is not ongoing.
+            Check if request is immediately cleared in case when no erase is ongoing.
+            Check if request is cleared in case when suspend is handled.
+            Read affected bank in order to verify erase suspension feature.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_erase_suspend"]
+    }
+    {
+      name: program_reset
+      desc: '''
+            Reset controller at every state of programming operation and check
+            if controller doesn't have any residue for the next operation.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_prog_reset"]
+    }
+    {
+      name: full_memory_access
+      desc: '''
+            Entire memory is accessed by Controller and directly by Host. In addition, Data
+            partitions can be directly read by Software(Flash controller) and hardware hosts,
+            while Info partitions can be read only by the Flash controller.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_full_mem_access"]
+    }
+    {
+      name: rd_buff_eviction
+      desc: '''
+            Perform following sequences of operations: read/program/read and read/erase/read in
+            order to test read buffer eviction properly. Read should be executed by both Software
+            and Host interface. All combinations should be tested. Covergroup for this hazardous
+            behavior is eviction_cg.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_rd_buff_evict"]
+    }
+    {
+      name: rd_buff_eviction_w_ecc
+      desc: '''
+            Run read eviction test with multiple memory protection configs.
+            Each config should enable read but randomize all other fields
+            including scramble and ecc enable.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_rw_evict", "flash_ctrl_re_evict", "flash_ctrl_rw_evict_all_en"]
+    }
+    {
+      name: host_arb
+      desc: '''
+            Test arbitration within Flash Physical Controller by reading from both interfaces at
+            the same time. Perform continuously direct read data from host interface and at the
+            same time, perform all operations READ/PROGRAM/ERASE from the flash controller is in
+            progress. Perform parallel operations at addresses of different banks and also on same
+            bank. Expect that operations are successfully executed.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_phy_arb"]
+    }
+    {
+      name: host_interleave
+      desc: '''
+            At same time, perform two read operations and the same time via host and via
+            controller. At same time, perform read operation via host and program
+            operation via controller. Perform mentioned parallel operations at different addresses
+            and on the same address. Expect that operations are successfully
+            executed.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_phy_arb"]
+    }
+    {
+      name: memory_protection
+      desc: '''
+            Perform READ/ PROGRAM/ ERASE operations over protected regions and pages of data and
+            info partitions. Use set and reset values of corresponding read, program and erase
+            enable bits. Test boundary values of regions. Test overlap of regions in which lower
+            region wins arbitration.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_mp_regions"]
+    }
+    {
+      name: fetch_code
+      desc: '''
+            Verify the Code Fetch Feature.
+            Reads for instructions via the Hardware Interface are allowed if a specific value
+            is written to the EXEC csr.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_fetch_code"]
+    }
+    {
+      name: all_partitions
+      desc: '''
+            Sanity + both, legal data and info partitions are accessed. In future, support for
+            multiple info partitions may be added - those will be covered as well.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_rand_ops"]
+    }
+    {
+      name: error_mp
+      desc: '''
+            Perform accesses in order to provoke memory permission errors. Test the Software
+            interface (Erase, Program, Read). Related covergroup is sw_error_cg.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_error_mp"]
+    }
+    {
+      name: error_prog_win
+      desc: '''
+            Perform accesses in order to provoke the 'program resolution' error.
+            Test via the Software interface. Related covergroup is sw_error_cg.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_error_prog_win"]
+    }
+    {
+      name: error_prog_type
+      desc: '''
+            Perform accesses in order to provoke the 'program type' error.
+            Test via the Software interface. Related covergroup is sw_error_cg.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_error_prog_type"]
+    }
+    {
+      name: error_read_seed
+      desc: '''
+            Create sw read error during hw seed read process.
+            Check all errors are properly detected.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_hw_read_seed_err"]
+    }
+    {
+      name: read_write_overflow
+      desc: '''
+            Send following error transactions with normal traffic and see
+            any catastrophic event happens.
+              - Program flash size longer than 64 bytes.
+                This wil cause prog_win_err.
+              - Read flash from controller without settting start op.
+              - Issue rd_fifo read more thatn CONTROL.NUM field value.
+                Both will cause d_error in tlul response.
+            Each transaction is terminated gracefully and should not cause
+            data path lock up. Also error status should be check per each
+            transaction.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_oversize_error"]
+    }
+    {
+      name: flash_ctrl_disable
+      desc: '''
+            Set flash ctrl disable by hw (lc_escalate_en = On) or
+            sw (flash_ctrl.dis = MuBi4True). And try to access flash ctrl
+            and check the access attempt to be failed.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_disable"]
+    }
+    {
+      name: flash_ctrl_connect
+      desc: '''
+            Check jtag input / output ports connectivity with lc_nvm_debug_en.
+            Connections are set only when lc_nvm_debug_en = On.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_connect"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - combine above sequences in one test to run sequentially, except csr sequence
+            - randomly add reset between each sequence
+            '''
+      stage: V2
+      tests: ["flash_ctrl_stress_all"]
+    }
+    {
+      name: secret_partition
+      desc: '''
+            Verify the secret information partitions. Accessibility is controlled by the Life Cycle Controller
+            Seeds are read upon flash controller initialization and sent to the Key Manager, additionally verify
+            that scramble Keys are Read from the OTP and sent into the Flash Ctlr.  Also erify that programmed
+            Secret Partitions retain their values through a Reset Cycle.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_hw_sec_otp", "flash_ctrl_otp_reset"]
+    }
+    {
+      name: isolation_partition
+      desc: '''
+            Verify the isolated information partitions. Accessablity is controlled by Life
+            Cycle Controller.  Verify Partition can be erase, written and programmed, with
+            HW control, and wipes after an RMA.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_hw_rma"]
+    }
+    {
+      name: interrupts
+      desc: '''
+            Perform accesses in order to raise all interrupts given in register map.
+            Check behaviour of Interrupt Enable and Status Registers.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_intr_rd", "flash_ctrl_intr_wr",
+              "flash_ctrl_intr_rd_slow_flash", "flash_ctrl_intr_wr_slow_flash"]
+    }
+    {
+      name: invalid_op
+      desc: '''
+            Send invalid command in order to check that it does not affect memory content.
+            Check that recovery alert is triggered.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_invalid_op"]
+    }
+    {
+      name: mid_op_rst
+      desc: '''
+            Flash middle operation reset test. Send reset via power ready signal
+            in the middle of operation program, read, erase and erase suspend.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_mid_op_rst"]
+    }
+    {
+      name: double_bit_err
+      desc: '''
+            Run read / write test and inject double bit error randomly for read transactions --
+            both direct and controller read.
+            Check op_status.err and err_code.rd_err are asserted for ctrl read and
+            tlul response error for host read.
+            Check fatal alert is asserted for reliability ecc errors (double bits) and
+            integrity ECC errors.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_read_word_sweep_derr", "flash_ctrl_ro_derr",
+              "flash_ctrl_rw_derr", "flash_ctrl_derr_detect", "flash_ctrl_integrity"]
+    }
+    {
+      name: single_bit_err
+      desc: '''
+            Run read only or read write test with randomly injected single bit error.
+            All single bit error should be corrected and all read data should be
+            matched with expected written value.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_read_word_sweep_serr",
+              "flash_ctrl_ro_serr", "flash_ctrl_rw_serr"]
+    }
+    {
+      name: singlebit_err_counter
+      desc: '''
+            Run read / write test and inject single bit error randomly for read transactions. -
+            both direct and controller read - Adjust error injection ratio s.t. counter is not
+            saturated.
+            Compare counter values for both bank with expected counter values.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_serr_counter"]
+    }
+    {
+      name: singlebit_err_address
+      desc: '''
+            Run read / write test and inject a single bit error randomly either direct
+            or controller read. Once error is injected a certain transaction, wait for the
+            transaction to be completed and compare ecc_single_err_addr register with the
+            expected value. Do this for multiple rounds for both banks.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_serr_address"]
+    }
+    {
+      name: scramble
+      desc: '''
+            Enable scrambling, along with randomized scramble keys. Program a fresh chunk of
+            memory and read back (both, via controller and host) to ensure data integrity. On
+            program, verify via backdoor scrambling was done on the raw data correctly. When
+            reading via host, read the same memory via host multiple times back-to-back and ensure
+            the timing is correct (subsequent reads should be faster). When scrambling is not
+            enabled, ensure that the raw data is written and read back.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_wo", "flash_ctrl_ro", "flash_ctrl_rw",
+              "flash_ctrl_write_word_sweep", "flash_ctrl_read_word_sweep"]
+    }
+    {
+      name: filesystem_support
+      desc: '''
+            Enable ECC and disable scrambling for all regions.
+            Initialize flash with erased state (FlashMemInitSet).
+            Execute random number of writes without writing the same location twice.
+            Record all write locations(Minimum resolution of location is 8bytes).
+            After that, execute write and read back test for random page and check
+             - If the locations are in the written record, write data should be all 0 and
+               readback data should match with the written data.
+             - If the locations are not in the written record, write data should be random and
+               readback data should match with the written data.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_fs_sup"]
+    }
+    {
+      name: rma_write_process_error
+      desc: '''
+            Verify error handling process duing the rma wipe process.
+            In normal rma process, inject bit error at the write path
+            (tb.dut.u_eflash.gen_flash_cores[0].u_core.gen_prog_data.u_prog.pack_data).
+            This should make debug_state to flash_ctrl_env_pkg::FlashLcIvalid and
+            fatal error (std_fault_status.lcmgr_err) should be triggered.
+            '''
+      stage: V2
+      tests: ["flash_ctrl_rma_err", "flash_ctrl_hw_prog_rma_wipe_err"]
+    }
+    {
+      name: asymmetric_read_path
+      desc: '''
+            Create 'fast' and 'slow' read path using scramble enable.
+            Send flash read requst over slow path followed by fast path.
+            While return data comes from fast path first but they are expected
+            to be returned in request order.
+            '''
+      stage: V3
+      tests: ["flash_ctrl_rd_ooo"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: control_cg
+      desc: '''
+            Covers that all operations READ/PROGRAM/ERASE/UNKNOWN have been tested.
+            Covers that ERASE operation is performed on a page and on entire bank.
+            Covers data and info partitions selection.
+            All valid combinations of the above will also be crossed.
+            '''
+    }
+    {
+      name: erase_susp_cg
+      desc: '''
+            Covers if request of erase suspension occured.
+            '''
+    }
+    {
+      name: msgfifo_level_cg
+      desc: '''
+            Covers that all possible fifo statuses generate interrupts for operations READ/PROGRAM.
+            Covers both boundary values 0 and 31. Also covers acceptable distributions within
+            ranges.
+            '''
+    }
+    {
+      name: sw_error_cg
+      desc: '''
+            Covers following error scenarios given in Flash error code register:
+            - op_err: Undefined operation.
+            - mp_err: Flash access has encountered an access permission error.
+            - rd_err: Flash read has an uncorrectable data error.
+            - prog_err: Flash program has an error.
+            - prog_win_err: Flash program has a window resolution error.
+            - prog_type_err: Flash program selected unavailable type.
+            - update_err: A shadow register encountered an update error.
+            '''
+    }
+    {
+      name: eviction_cg
+      desc: '''
+            Covers eviction with mp_region_cfgs for data and info regions.
+            Sample all 4 rd_buf status.
+            When each buffer hazard is set, capture the address stored in the buffer.
+            Then search from tb data base to see which region the address belong to.
+            After that record the config value (scrambe_en and ecc_en) of the region.
+            Use cross over buffer index, the operation to cause the eviction and
+            the region config values.
+            '''
+    }
+    {
+      name: fetch_code_cg
+      desc: '''
+            Covers whether dut received valid or invalid key value from ral.exec register.
+            Cross with tlul.instr_types.
+            '''
+    }
+    {
+      name: rma_init_cg
+      desc: '''
+            Cover rma operation is executed regardless of when flash_init started.
+            flash_ctrl_hw_rma runs rma operation and flash init in parallel thread.
+            In this test, sample rma state when flash init starts.
+            If rma state is StRmaIdle, which means rma is not started. So it confirms
+            rma start after flash init start.
+            If rma state is [StRmaPageSel:StRmaInvalid], which mean rma is on going.
+            So it confirms rma start before flash init start.
+            '''
+    }
+    {
+      name: phy_rd_cg
+      desc: '''
+            Cover various read sequences on the physical interfaces of each bank.
+            Create bins such as read after read, read after program and read after
+            erase.
+            '''
+    }
+    {
+      name: b2b_read_interval_cg
+      desc: '''
+            Cover interval profile of back to back read operation.
+            Minimum interval of the back to back read is 1 cycle.
+            '''
+    }
+  ]
+}

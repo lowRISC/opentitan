@@ -132,7 +132,7 @@ The `--no-export` option of FuseSoC disables copying the source files into the s
 **Only create Vivado project directory by using FuseSoC directly (skipping Bazel invocation).**
 ```sh
 cd $REPO_TOP
-fusesoc --cores-root . run --flag=fileset_top --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_${BOARD}
+fusesoc --cores-root . run --target=synth --no-export --setup lowrisc:systems:chip_earlgrey_${BOARD}
 ```
 
 You can then navigate to the created project directory, and open Vivado

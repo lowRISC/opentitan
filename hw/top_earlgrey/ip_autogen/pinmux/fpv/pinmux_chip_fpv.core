@@ -12,9 +12,9 @@ filesets:
     depend:
       - lowrisc:prim:all
       - lowrisc:ip:tlul
-      - lowrisc:ip_interfaces:pinmux
+      - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:fpv:pinmux_common_fpv
+      - lowrisc:opentitan:top_earlgrey_pinmux_common_fpv
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:scan_role_pkg
     files:

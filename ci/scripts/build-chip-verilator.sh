@@ -18,14 +18,12 @@ tl="$1"
 
 case "$tl" in
     earlgrey)
-        fileset=fileset_top
         fusesoc_core=lowrisc:dv:chip_verilator_sim
         vname=Vchip_sim_tb
         verilator_options="--threads 4"
         make_options="-j 4"
         ;;
     englishbreakfast)
-        fileset=fileset_topgen
         fusesoc_core=lowrisc:systems:chip_englishbreakfast_verilator
         vname=Vchip_englishbreakfast_verilator
         # Englishbreakfast on CI runs on a 2-core CPU
@@ -49,7 +47,7 @@ mkdir -p "$OBJ_DIR/hw"
 mkdir -p "$BIN_DIR/hw/top_${tl}"
 
 fusesoc --cores-root=. \
-  run --flag=$fileset --target=sim --setup --build \
+  run --target=sim --setup --build \
   --build-root="$OBJ_DIR/hw" \
   $fusesoc_core \
   --verilator_options="${verilator_options}" \

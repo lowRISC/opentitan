@@ -11,7 +11,7 @@ description: "RISC-V Platform Interrupt Controller (PLIC)"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:${module_instance_name}_component
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_component")}
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
     files:

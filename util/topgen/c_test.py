@@ -65,8 +65,7 @@ class TopGenCTest(TopGenC):
 
         self.irq_peripherals = self._get_irq_peripherals()
         # Only generate alert_handler and mappings if there is an alert_handler
-        if find_module(self.top['module'], 'alert_handler') or \
-           self.top['name'] == 'englishbreakfast':
+        if find_module(self.top['module'], 'alert_handler'):
             self.alert_peripherals = self._get_alert_peripherals()
 
     def _get_irq_peripherals(self):

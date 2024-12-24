@@ -23,7 +23,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: ["chip_sw_alert_test"]
-      bazel: ["//sw/device/tests/autogen:alert_test"]
+      bazel: ["//hw/top_earlgrey/sw/autogen/tests:alert_test"]
     }
     {
       name: chip_sw_alert_handler_escalations
@@ -125,9 +125,9 @@
       lc_states: ["PROD"]
       tests: ["chip_plic_all_irqs_0", "chip_plic_all_irqs_10", "chip_plic_all_irqs_20"]
       bazel: [
-        "//sw/device/tests/autogen:plic_all_irqs_test_0",
-        "//sw/device/tests/autogen:plic_all_irqs_test_10",
-        "//sw/device/tests/autogen:plic_all_irqs_test_20",
+        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_0",
+        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_10",
+        "//hw/top_earlgrey/sw/autogen/tests:plic_all_irqs_test_20",
       ]
     }
     {

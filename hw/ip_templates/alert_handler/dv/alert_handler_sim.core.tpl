@@ -13,8 +13,8 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
-      - lowrisc:dv:alert_handler_tb
-      - lowrisc:dv:alert_handler_cov
+      - ${instance_vlnv("lowrisc:dv:alert_handler_tb")}
+      - ${instance_vlnv("lowrisc:dv:alert_handler_cov")}
       - ${instance_vlnv("lowrisc:dv:alert_handler_sva:0.1")}
     file_type: systemVerilogSource
 

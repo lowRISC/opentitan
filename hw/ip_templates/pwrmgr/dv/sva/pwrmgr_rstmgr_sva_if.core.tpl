@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: ${instance_vlnv("lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1")}
+description: "PWRMGR to RSTMGR assertion interface."
+filesets:
+  files_dv:
+    depend:
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
+      - lowrisc:prim:assert
+    files:
+      - pwrmgr_rstmgr_sva_if.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
