@@ -29,7 +29,6 @@ case "$tl" in
         # Englishbreakfast on CI runs on a 2-core CPU
         verilator_options="--threads 2"
         make_options="-j 2"
-        util/topgen-fusesoc.py --files-root=. --topname=top_englishbreakfast
         ;;
     *)
         echo >&2 "Unknown toplevel: $tl"
