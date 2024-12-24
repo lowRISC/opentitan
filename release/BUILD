@@ -14,7 +14,7 @@ pkg_tar(
         "//hw:package",
         "//hw/bitstream:package",
         "//hw/bitstream/vivado:package",
-        "//hw/ip/otp_ctrl/data:package",
+        "//hw/top_earlgrey/data/otp:package",
         "//sw/device/examples/hello_world:package",
         "//sw/device/lib/testing/test_rom:package",
         "//sw/device/silicon_creator/rom:package",

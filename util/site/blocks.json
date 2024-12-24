@@ -96,8 +96,8 @@
     },
     "otp-fuse-controller": {
         "name": "OTP Fuse Controller",
-        "data_file": "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
-        "report": "/hw/ip/otp_ctrl/dv"
+        "data_file": "hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
+        "report": "/hw/top_earlgrey/ip_autogen/otp_ctrl/dv"
     },
     "life-cycle": {
         "name": "Life Cycle",
