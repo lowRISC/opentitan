@@ -19,6 +19,7 @@ module prim_badbit_ram_1p #(
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,
+  input  logic             rst_ni,
 
   input  logic             req_i,
   input  logic             write_i,
@@ -37,6 +38,7 @@ module prim_badbit_ram_1p #(
     .MemInitFile    (MemInitFile)
   ) u_mem (
     .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
 
     .cfg_i    ('0),
     .cfg_rsp_o(),

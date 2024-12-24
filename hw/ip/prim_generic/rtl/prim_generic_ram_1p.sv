@@ -15,6 +15,7 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,
+  input  logic             rst_ni,
 
   input  logic             req_i,
   input  logic             write_i,
@@ -39,8 +40,8 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
   // Width must be fully divisible by DataBitsPerMask
   `ASSERT_INIT(DataBitsPerMaskCheck_A, (Width % DataBitsPerMask) == 0)
 
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
+  logic unused_signals;
+  assign unused_signals = ^{cfg_i, rst_ni};
   assign cfg_rsp_o.done = 1'b0;
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
