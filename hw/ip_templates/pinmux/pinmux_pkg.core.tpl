@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:pinmux_pkg:0.1" # TODO: needs templating
+name: ${instance_vlnv("lowrisc:ip:pinmux_pkg:0.1")}
 description: "Pinmux package"
 virtual:
   - lowrisc:ip_interfaces:pinmux_pkg
@@ -11,7 +11,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:pad_wrapper_pkg
-      - lowrisc:ip_interfaces:pinmux_reg
+      - ${instance_vlnv("lowrisc:ip:pinmux_reg")}
     files:
       - rtl/pinmux_pkg.sv
     file_type: systemVerilogSource
