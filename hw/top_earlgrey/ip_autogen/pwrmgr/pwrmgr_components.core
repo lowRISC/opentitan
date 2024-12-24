@@ -19,7 +19,7 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:clock_buf
       - lowrisc:prim:measure
-      - lowrisc:ip_interfaces:alert_handler_reg
+      - lowrisc:ip_interfaces:alert_handler_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
     files:
       - rtl/pwrmgr_cdc.sv
