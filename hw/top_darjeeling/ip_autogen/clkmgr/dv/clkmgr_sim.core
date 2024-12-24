@@ -7,7 +7,7 @@ description: "CLKMGR DV sim target"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:clkmgr
+      - lowrisc:opentitan:top_darjeeling_clkmgr
 
   files_dv:
     depend:

@@ -17,7 +17,7 @@ filesets:
 
   files_formal:
     depend:
-      - lowrisc:ip_interfaces:clkmgr
+      - ${instance_vlnv("lowrisc:ip:clkmgr")}
 
 generate:
   csr_assert_gen:

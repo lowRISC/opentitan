@@ -10,7 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip_interfaces:clkmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:clkmgr_pkg")}
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv
