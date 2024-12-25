@@ -36,7 +36,7 @@ package top_racl_pkg;
     racl_role_t racl_role;
     ctn_uid_t   ctn_uid;
     // 0: Write access, 1: Read access
-    logic       read_not_write;
+    logic       read_access;
   } racl_error_log_t;
 
   // Extract RACL role bits from the TLUL reserved user bits
