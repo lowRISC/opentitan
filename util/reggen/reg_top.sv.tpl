@@ -718,11 +718,11 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
   assign racl_error_log_o.racl_role  = racl_role;
 
   if (EnableRacl) begin : gen_racl_log
-    assign racl_error_log_o.ctn_uid        = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
-    assign racl_error_log_o.read_not_write = tl_i.a_opcode == tlul_pkg::Get;
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
   end else begin : gen_no_racl_log
-    assign racl_error_log_o.ctn_uid        = '0;
-    assign racl_error_log_o.read_not_write = 1'b0;
+    assign racl_error_log_o.ctn_uid     = '0;
+    assign racl_error_log_o.read_access = 1'b0;
   end
 % endif
 
