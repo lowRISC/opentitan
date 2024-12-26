@@ -651,7 +651,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: uart1
@@ -717,7 +716,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: uart2
@@ -783,7 +781,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: uart3
@@ -849,7 +846,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: gpio
@@ -949,7 +945,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: spi_device
@@ -1095,7 +1090,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: i2c0
@@ -1199,7 +1193,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: i2c1
@@ -1303,7 +1296,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: i2c2
@@ -1407,7 +1399,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pattgen
@@ -1459,7 +1450,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_timer
@@ -1511,7 +1501,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: otp_ctrl
@@ -1943,7 +1932,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: lc_ctrl
@@ -2598,7 +2586,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: alert_handler
@@ -2735,7 +2722,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: spi_host0
@@ -2813,7 +2799,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: spi_host1
@@ -2889,7 +2874,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: usbdev
@@ -3217,7 +3201,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pwrmgr_aon
@@ -3547,7 +3530,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rstmgr_aon
@@ -3752,7 +3734,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: clkmgr_aon
@@ -4088,7 +4069,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sysrst_ctrl_aon
@@ -4171,7 +4151,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: adc_ctrl_aon
@@ -4256,7 +4235,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pwm_aon
@@ -4294,6 +4272,46 @@
       inter_signal_list:
       [
         {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: pwm_aon
+          index: -1
+        }
+        {
+          name: racl_error
+          desc:
+            '''
+            RACL error indication signal.
+            If 1, the error log contains valid information.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: pwm_aon
+          index: -1
+        }
+        {
+          name: racl_error_log
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: pwm_aon
+          index: -1
+        }
+        {
           name: tl
           struct: tl
           package: tlul_pkg
@@ -4315,7 +4333,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pinmux_aon
@@ -4772,7 +4789,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: aon_timer_aon
@@ -4893,7 +4909,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: ast
@@ -5003,7 +5018,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sensor_ctrl_aon
@@ -5145,7 +5159,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sram_ctrl_ret_aon
@@ -5372,7 +5385,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: flash_ctrl
@@ -5827,7 +5839,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_dm
@@ -6185,7 +6196,6 @@
           index: -1
         }
       ]
-      racl_mappings: {}
     }
     {
       name: rv_plic
@@ -6275,7 +6285,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: aes
@@ -6511,7 +6520,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: hmac
@@ -6575,7 +6583,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: kmac
@@ -6842,7 +6849,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: otbn
@@ -7139,7 +7145,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: keymgr
@@ -7515,7 +7520,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: csrng
@@ -7668,7 +7672,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: entropy_src
@@ -7841,7 +7844,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: edn0
@@ -7928,7 +7930,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: edn1
@@ -8015,7 +8016,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sram_ctrl_main
@@ -8245,7 +8245,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rom_ctrl
@@ -8434,7 +8433,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_core_ibex
@@ -9146,7 +9144,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
   ]
   memory: []
@@ -19598,6 +19595,46 @@
         default: ""
         end_idx: -1
         top_signame: adc_ctrl_aon_tl
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: pwm_aon
+        index: -1
+      }
+      {
+        name: racl_error
+        desc:
+          '''
+          RACL error indication signal.
+          If 1, the error log contains valid information.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: pwm_aon
+        index: -1
+      }
+      {
+        name: racl_error_log
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: pwm_aon
         index: -1
       }
       {

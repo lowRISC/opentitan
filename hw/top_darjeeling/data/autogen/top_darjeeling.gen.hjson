@@ -592,7 +592,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: gpio
@@ -694,7 +693,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: spi_device
@@ -851,7 +849,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: i2c0
@@ -962,7 +959,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_timer
@@ -1014,7 +1010,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: otp_ctrl
@@ -1446,7 +1441,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: lc_ctrl
@@ -2094,7 +2088,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: alert_handler
@@ -2231,7 +2224,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: spi_host0
@@ -2314,7 +2306,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pwrmgr_aon
@@ -2658,7 +2649,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rstmgr_aon
@@ -2863,7 +2853,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: clkmgr_aon
@@ -3199,7 +3188,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: pinmux_aon
@@ -3302,7 +3290,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: aon_timer_aon
@@ -3423,7 +3410,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: ast
@@ -3533,7 +3519,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sensor_ctrl
@@ -3647,7 +3632,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: soc_proxy
@@ -3975,7 +3959,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sram_ctrl_ret_aon
@@ -4205,7 +4188,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_dm
@@ -4571,7 +4553,6 @@
           index: -1
         }
       ]
-      racl_mappings: {}
     }
     {
       name: rv_plic
@@ -4661,7 +4642,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: aes
@@ -4897,7 +4877,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: hmac
@@ -4961,7 +4940,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: kmac
@@ -5242,7 +5220,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: otbn
@@ -5549,7 +5526,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: keymgr_dpe
@@ -5860,7 +5836,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: csrng
@@ -6010,7 +5985,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: edn0
@@ -6097,7 +6071,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: edn1
@@ -6184,7 +6157,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sram_ctrl_main
@@ -6416,7 +6388,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: sram_ctrl_mbox
@@ -6646,7 +6617,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rom_ctrl0
@@ -6831,7 +6801,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rom_ctrl1
@@ -7016,7 +6985,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: dma
@@ -7186,7 +7154,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx0
@@ -7323,7 +7290,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx1
@@ -7460,7 +7426,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx2
@@ -7597,7 +7562,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx3
@@ -7734,7 +7698,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx4
@@ -7871,7 +7834,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx5
@@ -8008,7 +7970,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx6
@@ -8145,7 +8106,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx_jtag
@@ -8282,7 +8242,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx_pcie0
@@ -8419,7 +8378,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: mbx_pcie1
@@ -8556,7 +8514,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: soc_dbg_ctrl
@@ -8735,7 +8692,6 @@
         }
       ]
       generate_dif: true
-      racl_mappings: {}
     }
     {
       name: rv_core_ibex
@@ -9452,7 +9408,6 @@
         }
       }
       generate_dif: true
-      racl_mappings: {}
     }
   ]
   memory: []
