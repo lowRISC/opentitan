@@ -7,9 +7,12 @@
 module pwm
   import pwm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int PhaseCntDw = 16,
-  parameter int BeatCntDw = 27
+  parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
+  parameter bit                   EnableRacl           = 1'b0,
+  parameter bit                   RaclErrorRsp         = 1'b1,
+  parameter int unsigned          RaclPolicySelVec[23] = '{23{0}},
+  parameter int                   PhaseCntDw           = 16,
+  parameter int                   BeatCntDw            = 27
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -23,6 +26,11 @@ module pwm
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
 
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t  racl_policies_i,
+  output logic                            racl_error_o,
+  output top_racl_pkg::racl_error_log_t   racl_error_log_o,
+
   output logic [NOutputs-1:0] cio_pwm_o,
   output logic [NOutputs-1:0] cio_pwm_en_o
 );
@@ -30,16 +38,23 @@ module pwm
   pwm_reg_pkg::pwm_reg2hw_t reg2hw;
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  pwm_reg_top u_reg (
+  pwm_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg (
     .clk_i,
     .rst_ni,
     .clk_core_i,
     .rst_core_ni,
-    .tl_i       (tl_i),
-    .tl_o       (tl_o),
-    .reg2hw     (reg2hw),
+    .tl_i             (tl_i),
+    .tl_o             (tl_o),
+    .reg2hw           (reg2hw),
+    .racl_policies_i  (racl_policies_i),
+    .racl_error_o     (racl_error_o),
+    .racl_error_log_o (racl_error_log_o),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o (alerts[0])
+    .intg_err_o       (alerts[0])
   );
 
   assign alert_test = {

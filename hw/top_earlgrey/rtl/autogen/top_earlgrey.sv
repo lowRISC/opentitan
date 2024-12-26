@@ -1988,6 +1988,9 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[29:29] ),
 
       // Inter-module signals
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(pwm_aon_tl_req),
       .tl_o(pwm_aon_tl_rsp),
 

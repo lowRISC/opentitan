@@ -699,11 +699,14 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
   % if racl_support:
 
     if (EnableRacl) begin : gen_racl_hit
-    % for i,r in enumerate(regs_flat):
-<% slice = '{}'.format(i).rjust(max_regs_char) %>\
-      racl_addr_hit_read [${slice}] = addr_hit[${slice}] & (|(racl_policies_i[RaclPolicySelVec[${slice}]].read_perm  & racl_role_vec));
-      racl_addr_hit_write[${slice}] = addr_hit[${slice}] & (|(racl_policies_i[RaclPolicySelVec[${slice}]].write_perm & racl_role_vec));
-    % endfor
+      for (int unsigned slice_idx = 0; slice_idx < ${len(regs_flat)}; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
     end else begin : gen_no_racl
       racl_addr_hit_read  = addr_hit;
       racl_addr_hit_write = addr_hit;
