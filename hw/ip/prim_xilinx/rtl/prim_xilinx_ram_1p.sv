@@ -44,7 +44,7 @@ module prim_xilinx_ram_1p import prim_ram_1p_pkg::*; #(
 
     logic unused_signals;
     assign unused_signals = ^{rst_ni, cfg_i};
-    assign cfg_rsp_o.done = 1'b0;
+    assign cfg_rsp_o      = '0;
 
     for (genvar k = 0; k < Width; k = k + PrimMaxWidth) begin : gen_split
       localparam int PrimWidth = ((Width - k) > PrimMaxWidth) ? PrimMaxWidth : Width - k;
