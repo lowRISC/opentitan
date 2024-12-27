@@ -10,6 +10,7 @@ package(default_visibility = ["//visibility:public"])
 rust_binary(
     name = "opentitantool",
     srcs = [
+        "src/command/bfv.rs",
         "src/command/bootstrap.rs",
         "src/command/certificate.rs",
         "src/command/clear_bitstream.rs",
@@ -52,6 +53,7 @@ rust_binary(
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
         "//sw/host/sphincsplus",
+        "//util:bfv_decoder",
         "@crate_index//:anyhow",
         "@crate_index//:clap",
         "@crate_index//:directories",

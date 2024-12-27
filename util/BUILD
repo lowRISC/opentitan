@@ -80,3 +80,11 @@ py_binary(
     srcs = ["fusesoc_build.py"],
     deps = all_requirements,
 )
+
+cc_library(
+    name = "bfv_decoder",
+    srcs = ["bfv_decoder.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
