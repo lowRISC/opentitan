@@ -543,6 +543,7 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
+    with_alert_handler: true
     topname: darjeeling
   }
 }

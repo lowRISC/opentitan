@@ -77,6 +77,7 @@ test_suite(
 % endfor
     ],
 )
+% if has_alert_handler:
 
 opentitan_test(
     name = "alert_test",
@@ -103,3 +104,4 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+% endif\

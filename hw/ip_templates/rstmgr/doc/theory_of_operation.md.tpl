@@ -1,4 +1,4 @@
-# Theory of Operation
+<%text filter="n"># Theory of Operation
 
 The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
 The reset controller is closely related to the [power controller](../../pwrmgr/README.md), please refer to that spec for details on how reset controller inputs are controlled.
@@ -134,12 +134,16 @@ The reset manager then checks as follows:
 
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
-### Reset Indications for Alert Handler
+</%text>\
+% if with_alert_handler:
+<%text filter="n">### Reset Indications for Alert Handler
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the reset manager outputs a 4bit MuBi signal for each reset domain that indicates whether its reset is active.
 For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
-
+</%text>\
+% endif
+<%text filter="n">
 ## Design Details
 
 The reset manager generates the resets required by the system by synchronizing reset tree components to appropriate output clocks.
@@ -308,3 +312,4 @@ For more details on the CPU dump details, please see [crash dump](../../../../ip
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.
+</%text>\

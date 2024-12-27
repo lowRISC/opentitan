@@ -111,5 +111,11 @@
       type: "object"
       default: {}
     }
+    {
+      name: "with_alert_handler"
+      desc: "Generate outputs for a rstmgr that would connect to an alert handler"
+      type: "bool"
+      default: "1"
+    }
   ]
 }

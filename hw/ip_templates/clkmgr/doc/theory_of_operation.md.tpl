@@ -1,4 +1,4 @@
-# Theory of Operation
+<%text filter="n"># Theory of Operation
 
 Clock management in OpenTitan is divided into groups.
 Each group has specific attributes and controls whether software is allowed to influence individual clocks during the active power state.
@@ -98,7 +98,7 @@ The controls can also be individual to each peripheral.
 
 ## Wait-for-Interrupt (wfi) Gating
 
-Wait-for-interrupt clock gating refers to the mechanism of using a processor’s sleep indication to actively gate off module clocks.
+Wait-for-interrupt clock gating refers to the mechanism of using a processor's sleep indication to actively gate off module clocks.
 Of the groups enumerated, only transactional, infrastructural and peripheral groups can be influenced by `wfi`.
 
 As `wfi` is effectively a processor clock request, there are subtleties related to its use.
@@ -156,12 +156,16 @@ For a detailed breakdown between `por` and `life cycle` resets, please see the [
 The following diagram enhances the block diagram to illustrate the overall reset domains of the clock manager.
 ![Clock Manager Block Diagram](clkmgr_rst_domain.svg)
 
-### Clock Gated Indications for Alert Handler
+</%text>\
+% if with_alert_handler:
+<%text filter="n">### Clock Gated Indications for Alert Handler
 
 The alert handler needs to know the status of the various clock domains in the system to avoid false alert indications due to the ping mechanism.
 To that end, the clock manager outputs a 4bit MuBi signal for each clock domain that indicates whether its clock is active.
 For more information on this mechanism, see [alert handler documentation](../../alert_handler/doc/theory_of_operation.md#low-power-management-of-alert-channels).
-
+</%text>\
+% endif
+<%text filter="n">
 ## Design Details
 
 ### Root Clock Gating and Interface with Power Manager
@@ -296,3 +300,4 @@ Clock too slow is registered when the clock cycle count is less than the softwar
 Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen).
+</%text>\

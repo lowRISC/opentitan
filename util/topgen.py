@@ -377,6 +377,10 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         ty: {nm: {"src_name": sig.src.name, "endpoint_ip": sig.endpoints[0][0]}
              for nm, sig in mp.items() if isinstance(sig, ClockSignal)}
         for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)})
+
+    # Will connect to alert_handler
+    with_alert_handler = lib.find_module(topcfg['module'], 'alert_handler') is not None
+
     params = {
         "src_clks": OrderedDict({
             name: vars(obj) for name, obj in clocks.srcs.items()}),
@@ -387,7 +391,8 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "hint_names": hint_names,
         "parent_child_clks": typed_clocks.parent_child_clks,
         "exported_clks": topcfg["exported_clks"],
-        "number_of_clock_groups": len(clocks.groups)
+        "number_of_clock_groups": len(clocks.groups),
+        "with_alert_handler": with_alert_handler,
     }
 
     ipgen_render("clkmgr", topname, params, out_path)
@@ -428,7 +433,7 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "rst_reqs": top["reset_requests"],
         "NumRstReqs": n_rstreqs,
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
-        "NumRomInputs": n_rom_ctrl
+        "NumRomInputs": n_rom_ctrl,
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)
@@ -468,6 +473,9 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"]["peripheral"])
 
+    # Will connect to alert_handler
+    with_alert_handler = lib.find_module(topcfg['module'], 'alert_handler') is not None
+
     params = {
         "clks": clks,
         "reqs": topcfg["reset_requests"],
@@ -478,6 +486,7 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": topcfg["exported_rsts"],
+        "with_alert_handler": with_alert_handler,
     }
 
     ipgen_render("rstmgr", topname, params, out_path)
