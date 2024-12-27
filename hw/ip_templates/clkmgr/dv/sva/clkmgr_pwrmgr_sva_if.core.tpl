@@ -4,6 +4,9 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:dv:clkmgr_pwrmgr_sva_if:0.1")}
 description: "CLKMGR to PWRMGR assertion interface."
+virtual:
+  - lowrisc:ip_interfaces:clkmgr_pwrmgr_sva_if
+
 filesets:
   files_dv:
     depend:

@@ -9,8 +9,8 @@ filesets:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:ip_interfaces:pwrmgr_rstmgr_sva_if
       - ${instance_vlnv("lowrisc:ip:rstmgr")}
-      - ${instance_vlnv("lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1")}
 
     files:
       - rstmgr_attrs_sva_if.sv
