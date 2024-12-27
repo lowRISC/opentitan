@@ -42,7 +42,7 @@ module prim_generic_ram_1p import prim_ram_1p_pkg::*; #(
 
   logic unused_signals;
   assign unused_signals = ^{cfg_i, rst_ni};
-  assign cfg_rsp_o.done = 1'b0;
+  assign cfg_rsp_o      = '0;
 
   // Width of internal write mask. Note wmask_i input into the module is always assumed
   // to be the full bit mask
