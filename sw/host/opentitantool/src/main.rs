@@ -27,6 +27,7 @@ use opentitanlib::transport::MaintainConnection;
 #[allow(clippy::large_enum_variant)]
 #[derive(Debug, Parser, CommandDispatch)]
 enum RootCommandHierarchy {
+    Bfv(command::bfv::BfvCommand),
     // Not flattened because `Bootstrap` is a leaf command.
     Bootstrap(command::bootstrap::BootstrapCommand),
     // Not flattened because `Console` is a leaf command.
