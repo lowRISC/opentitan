@@ -10,8 +10,8 @@
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
-#include "sw/device/sca/lib/sca.h"
 #include "sw/device/sca/lib/simple_serial.h"
+#include "sw/device/tests/penetrationtests/firmware/lib/pentest_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "otbn_regs.h"
@@ -241,10 +241,10 @@ static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
   uint32_t ecc256_signature_s[kEcc256NumWords];
 
   LOG_INFO("Signing");
-  sca_set_trigger_high();
+  pentest_set_trigger_high();
   p256_ecdsa_sign(ecc256_msg, ecc256_private_key_d, ecc256_signature_r,
                   ecc256_signature_s, ecc256_secret_k);
-  sca_set_trigger_low();
+  pentest_set_trigger_low();
 
   // Copy r and s into byte buffers to avoid strict-aliasing violations.
   uint8_t ecc256_signature_r_bytes[kEcc256NumBytes];
@@ -270,14 +270,15 @@ static void ecc256_ecdsa(const uint8_t *arg, size_t len) {
 static void simple_serial_main(void) {
   SS_CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
-  sca_init(kScaTriggerSourceOtbn, kScaPeripheralEntropy | kScaPeripheralIoDiv4 |
-                                      kScaPeripheralOtbn | kScaPeripheralCsrng |
-                                      kScaPeripheralEdn | kScaPeripheralHmac);
+  pentest_init(kPentestTriggerSourceOtbn,
+               kPentestPeripheralEntropy | kPentestPeripheralIoDiv4 |
+                   kPentestPeripheralOtbn | kPentestPeripheralCsrng |
+                   kPentestPeripheralEdn | kPentestPeripheralHmac);
 
   LOG_INFO("Running ECC serial");
   LOG_INFO("Initializing simple serial interface to capture board.");
 
-  simple_serial_init(sca_get_uart());
+  simple_serial_init(pentest_get_uart());
   SS_CHECK(simple_serial_register_handler('p', ecc256_ecdsa) ==
            kSimpleSerialOk);
   SS_CHECK(simple_serial_register_handler('k', ecc256_set_secret_key_k) ==

@@ -32,7 +32,7 @@ status_t handle_prng_sca_seed_prng(ujson_t *uj) {
   }
   prng_seed(read_32(uj_data.seed));
 
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
 
 /**
@@ -53,5 +53,5 @@ status_t handle_prng_sca(ujson_t *uj) {
       LOG_ERROR("Unrecognized PRNG SCA subcommand: %d", cmd);
       return INVALID_ARGUMENT();
   }
-  return OK_STATUS(0);
+  return OK_STATUS();
 }
