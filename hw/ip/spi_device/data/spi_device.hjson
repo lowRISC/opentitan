@@ -283,7 +283,7 @@
       name:    "ram_cfg_sys2spi",
       act:     "rcv"
     }
-    { struct:  "ram_2p_cfg",
+    { struct:  "ram_2p_cfg_rsp",
       package: "prim_ram_2p_pkg",
       type:    "uni",
       name:    "ram_cfg_rsp_sys2spi",
@@ -295,7 +295,7 @@
       name:    "ram_cfg_spi2sys",
       act:     "rcv"
     }
-    { struct:  "ram_2p_cfg",
+    { struct:  "ram_2p_cfg_rsp",
       package: "prim_ram_2p_pkg",
       type:    "uni",
       name:    "ram_cfg_rsp_spi2sys",
