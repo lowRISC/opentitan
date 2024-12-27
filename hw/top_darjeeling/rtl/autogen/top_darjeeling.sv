@@ -86,7 +86,7 @@ module top_darjeeling #(
   // parameters for edn0
   // parameters for edn1
   // parameters for sram_ctrl_main
-  parameter int SramCtrlMainInstSize = 4096,
+  parameter int SramCtrlMainInstSize = 65536,
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
