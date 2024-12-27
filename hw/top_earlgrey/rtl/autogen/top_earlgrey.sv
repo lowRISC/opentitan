@@ -130,6 +130,7 @@ module top_earlgrey #(
   parameter bit RvCoreIbexICache = 1,
   parameter bit RvCoreIbexICacheECC = 1,
   parameter bit RvCoreIbexICacheScramble = 1,
+  parameter int unsigned RvCoreIbexICacheNWays = 2,
   parameter bit RvCoreIbexBranchPredictor = 0,
   parameter bit RvCoreIbexDbgTriggerEn = 1,
   parameter int RvCoreIbexDbgHwBreakNum = 4,
@@ -244,7 +245,6 @@ module top_earlgrey #(
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
-  localparam int unsigned RvCoreIbexICacheNWays = 2;
 
   // Signals
   logic [56:0] mio_p2d;

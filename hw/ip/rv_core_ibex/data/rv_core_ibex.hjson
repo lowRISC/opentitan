@@ -394,7 +394,7 @@
       type:    "int unsigned"
       default: "2"
       desc:    "Number of instruction cache ways"
-      local:   "true"
+      local:   "false"
       expose:  "true"
     },
 
