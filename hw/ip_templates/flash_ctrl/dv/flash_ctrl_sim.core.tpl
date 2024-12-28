@@ -22,6 +22,12 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
+% if len(pwrmgr_instance_name) > 0:
+  files_top_sim:
+    depend:
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1", pwrmgr_instance_name)})"
+%endif
+
 targets:
   default: &default_target
     toplevel: tb
@@ -31,7 +37,15 @@ targets:
 
   sim:
     <<: *default_target
+% if len(pwrmgr_instance_name) > 0:
+    filesets_append:
+      - files_top_sim
+% endif
     default_tool: vcs
 
   lint:
     <<: *default_target
+% if len(pwrmgr_instance_name) > 0:
+    filesets_append:
+      - files_top_sim
+% endif

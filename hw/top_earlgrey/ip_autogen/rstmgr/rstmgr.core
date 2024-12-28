@@ -30,6 +30,11 @@ filesets:
       - rtl/rstmgr.sv
     file_type: systemVerilogSource
 
+  files_top_lint:
+    depend:
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_alert_handler_pkg:0.1)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1)"
+
   files_verilator_waiver:
     depend:
       # common waivers
@@ -61,6 +66,8 @@ targets:
 
   lint:
     <<: *default_target
+    filesets_append:
+      - files_top_lint
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

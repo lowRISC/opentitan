@@ -117,5 +117,17 @@
       type: "bool"
       default: "1"
     }
+    {
+      name: "alert_handler_instance_name"
+      desc: "Instance name for the alert_handler dependencies, if available"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "pwrmgr_instance_name"
+      desc: "Instance name for the pwrmgr dependencies, if available"
+      type: "string"
+      default: ""
+    }
   ]
 }

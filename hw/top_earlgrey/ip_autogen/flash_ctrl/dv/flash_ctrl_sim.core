@@ -22,6 +22,10 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
+  files_top_sim:
+    depend:
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1)"
+
 targets:
   default: &default_target
     toplevel: tb
@@ -31,7 +35,11 @@ targets:
 
   sim:
     <<: *default_target
+    filesets_append:
+      - files_top_sim
     default_tool: vcs
 
   lint:
     <<: *default_target
+    filesets_append:
+      - files_top_sim

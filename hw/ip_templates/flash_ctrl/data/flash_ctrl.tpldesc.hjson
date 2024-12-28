@@ -87,5 +87,11 @@
       type: "int"
       default: "1048576"
     }
+    {
+      name: "pwrmgr_instance_name"
+      desc: "Instance name for the pwrmgr dependencies, if available"
+      type: "string"
+      default: ""
+    }
   ]
 }

@@ -15,6 +15,10 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_pwrmgr_component:0.1
     file_type: systemVerilogSource
 
+  files_top_lint:
+    depend:
+      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_alert_handler_pkg:0.1)"
+
   files_verilator_waiver:
     depend:
       # common waivers
@@ -56,6 +60,8 @@ targets:
 
   lint:
     <<: *default_target
+    filesets_append:
+      - files_top_lint
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

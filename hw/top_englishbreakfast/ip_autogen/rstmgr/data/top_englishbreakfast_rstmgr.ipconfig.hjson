@@ -451,6 +451,7 @@
     rst_ni: lc_io_div4
     export_rsts: {}
     with_alert_handler: false
+    pwrmgr_instance_name: top_englishbreakfast_
     topname: englishbreakfast
   }
 }

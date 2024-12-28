@@ -236,6 +236,7 @@
     exported_clks: {}
     number_of_clock_groups: 8
     with_alert_handler: false
+    pwrmgr_instance_name: top_englishbreakfast_
     topname: englishbreakfast
   }
 }
