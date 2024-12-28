@@ -63,21 +63,20 @@
                   ]
              },
              {    name: sensor_ctrl
-                  fusesoc_core: lowrisc:systems:sensor_ctrl
+                  fusesoc_core: lowrisc:systems:top_earlgrey_sensor_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_englishbreakfast/ip/sensor_ctrl/lint/{tool}"
              },
-             // This currently doesn't work. We need to tell dvsim to call topgen.
-             //{    name: top_englishbreakfast
-             //     fusesoc_core: lowrisc:systems:top_englishbreakfast
-             //     import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-             //     rel_path: "hw/top_englishbreakfast/lint/{tool}"
-             //     overrides: [
-             //       {
-             //         name: design_level
-             //         value: "top"
-             //       }
-             //     ]
-             //},
+             {    name: top_englishbreakfast
+                  fusesoc_core: lowrisc:systems:top_englishbreakfast
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/top_englishbreakfast/lint/{tool}"
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
+             },
             ]
 }

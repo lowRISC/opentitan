@@ -1,0 +1,41 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:opentitan:top_earlgrey_rstmgr_sim_top:0.1"
+description: "Pseudo top-level for Earl Grey's rstmgr"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_rstmgr
+  files_dv:
+    depend:
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_rstmgr_sva_if
+      - lowrisc:opentitan:top_earlgrey_rstmgr_sim
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  lint:
+    toplevel: rstmgr
+    filesets:
+      - files_rtl
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"
+
+  sim:
+    toplevel: tb
+    filesets:
+      - files_rtl
+      - files_dv
+    default_tool: vcs
