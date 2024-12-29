@@ -249,7 +249,6 @@
     exported_clks: {}
     number_of_clock_groups: 7
     with_alert_handler: true
-    pwrmgr_instance_name: top_darjeeling_
     topname: darjeeling
   }
 }

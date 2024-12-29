@@ -46,9 +46,9 @@ filesets:
       - rtl/flash_phy_scramble.sv
     file_type: systemVerilogSource
 
-  files_top_lint:
+  files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_flash_ctrl_virtual_provider)"
 
   files_verilator_waiver:
     depend:
@@ -92,7 +92,7 @@ targets:
   lint:
     <<: *default_target
     filesets_append:
-      - files_top_lint
+      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

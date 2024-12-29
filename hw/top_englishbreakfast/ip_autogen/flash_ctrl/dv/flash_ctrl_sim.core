@@ -22,9 +22,9 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
-  files_top_sim:
+  files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_englishbreakfast_pwrmgr_pkg:0.1)"
+      - "fileset_top ? (lowrisc:opentitan:top_englishbreakfast_flash_ctrl_virtual_provider)"
 
 targets:
   default: &default_target
@@ -36,10 +36,10 @@ targets:
   sim:
     <<: *default_target
     filesets_append:
-      - files_top_sim
+      - files_virtual_provider
     default_tool: vcs
 
   lint:
     <<: *default_target
     filesets_append:
-      - files_top_sim
+      - files_virtual_provider

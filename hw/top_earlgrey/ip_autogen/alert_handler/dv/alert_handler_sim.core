@@ -18,6 +18,10 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_alert_handler_sva:0.1
     file_type: systemVerilogSource
 
+  files_virtual_provider:
+    depend:
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_alert_handler_virtual_provider)"
+
 generate:
   ral:
     generator: ralgen
@@ -31,6 +35,7 @@ targets:
     filesets:
       - files_rtl
       - files_dv
+      - files_virtual_provider
     generate:
       - ral
     default_tool: vcs

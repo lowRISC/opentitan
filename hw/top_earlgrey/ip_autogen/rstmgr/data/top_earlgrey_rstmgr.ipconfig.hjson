@@ -691,8 +691,6 @@
     rst_ni: lc_io_div4
     export_rsts: {}
     with_alert_handler: true
-    pwrmgr_instance_name: top_earlgrey_
-    alert_handler_instance_name: top_earlgrey_
     topname: earlgrey
   }
 }

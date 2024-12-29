@@ -81,8 +81,6 @@
     NumRstReqs: 2
     wait_for_external_reset: false
     NumRomInputs: 1
-    alert_handler_instance_name: top_earlgrey_
-    clkmgr_instance_name: top_earlgrey_
     topname: earlgrey
   }
 }

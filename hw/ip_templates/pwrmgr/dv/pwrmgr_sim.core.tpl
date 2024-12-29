@@ -17,20 +17,9 @@ filesets:
       - tb.sv
       - cov/pwrmgr_cov_bind.sv
     file_type: systemVerilogSource
-<%
-    have_files_top_sim = (len(clkmgr_instance_name) > 0 or
-                          len(alert_handler_instance_name) > 0)
-%>\
-% if have_files_top_sim:
-  files_top_sim:
+  files_virtual_provider:
     depend:
-%   if len(alert_handler_instance_name) > 0:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:alert_handler_pkg:0.1", alert_handler_instance_name)})"
-%   endif
-%   if len(clkmgr_instance_name) > 0:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:clkmgr_pwrmgr_sva_if:0.1", clkmgr_instance_name)})"
-%   endif
-% endif
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pwrmgr_virtual_provider")})"
 
 targets:
   sim: &sim_target
@@ -38,9 +27,7 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-% if have_files_top_sim:
-      - files_top_sim
-% endif
+      - files_virtual_provider
     default_tool: vcs
 
   lint:

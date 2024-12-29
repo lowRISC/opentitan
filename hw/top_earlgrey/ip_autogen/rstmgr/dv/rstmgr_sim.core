@@ -17,11 +17,9 @@ filesets:
       - tb.sv
       - cov/rstmgr_cov_bind.sv
     file_type: systemVerilogSource
-  files_top_sim:
+  files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_alert_handler_pkg:0.1)"
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_pwrmgr_pkg:0.1)"
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_pwrmgr_rstmgr_sva_if:0.1)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_rstmgr_virtual_provider)"
 
 targets:
   sim: &sim_target
@@ -29,7 +27,7 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-      - files_top_sim
+      - files_virtual_provider
     default_tool: vcs
 
   lint:

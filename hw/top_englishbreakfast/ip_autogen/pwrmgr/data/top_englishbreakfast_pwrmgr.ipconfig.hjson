@@ -60,8 +60,6 @@
     NumRstReqs: 1
     wait_for_external_reset: false
     NumRomInputs: 1
-    alert_handler_instance_name: top_englishbreakfast_
-    clkmgr_instance_name: top_englishbreakfast_
     topname: englishbreakfast
   }
 }

@@ -20,12 +20,17 @@ filesets:
       - tb.sv
     file_type: systemVerilogSource
 
+  files_virtual_provider:
+    depend:
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:rstmgr_virtual_provider")})"
+
 targets:
   sim: &sim_target
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
+      - files_virtual_provider
     default_tool: vcs
 
   lint:

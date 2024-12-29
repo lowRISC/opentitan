@@ -92,11 +92,5 @@
       type: "bool"
       default: "1"
     }
-    {
-      name: "pwrmgr_instance_name"
-      desc: "Instance name for the pwrmgr dependencies, if available"
-      type: "string"
-      default: ""
-    }
   ]
 }

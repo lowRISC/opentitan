@@ -13,6 +13,9 @@ filesets:
       - ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}
       - ${instance_vlnv("lowrisc:ip_interfaces:alert_handler_reg:0.1")}
     file_type: systemVerilogSource
+  files_virtual_provider:
+    depend:
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:alert_handler_virtual_provider")})"
 
 parameters:
   SYNTHESIS:
@@ -28,6 +31,8 @@ targets:
 
   lint:
     <<: *default_target
+    filesets_append:
+      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

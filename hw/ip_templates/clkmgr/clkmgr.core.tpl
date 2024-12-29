@@ -33,11 +33,9 @@ filesets:
       - rtl/clkmgr_trans.sv
     file_type: systemVerilogSource
 
-% if len(pwrmgr_instance_name) > 0:
-  files_top_lint:
+  files_virtual_provider:
     depend:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1", pwrmgr_instance_name)})"
-% endif
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:clkmgr_virtual_provider")})"
 
   files_verilator_waiver:
     depend:
@@ -69,10 +67,8 @@ targets:
 
   lint:
     <<: *default_target
-% if len(pwrmgr_instance_name) > 0:
     filesets_append:
-      - files_top_lint
-% endif
+      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

@@ -34,6 +34,10 @@ filesets:
       - rtl/pinmux.sv
     file_type: systemVerilogSource
 
+  files_virtual_provider:
+    depend:
+      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pinmux_virtual_provider")})"
+
   files_verilator_waiver:
     depend:
       # common waivers
@@ -74,6 +78,8 @@ targets:
 
   lint:
     <<: *default_target
+    filesets_append:
+      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
@@ -95,4 +101,5 @@ targets:
   formal:
     filesets:
       - files_rtl
+      - files_virtual_provider
     toplevel: pinmux_tb

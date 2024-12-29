@@ -23,7 +23,6 @@
     bytes_per_page: 2048
     bytes_per_bank: 32768
     size: 65536
-    pwrmgr_instance_name: top_englishbreakfast_
     topname: englishbreakfast
   }
 }
