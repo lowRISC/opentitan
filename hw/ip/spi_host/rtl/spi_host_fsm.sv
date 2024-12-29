@@ -8,16 +8,18 @@
 module spi_host_fsm
   import spi_host_cmd_pkg::*;
 #(
-  parameter  int NumCS = 1
+  parameter  int NumCS = 1,
+  localparam int CSW   = prim_util_pkg::vbits(NumCS)
 ) (
   input                              clk_i,
   input                              rst_ni,
   input                              en_i,
   input  command_t                   command_i,
+  input  logic [CSW-1:0]             command_csid_i,
   input                              command_valid_i,
   output logic                       command_ready_o,
   output logic                       sck_o,
-  output logic [NumCS-1:0]           csb_o,
+  output logic [CSW-1:0]             csb_o,
   output logic [3:0]                 sd_en_o,
   output logic                       last_read_o,
   output logic                       last_write_o,
@@ -128,7 +130,7 @@ module spi_host_fsm
                           (command_i.configopts.clkdiv   != clkdiv_q);
 
   always_comb begin
-    csid      = new_command ? command_i.csid : csid_q;
+    csid      = new_command ? command_csid_i : csid_q;
     cpol      = new_command ? command_i.configopts.cpol : cpol_q;
     cpha      = new_command ? command_i.configopts.cpha : cpha_q;
     full_cyc  = new_command ? command_i.configopts.full_cyc : full_cyc_q;
@@ -209,7 +211,7 @@ module spi_host_fsm
   logic         command_ready_idle_csb_active;
   always_comb begin
     if (command_valid_i) begin
-      if (command_i.csid != csid_q) begin
+      if (command_csid_i != csid_q) begin
         //
         // Do not acknowledge the command now, as it will trigger
         // an update of the internal command and configuration registers.

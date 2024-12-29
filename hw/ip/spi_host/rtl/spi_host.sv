@@ -11,7 +11,8 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter int unsigned          NumCS        = 1
 ) (
   input              clk_i,
   input              rst_ni,
@@ -44,6 +45,8 @@ module spi_host
 );
 
   import spi_host_cmd_pkg::*;
+
+  localparam int CSW = prim_util_pkg::vbits(NumCS);
 
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
@@ -166,6 +169,7 @@ module spi_host
   logic core_command_ready;
 
   command_t core_command, command;
+  logic [CSW-1:0] core_command_csid, command_csid;
   logic error_csid_inval;
   logic error_cmd_inval;
   logic error_busy;
@@ -216,7 +220,7 @@ module spi_host
   assign error_cmd_inval  = command_valid & ~command_busy &
                             (test_speed_inval | test_dir_inval);
 
-  assign command.csid = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
+  assign command_csid = (test_csid_inval) ? '0 : reg2hw.csid.q[CSW-1:0];
 
   assign command.configopts.clkdiv   = reg2hw.configopts.clkdiv.q;
   assign command.configopts.csnidle  = reg2hw.configopts.csnidle.q;
@@ -262,14 +266,17 @@ module spi_host
   logic [3:0]  cmd_qd;
 
   spi_host_command_queue #(
-    .CmdDepth(CmdDepth)
+    .CmdDepth(CmdDepth),
+    .NumCS(NumCS)
   ) u_cmd_queue (
     .clk_i,
     .rst_ni,
     .command_i            (command),
+    .command_csid_i       (command_csid),
     .command_valid_i      (command_valid),
     .command_busy_o       (command_busy),
     .core_command_o       (core_command),
+    .core_command_csid_o  (core_command_csid),
     .core_command_valid_o (core_command_valid),
     .core_command_ready_i (core_command_ready),
     .error_busy_o         (error_busy),
@@ -432,6 +439,7 @@ module spi_host
     .rst_ni,
 
     .command_i             (core_command),
+    .command_csid_i        (core_command_csid),
     .command_valid_i       (core_command_valid),
     .command_ready_o       (core_command_ready),
     .en_i                  (en),

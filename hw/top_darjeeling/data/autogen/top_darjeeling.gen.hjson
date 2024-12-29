@@ -2254,7 +2254,19 @@
         "0"
       ]
       param_decl: {}
-      param_list: []
+      memory: {}
+      param_list:
+      [
+        {
+          name: NumCS
+          desc: The number of active-low chip select (cs_n) lines to create.
+          type: int
+          default: "1"
+          local: "true"
+          expose: "true"
+          name_top: SpiHost0NumCS
+        }
+      ]
       inter_signal_list:
       [
         {
