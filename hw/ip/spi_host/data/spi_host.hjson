@@ -67,6 +67,8 @@
       desc: "The number of active-low chip select (cs_n) lines to create.",
       type: "int",
       default: "1"
+      local: "true",
+      expose: "true",
     },
     { name: "TxDepth",
       desc: "The size of the Tx FIFO (in words)",

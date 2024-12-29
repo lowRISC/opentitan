@@ -28,8 +28,8 @@ module tb;
   lc_tx_t                       scanmode_i;
   logic                         cio_sck_o;
   logic                         cio_sck_en_o;
-  logic [NumCS-1:0]             cio_csb_o;
-  logic [NumCS-1:0]             cio_csb_en_o;
+  logic [SPI_HOST_NUM_CS-1:0]   cio_csb_o;
+  logic [SPI_HOST_NUM_CS-1:0]   cio_csb_en_o;
   logic [3:0]                   cio_sd_o;
   logic [3:0]                   cio_sd_en_o;
   logic [3:0]                   cio_sd_i;
@@ -49,7 +49,9 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  spi_host dut (
+  spi_host # (
+    .NumCS(SPI_HOST_NUM_CS)
+  ) dut (
     .clk_i                (clk),
     .rst_ni               (rst_n),
 
@@ -102,7 +104,7 @@ module tb;
     assign (highz0, pull1) sio[i] = !cio_sd_en_o[i];
     assign si_pulldown[i] = sio[i];
 
-    if (i < NumCS) begin : gen_drive_csb
+    if (i < SPI_HOST_NUM_CS) begin : gen_drive_csb
       assign spi_if.csb[i] = cio_csb_en_o[i] ? cio_csb_o[i] : 1'b1;
     end
   end

@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module spi_host_data_stable_sva (
+module spi_host_data_stable_sva #(
+  parameter int unsigned NumCS = 1
+) (
   input logic                                              rst_ni,
   input logic                                              cio_sck_o,
-  input logic [spi_host_reg_pkg::NumCS-1:0]                cio_csb_o,
+  input logic [NumCS-1:0]                                  cio_csb_o,
   input logic [3:0]                                        cio_sd_i,
   input logic [3:0]                                        cio_sd_en_o,
   input spi_host_reg_pkg::spi_host_reg2hw_configopts_reg_t configopts,
