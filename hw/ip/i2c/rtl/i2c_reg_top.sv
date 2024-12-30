@@ -6,7 +6,12 @@
 
 `include "prim_assert.sv"
 
-module i2c_reg_top (
+module i2c_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter int unsigned RaclPolicySelVec[32] = '{32{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -14,6 +19,11 @@ module i2c_reg_top (
   // To HW
   output i2c_reg_pkg::i2c_reg2hw_t reg2hw, // Write
   input  i2c_reg_pkg::i2c_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -110,7 +120,8 @@ module i2c_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o))
   );
 
   // cdc oversampling signals
@@ -3385,8 +3396,32 @@ module i2c_reg_top (
 
 
   logic [31:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [31:0] racl_addr_hit_read;
+  logic [31:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[ 0] = (reg_addr == I2C_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == I2C_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == I2C_INTR_TEST_OFFSET);
@@ -3419,49 +3454,74 @@ module i2c_reg_top (
     addr_hit[29] = (reg_addr == I2C_HOST_NACK_HANDLER_TIMEOUT_OFFSET);
     addr_hit[30] = (reg_addr == I2C_CONTROLLER_EVENTS_OFFSET);
     addr_hit[31] = (reg_addr == I2C_TARGET_EVENTS_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 32; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // Address hit but failed the RACL check
+  assign racl_error_o = (|addr_hit) & ~(|(addr_hit & (racl_addr_hit_read | racl_addr_hit_write)));
+  assign racl_error_log_o.racl_role  = racl_role;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_log_o.ctn_uid     = '0;
+    assign racl_error_log_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(I2C_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(I2C_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(I2C_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(I2C_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(I2C_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(I2C_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(I2C_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(I2C_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(I2C_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(I2C_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(I2C_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(I2C_PERMIT[11] & ~reg_be))) |
-               (addr_hit[12] & (|(I2C_PERMIT[12] & ~reg_be))) |
-               (addr_hit[13] & (|(I2C_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(I2C_PERMIT[14] & ~reg_be))) |
-               (addr_hit[15] & (|(I2C_PERMIT[15] & ~reg_be))) |
-               (addr_hit[16] & (|(I2C_PERMIT[16] & ~reg_be))) |
-               (addr_hit[17] & (|(I2C_PERMIT[17] & ~reg_be))) |
-               (addr_hit[18] & (|(I2C_PERMIT[18] & ~reg_be))) |
-               (addr_hit[19] & (|(I2C_PERMIT[19] & ~reg_be))) |
-               (addr_hit[20] & (|(I2C_PERMIT[20] & ~reg_be))) |
-               (addr_hit[21] & (|(I2C_PERMIT[21] & ~reg_be))) |
-               (addr_hit[22] & (|(I2C_PERMIT[22] & ~reg_be))) |
-               (addr_hit[23] & (|(I2C_PERMIT[23] & ~reg_be))) |
-               (addr_hit[24] & (|(I2C_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(I2C_PERMIT[25] & ~reg_be))) |
-               (addr_hit[26] & (|(I2C_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(I2C_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(I2C_PERMIT[28] & ~reg_be))) |
-               (addr_hit[29] & (|(I2C_PERMIT[29] & ~reg_be))) |
-               (addr_hit[30] & (|(I2C_PERMIT[30] & ~reg_be))) |
-               (addr_hit[31] & (|(I2C_PERMIT[31] & ~reg_be)))));
+              ((racl_addr_hit_write[ 0] & (|(I2C_PERMIT[ 0] & ~reg_be))) |
+               (racl_addr_hit_write[ 1] & (|(I2C_PERMIT[ 1] & ~reg_be))) |
+               (racl_addr_hit_write[ 2] & (|(I2C_PERMIT[ 2] & ~reg_be))) |
+               (racl_addr_hit_write[ 3] & (|(I2C_PERMIT[ 3] & ~reg_be))) |
+               (racl_addr_hit_write[ 4] & (|(I2C_PERMIT[ 4] & ~reg_be))) |
+               (racl_addr_hit_write[ 5] & (|(I2C_PERMIT[ 5] & ~reg_be))) |
+               (racl_addr_hit_write[ 6] & (|(I2C_PERMIT[ 6] & ~reg_be))) |
+               (racl_addr_hit_write[ 7] & (|(I2C_PERMIT[ 7] & ~reg_be))) |
+               (racl_addr_hit_write[ 8] & (|(I2C_PERMIT[ 8] & ~reg_be))) |
+               (racl_addr_hit_write[ 9] & (|(I2C_PERMIT[ 9] & ~reg_be))) |
+               (racl_addr_hit_write[10] & (|(I2C_PERMIT[10] & ~reg_be))) |
+               (racl_addr_hit_write[11] & (|(I2C_PERMIT[11] & ~reg_be))) |
+               (racl_addr_hit_write[12] & (|(I2C_PERMIT[12] & ~reg_be))) |
+               (racl_addr_hit_write[13] & (|(I2C_PERMIT[13] & ~reg_be))) |
+               (racl_addr_hit_write[14] & (|(I2C_PERMIT[14] & ~reg_be))) |
+               (racl_addr_hit_write[15] & (|(I2C_PERMIT[15] & ~reg_be))) |
+               (racl_addr_hit_write[16] & (|(I2C_PERMIT[16] & ~reg_be))) |
+               (racl_addr_hit_write[17] & (|(I2C_PERMIT[17] & ~reg_be))) |
+               (racl_addr_hit_write[18] & (|(I2C_PERMIT[18] & ~reg_be))) |
+               (racl_addr_hit_write[19] & (|(I2C_PERMIT[19] & ~reg_be))) |
+               (racl_addr_hit_write[20] & (|(I2C_PERMIT[20] & ~reg_be))) |
+               (racl_addr_hit_write[21] & (|(I2C_PERMIT[21] & ~reg_be))) |
+               (racl_addr_hit_write[22] & (|(I2C_PERMIT[22] & ~reg_be))) |
+               (racl_addr_hit_write[23] & (|(I2C_PERMIT[23] & ~reg_be))) |
+               (racl_addr_hit_write[24] & (|(I2C_PERMIT[24] & ~reg_be))) |
+               (racl_addr_hit_write[25] & (|(I2C_PERMIT[25] & ~reg_be))) |
+               (racl_addr_hit_write[26] & (|(I2C_PERMIT[26] & ~reg_be))) |
+               (racl_addr_hit_write[27] & (|(I2C_PERMIT[27] & ~reg_be))) |
+               (racl_addr_hit_write[28] & (|(I2C_PERMIT[28] & ~reg_be))) |
+               (racl_addr_hit_write[29] & (|(I2C_PERMIT[29] & ~reg_be))) |
+               (racl_addr_hit_write[30] & (|(I2C_PERMIT[30] & ~reg_be))) |
+               (racl_addr_hit_write[31] & (|(I2C_PERMIT[31] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+  assign intr_state_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign intr_state_rx_overflow_wd = reg_wdata[3];
 
@@ -3478,7 +3538,7 @@ module i2c_reg_top (
   assign intr_state_unexp_stop_wd = reg_wdata[13];
 
   assign intr_state_host_timeout_wd = reg_wdata[14];
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+  assign intr_enable_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign intr_enable_fmt_threshold_wd = reg_wdata[0];
 
@@ -3509,7 +3569,7 @@ module i2c_reg_top (
   assign intr_enable_unexp_stop_wd = reg_wdata[13];
 
   assign intr_enable_host_timeout_wd = reg_wdata[14];
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_test_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign intr_test_fmt_threshold_wd = reg_wdata[0];
 
@@ -3540,10 +3600,10 @@ module i2c_reg_top (
   assign intr_test_unexp_stop_wd = reg_wdata[13];
 
   assign intr_test_host_timeout_wd = reg_wdata[14];
-  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign ctrl_we = addr_hit[4] & reg_we & !reg_error;
+  assign ctrl_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
   assign ctrl_enablehost_wd = reg_wdata[0];
 
@@ -3558,9 +3618,9 @@ module i2c_reg_top (
   assign ctrl_multi_controller_monitor_en_wd = reg_wdata[5];
 
   assign ctrl_tx_stretch_ctrl_en_wd = reg_wdata[6];
-  assign status_re = addr_hit[5] & reg_re & !reg_error;
-  assign rdata_re = addr_hit[6] & reg_re & !reg_error;
-  assign fdata_we = addr_hit[7] & reg_we & !reg_error;
+  assign status_re = racl_addr_hit_write[5] & reg_re & !reg_error;
+  assign rdata_re = racl_addr_hit_write[6] & reg_re & !reg_error;
+  assign fdata_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign fdata_fbyte_wd = reg_wdata[7:0];
 
@@ -3573,7 +3633,7 @@ module i2c_reg_top (
   assign fdata_rcont_wd = reg_wdata[11];
 
   assign fdata_nakok_wd = reg_wdata[12];
-  assign fifo_ctrl_we = addr_hit[8] & reg_we & !reg_error;
+  assign fifo_ctrl_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign fifo_ctrl_rxrst_wd = reg_wdata[0];
 
@@ -3582,59 +3642,59 @@ module i2c_reg_top (
   assign fifo_ctrl_acqrst_wd = reg_wdata[7];
 
   assign fifo_ctrl_txrst_wd = reg_wdata[8];
-  assign host_fifo_config_we = addr_hit[9] & reg_we & !reg_error;
+  assign host_fifo_config_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
   assign host_fifo_config_rx_thresh_wd = reg_wdata[11:0];
 
   assign host_fifo_config_fmt_thresh_wd = reg_wdata[27:16];
-  assign target_fifo_config_we = addr_hit[10] & reg_we & !reg_error;
+  assign target_fifo_config_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign target_fifo_config_tx_thresh_wd = reg_wdata[11:0];
 
   assign target_fifo_config_acq_thresh_wd = reg_wdata[27:16];
-  assign host_fifo_status_re = addr_hit[11] & reg_re & !reg_error;
-  assign target_fifo_status_re = addr_hit[12] & reg_re & !reg_error;
-  assign ovrd_we = addr_hit[13] & reg_we & !reg_error;
+  assign host_fifo_status_re = racl_addr_hit_write[11] & reg_re & !reg_error;
+  assign target_fifo_status_re = racl_addr_hit_write[12] & reg_re & !reg_error;
+  assign ovrd_we = racl_addr_hit_write[13] & reg_we & !reg_error;
 
   assign ovrd_txovrden_wd = reg_wdata[0];
 
   assign ovrd_sclval_wd = reg_wdata[1];
 
   assign ovrd_sdaval_wd = reg_wdata[2];
-  assign val_re = addr_hit[14] & reg_re & !reg_error;
-  assign timing0_we = addr_hit[15] & reg_we & !reg_error;
+  assign val_re = racl_addr_hit_write[14] & reg_re & !reg_error;
+  assign timing0_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign timing0_thigh_wd = reg_wdata[12:0];
 
   assign timing0_tlow_wd = reg_wdata[28:16];
-  assign timing1_we = addr_hit[16] & reg_we & !reg_error;
+  assign timing1_we = racl_addr_hit_write[16] & reg_we & !reg_error;
 
   assign timing1_t_r_wd = reg_wdata[9:0];
 
   assign timing1_t_f_wd = reg_wdata[24:16];
-  assign timing2_we = addr_hit[17] & reg_we & !reg_error;
+  assign timing2_we = racl_addr_hit_write[17] & reg_we & !reg_error;
 
   assign timing2_tsu_sta_wd = reg_wdata[12:0];
 
   assign timing2_thd_sta_wd = reg_wdata[28:16];
-  assign timing3_we = addr_hit[18] & reg_we & !reg_error;
+  assign timing3_we = racl_addr_hit_write[18] & reg_we & !reg_error;
 
   assign timing3_tsu_dat_wd = reg_wdata[8:0];
 
   assign timing3_thd_dat_wd = reg_wdata[28:16];
-  assign timing4_we = addr_hit[19] & reg_we & !reg_error;
+  assign timing4_we = racl_addr_hit_write[19] & reg_we & !reg_error;
 
   assign timing4_tsu_sto_wd = reg_wdata[12:0];
 
   assign timing4_t_buf_wd = reg_wdata[28:16];
-  assign timeout_ctrl_we = addr_hit[20] & reg_we & !reg_error;
+  assign timeout_ctrl_we = racl_addr_hit_write[20] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[29:0];
 
   assign timeout_ctrl_mode_wd = reg_wdata[30];
 
   assign timeout_ctrl_en_wd = reg_wdata[31];
-  assign target_id_we = addr_hit[21] & reg_we & !reg_error;
+  assign target_id_we = racl_addr_hit_write[21] & reg_we & !reg_error;
 
   assign target_id_address0_wd = reg_wdata[6:0];
 
@@ -3643,34 +3703,34 @@ module i2c_reg_top (
   assign target_id_address1_wd = reg_wdata[20:14];
 
   assign target_id_mask1_wd = reg_wdata[27:21];
-  assign acqdata_re = addr_hit[22] & reg_re & !reg_error;
-  assign txdata_we = addr_hit[23] & reg_we & !reg_error;
+  assign acqdata_re = racl_addr_hit_write[22] & reg_re & !reg_error;
+  assign txdata_we = racl_addr_hit_write[23] & reg_we & !reg_error;
 
   assign txdata_wd = reg_wdata[7:0];
-  assign host_timeout_ctrl_we = addr_hit[24] & reg_we & !reg_error;
+  assign host_timeout_ctrl_we = racl_addr_hit_write[24] & reg_we & !reg_error;
 
   assign host_timeout_ctrl_wd = reg_wdata[19:0];
-  assign target_timeout_ctrl_we = addr_hit[25] & reg_we & !reg_error;
+  assign target_timeout_ctrl_we = racl_addr_hit_write[25] & reg_we & !reg_error;
 
   assign target_timeout_ctrl_val_wd = reg_wdata[30:0];
 
   assign target_timeout_ctrl_en_wd = reg_wdata[31];
-  assign target_nack_count_re = addr_hit[26] & reg_re & !reg_error;
+  assign target_nack_count_re = racl_addr_hit_write[26] & reg_re & !reg_error;
 
   assign target_nack_count_wd = '1;
-  assign target_ack_ctrl_re = addr_hit[27] & reg_re & !reg_error;
-  assign target_ack_ctrl_we = addr_hit[27] & reg_we & !reg_error;
+  assign target_ack_ctrl_re = racl_addr_hit_write[27] & reg_re & !reg_error;
+  assign target_ack_ctrl_we = racl_addr_hit_write[27] & reg_we & !reg_error;
 
   assign target_ack_ctrl_nbytes_wd = reg_wdata[8:0];
 
   assign target_ack_ctrl_nack_wd = reg_wdata[31];
-  assign acq_fifo_next_data_re = addr_hit[28] & reg_re & !reg_error;
-  assign host_nack_handler_timeout_we = addr_hit[29] & reg_we & !reg_error;
+  assign acq_fifo_next_data_re = racl_addr_hit_write[28] & reg_re & !reg_error;
+  assign host_nack_handler_timeout_we = racl_addr_hit_write[29] & reg_we & !reg_error;
 
   assign host_nack_handler_timeout_val_wd = reg_wdata[30:0];
 
   assign host_nack_handler_timeout_en_wd = reg_wdata[31];
-  assign controller_events_we = addr_hit[30] & reg_we & !reg_error;
+  assign controller_events_we = racl_addr_hit_write[30] & reg_we & !reg_error;
 
   assign controller_events_nack_wd = reg_wdata[0];
 
@@ -3679,7 +3739,7 @@ module i2c_reg_top (
   assign controller_events_bus_timeout_wd = reg_wdata[2];
 
   assign controller_events_arbitration_lost_wd = reg_wdata[3];
-  assign target_events_we = addr_hit[31] & reg_we & !reg_error;
+  assign target_events_we = racl_addr_hit_write[31] & reg_we & !reg_error;
 
   assign target_events_tx_pending_wd = reg_wdata[0];
 
@@ -3728,7 +3788,7 @@ module i2c_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = intr_state_fmt_threshold_qs;
         reg_rdata_next[1] = intr_state_rx_threshold_qs;
         reg_rdata_next[2] = intr_state_acq_threshold_qs;
@@ -3746,7 +3806,7 @@ module i2c_reg_top (
         reg_rdata_next[14] = intr_state_host_timeout_qs;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = intr_enable_fmt_threshold_qs;
         reg_rdata_next[1] = intr_enable_rx_threshold_qs;
         reg_rdata_next[2] = intr_enable_acq_threshold_qs;
@@ -3764,7 +3824,7 @@ module i2c_reg_top (
         reg_rdata_next[14] = intr_enable_host_timeout_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[2] = '0;
@@ -3782,11 +3842,11 @@ module i2c_reg_top (
         reg_rdata_next[14] = '0;
       end
 
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[4]: begin
+      racl_addr_hit_read[4]: begin
         reg_rdata_next[0] = ctrl_enablehost_qs;
         reg_rdata_next[1] = ctrl_enabletarget_qs;
         reg_rdata_next[2] = ctrl_llpbk_qs;
@@ -3796,7 +3856,7 @@ module i2c_reg_top (
         reg_rdata_next[6] = ctrl_tx_stretch_ctrl_en_qs;
       end
 
-      addr_hit[5]: begin
+      racl_addr_hit_read[5]: begin
         reg_rdata_next[0] = status_fmtfull_qs;
         reg_rdata_next[1] = status_rxfull_qs;
         reg_rdata_next[2] = status_fmtempty_qs;
@@ -3810,11 +3870,11 @@ module i2c_reg_top (
         reg_rdata_next[10] = status_ack_ctrl_stretch_qs;
       end
 
-      addr_hit[6]: begin
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[7:0] = rdata_qs;
       end
 
-      addr_hit[7]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next[7:0] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
@@ -3823,126 +3883,126 @@ module i2c_reg_top (
         reg_rdata_next[12] = '0;
       end
 
-      addr_hit[8]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
         reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
       end
 
-      addr_hit[9]: begin
+      racl_addr_hit_read[9]: begin
         reg_rdata_next[11:0] = host_fifo_config_rx_thresh_qs;
         reg_rdata_next[27:16] = host_fifo_config_fmt_thresh_qs;
       end
 
-      addr_hit[10]: begin
+      racl_addr_hit_read[10]: begin
         reg_rdata_next[11:0] = target_fifo_config_tx_thresh_qs;
         reg_rdata_next[27:16] = target_fifo_config_acq_thresh_qs;
       end
 
-      addr_hit[11]: begin
+      racl_addr_hit_read[11]: begin
         reg_rdata_next[11:0] = host_fifo_status_fmtlvl_qs;
         reg_rdata_next[27:16] = host_fifo_status_rxlvl_qs;
       end
 
-      addr_hit[12]: begin
+      racl_addr_hit_read[12]: begin
         reg_rdata_next[11:0] = target_fifo_status_txlvl_qs;
         reg_rdata_next[27:16] = target_fifo_status_acqlvl_qs;
       end
 
-      addr_hit[13]: begin
+      racl_addr_hit_read[13]: begin
         reg_rdata_next[0] = ovrd_txovrden_qs;
         reg_rdata_next[1] = ovrd_sclval_qs;
         reg_rdata_next[2] = ovrd_sdaval_qs;
       end
 
-      addr_hit[14]: begin
+      racl_addr_hit_read[14]: begin
         reg_rdata_next[15:0] = val_scl_rx_qs;
         reg_rdata_next[31:16] = val_sda_rx_qs;
       end
 
-      addr_hit[15]: begin
+      racl_addr_hit_read[15]: begin
         reg_rdata_next[12:0] = timing0_thigh_qs;
         reg_rdata_next[28:16] = timing0_tlow_qs;
       end
 
-      addr_hit[16]: begin
+      racl_addr_hit_read[16]: begin
         reg_rdata_next[9:0] = timing1_t_r_qs;
         reg_rdata_next[24:16] = timing1_t_f_qs;
       end
 
-      addr_hit[17]: begin
+      racl_addr_hit_read[17]: begin
         reg_rdata_next[12:0] = timing2_tsu_sta_qs;
         reg_rdata_next[28:16] = timing2_thd_sta_qs;
       end
 
-      addr_hit[18]: begin
+      racl_addr_hit_read[18]: begin
         reg_rdata_next[8:0] = timing3_tsu_dat_qs;
         reg_rdata_next[28:16] = timing3_thd_dat_qs;
       end
 
-      addr_hit[19]: begin
+      racl_addr_hit_read[19]: begin
         reg_rdata_next[12:0] = timing4_tsu_sto_qs;
         reg_rdata_next[28:16] = timing4_t_buf_qs;
       end
 
-      addr_hit[20]: begin
+      racl_addr_hit_read[20]: begin
         reg_rdata_next[29:0] = timeout_ctrl_val_qs;
         reg_rdata_next[30] = timeout_ctrl_mode_qs;
         reg_rdata_next[31] = timeout_ctrl_en_qs;
       end
 
-      addr_hit[21]: begin
+      racl_addr_hit_read[21]: begin
         reg_rdata_next[6:0] = target_id_address0_qs;
         reg_rdata_next[13:7] = target_id_mask0_qs;
         reg_rdata_next[20:14] = target_id_address1_qs;
         reg_rdata_next[27:21] = target_id_mask1_qs;
       end
 
-      addr_hit[22]: begin
+      racl_addr_hit_read[22]: begin
         reg_rdata_next[7:0] = acqdata_abyte_qs;
         reg_rdata_next[10:8] = acqdata_signal_qs;
       end
 
-      addr_hit[23]: begin
+      racl_addr_hit_read[23]: begin
         reg_rdata_next[7:0] = '0;
       end
 
-      addr_hit[24]: begin
+      racl_addr_hit_read[24]: begin
         reg_rdata_next[19:0] = host_timeout_ctrl_qs;
       end
 
-      addr_hit[25]: begin
+      racl_addr_hit_read[25]: begin
         reg_rdata_next[30:0] = target_timeout_ctrl_val_qs;
         reg_rdata_next[31] = target_timeout_ctrl_en_qs;
       end
 
-      addr_hit[26]: begin
+      racl_addr_hit_read[26]: begin
         reg_rdata_next[7:0] = target_nack_count_qs;
       end
 
-      addr_hit[27]: begin
+      racl_addr_hit_read[27]: begin
         reg_rdata_next[8:0] = target_ack_ctrl_nbytes_qs;
         reg_rdata_next[31] = '0;
       end
 
-      addr_hit[28]: begin
+      racl_addr_hit_read[28]: begin
         reg_rdata_next[7:0] = acq_fifo_next_data_qs;
       end
 
-      addr_hit[29]: begin
+      racl_addr_hit_read[29]: begin
         reg_rdata_next[30:0] = host_nack_handler_timeout_val_qs;
         reg_rdata_next[31] = host_nack_handler_timeout_en_qs;
       end
 
-      addr_hit[30]: begin
+      racl_addr_hit_read[30]: begin
         reg_rdata_next[0] = controller_events_nack_qs;
         reg_rdata_next[1] = controller_events_unhandled_nack_timeout_qs;
         reg_rdata_next[2] = controller_events_bus_timeout_qs;
         reg_rdata_next[3] = controller_events_arbitration_lost_qs;
       end
 
-      addr_hit[31]: begin
+      racl_addr_hit_read[31]: begin
         reg_rdata_next[0] = target_events_tx_pending_qs;
         reg_rdata_next[1] = target_events_bus_timeout_qs;
         reg_rdata_next[2] = target_events_arbitration_lost_qs;
@@ -3969,6 +4029,8 @@ module i2c_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
