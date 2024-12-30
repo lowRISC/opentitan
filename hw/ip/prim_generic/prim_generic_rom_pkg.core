@@ -3,8 +3,11 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-name: "lowrisc:prim:rom_pkg"
+name: "lowrisc:prim_generic:rom_pkg"
 description: "Rom package"
+virtual:
+  - "lowrisc:prim:rom_pkg"
+
 filesets:
   files_rtl:
     files:
