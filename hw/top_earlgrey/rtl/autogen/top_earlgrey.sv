@@ -1085,6 +1085,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart0_tl_req),
       .tl_o(uart0_tl_rsp),
 
@@ -1119,6 +1122,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart1_tl_req),
       .tl_o(uart1_tl_rsp),
 
@@ -1153,6 +1159,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart2_tl_req),
       .tl_o(uart2_tl_rsp),
 
@@ -1187,6 +1196,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart3_tl_req),
       .tl_o(uart3_tl_rsp),
 
