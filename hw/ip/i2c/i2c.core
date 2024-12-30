@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:ram_1p_adv
       - lowrisc:ip:tlul
       - lowrisc:ip:i2c_pkg
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/i2c_reg_pkg.sv
       - rtl/i2c_reg_top.sv

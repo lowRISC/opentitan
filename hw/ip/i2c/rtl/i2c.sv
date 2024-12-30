@@ -9,8 +9,11 @@
 module i2c
   import i2c_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter int unsigned InputDelayCycles = 0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
+  parameter int unsigned          InputDelayCycles     = 0,
+  parameter bit                   EnableRacl           = 1'b0,
+  parameter bit                   RaclErrorRsp         = 1'b1,
+  parameter int unsigned          RaclPolicySelVec[32] = '{32{0}}
 ) (
   input                                    clk_i,
   input                                    rst_ni,
@@ -24,6 +27,11 @@ module i2c
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
   // Generic IO
   input                     cio_scl_i,
@@ -58,13 +66,20 @@ module i2c
 
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  i2c_reg_top u_reg (
+  i2c_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
     .tl_o,
     .reg2hw,
     .hw2reg,
+    .racl_policies_i,
+    .racl_error_o,
+    .racl_error_log_o,
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(alerts[0])
   );

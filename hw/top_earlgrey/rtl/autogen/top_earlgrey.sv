@@ -1321,6 +1321,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
 
@@ -1367,6 +1370,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c1_tl_req),
       .tl_o(i2c1_tl_rsp),
 
@@ -1413,6 +1419,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c2_tl_req),
       .tl_o(i2c2_tl_rsp),
 

@@ -1112,6 +1112,9 @@ module top_darjeeling #(
       .ram_cfg_i(i2c_ram_1p_cfg_i),
       .ram_cfg_rsp_o(i2c_ram_1p_cfg_rsp_o),
       .lsio_trigger_o(i2c0_lsio_trigger),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
 
