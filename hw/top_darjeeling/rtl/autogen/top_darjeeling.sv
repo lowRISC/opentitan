@@ -168,19 +168,26 @@ module top_darjeeling #(
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
-  input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
-  input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       otbn_imem_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       otbn_dmem_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       rv_core_ibex_icache_tag_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       rv_core_ibex_icache_data_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_data_ram_1p_cfg_rsp_o,
+  input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_sys2spi_i,
   output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_sys2spi_o,
   output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_spi2sys_o,
+  input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_spi2sys_i,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
@@ -492,8 +499,6 @@ module top_darjeeling #(
 
   // define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
-  prim_ram_1p_pkg::ram_1p_cfg_t       ast_ram_1p_cfg;
-  prim_ram_2p_pkg::ram_2p_cfg_t       ast_spi_ram_2p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   alert_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
@@ -746,8 +751,6 @@ module top_darjeeling #(
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
-  assign ast_ram_1p_cfg = ram_1p_cfg_i;
-  assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
   assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
 
@@ -1059,9 +1062,9 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
-      .ram_cfg_sys2spi_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_sys2spi_i(spi_device_ram_2p_cfg_sys2spi_i),
       .ram_cfg_rsp_sys2spi_o(spi_device_ram_2p_cfg_rsp_sys2spi_o),
-      .ram_cfg_spi2sys_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_spi2sys_i(spi_device_ram_2p_cfg_spi2sys_i),
       .ram_cfg_rsp_spi2sys_o(spi_device_ram_2p_cfg_rsp_spi2sys_o),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
@@ -1673,7 +1676,7 @@ module top_darjeeling #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
-      .cfg_i(ast_ram_1p_cfg),
+      .cfg_i(sram_ctrl_ret_aon_ram_1p_cfg_i),
       .cfg_rsp_o(sram_ctrl_ret_aon_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
@@ -1875,8 +1878,8 @@ module top_darjeeling #(
       .edn_urnd_o(edn0_edn_req[6]),
       .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
-      .ram_cfg_imem_i(ast_ram_1p_cfg),
-      .ram_cfg_dmem_i(ast_ram_1p_cfg),
+      .ram_cfg_imem_i(otbn_imem_ram_1p_cfg_i),
+      .ram_cfg_dmem_i(otbn_dmem_ram_1p_cfg_i),
       .ram_cfg_rsp_imem_o(otbn_imem_ram_1p_cfg_rsp_o),
       .ram_cfg_rsp_dmem_o(otbn_dmem_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
@@ -2040,7 +2043,7 @@ module top_darjeeling #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
-      .cfg_i(ast_ram_1p_cfg),
+      .cfg_i(sram_ctrl_main_ram_1p_cfg_i),
       .cfg_rsp_o(sram_ctrl_main_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
@@ -2075,7 +2078,7 @@ module top_darjeeling #(
       // Inter-module signals
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
-      .cfg_i(ast_ram_1p_cfg),
+      .cfg_i(sram_ctrl_mbox_ram_1p_cfg_i),
       .cfg_rsp_o(sram_ctrl_mbox_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
@@ -2540,9 +2543,9 @@ module top_darjeeling #(
 
       // Inter-module signals
       .rst_cpu_n_o(),
-      .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
+      .ram_cfg_icache_tag_i(rv_core_ibex_icache_tag_ram_1p_cfg_i),
       .ram_cfg_rsp_icache_tag_o(rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o),
-      .ram_cfg_icache_data_i(ast_ram_1p_cfg),
+      .ram_cfg_icache_data_i(rv_core_ibex_icache_data_ram_1p_cfg_i),
       .ram_cfg_rsp_icache_data_o(rv_core_ibex_icache_data_ram_1p_cfg_rsp_o),
       .hart_id_i(rv_core_ibex_hart_id),
       .boot_addr_i(rv_core_ibex_boot_addr),
