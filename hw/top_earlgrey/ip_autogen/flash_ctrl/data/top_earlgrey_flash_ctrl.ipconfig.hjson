@@ -23,6 +23,7 @@
     bytes_per_page: 2048
     bytes_per_bank: 524288
     size: 1048576
+    virtual_pkg_vlnv: lowrisc:opentitan:top_earlgrey_virtual_pkgs
     topname: earlgrey
   }
 }

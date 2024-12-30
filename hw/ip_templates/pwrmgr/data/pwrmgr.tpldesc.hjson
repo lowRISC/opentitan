@@ -64,5 +64,11 @@
       type: "int"
       default: "1"
     }
+    {
+      name: "virtual_pkg_vlnv"
+      desc: "Provides a VLNV that contains all the virtual providers for constants"
+      type: "string"
+      default: ""
+    }
   ]
 }

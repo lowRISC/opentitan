@@ -14,9 +14,11 @@ filesets:
       - tb/alert_handler_esc_timer_bind_fpv.sv
       - tb/alert_handler_esc_timer_tb.sv
     file_type: systemVerilogSource
+% if len(virtual_pkg_vlnv) > 0:
   files_virtual_provider:
     depend:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:alert_handler_virtual_provider")})"
+      - "fileset_top ? (${virtual_pkg_vlnv})"
+% endif
 
 targets:
   default: &default_target
@@ -29,10 +31,14 @@ targets:
 
   formal:
     <<: *default_target
+% if len(virtual_pkg_vlnv) > 0:
     filesets_append:
       - files_virtual_provider
+% endif
 
   lint:
     <<: *default_target
+% if len(virtual_pkg_vlnv) > 0:
     filesets_append:
       - files_virtual_provider
+% endif

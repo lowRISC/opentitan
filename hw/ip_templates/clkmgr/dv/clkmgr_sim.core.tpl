@@ -18,9 +18,11 @@ filesets:
       - cov/clkmgr_cov_bind.sv
     file_type: systemVerilogSource
 
+% if len(virtual_pkg_vlnv) > 0:
   files_virtual_provider:
     depend:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:clkmgr_virtual_provider")})"
+      - "fileset_top ? (${virtual_pkg_vlnv})"
+% endif
 
 targets:
   sim: &sim_target
@@ -28,7 +30,9 @@ targets:
     filesets:
       - files_rtl
       - files_dv
+% if len(virtual_pkg_vlnv) > 0:
       - files_virtual_provider
+% endif
     default_tool: vcs
 
   lint:

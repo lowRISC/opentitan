@@ -15,9 +15,11 @@ filesets:
       - ${instance_vlnv("lowrisc:ip:pwrmgr_component:0.1")}
     file_type: systemVerilogSource
 
+% if len(virtual_pkg_vlnv) > 0:
   files_virtual_provider:
     depend:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pwrmgr_virtual_provider")})"
+      - "fileset_top ? (${virtual_pkg_vlnv})"
+% endif
 
   files_verilator_waiver:
     depend:
@@ -60,8 +62,10 @@ targets:
 
   lint:
     <<: *default_target
+% if len(virtual_pkg_vlnv) > 0:
     filesets_append:
       - files_virtual_provider
+% endif
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

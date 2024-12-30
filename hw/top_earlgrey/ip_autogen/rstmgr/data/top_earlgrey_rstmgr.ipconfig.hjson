@@ -691,6 +691,7 @@
     rst_ni: lc_io_div4
     export_rsts: {}
     with_alert_handler: true
+    virtual_pkg_vlnv: lowrisc:opentitan:top_earlgrey_virtual_pkgs
     topname: earlgrey
   }
 }

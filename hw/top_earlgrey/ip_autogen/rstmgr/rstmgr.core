@@ -32,7 +32,7 @@ filesets:
 
   files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_rstmgr_virtual_provider)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_virtual_pkgs)"
 
   files_verilator_waiver:
     depend:

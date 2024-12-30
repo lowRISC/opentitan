@@ -18,7 +18,7 @@ filesets:
     file_type: systemVerilogSource
   files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_pinmux_virtual_provider)"
+      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_virtual_pkgs)"
 
 generate:
   csr_assert_gen:

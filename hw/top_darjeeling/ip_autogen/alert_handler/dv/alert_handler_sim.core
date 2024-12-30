@@ -20,7 +20,7 @@ filesets:
 
   files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_alert_handler_virtual_provider)"
+      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_virtual_pkgs)"
 
 generate:
   ral:

@@ -24,7 +24,7 @@ filesets:
 
   files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_flash_ctrl_virtual_provider)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_virtual_pkgs)"
 
 targets:
   default: &default_target
@@ -43,3 +43,4 @@ targets:
     <<: *default_target
     filesets_append:
       - files_virtual_provider
+    default_tool: vcs

@@ -20,9 +20,11 @@ filesets:
     files:
       - tb/pinmux_chip_tb.sv
     file_type: systemVerilogSource
+% if len(virtual_pkg_vlnv) > 0:
   files_virtual_provider:
     depend:
-      - "fileset_top ? (${instance_vlnv("lowrisc:ip:pinmux_virtual_provider")})"
+      - "fileset_top ? (${virtual_pkg_vlnv})"
+% endif
 
 generate:
   csr_assert_gen:
@@ -41,10 +43,14 @@ targets:
 
   formal:
     <<: *default_target
+% if len(virtual_pkg_vlnv) > 0:
     filesets_append:
       - files_virtual_provider
+% endif
 
   lint:
     <<: *default_target
+% if len(virtual_pkg_vlnv) > 0:
     filesets_append:
       - files_virtual_provider
+% endif

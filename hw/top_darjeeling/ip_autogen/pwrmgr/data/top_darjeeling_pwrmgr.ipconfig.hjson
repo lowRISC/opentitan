@@ -76,6 +76,7 @@
     NumRstReqs: 2
     wait_for_external_reset: true
     NumRomInputs: 3
+    virtual_pkg_vlnv: lowrisc:opentitan:top_darjeeling_virtual_pkgs
     topname: darjeeling
   }
 }

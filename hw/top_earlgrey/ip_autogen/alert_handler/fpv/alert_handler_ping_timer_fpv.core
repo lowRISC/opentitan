@@ -16,7 +16,7 @@ filesets:
     file_type: systemVerilogSource
   files_virtual_provider:
     depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_alert_handler_virtual_provider)"
+      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_virtual_pkgs)"
 
 targets:
   default: &default_target

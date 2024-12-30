@@ -15,6 +15,7 @@
     n_dio_periph_out: 57
     enable_usb_wakeup: false
     enable_strap_sampling: false
+    virtual_pkg_vlnv: lowrisc:opentitan:top_darjeeling_virtual_pkgs
     topname: darjeeling
   }
 }

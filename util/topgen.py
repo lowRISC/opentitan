@@ -227,6 +227,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
         "n_classes": n_classes,
         "n_lpg": n_lpg,
         "lpg_map": lpg_map,
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     }
 
     ipgen_render("alert_handler", topname, params, out_path)
@@ -357,6 +358,7 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     }
 
     ipgen_render("pinmux", topname, params, out_path)
@@ -393,6 +395,7 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "exported_clks": topcfg["exported_clks"],
         "number_of_clock_groups": len(clocks.groups),
         "with_alert_handler": with_alert_handler,
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     }
 
     ipgen_render("clkmgr", topname, params, out_path)
@@ -434,6 +437,7 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "NumRstReqs": n_rstreqs,
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
         "NumRomInputs": n_rom_ctrl,
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)
@@ -487,6 +491,7 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": topcfg["exported_rsts"],
         "with_alert_handler": with_alert_handler,
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     }
 
     ipgen_render("rstmgr", topname, params, out_path)
@@ -514,6 +519,7 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
         "metadata_width": 12,
         "info_types": 3,
         "infos_per_bank": [10, 1, 2],
+        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
     })
 
     params.pop('base_addrs', None)
