@@ -805,7 +805,9 @@ module top_englishbreakfast #(
       .rst_aon_ni (rstmgr_aon_resets.rst_sys_aon_n[rstmgr_pkg::Domain0Sel])
   );
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7])
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[7:7]),
+    .EscNumSeverities(4),
+    .EscPingCountWidth(16)
   ) u_pwrmgr_aon (
 
       // Interrupt

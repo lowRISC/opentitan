@@ -10,16 +10,27 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:ip:tlul
+      - lowrisc:prim:esc
+      - lowrisc:prim:lc_sync
+      - lowrisc:prim:lc_sender
+      - lowrisc:prim:all
+      - lowrisc:ip:rom_ctrl_pkg
+      - lowrisc:ip:lc_ctrl_pkg
+      - lowrisc:ip:rv_core_ibex_pkg
+      - lowrisc:prim:sparse_fsm
+      - lowrisc:prim:mubi
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:measure
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
       - ${instance_vlnv("lowrisc:ip:pwrmgr_reg:0.1")}
-      - ${instance_vlnv("lowrisc:ip:pwrmgr_component:0.1")}
+    files:
+      - rtl/pwrmgr_cdc.sv
+      - rtl/pwrmgr_slow_fsm.sv
+      - rtl/pwrmgr_fsm.sv
+      - rtl/pwrmgr_wake_info.sv
+      - rtl/pwrmgr.sv
     file_type: systemVerilogSource
-
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
 
   files_verilator_waiver:
     depend:
@@ -62,10 +73,6 @@ targets:
 
   lint:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
