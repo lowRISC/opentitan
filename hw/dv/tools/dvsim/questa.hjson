@@ -2,26 +2,34 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -optimize"
-  run_cmd:    "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -simulate"
+  build_cmd:  "{job_prefix} {QUESTA_HOME}/linux_x86_64/qrun -optimize"
+  run_cmd:    "{job_prefix} {QUESTA_HOME}/linux_x86_64/qrun -simulate"
 
 
   build_opts: [ "-timescale 1ns/1ps",
                 "-outdir {build_dir}/qrun.out",
-                "-uvm -uvmhome {QUESTA_HOME}/questasim/verilog_src/uvm-1.2",
+				"+incdir+{QUESTA_HOME}/verilog_src/uvm-1.2/src",
+				"+incdir+{QUESTA_HOME}/verilog_src/uvm-1.2/src/mentor",
+                "{QUESTA_HOME}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
+                "-uvm -uvmhome {QUESTA_HOME}/verilog_src/uvm-1.2",
                 "-mfcu",
+                "-sv",
+				"-svext=hierbinsof",
+                "-suppress 2744,2912,7070,7034,7033,2244,7041",
                 "-f {sv_flist}",
                 // List multiple tops for the simulation. Prepend each top level with `-top`.
                 "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
-                "-voptargs=\"+acc=nr\""
+                "-voptargs=\"-access=rw+/. -svext=cbos\""
               ]
 
   run_opts:   [ "-outdir {build_dir}/qrun.out",
                 "-sv_seed {seed}",
+                "-c",
+                "-sv_lib {QUESTA_HOME}/uvm-1.2/linux_x86_64/uvm_dpi",
                 // dv_macros.svh has a macro printing null using %0d
                 // format specifier, Questa throws an error on this
                 // we demote this error in Questa
-                "-suppress vsim-8323",
+                "-suppress 8323,7034,7033,7067,8111,16133,16132,7041",
                 // Questa forces all declared virtual interfaces to be allocated,
                 // even in classes that are not even created at runtime. The switch
                 // below demotes the associated error thrown.
@@ -84,6 +92,10 @@
       name: questa_waves
       is_sim_mode: 1
     }
+    {
+      name: questa_waves_off
+      is_sim_mode: 1
+    }
     // TODO Questa coverage only currently supported in the GUI with no merging
     {
       name: questa_cov
@@ -94,6 +106,12 @@
     // TODO support profiling for questa
     {
       name: questa_profile
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    {
+      name: questa_gui_debug
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
