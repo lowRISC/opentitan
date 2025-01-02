@@ -9,15 +9,13 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
-      - ${instance_vlnv("lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1")}
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr:0.1")}
 
     files:
       - pwrmgr_unit_only_bind.sv
     file_type: systemVerilogSource
-
-  files_formal:
-    depend:
-      - ${instance_vlnv("lowrisc:ip:pwrmgr:0.1")}
 
 generate:
   csr_assert_gen:
@@ -34,6 +32,5 @@ targets:
   formal:
     <<: *default_target
     filesets:
-      - files_formal
       - files_dv
     toplevel: pwrmgr

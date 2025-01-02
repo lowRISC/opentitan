@@ -9,9 +9,9 @@ filesets:
     depend:
       - lowrisc:tlul:headers
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:ip_interfaces:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:clkmgr_pwrmgr_sva_if
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
-      - ${instance_vlnv("lowrisc:dv:pwrmgr_rstmgr_sva_if:0.1")}
     files:
       - pwrmgr_bind.sv
       - pwrmgr_clock_enables_sva_if.sv
