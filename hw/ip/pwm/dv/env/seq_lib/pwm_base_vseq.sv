@@ -42,6 +42,12 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Return a randomized blink duty cycle.
   extern virtual function blink_param_t rand_pwm_blink();
 
+  // Start the clocks of all alert agents.
+  extern function void start_alert_clks();
+
+  // Stop the clocks of all alert agents.
+  extern function void stop_alert_clks();
+
   // Inject cycles of delay, disabling the main clock for a time in the middle if enable is true.
   extern task low_power_mode(bit enable, uint cycles);
 
@@ -147,22 +153,49 @@ function blink_param_t pwm_base_vseq::rand_pwm_blink();
   return blink;
 endfunction
 
+// Start the clocks of all alert agents.
+function void pwm_base_vseq::start_alert_clks();
+  foreach (cfg.list_of_alerts[i]) begin
+    string alert_name = cfg.list_of_alerts[i];
+    // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
+    // clocks (our TL-UL clock and this internal asynchronous clock).
+    cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.start_clk(.wait_for_posedge(1'b0));
+  end
+endfunction
+
+// Stop the clocks of all alert agents.
+function void pwm_base_vseq::stop_alert_clks();
+  foreach (cfg.list_of_alerts[i]) begin
+    string alert_name = cfg.list_of_alerts[i];
+    cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.stop_clk();
+  end
+endfunction
+
 // The PWM outputs are required to keep running with the chip in low power mode, meaning that the
 // monitor and scoreboard must continue to match predictions successfully when the TL-UL clock is
 // not running.
 task pwm_base_vseq::low_power_mode(bit enable, uint cycles);
   if (enable) begin
     int unsigned sleep_cycles = $urandom_range(10, cycles / 4);
+    bit ping_chk;
     `uvm_info(`gfn, "Running in low power mode...", UVM_MEDIUM)
     cfg.clk_rst_vif.wait_clks(cycles/2);
     // In the middle of the test turn off the TL-UL clk to observe that the PWM outputs continue.
     // as intended.
     `uvm_info(`gfn, "Stopping TL-UL clock", UVM_MEDIUM)
+    // We must suspend all alert agents too whilst the DUT is in low power mode because otherwise
+    // they will continue trying to send pings to the alert_sender(s) within the DUT, resulting in
+    // spurious ping timeouts.
+    stop_alert_clks();
     cfg.clk_rst_vif.stop_clk();
     // Use core clk to determine when to turn the TL-UL clk back on.
     cfg.clk_rst_core_vif.wait_clks(sleep_cycles);
     `uvm_info(`gfn, "Resuming TL-UL clock", UVM_MEDIUM)
-    cfg.clk_rst_vif.start_clk();
+    // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
+    // clocks (an internal asynchronous clock and this TL-UL clock).
+    cfg.clk_rst_vif.start_clk(.wait_for_posedge(1'b0));
+    // Resume the alert agents.
+    start_alert_clks();
     cfg.clk_rst_vif.wait_clks(cycles / 2 - sleep_cycles);
   end else begin
     cfg.clk_rst_vif.wait_clks(cycles);
