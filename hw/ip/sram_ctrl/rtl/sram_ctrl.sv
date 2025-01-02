@@ -75,9 +75,9 @@ module sram_ctrl
   import prim_mubi_pkg::mubi8_test_true_strict;
 
   // This is later on pruned to the correct width at the SRAM wrapper interface.
-  parameter int unsigned Depth = MemSizeRam >> 2;
-  parameter int unsigned InstDepth = InstSize >> 2;
-  parameter int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
+  localparam int unsigned Depth = MemSizeRam >> 2;
+  localparam int unsigned InstDepth = InstSize >> 2;
+  localparam int unsigned AddrWidth = prim_util_pkg::vbits(Depth);
 
   `ASSERT_INIT(NumRamInstSameAsComputed_A, NumRamInst == int'($ceil(MemSizeRam / real'(InstSize))))
 
