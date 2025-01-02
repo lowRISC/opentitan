@@ -24,7 +24,7 @@ class pwm_perf_vseq extends pwm_rand_output_vseq;
   extern constraint phase_delay_c;
 
   // The duty cycle and the threshold for the heartbeat blink counter should be minimal or maximal,
-  // correspoding to both counters being minimal or both counters being maximal.
+  // corresponding to both counters being minimal or both counters being maximal.
   extern constraint rand_dc_c;
   extern constraint rand_blink_c;
 
@@ -75,7 +75,7 @@ task pwm_perf_vseq::body();
   set_ch_invert(rand_invert);
   set_ch_enables(rand_chan);
 
-  low_power_mode(low_power, NUM_CYCLES);
+  monitor_dut_outputs(low_power, NUM_CYCLES);
 
   shutdown_dut();
 

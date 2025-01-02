@@ -11,11 +11,11 @@ class pwm_base_vseq extends cip_base_vseq #(
   `uvm_object_utils(pwm_base_vseq)
   extern function new (string name="");
 
-  // Tasks overridden from dv_base_vseq
+  // Tasks overridden from dv_base_vseq.
   extern task apply_reset(string kind = "HARD");
   extern task apply_resets_concurrently(int reset_duration_ps = 0);
 
-  // Set the CFG register with the given ClkDiv, DcResn, CntrEn with a CSR write
+  // Set the CFG register with the given ClkDiv, DcResn, CntrEn with a CSR write.
   extern task set_cfg_reg(bit [26:0] ClkDiv, bit [3:0] DcResn, bit CntrEn);
 
   // Pick a random value for the CFG register with cntr_en=1.
@@ -27,7 +27,7 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Use a CSR write to set the PWM_EN bits as requested.
   extern task set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
 
-  // Use a CSR write to set the duty cycle for the given channel.
+  // Use a CSR write to set DUTY_CYCLE for the given channel.
   extern task set_duty_cycle(int unsigned channel, bit [15:0] A, bit [15:0] B);
 
   // Use a CSR write to set BLINK_PARAM for the given channel
@@ -39,7 +39,7 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Return a randomized duty cycle.
   extern virtual function duty_cycle_t rand_pwm_duty_cycle();
 
-  // Return a randomized blink duty cycle.
+  // Return randomized blink parameters.
   extern virtual function blink_param_t rand_pwm_blink();
 
   // Start the clocks of all alert agents.
@@ -48,8 +48,9 @@ class pwm_base_vseq extends cip_base_vseq #(
   // Stop the clocks of all alert agents.
   extern function void stop_alert_clks();
 
-  // Inject cycles of delay, disabling the main clock for a time in the middle if enable is true.
-  extern task low_power_mode(bit enable, uint cycles);
+  // Wait for at least the specified number of clock cycles, monitoring and checking the DUT
+  // outputs. Optionally engage low power mode in the middle of the test.
+  extern task monitor_dut_outputs(bit low_power_mode, uint cycles);
 
   // Shutdown the dut in a way that helps the last item to finish gracefully.
   extern task shutdown_dut();
@@ -110,7 +111,7 @@ task pwm_base_vseq::set_ch_invert(bit [PWM_NUM_CHANNELS-1:0] invert);
 endtask
 
 task pwm_base_vseq::set_ch_enables(bit [PWM_NUM_CHANNELS-1:0] enables);
-  `uvm_info(`gfn, $sformatf("Channel enables  0x%0x", enables), UVM_HIGH)
+  `uvm_info(`gfn, $sformatf("Channel enables 0x%0x", enables), UVM_HIGH)
   csr_wr(.ptr(ral.pwm_en[0]), .value(enables));
 endtask
 
@@ -137,7 +138,7 @@ task pwm_base_vseq::set_param(int unsigned channel, param_reg_t value);
   ral.pwm_param[channel].htbt_en.set(value.HtbtEn);
   ral.pwm_param[channel].phase_delay.set(value.PhaseDelay);
   csr_update(ral.pwm_param[channel]);
-endtask // set_param
+endtask
 
 function duty_cycle_t pwm_base_vseq::rand_pwm_duty_cycle();
   duty_cycle_t value;
@@ -174,8 +175,8 @@ endfunction
 // The PWM outputs are required to keep running with the chip in low power mode, meaning that the
 // monitor and scoreboard must continue to match predictions successfully when the TL-UL clock is
 // not running.
-task pwm_base_vseq::low_power_mode(bit enable, uint cycles);
-  if (enable) begin
+task pwm_base_vseq::monitor_dut_outputs(bit low_power_mode, uint cycles);
+  if (low_power_mode) begin
     int unsigned sleep_cycles = $urandom_range(10, cycles / 4);
     bit ping_chk;
     `uvm_info(`gfn, "Running in low power mode...", UVM_MEDIUM)

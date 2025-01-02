@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 package pwm_env_pkg;
-  // dep packages
   import uvm_pkg::*;
   import top_pkg::*;
   import dv_utils_pkg::*;
@@ -18,32 +17,33 @@ package pwm_env_pkg;
 
   parameter uint PWM_NUM_CHANNELS = pwm_reg_pkg::NOutputs;
 
-  // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  // parameters
-  // alerts
+  // The DUT has a single alert signal.
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+
+  // Constants.
   parameter bit [31:0] MAX_32 = 32'hFFFF_FFFF;
   parameter bit [15:0] MAX_16 = 16'hFFFF;
   parameter bit [26:0] MAX_27 = 27'h7FF_FFFF;
+
+  // Duration of test in core clock cycles.
   parameter uint NUM_CYCLES = 'd1_049_000;
+
+  // The DUT has a very flexible interface, clearly intended to support a wide range of bus and
+  // core clock frequencies; however, large values of `CLK_DIV` are impractical in simulation.
   parameter bit [26:0] MAX_CLK_DIV = 15;
 
-  // datatype
-  typedef enum bit {
-    Enable  = 1'b1,
-    Disable = 1'b0
-  } pwm_status_e;
-
+  // Phase counter configuration (CFG).
   typedef struct packed {
     bit [26:0]   ClkDiv;
     bit [3:0]    DcResn;
     bit          CntrEn;
   } cfg_reg_t;
 
+  // Channel parameters (PWM_PARAM_i register).
   typedef struct packed {
     bit          BlinkEn;
     bit          HtbtEn;
@@ -62,14 +62,14 @@ package pwm_env_pkg;
     bit [15:0]   X;
   } blink_param_t;
 
-  // the index of multi-reg is at the last char of the name
+  // The index of a multi-reg is given by the last character of the name, since there are fewer
+  // than ten channels.
   function automatic int get_multireg_idx(string name);
     string s = name.getc(name.len - 1);
     return s.atoi();
   endfunction
 
-  // package sources
-  `include "pwm_seq_cfg.sv"
+  // Package sources
   `include "pwm_env_cfg.sv"
   `include "pwm_env_cov.sv"
   `include "pwm_virtual_sequencer.sv"
