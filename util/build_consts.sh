@@ -32,15 +32,6 @@ else
   exit 1
 fi
 
-OT_GIT_VERSION="$(git describe --always 2>/dev/null)"
-export OT_GIT_VERSION
-if [[ -n "$OT_GIT_VERSION" ]]; then
-  readonly OT_VERSION="opentitan-$OT_GIT_VERSION"
-else
-  readonly OT_VERSION="opentitan-<unknown>"
-fi
-export OT_VERSION
-
 export BUILD_ROOT="${BUILD_ROOT:-"$REPO_TOP"}"
 readonly OBJ_DIR="$BUILD_ROOT/build-out"
 export OBJ_DIR
