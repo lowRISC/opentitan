@@ -8848,7 +8848,7 @@
         DmAddrMask: tl_main_pkg::ADDR_MASK_RV_DM__MEM
         DmHaltAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]
         DmExceptionAddr: tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]
-        PipeLine: "0"
+        PipeLine: "1"
         NEscalationSeverities: alert_handler_reg_pkg::N_ESC_SEV
         WidthPingCounter: alert_handler_reg_pkg::PING_CNT_DW
       }
@@ -9203,7 +9203,7 @@
           name: PipeLine
           desc: Pipe line
           type: bit
-          default: "0"
+          default: "1"
           local: "false"
           expose: "true"
           name_top: RvCoreIbexPipeLine

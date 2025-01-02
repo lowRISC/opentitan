@@ -146,7 +146,7 @@ module top_darjeeling #(
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0],
-  parameter bit RvCoreIbexPipeLine = 0
+  parameter bit RvCoreIbexPipeLine = 1
 ) (
   // Multiplexed I/O
   input        [11:0] mio_in_i,
