@@ -106,6 +106,13 @@
     ],
   },
 
+  // List of unmanaged external resets
+  //
+  // These should be listed as dictionaries that just give their names, in this form:
+  //
+  //    { name: "my_external_reset" }
+  // unmanaged_resets: []
+
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module
@@ -706,6 +713,7 @@
       domain: ["Aon"],
       param_decl: {
         InstrExec: "0",
+        InstSize: "4096",
       }
       base_addrs: {
         regs: {hart: "0x40500000"},
@@ -889,6 +897,7 @@
       param_decl: {
         InstrExec: "1",
         NumPrinceRoundsHalf: "2",
+        InstSize: "131072",
       },
       base_addrs: {
         regs: {hart: "0x411C0000"},
@@ -954,9 +963,13 @@
                    DbgTriggerEn: "1",
                    DbgHwBreakNum: "4",
                    SecureIbex: "1",
+                   DmBaseAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM",
+                   DmAddrMask: "tl_main_pkg::ADDR_MASK_RV_DM__MEM",
                    DmHaltAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0]",
                    DmExceptionAddr: "tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::ExceptionAddress[31:0]",
-                   PipeLine: "0"
+                   PipeLine: "0",
+                   NEscalationSeverities: "alert_handler_reg_pkg::N_ESC_SEV",
+                   WidthPingCounter: "alert_handler_reg_pkg::PING_CNT_DW"
                   },
       clock_srcs: {
         clk_i: "main",
@@ -1067,14 +1080,15 @@
     'connect': {
       'ast.obs_ctrl'            : ['flash_ctrl.obs_ctrl',
                                    'otp_ctrl.obs_ctrl'],
-      'ast.ram_1p_cfg'          : ['otbn.ram_cfg',
+      'ast.ram_1p_cfg'          : ['otbn.ram_cfg_imem',
+                                   'otbn.ram_cfg_dmem',
                                    'i2c0.ram_cfg',
                                    'i2c1.ram_cfg',
                                    'i2c2.ram_cfg',
-                                   'sram_ctrl_main.cfg',
-                                   'sram_ctrl_ret_aon.cfg',
-                                   'rv_core_ibex.ram_cfg'],
-      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg'],
+                                   'rv_core_ibex.ram_cfg_icache_tag',
+                                   'rv_core_ibex.ram_cfg_icache_data'],
+      'ast.spi_ram_2p_cfg'      : ['spi_device.ram_cfg_sys2spi',
+                                   'spi_device.ram_cfg_spi2sys']
       'ast.usb_ram_1p_cfg'      : ['usbdev.ram_cfg'],
       'ast.rom_cfg'             : ['rom_ctrl.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
@@ -1279,6 +1293,8 @@
         'ast.lc_dft_en'                   : '',
         'ast.obs_ctrl'                    : 'obs_ctrl',
         'ast.ram_1p_cfg'                  : 'ram_1p_cfg',
+        'sram_ctrl_main.cfg'              : 'sram_ctrl_main_cfg'
+        'sram_ctrl_ret_aon.cfg'           : 'sram_ctrl_ret_aon_cfg'
         'ast.spi_ram_2p_cfg'              : 'spi_ram_2p_cfg',
         'ast.usb_ram_1p_cfg'              : 'usb_ram_1p_cfg',
         'ast.rom_cfg'                     : 'rom_cfg',

@@ -17,6 +17,7 @@ use cryptotest_commands::ecdh_commands::{
     CryptotestEcdhPrivateKey,
 };
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
@@ -65,7 +66,7 @@ struct EcdhTestCase {
 fn run_ecdh_testcase(
     test_case: &EcdhTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
     fail_counter: &mut usize,
     failures: &mut Vec<usize>,
 ) -> Result<()> {
@@ -74,7 +75,6 @@ fn run_ecdh_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
 
     assert_eq!(test_case.algorithm.as_str(), "ecdh");
     // Change byte slice parameters from big endian to little endian
@@ -82,7 +82,7 @@ fn run_ecdh_testcase(
     let qx = BigUint::from_bytes_be(&test_case.qx).to_bytes_le();
     let qy = BigUint::from_bytes_be(&test_case.qy).to_bytes_le();
 
-    CryptotestCommand::Ecdh.send(&*uart)?;
+    CryptotestCommand::Ecdh.send(spi_console)?;
 
     let (curve, d0, d1) = match test_case.curve.as_str() {
         "p256" => {
@@ -170,7 +170,7 @@ fn run_ecdh_testcase(
         _ => panic!("Invalid ECDH curve name"),
     };
 
-    curve.send(&*uart)?;
+    curve.send(spi_console)?;
 
     // Sizes were checked already, so we can unwrap() transformations
     // to `ArrayVec`s.  We can inline the `ArrayVec` initialization
@@ -182,21 +182,21 @@ fn run_ecdh_testcase(
         d1: ArrayVec::try_from(d1.as_slice()).unwrap(),
         d1_len: d1.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     CryptotestEcdhCoordinate {
         coordinate: ArrayVec::try_from(qx.as_slice()).unwrap(),
         coordinate_len: qx.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     CryptotestEcdhCoordinate {
         coordinate: ArrayVec::try_from(qy.as_slice()).unwrap(),
         coordinate_len: qy.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
-    let ecdh_output = CryptotestEcdhDeriveOutput::recv(&*uart, opts.timeout, false)?;
+    let ecdh_output = CryptotestEcdhDeriveOutput::recv(spi_console, opts.timeout, false)?;
     let out_len = ecdh_output.shared_secret_len;
     if out_len > ecdh_output.shared_secret.len() {
         panic!("ECDH returned shared secret was too long for device firmware configuration.");
@@ -219,9 +219,9 @@ fn run_ecdh_testcase(
 }
 
 fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0usize;
@@ -234,7 +234,13 @@ fn test_ecdh(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdh_test in &ecdh_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdh_testcase(ecdh_test, opts, transport, &mut fail_counter, &mut failures)?;
+            run_ecdh_testcase(
+                ecdh_test,
+                opts,
+                &spi_console_device,
+                &mut fail_counter,
+                &mut failures,
+            )?;
         }
     }
     assert_eq!(

@@ -336,6 +336,7 @@ This binding value is not considered secret, however its integrity is very impor
 The software binding is locked by software and unlocked by hardware upon a successful advance operation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`SW_BINDING_REGWEN`](#sw_binding_regwen)
 
 ### Instances
 
@@ -369,6 +370,7 @@ This binding value is not considered secret, however its integrity is very impor
 The software binding is locked by software and unlocked by hardware upon a successful advance operation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`SW_BINDING_REGWEN`](#sw_binding_regwen)
 
 ### Instances
 
@@ -398,6 +400,7 @@ The software binding is locked by software and unlocked by hardware upon a succe
 Salt value used as part of output generation
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 
@@ -427,6 +430,7 @@ Salt value used as part of output generation
 Version used as part of output generation
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 

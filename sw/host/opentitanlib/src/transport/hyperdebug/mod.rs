@@ -138,6 +138,7 @@ impl<T: Flavor> Hyperdebug<T> {
     const GOOGLE_CAP_GPIO_MONITORING: u16 = 0x0004;
     const GOOGLE_CAP_GPIO_BITBANGING: u16 = 0x0008;
     const GOOGLE_CAP_UART_QUEUE_CLEAR: u16 = 0x0010;
+    const GOOGLE_CAP_TPM_POLL: u16 = 0x0020;
 
     /// Establish connection with a particular HyperDebug.
     pub fn open(
@@ -442,6 +443,7 @@ pub struct CachedIo {
 
 pub struct Conn {
     console_port: RefCell<TTYPort>,
+    first_use: Cell<bool>,
 }
 
 // The way that the HyperDebug allows callers to request optimization for a sequence of operations
@@ -450,6 +452,9 @@ pub struct Conn {
 impl MaintainConnection for Conn {}
 
 impl Inner {
+    /// General timeout for response on the HyperDebug text-based USB command console.
+    const COMMAND_TIMEOUT: Duration = Duration::from_millis(3000);
+
     /// Establish connection with HyperDebug console USB interface.
     pub fn connect(&self) -> Result<Rc<Conn>> {
         if let Some(conn) = self.conn.borrow().upgrade() {
@@ -462,11 +467,12 @@ impl Inner {
             .to_str()
             .ok_or(TransportError::UnicodePathError)?;
         let port =
-            TTYPort::open(&serialport::new(port_name, 115_200).timeout(Duration::from_millis(100)))
+            TTYPort::open(&serialport::new(port_name, 115_200).timeout(Self::COMMAND_TIMEOUT))
                 .context("Failed to open HyperDebug console")?;
         flock_serial(&port, port_name)?;
         let conn = Rc::new(Conn {
             console_port: RefCell::new(port),
+            first_use: Cell::new(true),
         });
         // Return a (strong) reference to the newly opened connection, while keeping a weak
         // reference to the same in this `Inner` object.  The result is that if the caller keeps
@@ -560,10 +566,16 @@ impl Conn {
     fn execute_command(&self, cmd: &str, mut callback: impl FnMut(&str)) -> Result<()> {
         let port: &mut TTYPort = &mut self.console_port.borrow_mut();
 
-        // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
-        // partial input, before executing our command.
-        port.write(format!("\x03{}\n", cmd).as_bytes())
-            .context("writing to HyperDebug console")?;
+        if self.first_use.get() {
+            // Send Ctrl-C, followed by the command, then newline.  This will discard any previous
+            // partial input, before executing our command.
+            port.write(format!("\x03{}\n", cmd).as_bytes())
+                .context("writing to HyperDebug console")?;
+            self.first_use.set(false);
+        } else {
+            port.write(format!("{}\n", cmd).as_bytes())
+                .context("writing to HyperDebug console")?;
+        }
 
         // Now process response from HyperDebug.  First we expect to see the echo of the command
         // we just "typed". Then zero, one or more lines of useful output, which we want to pass
@@ -642,7 +654,17 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
     }
 
     fn apply_default_configuration(&self) -> Result<()> {
-        self.inner.cmd_no_output("reinit")
+        let mut error: Option<String> = None;
+        self.inner.execute_command("reinit", |line| {
+            log::warn!("Unexpected HyperDebug output: {}", line);
+            if line.starts_with("Error: ") {
+                error = Some(line.to_string());
+            }
+        })?;
+        if let Some(err) = error {
+            bail!(TransportError::CommunicationError(err));
+        }
+        Ok(())
     }
 
     // Create SPI Target instance, or return one from a cache of previously created instances.
@@ -656,6 +678,7 @@ impl<T: Flavor> Transport for Hyperdebug<T> {
             &self.spi_interface,
             enable_cmd,
             idx,
+            self.get_cmsis_google_capabilities()? & Self::GOOGLE_CAP_TPM_POLL != 0,
         )?);
         self.cached_io_interfaces
             .spis

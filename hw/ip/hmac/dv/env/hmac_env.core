@@ -29,6 +29,7 @@ filesets:
       - seq_lib/hmac_datapath_stress_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_test_vectors_hmac_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_long_msg_vseq.sv: {is_include_file: true}
+      - seq_lib/hmac_stress_reset_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_test_vectors_sha_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_burst_wr_vseq.sv: {is_include_file: true}
       - seq_lib/hmac_error_vseq.sv: {is_include_file: true}

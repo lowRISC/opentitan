@@ -19,7 +19,7 @@ The following table lists the fields of the manifest along with their sizes,
 alignments, and offsets from the start of the manifest in bytes. The last
 column provides the corresponding C data type of each field for illustration
 purposes. All manifest fields are stored little-endian and the total size of
-the manifest is 896 bytes.
+the manifest is 1024 bytes.
 
 | Field                 | Size (bytes) | Alignment (bytes) | Offset (bytes) | C Data Type    |
 | --------------------- | ------------ | ----------------- | -------------- | -------------- |
@@ -29,27 +29,38 @@ the manifest is 896 bytes.
 | `manuf_state_creator` | 4            | 4                 | 420            | `uint32_t`     |
 | `manuf_state_owner`   | 4            | 4                 | 424            | `uint32_t`     |
 | `life_cycle_state`    | 4            | 4                 | 428            | `uint32_t`     |
-| `modulus`             | 384          | 4                 | 432            | `uint32_t[96]` |
+| `public_key`          | 384          | 4                 | 432            | `uint32_t[96]` |
 | `address_translation` | 4            | 4                 | 816            | `uint32_t`     |
 | `identifier`          | 4            | 4                 | 820            | `uint32_t`     |
-| `length`              | 4            | 4                 | 824            | `uint32_t`     |
-| `version_major`       | 4            | 4                 | 828            | `uint32_t`     |
-| `version_minor`       | 4            | 4                 | 832            | `uint32_t`     |
-| `security_version`    | 4            | 4                 | 836            | `uint32_t`     |
-| `timestamp`           | 8            | 4                 | 840            | `uint32_t[2]`  |
-| `binding_value`       | 32           | 4                 | 848            | `uint32_t[8]`  |
-| `max_key_version`     | 4            | 4                 | 880            | `uint32_t`     |
-| `code_start`          | 4            | 4                 | 884            | `uint32_t`     |
-| `code_end`            | 4            | 4                 | 888            | `uint32_t`     |
-| `entry_point`         | 4            | 4                 | 892            | `uint32_t`     |
+| `manifest_version`    | 4            | 4                 | 824            | `uint32_t`     |
+| `signed_region_end`   | 4            | 4                 | 828            | `uint32_t`     |
+| `length`              | 4            | 4                 | 832            | `uint32_t`     |
+| `version_major`       | 4            | 4                 | 836            | `uint32_t`     |
+| `version_minor`       | 4            | 4                 | 840            | `uint32_t`     |
+| `security_version`    | 4            | 4                 | 844            | `uint32_t`     |
+| `timestamp`           | 8            | 4                 | 848            | `uint32_t[2]`  |
+| `binding_value`       | 32           | 4                 | 856            | `uint32_t[8]`  |
+| `max_key_version`     | 4            | 4                 | 888            | `uint32_t`     |
+| `code_start`          | 4            | 4                 | 892            | `uint32_t`     |
+| `code_end`            | 4            | 4                 | 896            | `uint32_t`     |
+| `entry_point`         | 4            | 4                 | 900            | `uint32_t`     |
+| `extensions`          | 120          | 4                 | 904            | `uint32_t[30]` |
 
 
 # Field Descriptions
 
-*   `signature`: [`RSASSA-PKCS1-v1_5`][rsassa_pkcs1_v1_5] signature of the
+Some fields like `signature` and `public_key` depend on the version of the manifest.
+
+*   `signature` (v1): [`RSASSA-PKCS1-v1_5`][rsassa_pkcs1_v1_5] signature of the
     image generated using a 3072-bit RSA private key and the SHA-256 hash
     function. The signed region of an image starts immediately after this
     field and extends to the end of the image.
+
+*   `signature` (v2): ECDSA P256 signature of the image generated using a NIST
+    P256 ECC key and the SHA-256 hash function. The signed region of an image
+    starts immediately after the end of the union encapsulating this field and
+    ends at the end of the image. Only the first 64 bytes of this field contain
+    the signature. The following 320 bytes are `0xa5` padding bytes.
 
 *   `selector_bits`: This field, along with the following four fields, is used
     to constrain a boot stage image to a set of devices based on their device
@@ -77,7 +88,11 @@ the manifest is 896 bytes.
 *   `life_cycle_state`: Device life cycle state compared against the state
     reported by the life cycle controller. Mapped to bit 10 of `selector_bits`.
 
-*   `modulus`:  Modulus of the signer's 3072-bit RSA public key.
+*   `public_key` (v1): Modulus of the signer's 3072-bit RSA public key.
+
+*   `public_key` (v2): Signer's ECDSA NIST P256 ECC public key. Only the first
+    64 bytes of this field contain the public key. The following 320 bytes are
+    `0xa5` padding bytes.
 
 *   `address_translation`: A hardened boolean representing whether address
     translation should be used for the `ROM_EXT` (see the [Ibex wrapper
@@ -87,6 +102,14 @@ the manifest is 896 bytes.
 *   `identifier`: Image identifier used to identify boot stage images. The
     value of this field must be `0x4552544f` (ASCII: "OTRE") for a `ROM_EXT`
     image and `0x3042544f` (ASCII: "OTB0") for the first owner stage.
+
+*   `manifest_version`: Manifest format major and minor version. These version
+    values can be used to maintain or break forward compatibility in ROM while
+    preserving backward compatibility in ROM_EXT. ROM requires the major version
+    to be `kManifestFormatVersionMajor1`.
+
+*   `signed_region_end`: Offset of the end of the signed region relative to the
+    start of the manifest.
 
 *   `length`: Length of the image (including the manifest) in bytes.
 
@@ -118,6 +141,8 @@ the manifest is 896 bytes.
 
 *   `entry_point`: Offset of the first instruction to execute in the image from
     the start of the manifest in bytes. Must be 4-byte word aligned.
+
+*   `extensions`: Extensions.
 
 [rsassa_pkcs1_v1_5]: https://datatracker.ietf.org/doc/html/rfc8017#section-8.2
 [key_manager]: https://opentitan.org/book/hw/ip/keymgr

@@ -252,6 +252,7 @@ module otbn_top_sim (
   prim_ram_1p_scr #(
     .Width              ( ExtWLEN       ),
     .Depth              ( DmemSizeWords ),
+    .InstDepth          ( DmemSizeWords ),
     .DataBitsPerMask    ( 39            ),
     .EnableParity       ( 0             ),
     .ReplicateKeyStream ( 1             )
@@ -276,6 +277,7 @@ module otbn_top_sim (
     .raddr_o          (                   ),
     .rerror_o         (                   ),
     .cfg_i            ( '0                ),
+    .cfg_rsp_o        (                   ),
 
     .wr_collision_o   (                   ),
     .write_pending_o  (                   ),
@@ -298,6 +300,7 @@ module otbn_top_sim (
   prim_ram_1p_scr #(
     .Width           ( 39            ),
     .Depth           ( ImemSizeWords ),
+    .InstDepth       ( ImemSizeWords ),
     .DataBitsPerMask ( 39            ),
     .EnableParity    ( 0             )
   ) u_imem (
@@ -321,6 +324,7 @@ module otbn_top_sim (
     .raddr_o          (                         ),
     .rerror_o         (                         ),
     .cfg_i            ( '0                      ),
+    .cfg_rsp_o        (                         ),
 
     .wr_collision_o   (                         ),
     .write_pending_o  (                         ),

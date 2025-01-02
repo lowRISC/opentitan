@@ -9,7 +9,7 @@ from collections import defaultdict, OrderedDict
 from copy import deepcopy
 from mako.template import Template
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import hjson
 from reggen.ip_block import IpBlock
@@ -586,19 +586,37 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
-def get_reset_path(top: object, reset: str, shadow_sel: bool = False):
+def get_clock_lpg_path(top: object, clk_name: str, unmanaged_clock: bool = False):
+    """Return the appropriate LPG clock path given name
+    """
+    if unmanaged_clock:
+        return top['unmanaged_clocks'].get_clock_by_signal_name(clk_name).cg_en_signal
+    else:
+        clk_name = clk_name.split('clk_')[-1]
+        return top['clocks'].hier_paths['lpg'] + clk_name
+
+
+def get_reset_path(top: object, reset: Union[str, object], shadow_sel: bool = False,
+                   unmanaged_reset: bool = False):
     """Return the appropriate reset path given name
     """
-    return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
+    if unmanaged_reset:
+        return top['unmanaged_resets'].get(reset['name']).signal_name
+    else:
+        return top['resets'].get_path(reset['name'], reset['domain'], shadow_sel)
 
 
-def get_reset_lpg_path(top: object, reset: str, shadow_sel: bool = False, domain: bool = None):
+def get_reset_lpg_path(top: object, reset: Union[str, object], shadow_sel: bool = False,
+                       domain: bool = None, unmanaged_reset: bool = False):
     """Return the appropriate LPG reset path given name
     """
-    if domain is not None:
-        return top['resets'].get_lpg_path(reset['name'], domain, shadow_sel)
+    if unmanaged_reset:
+        return top['unmanaged_resets'].get(reset['name']).rst_en_signal_name
     else:
-        return top['resets'].get_lpg_path(reset['name'], reset['domain'], shadow_sel)
+        if domain is not None:
+            return top['resets'].get_lpg_path(reset['name'], domain, shadow_sel)
+        else:
+            return top['resets'].get_lpg_path(reset['name'], reset['domain'], shadow_sel)
 
 
 def get_unused_resets(top):
@@ -811,14 +829,14 @@ def num_rom_ctrl(modules):
     return num
 
 
-def is_lc_ctrl(modules):
-    '''Return true if lc_ctrl exists in the design
+def find_module(modules, type):
+    '''Returns the first module of a given type
     '''
     for m in modules:
-        if m['type'] == 'lc_ctrl':
-            return True
+        if m['type'] == type:
+            return m
 
-    return False
+    return None
 
 
 def get_addr_space(top, addr_space_name):
@@ -855,13 +873,25 @@ class TopGen:
 
         self._init_plic_targets()
         self._init_plic_mapping()
-        self._init_alert_mapping()
-        self._init_pinmux_mapping()
-        self._init_pad_mapping()
-        self._init_pwrmgr_wakeups()
-        self._init_rstmgr_sw_rsts()
-        self._init_pwrmgr_reset_requests()
-        self._init_clkmgr_clocks()
+
+        # Only generate alert_handler and mappings if there is an alert_handler
+        if find_module(self.top['module'], 'alert_handler') or \
+           self.top['name'] == 'englishbreakfast':
+            self._init_alert_mapping()
+        # Only generate pinmux and pad mappings if there is a pinmux
+        if find_module(self.top['module'], 'pinmux'):
+            self._init_pinmux_mapping()
+            self._init_pad_mapping()
+        # Only generate pwrmgr mappings if there is a pwrmgr
+        if find_module(self.top['module'], 'pwrmgr'):
+            self._init_pwrmgr_wakeups()
+            self._init_pwrmgr_reset_requests()
+        # Only generate rstmgr mappings if there is a rstmgr
+        if find_module(self.top['module'], 'rstmgr'):
+            self._init_rstmgr_sw_rsts()
+        # Only generate clkmgr mappings if there is a clkmgr
+        if find_module(self.top['module'], 'clkmgr'):
+            self._init_clkmgr_clocks()
         self._init_subranges()
 
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
@@ -965,7 +995,9 @@ class TopGen:
         # When we generate the `interrupts` enum, the only info we have about
         # the source is the module name. We'll use `source_name_map` to map a
         # short module name to the full name object used for the enum constant.
-        source_name_map = {}
+        source_name_map = {
+            'unknown': unknown_source
+        }
 
         for name in self.top["interrupt_module"]:
 
@@ -989,7 +1021,8 @@ class TopGen:
                     irq_id = interrupts.add_constant(name,
                                                      docstring="{} {}".format(
                                                          intr["name"], i))
-                    source_name = source_name_map[intr["module_name"]]
+                    source_name_key = 'unknown' if intr['incoming'] else intr['module_name']
+                    source_name = source_name_map[source_name_key]
                     plic_mapping.add_entry(irq_id, source_name)
                     self.device_irqs[intr["module_name"]].append(intr["name"] +
                                                                  str(i))
@@ -1034,7 +1067,12 @@ class TopGen:
         # module name to the full name object used for the enum constant.
         source_name_map = {}
 
-        for name in self.top["alert_module"]:
+        # Uniquify the incoming alert module list
+        incoming_module_names = []
+        for incoming_alerts in self.top['incoming_alert'].values():
+            incoming_module_names.extend({alert['module_name'] for alert in incoming_alerts})
+
+        for name in self.top["alert_module"] + incoming_module_names:
             source_name = sources.add_constant(Name.from_snake_case(name),
                                                docstring=name)
             source_name_map[name] = source_name
@@ -1044,11 +1082,12 @@ class TopGen:
         else:
             sources.add_last_constant("Final Alert peripheral")
 
-        self.device_alerts = defaultdict(list)
-        for alert in self.top["alert"]:
+        def add_alert(alert, name_prefix=None):
             if "width" in alert and int(alert["width"]) != 1:
                 for i in range(int(alert["width"])):
                     name = Name.from_snake_case(alert["name"]) + Name([str(i)])
+                    if name_prefix:
+                        name = name_prefix + name
                     irq_id = alerts.add_constant(name,
                                                  docstring="{} {}".format(
                                                      alert["name"], i))
@@ -1062,6 +1101,14 @@ class TopGen:
                 source_name = source_name_map[alert["module_name"]]
                 alert_mapping.add_entry(alert_id, source_name)
                 self.device_alerts[alert["module_name"]].append(alert["name"])
+
+        self.device_alerts = defaultdict(list)
+        for alert in self.top["alert"]:
+            add_alert(alert)
+
+        for alert_group, incoming_alerts in self.top['incoming_alert'].items():
+            for alert in incoming_alerts:
+                add_alert(alert, Name(f'incoming_{alert_group}'))
 
         if isinstance(alerts, RustEnum):
             alerts.add_number_of_variants("The number of Alert ID.")

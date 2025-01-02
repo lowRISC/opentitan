@@ -23,3 +23,4 @@ initial force dut.rst_peri_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(rv_dm__dbg, dut, clk_dbg_i, rst_n)
 `CONNECT_TL_DEVICE_IF(mbx_jtag__soc, dut, clk_dbg_i, rst_n)
 `CONNECT_TL_DEVICE_IF(lc_ctrl__dmi, dut, clk_peri_i, rst_n)
+`CONNECT_TL_DEVICE_IF(soc_dbg_ctrl__jtag, dut, clk_peri_i, rst_n)

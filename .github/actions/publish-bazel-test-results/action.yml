@@ -12,6 +12,9 @@ inputs:
   artifact-name:
     description: Name of uploaded artifact. Leave empty to skip upload.
     default: ''
+  bucket-destination:
+    description: GCP bucket destination to upload report to.
+    default: ''
 
 runs:
   using: composite
@@ -27,6 +30,11 @@ runs:
           echo '<?xml version="1.0" encoding="UTF-8"?><testsuites/>' >> "${{ inputs.merged-results }}"
         fi
 
+    - name: Add hostname to testsuites
+      shell: bash
+      run: |
+        xmlstarlet ed --inplace -i '/testsuites/testsuite' -t attr -n hostname -v "${{ runner.name }}" "${{ inputs.merged-results }}"
+
     - name: Upload report as artifact
       if: inputs.artifact-name != ''
       uses: actions/upload-artifact@v4
@@ -35,6 +43,12 @@ runs:
         path: ${{ inputs.merged-results }}
         # In case this is from a re-run
         overwrite: true
+
+    - name: Upload report to Google Cloud
+      if: inputs.bucket-destination != ''
+      shell: bash
+      run: |
+        gcloud storage cp "${{ inputs.merged-results }}" "gs://${{ inputs.bucket-destination }}"
 
     - name: Publish job summary
       uses: mikepenz/action-junit-report@ec3a351c13e080dc4fa94c49ab7ad5bf778a9668 # v5

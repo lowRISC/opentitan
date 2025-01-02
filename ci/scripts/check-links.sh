@@ -11,7 +11,7 @@ set -e
 rm -f sw/vendor/eembc_coremark/docs/html/index/General2.html
 
 # Run Offline Link Check
-ci/bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
+./bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
     --offline --no-progress \
     --exclude-path sw/vendor \
     --exclude-path util/i2csvg/smbus/SMBus.md \
@@ -20,7 +20,7 @@ ci/bazelisk.sh run @lychee//:lychee -- SUMMARY.md hw/ sw/ doc/ util/ \
     --exclude-path doc/rust_for_c_devs.md \
     --exclude-path hw/top_earlgrey/ip/pinmux/doc/autogen/targets.md \
     || {
-      echo -n "##vso[task.logissue type=error]"
+      echo -n "::error::"
       echo "Link Check failed."
       exit 1
     }

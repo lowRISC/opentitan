@@ -207,7 +207,7 @@ package lc_ctrl_env_pkg;
   } lc_pwr_if_e;
 
   typedef virtual pins_if #(LcPwrIfWidth) pwr_lc_vif;
-  typedef virtual lc_ctrl_if lc_ctrl_vif;
+  typedef virtual lc_ctrl_if #(NUM_RMA_ACK_SIGS) lc_ctrl_vif;
 
   // LC states which are valid for transitions
   const

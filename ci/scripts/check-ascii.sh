@@ -20,6 +20,7 @@ allowed_suffixes=(
     vsdx
     elf
     woff2
+    o
 
     md
     html
@@ -84,7 +85,7 @@ git ls-files | \
     grep -v "${suff_re}" | \
     env LC_ALL=C xargs grep -d skip -P '[^\0-\x7f]' >"$TMPFILE" || true
 if [ -s "$TMPFILE" ]; then
-    echo -n "##vso[task.logissue type=error]"
+    echo -n ":error::"
     echo "One or more files have unexpected non-ASCII text:"
     cat "$TMPFILE"
     exit 1

@@ -12,6 +12,12 @@ package lc_ctrl_dv_utils_pkg;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
 
+`ifdef USE_1_RMI_INTF
+  parameter uint NUM_RMA_ACK_SIGS = 1;
+`else
+  parameter uint NUM_RMA_ACK_SIGS = 2;
+`endif
+
   // associative array cannot declare parameter here, so we used const instead
   // verilog_format: off - avoid bad formatting
   const dec_lc_state_e VALID_NEXT_STATES [dec_lc_state_e][$] = '{

@@ -13,6 +13,7 @@ module tb;
   import lc_ctrl_test_pkg::*;
   import otp_ctrl_pkg::*;
   import jtag_riscv_agent_pkg::*;
+  import lc_ctrl_dv_utils_pkg::NUM_RMA_ACK_SIGS;
 
   // LC_CTRL parameters
   // Enable asynchronous transitions on alerts.
@@ -60,7 +61,8 @@ module tb;
     .clk  (clk),
     .rst_n(rst_n)
   );
-  lc_ctrl_if lc_ctrl_if (
+  lc_ctrl_if #(.NumRmaAckSigs(NUM_RMA_ACK_SIGS))
+  lc_ctrl_if (
     .clk  (clk),
     .rst_n(rst_n)
   );
@@ -134,7 +136,8 @@ module tb;
     .SiliconCreatorId(LcCtrlSiliconCreatorId[lc_ctrl_reg_pkg::SiliconCreatorIdWidth-1:0]),
     .ProductId(LcCtrlProductId[lc_ctrl_reg_pkg::ProductIdWidth-1:0]),
     .RevisionId(LcCtrlRevisionId[lc_ctrl_reg_pkg::RevisionIdWidth-1:0]),
-    .SecVolatileRawUnlockEn(`SEC_VOLATILE_RAW_UNLOCK_EN)
+    .SecVolatileRawUnlockEn(`SEC_VOLATILE_RAW_UNLOCK_EN),
+    .NumRmaAckSigs(NUM_RMA_ACK_SIGS)
   ) dut (
     .clk_i (clk),
     .rst_ni(rst_n),
@@ -249,7 +252,8 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(pwr_lc_vif)::set(null, "*.env", "pwr_lc_vif", pwr_lc_if);
-    uvm_config_db#(virtual lc_ctrl_if)::set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
+    uvm_config_db#(virtual lc_ctrl_if#(.NumRmaAckSigs(NUM_RMA_ACK_SIGS)))::
+                   set(null, "*.env", "lc_ctrl_vif", lc_ctrl_if);
 
     // verilog_format: off - avoid bad formatting
     // The jtag_agent is a low_level agent that configured inside jtag_riscv_agent.

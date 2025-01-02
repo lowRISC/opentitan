@@ -58,10 +58,10 @@ Register write enable for all control registers
 {"reg": [{"name": "REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                            |
-|   0    |  rw0c  |   0x1   | REGWEN | When true, all writable registers can be modified. When false, they become read-only. Defaults true, write zero to clear. This can be cleared after initial configuration at boot in order to lock in the listed register settings. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                           |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                              |
+|   0    |  rw0c  |   0x1   | REGWEN | When true, all writable registers can be modified. When false, they become read-only. Defaults true, write zero to clear. This can be cleared after initial configuration at boot in order to lock in the supplied register settings. |
 
 ## CFG
 Configuration register
@@ -89,7 +89,7 @@ Assert this bit to enable the PWM phase counter.
 ### CFG . DC_RESN
 Phase Resolution (logarithmic). All duty-cycle and phase
    shift registers represent fractional PWM cycles, expressed in
-   units of 2^16 PWM cycles. Each PWM cycle  is divided
+   units of 2^-16 PWM cycles. Each PWM cycle is divided
    into 2^(DC_RESN+1) time slices, and thus only the (DC_RESN+1)
    most significant bits of each phase or duty cycle register
    are relevant.
@@ -151,6 +151,7 @@ Invert the PWM output for each channel
 Basic PWM Channel Parameters
 - Reset default: `0x0`
 - Reset mask: `0xc000ffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 
@@ -180,7 +181,7 @@ Basic PWM Channel Parameters
 ### PWM_PARAM . BLINK_EN
 Enables blink (or heartbeat).  If cleared, the output duty
    cycle will remain constant at DUTY_CYCLE.A. Enabling this
-   bit  causes the PWM duty cycle to fluctuate between
+   bit  causes the PWM duty cycle to alternate between
    DUTY_CYCLE.A and DUTY_CYCLE.B
 
 ### PWM_PARAM . HTBT_EN
@@ -188,20 +189,23 @@ Modulates blink behavior to create a heartbeat effect. When
    HTBT_EN is set, the duty cycle increases (or decreases)
    linearly from DUTY_CYCLE.A to DUTY_CYCLE.B and back, in
    steps of (BLINK_PARAM.Y+1), with an increment (decrement)
-   once every (BLINK_PARAM.X+1) PWM cycles. When HTBT_EN is
-   cleared, the standard blink behavior applies, meaning that
-   the output duty cycle alternates between DUTY_CYCLE.A for
+   once every (BLINK_PARAM.X+1) PWM cycles.
+
+   When HTBT_EN is cleared, the standard blink behavior applies,
+   meaning that the output duty cycle alternates between DUTY_CYCLE.A for
    (BLINK_PARAM.X+1) pulses and DUTY_CYCLE.B for
    (BLINK_PARAM.Y+1) pulses.
 
 ### PWM_PARAM . PHASE_DELAY
-Phase delay of the PWM rising edge, in units of 2^(-16) PWM
-   cycles
+Phase delay of the PWM leading edge, in units of 2^(-16) PWM
+   cycles. The leading edge will be the rising edge of the output
+   signal unless the corresponding INVERT bit is set.
 
 ## DUTY_CYCLE
 Controls the duty_cycle of each channel.
 - Reset default: `0x7fff7fff`
 - Reset mask: `0xffffffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 
@@ -244,6 +248,7 @@ The initial duty cycle for PWM output, in units
 Hardware controlled blink/heartbeat parameters.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`REGWEN`](#regwen)
 
 ### Instances
 
@@ -275,15 +280,15 @@ This blink-rate timing parameter has two different
    PWM will pulse at duty cycle B for (Y+1) pulse cycles
    before returning to duty cycle A. If heartbeat is enabled
    the duty cycle will increase (or decrease) by (Y+1) units
-   every time it is incremented (or decremented)
+   every time it is incremented (or decremented).
 
 ### BLINK_PARAM . X
 This blink-rate timing parameter has two different
    interpretations depending on whether or not the heartbeat
    feature is enabled. If heartbeat is disabled, a blinking
-   PWM will pulse at duty cycle A for (X+1) pulses before
+   PWM will pulse at duty cycle A for (X+1) pulse cycles before
    switching to duty cycle B. If heartbeat is enabled
-   the duty-cycle will start at the duty cycle A, but
+   the duty cycle will start at duty cycle A, but
    will be incremented (or decremented) every (X+1) cycles.
    In heartbeat mode is enabled, the size of each step is
    controlled by BLINK_PARAM.Y.

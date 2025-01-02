@@ -1,0 +1,8 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_rom_adv
+
+waive -rules {RESET_USE} -location {prim_rom_adv.sv} -regexp {rst_ni' is connected to 'prim_rom' port 'rst_ni', and used as an asynchronous reset or set at prim_rom_adv.sv} \
+      -comment "rst_ni is the asynchronous reset of prim_rom. It's unused in the generic implementation, but other implementations may use it (e.g., for BIST or DFT purposes)."

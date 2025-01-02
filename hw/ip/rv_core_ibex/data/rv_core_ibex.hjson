@@ -19,7 +19,7 @@
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
   dv_doc:             "../doc/dv",
-  version:            "2.0.0",
+  version:            "2.1.0",
   life_stage:         "L1",
   design_stage:       "D2S",
   verification_stage: "V2S",
@@ -69,8 +69,31 @@
 
     { struct:  "ram_1p_cfg",
       type:    "uni",
-      name:    "ram_cfg",
+      name:    "ram_cfg_icache_tag",
       act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_tag",
+      width:   "ICacheNWays",
+      act:     "req",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg",
+      type:    "uni",
+      name:    "ram_cfg_icache_data",
+      act:     "rcv",
+      package: "prim_ram_1p_pkg",
+    },
+
+    { struct:  "ram_1p_cfg_rsp",
+      type:    "uni",
+      name:    "ram_cfg_rsp_icache_data",
+      width:   "ICacheNWays",
+      act:     "req",
       package: "prim_ram_1p_pkg",
     },
 
@@ -153,11 +176,11 @@
       package: "lc_ctrl_pkg",
     },
 
-    { struct:  "pwr_cpu",
+    { struct:  "cpu_pwrmgr",
       type:    "uni",
       name:    "pwrmgr",
       act:     "req",
-      package: "pwrmgr_pkg",
+      package: "rv_core_ibex_pkg",
     },
 
     { struct:  "logic",
@@ -215,6 +238,22 @@
       desc:    "Default icache scrambling nonce"
       randcount: "64",
       randtype:  "data"
+    },
+
+    { name:    "NEscalationSeverities"
+      type:    "int unsigned"
+      default: "4"
+      desc:    "Number of escalation severities"
+      local:   "true"
+      expose:  "true"
+    },
+
+    { name:    "WidthPingCounter"
+      type:    "int unsigned"
+      default: "16"
+      desc:    "Width of the ping counter"
+      local:   "true"
+      expose:  "true"
     },
 
     { name:    "PMPEnable"
@@ -351,6 +390,14 @@
       expose:  "true"
     },
 
+    { name:    "ICacheNWays"
+      type:    "int unsigned"
+      default: "2"
+      desc:    "Number of instruction cache ways"
+      local:   "true"
+      expose:  "true"
+    },
+
     { name:    "BranchPredictor"
       type:    "bit"
       default: "0"
@@ -382,6 +429,22 @@
       local:   "false"
       expose:  "true"
     },
+
+    { name:    "DmBaseAddr"
+      type:    "int unsigned"
+      default: "437321728" //"32'h1A110000"
+      desc:    "Base address of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
+
+    { name:    "DmAddrMask"
+      type:    "int unsigned"
+      default: "4095" //"32'h00000FFF"
+      desc:    "Adress mask of Debug Module"
+      local:   "false"
+      expose:  "true"
+    }
 
     { name:    "DmHaltAddr"
       type:    "int unsigned"

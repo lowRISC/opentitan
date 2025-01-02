@@ -51,26 +51,37 @@ module ibex_counter #(
   end
 
 `ifdef FPGA_XILINX
-  // Set DSP pragma for supported xilinx FPGAs
-  localparam int DspPragma = CounterWidth < 49 ? "yes" : "no";
-  (* use_dsp = DspPragma *) logic [CounterWidth-1:0] counter_q;
-
-  // DSP output register requires synchronous reset.
-  `define COUNTER_FLOP_RST posedge clk_i
+  // On Xilinx FPGAs, 48-bit DSPs are available that can be used for the
+  // counter. Hence, use Xilinx specific flop implementation. The datatype for
+  // UseDsp is on purpose int as with string Xilinx throws an error for the
+  // use_dsp pragma.
+  localparam int UseDsp = CounterWidth < 49 ? "yes" : "no";
+  (* use_dsp = UseDsp *) logic [CounterWidth-1:0] counter_q;
 `else
+  localparam int UseDsp = "no";
   logic [CounterWidth-1:0] counter_q;
-
-  `define COUNTER_FLOP_RST posedge clk_i or negedge rst_ni
 `endif
 
-  // Counter flop
-  always_ff @(`COUNTER_FLOP_RST) begin
-    if (!rst_ni) begin
-      counter_q <= '0;
-    end else begin
-      counter_q <= counter_d;
+  if (UseDsp == "yes") begin : g_cnt_dsp
+    // Use sync. reset for DSP.
+    always_ff @(posedge clk_i) begin
+      if (!rst_ni) begin
+        counter_q <= '0;
+      end else begin
+        counter_q <= counter_d;
+      end
+    end
+  end else begin : g_cnt_no_dsp
+    // Use async. reset for flop.
+    always_ff @(posedge clk_i or negedge rst_ni) begin
+      if (!rst_ni) begin
+        counter_q <= '0;
+      end else begin
+        counter_q <= counter_d;
+      end
     end
   end
+
 
   if (CounterWidth < 64) begin : g_counter_narrow
     logic [63:CounterWidth] unused_counter_load;
@@ -98,6 +109,3 @@ module ibex_counter #(
   assign counter_val_o = counter;
 
 endmodule
-
-// Keep helper defines file-local.
-`undef COUNTER_FLOP_RST

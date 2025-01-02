@@ -71,7 +71,7 @@ test_suite(
         "//sw/device/tests/crypto:ecdh_p256_sideload_functest",
         "//sw/device/tests/crypto:ecdsa_p256_sideload_functest",
         "//sw/device/tests/pmod:i2c_host_eeprom_test",
-        "//sw/device/tests/pmod:spi_host_macronix_flash_test",
+        "//sw/device/tests/pmod:spi_host_macronix1Gb_flash_test",
     ],
 )
 
@@ -152,7 +152,6 @@ test_suite(
         "//sw/device/tests:pwrmgr_random_sleep_all_reset_reqs_test",
         "//sw/device/tests:pwrmgr_random_sleep_all_wake_ups",
         "//sw/device/tests:pwrmgr_sleep_disabled_test",
-        "//sw/device/tests:pwrmgr_sleep_wake_5_bug_test",
         "//sw/device/tests:pwrmgr_usb_clk_disabled_when_active_test",
         "//sw/device/tests:pwrmgr_wdog_reset_reqs_test",
         "//sw/device/tests:rstmgr_alert_info_test",

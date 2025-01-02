@@ -172,7 +172,6 @@ module hmac
         if (digest_on_blk) begin
           // Once the digest is being computed for the complete message block, wait for the hash to
           // complete.
-          // TODO (issue #21710): handle incomplete message size and check against 512 or 1024
           done_state_d = DoneAwaitHashComplete;
         end
       end
@@ -550,7 +549,7 @@ module hmac
       end else if ((digest_size == SHA2_384) || (digest_size == SHA2_512)) begin
         // reads out first upper 32 bits then lower 32 bits of each digest word
         index = !hmac_fifo_wdata_sel[0];
-        fifo_wdata = '{data: digest[hmac_fifo_wdata_sel >> 1][32*index+:32], mask: '1};
+        fifo_wdata = '{data: digest[hmac_fifo_wdata_sel[3:1]][32*index+:32], mask: '1};
       end
     end
   end
@@ -601,6 +600,7 @@ module hmac
     .wdata_o                    (msg_fifo_wdata ),
     .wmask_o                    (msg_fifo_wmask ),
     .intg_error_o               (               ),
+    .user_rsvd_o                (               ),
     .rdata_i                    (msg_fifo_rdata ),
     .rvalid_i                   (msg_fifo_rvalid),
     .rerror_i                   (msg_fifo_rerror),

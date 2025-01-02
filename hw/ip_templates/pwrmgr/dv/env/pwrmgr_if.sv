@@ -36,7 +36,7 @@ interface pwrmgr_if (
   pwrmgr_pkg::pwr_flash_t                                      pwr_flash;
 
   pwrmgr_pkg::pwrmgr_cpu_t                                     cpu_i;
-  pwrmgr_pkg::pwr_cpu_t                                        pwr_cpu;
+  rv_core_ibex_pkg::cpu_pwrmgr_t                               pwr_cpu;
 
   lc_ctrl_pkg::lc_tx_t                                         fetch_en;
   lc_ctrl_pkg::lc_tx_t                                         lc_hw_debug_en;
@@ -192,7 +192,7 @@ interface pwrmgr_if (
     pwr_otp_rsp = '{default: '0};
     pwr_lc_rsp = '{default: '0};
     pwr_flash = '{default: '0};
-    pwr_cpu = pwrmgr_pkg::PWR_CPU_DEFAULT;
+    pwr_cpu = rv_core_ibex_pkg::CPU_PWRMGR_DEFAULT;
     wakeups_i = pwrmgr_pkg::WAKEUPS_DEFAULT;
     rstreqs_i = pwrmgr_pkg::RSTREQS_DEFAULT;
     sw_rst_req_i = prim_mubi_pkg::MuBi4False;

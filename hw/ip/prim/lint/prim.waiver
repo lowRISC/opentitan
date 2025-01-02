@@ -12,10 +12,6 @@ waive -rules INTEGER           -location {prim_packer.sv} -msg {'i' of type int 
 waive -rules {ZERO_REP} -location {prim_packer_fifo.sv} -regexp {Replication count is zero in .*DepthW.*} \
       -comment "If InW equals OutW, DepthW is zero"
 
-# prim_sram_arbiter
-waive -rules CONST_OUTPUT -location {prim_sram_arbiter.sv} -regexp {rsp_error.* is driven by constant} \
-      -comment "SRAM protection is not yet implemented"
-
 # prim_fifo_async_simple
 waive -rules CONST_FF -location {prim_fifo_async_simple.sv} -msg {Flip-flop 'not_in_reset_q' is driven by constant one in module 'prim_fifo_async_simple'} \
       -comment "The flop input and reset values are constants."

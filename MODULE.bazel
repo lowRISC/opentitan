@@ -1,0 +1,41 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+module(name = "lowrisc_opentitan")
+
+# Dependencies:
+bazel_dep(name = "abseil-cpp", version = "20240116.1")
+bazel_dep(name = "bazel_skylib", version = "1.7.1")
+bazel_dep(name = "googletest", version = "1.14.0.bcr.1")
+bazel_dep(name = "platforms", version = "0.0.10")
+bazel_dep(name = "rules_cc", version = "0.0.14")
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+bazel_dep(name = "rules_fuzzing", version = "0.5.2")
+bazel_dep(name = "rules_pkg", version = "1.0.1")
+
+# Dev dependencies:
+bazel_dep(
+    name = "buildifier_prebuilt",
+    version = "6.4.0",
+    dev_dependency = True,
+)
+bazel_dep(
+    name = "lowrisc_misc_linters",
+    dev_dependency = True,
+)
+git_override(
+    module_name = "lowrisc_misc_linters",
+    commit = "13303cfa284e8b8c7040c6ad716b0b0c55e0aa8d",
+    remote = "https://github.com/lowRISC/misc-linters",
+)
+
+# Includes:
+include("//third_party/rust:rust.MODULE.bazel")
+
+include("//third_party/python:python.MODULE.bazel")
+
+# Repository rules:
+bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
+
+bitstreams_repo(name = "bitstreams")

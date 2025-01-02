@@ -53,22 +53,23 @@ module tlul_adapter_sram
   input   mubi4_t en_ifetch_i,
 
   // SRAM interface
-  output logic                req_o,
-  output mubi4_t              req_type_o,
-  input                       gnt_i,
-  output logic                we_o,
-  output logic [SramAw-1:0]   addr_o,
-  output logic [DataOutW-1:0] wdata_o,
-  output logic [DataOutW-1:0] wmask_o,
-  output logic                intg_error_o,
-  input        [DataOutW-1:0] rdata_i,
-  input                       rvalid_i,
-  input        [1:0]          rerror_i, // 2 bit error [1]: Uncorrectable, [0]: Correctable
-  output logic                compound_txn_in_progress_o,
-  input  mubi4_t              readback_en_i,
-  output logic                readback_error_o,
-  input  logic                wr_collision_i,
-  input  logic                write_pending_i
+  output logic                 req_o,
+  output mubi4_t               req_type_o,
+  input                        gnt_i,
+  output logic                 we_o,
+  output logic [SramAw-1:0]    addr_o,
+  output logic [DataOutW-1:0]  wdata_o,
+  output logic [DataOutW-1:0]  wmask_o,
+  output logic                 intg_error_o,
+  output logic [RsvdWidth-1:0] user_rsvd_o,
+  input        [DataOutW-1:0]  rdata_i,
+  input                        rvalid_i,
+  input        [1:0]           rerror_i, // 2 bit error [1]: Uncorrectable, [0]: Correctable
+  output logic                 compound_txn_in_progress_o,
+  input  mubi4_t               readback_en_i,
+  output logic                 readback_error_o,
+  input  logic                 wr_collision_i,
+  input  logic                 write_pending_i
 );
 
   localparam int SramByte = SramDw/8;
@@ -310,7 +311,7 @@ module tlul_adapter_sram
   end
 
   logic vld_rd_rsp;
-  assign vld_rd_rsp = d_valid & reqfifo_rvalid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
+  assign vld_rd_rsp = d_valid & rspfifo_rvalid & (reqfifo_rdata.op == OpRead);
   // If the response data is not valid, we set it to an illegal blanking value which is determined
   // by whether the current transaction is an instruction fetch or a regular read operation.
   logic [top_pkg::TL_DW-1:0] error_blanking_data;
@@ -387,10 +388,11 @@ module tlul_adapter_sram
   //    Generate request only when no internal error occurs. If error occurs, the request should be
   //    dropped and returned error response to the host. So, error to be pushed to reqfifo.
   //    In this case, it is assumed the request is granted (may cause ordering issue later?)
-  assign req_o      = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
-  assign req_type_o = tl_i_int.a_user.instr_type;
-  assign we_o       = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
-  assign addr_o     = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
+  assign req_o       = tl_i_int.a_valid & reqfifo_wready & ~error_internal;
+  assign req_type_o  = tl_i_int.a_user.instr_type;
+  assign we_o        = tl_i_int.a_valid & (tl_i_int.a_opcode inside {PutFullData, PutPartialData});
+  assign addr_o      = (tl_i_int.a_valid) ? tl_i_int.a_address[DataBitWidth+:SramAw] : '0;
+  assign user_rsvd_o = (tl_i_int.a_valid) ? tl_i_int.a_user.rsvd : '0;
 
   // Support SRAMs wider than the TL-UL word width by mapping the parts of the
   // TL-UL address which are more fine-granular than the SRAM width to the
@@ -680,4 +682,6 @@ module tlul_adapter_sram
   `ASSERT_KNOWN(TlOutValidKnown_A, tl_o.d_valid)
   `ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
 
+  // The definition of d_valid leads to the assertion below.
+  `ASSERT(DValidNeedsReqFifoRValid, d_valid -> reqfifo_rvalid)
 endmodule

@@ -294,14 +294,12 @@ impl CommandDispatch for SpiTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<SpiCommand>().unwrap();
-        let ready_pin = match &self.gsc_ready {
-            Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
-            None => None,
-        };
-        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::SpiDriver::new(
-            context.params.create(transport, "TPM")?,
-            ready_pin,
-        )?);
+        let spi = context.params.create(transport, "TPM")?;
+        if let Some(pin) = &self.gsc_ready {
+            spi.set_pins(None, None, None, None, Some(&transport.gpio_pin(pin)?))?;
+        }
+        let tpm_driver: Box<dyn tpm::Driver> =
+            Box::new(tpm::SpiDriver::new(spi, self.gsc_ready.is_some())?);
         self.command.run(&tpm_driver, transport)
     }
 }
@@ -416,6 +414,31 @@ impl CommandDispatch for SpiRawTransceive {
     }
 }
 
+/// Produces output useful for separate invocation of `flashrom` connecting to a particular SPI
+/// bus alias.
+#[derive(Debug, Args)]
+pub struct SpiFlashromArgs {}
+
+#[derive(Debug, serde::Serialize)]
+pub struct SpiFlashromArgsResponse {
+    programmer: String,
+}
+
+impl CommandDispatch for SpiFlashromArgs {
+    fn run(
+        &self,
+        context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        transport.capabilities()?.request(Capability::SPI).ok()?;
+        let context = context.downcast_ref::<SpiCommand>().unwrap();
+        let spi_bus = context.params.create(transport, "BOOTSTRAP")?;
+        Ok(Some(Box::new(SpiFlashromArgsResponse {
+            programmer: spi_bus.get_flashrom_programmer()?,
+        })))
+    }
+}
+
 /// Commands for interacting with a SPI EEPROM.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum InternalSpiCommand {
@@ -429,6 +452,7 @@ pub enum InternalSpiCommand {
     RawWriteRead(SpiRawWriteRead),
     RawTransceive(SpiRawTransceive),
     Tpm(SpiTpm),
+    FlashromArgs(SpiFlashromArgs),
 }
 
 #[derive(Debug, Args)]

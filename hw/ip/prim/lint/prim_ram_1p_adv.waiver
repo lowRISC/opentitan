@@ -6,3 +6,6 @@
 
 waive -rules {CONST_FF} -location {prim_ram_1p_adv.sv} -regexp {.*Flip-flop 'wmask_q' is driven by constant ones.*EnableECC=1'h1.*} \
       -comment "This particular instance is ok since we do not use the wmask when ECC is enabled."
+
+waive -rules {RESET_USE} -location {prim_ram_1p_adv.sv} -regexp {rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set at prim_ram_1p_adv.sv} \
+      -comment "rst_ni is the asynchronous reset of prim_ram_1p_adv. It's unused in the generic implementation, but other implementations may use it."

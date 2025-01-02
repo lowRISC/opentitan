@@ -239,6 +239,11 @@ def check_optional_str(obj: object, what: str) -> Optional[str]:
     return None if obj is None else check_str(obj, what)
 
 
+def check_optional_bool(obj: object, what: str) -> Optional[bool]:
+    '''Check that obj is a bool or None'''
+    return None if obj is None else check_bool(obj, what)
+
+
 def check_optional_name(obj: object, what: str) -> Optional[str]:
     '''Check that obj is a valid name or None'''
     return None if obj is None else check_name(obj, what)

@@ -33,7 +33,7 @@ Commonly one will run the following, which will go through every markdown file i
 ./util/cmdgen.py -u '**/*.md'
 ```
 
-If run, the following snippet will have the register tables of the AES block (output by `util/regtool.py -d ./hw/ip/aes/data/aes.hjson`) inserted into it.
+For example, when cmdgen is run with the '-u' flag, the following snippet will result in the insertion of the AES register tables between the BEGIN and END lines.
 
 ````md
 # Registers
@@ -46,7 +46,11 @@ If run, the following snippet will have the register tables of the AES block (ou
 *Note, one should remove the `#` before the commands.
 This is there so that `CMDGEN` doesn't generate registers in this file.*
 
-The `CMDGEN` tool can also be invoked by the `./hw/Makefile` using the target `cmdgen`.
+The `CMDGEN` tool can also be invoked by the `./hw/Makefile` using the target `cmdgen`, from the top of the repo
+
+```sh
+make -C hw cmdgen
+```
 
 [mdBook]: https://rust-lang.github.io/mdBook/
 [rustdoc]: https://doc.rust-lang.org/rustdoc/index.html

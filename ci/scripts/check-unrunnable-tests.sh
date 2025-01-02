@@ -10,7 +10,7 @@ set -e
 # The cquery will output an empty string for compatible tests and
 # a non-empty string (test name) for the incompatible ones. Therefore
 # we filter out the empty lines.
-ci/bazelisk.sh cquery 'tests(//...)' \
+./bazelisk.sh cquery 'tests(//...)' \
     --noinclude_aspects \
     --define DISABLE_VERILATOR_BUILD=true \
     --output=starlark \

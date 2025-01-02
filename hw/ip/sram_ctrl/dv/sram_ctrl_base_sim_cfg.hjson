@@ -82,6 +82,11 @@
     {
       name: "{name}_bijection"
       uvm_test_seq: sram_ctrl_bijection_vseq
+      // We max. do 25*32768 write and 25*32768 read operations. Each operation
+      // takes roughly 1000ns, resulting in 1638400ns for the read/write
+      // operations. Add some buffer for setting up the test and requesting
+      // new scrambling keys.
+      run_opts: ["+test_timeout_ns=2000000000"]
     }
     {
       name: "{name}_stress_pipeline"
@@ -107,6 +112,11 @@
       name: "{name}_throughput_w_partial_write"
       uvm_test_seq: sram_ctrl_throughput_vseq
       run_opts: ["+zero_delays=1 +partial_access_pct=20"]
+    }
+    {
+      name: "{name}_throughput_w_readback"
+      uvm_test_seq: sram_ctrl_throughput_vseq
+      run_opts: ["+zero_delays=1 +partial_access_pct=0 +init_w_readback=1"]
     }
     {
       name: "{name}_lc_escalation"
@@ -145,6 +155,10 @@
     {
       name: "{name}_readback_err"
       uvm_test_seq: sram_ctrl_readback_err_vseq
+    }
+    {
+      name: "{name}_mubi_enc_err"
+      uvm_test_seq: sram_ctrl_mubi_enc_err_vseq
     }
   ]
 

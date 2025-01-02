@@ -4,6 +4,9 @@
 ${gencmd}
 <%
 import topgen.lib as lib
+import topgen.lib as lib
+
+has_pinmux = lib.find_module(top['module'], 'pinmux')
 %>\
 package top_${top["name"]}_pkg;
 % for (inst_name, if_name), region in helper.devices():
@@ -59,6 +62,45 @@ package top_${top["name"]}_pkg;
 % endif
 
 % endfor
+% for alert_group, alert_modules in top["outgoing_alert_module"].items():
+  
+  // Number of ${alert_group} outgoing alerts
+  parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(top['outgoing_alert'][alert_group])};
+
+  // Number of LPGs for outgoing alert group ${alert_group}
+  parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${len(top["outgoing_alert_lpgs"][alert_group])};
+  
+  // Enumeration of ${alert_group} outgoing alert modules
+  typedef enum int unsigned {
+% for mod in alert_modules:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
+% endfor
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_peripheral_count").as_camel_case()}
+  } ${"outgoing_alert_" + alert_group + "_peripheral_e"};
+
+  // Enumeration of ${alert_group} outgoing alerts
+  typedef enum int unsigned {
+% for alert in top["outgoing_alert"][alert_group]:
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_" + alert["name"]).as_camel_case()} = ${loop.index},
+% endfor
+    ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_id_count").as_camel_case()}
+  } ${"outgoing_alert_" + alert_group + "_id_e"};
+
+  // Enumeration of ${alert_group} outgoing alerts AsyncOn configuration
+  parameter logic [NOutgoingAlerts${alert_group.capitalize()}-1:0] AsyncOnOutgoingAlert${alert_group.capitalize()} = {
+  % for alert in list(reversed(top["outgoing_alert"][alert_group])):
+    1'b${alert['async']}${"" if loop.last else ","}
+  % endfor
+  };
+% endfor
+% for alert_group, alerts in top["incoming_alert"].items():
+
+  // Number of ${alert_group} incoming alerts
+  parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
+
+  // Number of LPGs for incoming alert group ${alert_group}
+  parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
+% endfor
 
   // Enumeration of alert modules
   typedef enum int unsigned {
@@ -75,6 +117,7 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_count").as_camel_case()}
   } alert_id_e;
+% if has_pinmux:
 
   // Enumeration of IO power domains.
   // Only used in ASIC target.
@@ -147,6 +190,7 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
+% endif
 
 <%
     instances = sorted(set(inst for (inst, _), __ in helper.devices()))

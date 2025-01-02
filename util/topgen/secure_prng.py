@@ -179,7 +179,7 @@ class secure_prng():
         if seed.bit_length() < 250:
             # Warn, but don't fail, because the DV logic always passes in 32-bit
             # seeds and this can naturally happen about 1% of the time.
-            log.warn('PRNG seed is only {seed.bit_length()} bits long, which is '
+            log.warn(f'PRNG seed is only {seed.bit_length()} bits long, which is '
                      'unlikely for a sample from a 256-bit distribution. Please '
                      'double-check the logic.')
         # Check if the seed is longer than 256 bits. Trim the excess bits and

@@ -1,0 +1,461 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  name:               "soc_dbg_ctrl",
+  human_name:         "SoC Debug Access Control Module",
+  one_line_desc:      "Control module to enable or disable debug access",
+  one_paragraph_desc: '''
+  Module that controls the Debug / DFT feature access for an SoC for which OpenTitan serves as an integrated HW RoT.
+  A debug policy bus driven from this module governs the unlock policy. Output from the debug policy bus is decoded by various debug / DFT logic blocks in an SoC to determine if feature debug / DFT access is allowed or not.
+  The access policy is derived by the RoT with a challenge-response based debug authentication exchange session with a remote policy enforcer.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "42",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/ip/soc_dbg_ctrl/dif/dif_soc_dbg_ctrl",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L1",
+      design_stage:       "D1",
+      verification_stage: "V1",
+      dif_stage:          "S1",
+      notes:              ""
+    }
+  ]
+
+  clocking: [{clock: "clk_i", reset: "rst_ni"}],
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", name: "core" }
+    { protocol: "tlul", direction: "device", name: "jtag" }
+  ]
+
+  alert_list: [
+    { name: "fatal_fault",
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
+    { name: "recov_ctrl_update_err",
+      desc: '''
+        This recoverable alert is triggered upon detecting an update error in the shadowed Control Register.
+      '''
+    }
+  ]
+
+  /////////////////////
+  // Countermeasures //
+  /////////////////////
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme.",
+    }
+    { name: "DEBUG_POLICY_VALID.CONFIG.SHADOW",
+      desc: "Debug policy valid register is shadowed."
+    }
+    { name: "DEBUG_POLICY_RELOCKED.CONFIG.SHADOW",
+      desc: "Debug policy relocked register is shadowed."
+    }
+  ]
+
+  inter_signal_list: [
+    { struct:  "pwr_boot_status",
+      type:    "uni",
+      name:    "boot_status",
+      act:     "rcv",
+      package: "pwrmgr_pkg",
+    },
+    { struct:  "soc_dbg_state"
+      type:    "uni"
+      name:    "soc_dbg_state"
+      package: "lc_ctrl_state_pkg"
+      act:     "rcv"
+    }
+    { struct:  "soc_dbg_policy"
+      type:    "uni"
+      name:    "soc_dbg_policy_bus"
+      package: "soc_dbg_ctrl_pkg"
+      act:     "req"
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_hw_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    "Multibit life cycle hardware debug enable signal coming from life cycle controller, asserted when the hardware debug mechanisms are enabled in the system."
+    },
+
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_dft_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Test enable qualifier coming from life cycle controller.
+               This signals enables TEST & RMA mode accesses.
+               '''
+    }
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_raw_test_rma"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+      desc:    '''
+               Test enable qualifier coming from life cycle controller.
+               This signals enables RAW, TEST and RMA mode accesses.
+               '''
+    }
+    { struct:  'logic'
+      type:    'uni'
+      name:    'halt_cpu_boot'
+      act:     'rcv'
+    }
+    { struct:  'pwrmgr_data'
+      type:    'uni'
+      name:    'continue_cpu_boot'
+      package: 'rom_ctrl_pkg'
+      act:     'req'
+      desc:    '''
+               Artificial ROM control input to the pwrmgr to halt the boot process.
+               '''
+    }
+  ]
+
+  regwidth: "32"
+  registers: {
+    core: [
+      { name: "DEBUG_POLICY_VALID_SHADOWED"
+        desc: '''
+              Debug Policy Valid.
+              Once valid is set to Mubi4::True, the debug policy cannot be written anymore.
+              '''
+        swaccess: "rw1s"
+        hwaccess: "hro"
+        shadowed: "true"
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
+        fields: [
+          { bits: "3:0"
+            mubi: true
+            resval: false
+            name: "debug_policy_valid"
+            desc: '''
+                  The valid state of the debug policy.
+                  '''
+          }
+        ]
+      }
+      { name: "DEBUG_POLICY_CATEGORY_SHADOWED"
+        desc: "Debug Policy category"
+        swaccess: "rw"
+        hwaccess: "hrw"
+        hwqe: true
+        hwre: true
+        hwext: true
+        shadowed: "true"
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
+        fields: [
+          { bits: "6:0"
+            resval: "0x0"
+            name: "debug_policy_category"
+            desc: '''
+                  Debug Policy Control Setting.
+                  Indicates the current debug authorization policy that is distributed to the rest of the SoC to govern debug / DFT feature unlock.
+                  '''
+            tags: ["shadowed_reg_path:u_debug_policy_category_shadowed"]
+          }
+        ]
+      }
+      { name: "DEBUG_POLICY_RELOCKED"
+        desc: "Debug Policy relocked"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "3:0"
+            mubi: true
+            resval: false
+            name: "debug_policy_relocked"
+            desc: '''
+                  The relocked state.
+                  '''
+          }
+        ]
+      }
+      { name: "TRACE_DEBUG_POLICY_CATEGORY"
+        desc: "Trace register to observe the debug category that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "6:0"
+            resval: "0x0"
+            name: "category"
+            desc: '''
+                  The debug policy determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name: "TRACE_DEBUG_POLICY_VALID_RELOCKED"
+        desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "7:4"
+            mubi: true
+            resval: false
+            name: "relocked"
+            desc: '''
+                  The relocked state determined by hardware or software.
+                  '''
+          }
+          { bits: "3:0"
+            mubi: true
+            resval: false
+            name: "valid"
+            desc: '''
+                  The valid state determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name:     "STATUS"
+        desc:     "Debug Status Register"
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "0"
+            name: "auth_debug_intent_set"
+            desc: '''
+                  Status bit indicating whether the debug intent hardware strap was set.
+                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "auth_window_open"
+            desc: '''
+                  Status bit that tells whether debug authorization exchange can take place.
+                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  '''
+            resval: "0"
+          }
+          { bits: "5"
+            name: "auth_window_closed"
+            desc: '''
+                  Status bit that indicates that SoC reset sequence is unpaused SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
+                  Note that the rest of the SoC reset sequence is triggered by the OT RoT.
+                  '''
+            resval: "0"
+          }
+          { bits: "6"
+            name: "auth_unlock_success"
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level."
+            resval: "0"
+          }
+          { bits: "7"
+            name: "auth_unlock_failed"
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level."
+            resval: "0"
+          }
+        ]
+      }
+    ]
+    jtag: [
+      { name: "JTAG_TRACE_DEBUG_POLICY_CATEGORY"
+        desc: "Trace register to observe the debug category that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "6:0"
+            resval: "0x0"
+            name: "category"
+            desc: '''
+                  The debug policy determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name: "JTAG_TRACE_DEBUG_POLICY_VALID_RELOCKED"
+        desc: "Trace register to observe the valid or relocked state that is either determined by hardware or software."
+        swaccess: "ro"
+        hwaccess: "hwo"
+        fields: [
+          { bits: "7:4"
+            mubi: true
+            resval: false
+            name: "relocked"
+            desc: '''
+                  The relocked state determined by hardware or software.
+                  '''
+          }
+          { bits: "3:0"
+            mubi: true
+            resval: false
+            name: "valid"
+            desc: '''
+                  The valid state determined by hardware or software.
+                  '''
+          }
+        ]
+      }
+      { name: "JTAG_CONTROL"
+        desc: "JTAG control register to interact with the boot flow."
+        swaccess: "rw"
+        hwaccess: "hro"
+        fields: [
+          { bits: "0"
+            resval: "0"
+            name: "boot_continue"
+            desc: '''
+                  JTAG bit to stop or continue the boot flow of Ibex.
+                    1'b0: Stop and halt boot flow.
+                    1'b1: Continue with the boot flow and let Ibex fetch code.
+                  '''
+          }
+        ]
+      }
+      { name:     "JTAG_STATUS"
+        desc:     "Debug Status Register"
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "0"
+            name: "auth_debug_intent_set"
+            desc: '''
+                  Status bit indicating whether the debug intent hardware strap was set.
+                  If set, SoC will be treated as under debug and authorized debug can be enabled to unlock the SoC at desired debug unlock level.
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "auth_window_open"
+            desc: '''
+                  Status bit that tells whether debug authorization exchange can take place.
+                  This bit is set when auth_debug_intent_set is 1 and SoC reset sequence is paused to enable debug authorization exchange.
+                  '''
+            resval: "0"
+          }
+          { bits: "5"
+            name: "auth_window_closed"
+            desc: '''
+                  Status bit that indicates that SoC reset sequence is unpaused, SoC shall continue to boot and the debug authorization exchange cannot take place anymore until next reset.
+                  Note that the rest of the SoC reset sequence is triggered by the OT RoT"
+                  '''
+            resval: "0"
+          }
+          { bits: "6"
+            name: "auth_unlock_success"
+            desc: "Status bit indicating whether the unlock protocol resulted in a successful unlock at requested level"
+            resval: "0"
+          }
+          { bits: "7"
+            name: "auth_unlock_failed"
+            desc: "Status bit indicating whether the unlock protocol resulted in unlock failure at requested level"
+            resval: "0"
+          }
+        ]
+      }
+      { name: "JTAG_BOOT_STATUS"
+        desc: '''
+              Debug boot status register that tells important boot state information.
+              Note that this information is reflected only if the hw_dft_en signal is true.
+              '''
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "0"
+            name: "main_clk_status"
+            desc: '''
+                    Status of the main clock activation
+                  '''
+            resval: "0"
+          }
+          { bits: "1"
+            name: "io_clk_status"
+            desc: '''
+                    Status of the IO Clock activation
+                  '''
+            resval: "0"
+          }
+          { bits: "2"
+            name: "otp_done"
+            desc: '''
+                    OTP controller initialization complete
+                  '''
+            resval: "0"
+          }
+          { bits: "3"
+            name: "lc_done"
+            desc: '''
+                    Lifecycle controller initialization done; LC policy is decoded and set
+                  '''
+            resval: "0"
+          }
+          { bits: "4"
+            name: "cpu_fetch_en"
+            desc: '''
+                    Indication from powermanger to IBEX to state code execution
+                  '''
+            resval: "0"
+          }
+          { bits: "10:5"
+            name: "halt_fsm_state"
+            desc: '''
+                  The state of the halt state FSM.
+                  '''
+            resval: "0"
+          }
+          { bits: "13:11"
+            name: "boot_greenlight_done"
+            desc: '''
+                  Green lights for the boot process: _done_ indication coming from
+                    [0]: base ROM
+                    [1]: second ROM
+                    [2]: this module
+
+                  Note that for the boot process to go through, all _done_ bits in this field and all _good_ bits in the next field need to be set.
+                  '''
+            resval: "0"
+          }
+          { bits: "16:14"
+            name: "boot_greenlight_good"
+            desc: '''
+                  Green lights status for the boot process: _good_ indication coming from
+                    [0]: base ROM
+                    [1]: second ROM
+                    [2]: this module
+                  '''
+            resval: "0"
+          }
+        ]
+      }
+      { name: "JTAG_TRACE_SOC_DBG_STATE"
+        desc: '''
+              Tells the current debug state coming from OTP.
+              Note that this information is reflected only if the hw_dft_en signal is true.
+              '''
+        swaccess: "ro"
+        hwaccess: "hwo"
+        hwext:    "true"
+        fields: [
+          { bits: "31:0"
+            name: "soc_dbg_state"
+            desc: '''
+                  The current debug state.
+                  '''
+            resval: "0"
+          }
+        ]
+      }
+    ]
+  }
+}

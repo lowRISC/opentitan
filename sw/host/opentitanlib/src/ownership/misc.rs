@@ -72,6 +72,7 @@ impl TlvHeader {
 
 /// Low-level key material (ie: bit representation).
 #[derive(Debug, Serialize, Deserialize)]
+#[allow(clippy::len_without_is_empty)]
 pub enum KeyMaterial {
     Unknown(Vec<u8>),
     Ecdsa(#[serde(deserialize_with = "string_or_struct")] EcdsaRawPublicKey),

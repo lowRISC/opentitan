@@ -12,19 +12,53 @@ load(
     "silicon_params",
     "verilator_params",
 )
+load("//rules:splice.bzl", "bitstream_splice")
+load(
+    "//rules/opentitan:defs.bzl",
+    "DEFAULT_TEST_FAILURE_MSG",
+    "DEFAULT_TEST_SUCCESS_MSG",
+    "fpga_cw310",
+)
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+# A custom execution environment, which uses the same attributes as the CW310
+# SiVal ROM EXT execution environment, but uses the base universal bitstream
+# & interface for the CW310 as opposed to the hyperdebug variants, due to the
+# PMOD tests requiring the PMOD pins that are not available with hyperdebug.
+fpga_cw310(
+    name = "fpga_cw310_sival_rom_ext_no_hyper",
+    testonly = True,
+    base = "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
+    # Override the hyperdebug bitstream, interface, and OTP & ROM MMIs.
+    base_bitstream = "//hw/bitstream:bitstream",
+    mmi = "//hw/bitstream:cw310_mmi",
+    param = {
+        "interface": "cw310",
+        "exit_success": DEFAULT_TEST_SUCCESS_MSG,
+        "exit_failure": DEFAULT_TEST_FAILURE_MSG,
+        "assemble": "{rom_ext}@0 {firmware}@0x10000",
+    },
+    visibility = ["//visibility:private"],
+)
+
 opentitan_test(
-    name = "spi_host_macronix_flash_test",
-    srcs = ["spi_host_macronix_flash_test.c"],
+    name = "spi_host_macronix1Gb_flash_test",
+    srcs = ["spi_host_macronix1Gb_flash_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
+        dicts.omit(
+            EARLGREY_TEST_ENVS,
+            # Requires special SiVal ROM EXT environment
+            ["//hw/top_earlgrey:fpga_cw310_sival_rom_ext"],
+        ),
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            # Custom execution environment must be used for SiVal ROM EXT
+            # to ensure that all the PMOD pins are available.
+            ":fpga_cw310_sival_rom_ext_no_hyper": "sival_rom_ext_no_hyper",
         },
     ),
     fpga = fpga_params(
@@ -35,6 +69,43 @@ opentitan_test(
     ),
     silicon = silicon_params(
         tags = [
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    sival_rom_ext_no_hyper = fpga_params(
+        tags = [
+            "cw310_sival_rom_ext",
+            "manual",
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:spi_host_flash_test_impl",
+    ],
+)
+
+opentitan_test(
+    name = "spi_host_macronix128Mb_flash_test",
+    srcs = ["spi_host_macronix128Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    fpga = fpga_params(
+        tags = [
+            "manual",
             "pmod",
         ],  # Requires the PMOD::BoB.
     ),
@@ -118,8 +189,70 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "spi_host_issi256Mb_flash_test",
+    srcs = ["spi_host_issi256Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    fpga = fpga_params(
+        tags = [
+            "manual",
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:spi_host_flash_test_impl",
+    ],
+)
+
+opentitan_test(
     name = "spi_host_micron512Mb_flash_test",
     srcs = ["spi_host_micron512Mb_flash_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+    },
+    fpga = fpga_params(
+        tags = [
+            "manual",
+            "pmod",
+        ],  # Requires the PMOD::BoB.
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/dif:spi_host",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/runtime:print",
+        "//sw/device/lib/testing:spi_device_testutils",
+        "//sw/device/lib/testing:spi_flash_testutils",
+        "//sw/device/lib/testing:spi_host_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/tests:spi_host_flash_test_impl",
+    ],
+)
+
+opentitan_test(
+    name = "spi_host_winbond1Gb_flash_test",
+    srcs = ["spi_host_winbond1Gb_flash_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
         "//hw/top_earlgrey:fpga_cw310_test_rom": None,

@@ -108,7 +108,7 @@ class BazelQueryRunner:
             return self._backend(query)
 
         bazel = subprocess.run(
-            ["ci/bazelisk.sh", "query", "--output=label", query],
+            ["./bazelisk.sh", "query", "--output=label", query],
             stdout=subprocess.PIPE,
             stderr=subprocess.DEVNULL,
             encoding='utf-8',

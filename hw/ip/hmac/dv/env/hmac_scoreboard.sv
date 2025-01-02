@@ -723,7 +723,6 @@ task hmac_scoreboard::hmac_process_fifo_rd();
           key_processed = 1;
         end
         while (1) begin
-          // TODO: check if we need the error checking here - might not be necessary
           // break if hmac is done or if invalid config error is triggered or if SHA is
           // being disabled as HMAC enable configuration could be changed and thus
           // key_process_cycles might need to be updated
@@ -815,7 +814,6 @@ function void hmac_scoreboard::predict_digest(
 
   `uvm_info(`gfn, $sformatf("Computing digest prediction"), UVM_LOW)
 
-  // TODO: predict even if sha_en == 0?
   case ({hmac_en, sha_en})
     2'b11: begin
       if (digest_size == SHA2_256) begin

@@ -27,6 +27,20 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     };
   }
 
+  // Write rubbish to the storage backing memory for a prim_fifo_sync
+  function void splat_fifo_storage(string fifo_path, int unsigned depth);
+    for (int unsigned i = 0; i < depth; i++) begin
+      string storage = $sformatf("%0s.gen_normal_fifo.storage[%0d]", fifo_path, i);
+      bit [31:0] value;
+      randcase
+        1: value = '0;
+        1: value = '1;
+        1: value = $urandom;
+      endcase
+      `DV_CHECK_FATAL(uvm_hdl_deposit(storage, value))
+    end
+  endfunction
+
   virtual task pre_start();
     string common_seq_type;
 
@@ -61,26 +75,12 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   endtask
 
   task dut_init(string reset_kind = "HARD");
-    // Disable fault injection on the prim_count module associated with the TL-UL
-    // adapter SRAM request and sramreqfifo fifo.
-    //
-    // This is because injecting a fault causes a spurious TL transaction whose response
-    // eventually causes a fatal alert (good). Unfortunately, the FIFOs might actually have
-    // been empty, so lots of signals in the design become X. This includes SRAM_CTRL's
-    // bus_integ_error signal than then cannot be reliably sensed in the DV environment.
-    // The code here disables fault injection at that location.
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram*u_reqfifo*u_fifo_cnt*u_rptr"),
-      .is_regex(1)).disable_fi();
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram*u_reqfifo*u_fifo_cnt*u_wptr"),
-      .is_regex(1)).disable_fi();
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram*u_sramreqfifo*u_fifo_cnt*u_rptr"),
-      .is_regex(1)).disable_fi();
-    sec_cm_pkg::find_sec_cm_if_proxy(
-      .path("*u_tlul_adapter_sram*u_sramreqfifo*u_fifo_cnt*u_wptr"),
-      .is_regex(1)).disable_fi();
+    // Zero the contents of the sram_ctrl sram request fifos if we're about to do fault injection on
+    // their counters. This avoids a problem where we generate a spurious request when the FIFO was
+    // actually empty and lots of signals in the design become X. This will let the fifos error
+    // signal stuck at X. Zeroing the backing memory avoids that problem.
+    splat_fifo_storage("tb.dut.u_tlul_adapter_sram.u_reqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tlul_adapter_sram.u_sramreqfifo", 2);
 
     super.dut_init(reset_kind);
   endtask
@@ -124,32 +124,97 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
   endtask : check_sram_access_blocked_after_fi
 
-  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
-    if (!uvm_re_match("*u_tlul_adapter_sram.u_rspfifo.*", if_proxy.path)) begin
-      if (enable) begin
-        $asserton(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
-      end else begin
-        $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+  // Return 1 if path is a pointer in the prim_count associated with the fifo at fifo_path
+  function bit is_ptr_in_prim_counts_fifo(string path, string fifo_path);
+    string cnt_path = {fifo_path, ".gen_normal_fifo.u_fifo_cnt"};
+    string ptr_rel_paths[] = '{"gen_secure_ptrs.u_rptr", "gen_secure_ptrs.u_wptr"};
+
+    foreach (ptr_rel_paths[i]) begin
+      if (path == {cnt_path, ".", ptr_rel_paths[i]}) begin
+        return 1'b1;
       end
     end
+    return 1'b0;
   endfunction
+
+  // Return 1 if path is a pointer in a prim_count for a fifo in with the adapter at adapter_path.
+  // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
+  // request fifo.
+  function bit is_ptr_in_adapters_fifo(string path, output bit in_req_fifo);
+    string adapter_path = {"tb.dut.u_tlul_adapter_sram"};
+    string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
+                            {adapter_path, ".u_sramreqfifo"},
+                            {adapter_path, ".u_rspfifo"}};
+
+    foreach (fifo_paths[i]) begin
+      if (is_ptr_in_prim_counts_fifo(path, fifo_paths[i])) begin
+        in_req_fifo = (i == 0 || i == 1);
+        return 1'b1;
+      end
+    end
+    return 1'b0;
+  endfunction
+
+  virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
+    if (if_proxy.sec_cm_type == SecCmPrimCount) begin
+      // If we are injecting an error into a prim_count inside a prim_fifo_sync, we need to disable
+      // the DataKnown_A assertion inside the fifo. The problem is that we're telling the FIFO that
+      // it contains some elements that it doesn't really contain, so the backing memory is probably
+      // 'X, which fails an !$isunknown() check. The touching_fifo bit is computed to figure out
+      // whether this is happening.
+
+      bit touching_fifo = 1'b0, touching_req_fifo = 1'b0;
+
+      if (is_ptr_in_adapters_fifo(if_proxy.path, touching_req_fifo)) begin
+        if (!enable) begin
+          `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+        end else begin
+          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
+          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
+          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+        end
+
+        // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes us to
+        // generate spurious TL transactions.
+        if (touching_req_fifo) begin
+          if (!enable) begin
+            `uvm_info(`gfn, "Doing FI on a request fifo. Disabling related assertions", UVM_HIGH)
+            $assertoff(0, "tb.dut");
+            cfg.m_tl_agent_cfg.check_tl_errs = 1'b0;
+          end else begin
+            $asserton(0, "tb.dut");
+            cfg.m_tl_agent_cfg.check_tl_errs = 1'b1;
+          end
+        end
+      end
+    end
+  endfunction: sec_cm_fi_ctrl_svas
 
   // Check alert and the corresponding status bit is set.
   virtual task check_sec_cm_fi_resp(sec_cm_base_if_proxy if_proxy);
     bit [TL_AW-1:0]  addr;
     bit [TL_DBW-1:0] mask;
     bit [TL_DW-1:0]  rdata;
+    bit touching_req_fifo = 1'b0;
 
     super.check_sec_cm_fi_resp(if_proxy);
 
-    if (!uvm_re_match("*.u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.*",
-                      if_proxy.path)) begin
-      csr_rd_check(.ptr(ral.status.bus_integ_error), .compare_value(1));
+    if (is_ptr_in_adapters_fifo(if_proxy.path, touching_req_fifo)) begin
+      // Do a backdoor access as the TL-UL bus can be frozen.
+      csr_rd_check(.ptr(ral.status.bus_integ_error), .compare_value(1), .backdoor(1));
+      // Only execute the function below when not messing around with the request FIFO.
+      // If we inject a fault into a request FIFO, we generate spurious TL transactions.
+      // Hence, we cannot expect that subsequent TL transactions still work.
+      if (!touching_req_fifo) begin
+        check_sram_access_blocked_after_fi();
+      end
     end else begin
       csr_rd_check(.ptr(ral.status.init_error), .compare_value(1));
+      check_sram_access_blocked_after_fi();
     end
-
-    check_sram_access_blocked_after_fi();
   endtask : check_sec_cm_fi_resp
 
   virtual task check_tl_intg_error_response();

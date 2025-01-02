@@ -47,6 +47,8 @@ module top_darjeeling #(
   // parameters for sensor_ctrl
   // parameters for soc_proxy
   // parameters for sram_ctrl_ret_aon
+  parameter int SramCtrlRetAonInstSize = 4096,
+  parameter int SramCtrlRetAonNumRamInst = 1,
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
   // parameters for rv_dm
@@ -84,9 +86,13 @@ module top_darjeeling #(
   // parameters for edn0
   // parameters for edn1
   // parameters for sram_ctrl_main
+  parameter int SramCtrlMainInstSize = 4096,
+  parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
   // parameters for sram_ctrl_mbox
+  parameter int SramCtrlMboxInstSize = 4096,
+  parameter int SramCtrlMboxNumRamInst = 1,
   parameter bit SramCtrlMboxInstrExec = 0,
   parameter int SramCtrlMboxNumPrinceRoundsHalf = 3,
   // parameters for rom_ctrl0
@@ -111,6 +117,7 @@ module top_darjeeling #(
   // parameters for mbx_jtag
   // parameters for mbx_pcie0
   // parameters for mbx_pcie1
+  // parameters for soc_dbg_ctrl
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -133,6 +140,8 @@ module top_darjeeling #(
   parameter bit RvCoreIbexDbgTriggerEn = 1,
   parameter int RvCoreIbexDbgHwBreakNum = 4,
   parameter bit RvCoreIbexSecureIbex = 1,
+  parameter int unsigned RvCoreIbexDmBaseAddr = tl_main_pkg::ADDR_SPACE_RV_DM__MEM,
+  parameter int unsigned RvCoreIbexDmAddrMask = tl_main_pkg::ADDR_MASK_RV_DM__MEM,
   parameter int unsigned RvCoreIbexDmHaltAddr =
       tl_main_pkg::ADDR_SPACE_RV_DM__MEM + dm::HaltAddress[31:0],
   parameter int unsigned RvCoreIbexDmExceptionAddr =
@@ -162,6 +171,16 @@ module top_darjeeling #(
   input  prim_ram_1p_pkg::ram_1p_cfg_t       ram_1p_cfg_i,
   input  prim_ram_2p_pkg::ram_2p_cfg_t       spi_ram_2p_cfg_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMainNumRamInst-1:0] sram_ctrl_main_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_imem_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       otbn_dmem_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [RvCoreIbexICacheNWays-1:0] rv_core_ibex_icache_data_ram_1p_cfg_rsp_o,
+  output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_sys2spi_o,
+  output prim_ram_2p_pkg::ram_2p_cfg_t       spi_device_ram_2p_cfg_rsp_spi2sys_o,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output prim_mubi_pkg::mubi4_t       io_clk_byp_req_o,
@@ -249,6 +268,8 @@ module top_darjeeling #(
   output logic [15:0] soc_gpi_async_o,
   input  logic [15:0] soc_gpo_async_i,
   output logic       sck_monitor_o,
+  output soc_dbg_ctrl_pkg::soc_dbg_policy_t       soc_dbg_policy_bus_o,
+  input  logic       debug_halt_cpu_boot_i,
 
 
   // All externally supplied clocks
@@ -274,6 +295,12 @@ module top_darjeeling #(
   import top_darjeeling_rnd_cnst_pkg::*;
 
   // Local Parameters
+  // local parameters for lc_ctrl
+  localparam int LcCtrlNumRmaAckSigs = 1;
+  // local parameters for rv_core_ibex
+  localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
+  localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
+  localparam int unsigned RvCoreIbexICacheNWays = 2;
 
   // Signals
   logic [3:0] mio_p2d;
@@ -354,6 +381,7 @@ module top_darjeeling #(
   // mbx_jtag
   // mbx_pcie0
   // mbx_pcie1
+  // soc_dbg_ctrl
   // rv_core_ibex
 
 
@@ -486,7 +514,8 @@ module top_darjeeling #(
   logic       pwrmgr_aon_strap;
   logic       pwrmgr_aon_low_power;
   lc_ctrl_pkg::lc_tx_t       pwrmgr_aon_fetch_en;
-  rom_ctrl_pkg::pwrmgr_data_t [1:0] pwrmgr_aon_rom_ctrl;
+  rom_ctrl_pkg::pwrmgr_data_t [2:0] pwrmgr_aon_rom_ctrl;
+  pwrmgr_pkg::pwr_boot_status_t       pwrmgr_aon_boot_status;
   rom_ctrl_pkg::keymgr_data_t [1:0] keymgr_dpe_rom_digest;
   dma_pkg::lsio_trigger_t       dma_lsio_trigger;
   logic       i2c0_lsio_trigger;
@@ -515,6 +544,7 @@ module top_darjeeling #(
   otp_ctrl_pkg::lc_otp_vendor_test_rsp_t       lc_ctrl_lc_otp_vendor_test_rsp;
   lc_ctrl_pkg::lc_keymgr_div_t       lc_ctrl_lc_keymgr_div;
   logic       lc_ctrl_strap_en_override;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_raw_test_rma;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_cpu_en;
@@ -530,7 +560,7 @@ module top_darjeeling #(
   logic       rv_plic_irq;
   logic       rv_dm_debug_req;
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
-  pwrmgr_pkg::pwr_cpu_t       rv_core_ibex_pwrmgr;
+  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
@@ -669,6 +699,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       sram_ctrl_ret_aon_ram_tl_rsp;
   tlul_pkg::tl_h2d_t       aon_timer_aon_tl_req;
   tlul_pkg::tl_d2h_t       aon_timer_aon_tl_rsp;
+  tlul_pkg::tl_h2d_t       soc_dbg_ctrl_core_tl_req;
+  tlul_pkg::tl_d2h_t       soc_dbg_ctrl_core_tl_rsp;
   tlul_pkg::tl_h2d_t       mbx0_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx0_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx1_soc_tl_d_req;
@@ -693,6 +725,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx_jtag_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       lc_ctrl_dmi_tl_req;
   tlul_pkg::tl_d2h_t       lc_ctrl_dmi_tl_rsp;
+  tlul_pkg::tl_h2d_t       soc_dbg_ctrl_jtag_tl_req;
+  tlul_pkg::tl_d2h_t       soc_dbg_ctrl_jtag_tl_rsp;
   clkmgr_pkg::clkmgr_out_t       clkmgr_aon_clocks;
   clkmgr_pkg::clkmgr_cg_en_t       clkmgr_aon_cg_en;
   rstmgr_pkg::rstmgr_out_t       rstmgr_aon_resets;
@@ -715,6 +749,7 @@ module top_darjeeling #(
   assign ast_ram_1p_cfg = ram_1p_cfg_i;
   assign ast_spi_ram_2p_cfg = spi_ram_2p_cfg_i;
   assign ast_rom_cfg = rom_cfg_i;
+  assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -837,6 +872,7 @@ module top_darjeeling #(
   // otbn_trans_lc_0
   assign lpg_cg_en[18] = clkmgr_aon_cg_en.main_otbn;
   assign lpg_rst_en[18] = rstmgr_aon_rst_en.lc[rstmgr_pkg::Domain0Sel];
+
 
 // tie-off unused connections
 //VCS coverage off
@@ -1023,7 +1059,10 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[2:2] ),
 
       // Inter-module signals
-      .ram_cfg_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_sys2spi_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_sys2spi_o(spi_device_ram_2p_cfg_rsp_sys2spi_o),
+      .ram_cfg_spi2sys_i(ast_spi_ram_2p_cfg),
+      .ram_cfg_rsp_spi2sys_o(spi_device_ram_2p_cfg_rsp_spi2sys_o),
       .passthrough_o(spi_device_passthrough_req),
       .passthrough_i(spi_device_passthrough_rsp),
       .mbist_en_i('0),
@@ -1075,6 +1114,7 @@ module top_darjeeling #(
 
       // Inter-module signals
       .ram_cfg_i(prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
+      .ram_cfg_rsp_o(i2c_ram_1p_cfg_rsp_o),
       .lsio_trigger_o(i2c0_lsio_trigger),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
@@ -1180,7 +1220,8 @@ module top_darjeeling #(
     .SiliconCreatorId(LcCtrlSiliconCreatorId),
     .ProductId(LcCtrlProductId),
     .RevisionId(LcCtrlRevisionId),
-    .IdcodeValue(LcCtrlIdcodeValue)
+    .IdcodeValue(LcCtrlIdcodeValue),
+    .NumRmaAckSigs(LcCtrlNumRmaAckSigs)
   ) u_lc_ctrl (
       // [10]: fatal_prog_error
       // [11]: fatal_state_error
@@ -1204,6 +1245,7 @@ module top_darjeeling #(
       .lc_otp_program_i(lc_ctrl_lc_otp_program_rsp),
       .kmac_data_o(kmac_app_req[1]),
       .kmac_data_i(kmac_app_rsp[1]),
+      .lc_raw_test_rma_o(lc_ctrl_lc_raw_test_rma),
       .lc_dft_en_o(lc_ctrl_lc_dft_en),
       .lc_nvm_debug_en_o(),
       .lc_hw_debug_en_o(lc_ctrl_lc_hw_debug_en),
@@ -1317,7 +1359,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[14:14] ),
 
       // Inter-module signals
-      .boot_status_o(pwrmgr_boot_status_o),
+      .boot_status_o(pwrmgr_aon_boot_status),
       .pwr_ast_o(pwrmgr_ast_req_o),
       .pwr_ast_i(pwrmgr_ast_rsp_i),
       .pwr_rst_o(pwrmgr_aon_pwr_rst_req),
@@ -1619,6 +1661,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlRetAonLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlRetAonLfsrPerm),
     .MemSizeRam(4096),
+    .InstSize(SramCtrlRetAonInstSize),
+    .NumRamInst(SramCtrlRetAonNumRamInst),
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf)
   ) u_sram_ctrl_ret_aon (
@@ -1630,6 +1674,7 @@ module top_darjeeling #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[1]),
       .cfg_i(ast_ram_1p_cfg),
+      .cfg_rsp_o(sram_ctrl_ret_aon_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
@@ -1830,7 +1875,10 @@ module top_darjeeling #(
       .edn_urnd_o(edn0_edn_req[6]),
       .edn_urnd_i(edn0_edn_rsp[6]),
       .idle_o(clkmgr_aon_idle[3]),
-      .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_imem_i(ast_ram_1p_cfg),
+      .ram_cfg_dmem_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_imem_o(otbn_imem_ram_1p_cfg_rsp_o),
+      .ram_cfg_rsp_dmem_o(otbn_dmem_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_rma_req_i(lc_ctrl_lc_flash_rma_req),
       .lc_rma_ack_o(otbn_lc_rma_ack),
@@ -1980,6 +2028,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMainLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMainLfsrPerm),
     .MemSizeRam(65536),
+    .InstSize(SramCtrlMainInstSize),
+    .NumRamInst(SramCtrlMainNumRamInst),
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf)
   ) u_sram_ctrl_main (
@@ -1991,6 +2041,7 @@ module top_darjeeling #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[0]),
       .cfg_i(ast_ram_1p_cfg),
+      .cfg_rsp_o(sram_ctrl_main_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .otp_en_sram_ifetch_i(sram_ctrl_main_otp_en_sram_ifetch),
@@ -2012,6 +2063,8 @@ module top_darjeeling #(
     .RndCnstLfsrSeed(RndCnstSramCtrlMboxLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlMboxLfsrPerm),
     .MemSizeRam(4096),
+    .InstSize(SramCtrlMboxInstSize),
+    .NumRamInst(SramCtrlMboxNumRamInst),
     .InstrExec(SramCtrlMboxInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf)
   ) u_sram_ctrl_mbox (
@@ -2023,6 +2076,7 @@ module top_darjeeling #(
       .sram_otp_key_o(otp_ctrl_sram_otp_key_req[2]),
       .sram_otp_key_i(otp_ctrl_sram_otp_key_rsp[2]),
       .cfg_i(ast_ram_1p_cfg),
+      .cfg_rsp_o(sram_ctrl_mbox_ram_1p_cfg_rsp_o),
       .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
       .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
       .otp_en_sram_ifetch_i(prim_mubi_pkg::MuBi8False),
@@ -2414,12 +2468,41 @@ module top_darjeeling #(
       .clk_i (clkmgr_aon_clocks.clk_main_infra),
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
+  soc_dbg_ctrl #(
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[96:95])
+  ) u_soc_dbg_ctrl (
+      // [95]: fatal_fault
+      // [96]: recov_ctrl_update_err
+      .alert_tx_o  ( alert_tx[96:95] ),
+      .alert_rx_i  ( alert_rx[96:95] ),
+
+      // Inter-module signals
+      .boot_status_i(pwrmgr_aon_boot_status),
+      .soc_dbg_state_i(lc_ctrl_state_pkg::SOC_DBG_STATE_DEFAULT),
+      .soc_dbg_policy_bus_o(soc_dbg_policy_bus_o),
+      .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
+      .lc_dft_en_i(lc_ctrl_lc_dft_en),
+      .lc_raw_test_rma_i(lc_ctrl_lc_raw_test_rma),
+      .halt_cpu_boot_i(debug_halt_cpu_boot_i),
+      .continue_cpu_boot_o(pwrmgr_aon_rom_ctrl[2]),
+      .core_tl_i(soc_dbg_ctrl_core_tl_req),
+      .core_tl_o(soc_dbg_ctrl_core_tl_rsp),
+      .jtag_tl_i(soc_dbg_ctrl_jtag_tl_req),
+      .jtag_tl_o(soc_dbg_ctrl_jtag_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_io_div4_secure),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_io_div4_shadowed_n[rstmgr_pkg::Domain0Sel]),
+      .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
+  );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:95]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[100:97]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
     .RndCnstIbexNonceDefault(RndCnstRvCoreIbexIbexNonceDefault),
+    .NEscalationSeverities(RvCoreIbexNEscalationSeverities),
+    .WidthPingCounter(RvCoreIbexWidthPingCounter),
     .PMPEnable(RvCoreIbexPMPEnable),
     .PMPGranularity(RvCoreIbexPMPGranularity),
     .PMPNumRegions(RvCoreIbexPMPNumRegions),
@@ -2437,24 +2520,30 @@ module top_darjeeling #(
     .ICache(RvCoreIbexICache),
     .ICacheECC(RvCoreIbexICacheECC),
     .ICacheScramble(RvCoreIbexICacheScramble),
+    .ICacheNWays(RvCoreIbexICacheNWays),
     .BranchPredictor(RvCoreIbexBranchPredictor),
     .DbgTriggerEn(RvCoreIbexDbgTriggerEn),
     .DbgHwBreakNum(RvCoreIbexDbgHwBreakNum),
     .SecureIbex(RvCoreIbexSecureIbex),
+    .DmBaseAddr(RvCoreIbexDmBaseAddr),
+    .DmAddrMask(RvCoreIbexDmAddrMask),
     .DmHaltAddr(RvCoreIbexDmHaltAddr),
     .DmExceptionAddr(RvCoreIbexDmExceptionAddr),
     .PipeLine(RvCoreIbexPipeLine)
   ) u_rv_core_ibex (
-      // [95]: fatal_sw_err
-      // [96]: recov_sw_err
-      // [97]: fatal_hw_err
-      // [98]: recov_hw_err
-      .alert_tx_o  ( alert_tx[98:95] ),
-      .alert_rx_i  ( alert_rx[98:95] ),
+      // [97]: fatal_sw_err
+      // [98]: recov_sw_err
+      // [99]: fatal_hw_err
+      // [100]: recov_hw_err
+      .alert_tx_o  ( alert_tx[100:97] ),
+      .alert_rx_i  ( alert_rx[100:97] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
-      .ram_cfg_i(ast_ram_1p_cfg),
+      .ram_cfg_icache_tag_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_tag_o(rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o),
+      .ram_cfg_icache_data_i(ast_ram_1p_cfg),
+      .ram_cfg_rsp_icache_data_o(rv_core_ibex_icache_data_ram_1p_cfg_rsp_o),
       .hart_id_i(rv_core_ibex_hart_id),
       .boot_addr_i(rv_core_ibex_boot_addr),
       .irq_software_i(rv_plic_msip),
@@ -2882,6 +2971,10 @@ module top_darjeeling #(
     .tl_ast_o(ast_tl_req_o),
     .tl_ast_i(ast_tl_rsp_i),
 
+    // port: tl_soc_dbg_ctrl__core
+    .tl_soc_dbg_ctrl__core_o(soc_dbg_ctrl_core_tl_req),
+    .tl_soc_dbg_ctrl__core_i(soc_dbg_ctrl_core_tl_rsp),
+
 
     .scanmode_i
   );
@@ -2953,6 +3046,10 @@ module top_darjeeling #(
     // port: tl_lc_ctrl__dmi
     .tl_lc_ctrl__dmi_o(lc_ctrl_dmi_tl_req),
     .tl_lc_ctrl__dmi_i(lc_ctrl_dmi_tl_rsp),
+
+    // port: tl_soc_dbg_ctrl__jtag
+    .tl_soc_dbg_ctrl__jtag_o(soc_dbg_ctrl_jtag_tl_req),
+    .tl_soc_dbg_ctrl__jtag_i(soc_dbg_ctrl_jtag_tl_rsp),
 
 
     .scanmode_i

@@ -26,7 +26,7 @@ set -o pipefail
 git diff --name-only --diff-filter=ACMRTUXB "$merge_base" -- \
   "*.h" ':!*/vendor/*' | \
     xargs -r util/fix_include_guard.py --dry-run || {
-    echo -n "##vso[task.logissue type=error]"
+    echo -n "::error::"
     echo "Include guard check failed. Please run util/fix_include_guard.py on the above files."
     exit 1
 }

@@ -16,24 +16,16 @@ class spi_host_performance_vseq extends spi_host_smoke_vseq;
   }
 
   constraint spi_config_regs_c {
-      // configopts regs
-      foreach (spi_config_regs.cpol[i]) {spi_config_regs.cpol[i] == 1'b0;}
-      foreach (spi_config_regs.cpha[i]) {spi_config_regs.cpha[i] == 1'b0;}
-      foreach (spi_config_regs.csnlead[i]) {
-        spi_config_regs.csnlead[i] == cfg.seq_cfg.host_spi_min_csn_latency;
-      }
-      foreach (spi_config_regs.csntrail[i]) {
-        spi_config_regs.csntrail[i] == cfg.seq_cfg.host_spi_min_csn_latency;
-      }
-      foreach (spi_config_regs.csnidle[i]) {
-        spi_config_regs.csnidle[i] == cfg.seq_cfg.host_spi_min_csn_latency;
-      }
+    // configopts regs
+    spi_config_regs.cpol == 1'b0;
+    spi_config_regs.cpha == 1'b0;
+    spi_config_regs.csnlead == cfg.seq_cfg.host_spi_min_csn_latency;
+    spi_config_regs.csntrail == cfg.seq_cfg.host_spi_min_csn_latency;
+    spi_config_regs.csnidle == cfg.seq_cfg.host_spi_min_csn_latency;
   }
 
   constraint spi_config_regs_clkdiv_c {
-    foreach (spi_config_regs.clkdiv[i]) {
-      spi_config_regs.clkdiv[i] == cfg.seq_cfg.host_spi_min_clkdiv;
-    }
+    spi_config_regs.clkdiv == cfg.seq_cfg.host_spi_min_clkdiv;
   }
 
   virtual task body();

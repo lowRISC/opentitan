@@ -1079,9 +1079,9 @@ module chip_earlgrey_cw310 #(
     .KeymgrKmacEnMasking(0),
     .SecKmacCmdDelay(0),
     .SecKmacIdleAcceptSwMsg(1'b0),
+    .RvCoreIbexSecureIbex(0),
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (

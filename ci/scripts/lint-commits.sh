@@ -25,11 +25,8 @@ echo "Checking commit messages since $merge_base"
 #   merges to keep a linear history, which makes merge commits disappear
 #   ultimately, making them only a CI artifact which should not be
 #   checked.
-# * 'type=error' is used even for warnings. Only "errors" are shown in
-#   the GitHub checks API. However, warnings don't return a non-zero
-#   error code so don't fail the build step.
 util/lint_commits.py \
   --no-merges \
-  --error-msg-prefix="##vso[task.logissue type=error]" \
-  --warning-msg-prefix="##vso[task.logissue type=error]" \
+  --error-msg-prefix="::error::" \
+  --warning-msg-prefix="::warning::" \
   "$merge_base"..HEAD

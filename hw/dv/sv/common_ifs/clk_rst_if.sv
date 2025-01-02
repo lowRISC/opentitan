@@ -122,10 +122,13 @@ interface clk_rst_if #(
 
   // Wait for 'num_clks' clocks based on the positive clock edge or reset, whichever comes first.
   task automatic wait_clks_or_rst(int num_clks);
-    fork
-      wait_clks(num_clks);
-      wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
-    join_any
+    fork begin : isolation_fork
+      fork
+        wait_clks(num_clks);
+        wait_for_reset(.wait_negedge(1'b1), .wait_posedge(1'b0));
+      join_any
+      disable fork;
+    end join
   endtask
 
   // wait for rst_n to assert and then deassert

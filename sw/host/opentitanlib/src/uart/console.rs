@@ -181,6 +181,14 @@ impl UartConsole {
         Token(TOKEN_COUNTER.fetch_add(1, Ordering::Relaxed))
     }
 
+    /// Returns `true` if any regular expressions are used to match the streamed output.  If so,
+    /// then this struct will keep a window of the most recent output, and take care not to read
+    /// any more characters from the underlying stream should one of the regular expressions
+    /// match.
+    fn uses_regex(&self) -> bool {
+        self.exit_success.is_some() || self.exit_failure.is_some()
+    }
+
     // Maintain a buffer for the exit regexes to match against.
     fn append_buffer(&mut self, data: &[u8]) {
         self.buffer.push_str(&String::from_utf8_lossy(data));
@@ -199,8 +207,15 @@ impl UartConsole {
     where
         T: ConsoleDevice + ?Sized,
     {
-        let mut buf = [0u8; 1];
-        let len = device.console_read(&mut buf, timeout)?;
+        let mut buf = [0u8; 1024];
+        let effective_buf = if self.uses_regex() {
+            // Read one byte at a time when matching, to avoid the risk of consuming output past a
+            // match.
+            &mut buf[..1]
+        } else {
+            &mut buf
+        };
+        let len = device.console_read(effective_buf, timeout)?;
         if len == 0 {
             return Ok(false);
         }
@@ -223,7 +238,9 @@ impl UartConsole {
         self.logfile
             .as_mut()
             .map_or(Ok(()), |f| f.write_all(&buf[..len]))?;
-        self.append_buffer(&buf[..len]);
+        if self.uses_regex() {
+            self.append_buffer(&buf[..len]);
+        }
         Ok(true)
     }
 

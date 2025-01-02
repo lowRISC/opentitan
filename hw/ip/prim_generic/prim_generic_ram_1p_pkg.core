@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_generic:ram_1p_pkg"
+description: "Ram 1p package"
+virtual:
+  - "lowrisc:prim:ram_1p_pkg"
+
+filesets:
+  files_rtl:
+    files:
+      - rtl/prim_ram_1p_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

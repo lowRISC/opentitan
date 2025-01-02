@@ -39,11 +39,13 @@ class UnmanagedClock:
     def __init__(self, raw: Dict[str, object]):
         self.name = str(raw['name'])
         self.signal_name = f'clk_{self.name}_i'
+        self.cg_en_signal = f'cg_en_{self.name}_i'
 
     def _asdict(self) -> Dict[str, object]:
         return {
             'name': self.name,
-            'signal_name': self.signal_name
+            'signal_name': self.signal_name,
+            'cg_en_signal': self.cg_en_signal
         }
 
 
@@ -224,6 +226,12 @@ class UnmanagedClocks:
 
     def _asdict(self) -> Dict[str, object]:
         return self.clks
+
+    def get_clock_by_signal_name(self, signal_name: str) -> UnmanagedClock:
+        for clock in self.clks.values():
+            if clock.signal_name == signal_name:
+                return clock
+        raise ValueError(f"No clock defined with signal name {signal_name}") from None
 
 
 class Clocks:

@@ -16,6 +16,10 @@ use crate::util::attribute::{AttributeMap, AttributeType};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct List {
+    /// Optional search attributes.
+    #[arg(short, long)]
+    #[serde(default)]
+    search: Option<AttributeMap>,
     /// Attributes to show.
     #[arg(short, long, value_parser=AttributeType::from_str)]
     #[serde(default)]
@@ -36,6 +40,10 @@ impl Dispatch for List {
         session: Option<&Session>,
     ) -> Result<Box<dyn Annotate>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
+        let search = self
+            .search
+            .as_ref()
+            .map_or(Ok(Vec::new()), |s| s.to_vec())?;
         let default_attr = [
             AttributeType::Id,
             AttributeType::Label,
@@ -53,7 +61,7 @@ impl Dispatch for List {
             .collect::<Result<Vec<cryptoki::object::AttributeType>>>()?;
 
         let mut result = Box::<ListResult>::default();
-        for object in session.find_objects(&[])? {
+        for object in session.find_objects(&search)? {
             let attr = session.get_attributes(object, &attr)?;
             let attr = AttributeMap::from(attr.as_slice());
             result.objects.push(attr);

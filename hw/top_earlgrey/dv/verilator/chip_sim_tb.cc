@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
 
   std::string top_scope("TOP.chip_sim_tb.u_dut.top_earlgrey");
   std::string ram1p_adv_scope(
-      "u_prim_ram_1p_adv.u_mem."
+      "u_prim_ram_1p_adv.gen_ram_inst[0].u_mem."
       "gen_generic.u_impl_generic");
 
   MemArea rom(top_scope + (".u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom."

@@ -32,6 +32,10 @@ Parameters
 +---------------------+-----------------------------------------------------------------+
 | Parameter           | Description                                                     |
 +=====================+=================================================================+
+| ``DmBaseAddr``      | Base address of the Debug Module                                |
++---------------------+-----------------------------------------------------------------+
+| ``DmAddrMask``      | Address mask of the Debug Module                                |
++---------------------+-----------------------------------------------------------------+
 | ``DmHaltAddr``      | Address to jump to when entering Debug Mode                     |
 +---------------------+-----------------------------------------------------------------+
 | ``DmExceptionAddr`` | Address to jump to when an exception occurs while in Debug Mode |

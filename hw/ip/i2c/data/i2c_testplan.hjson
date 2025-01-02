@@ -227,7 +227,7 @@
               - Read rx data oversampled value and ensure it is same as driven value
             '''
       stage: V2
-      tests: ["i2c_host_rx_oversample"]
+      tests: [/* TODO(#21887) "i2c_host_rx_oversample" */]
     }
     {
       name: i2c_host_mode_toggle

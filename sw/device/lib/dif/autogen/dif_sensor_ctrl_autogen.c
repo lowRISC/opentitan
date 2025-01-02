@@ -79,8 +79,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_sensor_ctrl_irq_get_type(const dif_sensor_ctrl_t *sensor_ctrl,
                                           dif_sensor_ctrl_irq_t irq,
                                           dif_irq_type_t *type) {
-  if (sensor_ctrl == NULL || type == NULL ||
-      irq == kDifSensorCtrlIrqInitStatusChange + 1) {
+  if (sensor_ctrl == NULL || type == NULL || irq < 0 ||
+      irq > kDifSensorCtrlIrqInitStatusChange) {
     return kDifBadArg;
   }
 

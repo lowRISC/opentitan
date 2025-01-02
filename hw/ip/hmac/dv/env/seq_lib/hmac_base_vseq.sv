@@ -558,6 +558,14 @@ task hmac_base_vseq::save_and_restore();
   // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
   // or 1024 bits SHA-2 384/512)
   sar_window.wait_trigger();
+
+  // Insert random delay to mimic the SW accesses which can take some time because of potential
+  // incoming interrupts. To cover the particular case where the stop command is issued while the
+  // hash has already been processed, this delay should exceed the number clock cycles required
+  // for this operation, which is 64 for SHA2-256 and 80 for SHA2-384/512 with the current RTL.
+  cfg.clk_rst_vif.wait_clks($urandom_range(HMAC_MSG_PROCESS_CYCLES_256-10,
+                                           HMAC_MSG_PROCESS_CYCLES_512+10));
+
   randcase
     1:  sar_stop_and_continue();
     1:  sar_same_context();

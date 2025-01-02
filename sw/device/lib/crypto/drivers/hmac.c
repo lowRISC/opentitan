@@ -9,7 +9,6 @@
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/runtime/ibex.h"
 
 #include "hmac_regs.h"  // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -77,10 +76,6 @@ enum {
    * Let's take a large margin and consider that 200 loops are enough.
    */
   kNumIterTimeout = 200,
-  /* Temporary delay linked to issue #24767, which should be equivalent to at
-   * least 80 clock cycles of the HMAC clock plus a margin.
-   */
-  kHmacTmpDelay = 200,
 };
 
 /**
@@ -274,41 +269,6 @@ static void msg_fifo_write(const uint8_t *message, size_t message_len) {
 }
 
 /**
- * Temporary workaround linked to issue #24767
- *
- * The HMAC HWIP is not told to stop. This will cause the HW to be in an
- * unexpected state, which could be exited by trigerring a simple HASH process
- * operation. Before doing that, the context should be saved (message length
- * and digest). This context is only available after a duration equivalent to
- * 64 clock cycles in SHA2-256 and 80 clock cycles in SHA2-384/512, after the
- * message length is on a block boundary (512 for SHA2-256 or 1024 bits for
- * SHA2-384/512).
- *
- * @param[out] ctx Context to which values are written.
- */
-static status_t tmp_avoid_hw_hang(hmac_ctx_t *ctx) {
-  // Insert a delay
-  ibex_timeout_t timeout;
-  timeout.cycles = kHmacTmpDelay;
-  timeout.start = ibex_mcycle_read();
-  while (!ibex_timeout_check(&timeout)) {
-    // NULL statement
-  }
-
-  // Save current context as it is updated after each block even if stop is not
-  // triggered
-  context_save(ctx);
-
-  // Trigger hash_process
-  uint32_t cmd_reg = abs_mmio_read32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET);
-  cmd_reg = bitfield_bit32_write(cmd_reg, HMAC_CMD_HASH_PROCESS_BIT, true);
-  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
-
-  // Wait for HMAC HWIP operation to be completed.
-  return hmac_idle_wait();
-}
-
-/**
  * For given `hmac_mode`, derive the matching CFG value and block/digest
  * lengths.
  *
@@ -449,24 +409,17 @@ status_t hmac_update(hmac_ctx_t *ctx, const uint8_t *data, size_t len) {
   // Keep writing incoming bytes
   msg_fifo_write(data, len - leftover_len);
 
-  /*
-   * TODO should be uncommented once the issue #24767 will be solved in the HW
-   * and tmp_avoid_hw_hang should be removed.
-   *
-   * // Time to tell HMAC HWIP to stop, because we do not have enough message
-   * // bytes for another round.
-   * uint32_t cmd_reg =
-   *     bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_STOP_BIT, 1);
-   * abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
-   *
-   * // Wait for HMAC HWIP operation to be completed.
-   * HARDENED_TRY(hmac_idle_wait());
-   *
-   * // Store context into `ctx`.
-   * context_save(ctx);
-   */
+  // Time to tell HMAC HWIP to stop, because we do not have enough message
+  // bytes for another round.
+  uint32_t cmd_reg =
+      bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_STOP_BIT, 1);
+  abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd_reg);
 
-  tmp_avoid_hw_hang(ctx);
+  // Wait for HMAC HWIP operation to be completed.
+  HARDENED_TRY(hmac_idle_wait());
+
+  // Store context into `ctx`.
+  context_save(ctx);
 
   // Write leftover bytes to `partial_block`, so that future update/final call
   // can feed them to HMAC HWIP.

@@ -56,16 +56,6 @@ for pad in target["pinout"]["add_pads"]:
   amended_pad.update({"idx" : k})
   dedicated_pads.append(pad)
   k += 1
-
-num_im = sum([x["width"] if "width" in x else 1 for x in top["inter_signal"]["external"]])
-
-max_sigwidth = max([x["width"] if "width" in x else 1 for x in top["pinmux"]["ios"]])
-max_sigwidth = len("{}".format(max_sigwidth))
-
-cpu_clk = top['clocks'].hier_paths['top'] + "clk_proc_main"
-
-unused_im_defs, undriven_im_defs = lib.get_dangling_im_def(top["inter_signal"]["definitions"])
-
 %>\
 
 % if target["name"] != "asic":
@@ -1078,6 +1068,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
     // Memory attributes
     .ram_1p_cfg_i                 ( ram_1p_cfg                 ),
+    .sram_ctrl_main_cfg_i         ( '{ram_1p_cfg}              ),
+    .sram_ctrl_ret_aon_cfg_i      ( '{ram_1p_cfg}              ),
     .spi_ram_2p_cfg_i             ( spi_ram_2p_cfg             ),
     .usb_ram_1p_cfg_i             ( usb_ram_1p_cfg             ),
 
@@ -1158,6 +1150,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .SecAesSkipPRNGReseeding(1'b1),
     .UsbdevStub(1'b1),
+    .RvCoreIbexSecureIbex(0),
 % else:
     .SecAesMasking(1'b0),
     .SecAesSBoxImpl(aes_pkg::SBoxImplLut),
@@ -1178,16 +1171,17 @@ module chip_${top["name"]}_${target["name"]} #(
     .KmacEnMasking(1),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(1),
+    .RvCoreIbexSecureIbex(1),
 % elif target["name"] == "cw310":
     .KmacEnMasking(0),
     .KmacSwKeyMasked(1),
     .KeymgrKmacEnMasking(0),
     .SecKmacCmdDelay(0),
     .SecKmacIdleAcceptSwMsg(1'b0),
+    .RvCoreIbexSecureIbex(0),
 % endif
     .RomCtrlBootRomInitFile(BootRomInitFile),
     .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
-    .RvCoreIbexSecureIbex(0),
     .SramCtrlMainInstrExec(1),
     .PinmuxAonTargetCfg(PinmuxTargetCfg)
   ) top_${top["name"]} (

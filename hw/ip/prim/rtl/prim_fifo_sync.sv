@@ -46,7 +46,7 @@ module prim_fifo_sync #(
 
     // host facing
     assign wready_o = rready_i;
-    assign full_o = rready_i;
+    assign full_o = 1'b1;
 
     // this avoids lint warnings
     logic unused_clr;

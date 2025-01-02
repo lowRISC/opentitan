@@ -29,7 +29,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_nopass7 prim_fifo_sync_assert_fpv #(
@@ -47,7 +49,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_nopass8 prim_fifo_sync_assert_fpv #(
@@ -65,7 +69,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_nopass15 prim_fifo_sync_assert_fpv #(
@@ -83,7 +89,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_nopass16 prim_fifo_sync_assert_fpv #(
@@ -101,7 +109,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   ////////////////
@@ -123,7 +133,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_pass1 prim_fifo_sync_assert_fpv #(
@@ -141,7 +153,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_pass7 prim_fifo_sync_assert_fpv #(
@@ -159,7 +173,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_pass8 prim_fifo_sync_assert_fpv #(
@@ -177,7 +193,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_pass15 prim_fifo_sync_assert_fpv #(
@@ -195,7 +213,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
   bind i_pass16 prim_fifo_sync_assert_fpv #(
@@ -213,7 +233,9 @@ module prim_fifo_sync_bind_fpv;
     .rvalid_o,
     .rready_i,
     .rdata_o,
-    .depth_o
+    .full_o,
+    .depth_o,
+    .err_o
   );
 
 endmodule : prim_fifo_sync_bind_fpv

@@ -409,13 +409,15 @@ module prim_generic_flash_bank #(
     .DataBitsPerMask(DataWidth)
   ) u_mem (
     .clk_i,
+    .rst_ni,
     .req_i    (data_mem_req),
     .write_i  (mem_wr),
     .addr_i   (mem_addr),
     .wdata_i  (mem_wdata),
     .wmask_i  ({DataWidth{1'b1}}),
     .rdata_o  (rd_data_main),
-    .cfg_i    ('0)
+    .cfg_i    ('0),
+    .cfg_rsp_o()
   );
 
   for (genvar info_type = 0; info_type < InfoTypes; info_type++) begin : gen_info_types
@@ -433,13 +435,15 @@ module prim_generic_flash_bank #(
       .DataBitsPerMask(DataWidth)
     ) u_info_mem (
       .clk_i,
+      .rst_ni,
       .req_i    (info_mem_req),
       .write_i  (mem_wr),
       .addr_i   (mem_addr[0 +: InfoAddrW]),
       .wdata_i  (mem_wdata),
       .wmask_i  ({DataWidth{1'b1}}),
       .rdata_o  (rd_nom_data_info[info_type]),
-      .cfg_i    ('0)
+      .cfg_i    ('0),
+      .cfg_rsp_o()
     );
   end
 

@@ -72,8 +72,8 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_adc_ctrl_irq_get_type(const dif_adc_ctrl_t *adc_ctrl,
                                        dif_adc_ctrl_irq_t irq,
                                        dif_irq_type_t *type) {
-  if (adc_ctrl == NULL || type == NULL ||
-      irq == kDifAdcCtrlIrqMatchPending + 1) {
+  if (adc_ctrl == NULL || type == NULL || irq < 0 ||
+      irq > kDifAdcCtrlIrqMatchPending) {
     return kDifBadArg;
   }
 

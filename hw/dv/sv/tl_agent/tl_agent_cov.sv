@@ -34,7 +34,7 @@ covergroup tl_a_chan_cov_cg(string name, int valid_source_width, string path) wi
     bins values[] = {Get, PutFullData, PutPartialData};
   }
   cp_mask: coverpoint item.a_mask {
-    bins all_enables  = {'1};
+    bins all_enables  = {{MaskWidth{1'b1}}};
     bins others       = default;
   }
   cp_size: coverpoint item.a_size {

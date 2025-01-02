@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result};
+use anyhow::{bail, Context, Result};
 use std::cell::RefCell;
 use std::rc::Rc;
 
@@ -12,6 +12,7 @@ use crate::io::spi::{
 };
 use crate::transport::ultradebug::mpsse;
 use crate::transport::ultradebug::Ultradebug;
+use crate::transport::TransportError;
 
 struct Inner {
     mode: TransferMode,
@@ -101,6 +102,10 @@ impl Target for UltradebugSpi {
         Ok(true)
     }
 
+    fn supports_tpm_poll(&self) -> Result<bool> {
+        Ok(false)
+    }
+
     fn get_max_transfer_count(&self) -> Result<usize> {
         // Arbitrary value: number of `Transfers` that can be in a single transaction.
         Ok(42)
@@ -164,6 +169,7 @@ impl Target for UltradebugSpi {
                     },
                     rbuf,
                 ),
+                _ => bail!(TransportError::UnsupportedOperation),
             });
         }
         if cs_not_already_asserted {

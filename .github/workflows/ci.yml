@@ -22,6 +22,8 @@ concurrency:
 
 env:
   VIVADO_VERSION: "2021.1"
+  # Release tag from https://github.com/lowRISC/lowrisc-toolchains/releases
+  TOOLCHAIN_VERSION: 20220210-1
 
 jobs:
   quick_lint:
@@ -104,8 +106,6 @@ jobs:
       - name: DV software images
         run: ./ci/scripts/check_dv_sw_images.sh
         continue-on-error: true
-      - name: Build documentation
-        run: ./ci/scripts/build-docs.sh
       - name: Generated files
         run: ./ci/scripts/check-generated.sh
         env:
@@ -120,6 +120,48 @@ jobs:
         run: ./ci/scripts/verible-lint.sh dv
       - name: Verible FPV
         run: ./ci/scripts/verible-lint.sh fpv
+
+  build_docs:
+    name: Build documentation
+    runs-on: ubuntu-22.04
+    needs: quick_lint
+    env:
+      BUCKET: gold-hybrid-255313-prod
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Build documentation
+        run: util/site/build-docs.sh build
+      - name: Upload files
+        if: ${{ github.event_name != 'pull_request' && github.ref_name == 'master' }}
+        run: |
+          echo "::group::Upload all uncompressed files"
+          gcloud storage cp -R --gzip-in-flight=js,css,html "build-site/*" gs://$BUCKET
+          echo "::endgroup::"
+
+          # This script compresses the searchindex files, replacing the originals in-place.
+          # (This is how 'content-encoding'-tagged files should be uploaded to gcloud buckets)
+          util/site/post-build.sh compress_br
+
+          search_indexes=$(find build-site/ -type f -name '*searchindex.json')
+          for f in $search_indexes; do
+              echo "Uploading compressed file ${f}"
+              # Get directory of file, relative to the build directory.
+              # - var=${var#*//} # removes stuff from the begining up to //
+              dir=$(dirname "${f#*build-site/}")
+              # When serving from gcloud buckets, file should be uploaded with an identical name as the
+              # original, but compressed and with the matching 'content-encoding' and 'content-type' tags applied.
+              gcloud storage cp \
+                     --content-encoding=br \
+                     --content-type=application/json \
+                     -R \
+                     "$f" "gs://$BUCKET/${dir}/"
+          done
 
   airgapped_build:
     name: Airgapped build
@@ -179,6 +221,55 @@ jobs:
           config_file: ${{ env.verible_config }}
           extra_args: "--waiver_files=verible_waiver"
 
+  otbn_standalone_tests:
+    name: Run OTBN smoke Test
+    needs: quick_lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Install toolchain
+        run: |
+          TOOLCHAIN_PATH=/tools/riscv
+          sudo util/get-toolchain.py \
+            --install-dir="$TOOLCHAIN_PATH" \
+            --release-version="$TOOLCHAIN_VERSION" \
+            --update
+          echo "$TOOLCHAIN_PATH/bin" >> $GITHUB_PATH
+      - name: Display environment
+        run: |
+          python3 --version
+          fusesoc --version
+          verilator --version
+      - name: OTBN ISS test
+        run: make -C hw/ip/otbn/dv/otbnsim test
+      - name: OBTN smoke test
+        run: ./hw/ip/otbn/dv/smoke/run_smoke.sh
+      - name: Assemble & link code snippets
+        run: make -C hw/ip/otbn/util asm-check
+
+  otbn_crypto_tests:
+    name: Run OTBN crypto tests
+    needs: quick_lint
+    runs-on: ubuntu-22.04
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Bitstream cache requires all commits.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute tests
+        run: ./bazelisk.sh test --test_tag_filters=-nightly //sw/otbn/crypto/...
+
   verilator_englishbreakfast:
     name: Verilated English Breakfast
     runs-on: ubuntu-22.04
@@ -222,7 +313,7 @@ jobs:
   # Build CW305 variant of the English Breakfast toplevel design using Vivado
   chip_englishbreakfast_cw305:
     name: CW305's Bitstream
-    runs-on: ubuntu-22.04-bitstream
+    runs-on: ubuntu-22.04-vivado
     needs: quick_lint
     steps:
       - uses: actions/checkout@v4
@@ -307,7 +398,6 @@ jobs:
             --stamp-file $PWD/bazel-out/volatile-status.txt \
             --out $PWD/build-bin/bitstream-cache \
             $PWD/build-bin/**/manifest.json
-      - uses: google-github-actions/setup-gcloud@v2
       - name: Upload bitstreams to GCP bucket
         run: |
           BUCKET_URI=gs://opentitan-bitstreams/${{ github.ref_name }}
@@ -344,15 +434,15 @@ jobs:
 
   execute_rom_ext_fpga_tests_cw310:
     name: CW310 ROM_EXT Tests
-    needs: chip_earlgrey_cw310
+    needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
     with:
       job_name: execute_rom_ext_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310
+      bitstream: chip_earlgrey_cw310_hyperdebug
       board: cw310
-      interface: cw310
-      tag_filters: cw310_rom_ext
+      interface: hyper310
+      tag_filters: hyper310_rom_ext
 
   execute_sival_fpga_tests_cw310:
     name: CW310 SiVal Tests

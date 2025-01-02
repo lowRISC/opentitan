@@ -140,9 +140,11 @@
             Without partial write, if driver doesn't introduce any delay, it takes N+1 cycles to
             finish N SRAM read/write accesses.
             With partial write, it needs 2 extra cycles per partial write.
+            With readback enabled, each read needs 2 cycles and each write 3 cycles.
             '''
       stage: V2
-      tests: ["{name}_max_throughput", "{name}_throughput_w_partial_write"]
+      tests: ["{name}_max_throughput", "{name}_throughput_w_partial_write",
+              "{name}_throughput_w_readback"]
     }
     {
       name: regwen

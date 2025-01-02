@@ -579,7 +579,7 @@ opentitan_test(
         ":ecdsa_p256_verify_testvectors_hardcoded_header",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/impl:hash",
-        "//sw/device/lib/crypto/impl/ecc:ecdsa_p256",
+        "//sw/device/lib/crypto/impl/ecc:p256",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -805,12 +805,11 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "rsa_3072_verify_functest_wycheproof",
     srcs = ["rsa_3072_verify_functest.c"],
-    # The test vectors don't fit in the flash allocated for ROM_EXT stage, so
-    # we have to restrict the environments to run with the test_rom.
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_test_rom": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
     ),
@@ -1043,6 +1042,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     deps = [
@@ -1061,6 +1061,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
         },
     ),
     deps = [

@@ -14,6 +14,7 @@ use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::drbg_commands::{CryptotestDrbgInput, CryptotestDrbgOutput};
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
@@ -52,7 +53,7 @@ struct DrbgTestCase {
 fn run_drbg_testcase(
     test_case: &DrbgTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
     fail_counter: &mut u32,
 ) -> Result<()> {
     log::info!(
@@ -60,9 +61,8 @@ fn run_drbg_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
 
-    CryptotestCommand::Drbg.send(&*uart)?;
+    CryptotestCommand::Drbg.send(spi_console)?;
 
     // Convert all inputs to little-endian
     let mut entropy_le = Vec::from(test_case.entropy.as_slice());
@@ -95,10 +95,10 @@ fn run_drbg_testcase(
         additional_input_2_len: addl_2_le.len(),
         output_len: test_case.output.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     // Get output
-    let drbg_output = CryptotestDrbgOutput::recv(&*uart, opts.timeout, false)?;
+    let drbg_output = CryptotestDrbgOutput::recv(spi_console, opts.timeout, false)?;
     // The expected output is in a mixed-endian format (32-bit words
     // are in little-endian order, but the bytes within the words are
     // in big-endian order). Convert the actual output to match this
@@ -127,9 +127,9 @@ fn run_drbg_testcase(
 }
 
 fn test_drbg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut fail_counter = 0u32;
@@ -141,7 +141,7 @@ fn test_drbg(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for drbg_test in &drbg_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_drbg_testcase(drbg_test, opts, transport, &mut fail_counter)?;
+            run_drbg_testcase(drbg_test, opts, &spi_console_device, &mut fail_counter)?;
         }
     }
     assert_eq!(

@@ -9,6 +9,7 @@ use std::rc::Rc;
 use std::time::Duration;
 use thiserror::Error;
 
+use super::gpio;
 use crate::app::TransportWrapper;
 use crate::impl_serializable_error;
 use crate::transport::TransportError;
@@ -63,6 +64,8 @@ pub enum I2cError {
     MissingAddress,
     #[error("I2C port not in device mode")]
     NotInDeviceMode,
+    #[error("Given pin does not support requested I2C function")]
+    InvalidPin,
     #[error("Generic error {0}")]
     Generic(String),
 }
@@ -72,6 +75,8 @@ impl_serializable_error!(I2cError);
 pub enum Transfer<'rd, 'wr> {
     Read(&'rd mut [u8]),
     Write(&'wr [u8]),
+    // Wait for pulse on non-standard Google signal
+    GscReady,
 }
 
 /// Status of I2C read operations (data from device to host).
@@ -142,6 +147,19 @@ pub trait Bus {
     /// Sets the maximum allowed speed of the I2C bus, typical values are 100_000, 400_000 or
     /// 1_000_000.
     fn set_max_speed(&self, max_speed: u32) -> Result<()>;
+
+    /// Sets which pins should be used for I2C communication.  `None` value means use the same pin
+    /// as previously, or the implementation default if never before specified.  This call is not
+    /// supported by most backend transports, and ones that do support it may still have
+    /// restrictions on which set of pins can be used in which roles.
+    fn set_pins(
+        &self,
+        _serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
+        _serial_data: Option<&Rc<dyn gpio::GpioPin>>,
+        _gsc_ready: Option<&Rc<dyn gpio::GpioPin>>,
+    ) -> Result<()> {
+        Err(I2cError::InvalidPin.into())
+    }
 
     /// Sets the "default" device address, used in cases when not overriden by parameter to
     /// `run_transaction()`.

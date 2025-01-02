@@ -7,7 +7,7 @@ set -e
 
 # Increase the test_timeout due to slow performance on CI
 
-ci/bazelisk.sh test \
+./bazelisk.sh test \
     --build_tests_only=true \
     --test_timeout=2400,2400,3600,-1 \
     --local_test_jobs=8 \

@@ -115,6 +115,11 @@
     ],
   },
 
+  // List of unmanaged external resets
+  unmanaged_resets: [
+    // { name: "my_ext" }
+  ]
+
   // This is the reset data structure of the design.
   // The hier path refers to the reset reference path (struct / port)
   //   - The top/ext desgination follows the same scheme as inter-module

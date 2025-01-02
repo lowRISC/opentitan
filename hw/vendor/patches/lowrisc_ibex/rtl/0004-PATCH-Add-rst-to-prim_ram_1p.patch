@@ -1,0 +1,33 @@
+From 805f8c59091632a1416c6cd2e2308c1e6a81752d Mon Sep 17 00:00:00 2001
+From: Robert Schilling <rschilling@rivosinc.com>
+Date: Mon, 23 Dec 2024 11:18:32 +0100
+Subject: [PATCH 1/1] [PATCH] Add rst to prim_ram_1p
+
+Signed-off-by: Robert Schilling <rschilling@rivosinc.com>
+---
+ ibex_top.sv | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/ibex_top.sv b/ibex_top.sv
+index a90fee0e..4974270c 100644
+--- a/ibex_top.sv
++++ b/ibex_top.sv
+@@ -686,6 +686,7 @@ module ibex_top import ibex_pkg::*; #(
+           .DataBitsPerMask  (TagSizeECC)
+         ) tag_bank (
+           .clk_i,
++          .rst_ni,
+ 
+           .req_i       (ic_tag_req[way]),
+ 
+@@ -705,6 +706,7 @@ module ibex_top import ibex_pkg::*; #(
+           .DataBitsPerMask    (LineSizeECC)
+         ) data_bank (
+           .clk_i,
++          .rst_ni,
+ 
+           .req_i       (ic_data_req[way]),
+ 
+-- 
+2.47.0
+

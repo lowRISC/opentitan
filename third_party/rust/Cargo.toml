@@ -81,6 +81,7 @@ thiserror = "1.0"
 tiny-keccak = {version = "2.0.2", features = ["cshake"]}
 typetag = "0.2"
 zerocopy = { version = "0.7.1", features = ["derive"] }
+zeroize = "1.8.1"
 
 # hsmtool dependencies
 cryptoki = "0.5.0"

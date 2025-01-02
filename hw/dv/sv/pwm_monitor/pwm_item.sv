@@ -5,12 +5,16 @@
 class pwm_item extends uvm_sequence_item;
 
   int monitor_id    = 0; // for debugging purpose only
-  int period        = 0; // clks in a beat
-  int duty_cycle    = 0; // high vs low cnt
-  int active_cnt    = 0; // number of clocks pwm was high
-  int inactive_cnt  = 0; // number of clocks pwm was low
-  int phase         = 0; // what clock cnt did the pulse start
-  bit invert        = 0; // (1)active low (0) active high
+  int period        = 0; // clks in a pulse cycle
+  int duty_cycle    = 0; // 0.16 fixed-point fraction for which output was asserted
+  int active_cnt    = 0; // number of clocks pwm was asserted
+  int inactive_cnt  = 0; // number of clocks pwm was deasserted
+  int phase         = 0; // phase at which output was asserted (0-ffff)
+  bit invert        = 0; // (1) active low (0) active high
+
+  // May be assigned to `phase` to indicate that the pwm phase cannot be ascertained because
+  // the signal has never been asserted.
+  static int PhaseUnknown = -1;
 
   `uvm_object_utils_begin(pwm_item)
     `uvm_field_int(period, UVM_DEFAULT)
@@ -29,7 +33,7 @@ class pwm_item extends uvm_sequence_item;
       txt = "\n------| PWM ITEM |------";
       txt = { txt, $sformatf("\n Item from monitor %d", monitor_id) };
       txt = { txt, $sformatf("\n Period %d clocks", period) };
-      txt = { txt, $sformatf("\n Duty cycle %0d pct ", duty_cycle) };
+      txt = { txt, $sformatf("\n Duty cycle %04x", duty_cycle) };
       txt = { txt, $sformatf("\n inverted %0b", invert) };
       txt = { txt, $sformatf("\n # of active cycles %d", active_cnt) };
       txt = { txt, $sformatf("\n # of inactive cycles %d", inactive_cnt) };
@@ -38,9 +42,9 @@ class pwm_item extends uvm_sequence_item;
     endfunction : convert2string
 
   function int get_duty_cycle();
-    real dc = 0;
-    dc = (invert) ? (real'(inactive_cnt) / real'(period) * 100)
-                  : (real'(active_cnt) / real'(period) * 100);
-    return dc;
+    // 16-bit fraction for which the duty cycle is asserted; 0xffff nearly always asserted;
+    // the DUT cannot produce a continuously asserted output except by using inversion and
+    // a duty cycle of 0.
+    return (active_cnt << 16) / period;
   endfunction : get_duty_cycle
 endclass

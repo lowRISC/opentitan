@@ -4,7 +4,6 @@
 
 load("@//rules:repo.bzl", "bare_repository", "http_archive_or_local")
 load("@//rules:rust.bzl", "crate_build")
-load("@python3//:defs.bzl", "interpreter")
 
 # Exports the kernel_layout.ld file so it can be used in opentitan rules.
 _KERNEL_LAYOUT = """

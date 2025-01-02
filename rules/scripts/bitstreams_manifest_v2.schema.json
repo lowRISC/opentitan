@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/rules/scripts/bitstreams_manifest_v2.schema.json",
+  "title": "Bitstreams Cache Manifest v2",
+  "description":
+      "A manifest of bitstreams in a cache entry, informing what is there and how to reproduce",
+  "type": "object",
+  "properties": {
+    "schema_version": {
+      "description": "Version number of this manifest's schema",
+      "type": "number",
+      "minimum": 2,
+      "maximum": 2
+    },
+    "designs": {
+      "description": "Map of designs to their files and metadata objects",
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/design" }
+    }
+  },
+  "required": [
+    "schema_version",
+    "designs"
+  ],
+  "$defs": {
+    "bitstream_info": {
+      "description": "Bitstream build output",
+      "type": "object",
+      "properties": {
+        "file": {
+          "description": "Path to bitstream file relative to root",
+          "type": "string"
+        },
+        "build_target": {
+          "description": "Build target that generated the output",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file"
+      ]
+    },
+    "memory_map_info": {
+      "description": "Build output that maps memories to cells in a hardware implementation",
+      "type": "object",
+      "properties": {
+        "file": {
+          "description": "Path to file with memory contents, relative to root",
+          "type": "string"
+        },
+        "build_target": {
+          "description": "Build target that generated the output",
+          "type": "string"
+        }
+      },
+      "required": [
+        "file"
+      ]
+    },
+    "design": {
+      "description": "Files and metadata related to a design",
+      "type": "object",
+      "properties": {
+        "build_id": {
+          "description": "Build ID associated with this design's output (typically a git hash)",
+          "type": "string"
+        },
+        "bitstream": { "$ref": "#/$defs/bitstream_info" },
+        "memory_map_info": {
+          "description": "Map of name or key identifying the associated memory to file describing contents",
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/memory_map_info" }
+        }
+      },
+      "required": [
+        "bitstream"
+      ]
+    }
+  }
+}

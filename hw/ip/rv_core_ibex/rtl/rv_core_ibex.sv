@@ -30,19 +30,24 @@ module rv_core_ibex
   parameter bit                     ICache           = 1'b1,
   parameter bit                     ICacheECC        = 1'b1,
   parameter bit                     ICacheScramble   = 1'b1,
+  parameter int unsigned            ICacheNWays      = 2,
   parameter bit                     BranchPredictor  = 1'b0,
   parameter bit                     DbgTriggerEn     = 1'b1,
   parameter int unsigned            DbgHwBreakNum    = 4,
   parameter bit                     SecureIbex       = 1'b1,
   parameter ibex_pkg::lfsr_seed_t   RndCnstLfsrSeed  = ibex_pkg::RndCnstLfsrSeedDefault,
   parameter ibex_pkg::lfsr_perm_t   RndCnstLfsrPerm  = ibex_pkg::RndCnstLfsrPermDefault,
+  parameter int unsigned            DmBaseAddr       = 32'h1A110000,
+  parameter int unsigned            DmAddrMask       = 32'h00000FFF,
   parameter int unsigned            DmHaltAddr       = 32'h1A110800,
   parameter int unsigned            DmExceptionAddr  = 32'h1A110808,
   parameter bit                     PipeLine         = 1'b0,
   parameter logic [ibex_pkg::SCRAMBLE_KEY_W-1:0] RndCnstIbexKeyDefault =
       ibex_pkg::RndCnstIbexKeyDefault,
   parameter logic [ibex_pkg::SCRAMBLE_NONCE_W-1:0] RndCnstIbexNonceDefault =
-      ibex_pkg::RndCnstIbexNonceDefault
+      ibex_pkg::RndCnstIbexNonceDefault,
+  parameter int unsigned            NEscalationSeverities = 4,
+  parameter int unsigned            WidthPingCounter = 16
 ) (
   // Clock and Reset
   input  logic        clk_i,
@@ -56,7 +61,10 @@ module rv_core_ibex
   // Reset feedback to rstmgr
   output logic        rst_cpu_n_o,
 
-  input  prim_ram_1p_pkg::ram_1p_cfg_t ram_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_tag_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_tag_o,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t                       ram_cfg_icache_data_i,
+  output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0] ram_cfg_rsp_icache_data_o,
 
   input  logic [31:0] hart_id_i,
   input  logic [31:0] boot_addr_i,
@@ -90,7 +98,7 @@ module rv_core_ibex
   // CPU Control Signals
   input lc_ctrl_pkg::lc_tx_t lc_cpu_en_i,
   input lc_ctrl_pkg::lc_tx_t pwrmgr_cpu_en_i,
-  output pwrmgr_pkg::pwr_cpu_t pwrmgr_o,
+  output cpu_pwrmgr_t pwrmgr_o,
 
   // dft bypass
   input scan_rst_ni,
@@ -231,8 +239,8 @@ module rv_core_ibex
   // protocol into single ended signal.
   logic esc_irq_nm;
   prim_esc_receiver #(
-    .N_ESC_SEV   (alert_handler_reg_pkg::N_ESC_SEV),
-    .PING_CNT_DW (alert_handler_reg_pkg::PING_CNT_DW)
+    .N_ESC_SEV   (NEscalationSeverities),
+    .PING_CNT_DW (WidthPingCounter)
   ) u_prim_esc_receiver (
     .clk_i     ( clk_esc_i  ),
     .rst_ni    ( rst_esc_ni ),
@@ -407,6 +415,8 @@ module rv_core_ibex
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
     .RndCnstIbexKey              ( RndCnstIbexKeyDefault    ),
     .RndCnstIbexNonce            ( RndCnstIbexNonceDefault  ),
+    .DmBaseAddr                  ( DmBaseAddr               ),
+    .DmAddrMask                  ( DmAddrMask               ),
     .DmHaltAddr                  ( DmHaltAddr               ),
     .DmExceptionAddr             ( DmExceptionAddr          )
   ) u_core (
@@ -417,7 +427,10 @@ module rv_core_ibex
     .test_en_i          (prim_mubi_pkg::mubi4_test_true_strict(scanmode_i)),
     .scan_rst_ni,
 
-    .ram_cfg_i,
+    .ram_cfg_icache_tag_i,
+    .ram_cfg_rsp_icache_tag_o,
+    .ram_cfg_icache_data_i,
+    .ram_cfg_rsp_icache_data_o,
 
     .hart_id_i,
     .boot_addr_i,
@@ -900,6 +913,8 @@ module rv_core_ibex
     .tl_h_i(tl_h2d_t'(tl_win_h2d_int)),
     .tl_h_o(tl_win_d2h_err_rsp)
   );
+
+  `ASSERT_INIT(ICacheNWaysCorrect_A, ICacheNWays == ibex_pkg::IC_NUM_WAYS)
 
   // Assertions for CPU enable
   // Allow 2 or 3 cycles for input to enable due to synchronizers

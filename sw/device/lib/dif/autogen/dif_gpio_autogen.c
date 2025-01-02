@@ -169,7 +169,7 @@ static dif_irq_type_t irq_types[] = {
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_gpio_irq_get_type(const dif_gpio_t *gpio, dif_gpio_irq_t irq,
                                    dif_irq_type_t *type) {
-  if (gpio == NULL || type == NULL || irq == kDifGpioIrqGpio31 + 1) {
+  if (gpio == NULL || type == NULL || irq < 0 || irq > kDifGpioIrqGpio31) {
     return kDifBadArg;
   }
 

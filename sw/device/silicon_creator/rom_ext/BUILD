@@ -12,6 +12,10 @@ load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
     "ROM_EXT_VERSION",
 )
+load(
+    "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "IMM_ROM_EXT_TARGETS",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -30,6 +34,18 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
         "//sw/device/silicon_creator/lib/ownership:owner_block",
+    ],
+)
+
+cc_library(
+    name = "rom_ext_manifest",
+    srcs = ["rom_ext_manifest.c"],
+    hdrs = ["rom_ext_manifest.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib:manifest",
     ],
 )
 
@@ -207,6 +223,7 @@ cc_library(
         ":rescue",
         ":rom_ext_boot_policy",
         ":rom_ext_boot_policy_ptrs",
+        ":rom_ext_manifest",
         ":sigverify_keys",
         "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
@@ -220,9 +237,11 @@ cc_library(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:epmp_state",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib:manifest_def",
         "//sw/device/silicon_creator/lib:shutdown",
+        "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
@@ -326,6 +345,33 @@ opentitan_binary(
         "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
+
+[
+    opentitan_binary(
+        name = "rom_ext_with_{}_imm_slot_virtual".format(name),
+        testonly = True,
+        ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:prod_key_0_ecdsa_p256": "prod_key_0"},
+        exec_env = [
+            "//hw/top_earlgrey:fpga_cw310",
+            "//hw/top_earlgrey:fpga_cw340",
+            "//hw/top_earlgrey:sim_dv_base",
+            "//hw/top_earlgrey:sim_verilator_base",
+            "//hw/top_earlgrey:silicon_creator",
+        ],
+        linker_script = ":ld_slot_virtual",
+        manifest = ":manifest",
+        deps = [
+            ":rom_ext",
+            "//sw/device/lib/crt",
+            "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib/ownership:test_owner",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake",
+        ] + [
+            imm_rom_ext_target,
+        ],
+    )
+    for name, imm_rom_ext_target in IMM_ROM_EXT_TARGETS.items()
+]
 
 manifest(d = {
     "name": "manifest_bad_address_translation",

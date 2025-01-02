@@ -1,6 +1,11 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------//
+// PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
+// util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+// -o hw/top_darjeeling
 
 #ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
 #define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
@@ -950,6 +955,23 @@
  * `TOP_DARJEELING_MBX_PCIE1_CORE_BASE_ADDR + TOP_DARJEELING_MBX_PCIE1_CORE_SIZE_BYTES`.
  */
 #define TOP_DARJEELING_MBX_PCIE1_CORE_SIZE_BYTES 0x80
+/**
+ * Peripheral base address for core device on soc_dbg_ctrl in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR 0x30160000
+
+/**
+ * Peripheral size for core device on soc_dbg_ctrl in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR and
+ * `TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_SOC_DBG_CTRL_CORE_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_SOC_DBG_CTRL_CORE_SIZE_BYTES 0x20
 /**
  * Peripheral base address for cfg device on rv_core_ibex in top darjeeling.
  *

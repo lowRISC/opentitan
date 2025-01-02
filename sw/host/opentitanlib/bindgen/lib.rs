@@ -10,3 +10,8 @@ pub use multibits;
 pub use sram_program;
 pub use status;
 pub use test_status;
+
+#[allow(non_snake_case)]
+#[allow(non_upper_case_globals)]
+#[allow(non_camel_case_types)]
+pub mod rom_error;

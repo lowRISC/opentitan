@@ -158,7 +158,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // If there is a trst_n reset in the meantime, wait until the signal goes high again. After its
   // does, we'll be in the test-logic-reset state by a different route, so the task can terminate.
   task drive_jtag_test_logic_reset();
-    `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_MEDIUM)
+    `uvm_info(`gfn, "Driving JTAG to Test-Logic-Reset state", UVM_HIGH)
 
     // This task should only be called in situations where tck is already enabled.
     `DV_CHECK_FATAL(tck_in_use)
@@ -196,11 +196,11 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     if (exit_to_rti_dr_past & ~cfg.min_rti) begin
       @(`HOST_CB); // wait one cycle to ensure clock is stable. TODO: remove.
     end else begin
-      `uvm_info(`gfn, "Skip wait cycles because of past exit to RTI in drive_dr", UVM_MEDIUM)
+      `uvm_info(`gfn, "Skip wait cycles because of past exit to RTI in drive_dr", UVM_HIGH)
     end
     if (req.ir_len) begin
       if (req.skip_reselected_ir && req.ir == selected_ir && req.ir_len == selected_ir_len) begin
-        `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_MEDIUM)
+        `uvm_info(`gfn, $sformatf("UpdateIR for 0x%0h skipped", selected_ir), UVM_HIGH)
       end else begin
         if (req.dummy_ir) begin
           drive_dummy_ir();
@@ -229,7 +229,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
                      uint pause_count = 0,
                      uint pause_cycle = 0);
     logic [JTAG_DRW-1:0] dout;
-    `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("ir: 0x%0h, len: %0d", ir, len), UVM_HIGH)
     // Assume starting in RTI state
     // SelectDR
     tms_tdi_step(1, 0);
@@ -248,7 +248,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
            $sformatf("jtag_pause in drive_jtag_ir with pause_count : %0d, pause_cycle:%0d",
                     pause_count,
                     pause_cycle),
-           UVM_MEDIUM)
+           UVM_HIGH)
         jtag_pause(pause_count, dout);
       end
 
@@ -259,7 +259,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     // - PauseIR -> exit2IR -> UpdateIR -> RTI or
     // - Exit1IR -> UpdateIR -> RTI
     if (req.exit_via_pause_ir) begin
-      `uvm_info(`gfn, "Exiting via PauseIR", UVM_MEDIUM)
+      `uvm_info(`gfn, "Exiting via PauseIR", UVM_HIGH)
       // Go to PauseIR
       tms_tdi_step(0, 0);
       // Go to Exit2IR
@@ -285,7 +285,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
     bit pause_just_injected = 1'b0;
 
     exit_to_rti_dr_past = exit_to_rti;
-    `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("dr: 0x%0h, len: %0d", dr, len), UVM_HIGH)
     // assume starting in RTI
     // go to SelectDR
     tms_tdi_step(1, 0);
@@ -310,7 +310,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
            $sformatf("jtag_pause in drive_jtag_dr with pause_count : %0d, pause_cycle:%0d",
                     pause_count,
                     pause_cycle),
-           UVM_MEDIUM)
+           UVM_HIGH)
         jtag_pause(pause_count, dout);
         pause_just_injected = 1'b1;
       end
@@ -340,7 +340,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
       // go to RTI
       tms_tdi_step(0, 0);
     end else begin
-      `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_MEDIUM)
+      `uvm_info(`gfn, "drive_dr: skip going to RTI", UVM_HIGH)
     end
     dout >>= (JTAG_DRW - len);
   endtask
@@ -361,7 +361,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // Task to drive tms such that TAP FSM transitions through
   // IR sequence without going through ShiftIR state
   task drive_dummy_ir();
-    `uvm_info(`gfn, "Introducing dummy IR", UVM_MEDIUM)
+    `uvm_info(`gfn, "Introducing dummy IR", UVM_HIGH)
     // assume starting in RTI
     // go to SelectDR
     tms_tdi_step(1, 0);
@@ -374,7 +374,7 @@ class jtag_driver extends dv_base_driver #(jtag_item, jtag_agent_cfg);
   // Task to drive tms such that TAP FSM transitions through
   // DR sequence without going through ShiftDR state
   task drive_dummy_dr();
-    `uvm_info(`gfn, "Introducing dummy DR", UVM_MEDIUM)
+    `uvm_info(`gfn, "Introducing dummy DR", UVM_HIGH)
     // assume starting in RTI
     // go to SelectDR
     tms_tdi_step(1, 0);

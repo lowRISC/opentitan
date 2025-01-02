@@ -4,10 +4,12 @@
 
 use crate::{DecodeKey, EncodeKey, SphincsPlus, SpxError};
 use pem_rfc7468::LineEnding;
+use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
 use std::fmt;
 use std::str::FromStr;
 use strum::{Display, EnumString};
+use zeroize::Zeroize;
 
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SpxPublicKey {
@@ -30,7 +32,7 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
-#[derive(Default, Debug, Clone, Copy, EnumString, Display)]
+#[derive(Default, Debug, Clone, Copy, EnumString, Display, Serialize, Deserialize)]
 #[strum(ascii_case_insensitive)]
 pub enum SpxDomain {
     None,
@@ -101,6 +103,13 @@ impl SpxSecretKey {
     pub fn sign(&self, domain: SpxDomain, msg: &[u8]) -> Result<Vec<u8>, SpxError> {
         let msg = domain.prepare(msg);
         self.algorithm.sign(&self.key, &msg)
+    }
+}
+
+impl Drop for SpxSecretKey {
+    fn drop(&mut self) {
+        // Destroy the secret key value upon drop.
+        self.key.zeroize();
     }
 }
 

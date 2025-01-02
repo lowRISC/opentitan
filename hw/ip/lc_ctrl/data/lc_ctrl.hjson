@@ -215,7 +215,8 @@
       desc: "Number of Flash RMA wiping response signals",
       type: "int",
       default: "2",
-      local: "true"
+      local: "true",
+      expose: "true"
     },
   ]
 
@@ -296,6 +297,13 @@
       package: "kmac_pkg"
     }
     // Life cycle broadcast signals
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_raw_test_rma"
+      act:     "req"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg"
+    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_dft_en"

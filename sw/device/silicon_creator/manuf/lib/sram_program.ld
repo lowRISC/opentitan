@@ -28,6 +28,10 @@ _dv_log_offset = 0x10000;
 
 ENTRY(sram_start);
 
+PHDRS {
+  sram_segment PT_LOAD;
+}
+
 /* NOTE This linker script assumes non-page-aligned segments because we skip
  * the first _static_critical_size bytes of the SRAM and we do not want the
  * ELF segments to contain the headers as this would overwrite the contents of
@@ -45,13 +49,13 @@ SECTIONS {
      * the RAM to the entry point for VMEM files. */
     KEEP(*(.sram_start))
     . = ALIGN(256);
-  } > ram_main
+  } > ram_main : sram_segment
 
   .vectors : ALIGN (256){
     _text_start = .;
     KEEP(*(.vectors))
     . = ALIGN(4);
-  } > ram_main
+  } > ram_main : sram_segment
 
   .text : ALIGN(4) {
     KEEP(*(.crt))
@@ -59,14 +63,14 @@ SECTIONS {
     KEEP(*(.text.*))
     . = ALIGN(4);
     _text_end = .;
-  } > ram_main
+  } > ram_main : sram_segment
 
   .rodata : ALIGN(4) {
     KEEP(*(.rodata))
     KEEP(*(.rodata.*))
     . = ALIGN(4);
     __rodata_end = .;
-  } > ram_main
+  } > ram_main : sram_segment
 
   .data : ALIGN(4) {
     /* This will get loaded into `gp`, and the linker will use that register for
@@ -89,7 +93,7 @@ SECTIONS {
     KEEP(*(.sdata.*))
     . = ALIGN(4);
     _crc_end = .;
-  } > ram_main
+  } > ram_main : sram_segment
 
   /**
    * Standard BSS section. This will be zeroed at runtime by the CRT.
@@ -109,7 +113,7 @@ SECTIONS {
     /* Ensure section end is word-aligned. */
     . = ALIGN(4);
     _bss_end = .;
-  } > ram_main
+  } > ram_main : sram_segment
 
   INCLUDE sw/device/info_sections.ld
 }

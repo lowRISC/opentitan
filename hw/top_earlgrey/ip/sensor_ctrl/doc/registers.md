@@ -155,6 +155,7 @@ Alert trigger test
 Each multibit value enables a corresponding alert.
 - Reset default: `0x6`
 - Reset mask: `0xf`
+- Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Instances
 
@@ -424,6 +425,7 @@ The mapping of registers to pads is as follows (only supported for targets that 
 - MANUAL_PAD_ATTR_3: FLASH_TEST_MODE1
 - Reset default: `0x0`
 - Reset mask: `0x8c`
+- Register enable: [`MANUAL_PAD_ATTR_REGWEN`](#manual_pad_attr_regwen)
 
 ### Instances
 

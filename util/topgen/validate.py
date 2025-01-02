@@ -63,13 +63,17 @@ top_optional = {
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
+    'incoming_alert': ['g', 'Parsed incoming alerts (generated)'],
     'inter_module': ['g', 'define the signal connections between the modules'],
     'interrupt': ['lnw', 'interrupts (generated)'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
-    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"]
+    'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
+    'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
+    'unmanaged_resets': ['l', 'List of unmanaged external resets']
 }
 
 top_added = {}
@@ -207,7 +211,11 @@ module_optional = {
                         ' (if the IP has multiple TL-UL interfaces)'],
     'memory': ['g', 'optional dict with memory region attributes'],
     'param_decl': ['g', 'optional dict that allows to override instantiation parameters'],
-    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that module']
+    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that '
+                           'module'],
+    'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
+                            'group'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
 }
 
 module_added = {
@@ -627,25 +635,19 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     error = 0
 
-    # there should only be one each of pwrmgr/clkmgr/rstmgr
-    pwrmgrs = [m for m in top['module'] if m['type'] == 'pwrmgr']
-    clkmgrs = [m for m in top['module'] if m['type'] == 'clkmgr']
-    rstmgrs = [m for m in top['module'] if m['type'] == 'rstmgr']
-
-    if len(pwrmgrs) == 1 * len(clkmgrs) == 1 * len(rstmgrs) != 1:
-        log.error("Incorrect number of pwrmgr/clkmgr/rstmgr")
-        error += 1
-
     # all defined clock/reset nets
     reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
     unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())
+    unmanaged_reset_nets = [net for reset in top.get('unmanaged_resets', [])
+                            for net in reset.values()]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['name'].lower()
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets)
+        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets,
+                                unmanaged_reset_nets)
         error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
                                 unmanaged_clock_srcs)
 
@@ -658,7 +660,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
         xbarcfg_name = xbarcfg['name'].lower()
         log.info("Checking clock/resets for xbar %s" % xbarcfg_name)
         error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
-                                reset_nets, "xbar")
+                                reset_nets, unmanaged_reset_nets, "xbar")
         error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
                                 clock_srcs, unmanaged_clock_srcs, "xbar")
 
@@ -673,7 +675,7 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 # For each defined reset connection in top*.hjson, there exists a defined port at the destination
 # and defined reset net
 # There are the same number of defined connections as there are ports
-def validate_reset(top, inst, reset_nets, prefix=""):
+def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
     # Gather inst port list
     error = 0
 
@@ -739,7 +741,7 @@ def validate_reset(top, inst, reset_nets, prefix=""):
 
     missing_net = [
         net['name'] for net in top['reset_connections'].values()
-        if net['name'] not in reset_nets
+        if net['name'] not in reset_nets + unmanaged_reset_nets
     ]
 
     if missing_net:

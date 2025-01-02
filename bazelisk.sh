@@ -6,9 +6,6 @@
 # This is a wrapper script for `bazelisk` that downloads and executes bazelisk.
 # Bazelisk is a wrapper for `bazel` that can download and execute the project's
 # required bazel version.
-#
-# CI jobs should use ci/bazelisk.sh instead, which performs CI-friendly additional
-# setup.
 
 set -eo pipefail
 
@@ -20,10 +17,11 @@ cd "$(dirname "$0")"
 : "${BINDIR:=.bin}"
 : "${BAZEL_BIN:=$(which bazel 2>/dev/null)}"
 
-readonly release="v1.11.0"
+# Bazelisk (not Bazel) release. Keep this in sync with `util/container/Dockerfile`.
+readonly release="v1.24.1"
 declare -A hashes=(
-    # sha256sums for v1.11.0.  Update this if you update the release.
-    [linux-amd64]="231ec5ca8115e94c75a1f4fbada1a062b48822ca04f21f26e4cb1cd8973cd458"
+    # sha256sums for v1.24.1.  Update this if you update the release.
+    [linux-amd64]="0aee09c71828b0012750cb9b689ce3575da8e230f265bf8d6dcd454eee6ea842"
 )
 
 declare -A architectures=(
@@ -111,6 +109,14 @@ function main() {
     local bindir="${REPO_TOP}/${BINDIR}"
     local file="${BAZEL_BIN:-${bindir}/bazelisk}"
     local lockfile="${bindir}/bazelisk.lock"
+
+    # If the user has Bazel in their PATH, check its version.
+    # Fallback to bazelisk if it doesn't match.
+    if [ -x "$BAZEL_BIN" ]; then
+        if [ "$("$BAZEL_BIN" --version)" != "bazel $(cat .bazelversion)" ]; then
+            file="${bindir}/bazelisk"
+        fi
+    fi
 
     # Are we using bazel from the user's PATH or using bazelisk?
     if expr match "${file}" ".*bazelisk$" >/dev/null; then

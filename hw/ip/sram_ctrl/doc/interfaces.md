@@ -27,15 +27,16 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name          | Package::Struct             | Type    | Act   |   Width | Description   |
-|:-------------------|:----------------------------|:--------|:------|--------:|:--------------|
-| sram_otp_key       | otp_ctrl_pkg::sram_otp_key  | req_rsp | req   |       1 |               |
-| cfg                | prim_ram_1p_pkg::ram_1p_cfg | uni     | rcv   |       1 |               |
-| lc_escalate_en     | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx          | uni     | rcv   |       1 |               |
-| otp_en_sram_ifetch | prim_mubi_pkg::mubi8        | uni     | rcv   |       1 |               |
-| regs_tl            | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
-| ram_tl             | tlul_pkg::tl                | req_rsp | rsp   |       1 |               |
+| Port Name          | Package::Struct                 | Type    | Act   | Width      | Description   |
+|:-------------------|:--------------------------------|:--------|:------|:-----------|:--------------|
+| sram_otp_key       | otp_ctrl_pkg::sram_otp_key      | req_rsp | req   | 1          |               |
+| cfg                | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   | NumRamInst |               |
+| cfg_rsp            | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   | NumRamInst |               |
+| lc_escalate_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |               |
+| lc_hw_debug_en     | lc_ctrl_pkg::lc_tx              | uni     | rcv   | 1          |               |
+| otp_en_sram_ifetch | prim_mubi_pkg::mubi8            | uni     | rcv   | 1          |               |
+| regs_tl            | tlul_pkg::tl                    | req_rsp | rsp   | 1          |               |
+| ram_tl             | tlul_pkg::tl                    | req_rsp | rsp   | 1          |               |
 
 ## Security Alerts
 
@@ -55,6 +56,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | SRAM_CTRL.EXEC.INTERSIG.MUBI           | The SRAM execution enable signal coming from OTP is multibit encoded.                                                                                                       |
 | SRAM_CTRL.LC_ESCALATE_EN.INTERSIG.MUBI | The life cycle escalation enable signal is multibit encoded.                                                                                                                |
 | SRAM_CTRL.LC_HW_DEBUG_EN.INTERSIG.MUBI | The life cycle hardware debug enable signal is multibit encoded.                                                                                                            |
+| SRAM_CTRL.PRIM_RAM.CTRL.MUBI           | The control signals inside prim_ram are multibit encoded.                                                                                                                   |
 | SRAM_CTRL.MEM.INTEGRITY                | End-to-end data/memory integrity scheme.                                                                                                                                    |
 | SRAM_CTRL.MEM.READBACK                 | Each read and write is checked with a readback.                                                                                                                             |
 | SRAM_CTRL.MEM.SCRAMBLE                 | Data is scrambled with a keyed reduced-round PRINCE cipher in CTR mode.                                                                                                     |

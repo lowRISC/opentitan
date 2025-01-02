@@ -3,11 +3,13 @@
 // SPDX-License-Identifier: Apache-2.0
 ${gencmd}
 <%
+from collections import defaultdict
 import re
 import topgen.lib as lib
 from reggen.params import Parameter
 from topgen.clocks import Clocks
 from topgen.resets import Resets
+from topgen.merge import is_unmanaged_reset
 
 num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
                  top['pinmux']['io_counts']['muxed']['inputs']
@@ -114,10 +116,30 @@ module top_${top["name"]} #(
   % endfor
 
 % endif
+  % for irq_group, irqs in top['incoming_interrupt'].items():
+  // Incoming interrupt of group ${irq_group}
+  input logic [${len(irqs)-1}:0] incoming_interrupt_${irq_group}_i,
+  % endfor
 
   // All externally supplied clocks
   % for clk in top['clocks'].typed_clocks().ast_clks:
   input ${clk},
+  % endfor
+  % for alert_group in top['outgoing_alert'].keys():
+
+  // Outgoing alerts for group ${alert_group}
+  output prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_tx_o,
+  input  prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NOutgoingAlerts${alert_group.capitalize()}-1:0] outgoing_alert_${alert_group}_rx_i,
+  output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_cg_en_${alert_group}_o,
+  output prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NOutgoingLpgs${alert_group.capitalize()}-1:0]   outgoing_lpg_rst_en_${alert_group}_o,
+  % endfor
+  % for alert_group in top['incoming_alert'].keys():
+  
+  // Incoming alerts for group ${alert_group}
+  input  prim_alert_pkg::alert_tx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_tx_i,
+  output prim_alert_pkg::alert_rx_t [top_${top["name"]}_pkg::NIncomingAlerts${alert_group.capitalize()}-1:0] incoming_alert_${alert_group}_rx_o,
+  input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_cg_en_${alert_group}_i,
+  input  prim_mubi_pkg::mubi4_t     [top_${top["name"]}_pkg::NIncomingLpgs${alert_group.capitalize()}-1:0]   incoming_lpg_rst_en_${alert_group}_i,
   % endfor
 
   // All clocks forwarded to ast
@@ -127,8 +149,16 @@ module top_${top["name"]} #(
 
   // Unmanaged external clocks
     % for clk in top['unmanaged_clocks']._asdict().values():
-  input                        clk_${clk.name}_i,
-  input prim_mubi_pkg::mubi4_t cg_${clk.name}_i,
+  input                        ${clk.signal_name},
+  input prim_mubi_pkg::mubi4_t ${clk.cg_en_signal},
+    % endfor
+  % endif
+  % if len(top['unmanaged_resets']._asdict().values()) > 0:
+
+  // Unmanaged external resets
+    % for rst in top['unmanaged_resets']._asdict().values():
+  input                        ${rst.signal_name},
+  input prim_mubi_pkg::mubi4_t ${rst.rst_en_signal_name},
     % endfor
   % endif
 
@@ -350,7 +380,7 @@ module top_${top["name"]} #(
 
   ## Not all top levels have a lifecycle controller.
   ## For those that do not, always enable ibex.
-% if not lib.is_lc_ctrl(top["module"]):
+% if not lib.find_module(top["module"], 'lc_ctrl'):
   assign rv_core_ibex_lc_cpu_en = lc_ctrl_pkg::On;
 % endif
 
@@ -378,7 +408,7 @@ assert isinstance(clocks, Clocks)
 typed_clocks = clocks.typed_clocks()
 known_clocks = {}
 for clk in typed_clocks.all_clocks():
-  known_clocks.update({top['clocks'].hier_paths['lpg'] + clk.split('clk_')[-1]: 1})
+  known_clocks.update({lib.get_clock_lpg_path(top, clk): 1})
 
 # get all known resets and add them to a dict
 # this is used to generate the tie-off assignments further below
@@ -401,17 +431,29 @@ for rst in output_rsts:
 
 % for k, lpg in enumerate(top['alert_lpgs']):
   // ${lpg['name']}
-<%
-  if lpg['unmanaged_clock']:
-    cg_en = 'cg_' + lpg['clock_connection'].split('clk_')[-1]
-  else:
-    cg_en = top['clocks'].hier_paths['lpg'] + lpg['clock_connection'].split('.clk_')[-1]
-  rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'])
+<% 
+  cg_en = lib.get_clock_lpg_path(top, lpg['clock_connection'], lpg['unmanaged_clock'])
+  rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
   known_clocks[cg_en] = 0
   known_resets[rst_en] = 0
 %>\
   assign lpg_cg_en[${k}] = ${cg_en};
   assign lpg_rst_en[${k}] = ${rst_en};
+% endfor
+
+% for alert_group, lpgs in top['outgoing_alert_lpgs'].items():
+  // Outgoing LPGs for alert group ${alert_group}
+  % for k, lpg in enumerate(lpgs):
+  // ${lpg['name']}
+<%
+    cg_en = lib.get_clock_lpg_path(top, lpg['clock_connection'], lpg['unmanaged_clock'])
+    rst_en = lib.get_reset_lpg_path(top, lpg['reset_connection'], False, None, lpg['unmanaged_reset'])
+    known_clocks[cg_en] = 0
+    known_resets[rst_en] = 0
+%>\
+  assign outgoing_lpg_cg_en_${alert_group}_o[${k}] = ${cg_en};
+  assign outgoing_lpg_rst_en_${alert_group}_o[${k}] = ${rst_en};
+  % endfor
 % endfor
 
 // tie-off unused connections
@@ -436,7 +478,8 @@ for rst in output_rsts:
 
   // Peripheral Instantiation
 
-<% alert_idx = 0 %>
+<% alert_idx = 0 %>\
+<% outgoing_alert_idx = defaultdict(int) %>
 % for m in top["module"]:
 <%
 if not lib.is_inst(m):
@@ -455,9 +498,18 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
   % if block.alerts:
 <%
 w = len(block.alerts)
-slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+if 'outgoing_alert' in m:
+  outgoing_alert = m['outgoing_alert']
+  lo = outgoing_alert_idx[outgoing_alert]
+else:
+  lo = alert_idx
+slice = f"{lo+w-1}:{lo}"
 %>\
+  % if 'outgoing_alert' in m:
+    .AlertAsyncOn(AsyncOnOutgoingAlert${alert_group.capitalize()}[${slice}])${"," if m["param_list"] else ""}
+  % else:
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[${slice}])${"," if m["param_list"] else ""}
+  % endif
   % endif
     % for i in m["param_list"]:
     .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
@@ -490,10 +542,19 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     % endfor
     % if block.alerts:
       % for alert in block.alerts:
+        % if 'outgoing_alert' in m:
+      // External alert group "${m['outgoing_alert']}" [${outgoing_alert_idx[m['outgoing_alert']]}]: ${alert.name}<% outgoing_alert_idx[m['outgoing_alert']] += 1 %>
+        % else:
       // [${alert_idx}]: ${alert.name}<% alert_idx += 1 %>
+        % endif
       % endfor
+      % if 'outgoing_alert' in m:
+      .alert_tx_o  ( outgoing_alert_${m['outgoing_alert']}_tx_o[${slice}] ),
+      .alert_rx_i  ( outgoing_alert_${m['outgoing_alert']}_rx_i[${slice}] ),
+      % else:
       .alert_tx_o  ( alert_tx[${slice}] ),
       .alert_rx_i  ( alert_rx[${slice}] ),
+      % endif
     % endif
     ## TODO: Inter-module Connection
     % if m.get('inter_signal_list'):
@@ -561,17 +622,44 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
       .${k} (${v}),
     % endfor
     % for port, reset in m["reset_connections"].items():
-      % if lib.is_shadowed_port(block, port):
-      .${lib.shadow_name(port)} (${lib.get_reset_path(top, reset, True)}),
-      % endif:
-      .${port} (${lib.get_reset_path(top, reset)})${"," if not loop.last else ""}
+<%
+      is_shadowed_port = lib.is_shadowed_port(block, port)
+      unmanaged_reset = is_unmanaged_reset(top, reset['name'])
+      reset_port = lib.get_reset_path(top, reset, False, unmanaged_reset)
+      shadowed_port = lib.get_reset_path(top, reset, True, unmanaged_reset)
+%>\
+    % if is_shadowed_port:
+      .${lib.shadow_name(port)} (${shadowed_port}),
+    % endif
+      .${port} (${reset_port})${"," if not loop.last else ""}
     % endfor
   );
 % endfor
+
+% for alert_group, alerts in top['incoming_alert'].items():
+<%
+w = len(alerts)
+slice = str(alert_idx+w-1) + ":" + str(alert_idx)
+%>
+  // Alert mapping to the alert handler for alert group ${alert_group}
+  % for alert in alerts:
+  // [${alert_idx}]: ${alert['name']}<% alert_idx += 1 %>
+  % endfor
+  assign alerts_tx[${slice}] = incoming_alert_${alert_group}_tx_i;
+  assign incoming_alert_${alert_group}_rx_o = alerts_rx[${slice}];
+% endfor
+
   // interrupt assignments
 <% base = interrupt_num %>\
   assign intr_vector = {
+  % for irq_group, irqs in reversed(top['incoming_interrupt'].items()):
+  <% base -= len(irqs) %>\
+    incoming_interrupt_${irq_group}_i, // IDs [${base} +: ${len(irqs)}]
+  % endfor
   % for intr in top["interrupt"][::-1]:
+    % if intr['incoming']:
+<% continue %>\
+    % endif
 <% base -= intr["width"] %>\
       intr_${intr["name"]}, // IDs [${base} +: ${intr['width']}]
   % endfor
@@ -588,7 +676,7 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
     .${k} (${v}),
   % endfor
   % for port, reset in xbar["reset_connections"].items():
-    .${port} (${lib.get_reset_path(top, reset)}),
+    .${port} (${lib.get_reset_path(top, reset, False, is_unmanaged_reset(top, reset['name']))}),
   % endfor
 
   ## Inter-module signal

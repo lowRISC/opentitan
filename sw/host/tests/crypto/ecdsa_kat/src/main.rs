@@ -29,6 +29,7 @@ use cryptotest_commands::ecdsa_commands::{
 };
 
 use opentitanlib::app::TransportWrapper;
+use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::execute_test;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::rpc::{ConsoleRecv, ConsoleSend};
@@ -180,7 +181,7 @@ fn p384_verify_signature(
 fn run_ecdsa_testcase(
     test_case: &EcdsaTestCase,
     opts: &Opts,
-    transport: &TransportWrapper,
+    spi_console: &SpiConsoleDevice,
     failures: &mut Vec<String>,
 ) -> Result<()> {
     log::info!(
@@ -188,7 +189,6 @@ fn run_ecdsa_testcase(
         test_case.vendor,
         test_case.test_case_id
     );
-    let uart = transport.uart("console")?;
     assert_eq!(test_case.algorithm.as_str(), "ecdsa");
     let mut qx: Vec<u8> = BigInt::from_str_radix(&test_case.qx, 16)
         .unwrap()
@@ -398,10 +398,10 @@ fn run_ecdsa_testcase(
     };
 
     // Send everything
-    CryptotestCommand::Ecdsa.send(&*uart)?;
-    operation.send(&*uart)?;
-    hash_alg.send(&*uart)?;
-    curve.send(&*uart)?;
+    CryptotestCommand::Ecdsa.send(spi_console)?;
+    operation.send(spi_console)?;
+    hash_alg.send(spi_console)?;
+    curve.send(spi_console)?;
 
     // Size of `input` is determined at compile-time by type inference
     let mut input = ArrayVec::new();
@@ -417,7 +417,7 @@ fn run_ecdsa_testcase(
         input,
         input_len: msg_len,
     };
-    msg.send(&*uart)?;
+    msg.send(spi_console)?;
 
     CryptotestEcdsaSignature {
         r: ArrayVec::try_from(r.as_slice()).unwrap(),
@@ -425,19 +425,19 @@ fn run_ecdsa_testcase(
         s: ArrayVec::try_from(s.as_slice()).unwrap(),
         s_len: s.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     CryptotestEcdsaCoordinate {
         coordinate: ArrayVec::try_from(qx.as_slice()).unwrap(),
         coordinate_len: qx.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     CryptotestEcdsaCoordinate {
         coordinate: ArrayVec::try_from(qy.as_slice()).unwrap(),
         coordinate_len: qy.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
 
     CryptotestEcdsaPrivateKey {
         d0: ArrayVec::try_from(d0.as_slice()).unwrap(),
@@ -446,10 +446,11 @@ fn run_ecdsa_testcase(
         d1_len: d1.len(),
         unmasked_len: d0.len(),
     }
-    .send(&*uart)?;
+    .send(spi_console)?;
     let success = match operation {
         CryptotestEcdsaOperation::Sign => {
-            let mut output_signature = CryptotestEcdsaSignature::recv(&*uart, opts.timeout, false)?;
+            let mut output_signature =
+                CryptotestEcdsaSignature::recv(spi_console, opts.timeout, false)?;
             // Truncate signature values to correct size for curve and convert to big-endian
             output_signature.r.truncate(output_signature.r_len);
             output_signature.s.truncate(output_signature.s_len);
@@ -476,7 +477,7 @@ fn run_ecdsa_testcase(
             }
         }
         CryptotestEcdsaOperation::Verify => {
-            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(&*uart, opts.timeout, false)?;
+            let ecdsa_output = CryptotestEcdsaVerifyOutput::recv(spi_console, opts.timeout, false)?;
             match ecdsa_output {
                 CryptotestEcdsaVerifyOutput::Success => true,
                 CryptotestEcdsaVerifyOutput::Failure => false,
@@ -509,9 +510,9 @@ fn run_ecdsa_testcase(
 }
 
 fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
-    let uart = transport.uart("console")?;
-    uart.set_flow_control(true)?;
-    let _ = UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
+    let spi = transport.spi("BOOTSTRAP")?;
+    let spi_console_device = SpiConsoleDevice::new(&*spi)?;
+    let _ = UartConsole::wait_for(&spi_console_device, r"Running [^\r\n]*", opts.timeout)?;
 
     let mut test_counter = 0u32;
     let mut failures = vec![];
@@ -523,7 +524,7 @@ fn test_ecdsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
         for ecdsa_test in &ecdsa_tests {
             test_counter += 1;
             log::info!("Test counter: {}", test_counter);
-            run_ecdsa_testcase(ecdsa_test, opts, transport, &mut failures)?;
+            run_ecdsa_testcase(ecdsa_test, opts, &spi_console_device, &mut failures)?;
         }
     }
     assert_eq!(

@@ -306,6 +306,7 @@ Hardware automatically determines the access granule (32bit or 64bit) based on w
 partition is being written to.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
+- Register enable: [`DIRECT_ACCESS_REGWEN`](#direct_access_regwen)
 
 ### Instances
 

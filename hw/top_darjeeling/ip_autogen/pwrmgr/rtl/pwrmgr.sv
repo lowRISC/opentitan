@@ -56,7 +56,7 @@ module pwrmgr
   input  pwr_flash_t pwr_flash_i,
 
   // processor interface
-  input  pwr_cpu_t pwr_cpu_i,
+  input  rv_core_ibex_pkg::cpu_pwrmgr_t pwr_cpu_i,
   // SEC_CM: LC_CTRL.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t fetch_en_o,
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,

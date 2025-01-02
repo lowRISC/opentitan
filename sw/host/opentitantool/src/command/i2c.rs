@@ -274,14 +274,12 @@ impl CommandDispatch for I2cTpm {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let context = context.downcast_ref::<I2cCommand>().unwrap();
-        let ready_pin = match &self.gsc_ready {
-            Some(pin) => Some((transport.gpio_pin(pin)?, transport.gpio_monitoring()?)),
-            None => None,
-        };
-        let tpm_driver: Box<dyn tpm::Driver> = Box::new(tpm::I2cDriver::new(
-            context.params.create(transport, "TPM")?,
-            ready_pin,
-        )?);
+        let i2c = context.params.create(transport, "TPM")?;
+        if let Some(pin) = &self.gsc_ready {
+            i2c.set_pins(None, None, Some(&transport.gpio_pin(pin)?))?;
+        }
+        let tpm_driver: Box<dyn tpm::Driver> =
+            Box::new(tpm::I2cDriver::new(i2c, self.gsc_ready.is_some())?);
         self.command.run(&tpm_driver, transport)
     }
 }

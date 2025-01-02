@@ -19,6 +19,7 @@ module prim_badbit_ram_1p #(
   localparam int Aw              = $clog2(Depth)  // derived parameter
 ) (
   input  logic             clk_i,
+  input  logic             rst_ni,
 
   input  logic             req_i,
   input  logic             write_i,
@@ -36,15 +37,17 @@ module prim_badbit_ram_1p #(
     .DataBitsPerMask(DataBitsPerMask),
     .MemInitFile    (MemInitFile)
   ) u_mem (
-    .clk_i(clk_i),
+    .clk_i    (clk_i),
+    .rst_ni   (rst_ni),
 
-    .cfg_i  ('0),
-    .req_i  (req_i),
-    .write_i(write_i),
-    .addr_i (addr_i),
-    .wdata_i(wdata_i),
-    .wmask_i(wmask_i),
-    .rdata_o(sram_rdata)
+    .cfg_i    ('0),
+    .cfg_rsp_o(),
+    .req_i    (req_i),
+    .write_i  (write_i),
+    .addr_i   (addr_i),
+    .wdata_i  (wdata_i),
+    .wmask_i  (wmask_i),
+    .rdata_o  (sram_rdata)
   );
 
   // This module doesn't work with Verilator (because of the wired-or). Because we define the

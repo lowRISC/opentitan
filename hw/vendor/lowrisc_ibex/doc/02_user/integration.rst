@@ -108,6 +108,8 @@ Instantiation Template
       .RndCnstLfsrSeed  ( ibex_pkg::RndCnstLfsrSeedDefault ),
       .RndCnstLfsrPerm  ( ibex_pkg::RndCnstLfsrPermDefault ),
       .DbgTriggerEn     ( 0                                ),
+      .DmBaseAddr       ( 32'h1A110000                     ),
+      .DmAddrMask       ( 32'h00000FFF                     ),
       .DmHaltAddr       ( 32'h1A110800                     ),
       .DmExceptionAddr  ( 32'h1A110808                     )
   ) u_top (
@@ -223,6 +225,10 @@ Parameters
 |                              |                     |            | generate dummy instructions (only relevant when SecureIbex == 1'b1)   |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``DbgTriggerEn``             | bit                 | 0          | Enable debug trigger support (one trigger only)                       |
++------------------------------+---------------------+------------+-----------------------------------------------------------------------+
+| ``DmBaseAddr``               | int                 | 0x1A110000 | Base address of the Debug Module                                      |
++------------------------------+---------------------+------------+-----------------------------------------------------------------------+
+| ``DmAddrMask``               | int                 | 0x1A110000 | Address mask of the Debug Module                                      |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+
 | ``DmHaltAddr``               | int                 | 0x1A110800 | Address to jump to when entering Debug Mode                           |
 +------------------------------+---------------------+------------+-----------------------------------------------------------------------+

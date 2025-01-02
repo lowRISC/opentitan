@@ -101,18 +101,27 @@ impl Target for ProxySpi {
         }
     }
 
+    fn supports_tpm_poll(&self) -> Result<bool> {
+        match self.execute_command(SpiRequest::SupportsTpmPoll)? {
+            SpiResponse::SupportsTpmPoll { has_support } => Ok(has_support),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn set_pins(
         &self,
         serial_clock: Option<&Rc<dyn gpio::GpioPin>>,
         host_out_device_in: Option<&Rc<dyn gpio::GpioPin>>,
         host_in_device_out: Option<&Rc<dyn gpio::GpioPin>>,
         chip_select: Option<&Rc<dyn gpio::GpioPin>>,
+        gsc_ready: Option<&Rc<dyn gpio::GpioPin>>,
     ) -> Result<()> {
         match self.execute_command(SpiRequest::SetPins {
             serial_clock: spi_pin_name(serial_clock)?,
             host_out_device_in: spi_pin_name(host_out_device_in)?,
             host_in_device_out: spi_pin_name(host_in_device_out)?,
             chip_select: spi_pin_name(chip_select)?,
+            gsc_ready: spi_pin_name(gsc_ready)?,
         })? {
             SpiResponse::SetPins => Ok(()),
             _ => bail!(ProxyError::UnexpectedReply()),
@@ -147,6 +156,13 @@ impl Target for ProxySpi {
         }
     }
 
+    fn get_flashrom_programmer(&self) -> Result<String> {
+        match self.execute_command(SpiRequest::GetFlashromArgs)? {
+            SpiResponse::GetFlashromArgs { programmer } => Ok(programmer),
+            _ => bail!(ProxyError::UnexpectedReply()),
+        }
+    }
+
     fn run_transaction(&self, transaction: &mut [Transfer]) -> Result<()> {
         let mut req: Vec<SpiTransferRequest> = Vec::new();
         for transfer in transaction.iter() {
@@ -166,6 +182,8 @@ impl Target for ProxySpi {
                         data: wbuf.to_vec(),
                     })
                 }
+                Transfer::TpmPoll => req.push(SpiTransferRequest::TpmPoll),
+                Transfer::GscReady => req.push(SpiTransferRequest::GscReady),
             }
         }
         match self.execute_command(SpiRequest::RunTransaction { transaction: req })? {
@@ -181,6 +199,8 @@ impl Target for ProxySpi {
                             rbuf.clone_from_slice(data);
                         }
                         (SpiTransferResponse::Write, Transfer::Write(_)) => (),
+                        (SpiTransferResponse::TpmPoll, Transfer::TpmPoll) => (),
+                        (SpiTransferResponse::GscReady, Transfer::GscReady) => (),
                         _ => bail!(ProxyError::UnexpectedReply()),
                     }
                 }

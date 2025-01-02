@@ -41,6 +41,14 @@ function void pwm_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
 
   // only support 1 outstanding TL items in tlul_adapter
   m_tl_agent_cfg.max_outstanding_req = 1;
+
+  // Switch the alert agent to use the TL-UL clock rather than asynchronous clocking because
+  // otherwise we shall incur ping timeouts when stopping the TL-UL clock for an extended period to
+  // exercise low power mode.
+  foreach(list_of_alerts[i]) begin
+    string alert_name = list_of_alerts[i];
+    m_alert_agent_cfgs[alert_name].is_async = 0;
+  end
 endfunction
 
 function int pwm_env_cfg::get_clk_core_freq();

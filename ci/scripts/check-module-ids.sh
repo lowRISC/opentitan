@@ -24,10 +24,10 @@ query_elfs='
     )'
 target_file=$(mktemp)
 trap 'rm -f "$target_file"' EXIT
-ci/bazelisk.sh query "$query_elfs" >"$target_file"
+./bazelisk.sh query "$query_elfs" >"$target_file"
 # We now ask bazel to build all targets but we also add the module ID checker aspect
 # and we query the corresponding output group to force bazel to run the checks.
-./ci/bazelisk.sh build \
+./bazelisk.sh build \
     --config=riscv32 \
     --aspects=rules/quality.bzl%modid_check_aspect \
     --output_groups=modid_check \

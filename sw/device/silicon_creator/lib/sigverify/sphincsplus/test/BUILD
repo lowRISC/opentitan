@@ -107,14 +107,7 @@ autogen_cryptotest_header(
 opentitan_test(
     name = "verify_test_hardcoded",
     srcs = ["verify_test.c"],
-    # TODO(#22871): Remove "broken" tag once the tests are fixed.
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": "broken",
-        },
-    ),
+    exec_env = EARLGREY_TEST_ENVS,
     verilator = verilator_params(
         timeout = "eternal",
     ),

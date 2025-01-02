@@ -74,13 +74,13 @@ All common types and methods defined at the package level can be found in
   // spi config
   typedef struct {
     // configopts register fields
-    rand bit        cpol[SPI_HOST_NUM_CS];
-    rand bit        cpha[SPI_HOST_NUM_CS];
-    rand bit        fullcyc[SPI_HOST_NUM_CS];
-    rand bit [3:0]  csnlead[SPI_HOST_NUM_CS];
-    rand bit [3:0]  csntrail[SPI_HOST_NUM_CS];
-    rand bit [3:0]  csnidle[SPI_HOST_NUM_CS];
-    rand bit [15:0] clkdiv[SPI_HOST_NUM_CS];
+    rand bit        cpol;
+    rand bit        cpha;
+    rand bit        fullcyc;
+    rand bit [3:0]  csnlead;
+    rand bit [3:0]  csntrail;
+    rand bit [3:0]  csnidle;
+    rand bit [15:0] clkdiv;
   } spi_host_configopts_t;
 
   typedef struct {
@@ -104,7 +104,7 @@ All common types and methods defined at the package level can be found in
     rand spi_mode_e mode;
     rand spi_dir_e  direction;
     rand bit        csaat;
-    rand bit [8:0]  len;
+    rand bit [19:0] len;
   } spi_host_command_t;
 
   typedef struct packed {

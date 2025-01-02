@@ -73,7 +73,7 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_keymgr_irq_get_type(const dif_keymgr_t *keymgr,
                                      dif_keymgr_irq_t irq,
                                      dif_irq_type_t *type) {
-  if (keymgr == NULL || type == NULL || irq == kDifKeymgrIrqOpDone + 1) {
+  if (keymgr == NULL || type == NULL || irq < 0 || irq > kDifKeymgrIrqOpDone) {
     return kDifBadArg;
   }
 

@@ -4,14 +4,15 @@
 
 import logging as log
 import re
-from collections import OrderedDict
+from collections import defaultdict, OrderedDict
 from copy import deepcopy
+from itertools import chain
 from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
 from topgen import lib, secure_prng
 from .clocks import Clocks
-from .resets import Resets
+from .resets import Resets, UnmanagedResets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 from reggen.validate import check_bool
@@ -172,6 +173,14 @@ def elaborate_instance(instance, block: IpBlock):
         if isinstance(s['width'], Parameter):
             for p in instance["param_list"]:
                 if p['name'] == s['width'].name:
+                    # When mangling the name, we first need to deep copy the param. Parameters in
+                    # signals have a reference to a parameter. If we have multiple instances of the
+                    # same IP, then their signals would reference the same single parameter. If we
+                    # would mangle that directly, we all signals of all IPs would reference to that
+                    # single mangled paramter. Since parameters are instance dependent, that would
+                    # fail. Therefore, copy the parameter first to have a unique paramter for that
+                    # particular signal and instance, which is safe to mangle.
+                    s['width'] = deepcopy(s['width'])
                     s['width'].name_top = p['name_top']
 
     # An instance must either have a 'base_addr' address or a 'base_addrs'
@@ -592,6 +601,10 @@ def is_unmanaged_clock(top: OrderedDict, clock: str):
     return clock in top['unmanaged_clocks']._asdict()
 
 
+def is_unmanaged_reset(top: OrderedDict, reset: str):
+    return reset in top['unmanaged_resets']
+
+
 def extract_clocks(top: OrderedDict):
     '''Add clock exports to top and connections to endpoints
 
@@ -633,7 +646,7 @@ def extract_clocks(top: OrderedDict):
 
             if is_unmanaged_clock(top, src_name):
                 # Unmanaged clocks have a simpler connection without clock groups
-                clock_connections[port] = top['unmanaged_clocks']._asdict()[clk].signal_name
+                clock_connections[port] = top['unmanaged_clocks']._asdict()[src_name].signal_name
             else:
                 group = clocks.groups[group_name]
 
@@ -778,6 +791,7 @@ def amend_resets(top, name_to_block):
        domains.
     """
 
+    top['unmanaged_resets'] = UnmanagedResets(top.get('unmanaged_resets', []))
     top_resets = Resets(top['resets'], top['clocks'])
     rstmgr_name = _find_module_name(top['module'], 'rstmgr')
 
@@ -797,6 +811,8 @@ def amend_resets(top, name_to_block):
         for r in block.clocking.items:
             if r.reset:
                 reset = module['reset_connections'][r.reset]
+                if is_unmanaged_reset(top, reset['name']):
+                    continue
                 top_resets.add_reset_domain(reset['name'], reset['domain'])
 
         # This code is here to ensure if amend_clocks/resets switched order
@@ -817,6 +833,8 @@ def amend_resets(top, name_to_block):
     # unless otherwise stated, xbars always fall into the default power domain.
     for xbar in top["xbar"]:
         for reset in xbar['reset_connections'].values():
+            if is_unmanaged_reset(top, reset['name']):
+                continue
             top_resets.add_reset_domain(reset['name'], top['power']['default'])
 
     # add entry to top level json
@@ -833,9 +851,10 @@ def amend_resets(top, name_to_block):
 
 def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
     '''Loop over modules and determine number of unique LPGs'''
-    num_lpg = 0
     lpg_dict = {}
+    outgoing_lpg_dict = defaultdict(dict)
     top['alert_lpgs'] = []
+    top['outgoing_alert_lpgs'] = defaultdict(list)
 
     # ensure the object is already generated before we attempt to use it
     assert isinstance(top['clocks'], Clocks)
@@ -885,28 +904,41 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
 
         # if clock group is "unique", add some uniquification to the tag
         lpg_name = f"{module['name']}_{lpg_name}" if unique_cg else lpg_name
-        if lpg_name not in lpg_dict:
-            lpg_dict.update({lpg_name: num_lpg})
+
+        def append_to_lpg_dict(lpg_dict):
             # since the alert handler can tolerate timing delays on LPG
             # indication signals, we can just use the clock / reset signals
             # of the first block that belongs to a new unique LPG.
             clock = module['clock_connections'][block_clock.clock]
-            top['alert_lpgs'].append({
+            lpg_dict.append({
                 'name': lpg_name,
                 'clock_group': None if unmanaged_clock else clock_group,
                 'clock_connection': clock,
                 'unmanaged_clock': unmanaged_clock,
+                'unmanaged_reset': is_unmanaged_reset(top, reset_name),
                 'reset_connection': primary_reset
             })
-            num_lpg += 1
+
+        alert_group = module.get('outgoing_alert')
+        if alert_group is not None:
+            if lpg_name not in outgoing_lpg_dict[alert_group]:
+                outgoing_lpg_dict[alert_group][lpg_name] = len(outgoing_lpg_dict[alert_group])
+                append_to_lpg_dict(top['outgoing_alert_lpgs'][alert_group])
+        else:
+            if lpg_name not in lpg_dict:
+                lpg_dict[lpg_name] = len(lpg_dict)
+                append_to_lpg_dict(top['alert_lpgs'])
 
         # annotate all alerts of this module to use this LPG
         for alert in top['alert']:
             if alert['module_name'] == module['name']:
-                alert.update({
-                    'lpg_name': lpg_name,
-                    'lpg_idx': lpg_dict[lpg_name]
-                })
+                alert['lpg_name'] = lpg_name
+                alert['lpg_idx'] = lpg_dict[lpg_name]
+        for alert_group, alerts in top['outgoing_alert'].items():
+            for alert in alerts:
+                if alert['module_name'] == module['name']:
+                    alert['lpg_name'] = lpg_name
+                    alert['lpg_idx'] = outgoing_lpg_dict[module['outgoing_alert']][lpg_name]
 
 
 def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
@@ -953,7 +985,16 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
                                                    module=m.lower())
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
+            qual['incoming'] = False
             top["interrupt"].append(qual)
+
+    for irqs in top['incoming_interrupt'].values():
+        for irq in irqs:
+            # Qualify name with module name
+            irq['name'] = f"{irq['module_name']}_{irq['name']}"
+            irq['incoming'] = True
+            irq['width'] = 1
+            top["interrupt"].append(irq)
 
 
 def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
@@ -970,20 +1011,44 @@ def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     for module in top['module']:
         block = name_to_block[module['type']]
         if block.alerts:
-            modules.append(module['name'])
+            if 'outgoing_alert' not in module:
+                modules.append(module['name'])
 
     top['alert_module'] = modules
+
+
+def ensure_outgoing_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
+    '''Populate top['outgoing_alert_module'] if necessary
+
+    Do this by adding each module in top['modules'] that defines at least one
+    outgoing alert.
+
+    '''
+    if 'outgoing_alert_module' in top:
+        return
+
+    modules = defaultdict(list)
+    for module in top['module']:
+        block = name_to_block[module['type']]
+        if block.alerts:
+            if 'outgoing_alert' in module:
+                modules[module['outgoing_alert']].append(module['name'])
+
+    top['outgoing_alert_module'] = modules
 
 
 def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
     """Check interrupt_module if exists, or just use all modules
     """
     ensure_alert_modules(top, name_to_block)
+    ensure_outgoing_alert_modules(top, name_to_block)
 
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
-    for m in top["alert_module"]:
+    top['outgoing_alert'] = defaultdict(list)
+
+    for m in top["alert_module"] + list(chain(*top['outgoing_alert_module'].values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
             log.warning("Cannot find IP %s which is used in the alert_module" %
@@ -1002,13 +1067,13 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             alert_dict['async'] = '1'
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
-            top["alert"].append(qual_sig)
+            if 'outgoing_alert' in ip:
+                top['outgoing_alert'][ip['outgoing_alert']].append(qual_sig)
+            else:
+                top["alert"].append(qual_sig)
 
 
 def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
-
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-
     if "wakeups" not in topcfg or topcfg["wakeups"] == "":
         topcfg["wakeups"] = []
 
@@ -1024,22 +1089,21 @@ def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
                 'module': m["name"]
             })
 
-    # add wakeup signals to pwrmgr connections
-    signal_names = [
-        f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
-    ]
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+    if pwrmgr_name:
+        # add wakeup signals to pwrmgr connections if there is one
+        signal_names = [
+            f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
+        ]
 
-    topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
-    log.info("Intermodule signals: {}".format(
-        topcfg["inter_module"]["connect"]))
+        topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
+        log.info("Intermodule signals: {}".format(
+            topcfg["inter_module"]["connect"]))
 
 
 # Handle reset requests from modules
 def amend_reset_request(topcfg: OrderedDict,
                         name_to_block: Dict[str, IpBlock]):
-
-    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
-
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = {}
         topcfg["reset_requests"]["peripheral"] = []
@@ -1080,15 +1144,17 @@ def amend_reset_request(topcfg: OrderedDict,
                 'desc': signal.desc
             })
 
-    # add reset requests to pwrmgr connections
-    signal_names = [
-        "{}.{}".format(s["module"].lower(), s["name"].lower())
-        for s in topcfg["reset_requests"]["peripheral"]
-    ]
+    pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
+    if pwrmgr_name:
+        # add reset requests to pwrmgr connections if there is one
+        signal_names = [
+            "{}.{}".format(s["module"].lower(), s["name"].lower())
+            for s in topcfg["reset_requests"]["peripheral"]
+        ]
 
-    topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
-    log.info("Intermodule signals: {}".format(
-        topcfg["inter_module"]["connect"]))
+        topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
+        log.info("Intermodule signals: {}".format(
+            topcfg["inter_module"]["connect"]))
 
 
 def append_io_signal(temp: Dict, sig_inst: Dict) -> None:
@@ -1302,9 +1368,10 @@ def merge_top(topcfg: OrderedDict,
     # Combine the alert (should be processed prior to xbar)
     amend_alert(topcfg, name_to_block)
 
-    # Creates input/output list in the pinmux
-    log.info("Processing PINMUX")
-    amend_pinmux_io(topcfg, name_to_block)
+    if lib.find_module(topcfg['module'], 'pinmux'):
+        # Creates input/output list in the pinmux
+        log.info("Processing PINMUX")
+        amend_pinmux_io(topcfg, name_to_block)
 
     # Combine xbar into topcfg
     for xbar in xbarobjs:

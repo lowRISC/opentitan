@@ -12,14 +12,15 @@ module prim_generic_rom import prim_rom_pkg::*; #(
   localparam int Aw          = $clog2(Depth)
 ) (
   input  logic             clk_i,
+  input  logic             rst_ni,
   input  logic             req_i,
   input  logic [Aw-1:0]    addr_i,
   output logic [Width-1:0] rdata_o,
   input rom_cfg_t          cfg_i
 );
 
-  logic unused_cfg;
-  assign unused_cfg = ^cfg_i;
+  logic unused_signals;
+  assign unused_signals = ^{cfg_i, rst_ni};
 
   logic [Width-1:0] mem [Depth];
 

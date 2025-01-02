@@ -12,6 +12,7 @@ use std::io::{Read, Write};
 
 use super::ChipDataError;
 use crate::chip::boolean::HardenedBool;
+use crate::chip::rom_error::RomError;
 use crate::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::with_unknown;
 
@@ -86,7 +87,8 @@ pub struct MinBl0SecVerResponse {
     /// The current minimum BL0 version.
     pub ver: u32,
     /// The status response to the request.
-    pub status: u32,
+    #[annotate(format = hex)]
+    pub status: RomError,
 }
 
 /// Request to set the next (one-time) owner stage boot slot.
@@ -102,7 +104,8 @@ pub struct NextBl0SlotRequest {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct NextBl0SlotResponse {
     /// The status response to the request.
-    pub status: u32,
+    #[annotate(format = hex)]
+    pub status: RomError,
     /// The current primary slot.
     pub primary_bl0_slot: BootSlot,
 }
@@ -129,7 +132,8 @@ pub struct OwnershipUnlockRequest {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct OwnershipUnlockResponse {
     /// The status response to the request.
-    pub status: u32,
+    #[annotate(format = hex)]
+    pub status: RomError,
 }
 
 /// Request to activate ownership of the chip.
@@ -154,7 +158,8 @@ pub struct OwnershipActivateRequest {
 #[derive(Debug, Default, Serialize, Annotate)]
 pub struct OwnershipActivateResponse {
     /// The status response to the request.
-    pub status: u32,
+    #[annotate(format = hex)]
+    pub status: RomError,
 }
 
 #[derive(Debug, Serialize, Annotate)]
@@ -373,7 +378,7 @@ impl TryFrom<&[u8]> for MinBl0SecVerResponse {
         let mut reader = std::io::Cursor::new(buf);
         Ok(MinBl0SecVerResponse {
             ver: reader.read_u32::<LittleEndian>()?,
-            status: reader.read_u32::<LittleEndian>()?,
+            status: RomError(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
@@ -381,7 +386,7 @@ impl MinBl0SecVerResponse {
     pub const SIZE: usize = 8;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
         dest.write_u32::<LittleEndian>(self.ver)?;
-        dest.write_u32::<LittleEndian>(self.status)?;
+        dest.write_u32::<LittleEndian>(u32::from(self.status))?;
         Ok(())
     }
 }
@@ -410,7 +415,7 @@ impl TryFrom<&[u8]> for NextBl0SlotResponse {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(NextBl0SlotResponse {
-            status: reader.read_u32::<LittleEndian>()?,
+            status: RomError(reader.read_u32::<LittleEndian>()?),
             primary_bl0_slot: BootSlot(reader.read_u32::<LittleEndian>()?),
         })
     }
@@ -418,8 +423,7 @@ impl TryFrom<&[u8]> for NextBl0SlotResponse {
 impl NextBl0SlotResponse {
     pub const SIZE: usize = 4;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        dest.write_u32::<LittleEndian>(self.status)?;
-        dest.write_u32::<LittleEndian>(u32::from(self.primary_bl0_slot))?;
+        dest.write_u32::<LittleEndian>(u32::from(self.status))?;
         Ok(())
     }
 }
@@ -472,14 +476,14 @@ impl TryFrom<&[u8]> for OwnershipUnlockResponse {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(OwnershipUnlockResponse {
-            status: reader.read_u32::<LittleEndian>()?,
+            status: RomError(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
 impl OwnershipUnlockResponse {
     pub const SIZE: usize = 4;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        dest.write_u32::<LittleEndian>(self.status)?;
+        dest.write_u32::<LittleEndian>(u32::from(self.status))?;
         Ok(())
     }
 }
@@ -527,14 +531,14 @@ impl TryFrom<&[u8]> for OwnershipActivateResponse {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let mut reader = std::io::Cursor::new(buf);
         Ok(OwnershipActivateResponse {
-            status: reader.read_u32::<LittleEndian>()?,
+            status: RomError(reader.read_u32::<LittleEndian>()?),
         })
     }
 }
 impl OwnershipActivateResponse {
     pub const SIZE: usize = 4;
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
-        dest.write_u32::<LittleEndian>(self.status)?;
+        dest.write_u32::<LittleEndian>(u32::from(self.status))?;
         Ok(())
     }
 }

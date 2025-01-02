@@ -22,7 +22,7 @@
  * SLEEP PWM PULSES test
  *
  * This test configure 6 pwm channels with a fixed duty cycle
- * then kicks power manager sleep mode to see pwm pluses are
+ * then kicks power manager sleep mode to see pwm pulses are
  * not affected by power down event.
  * pwm out --> pinmux setup is chosen arbitrary as below
  *      pwmout[0] -> IOB10

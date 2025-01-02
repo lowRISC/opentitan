@@ -198,6 +198,7 @@ module rom_ctrl
     .wdata_o                    (),
     .wmask_o                    (),
     .intg_error_o               (rom_integrity_error),
+    .user_rsvd_o                (),
     .rdata_i                    (bus_rom_rdata),
     .rvalid_i                   (bus_rom_rvalid),
     .rerror_i                   (2'b00),

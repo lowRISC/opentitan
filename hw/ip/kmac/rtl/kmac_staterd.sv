@@ -73,6 +73,7 @@ module kmac_staterd
     .wdata_o                    (unused_tlram_wdata),
     .wmask_o                    (unused_tlram_wmask),
     .intg_error_o               (),
+    .user_rsvd_o                (),
     .rdata_i                    (tlram_rdata),
     .rvalid_i                   (tlram_rvalid),
     .rerror_i                   (tlram_rerror),

@@ -20,6 +20,7 @@
 enum {
   kBaseEntropySrc = TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR,
   kBaseIbex = TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR,
+  kIbexRndStatusReg = kBaseIbex + RV_CORE_IBEX_RND_STATUS_REG_OFFSET,
 
   // This covers the health threshold registers which are contiguous. The alert
   // threshold register is not included here.
@@ -112,7 +113,7 @@ uint32_t rnd_uint32(void) {
           kHardenedBoolTrue) {
     // When bit-0 is clear an EDN request for new data for RND_DATA is
     // pending.
-    while (!abs_mmio_read32(kBaseIbex + RV_CORE_IBEX_RND_STATUS_REG_OFFSET)) {
+    while (!(abs_mmio_read32(kIbexRndStatusReg) & 1)) {
     }
   }
   uint32_t mcycle;
