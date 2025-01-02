@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class pwm_monitor_cfg  extends dv_base_agent_cfg;
+class pwm_monitor_cfg extends dv_base_agent_cfg;
 
   int monitor_id = 0;
-  bit invert     = 1'b0; // 0: active high,  1: active low
+  bit invert     = 1'b0; // 0: active high, 1: active low
   bit active     = 1'b0; // 1: valid configuration, collect items 0: ignore
   int resolution = 0;
   int clk_div    = 0;
