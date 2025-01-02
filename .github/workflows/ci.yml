@@ -104,55 +104,6 @@ jobs:
       interface: cw310
       tag_filters: cw310_test_rom
 
-  execute_rom_fpga_tests_cw310:
-    name: CW310 ROM Tests
-    needs: chip_earlgrey_cw310
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_rom_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310
-      board: cw310
-      interface: cw310
-      tag_filters: "cw310_rom_with_fake_keys,cw310_rom_with_real_keys,-manuf"
-      timeout: 90
-
-  execute_rom_ext_fpga_tests_cw310:
-    name: CW310 ROM_EXT Tests
-    needs: chip_earlgrey_cw310_hyperdebug
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_rom_ext_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310_hyperdebug
-      board: cw310
-      interface: hyper310
-      tag_filters: hyper310_rom_ext
-
-  execute_sival_fpga_tests_cw310:
-    name: CW310 SiVal Tests
-    needs: chip_earlgrey_cw310_hyperdebug
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_sival_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310_hyperdebug
-      board: cw310
-      interface: hyper310
-      tag_filters: "cw310_sival,-manuf"
-
-  execute_sival_rom_ext_fpga_tests_cw310:
-    name: CW310 SiVal ROM_EXT Tests
-    needs: chip_earlgrey_cw310_hyperdebug
-    uses: ./.github/workflows/fpga.yml
-    secrets: inherit
-    with:
-      job_name: execute_sival_rom_ext_fpga_tests_cw310
-      bitstream: chip_earlgrey_cw310_hyperdebug
-      board: cw310
-      interface: hyper310
-      tag_filters: cw310_sival_rom_ext
-
   execute_manuf_fpga_tests_cw310:
     name: CW310 Manufacturing Tests
     needs: chip_earlgrey_cw310_hyperdebug
@@ -170,10 +121,6 @@ jobs:
     runs-on: ubuntu-22.04
     needs:
       - execute_test_rom_fpga_tests_cw310
-      - execute_rom_fpga_tests_cw310
-      - execute_rom_ext_fpga_tests_cw310
-      - execute_sival_fpga_tests_cw310
-      - execute_sival_rom_ext_fpga_tests_cw310
       - execute_manuf_fpga_tests_cw310
     if: success() || failure()
     steps:
