@@ -859,7 +859,7 @@
     },
     "//third_party/tock:extensions.bzl%tock": {
       "general": {
-        "bzlTransitiveDigest": "T99/pQcMcjrRwKzA/adYMZ+7NNswv1OK/Y99xkifR7E=",
+        "bzlTransitiveDigest": "OcDyZKROwGaVMtk8FFdPQaILN3NTB9Eo01M94Gqbw4A=",
         "usagesDigest": "fQHPKaIGApMNRxDqTd07pSqd9IzEr+5D869in2Lsz48=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -941,11 +941,6 @@
             "",
             "",
             ""
-          ],
-          [
-            "",
-            "bazel_skylib",
-            "bazel_skylib~"
           ],
           [
             "",
