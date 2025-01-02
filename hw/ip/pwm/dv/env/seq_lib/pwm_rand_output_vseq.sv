@@ -9,11 +9,11 @@ class pwm_rand_output_vseq extends pwm_base_vseq;
   // Configuration for each channel in turn.
   rand param_reg_t [PWM_NUM_CHANNELS-1:0] pwm_param;
 
-  // Enable and invert bits for each channel
+  // Enable and invert bits for each channel.
   rand bit [PWM_NUM_CHANNELS-1:0] rand_chan;
   rand bit [PWM_NUM_CHANNELS-1:0] rand_invert;
 
-  // If true, this stops the clock in "low power" mode
+  // If true, this stops the clock in "low power" mode.
   rand bit low_power;
 
   // Model low power mode 10% of the time.
@@ -50,7 +50,7 @@ task pwm_rand_output_vseq::body();
   // Enable the channels.
   set_ch_enables(rand_chan);
 
-  low_power_mode(low_power, NUM_CYCLES);
+  monitor_dut_outputs(low_power, NUM_CYCLES);
 
   shutdown_dut();
 endtask
