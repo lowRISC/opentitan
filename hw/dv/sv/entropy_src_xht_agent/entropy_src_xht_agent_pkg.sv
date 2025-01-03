@@ -9,6 +9,10 @@ package entropy_src_xht_agent_pkg;
   import dv_lib_pkg::*;
   import entropy_src_pkg::*;
 
+  // TODO(#25760): Make the RNG BUS WIDTH parameter overwritable from the outside to allow
+  // testing other configs than the Earlgrey config
+  parameter uint RNG_BUS_WIDTH = 4;
+
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
