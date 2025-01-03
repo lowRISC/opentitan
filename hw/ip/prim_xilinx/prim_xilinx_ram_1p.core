@@ -9,7 +9,6 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
-      - lowrisc:prim:ram_1p_pkg
       # Note that prim_xilinx_pkg is a virtual core that the top should provide.
       # It maps parameters to instructions for how to split memories into
       # logical groups of bits. See prim_xilinx_default_pkg for an example.
