@@ -17,16 +17,19 @@ class rom_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(rom_ctrl_env_cfg));
   // covergroups
   // [add covergroups here]
 
-  function new(string name, uvm_component parent);
-    super.new(name, parent);
-    // [instantiate covergroups here]
-  endfunction : new
-
-  virtual function void build_phase(uvm_phase phase);
-    super.build_phase(phase);
-    // [or instantiate covergroups here]
-    // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
-    // See cip_base_env_cov for details
-  endfunction
+  extern function new(string name, uvm_component parent);
+  extern virtual function void build_phase(uvm_phase phase);
 
 endclass
+
+function rom_ctrl_env_cov::new(string name, uvm_component parent);
+  super.new(name, parent);
+  // [instantiate covergroups here]
+endfunction : new
+
+function void rom_ctrl_env_cov::build_phase(uvm_phase phase);
+  super.build_phase(phase);
+  // [or instantiate covergroups here]
+  // Please instantiate sticky_intr_cov array of objects for all interrupts that are sticky
+  // See cip_base_env_cov for details
+endfunction
