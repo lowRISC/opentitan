@@ -450,8 +450,9 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    with_alert_handler: false
-    virtual_pkg_vlnv: lowrisc:opentitan:top_englishbreakfast_virtual_pkgs
+    alert_handler_vlnv_prefix: top_earlgrey_
+    pwrmgr_vlnv_prefix: top_englishbreakfast_
+    top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     topname: englishbreakfast
   }
 }

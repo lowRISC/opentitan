@@ -690,8 +690,9 @@
     ]
     rst_ni: lc_io_div4
     export_rsts: {}
-    with_alert_handler: true
-    virtual_pkg_vlnv: lowrisc:opentitan:top_earlgrey_virtual_pkgs
+    alert_handler_vlnv_prefix: top_earlgrey_
+    pwrmgr_vlnv_prefix: top_earlgrey_
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }

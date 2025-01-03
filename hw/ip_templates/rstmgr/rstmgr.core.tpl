@@ -4,13 +4,13 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:rstmgr:0.1")}
 description: "Reset manager RTL"
-virtual:
-  - lowrisc:ip_interfaces:rstmgr
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip_interfaces:alert_handler_pkg
+% if len(alert_handler_vlnv_prefix) > 0:
+      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg", alert_handler_vlnv_prefix)}
+% endif
       - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:clock_mux2
@@ -29,12 +29,6 @@ filesets:
       - rtl/rstmgr_leaf_rst.sv
       - rtl/rstmgr.sv
     file_type: systemVerilogSource
-
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
 
   files_verilator_waiver:
     depend:
@@ -67,10 +61,6 @@ targets:
 
   lint:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

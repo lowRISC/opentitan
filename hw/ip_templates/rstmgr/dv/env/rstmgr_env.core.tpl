@@ -14,6 +14,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - ${instance_vlnv("lowrisc:ip:rstmgr_pkg")}
+      - ${top_pkg_vlnv}
 
     files:
       - rstmgr_env_pkg.sv

@@ -8,8 +8,8 @@ filesets:
   files_dv:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
-      - lowrisc:ip_interfaces:pwrmgr_rstmgr_sva_if
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if
       - ${instance_vlnv("lowrisc:ip:rstmgr")}
 
     files:

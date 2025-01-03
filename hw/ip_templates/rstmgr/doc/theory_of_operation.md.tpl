@@ -1,3 +1,6 @@
+<%
+  has_alert_handler = len(alert_handler_vlnv_prefix) > 0
+%>\
 <%text filter="n"># Theory of Operation
 
 The OpenTitan reset topology and reset controller block diagram are shown in the diagram below.
@@ -135,7 +138,7 @@ The reset manager then checks as follows:
 - If all reset conditions are satisfied, wait for the reset release to gracefully complete the cycle.
 
 </%text>\
-% if with_alert_handler:
+% if has_alert_handler:
 <%text filter="n">### Reset Indications for Alert Handler
 
 The alert handler needs to know the status of the various reset domains in the system to avoid false alert indications due to the ping mechanism.
