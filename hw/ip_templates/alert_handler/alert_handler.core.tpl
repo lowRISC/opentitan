@@ -4,20 +4,13 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:alert_handler:0.1")}
 description: "Alert Handler"
-virtual:
-  - lowrisc:ip_interfaces:alert_handler
 
 filesets:
   files_rtl:
     depend:
       - ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}
-      - ${instance_vlnv("lowrisc:ip_interfaces:alert_handler_reg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:alert_handler_reg:0.1")}
     file_type: systemVerilogSource
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
 
 parameters:
   SYNTHESIS:
@@ -33,10 +26,6 @@ targets:
 
   lint:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

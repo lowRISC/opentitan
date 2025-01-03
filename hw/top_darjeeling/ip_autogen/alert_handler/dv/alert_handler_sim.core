@@ -18,10 +18,6 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_alert_handler_sva:0.1
     file_type: systemVerilogSource
 
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_virtual_pkgs)"
-
 generate:
   ral:
     generator: ralgen
@@ -35,7 +31,6 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-      - files_virtual_provider
     generate:
       - ral
     default_tool: vcs

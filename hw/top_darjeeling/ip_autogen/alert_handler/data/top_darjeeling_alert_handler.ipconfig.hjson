@@ -218,7 +218,7 @@
       5'd11
       5'd11
     ]
-    virtual_pkg_vlnv: lowrisc:opentitan:top_darjeeling_virtual_pkgs
+    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
   }
 }

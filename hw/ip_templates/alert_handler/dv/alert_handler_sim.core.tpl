@@ -18,12 +18,6 @@ filesets:
       - ${instance_vlnv("lowrisc:dv:alert_handler_sva:0.1")}
     file_type: systemVerilogSource
 
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
-
 generate:
   ral:
     generator: ralgen
@@ -37,9 +31,6 @@ targets:
     filesets:
       - files_rtl
       - files_dv
-% if len(virtual_pkg_vlnv) > 0:
-      - files_virtual_provider
-% endif
     generate:
       - ral
     default_tool: vcs

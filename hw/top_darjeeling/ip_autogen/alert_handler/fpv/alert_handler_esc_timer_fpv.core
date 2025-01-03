@@ -14,9 +14,6 @@ filesets:
       - tb/alert_handler_esc_timer_bind_fpv.sv
       - tb/alert_handler_esc_timer_tb.sv
     file_type: systemVerilogSource
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_virtual_pkgs)"
 
 targets:
   default: &default_target
@@ -29,10 +26,6 @@ targets:
 
   formal:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider

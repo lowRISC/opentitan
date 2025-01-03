@@ -227,7 +227,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
         "n_classes": n_classes,
         "n_lpg": n_lpg,
         "lpg_map": lpg_map,
-        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("alert_handler", topname, params, out_path)
@@ -485,7 +485,7 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     elif topname == "englishbreakfast":
         # TODO: Clean templates to not require alert_handler. English Breakfast
         # does not have one, so it uses types and constants from Earl Grey.
-        alert_handler_vlnv_prefix = f"top_earlgrey_"
+        alert_handler_vlnv_prefix = "top_earlgrey_"
     else:
         alert_handler_vlnv_prefix = ""
 

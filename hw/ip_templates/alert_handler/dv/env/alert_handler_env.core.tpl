@@ -8,8 +8,9 @@ filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}  # import alert_pkg
-      - lowrisc:prim:mubi  # import prim_mubi_pkg
+      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg:0.1")}
+      - lowrisc:prim:mubi_pkg
+      - ${top_pkg_vlnv}
     files:
       - alert_handler_env_pkg.sv
       - alert_handler_if.sv
