@@ -82,7 +82,7 @@ jobs:
 
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt || {
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt build.log || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
@@ -101,3 +101,10 @@ jobs:
         with:
           name: ${{ inputs.job_name }}-targets
           path: target_pattern_file.txt
+
+      - name: Upload Bazel execution logs
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.job_name }}-exec-logs
+          path: build.log

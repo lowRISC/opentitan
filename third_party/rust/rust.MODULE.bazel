@@ -47,6 +47,16 @@ crate.from_cargo(
     manifests = ["//third_party/rust:Cargo.toml"],
 )
 crate.annotation(
+    crate = "thiserror-core",
+    build_script_env = {"CARGO_BUILD_DEP_INFO_BASEDIR": "."},
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    crate = "rustix",
+    build_script_env = {"CARGO_BUILD_DEP_INFO_BASEDIR": "."},
+    repositories = ["crate_index"],
+)
+crate.annotation(
     crate = "libudev-sys",
     patch_args = ["-p1"],
     patches = ["@//third_party/rust/patches:libudev-sys-0.1.4.patch"],
