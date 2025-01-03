@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl_reg:0.1
 description: "Flash registers"
-virtual:
-  - lowrisc:ip_interfaces:flash_ctrl_reg
 
 filesets:
   files_rtl:

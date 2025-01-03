@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_englishbreakfast_flash_ctrl:0.1
 description: "Flash Controller"
-virtual:
-  - lowrisc:ip_interfaces:flash_ctrl
 
 filesets:
   files_rtl:
@@ -24,6 +22,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_pkg
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_reg
+      - lowrisc:constants:top_englishbreakfast_top_pkg
       - lowrisc:ip:jtag_pkg
     files:
       - rtl/flash_ctrl.sv
@@ -45,10 +44,6 @@ filesets:
       - rtl/flash_phy_erase.sv
       - rtl/flash_phy_scramble.sv
     file_type: systemVerilogSource
-
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_englishbreakfast_virtual_pkgs)"
 
   files_verilator_waiver:
     depend:
@@ -91,8 +86,6 @@ targets:
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

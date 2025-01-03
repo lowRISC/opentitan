@@ -8,7 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_earlgrey_top_pkg
       - lowrisc:opentitan:top_earlgrey_flash_ctrl:0.1
     file_type: systemVerilogSource
 
@@ -22,10 +22,6 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_virtual_pkgs)"
-
 targets:
   default: &default_target
     toplevel: tb
@@ -35,12 +31,8 @@ targets:
 
   sim:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
     default_tool: vcs
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
     default_tool: vcs

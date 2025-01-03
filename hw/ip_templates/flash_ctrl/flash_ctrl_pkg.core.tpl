@@ -10,10 +10,10 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - ${top_pkg_vlnv}
       - lowrisc:prim:util
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
       - lowrisc:ip:jtag_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:tlul:headers

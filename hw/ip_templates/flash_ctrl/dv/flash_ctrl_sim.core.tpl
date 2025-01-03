@@ -8,7 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:tlul
-      - lowrisc:constants:top_pkg
+      - ${top_pkg_vlnv}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
     file_type: systemVerilogSource
 
@@ -22,12 +22,6 @@ filesets:
       - tb/tb.sv
     file_type: systemVerilogSource
 
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
-
 targets:
   default: &default_target
     toplevel: tb
@@ -37,16 +31,8 @@ targets:
 
   sim:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: vcs
 
   lint:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: vcs

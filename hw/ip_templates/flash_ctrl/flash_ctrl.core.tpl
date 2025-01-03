@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl:0.1")}
 description: "Flash Controller"
-virtual:
-  - lowrisc:ip_interfaces:flash_ctrl
 
 filesets:
   files_rtl:
@@ -24,6 +22,7 @@ filesets:
       - lowrisc:ip:otp_ctrl_pkg
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_reg")}
+      - ${top_pkg_vlnv}
       - lowrisc:ip:jtag_pkg
     files:
       - rtl/flash_ctrl.sv
@@ -45,12 +44,6 @@ filesets:
       - rtl/flash_phy_erase.sv
       - rtl/flash_phy_scramble.sv
     file_type: systemVerilogSource
-
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
 
   files_verilator_waiver:
     depend:
@@ -93,10 +86,6 @@ targets:
 
   lint:
     <<: *default_target
-% if len(virtual_pkg_vlnv) > 0:
-    filesets_append:
-      - files_virtual_provider
-% endif
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
