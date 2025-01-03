@@ -85,3 +85,11 @@ py_library(
     name = "version_file",
     srcs = ["version_file.py"],
 )
+
+cc_library(
+    name = "bfv_decoder",
+    srcs = ["bfv_decoder.c"],
+    deps = [
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)

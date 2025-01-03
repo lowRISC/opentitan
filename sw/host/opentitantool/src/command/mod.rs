@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+pub mod bfv;
 pub mod bootstrap;
 pub mod certificate;
 pub mod clear_bitstream;
