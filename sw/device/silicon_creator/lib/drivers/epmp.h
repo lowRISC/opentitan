@@ -44,6 +44,31 @@ extern "C" {
 void epmp_clear(uint8_t entry);
 
 /**
+ * Clear the lock bit in all ePMP entries.
+ */
+void epmp_clear_lock_bits(void);
+
+/**
+ * Encode a start/end address pair to NAPOT address.
+ *
+ * The region start must have an alignment consistend with the region size.  The
+ * region size must be a power of two.  If either of these conditions is not
+ * met, this function will fault.
+ *
+ * @param region The address region to configure.
+ * @return The encoded NAPOT address.
+ */
+uint32_t epmp_encode_napot(epmp_region_t region);
+
+/**
+ * Decode a NAPOT address back to start/end address pair.
+ *
+ * @param pmpaddr The encoded NAPOT address.
+ * @return region The decoded start/end address pair.
+ */
+epmp_region_t epmp_decode_napot(uint32_t pmpaddr);
+
+/**
  * Configures an ePMP entry for a NAPOT or NA4 region.
  *
  * The region start must have an alignment consistend with the region size.  The
