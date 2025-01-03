@@ -65,10 +65,10 @@
       default: "1"
     }
     {
-      name: "virtual_pkg_vlnv"
-      desc: "Provides a VLNV that contains all the virtual providers for constants"
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
       type: "string"
-      default: ""
+      default: "lowrisc:constants:top_pkg"
     }
   ]
 }

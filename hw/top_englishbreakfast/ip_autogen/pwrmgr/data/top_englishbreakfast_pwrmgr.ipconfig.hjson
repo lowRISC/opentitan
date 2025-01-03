@@ -60,7 +60,7 @@
     NumRstReqs: 1
     wait_for_external_reset: false
     NumRomInputs: 1
-    virtual_pkg_vlnv: lowrisc:opentitan:top_englishbreakfast_virtual_pkgs
+    top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     topname: englishbreakfast
   }
 }

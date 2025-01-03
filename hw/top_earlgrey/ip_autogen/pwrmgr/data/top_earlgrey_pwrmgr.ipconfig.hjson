@@ -81,7 +81,7 @@
     NumRstReqs: 2
     wait_for_external_reset: false
     NumRomInputs: 1
-    virtual_pkg_vlnv: lowrisc:opentitan:top_earlgrey_virtual_pkgs
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }

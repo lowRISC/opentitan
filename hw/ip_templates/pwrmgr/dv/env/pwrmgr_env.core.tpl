@@ -11,6 +11,7 @@ filesets:
       - lowrisc:dv:cip_lib
       - lowrisc:ip:rv_core_ibex_pkg
       - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg")}
+      - ${top_pkg_vlnv}
     files:
       - pwrmgr_env_pkg.sv
       - pwrmgr_env_cfg.sv: {is_include_file: true}

@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_englishbreakfast_pwrmgr:0.1
 description: "Power manager RTL"
-virtual:
-  - lowrisc:ip_interfaces:pwrmgr
 
 filesets:
   files_rtl:
