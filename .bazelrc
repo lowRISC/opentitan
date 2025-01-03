@@ -10,6 +10,9 @@ build --action_env=BAZEL_CXXOPTS="-std=gnu++14"
 build --cxxopt='-std=gnu++14'
 build --conlyopt='-std=gnu11'
 
+# Deterministic builds!
+build --action_env=CARGO_BUILD_DEP_INFO_BASEDIR="."
+
 # Never strip debugging information so that we can produce annotated
 # disassemblies when compilation mode is fastbuild.
 build --strip='never'
