@@ -116,3 +116,28 @@ use_repo(hwtrust, "hwtrust")
 
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
 use_repo(qemu, "qemu_opentitan")
+
+# Extension for linking in externally managed test and provisioning customizations
+# for both secure/non-secure manufacturer domains.
+hooks = use_extension("//rules:extensions.bzl", "hooks")
+hooks.repo(
+    name = "manufacturer_test_hooks",
+    dummy = "sw/device/tests/closed_source",
+    env = "MANUFACTURER_HOOKS_DIR",
+)
+hooks.repo(
+    name = "secure_manufacturer_test_hooks",
+    dummy = "sw/device/tests/closed_source",
+    env = "SECURE_MANUFACTURER_HOOKS_DIR",
+)
+hooks.repo(
+    name = "provisioning_exts",
+    dummy = "sw/device/silicon_creator/manuf/extensions",
+    env = "PROV_EXTS_DIR",
+)
+use_repo(
+    hooks,
+    "manufacturer_test_hooks",
+    "provisioning_exts",
+    "secure_manufacturer_test_hooks",
+)
