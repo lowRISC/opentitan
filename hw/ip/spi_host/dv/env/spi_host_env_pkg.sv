@@ -15,9 +15,9 @@ package spi_host_env_pkg;
   import dv_base_reg_pkg::*;
   import spi_host_reg_pkg::*;
   import spi_host_ral_pkg::*;
+  import spi_host_env_cfg_pkg::*;
 
   // parameters
-  parameter uint SPI_HOST_NUM_CS         = spi_host_reg_pkg::NumCS;
   parameter uint SPI_HOST_TX_DEPTH       = spi_host_reg_pkg::TxDepth;
   parameter uint SPI_HOST_RX_DEPTH       = spi_host_reg_pkg::RxDepth;
   parameter uint SPI_HOST_CMD_DEPTH      = spi_host_reg_pkg::CmdDepth;
