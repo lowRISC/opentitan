@@ -13,7 +13,7 @@ package aon_timer_env_pkg;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
   import aon_timer_ral_pkg::*;
-
+  import usbdev_env_pkg::*;
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -31,6 +31,7 @@ package aon_timer_env_pkg;
   `include "aon_timer_env_cfg.sv"
   `include "aon_timer_env_cov.sv"
   `include "aon_timer_virtual_sequencer.sv"
+  `include "aon_timer_intr_timed_regs.sv"
   `include "aon_timer_scoreboard.sv"
   `include "aon_timer_env.sv"
   `include "aon_timer_vseq_list.sv"

@@ -35,6 +35,10 @@ class dv_base_reg extends uvm_reg;
   // through the 1st/2nd (or both) writes
   semaphore            atomic_en_shadow_wr;
 
+  // Can be set before predicting a value for the case the register 'is_busy==1'
+  bit                  predicting_value;
+  uvm_event value_predicted_ev = new(); // Can be triggered to know when a prediction's finalised
+
   function new(string       name = "",
                int unsigned n_bits,
                int          has_coverage);
@@ -478,5 +482,15 @@ class dv_base_reg extends uvm_reg;
     end
     return retval;
   endfunction
+
+  // Blocks until a value is predicted assuming the flag 'predicting_value' was set prior to
+  // calling '.predict()' method
+  task wait_for_prediction();
+    if (predicting_value ) begin
+      value_predicted_ev.wait_ptrigger();
+      `uvm_info(`gfn, $sformatf("Reg_name: %0s, value=0x%0x; value_predicted_ev event triggered",
+                                get_name(), get_mirrored_value()), UVM_DEBUG)
+    end
+  endtask
 
 endclass

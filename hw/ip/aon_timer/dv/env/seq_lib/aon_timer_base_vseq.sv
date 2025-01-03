@@ -59,6 +59,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   extern virtual task apply_reset(string kind = "HARD");
   extern virtual task apply_resets_concurrently(int reset_duration_ps = 0);
   extern task wait_for_interrupt(bit intr_state_read = 1);
+  extern task write_wkup_reg(input uvm_object ptr, input uvm_reg_data_t value);
 
 endclass : aon_timer_base_vseq
 
@@ -98,13 +99,16 @@ task aon_timer_base_vseq::aon_timer_shutdown();
   `uvm_info(`gfn, "Shutting down AON Timer...", UVM_LOW)
 
   `uvm_info(`gfn, "Writing 0 to WKUP_CTRL and WDOG_CTRL to disable AON timer", UVM_HIGH)
-  csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b0);
+  write_wkup_reg(ral.wkup_ctrl.enable, 1'b0);
+  `uvm_info(`gfn, "write_reg wdog_ctr.enable", UVM_DEBUG);
   csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
 
   `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_HIGH)
   // Clear wake-up request if we have any
   csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
 
+  // We need to ensure the prediction has kicked in before we read the intr_state
+  wait (ral.intr_state.is_busy() == 0);
   // Clear the interrupts
   csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
 
@@ -113,9 +117,9 @@ task aon_timer_base_vseq::aon_timer_shutdown();
                              "to WDOG_COUNT."},
                             wkup_count, wdog_count), UVM_LOW)
   // Register Write
-  csr_utils_pkg::csr_wr(ral.wkup_count_lo, wkup_count[31:0]);
-  csr_utils_pkg::csr_wr(ral.wkup_count_hi, wkup_count[63:32]);
-  csr_utils_pkg::csr_wr(ral.wdog_count, wdog_count);
+  write_wkup_reg(ral.wkup_count_lo, wkup_count[31:0]);
+  write_wkup_reg(ral.wkup_count_hi, wkup_count[63:32]);
+  write_wkup_reg(ral.wdog_count, wdog_count);
 
   // Wait to settle registers on AON timer domain
   cfg.aon_clk_rst_vif.wait_clks(5);
@@ -123,27 +127,27 @@ endtask : aon_timer_shutdown
 
 // setup basic aon_timer features
 task aon_timer_base_vseq::aon_timer_init();
-
+  bit wkup_thold_lo_we, wkup_thold_hi_we;
   // Clear the interrupts
   csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
 
   `uvm_info(`gfn, "Initializating AON Timer. Writing 0 to WKUP_COUNT and WDOG_COUNT", UVM_LOW)
   // Register Write
-  csr_utils_pkg::csr_wr(ral.wkup_count_lo, 32'h0000_0000);
-  csr_utils_pkg::csr_wr(ral.wkup_count_hi, 32'h0000_0000);
+  write_wkup_reg(ral.wkup_count_lo, 32'h0000_0000);
+  write_wkup_reg(ral.wkup_count_hi, 32'h0000_0000);
   csr_utils_pkg::csr_wr(ral.wdog_count, 32'h0000_0000);
 
   `uvm_info(`gfn, "Randomizing AON Timer thresholds", UVM_HIGH)
 
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to wkup_thold", wkup_thold), UVM_HIGH)
-  csr_utils_pkg::csr_wr(ral.wkup_thold_lo, wkup_thold[31:0]);
-  csr_utils_pkg::csr_wr(ral.wkup_thold_hi, wkup_thold[63:32]);
+  write_wkup_reg(ral.wkup_thold_lo, wkup_thold[31:0]);
+  write_wkup_reg(ral.wkup_thold_hi, wkup_thold[63:32]);
 
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bark_thold", wdog_bark_thold), UVM_HIGH)
-  csr_utils_pkg::csr_wr(ral.wdog_bark_thold, wdog_bark_thold);
+  write_wkup_reg(ral.wdog_bark_thold, wdog_bark_thold);
 
   `uvm_info(`gfn, $sformatf("Writing 0x%0h to wdog_bite_thold", wdog_bite_thold), UVM_HIGH)
-  csr_utils_pkg::csr_wr(ral.wdog_bite_thold, wdog_bite_thold);
+  write_wkup_reg(ral.wdog_bite_thold, wdog_bite_thold);
 
   cfg.lc_escalate_en_vif.drive(0);
 
@@ -188,6 +192,9 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
     if (intr_state_read) begin
       // Wait 2 clocks to ensure interrupt is visible on intr_state read
       cfg.aon_clk_rst_vif.wait_clks(2);
+
+      // We need to ensure the prediction has kicked in before we read the intr_state
+      wait (ral.intr_state.is_busy()==0);
       csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
     end
 
@@ -197,3 +204,41 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
     end
   end
 endtask : wait_for_interrupt
+
+// Use only to write wkup regs, since some wdog regs won't see the WE signal go high until REGWEN
+// is sent
+task aon_timer_base_vseq::write_wkup_reg(input uvm_object ptr, input uvm_reg_data_t value);
+  bit we;
+  string path_to_we;
+  csr_field_t csr_or_fld = decode_csr_or_field(ptr);
+
+  if (csr_or_fld.csr == null)
+    `uvm_fatal(`gfn, "Couldn't decode argument into CSR reg")
+  path_to_we = {"tb.dut.u_reg.aon_", csr_or_fld.csr.get_name(), "_we"};
+  // Fork killable by reset
+  fork
+    begin : iso_fork
+      fork
+        wait(cfg.under_reset);
+        begin
+          csr_utils_pkg::csr_wr(ptr, value);
+          // After write we wait for WE to go high and then low
+          do begin
+            if (! uvm_hdl_read(path_to_we, we))
+			        `uvm_error (`gfn, $sformatf("HDL Read from %s failed", path_to_we))
+            if (we === 0)
+              cfg.aon_clk_rst_vif.wait_clks(1); // enabled is synchronised to the aon domain
+          end while (!we);
+          do begin
+            if (! uvm_hdl_read(path_to_we, we))
+			        `uvm_error (`gfn, $sformatf("HDL Read from %s failed", path_to_we))
+            if (we === 1)
+              cfg.aon_clk_rst_vif.wait_clks(1); // enabled is synchronised to the aon domain
+          end while (we);
+        end
+      join_any
+      disable fork;
+    end : iso_fork
+  join
+
+endtask : write_wkup_reg
