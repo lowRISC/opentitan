@@ -30,6 +30,8 @@ cp -rt "${BIT_CACHE_DIR}" "${BIT_SRC_DIR}"/*
 
 export BITSTREAM="--offline --list ci_bitstreams"
 
+export CARGO_BUILD_DEP_INFO_BASEDIR="."
+
 # We will lose serial access when we reboot, but if tests fail we should reboot
 # in case we've crashed the UART handler on the CW310's SAM3U
 # Note that the hyperdebug backend does not have the reset-sam3x command so this will fail but not trigger an error.
