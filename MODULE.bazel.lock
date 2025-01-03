@@ -173,6 +173,49 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//rules:extensions.bzl%hooks": {
+      "general": {
+        "bzlTransitiveDigest": "4jKAP4jsTdJoZuA38C4q/KV6hxks41+r6Bfm6YN+2JA=",
+        "usagesDigest": "efm8dv/MZl0wK8Lk/GoYEpr1qnmqsiHA2uojJeQNjFg=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {
+          "MANUFACTURER_HOOKS_DIR": null,
+          "PROV_EXTS_DIR": null,
+          "SECURE_MANUFACTURER_HOOKS_DIR": null
+        },
+        "generatedRepoSpecs": {
+          "manufacturer_test_hooks": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/tests/closed_source"
+            }
+          },
+          "secure_manufacturer_test_hooks": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/tests/closed_source"
+            }
+          },
+          "provisioning_exts": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/silicon_creator/manuf/extensions"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/coremark:extensions.bzl%coremark": {
       "general": {
         "bzlTransitiveDigest": "oYo82g1v5+HVld/0IwdJ9ySQQ8T3TvFE4GeVWBErLKM=",
