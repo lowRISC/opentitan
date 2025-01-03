@@ -10,6 +10,7 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:prim:all
       - lowrisc:ip:tlul
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/uart_reg_pkg.sv
       - rtl/uart_reg_top.sv

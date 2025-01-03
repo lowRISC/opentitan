@@ -69,15 +69,36 @@
     },
   ],
   inter_signal_list: [
-    { struct:  "policies",
+    { struct:  "racl_policy_vec",
       type:    "uni",
-      name:    "policies",
+      name:    "racl_policies",
       act:     "req",
-      package: "racl_pkg",
+      package: "top_racl_pkg",
       desc:    '''
         Policy vector distributed to the subscribing RACL IPs.
       '''
-    },
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "rcv",
+      width  : "NumSubscribingIps",
+      desc:    '''
+        Error notification vector collecting errors from all subscribing IPs.
+        A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
+        Only one IP can raise an error at a time.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error_log",
+      act:     "rcv",
+      width:   "NumSubscribingIps"
+      package: "top_racl_pkg",
+      desc:    '''
+        Error log information from all IPs.
+      '''
+    }
   ],
 
   registers: [
