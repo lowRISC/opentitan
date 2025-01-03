@@ -41,6 +41,10 @@ bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
 
 bitstreams_repo(name = "bitstreams")
 
+nonhermetic_repo = use_repo_rule("//rules:nonhermetic.bzl", "nonhermetic_repo")
+
+nonhermetic_repo(name = "nonhermetic")
+
 # Source repositories (not Bazel-aware):
 github_tools = use_extension("//third_party/github:extensions.bzl", "github_tools")
 use_repo(github_tools, "com_github_gh")
