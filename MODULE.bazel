@@ -145,3 +145,5 @@ use_repo(
     "provisioning_exts",
     "secure_manufacturer_test_hooks",
 )
+
+register_toolchains("//rules/opentitan:localtools")
