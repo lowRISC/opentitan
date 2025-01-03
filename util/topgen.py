@@ -395,7 +395,9 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "exported_clks": topcfg["exported_clks"],
         "number_of_clock_groups": len(clocks.groups),
         "with_alert_handler": with_alert_handler,
-        "virtual_pkg_vlnv": f"lowrisc:opentitan:top_{topname}_virtual_pkgs",
+        # TODO: Register VLNVs and look this up instead of hard-coding.
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("clkmgr", topname, params, out_path)

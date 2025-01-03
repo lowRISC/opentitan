@@ -18,17 +18,12 @@ filesets:
       - cov/clkmgr_cov_bind.sv
     file_type: systemVerilogSource
 
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_englishbreakfast_virtual_pkgs)"
-
 targets:
   sim: &sim_target
     toplevel: tb
     filesets:
       - files_rtl
       - files_dv
-      - files_virtual_provider
     default_tool: vcs
 
   lint:

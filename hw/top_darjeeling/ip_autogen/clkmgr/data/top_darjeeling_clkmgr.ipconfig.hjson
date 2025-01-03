@@ -249,7 +249,8 @@
     exported_clks: {}
     number_of_clock_groups: 7
     with_alert_handler: true
-    virtual_pkg_vlnv: lowrisc:opentitan:top_darjeeling_virtual_pkgs
+    pwrmgr_vlnv_prefix: top_darjeeling_
+    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
   }
 }

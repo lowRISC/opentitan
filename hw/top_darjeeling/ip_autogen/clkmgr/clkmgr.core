@@ -4,14 +4,12 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_darjeeling_clkmgr:0.1
 description: "Top specific clock manager "
-virtual:
-  - lowrisc:ip_interfaces:clkmgr
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:ip:lc_ctrl_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:buf
@@ -32,10 +30,6 @@ filesets:
       - rtl/clkmgr_root_ctrl.sv
       - rtl/clkmgr_trans.sv
     file_type: systemVerilogSource
-
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_darjeeling_virtual_pkgs)"
 
   files_verilator_waiver:
     depend:
@@ -67,8 +61,6 @@ targets:
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true

@@ -236,7 +236,8 @@
     exported_clks: {}
     number_of_clock_groups: 8
     with_alert_handler: false
-    virtual_pkg_vlnv: lowrisc:opentitan:top_englishbreakfast_virtual_pkgs
+    pwrmgr_vlnv_prefix: top_englishbreakfast_
+    top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
     topname: englishbreakfast
   }
 }

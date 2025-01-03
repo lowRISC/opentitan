@@ -9,8 +9,9 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg", pwrmgr_vlnv_prefix)}
       - ${instance_vlnv("lowrisc:ip:clkmgr_pkg")}
+      - ${top_pkg_vlnv}
     files:
       - clkmgr_csrs_if.sv
       - clkmgr_env_pkg.sv
