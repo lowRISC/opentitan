@@ -10,6 +10,10 @@ filesets:
     depend:
       - lowrisc:prim:prim_pkg
       - lowrisc:prim:primgen
+      # TODO: This hack should go away with upstream fusesoc support. The
+      # generic prim_generic_flop_2sync depends on prim:flop, but the generator
+      # does not appear to run recursively.
+      - lowrisc:prim:flop
 
   files_verilator_waiver:
     depend:
