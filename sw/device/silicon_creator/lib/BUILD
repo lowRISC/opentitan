@@ -31,8 +31,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:memory",
@@ -360,12 +360,12 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//hw/ip/keymgr/data:keymgr_c_regs",
             "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
             "//hw/ip/rv_core_ibex/data:rv_core_ibex_c_regs",
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/ip/uart/data:uart_c_regs",
             "//hw/top_earlgrey:alert_handler_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+            "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/rstmgr:rstmgr_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -439,8 +439,8 @@ cc_library(
     deps = [
         ":bootstrap",
         "//hw/ip/gpio/data:gpio_c_regs",
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/ip_autogen/otp_ctrl:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
