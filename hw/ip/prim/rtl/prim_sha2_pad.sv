@@ -114,10 +114,9 @@ module prim_sha2_pad import prim_sha2_pkg::*;
             2'b 00:  shaf_rdata_o = 64'h 0000_0000_8000_0000;
             2'b 01:  shaf_rdata_o = {32'h 0000_0000, fifo_rdata_i.data[31:24], 24'h 8000_00};
             2'b 10:  shaf_rdata_o = {32'h 0000_0000, fifo_rdata_i.data[31:16], 16'h 8000};
-            2'b 11:  shaf_rdata_o = {32'h 0000_0000, fifo_rdata_i.data[31: 8],  8'h 80};
-            default: shaf_rdata_o = 64'h0;
+            default: shaf_rdata_o = {32'h 0000_0000, fifo_rdata_i.data[31: 8],  8'h 80}; // 2'b11
           endcase
-        end else if ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) begin
+        end else begin // SHA384 || SHA512
           unique case (message_length_i[5:3])
             3'b 000: shaf_rdata_o = 64'h 8000_0000_0000_0000;
             3'b 001: shaf_rdata_o = {fifo_rdata_i.data[63:56], 56'h 8000_0000_0000_00};
@@ -126,11 +125,9 @@ module prim_sha2_pad import prim_sha2_pkg::*;
             3'b 100: shaf_rdata_o = {fifo_rdata_i.data[63:32], 32'h 8000_0000};
             3'b 101: shaf_rdata_o = {fifo_rdata_i.data[63:24], 24'h 8000_00};
             3'b 110: shaf_rdata_o = {fifo_rdata_i.data[63:16], 16'h 8000};
-            3'b 111: shaf_rdata_o = {fifo_rdata_i.data[63:8],  8'h 80};
-            default: shaf_rdata_o = 64'h0;
+            default: shaf_rdata_o = {fifo_rdata_i.data[63:8],  8'h 80}; // 3'b111
           endcase
-        end else
-            shaf_rdata_o = '0;
+        end
       end
 
       Pad00: begin
@@ -139,16 +136,14 @@ module prim_sha2_pad import prim_sha2_pkg::*;
 
       LenHi: begin
         shaf_rdata_o = ((digest_mode_flag_q == SHA2_256) || ~MultimodeEn) ?
-                                                     {32'b0, message_length_i[63:32]}:
-                       ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) ?
-                                                     message_length_i[127:64] : '0;
+                       {32'b0, message_length_i[63:32]} :
+                       message_length_i[127:64]; // SHA384 || SHA512
       end
 
       LenLo: begin
         shaf_rdata_o = ((digest_mode_flag_q == SHA2_256) || ~MultimodeEn) ?
-                                                     {32'b0, message_length_i[31:0]}:
-                       ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) ?
-                                                     message_length_i[63:0]: '0;
+                       {32'b0, message_length_i[31:0]} :
+                       message_length_i[63:0]; // SHA384 || SHA512
       end
 
       default: begin
@@ -250,8 +245,8 @@ module prim_sha2_pad import prim_sha2_pkg::*;
         shaf_rvalid_o = 1'b1;
         fifo_rready_o = (digest_mode_flag_q == SHA2_256 || ~MultimodeEn) ?
                         shaf_rready_i && |message_length_i[4:3] :
-                        ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) ?
-                        shaf_rready_i && |message_length_i[5:3] : '0; // Only when partial
+                        // SHA384 || SHA512. Only when partial.
+                        shaf_rready_i && |message_length_i[5:3];
 
         // exactly 192 bits left, do not need to pad00's
         if (shaf_rready_i && txcnt_eq_1a0) begin
@@ -310,12 +305,12 @@ module prim_sha2_pad import prim_sha2_pkg::*;
         sel_data      = LenHi;
         shaf_rvalid_o = 1'b1;
 
+        st_d = StLenHi;
+        inc_txcount = 1'b0;
+
         if (shaf_rready_i) begin
           st_d = StLenLo;
           inc_txcount = 1'b1;
-        end else begin
-          st_d = StLenHi;
-          inc_txcount = 1'b0;
         end
       end
 
@@ -323,12 +318,12 @@ module prim_sha2_pad import prim_sha2_pkg::*;
         sel_data        = LenLo;
         shaf_rvalid_o   = 1'b1;
 
+        st_d        = StLenLo;
+        inc_txcount = 1'b0;
+
         if (shaf_rready_i) begin
           st_d        = StIdle;
           inc_txcount = 1'b1;
-        end else begin
-          st_d        = StLenLo;
-          inc_txcount = 1'b0;
         end
       end
 
@@ -359,7 +354,7 @@ module prim_sha2_pad import prim_sha2_pkg::*;
     end else if (inc_txcount) begin
       if ((digest_mode_flag_q == SHA2_256) || !MultimodeEn) begin
         tx_count_d[127:5] = tx_count[127:5] + 1'b1;
-      end else if ((digest_mode_flag_q == SHA2_384) || (digest_mode_flag_q == SHA2_512)) begin
+      end else begin // SHA384 || SHA512
         tx_count_d[127:6] = tx_count[127:6] + 1'b1;
       end
     end

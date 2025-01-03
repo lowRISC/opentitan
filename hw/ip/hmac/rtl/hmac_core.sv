@@ -199,8 +199,8 @@ module hmac_core import prim_sha2_pkg::*; (
                   ? '{data: o_pad_256[(BlockSizeSHA256-1)-32*pad_index_256-:32], mask: '1} :
     (sel_rdata == SelOPad && ((digest_size_i == SHA2_384) || (digest_size_i == SHA2_512)))
                   ? '{data: o_pad_512[(BlockSizeSHA512-1)-32*pad_index_512-:32], mask: '1} :
-    (sel_rdata == SelFifo) ? fifo_rdata_i                                                    :
-                  '{default: '0};
+    // Well-defined default case `sel_rdata == SelFifo`. `sel_rdata == 2'b11` cannot occur.
+                  fifo_rdata_i;
 
   logic [63:0] sha_msg_len;
 
@@ -210,23 +210,24 @@ module hmac_core import prim_sha2_pkg::*; (
       sha_msg_len = message_length_i;
     // HASH = (o_pad || HASH_INTERMEDIATE (i_pad || msg))
     // message length for HASH_INTERMEDIATE = block size (i_pad) + message length
-    end else if (sel_msglen == SelIPadMsg) begin
-      if (digest_size_i == SHA2_256) begin
-        sha_msg_len = message_length_i + BlockSizeSHA256in64;
-      end else if ((digest_size_i == SHA2_384) || (digest_size_i == SHA2_512)) begin
-        sha_msg_len = message_length_i + BlockSizeSHA512in64;
+    end else begin
+      if (sel_msglen == SelIPadMsg) begin
+        if (digest_size_i == SHA2_256) begin
+          sha_msg_len = message_length_i + BlockSizeSHA256in64;
+        end else begin // SHA384 || SHA512
+          sha_msg_len = message_length_i + BlockSizeSHA512in64;
+        end
+      end else begin // `SelOPadMsg`
+        // message length for HASH = block size (o_pad) + HASH_INTERMEDIATE digest length
+        if (digest_size_i == SHA2_256) begin
+          sha_msg_len = BlockSizeSHA256in64 + 64'd256;
+        end else if (digest_size_i == SHA2_384) begin
+          sha_msg_len = BlockSizeSHA512in64 + 64'd384;
+        end else begin // SHA512
+          sha_msg_len = BlockSizeSHA512in64 + 64'd512;
+        end
       end
-    end else if (sel_msglen == SelOPadMsg) begin
-    // message length for HASH = block size (o_pad) + HASH_INTERMEDIATE digest length
-      if (digest_size_i == SHA2_256) begin
-        sha_msg_len = BlockSizeSHA256in64 + 64'd256;
-      end else if (digest_size_i == SHA2_384) begin
-        sha_msg_len = BlockSizeSHA512in64 + 64'd384;
-      end else if (digest_size_i == SHA2_512) begin
-        sha_msg_len = BlockSizeSHA512in64 + 64'd512;
-      end
-    end else
-      sha_msg_len = '0;
+    end
   end
 
   assign sha_message_length_o = sha_msg_len;
