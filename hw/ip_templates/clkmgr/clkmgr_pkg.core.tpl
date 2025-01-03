@@ -13,7 +13,9 @@ filesets:
       - lowrisc:constants:top_pkg
       - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:prim:mubi
+      - lowrisc:tlul:headers
     files:
+      - rtl/clkmgr_reg_pkg.sv
       - rtl/clkmgr_pkg.sv
     file_type: systemVerilogSource
 
