@@ -11,16 +11,17 @@ class pwm_env extends cip_base_env #(
   `uvm_component_utils(pwm_env)
   `uvm_component_new
 
-  pwm_monitor           m_pwm_monitor[PWM_NUM_CHANNELS];
+  // One monitor for each channel; the monitors operate independently.
+  pwm_monitor m_pwm_monitor[PWM_NUM_CHANNELS];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
-    // instantiate pwm_monitor
-    foreach(m_pwm_monitor[i]) begin
+    // Instantiate PWM monitors.
+    foreach (m_pwm_monitor[i]) begin
       m_pwm_monitor[i] = pwm_monitor::type_id::create($sformatf("m_pwm_monitor%0d", i), this);
       uvm_config_db#(pwm_monitor_cfg)::set(this, $sformatf("m_pwm_monitor%0d", i), "cfg",
-                                           cfg.m_pwm_monitor_cfg[i]);
+                                                           cfg.m_pwm_monitor_cfg[i]);
       cfg.m_pwm_monitor_cfg[i].ok_to_end_delay_ns = 2000;
     end
 
@@ -31,8 +32,9 @@ class pwm_env extends cip_base_env #(
     end
 
     cfg.clk_rst_core_vif.set_freq_mhz(cfg.get_clk_core_freq());
-    `uvm_info(`gfn, $sformatf("\n  env_cfg: bus_clk %0d Mhz, core_clk %0d Mhz",
-        cfg.clk_rst_vif.clk_freq_mhz, cfg.clk_rst_core_vif.clk_freq_mhz), UVM_DEBUG)
+    `uvm_info(`gfn, $sformatf("\n  env_cfg: bus_clk %0d MHz, core_clk %0d MHz",
+                              cfg.clk_rst_vif.clk_freq_mhz, cfg.clk_rst_core_vif.clk_freq_mhz),
+              UVM_DEBUG)
   endfunction : build_phase
 
   function void connect_phase(uvm_phase phase);

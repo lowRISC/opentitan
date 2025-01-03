@@ -13,7 +13,6 @@ filesets:
       - lowrisc:dv:pwm_monitor
     files:
       - pwm_env_pkg.sv
-      - pwm_seq_cfg.sv: {is_include_file: true}
       - pwm_env_cfg.sv: {is_include_file: true}
       - pwm_env_cov.sv: {is_include_file: true}
       - pwm_virtual_sequencer.sv: {is_include_file: true}
