@@ -199,8 +199,8 @@ module hmac_core import prim_sha2_pkg::*; (
                   ? '{data: o_pad_256[(BlockSizeSHA256-1)-32*pad_index_256-:32], mask: '1} :
     (sel_rdata == SelOPad && ((digest_size_i == SHA2_384) || (digest_size_i == SHA2_512)))
                   ? '{data: o_pad_512[(BlockSizeSHA512-1)-32*pad_index_512-:32], mask: '1} :
-    (sel_rdata == SelFifo) ? fifo_rdata_i                                                    :
-                  '{default: '0};
+    // Well-defined default case `sel_rdata == SelFifo`. `sel_rdata == 2'b11` cannot occur.
+                  fifo_rdata_i;
 
   logic [63:0] sha_msg_len;
 
@@ -215,18 +215,21 @@ module hmac_core import prim_sha2_pkg::*; (
         sha_msg_len = message_length_i + BlockSizeSHA256in64;
       end else if ((digest_size_i == SHA2_384) || (digest_size_i == SHA2_512)) begin
         sha_msg_len = message_length_i + BlockSizeSHA512in64;
+      // `SHA2_None` is a permissible value in the `SelIPadMsg` case. It can not occur for the
+      // `SelOPadMsg` message length.
+      end else begin
+        sha_msg_len = '0;
       end
-    end else if (sel_msglen == SelOPadMsg) begin
-    // message length for HASH = block size (o_pad) + HASH_INTERMEDIATE digest length
+    end else begin // `SelOPadMsg`
+      // message length for HASH = block size (o_pad) + HASH_INTERMEDIATE digest length
       if (digest_size_i == SHA2_256) begin
         sha_msg_len = BlockSizeSHA256in64 + 64'd256;
       end else if (digest_size_i == SHA2_384) begin
         sha_msg_len = BlockSizeSHA512in64 + 64'd384;
-      end else if (digest_size_i == SHA2_512) begin
+      end else begin // SHA512
         sha_msg_len = BlockSizeSHA512in64 + 64'd512;
       end
-    end else
-      sha_msg_len = '0;
+    end
   end
 
   assign sha_message_length_o = sha_msg_len;
@@ -488,4 +491,13 @@ module hmac_core import prim_sha2_pkg::*; (
       idle_q <= idle_d;
     end
   end
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  `ASSERT(ValidSelRdata_A, hmac_en_i |-> sel_rdata inside {SelIPad, SelOPad, SelFifo})
+  `ASSERT(ValidDigestSize_A, (hmac_en_i && (sel_msglen == SelOPadMsg)) |->
+      digest_size_i inside {SHA2_256, SHA2_384, SHA2_512})
+
 endmodule
