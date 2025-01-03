@@ -23,6 +23,8 @@
     bytes_per_page: 2048
     bytes_per_bank: 524288
     size: 1048576
+    pwrmgr_vlnv_prefix: top_earlgrey_
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }

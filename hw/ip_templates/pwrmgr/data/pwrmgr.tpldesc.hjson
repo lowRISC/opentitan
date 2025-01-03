@@ -64,5 +64,11 @@
       type: "int"
       default: "1"
     }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
+    }
   ]
 }

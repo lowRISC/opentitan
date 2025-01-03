@@ -1,0 +1,28 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: ${instance_vlnv("lowrisc:fpv:pinmux_common_fpv:0.1")}
+description: "pinmux common FPV target"
+filesets:
+  files_formal:
+    depend:
+      - lowrisc:prim:all
+      - lowrisc:ip:tlul
+      - ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
+    files:
+      - vip/pinmux_assert_fpv.sv
+      - tb/pinmux_bind_fpv.sv
+    file_type: systemVerilogSource
+
+targets:
+  default: &default_target
+    default_tool: icarus
+    filesets:
+      - files_formal
+
+  formal:
+    <<: *default_target
+
+  lint:
+    <<: *default_target

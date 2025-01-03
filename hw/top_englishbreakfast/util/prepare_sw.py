@@ -138,7 +138,6 @@ def main():
     REG_FILES = [
         'ip/ast/data/ast.hjson',
         'ip/sensor_ctrl/data/sensor_ctrl.hjson',
-        'ip_autogen/alert_handler/data/alert_handler.hjson',
         'ip_autogen/clkmgr/data/clkmgr.hjson',
         'ip_autogen/flash_ctrl/data/flash_ctrl.hjson',
         'ip_autogen/pinmux/data/pinmux.hjson',

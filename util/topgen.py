@@ -227,6 +227,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
         "n_classes": n_classes,
         "n_lpg": n_lpg,
         "lpg_map": lpg_map,
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("alert_handler", topname, params, out_path)
@@ -356,7 +357,9 @@ def generate_pinmux(top: Dict[str, object], out_path: Path) -> None:
         "n_dio_periph_in": n_dio_periph_in,
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
-        "enable_strap_sampling": pinmux['enable_strap_sampling']
+        "enable_strap_sampling": pinmux['enable_strap_sampling'],
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
+        "scan_role_pkg_vlnv": f"lowrisc:systems:top_{topname}_scan_role_pkg",
     }
 
     ipgen_render("pinmux", topname, params, out_path)
@@ -377,6 +380,10 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         ty: {nm: {"src_name": sig.src.name, "endpoint_ip": sig.endpoints[0][0]}
              for nm, sig in mp.items() if isinstance(sig, ClockSignal)}
         for ty, mp in typed_clocks._asdict().items() if isinstance(mp, dict)})
+
+    # Will connect to alert_handler
+    with_alert_handler = lib.find_module(topcfg['module'], 'alert_handler') is not None
+
     params = {
         "src_clks": OrderedDict({
             name: vars(obj) for name, obj in clocks.srcs.items()}),
@@ -387,7 +394,11 @@ def generate_clkmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "hint_names": hint_names,
         "parent_child_clks": typed_clocks.parent_child_clks,
         "exported_clks": topcfg["exported_clks"],
-        "number_of_clock_groups": len(clocks.groups)
+        "number_of_clock_groups": len(clocks.groups),
+        "with_alert_handler": with_alert_handler,
+        # TODO: Register VLNVs and look this up instead of hard-coding.
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("clkmgr", topname, params, out_path)
@@ -428,7 +439,8 @@ def generate_pwrmgr(top: Dict[str, object], out_path: Path) -> None:
         "rst_reqs": top["reset_requests"],
         "NumRstReqs": n_rstreqs,
         "wait_for_external_reset": top['power']['wait_for_external_reset'],
-        "NumRomInputs": n_rom_ctrl
+        "NumRomInputs": n_rom_ctrl,
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("pwrmgr", topname, params, out_path)
@@ -468,6 +480,16 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
     # Number of reset requests
     n_rstreqs = len(topcfg["reset_requests"]["peripheral"])
 
+    # Will connect to alert_handler
+    if lib.find_module(topcfg['module'], 'alert_handler') is not None:
+        alert_handler_vlnv_prefix = f"top_{topname}_"
+    elif topname == "englishbreakfast":
+        # TODO: Clean templates to not require alert_handler. English Breakfast
+        # does not have one, so it uses types and constants from Earl Grey.
+        alert_handler_vlnv_prefix = "top_earlgrey_"
+    else:
+        alert_handler_vlnv_prefix = ""
+
     params = {
         "clks": clks,
         "reqs": topcfg["reset_requests"],
@@ -478,6 +500,9 @@ def generate_rstmgr(topcfg: Dict[str, object], out_path: Path) -> None:
         "leaf_rsts": leaf_rsts,
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": topcfg["exported_rsts"],
+        "alert_handler_vlnv_prefix": alert_handler_vlnv_prefix,
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("rstmgr", topname, params, out_path)
@@ -504,7 +529,10 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     params.update({
         "metadata_width": 12,
         "info_types": 3,
-        "infos_per_bank": [10, 1, 2]
+        "infos_per_bank": [10, 1, 2],
+        # TODO: Register VLNVs and look this up instead of hard-coding.
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     })
 
     params.pop('base_addrs', None)
@@ -879,8 +907,7 @@ def _process_top(
 
     # Generate Alert Handler if there is an instance
     if not args.xbar_only:
-        if lib.find_module(completecfg['module'], 'alert_handler') or \
-           completecfg['name'] == 'englishbreakfast':
+        if lib.find_module(completecfg['module'], 'alert_handler'):
             generate_alert_handler(completecfg, out_path)
             if args.alert_handler_only:
                 sys.exit()
@@ -1358,6 +1385,26 @@ def main():
                             helper=c_helper,
                             gencmd=gencmd_bzl)
 
+            # Auto-generate tests in "sw/device/tests/autogen" area.
+            for fname in ["plic_all_irqs_test.c", "BUILD"]:
+                # TODO(#25752): Delay generating tests until multi-top SW generation
+                # is designed and implemented.
+                if fname == "BUILD" and topname != "earlgrey":
+                    continue
+                outfile = cformat_dir / "tests" / fname
+                render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
+                                outfile,
+                                helper=c_helper,
+                                gencmd=gencmd_c)
+
+            # Render alert tests only if there is really an alert handler
+            if lib.find_module(completecfg['module'], 'alert_handler'):
+                outfile = cformat_dir / "tests" / "alert_test.c"
+                render_template(TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
+                                outfile,
+                                helper=c_helper,
+                                gencmd=gencmd_c)
+
         # generate chip level xbar and alert_handler TB
         tb_files = [
             "xbar_env_pkg__params.sv", "tb__xbar_connect.sv",
@@ -1394,23 +1441,6 @@ def main():
 
         # generate documentation for toplevel
         gen_top_docs(completecfg, c_helper, out_path)
-
-        # Auto-generate tests in "sw/device/tests/autogen" area.
-        gencmd = warnhdr + GENCMD.format(top_name=top_name)
-        for fname in ["plic_all_irqs_test.c", "BUILD"]:
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / fname
-            render_template(TOPGEN_TEMPLATE_PATH / f"{fname}.tpl",
-                            outfile,
-                            helper=c_helper,
-                            gencmd=gencmd)
-
-        # Render alert tests only if there is really an alert handler
-        if lib.find_module(completecfg['module'], 'alert_handler'):
-            outfile = SRCTREE_TOP / "sw/device/tests/autogen" / "alert_test.c"
-            render_template(TOPGEN_TEMPLATE_PATH / "alert_test.c.tpl",
-                            outfile,
-                            helper=c_helper,
-                            gencmd=gencmd)
 
 
 if __name__ == "__main__":

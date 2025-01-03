@@ -1,0 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_englishbreakfast_pinmux
+  param_values:
+  {
+    n_wkup_detect: 8
+    wkup_cnt_width: 8
+    n_mio_pads: 47
+    n_mio_periph_in: 38
+    n_mio_periph_out: 35
+    n_dio_pads: 14
+    n_dio_periph_in: 12
+    n_dio_periph_out: 12
+    enable_usb_wakeup: true
+    enable_strap_sampling: true
+    top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
+    scan_role_pkg_vlnv: lowrisc:systems:top_englishbreakfast_scan_role_pkg
+    topname: englishbreakfast
+  }
+}

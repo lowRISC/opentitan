@@ -98,7 +98,7 @@ class IpTemplateRendererBase:
                 strict_undefined=True)
         return self._lookup
 
-    def _tplfunc_instance_vlnv(self, template_vlnv_str: str) -> str:
+    def _tplfunc_instance_vlnv(self, template_vlnv_str: str, prefix: str = None) -> str:
         """Makes a vlnv into an instance specific one.
 
         A vlnv is a string of the form vendor:library:name[:version] where
@@ -125,6 +125,11 @@ class IpTemplateRendererBase:
         template_core_version = (template_vlnv[3]
                                  if len(template_vlnv) == 4 else None)
 
+        if prefix is None:
+            template_core_prefix = self.ip_config.instance_name
+        else:
+            template_core_prefix = prefix
+
         if "module_instance_name" in self.ip_config.param_values:
             if not template_core_name.startswith(
                     self.ip_config.param_values["module_instance_name"]):
@@ -137,7 +142,7 @@ class IpTemplateRendererBase:
             template_core_name = template_core_name[len(self.ip_template.name
                                                         ):]
 
-        instance_core_name = self.ip_config.instance_name + template_core_name
+        instance_core_name = template_core_prefix + template_core_name
         instance_vlnv = ['lowrisc', 'opentitan', instance_core_name]
 
         if template_core_version is not None:

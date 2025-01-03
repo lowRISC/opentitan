@@ -1,0 +1,34 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:top_earlgrey_ast_top:0.1"
+description: "Pseudo top-level for Earl Grey's ast"
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:opentitan:top_earlgrey_alert_handler_pkg
+      - lowrisc:opentitan:top_earlgrey_clkmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_pwrmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_rstmgr_pkg
+      - lowrisc:opentitan:top_earlgrey_pinmux_pkg
+      - lowrisc:systems:top_earlgrey_ast
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+targets:
+  lint:
+    toplevel: ast
+    filesets:
+      - files_rtl
+    default_tool: verilator
+    parameters:
+      - SYNTHESIS=true
+    tools:
+      verilator:
+        mode: lint-only
+        verilator_options:
+          - "-Wall"

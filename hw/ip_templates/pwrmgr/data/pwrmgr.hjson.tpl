@@ -332,6 +332,20 @@
       default: "${NumRomInputs}",
       local: "true"
     },
+    {
+      name: "EscNumSeverities"
+      desc: "Number of escalation severities"
+      type: "int"
+      default: "4"
+      local: "false"
+    },
+    {
+      name: "EscPingCountWidth"
+      desc: "Width of ping count for the escalation receiver"
+      type: "int"
+      default: "16"
+      local: "false"
+    },
 
     % for req in int_reset_reqs + debug_reset_reqs:
     { name: "${f"Reset{req['name']}Idx"}",

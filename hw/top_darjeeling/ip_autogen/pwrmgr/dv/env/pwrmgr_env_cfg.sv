@@ -26,7 +26,7 @@ class pwrmgr_env_cfg extends cip_base_env_cfg #(
   virtual clk_rst_if slow_clk_rst_vif;
   virtual pwrmgr_if pwrmgr_vif;
   virtual pwrmgr_clock_enables_sva_if pwrmgr_clock_enables_sva_vif;
-  virtual pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_vif;
+  virtual pwrmgr_rstmgr_sva_if #(.PowerDomains(pwrmgr_pkg::PowerDomains)) pwrmgr_rstmgr_sva_vif;
 
   // The run_phase object, to deal with objections.
   uvm_phase run_phase;

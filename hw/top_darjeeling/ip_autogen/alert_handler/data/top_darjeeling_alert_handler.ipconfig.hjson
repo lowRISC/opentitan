@@ -218,6 +218,7 @@
       5'd11
       5'd11
     ]
+    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
   }
 }

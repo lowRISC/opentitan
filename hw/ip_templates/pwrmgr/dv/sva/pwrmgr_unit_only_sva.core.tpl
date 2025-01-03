@@ -1,0 +1,36 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: ${instance_vlnv("lowrisc:dv:pwrmgr_unit_only_sva:0.1")}
+description: "PWRMGR assertion interfaces not suitable for chip level bind file."
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:tlul:headers
+      - lowrisc:fpv:csr_assert_gen
+      - lowrisc:dv:pwrmgr_rstmgr_sva_if
+      - ${instance_vlnv("lowrisc:ip:pwrmgr_pkg:0.1")}
+      - ${instance_vlnv("lowrisc:ip:pwrmgr:0.1")}
+
+    files:
+      - pwrmgr_unit_only_bind.sv
+    file_type: systemVerilogSource
+
+generate:
+  csr_assert_gen:
+    generator: csr_assert_gen
+    parameters:
+      spec: ../../data/pwrmgr.hjson
+
+targets:
+  default: &default_target
+    filesets:
+      - files_dv
+    generate:
+      - csr_assert_gen
+  formal:
+    <<: *default_target
+    filesets:
+      - files_dv
+    toplevel: pwrmgr

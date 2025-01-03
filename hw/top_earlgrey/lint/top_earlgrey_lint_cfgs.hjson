@@ -48,7 +48,7 @@
                   rel_path: "hw/ip/ascon/lint/{tool}"
              },
              {    name: ast
-                  fusesoc_core: lowrisc:systems:ast
+                  fusesoc_core: lowrisc:dv:top_earlgrey_ast_top
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/ast/lint/{tool}"
                   overrides: [
@@ -158,7 +158,7 @@
                   ]
              },
              {    name: pinmux
-                  fusesoc_core: lowrisc:ip_interfaces:pinmux
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/pinmux/lint/{tool}"
                   overrides: [
@@ -283,7 +283,7 @@
                   rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
              },
              {    name: sensor_ctrl
-                  fusesoc_core: lowrisc:systems:sensor_ctrl
+                  fusesoc_core: lowrisc:systems:top_earlgrey_sensor_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip/sensor_ctrl/lint/{tool}"
              },

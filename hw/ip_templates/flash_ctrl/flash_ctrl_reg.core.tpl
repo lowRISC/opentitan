@@ -4,15 +4,13 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:flash_ctrl_reg:0.1")}
 description: "Flash registers"
-virtual:
-  - lowrisc:ip_interfaces:flash_ctrl_reg
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
+      - lowrisc:ip:tlul
+      - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
     files:
-      - rtl/flash_ctrl_reg_pkg.sv
       - rtl/flash_ctrl_core_reg_top.sv
     file_type: systemVerilogSource
 

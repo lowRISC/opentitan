@@ -258,6 +258,9 @@
     }
     exported_clks: {}
     number_of_clock_groups: 7
+    with_alert_handler: true
+    pwrmgr_vlnv_prefix: top_earlgrey_
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }

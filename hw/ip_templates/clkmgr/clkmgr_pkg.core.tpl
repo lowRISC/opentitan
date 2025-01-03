@@ -10,8 +10,6 @@ virtual:
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
-      - lowrisc:ip_interfaces:pwrmgr_pkg
       - lowrisc:prim:mubi
     files:
       - rtl/clkmgr_pkg.sv

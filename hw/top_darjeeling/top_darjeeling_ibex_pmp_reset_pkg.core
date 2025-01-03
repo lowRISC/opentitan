@@ -8,6 +8,9 @@ CAPI=2:
 # Tracked in https://github.com/olofk/fusesoc/issues/235
 name: "lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg"
 description: "Top-level specific PMP reset settings for Darjeeling"
+virtual:
+  - lowrisc:constants:ibex_pmp_reset_pkg
+
 filesets:
   files_rtl:
     depend:

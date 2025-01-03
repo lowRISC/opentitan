@@ -5,7 +5,9 @@
 // This binds assertions that should not be bound at chip level.
 module pwrmgr_unit_only_bind;
 
-  bind pwrmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
+  bind pwrmgr pwrmgr_rstmgr_sva_if #(
+    .PowerDomains(pwrmgr_pkg::PowerDomains)
+  ) pwrmgr_rstmgr_sva_if (
     .clk_i,
     .rst_ni,
     .clk_slow_i,

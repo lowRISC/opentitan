@@ -111,5 +111,23 @@
       type: "object"
       default: {}
     }
+    {
+      name: "alert_handler_vlnv_prefix"
+      desc: "Provides the VLNV prefix (for instance_vlnv) for the alert_handler used by this rstmgr"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "pwrmgr_vlnv_prefix"
+      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr used by this rstmgr"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
+    }
   ]
 }
