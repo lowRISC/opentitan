@@ -45,3 +45,12 @@ CHECKSUM: "3215070453 1827096802"
 INSTANCE: tb.dut.u_tlul_adapter_sram.u_sram_byte.gen_integ_handling.u_sync_fifo.gen_normal_fifo.u_fifo_cnt
 Branch 1 "2417346495" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
 Branch 2 "456961687" "(!rst_ni)" (3) "(!rst_ni) 0,0,0,1"
+
+// Exclude the default branch of the FSM inside the tlul_sram_byte module as we
+// should not reach it under normal conditions.
+CHECKSUM: "432309571 1160560609"
+INSTANCE: tb.dut.u_tlul_adapter_sram.u_sram_byte
+Branch 1 "2309313685" "gen_integ_handling.state_q" (46) "gen_integ_handling.state_q default,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-,-"
+CHECKSUM: "432309571 1673264206"
+INSTANCE: tb.dut.u_tlul_adapter_sram.u_sram_byte
+Block 86 "2943004802" "alert_o = 1'b1;"
