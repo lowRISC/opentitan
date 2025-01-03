@@ -4,15 +4,14 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:ip:pinmux_reg:0.1")}
 description: "Auto-generated pinmux register sources"
-virtual:
-  - lowrisc:ip_interfaces:pinmux_reg
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:tlul:headers
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
+      - ${instance_vlnv("lowrisc:ip:pinmux_pkg")}
     files:
-      - rtl/pinmux_reg_pkg.sv
       - rtl/pinmux_reg_top.sv
     file_type: systemVerilogSource
 

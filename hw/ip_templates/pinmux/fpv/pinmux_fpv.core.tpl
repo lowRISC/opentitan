@@ -12,15 +12,9 @@ filesets:
       - ${instance_vlnv("lowrisc:ip:pinmux:0.1")}
       - lowrisc:fpv:csr_assert_gen
       - ${instance_vlnv("lowrisc:fpv:pinmux_common_fpv")}
-      - lowrisc:systems:scan_role_pkg
     files:
       - tb/pinmux_tb.sv
     file_type: systemVerilogSource
-% if len(virtual_pkg_vlnv) > 0:
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (${virtual_pkg_vlnv})"
-% endif
 
 generate:
   csr_assert_gen:
@@ -39,14 +33,6 @@ targets:
 
   formal:
     <<: *default_target
-    filesets_append:
-% if len(virtual_pkg_vlnv) > 0:
-      - files_virtual_provider
-% endif
 
   lint:
     <<: *default_target
-    filesets_append:
-% if len(virtual_pkg_vlnv) > 0:
-      - files_virtual_provider
-% endif

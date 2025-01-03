@@ -12,13 +12,9 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_pinmux:0.1
       - lowrisc:fpv:csr_assert_gen
       - lowrisc:opentitan:top_earlgrey_pinmux_common_fpv
-      - lowrisc:systems:scan_role_pkg
     files:
       - tb/pinmux_tb.sv
     file_type: systemVerilogSource
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_earlgrey_virtual_pkgs)"
 
 generate:
   csr_assert_gen:
@@ -37,10 +33,6 @@ targets:
 
   formal:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider

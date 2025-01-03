@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_englishbreakfast_pinmux:0.1
 description: "Pin Multiplexer"
-virtual:
-  - lowrisc:ip_interfaces:pinmux
 
 filesets:
   files_rtl:
@@ -31,10 +29,6 @@ filesets:
       - rtl/pinmux_strap_sampling.sv
       - rtl/pinmux.sv
     file_type: systemVerilogSource
-
-  files_virtual_provider:
-    depend:
-      - "fileset_top ? (lowrisc:opentitan:top_englishbreakfast_virtual_pkgs)"
 
   files_verilator_waiver:
     depend:
@@ -76,8 +70,6 @@ targets:
 
   lint:
     <<: *default_target
-    filesets_append:
-      - files_virtual_provider
     default_tool: verilator
     parameters:
       - SYNTHESIS=true
@@ -99,5 +91,4 @@ targets:
   formal:
     filesets:
       - files_rtl
-      - files_virtual_provider
     toplevel: pinmux_tb
