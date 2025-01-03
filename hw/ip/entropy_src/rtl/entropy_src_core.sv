@@ -3128,7 +3128,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   logic [63:0] rng_valid_bit_cnt_d, rng_valid_bit_cnt_q;
   assign rng_valid_bit_cnt_d = entropy_src_rng_i.rng_valid && es_enable_fo[5] &&
                                es_delayed_enable_q ?
-                               rng_valid_bit_cnt_q + RNG_BUS_WIDTH :
+                               rng_valid_bit_cnt_q + top_pkg::RNG_BUS_WIDTH :
                                rng_valid_bit_cnt_q;
 
   // Count number of bits pushed into esrng FIFO (RngBusWidth wide).

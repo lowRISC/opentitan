@@ -23,6 +23,10 @@ package entropy_src_env_pkg;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
+  // TODO(#25760): Make the RNG BUS WIDTH parameter overwritable from the outside to allow
+  // testing other configs than the Earlgrey config
+  parameter uint              RNG_BUS_WIDTH = 4;
+
   // parameters
   parameter bit [TL_DW-1:0]   INCR_ENTROPY_LO    = 32'h76543210;
   parameter bit [TL_DW-1:0]   INCR_ENTROPY_HI    = 32'hfedcba98;
