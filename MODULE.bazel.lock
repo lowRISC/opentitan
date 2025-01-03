@@ -156,6 +156,49 @@
   },
   "selectedYankedVersions": {},
   "moduleExtensions": {
+    "//rules:extensions.bzl%hooks": {
+      "general": {
+        "bzlTransitiveDigest": "4jKAP4jsTdJoZuA38C4q/KV6hxks41+r6Bfm6YN+2JA=",
+        "usagesDigest": "0+snh445CCQCMR/eSXcc9tjT2r8E8YuQEgPJGkRME88=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {
+          "MANUFACTURER_HOOKS_DIR": null,
+          "PROV_EXTS_DIR": null,
+          "SECURE_MANUFACTURER_HOOKS_DIR": null
+        },
+        "generatedRepoSpecs": {
+          "provisioning_exts": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/silicon_creator/manuf/extensions"
+            }
+          },
+          "secure_manufacturer_test_hooks": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/tests/closed_source"
+            }
+          },
+          "manufacturer_test_hooks": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/tests/closed_source"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/coremark:extensions.bzl%coremark": {
       "general": {
         "bzlTransitiveDigest": "InK9o+8/hN6CwtLICnnFEg5vFlwmr2K0KmjQb+BFBkM=",
@@ -5718,7 +5761,7 @@
           "@@//third_party/rust/Cargo.lock": "18e7bab3feba348ad70ccce9888b8e41b05cc15fb6a0abda2c5bb027f4e31997",
           "@@//third_party/tock/Cargo.lock": "b5a7a833ae205f1e3697a510e97e3185b44b195d7a22879b4669bff95febd5c8",
           "@@//third_party/tock/Cargo.toml": "5a939bd934aef4775b65a82e678f1180ec00aa78cf214f6052cc82353c975cc4",
-          "@@//MODULE.bazel": "095577d6e3251a199c486f8a1d0fee5c61167af4d6452dcb828f9961bddeac5a",
+          "@@//MODULE.bazel": "dc4abf43e0cbdb124c48d193151115b61c57e37f624932cc874a12eb4bce09b5",
           "@@//third_party/rust/Cargo.toml": "2fbe1a86bcee488ed55298ff7aa0b08965e9f57bc922f7edbc2386443f95c32b",
           "@@rules_rust~~rust_host_tools~rust_host_tools//WORKSPACE.bazel": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
