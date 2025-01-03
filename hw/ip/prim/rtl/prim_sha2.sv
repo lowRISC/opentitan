@@ -129,7 +129,7 @@ module prim_sha2 import prim_sha2_pkg::*;
         if (digest_mode_flag_q == SHA2_256) begin
           hash_d = compress_multi_256(w_q[0][31:0],
                    CubicRootPrime256[round_q[RndWidth256-1:0]], hash_q);
-        end else if ((digest_mode_flag_q == SHA2_512) || (digest_mode_flag_q == SHA2_384)) begin
+        end else begin // SHA384 || SHA512
           hash_d = compress_512(w_q[0], CubicRootPrime512[round_q], hash_q);
         end
       end
@@ -334,7 +334,7 @@ module prim_sha2 import prim_sha2_pkg::*;
   end
 
   always_comb begin
-    fifo_st_d          = FifoIdle;
+    fifo_st_d          = fifo_st_q;
     update_w_from_fifo = 1'b0;
     hash_done_next     = 1'b0;
 
@@ -515,4 +515,12 @@ module prim_sha2 import prim_sha2_pkg::*;
 
   // Idle
   assign idle_o = (fifo_st_q == FifoIdle) && (sha_st_q == ShaIdle) && !hash_go;
+
+  ////////////////
+  // Assertions //
+  ////////////////
+
+  `ASSERT(ValidDigestModeFlag_A, run_hash |->
+    digest_mode_flag_q inside {SHA2_256, SHA2_384, SHA2_512})
+
 endmodule : prim_sha2
