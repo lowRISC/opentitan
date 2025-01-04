@@ -11,8 +11,8 @@ filesets:
       - lowrisc:prim:mubi
       - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:systems:top_darjeeling_pkg
-      - "!fileset_partner ? (lowrisc:systems:physical_pads)"
-      - "fileset_partner ? (partner:systems:physical_pads)"
+      - "!fileset_partner ? (lowrisc:systems:top_darjeeling_physical_pads)"
+      - "fileset_partner ? (partner:systems:top_darjeeling_physical_pads)"
     files:
       - rtl/padring.sv
     file_type: systemVerilogSource

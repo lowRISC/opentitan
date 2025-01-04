@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:sensor_ctrl:0.1"
+name: "lowrisc:systems:top_earlgrey_sensor_ctrl:0.1"
 description: "Sensor Control"
 
 filesets:
@@ -12,7 +12,7 @@ filesets:
       - lowrisc:prim:edge_detector
       - lowrisc:prim:mubi
       - lowrisc:prim:pad_wrapper_pkg
-      - lowrisc:systems:sensor_ctrl_pkg
+      - lowrisc:systems:top_earlgrey_sensor_ctrl_pkg
     files:
       - rtl/sensor_ctrl.sv
     file_type: systemVerilogSource

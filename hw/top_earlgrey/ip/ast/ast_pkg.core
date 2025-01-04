@@ -2,13 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:systems:ast_pkg"
+name: "lowrisc:systems:top_earlgrey_ast_pkg"
 description: "Analog sensor top (AST) wrapper package"
+virtual:
+  - lowrisc:systems:ast_pkg
 
 filesets:
   files_rtl:
     depend:
-      - lowrisc:constants:top_pkg
+      - lowrisc:constants:top_earlgrey_top_pkg
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/ast_pkg.sv

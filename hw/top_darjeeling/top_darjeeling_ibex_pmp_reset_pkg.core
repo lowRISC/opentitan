@@ -3,11 +3,9 @@ CAPI=2:
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-# XXX: This name is currently required as global identifier until we have
-# support for "interfaces" or a similar concept.
-# Tracked in https://github.com/olofk/fusesoc/issues/235
 name: "lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg"
 description: "Top-level specific PMP reset settings for Darjeeling"
+
 filesets:
   files_rtl:
     depend:

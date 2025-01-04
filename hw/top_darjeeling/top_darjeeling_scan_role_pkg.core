@@ -4,6 +4,8 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: "lowrisc:systems:top_darjeeling_scan_role_pkg:0.1"
 description: "Open-source place-holder for scanrole parameters for Darjeeling"
+virtual:
+  - lowrisc:systems:scan_role_pkg
 
 filesets:
   files_rtl:
