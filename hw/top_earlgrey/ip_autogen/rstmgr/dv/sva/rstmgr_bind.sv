@@ -39,7 +39,9 @@ module rstmgr_bind;
     .expected_cpu_info_attr(($bits(cpu_dump_i) + 31) / 32)
   );
 
-  bind rstmgr pwrmgr_rstmgr_sva_if pwrmgr_rstmgr_sva_if (
+  bind rstmgr pwrmgr_rstmgr_sva_if #(
+    .PowerDomains(rstmgr_pkg::PowerDomains)
+  ) pwrmgr_rstmgr_sva_if (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
     .clk_slow_i(clk_aon_i),
