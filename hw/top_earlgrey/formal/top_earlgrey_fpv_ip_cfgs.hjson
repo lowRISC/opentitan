@@ -23,7 +23,7 @@
              {
                name: pinmux_fpv
                dut: pinmux_tb
-               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"

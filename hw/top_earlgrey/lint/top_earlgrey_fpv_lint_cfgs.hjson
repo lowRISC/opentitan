@@ -133,7 +133,7 @@
              }
              {
                name: pinmux_fpv
-               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               fusesoc_core: lowrisc:opentitan:top_earlgrey_pinmux_fpv
                import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                rel_path: "hw/top_earlgrey/ip_autogen/pinmux/fpv/lint/{tool}"
              }

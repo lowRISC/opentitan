@@ -53,7 +53,7 @@
                   rel_path: "hw/ip/aon_timer/lint/{tool}"
              },
              {    name: ast
-                  fusesoc_core: lowrisc:systems:ast
+                  fusesoc_core: lowrisc:systems:top_darjeeling_ast
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip/ast/lint/{tool}"
                   overrides: [
@@ -293,7 +293,7 @@
                   rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
              },
              {    name: sensor_ctrl
-                  fusesoc_core: lowrisc:systems:sensor_ctrl
+                  fusesoc_core: lowrisc:systems:top_darjeeling_sensor_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_darjeeling/ip/sensor_ctrl/lint/{tool}"
              },
