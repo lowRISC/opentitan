@@ -227,6 +227,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
         "n_classes": n_classes,
         "n_lpg": n_lpg,
         "lpg_map": lpg_map,
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
     }
 
     ipgen_render("alert_handler", topname, params, out_path)
