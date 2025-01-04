@@ -206,7 +206,7 @@
           //         rel_path: "hw/top_darjeeling/ip/xbar_mbx/dv/lint/{tool}"
           //    },
           //    {    name: chip
-          //         fusesoc_core: lowrisc:dv:chip_sim
+          //         fusesoc_core: lowrisc:dv:top_darjeeling_chip_sim
           //         import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
           //         rel_path: "hw/top_darjeeling/dv/lint/{tool}"
           //         overrides: [

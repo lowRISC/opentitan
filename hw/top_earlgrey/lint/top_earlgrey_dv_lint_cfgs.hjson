@@ -34,7 +34,7 @@
                   rel_path: "hw/top_earlgrey/ip/aon_timer/dv/lint/{tool}"
              },
              {    name: clkmgr
-                  fusesoc_core: lowrisc:dv:clkmgr_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_clkmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/clkmgr/dv/lint/{tool}"
              },
@@ -59,7 +59,7 @@
                   rel_path: "hw/ip/edn/dv/lint/{tool}"
              },
              {    name: flash_ctrl
-                  fusesoc_core: lowrisc:dv:flash_ctrl_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_flash_ctrl_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/flash_ctrl/dv/lint/{tool}"
              },
@@ -131,7 +131,7 @@
                   rel_path: "hw/ip/prim/dv/prim_prince/lint/{tool}"
              },
              {    name: pwrmgr
-                  fusesoc_core: lowrisc:dv:pwrmgr_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_pwrmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/pwrmgr/dv/lint/{tool}"
              },
@@ -141,7 +141,7 @@
                   rel_path: "hw/ip/rom_ctrl/dv/lint/{tool}"
              },
              {    name: rstmgr
-                  fusesoc_core: lowrisc:dv:rstmgr_sim
+                  fusesoc_core: lowrisc:opentitan:top_earlgrey_rstmgr_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/ip_autogen/rstmgr/dv/lint/{tool}"
              },
@@ -196,7 +196,7 @@
                   rel_path: "hw/top_earlgrey/ip/xbar_peri/dv/lint/{tool}"
              },
              {    name: chip
-                  fusesoc_core: lowrisc:dv:chip_sim
+                  fusesoc_core: lowrisc:dv:top_earlgrey_chip_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/top_earlgrey/dv/lint/{tool}"
                   overrides: [
