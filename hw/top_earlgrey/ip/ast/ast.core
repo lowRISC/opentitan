@@ -23,7 +23,7 @@ filesets:
       - lowrisc:prim:multibit_sync
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:edn_pkg
-      - lowrisc:ip_interfaces:alert_handler_reg
+      - lowrisc:ip_interfaces:alert_handler_pkg
       - lowrisc:ip_interfaces:clkmgr_pkg
       - lowrisc:ip_interfaces:rstmgr_pkg
       - lowrisc:systems:top_earlgrey_ast_pkg

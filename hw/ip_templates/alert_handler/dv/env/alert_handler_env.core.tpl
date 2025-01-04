@@ -2,14 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:alert_handler_env:0.1"
+name: ${instance_vlnv("lowrisc:dv:alert_handler_env:0.1")}
 description: "ALERT_HANDLER DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - lowrisc:ip:alert_handler_component  # import alert_pkg
-      - lowrisc:prim:mubi  # import prim_mubi_pkg
+      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg:0.1")}
+      - lowrisc:prim:mubi_pkg
+      - ${top_pkg_vlnv}
     files:
       - alert_handler_env_pkg.sv
       - alert_handler_if.sv
