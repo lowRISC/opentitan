@@ -121,6 +121,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "N_ESC_SEV",
       desc: "Number of escalation severities",
       type: "int",
+      # NOTE: If this value is to be changed, ensure all IPs with
+      # prim_esc_receiver get updated as well.
       default: "4",
       local: "true"
     },
@@ -139,6 +141,8 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     { name: "PING_CNT_DW",
       desc: "Width of ping counter",
       type: "int",
+      # NOTE: If this value is to be changed, ensure all IPs with
+      # prim_esc_receiver get updated as well.
       default: "16",
       local: "true"
     },
