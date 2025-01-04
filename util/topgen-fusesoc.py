@@ -114,7 +114,7 @@ def main():
                     'lowrisc:ibex:ibex_pkg',
                     'lowrisc:ip:otbn_pkg',
                     # flash_ctrl
-                    'lowrisc:constants:top_pkg',
+                    f'lowrisc:constants:{topname}_top_pkg',
                     'lowrisc:prim:util',
                     'lowrisc:ip:lc_ctrl_pkg',
                     'lowrisc:ip_interfaces:clkmgr_pkg',
@@ -129,8 +129,8 @@ def main():
                     'lowrisc:prim:clock_div',
                     # Top
                     # ast and sensor_ctrl not auto-generated, re-used from top_earlgrey
-                    'lowrisc:systems:sensor_ctrl',
-                    'lowrisc:systems:ast_pkg',
+                    'lowrisc:systems:top_earlgrey_sensor_ctrl',
+                    'lowrisc:systems:top_earlgrey_ast_pkg',
                     # TODO: absorb this into AST longerm
                     'lowrisc:systems:clkgen_xil7series',
                 ],

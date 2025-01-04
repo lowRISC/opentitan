@@ -10,9 +10,9 @@ filesets:
       - lowrisc:systems:top_darjeeling:0.1
       - lowrisc:systems:top_darjeeling_pkg
       - lowrisc:systems:top_darjeeling_padring
-      - "fileset_partner ? (partner:systems:ast)"
+      - "fileset_partner ? (partner:systems:top_darjeeling_ast)"
       - "fileset_partner ? (partner:systems:top_darjeeling_scan_role_pkg)"
-      - "!fileset_partner ? (lowrisc:systems:ast)"
+      - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast)"
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_scan_role_pkg)"
     files:
       - rtl/autogen/chip_darjeeling_asic.sv
