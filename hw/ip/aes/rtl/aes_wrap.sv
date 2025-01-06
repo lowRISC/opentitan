@@ -32,7 +32,6 @@ module aes_wrap
   localparam logic SIDELOAD = 1'b1;
   localparam aes_mode_e AES_MODE = AES_ECB;
 
-  import aes_pkg::*;
   import aes_reg_pkg::*;
   import tlul_pkg::*;
 
