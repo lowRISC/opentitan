@@ -145,7 +145,7 @@ def _to_memfile_with_ecc(data, annotation, config,
         # count ECC bits. In a comment, we also include any annotations
         # associated with the word.
         line = '@{:06x} {} // {}'.format(i_word, word_hex,
-                                         ', '.join(word_annotations))
+                                         ', '.join(sorted(word_annotations)))
         mem_lines.append(line)
 
     log.info('Done.')
