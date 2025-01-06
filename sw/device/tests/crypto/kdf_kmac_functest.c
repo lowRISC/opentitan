@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
 #include "sw/device/lib/crypto/include/kdf.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -50,13 +51,8 @@ status_t get_kmac_mode(kdf_test_operation_t test_operation,
 static status_t run_test_vector(void) {
   // Below, `km` prefix refers to keying_material, and
   // `kdk` prefix refers to key derivation key
-  size_t km_key_length = current_test_vector->keying_material.config.key_length;
-
-  size_t km_num_words = km_key_length / sizeof(uint32_t);
-  if (km_key_length % sizeof(uint32_t) != 0) {
-    km_num_words++;
-  }
-  uint32_t km_buffer[km_num_words];
+  size_t km_num_words = current_test_vector->expected_output.len;
+  uint32_t km_buffer[2 * km_num_words];
 
   otcrypto_kmac_mode_t mode;
   TRY(get_kmac_mode(current_test_vector->test_operation, &mode));
@@ -67,32 +63,42 @@ static status_t run_test_vector(void) {
               // The following key_mode is a dummy placeholder. It does not
               // necessarily match the `key_length`.
               .key_mode = kOtcryptoKeyModeKdfKmac128,
-              .key_length = km_key_length,
+              .key_length = km_num_words * sizeof(uint32_t),
               .hw_backed = kHardenedBoolFalse,
               .security_level = kOtcryptoKeySecurityLevelLow,
               .exportable = kHardenedBoolTrue,
           },
       .keyblob = km_buffer,
-      .keyblob_length = 2 * km_key_length};
+      .keyblob_length = sizeof(km_buffer),
+  };
 
   // Populate `checksum` and `config.security_level` fields.
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
 
-  TRY(otcrypto_kdf_kmac(
-      current_test_vector->key_derivation_key, mode, current_test_vector->label,
-      current_test_vector->context, km_key_length, &keying_material));
+  TRY(otcrypto_kdf_kmac(current_test_vector->key_derivation_key, mode,
+                        current_test_vector->label,
+                        current_test_vector->context,
+                        keying_material.config.key_length, &keying_material));
 
   HARDENED_CHECK_EQ(integrity_blinded_key_check(&keying_material),
                     kHardenedBoolTrue);
 
-  // At the moment, the function `kmac_kmac_128` called under the hood does not
-  // return the digest in 2 shares. Therefore we can simply compare the first
-  // share of the result from the test vector, since the second share is always
-  // 0.
-  TRY_CHECK_ARRAYS_EQ((uint8_t *)keying_material.keyblob,
-                      (uint8_t *)current_test_vector->keying_material.keyblob,
-                      km_key_length);
+  // Export the derived blinded key.
+  uint32_t km_share0[km_num_words];
+  uint32_t km_share1[km_num_words];
+  TRY(otcrypto_export_blinded_key(
+      keying_material,
+      (otcrypto_word32_buf_t){.data = km_share0, .len = ARRAYSIZE(km_share0)},
+      (otcrypto_word32_buf_t){.data = km_share1, .len = ARRAYSIZE(km_share1)}));
+
+  // Unmask the derived key and compare to the expected value.
+  uint32_t actual_output[km_num_words];
+  for (size_t i = 0; i < ARRAYSIZE(actual_output); i++) {
+    actual_output[i] = km_share0[i] ^ km_share1[i];
+  }
+  TRY_CHECK_ARRAYS_EQ(actual_output, current_test_vector->expected_output.data,
+                      km_num_words);
   return OTCRYPTO_OK;
 }
 
