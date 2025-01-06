@@ -421,6 +421,7 @@
       ''',
       swaccess: "rw",
       hwaccess: "hro",
+      regwen: "JITTER_REGWEN"
       fields: [
         {
           mubi: true,
