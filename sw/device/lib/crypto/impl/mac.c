@@ -279,9 +279,10 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
       if (key->config.key_mode != kOtcryptoKeyModeKmac128) {
         return OTCRYPTO_BAD_ARGS;
       }
-      HARDENED_TRY(kmac_kmac_128(&kmac_key, input_message.data,
-                                 input_message.len, customization_string.data,
-                                 customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_128(
+          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
+          input_message.len, customization_string.data,
+          customization_string.len, tag.data, tag.len));
       break;
     case kOtcryptoKmacModeKmac256:
       // Check `key_mode` matches `mac_mode`
@@ -289,9 +290,10 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
         return OTCRYPTO_BAD_ARGS;
       }
 
-      HARDENED_TRY(kmac_kmac_256(&kmac_key, input_message.data,
-                                 input_message.len, customization_string.data,
-                                 customization_string.len, tag.data, tag.len));
+      HARDENED_TRY(kmac_kmac_256(
+          &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
+          input_message.len, customization_string.data,
+          customization_string.len, tag.data, tag.len));
       break;
     default:
       return OTCRYPTO_BAD_ARGS;

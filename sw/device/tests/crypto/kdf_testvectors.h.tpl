@@ -30,7 +30,7 @@ typedef struct kdf_test_vector {
   otcrypto_blinded_key_t key_derivation_key;
   otcrypto_const_byte_buf_t label;
   otcrypto_const_byte_buf_t context;
-  otcrypto_blinded_key_t keying_material;
+  otcrypto_word32_buf_t expected_output;
 } kdf_kmac_test_vector_t;
 
 static kdf_kmac_test_vector_t kKdfTestVectors[${len(tests)}] = {
@@ -78,15 +78,11 @@ static kdf_kmac_test_vector_t kKdfTestVectors[${len(tests)}] = {
             .len = 0,
   % endif
         },
-        .keying_material = {
-            .config = {
-                .key_length = ${2 * len(t["km_keyblob"])},
-                .hw_backed = kHardenedBoolFalse,
-            },
-            .keyblob_length = ${4 * len(t["km_keyblob"])},
-            .keyblob = (uint32_t[]){
-      % for i in range(0, len(t["km_keyblob"]), 4):
-                ${', '.join(t["km_keyblob"][i:i + 4])},
+        .expected_output = {
+            .len = ${len(t["expected_output"])},
+            .data = (uint32_t[]){
+      % for i in range(0, len(t["expected_output"]), 4):
+                ${', '.join(t["expected_output"][i:i + 4])},
       % endfor
             },
         },
