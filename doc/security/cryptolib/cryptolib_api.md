@@ -486,17 +486,19 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 
 ### API
 
-#### KDF-CTR
-
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hmac_ctr }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_kmac }}
-
-
 #### HKDF
 
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_expand }}
+
+#### KDF-CTR
+
+{{#header-snippet sw/device/lib/crypto/include/kdf_ctr.h otcrypto_kdf_ctr_hmac }}
+
+#### KMAC-KDF
+
+{{#header-snippet sw/device/lib/crypto/include/kmac_kdf.h otcrypto_kmac_kdf }}
 
 ## Key transport
 
