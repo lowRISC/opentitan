@@ -40,6 +40,7 @@ load("@bazel_skylib//lib:new_sets.bzl", "sets")
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
+load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
@@ -231,6 +232,8 @@ def _otp_image(ctx):
     args = ctx.actions.args()
     if not ctx.attr.verbose:
         args.add("--quiet")
+    if stamping_enabled(ctx):
+        args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
     if ctx.attr.img_seed:
@@ -302,7 +305,7 @@ otp_image = rule(
             executable = True,
             cfg = "exec",
         ),
-    },
+    } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
 def _otp_image_consts_impl(ctx):
@@ -310,6 +313,8 @@ def _otp_image_consts_impl(ctx):
     args = ctx.actions.args()
     if not ctx.attr.verbose:
         args.add("--quiet")
+    if stamping_enabled(ctx):
+        args.add("--stamp")
     args.add("--lc-state-def", ctx.file.lc_state_def)
     args.add("--mmap-def", ctx.file.mmap_def)
     args.add("--img-seed", ctx.attr.img_seed[BuildSettingInfo].value)
@@ -381,7 +386,7 @@ otp_image_consts = rule(
             executable = True,
             cfg = "exec",
         ),
-    },
+    } | stamp_attr(-1, "//rules:stamp_flag"),
 )
 
 # The following overlays are used to generate a generic OTP image with fake
