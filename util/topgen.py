@@ -1263,6 +1263,7 @@ def _check_countermeasures(completecfg: Dict[str, object],
         log.debug("Checking countermeasures for %s.", name)
         success &= name_to_block[name].check_cm_annotations(
             rtl_names, hjson_path.name)
+        success &= name_to_block[name].check_regwens()
     if success:
         log.info("All Hjson declared countermeasures are implemented in RTL.")
     else:
@@ -1614,8 +1615,9 @@ def main():
         # Change verbosity to log.INFO to see an okay confirmation message:
         # the log level is set to log.ERROR upon start to avoid the chatter
         # of the regular topgen elaboration.
+        log_level = log.DEBUG if args.verbose else log.INFO
         log.basicConfig(format="%(levelname)s: %(message)s",
-                        level=log.INFO,
+                        level=log_level,
                         force=True)
 
         okay = _check_countermeasures(completecfg, name_to_block,
