@@ -112,6 +112,20 @@ cc_library(
 )
 
 cc_library(
+    name = "hkdf",
+    srcs = ["hkdf.c"],
+    hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        ":mac",
+        ":status",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "integrity",
     srcs = ["integrity.c"],
     hdrs = ["integrity.h"],
@@ -122,16 +136,15 @@ cc_library(
 )
 
 cc_library(
-    name = "kdf",
-    srcs = ["kdf.c"],
-    hdrs = ["//sw/device/lib/crypto/include:kdf.h"],
+    name = "kdf_ctr",
+    srcs = ["kdf_ctr.c"],
+    hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
     deps = [
         ":integrity",
         ":keyblob",
         ":mac",
         ":status",
         "//sw/device/lib/base:math",
-        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -179,6 +192,20 @@ cc_test(
     deps = [
         ":key_transport",
         "@googletest//:gtest_main",
+    ],
+)
+
+cc_library(
+    name = "kmac_kdf",
+    srcs = ["kmac_kdf.c"],
+    hdrs = ["//sw/device/lib/crypto/include:kmac_kdf.h"],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        ":status",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/drivers:kmac",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )
 
