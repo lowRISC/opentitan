@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 '''Code representing an IP block for reggen'''
 
+import logging as log
 from typing import Dict, List, Optional, Sequence, Set, Tuple
 
 import hjson  # type: ignore
@@ -622,3 +623,40 @@ class IpBlock:
         return CounterMeasure.check_annotation_list(self.name, hjson_path,
                                                     rtl_names,
                                                     self.countermeasures)
+
+    def check_regwens(self) -> bool:
+        """Checks all regwens are used in at least one other CSR
+
+        This relies on the regwen having the string "REGWEN" in its name.
+        The uses should be in the "regwen" field of a CSR.
+        """
+        log.debug(f"Checking regwens for IP {self.name}")
+        status: bool = True
+        for rb in self.reg_blocks.values():
+            rb_name = rb.name if rb.name else "default"
+            log.debug(f"Register block: {rb_name}")
+            regwen_names: List[str] = [reg.name for reg in rb.registers
+                                       if "REGWEN" in reg.name]
+            unused_regwens: List[str] = []
+            for regwen in regwen_names:
+                regwen_users = []
+                for reg in rb.registers:
+                    if reg.regwen == regwen:
+                        regwen_users.append(reg)
+                for multi_reg in rb.multiregs:
+                    for reg in multi_reg.regs:
+                        if reg.regwen == regwen:
+                            regwen_users.append(reg)
+                if not regwen_users:
+                    unused_regwens.append(regwen)
+                else:
+                    log.debug(
+                        f"Regwen {regwen} in {self.name}'s {rb_name} register "
+                        "block controls the following registers:")
+                    for r in regwen_users:
+                        log.debug(f"  {r.name}")
+            if unused_regwens:
+                log.error(f"Unused regwen(s) in {self.name} {rb_name} "
+                          f"register block: {', '.join(unused_regwens)}")
+                status = False
+        return status
