@@ -144,12 +144,11 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
             blink_cnt[ii] = blink[ii].X;
             blink_state[ii] = CycleA;
             int_dc[ii] = duty_cycle[ii].A;
-
-            // Alas we presently must ignore the first couple of items because the PWM output is
-            // enabled with an arbitrary phase relationship to the shared phase counter.
-            ignore_state_change[ii] = SettleTime;
           end
-          txt = $sformatf("\n Channel[%0d] : %0b", ii, channel_en[ii]);
+          // Alas we presently must ignore the first couple of items because the PWM configuration
+          // is set up with an arbitrary phase relationship to the shared phase counter.
+          ignore_state_change[ii] = SettleTime;
+          txt = $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]);
         end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
       end

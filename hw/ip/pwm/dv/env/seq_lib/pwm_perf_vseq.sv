@@ -64,15 +64,17 @@ endfunction
 
 task pwm_perf_vseq::body();
   set_ch_enables(32'h0);
-  rand_pwm_cfg_reg();
 
   for (uint i = 0; i < PWM_NUM_CHANNELS; i++) begin
     set_duty_cycle(i, .A(rand_dc), .B(rand_dc));
     set_blink(i, .X(rand_blink), .Y(rand_blink));
     set_param(i, pwm_param[i]);
   end
-
   set_ch_invert(rand_invert);
+
+  // Start the phase counter.
+  rand_pwm_cfg_reg();
+  // Enable the channels.
   set_ch_enables(rand_chan);
 
   monitor_dut_outputs(low_power, NUM_CYCLES);
