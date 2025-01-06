@@ -14,7 +14,7 @@
                 "-uvm -uvmhome {QUESTA_HOME}/verilog_src/uvm-1.2",
                 "-mfcu",
                 "-sv",
-								"-svext=hierbinsof",
+                "-svext=hierbinsof",
                 // Questa throws error on some LRM violations & restrictions. We demoted these errors since they will not impact the flow:
                   //2744: It shall be illegal to have an import statement directory within a class scope.
                   //      [DOC: IEEE Std 1800-2009 Verilog LRM - Section 26.3 "Referencing data in packages"]
