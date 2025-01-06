@@ -1,31 +1,47 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_CTR_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_CTR_H_
+
+#include "datatypes.h"
+
 /**
- * Performs the key derivation function in counter mode wtih HMAC according to
- * NIST SP 800-108r1.
+ * @file
+ * @brief KDF-CTR operations for the OpenTitan cryptography library.
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
+
+/**
+ * Performs KDF-CTR with HMAC as the PRF, according to NIST SP 800-108r1.
  *
- * The supported PRF engine for the KDF function is HMAC (since KMAC does not
- * use the counter mode).
- *
- * The caller should allocate and partially populate the `keying_material`
+ * The caller should allocate and partially populate the `output_key_material`
  * blinded key struct, including populating the key configuration and
- * allocating space for the keyblob. The caller should indicate the length of
- * the allocated keyblob; this function will return an error if the keyblob
- * length does not match expectations. For hardware-backed keys, the keyblob
- * expectations. If the key is hardware-backed, the caller should pass a fully
- * populated private key handle such as the kind returned by
- * `otcrypto_hw_backed_key`. For non-hardware-backed keys, the keyblob should
- * be twice the length of the key. The value in the `checksum` field of the
- * blinded key struct will be populated by this function.
+ * allocating space for the keyblob. The configuration may not indicate a
+ * hardware-backed key and must indicate a symmetric mode. The allocated
+ * keyblob length for the output key should be twice the unmasked key length
+ * indicated in its key configuration, rounded up to the nearest 32-bit word.
+ * The value in the `checksum` field of the blinded key struct will be
+ * populated by the key derivation function.
  *
  * @param key_derivation_key Blinded key derivation key.
- * @param kdf_label Label string according to SP 800-108r1.
- * @param kdf_context Context string according to SP 800-108r1.
- * @param required_byte_len Required length of the derived key in bytes.
- * @param[out] keying_material Pointer to the blinded keying material to be
- * populated by this function.
+ * @param label Label string (optional, may be empty).
+ * @param context Context string (optional, may be empty).
+ * @param[out] output_key_material Blinded output key material.
  * @return Result of the key derivation operation.
  */
-otcrypto_status_t otcrypto_kdf_hmac_ctr(
+otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_blinded_key_t key_derivation_key,
-    const otcrypto_const_byte_buf_t kdf_label,
-    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
-    otcrypto_blinded_key_t *keying_material);
+    const otcrypto_const_byte_buf_t label,
+    const otcrypto_const_byte_buf_t context,
+    otcrypto_blinded_key_t *output_key_material);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KDF_CTR_H_

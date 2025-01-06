@@ -1,3 +1,18 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include "sw/device/lib/crypto/include/kdf_ctr.h"
+
+#include "sw/device/lib/base/math.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/mac.h"
+
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('c', 'k', 'd')
 
 /**
  * Check if the string contains a 0x00 byte.
@@ -14,18 +29,48 @@ static status_t check_zero_byte(const otcrypto_const_byte_buf_t buffer) {
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hmac_ctr(
+/**
+ * Infer the digest length in 32-bit words for the given hash function.
+ *
+ * @param key_mode HMAC key mode.
+ * @param[out] digest_words Number of words in the hash digest.
+ * @return OK or error.
+ */
+static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
+                                               size_t *digest_words) {
+  *digest_words = 0;
+  switch (launder32(key_mode)) {
+    case kOtcryptoKeyModeHmacSha256:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha256);
+      *digest_words = 256 / 32;
+      break;
+    case kOtcryptoKeyModeHmacSha384:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha384);
+      *digest_words = 384 / 32;
+      break;
+    case kOtcryptoKeyModeHmacSha512:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeHmacSha512);
+      *digest_words = 512 / 32;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(*digest_words, 0);
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_blinded_key_t key_derivation_key,
-    const otcrypto_const_byte_buf_t kdf_label,
-    const otcrypto_const_byte_buf_t kdf_context, size_t required_byte_len,
-    otcrypto_blinded_key_t *keying_material) {
+    const otcrypto_const_byte_buf_t label,
+    const otcrypto_const_byte_buf_t context,
+    otcrypto_blinded_key_t *output_key_material) {
   // Check NULL pointers.
-  if (keying_material == NULL || keying_material->keyblob == NULL ||
+  if (output_key_material == NULL || output_key_material->keyblob == NULL ||
       key_derivation_key.keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (launder32(keying_material->config.security_level) !=
+  if (launder32(output_key_material->config.security_level) !=
           kOtcryptoKeySecurityLevelLow ||
       launder32(key_derivation_key.config.security_level) !=
           kOtcryptoKeySecurityLevelLow) {
@@ -34,12 +79,12 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
   }
 
   // Check for null label with nonzero length.
-  if (kdf_label.data == NULL && kdf_label.len != 0) {
+  if (label.data == NULL && label.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Check for null context with nonzero length.
-  if (kdf_context.data == NULL && kdf_context.len != 0) {
+  if (context.data == NULL && context.len != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -48,8 +93,8 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Check non-zero length for keying_material.
-  if (required_byte_len == 0) {
+  // Check non-zero length for output_key_material.
+  if (output_key_material->config.key_length == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -60,17 +105,16 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
 
   // Ensure that the derived key is a symmetric key masked with XOR and is not
   // supposed to be hardware-backed.
-  HARDENED_TRY(keyblob_ensure_xor_masked(keying_material->config));
+  HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
 
-  // Check `keying_material` key length.
-  if (keying_material->config.hw_backed == kHardenedBoolTrue) {
-    // The case where `keying_material` is hw_backed is addressed by
+  // Check `output_key_material` key length.
+  if (output_key_material->config.hw_backed == kHardenedBoolTrue) {
+    // The case where `output_key_material` is hw_backed is addressed by
     // `otcrypto_hw_backed_key` function in `key_transport.h`.
     return OTCRYPTO_BAD_ARGS;
-  } else if (keying_material->config.hw_backed == kHardenedBoolFalse) {
-    if (keying_material->config.key_length != required_byte_len ||
-        keying_material->keyblob_length !=
-            keyblob_num_words(keying_material->config) * sizeof(uint32_t)) {
+  } else if (output_key_material->config.hw_backed == kHardenedBoolFalse) {
+    if (output_key_material->keyblob_length !=
+        keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
       return OTCRYPTO_BAD_ARGS;
     }
   } else {
@@ -79,23 +123,25 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
 
   // Check that the unmasked key length is not too large for HMAC CTR
   // (see NIST SP 800-108r1, section 4.1)
+  size_t required_byte_len = output_key_material->config.key_length;
   size_t required_word_len = ceil_div(required_byte_len, sizeof(uint32_t));
   size_t num_iterations = ceil_div(required_word_len, digest_word_len);
-  if (launder32(num_iterations) > UINT32_MAX) {
+  if (launder32(num_iterations) > UINT32_MAX ||
+      launder32(required_byte_len) > UINT32_MAX / 8) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_LE(num_iterations, UINT32_MAX);
+  HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
+  uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 
   // Check if label or context contain 0x00 bytes
   // Since 0x00 is used as the delimiter between label and context
   // there shouldn't be multiple instances of them in input data
-  HARDENED_TRY(check_zero_byte(kdf_label));
-  HARDENED_TRY(check_zero_byte(kdf_context));
+  HARDENED_TRY(check_zero_byte(label));
+  HARDENED_TRY(check_zero_byte(context));
 
   // Setup
   uint8_t zero = 0x00;
-  HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
-  uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 
   // Repeatedly call HMAC to generate the derived key based on input data:
   // [i]_2 || Label || 0x00 || Context || [L]_2
@@ -104,9 +150,9 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
   // [L]_2 is the binary representation of the required bit length
   // The counter value is updated within the loop
 
-  uint32_t keying_material_len =
+  uint32_t output_key_material_len =
       required_word_len + digest_word_len - required_word_len % digest_word_len;
-  uint32_t keying_material_data[keying_material_len];
+  uint32_t output_key_material_data[output_key_material_len];
 
   for (uint32_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
@@ -116,17 +162,17 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
         &ctx, (otcrypto_const_byte_buf_t){
                   .data = (const unsigned char *const)&counter_be,
                   .len = sizeof(counter_be)}));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, kdf_label));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, label));
     HARDENED_TRY(otcrypto_hmac_update(
         &ctx,
         (otcrypto_const_byte_buf_t){.data = (const unsigned char *const)&zero,
                                     .len = sizeof(zero)}));
-    HARDENED_TRY(otcrypto_hmac_update(&ctx, kdf_context));
+    HARDENED_TRY(otcrypto_hmac_update(&ctx, context));
     HARDENED_TRY(otcrypto_hmac_update(
         &ctx, (otcrypto_const_byte_buf_t){
                   .data = (const unsigned char *const)&required_bit_len,
                   .len = sizeof(required_bit_len)}));
-    uint32_t *tag_dest = keying_material_data + i * digest_word_len;
+    uint32_t *tag_dest = output_key_material_data + i * digest_word_len;
     HARDENED_TRY(otcrypto_hmac_final(
         &ctx,
         (otcrypto_word32_buf_t){.data = tag_dest, .len = digest_word_len}));
@@ -137,11 +183,12 @@ otcrypto_status_t otcrypto_kdf_hmac_ctr(
   memset(mask, 0, sizeof(mask));
 
   // Construct a blinded key.
-  HARDENED_TRY(keyblob_from_key_and_mask(keying_material_data, mask,
-                                         keying_material->config,
-                                         keying_material->keyblob));
+  HARDENED_TRY(keyblob_from_key_and_mask(output_key_material_data, mask,
+                                         output_key_material->config,
+                                         output_key_material->keyblob));
 
-  keying_material->checksum = integrity_blinded_checksum(keying_material);
+  output_key_material->checksum =
+      integrity_blinded_checksum(output_key_material);
 
   return OTCRYPTO_OK;
 }

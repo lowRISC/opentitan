@@ -2,8 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/include/hkdf.h"
+
 #include "sw/device/lib/base/math.h"
-#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -12,7 +13,7 @@
 #include "sw/device/lib/crypto/include/mac.h"
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('k', 'd', 'f')
+#define MODULE_ID MAKE_MODULE_ID('h', 'k', 'd')
 
 /**
  * Infer the digest length in 32-bit words for the given hash function.
@@ -44,10 +45,10 @@ static status_t digest_num_words_from_key_mode(otcrypto_key_mode_t key_mode,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf(const otcrypto_blinded_key_t ikm,
-                                    otcrypto_const_byte_buf_t salt,
-                                    otcrypto_const_byte_buf_t info,
-                                    otcrypto_blinded_key_t *okm) {
+otcrypto_status_t otcrypto_hkdf(const otcrypto_blinded_key_t ikm,
+                                otcrypto_const_byte_buf_t salt,
+                                otcrypto_const_byte_buf_t info,
+                                otcrypto_blinded_key_t *okm) {
   // Infer the digest length.
   size_t digest_wordlen;
   HARDENED_TRY(
@@ -72,8 +73,8 @@ otcrypto_status_t otcrypto_kdf_hkdf(const otcrypto_blinded_key_t ikm,
   };
 
   // Call extract and expand.
-  HARDENED_TRY(otcrypto_kdf_hkdf_extract(ikm, salt, &prk));
-  return otcrypto_kdf_hkdf_expand(prk, info, okm);
+  HARDENED_TRY(otcrypto_hkdf_extract(ikm, salt, &prk));
+  return otcrypto_hkdf_expand(prk, info, okm);
 }
 
 /**
@@ -116,9 +117,9 @@ static status_t hkdf_check_prk(size_t digest_words,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
-                                            otcrypto_const_byte_buf_t salt,
-                                            otcrypto_blinded_key_t *prk) {
+otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,
+                                        otcrypto_const_byte_buf_t salt,
+                                        otcrypto_blinded_key_t *prk) {
   // Check for null pointers.
   if (ikm.keyblob == NULL || prk == NULL || prk->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -219,9 +220,9 @@ otcrypto_status_t otcrypto_kdf_hkdf_extract(const otcrypto_blinded_key_t ikm,
   return OTCRYPTO_OK;
 }
 
-otcrypto_status_t otcrypto_kdf_hkdf_expand(const otcrypto_blinded_key_t prk,
-                                           otcrypto_const_byte_buf_t info,
-                                           otcrypto_blinded_key_t *okm) {
+otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t prk,
+                                       otcrypto_const_byte_buf_t info,
+                                       otcrypto_blinded_key_t *okm) {
   if (okm == NULL || okm->keyblob == NULL || prk.keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }

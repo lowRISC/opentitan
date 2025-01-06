@@ -8,7 +8,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/kdf.h"
+#include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
@@ -329,28 +329,6 @@ status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
 }
 
 /**
- * Get the mode for KMAC based on test operation.
- *
- * @param test_operation Security strength of KMAC.
- * @param[out] mode KMAC mode enum value.
- */
-status_t get_kmac_mode(kdf_test_operation_t test_operation,
-                       otcrypto_kmac_mode_t *mode) {
-  switch (test_operation) {
-    case kKdfTestOperationKmac128:
-      *mode = kOtcryptoKmacModeKmac128;
-      break;
-    case kKdfTestOperationKmac256:
-      *mode = kOtcryptoKmacModeKmac256;
-      break;
-    default:
-      LOG_INFO("Invalid test operation is given for KDF-KMAC");
-      return INVALID_ARGUMENT();
-  }
-  return OK_STATUS();
-}
-
-/**
  * Run the test pointed to by `current_test_vector`.
  */
 static status_t run_test_vector(void) {
@@ -364,9 +342,6 @@ static status_t run_test_vector(void) {
 
   current_test_vector->key_derivation_key.checksum =
       integrity_blinded_checksum(&current_test_vector->key_derivation_key);
-
-  otcrypto_kmac_mode_t mode;
-  TRY(get_kmac_mode(current_test_vector->test_operation, &mode));
 
   otcrypto_key_config_t km_config = {
       // The following key_mode is a dummy placeholder. It does not
@@ -402,9 +377,9 @@ static status_t run_test_vector(void) {
   };
 
   LOG_INFO("Running the first KDF-KMAC sideload operation.");
-  TRY(otcrypto_kdf_kmac(
-      current_test_vector->key_derivation_key, mode, current_test_vector->label,
-      current_test_vector->context, km_key_len, &keying_material1));
+  TRY(otcrypto_kmac_kdf(current_test_vector->key_derivation_key,
+                        current_test_vector->label,
+                        current_test_vector->context, &keying_material1));
 
   // Run a SHA-3 operation in between the two KMAC operations.
   LOG_INFO("Running the intermediate SHA3 operation.");
@@ -412,9 +387,9 @@ static status_t run_test_vector(void) {
   TRY(otcrypto_hash(sha3_test_vector.input_msg, digest_buf));
 
   LOG_INFO("Running the second KDF-KMAC sideload operation for comparison.");
-  TRY(otcrypto_kdf_kmac(
-      current_test_vector->key_derivation_key, mode, current_test_vector->label,
-      current_test_vector->context, km_key_len, &keying_material2));
+  TRY(otcrypto_kmac_kdf(current_test_vector->key_derivation_key,
+                        current_test_vector->label,
+                        current_test_vector->context, &keying_material2));
 
   TRY_CHECK_ARRAYS_EQ((unsigned char *)keying_material1.keyblob,
                       (unsigned char *)keying_material2.keyblob, km_key_len);
