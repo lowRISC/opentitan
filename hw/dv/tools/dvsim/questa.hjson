@@ -14,7 +14,21 @@
                 "-uvm -uvmhome {QUESTA_HOME}/verilog_src/uvm-1.2",
                 "-mfcu",
                 "-sv",
-				"-svext=hierbinsof",
+								"-svext=hierbinsof",
+                // Questa throws error on some LRM violations & restrictions. We demoted these errors since they will not impact the flow:
+                  //2744: It shall be illegal to have an import statement directory within a class scope.
+                  //      [DOC: IEEE Std 1800-2009 Verilog LRM - Section 26.3 "Referencing data in packages"]
+                  //2912: The specified port cannot be connected by name because it does not exist.
+                  //7070: An expression of string type can be assigned directly to a variable of string type.
+                  //      Values of integral type can be assigned to a string variable, but require a cast.
+                  //      [DOC: IEEE Std 1800-2012 Verilog LRM - 6.16 String Data Type]
+                  //7034: The strict rule for unpacked array assignment/comparison requires that the packed elements must match exactly as do the keys for associative arrays.
+                  //7033: In SystemVerilog, a variable assigned inside an always_comb, always_latch, or always_ff may not be assigned by any other process.
+                  //2244: An explicit static keyword shall be required when an initialization value is specified as part of a static variable's declaration to indicate the user's intent of executing that initialization only once at the beginning of simulation.
+                  //      The static keyword shall be optional where it would not be legal to declare the variables as automatic.
+                  //      [DOC: IEEE Std 1800-2009 Verilog LRM - 6.21 Scope and Lifetime] Variable initialized in its declaration in a static task, function or procedural block requires an explicit static keyword.
+                  //7041: The strict rule for string type assignment requires a cast if a string type is assigned to a packed type or a packed type is assigned to a string type.
+                  //      Note that a string literal is not the same as a string type.
                 "-suppress 2744,2912,7070,7034,7033,2244,7041",
                 "-f {sv_flist}",
                 // List multiple tops for the simulation. Prepend each top level with `-top`.
