@@ -4,7 +4,7 @@
 //
 // Breakout / remapping wrapper for register file.
 
-module alert_handler_reg_wrap import alert_pkg::*; (
+module alert_handler_reg_wrap import alert_handler_pkg::*; (
   input                                   clk_i,
   input                                   rst_ni,
   input                                   rst_shadowed_ni,

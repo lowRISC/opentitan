@@ -5,7 +5,7 @@
 // Binds ALERT_HANDLER functional coverage interafaces to the top level ALERT_HANDLER module.
 
 module alert_handler_cov_bind;
-  import alert_pkg::*;
+  import alert_handler_pkg::*;
 
   bind alert_handler cip_mubi_cov_wrapper#(.NumMubis(NLpg)) u_lpg_cg_en_cov_if (
     .rst_ni (rst_ni),

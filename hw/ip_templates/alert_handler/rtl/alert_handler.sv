@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module alert_handler
-  import alert_pkg::*;
+  import alert_handler_pkg::*;
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 #(

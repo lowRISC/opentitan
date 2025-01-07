@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_ping_timer_assert_fpv import alert_pkg::*; (
+module alert_handler_ping_timer_assert_fpv import alert_handler_pkg::*; (
   input                   clk_i,
   input                   rst_ni,
   input                   edn_req_o,

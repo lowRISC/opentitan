@@ -6,7 +6,7 @@
 interface alerts_if (
   input logic clk,
   input logic rst_ni,
-  input logic [alert_pkg::NAlerts-1:0] alerts
+  input logic [alert_handler_pkg::NAlerts-1:0] alerts
 );
 
   clocking alerts_cb @(posedge clk);

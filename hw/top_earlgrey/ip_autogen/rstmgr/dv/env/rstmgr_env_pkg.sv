@@ -21,7 +21,7 @@ package rstmgr_env_pkg;
   import rstmgr_reg_pkg::NumHwResets;
   import rstmgr_reg_pkg::NumSwResets;
 
-  import alert_pkg::alert_crashdump_t;
+  import alert_handler_pkg::alert_crashdump_t;
   import rv_core_ibex_pkg::cpu_crash_dump_t;
 
   import sec_cm_pkg::*;

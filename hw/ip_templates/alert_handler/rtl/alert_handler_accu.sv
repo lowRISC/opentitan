@@ -12,7 +12,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_accu import alert_pkg::*; (
+module alert_handler_accu import alert_handler_pkg::*; (
   input                        clk_i,
   input                        rst_ni,
   input                        class_en_i,   // class enable

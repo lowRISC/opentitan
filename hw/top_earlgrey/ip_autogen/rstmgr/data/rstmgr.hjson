@@ -263,7 +263,7 @@
       type:    "uni",
       name:    "alert_dump",
       act:     "rcv",
-      package: "alert_pkg",
+      package: "alert_handler_pkg",
       desc:    '''
         Alert handler crash dump information.
       '''

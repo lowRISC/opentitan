@@ -11,7 +11,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_lpg_ctrl import alert_pkg::*; (
+module alert_handler_lpg_ctrl import alert_handler_pkg::*; (
   input  clk_i,
   input  rst_ni,
   // Low power clk and rst indication signals.

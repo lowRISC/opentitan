@@ -34,13 +34,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "alert_pkg::lfsr_seed_t"
+      type:      "alert_handler_pkg::lfsr_seed_t"
       randcount: "32",
       randtype:  "data", // randomize randcount databits
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "alert_pkg::lfsr_perm_t"
+      type:      "alert_handler_pkg::lfsr_perm_t"
       randcount: "32",
       randtype:  "perm", // random permutation for randcount elements
     }
@@ -213,7 +213,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       type:    "uni",
       name:    "crashdump",
       act:     "req",
-      package: "alert_pkg"
+      package: "alert_handler_pkg"
     },
     { struct:  "edn"
       type:    "req_rsp"

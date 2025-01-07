@@ -13,7 +13,7 @@ filesets:
       - lowrisc:tlul:headers
     files:
       - rtl/alert_handler_reg_pkg.sv
-      - rtl/alert_pkg.sv
+      - rtl/alert_handler_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
