@@ -645,8 +645,8 @@ slice = str(alert_idx+w-1) + ":" + str(alert_idx)
   % for alert in alerts:
   // [${alert_idx}]: ${alert['name']}<% alert_idx += 1 %>
   % endfor
-  assign alerts_tx[${slice}] = incoming_alert_${alert_group}_tx_i;
-  assign incoming_alert_${alert_group}_rx_o = alerts_rx[${slice}];
+  assign alert_tx[${slice}] = incoming_alert_${alert_group}_tx_i;
+  assign incoming_alert_${alert_group}_rx_o = alert_rx[${slice}];
 % endfor
 
   // interrupt assignments
