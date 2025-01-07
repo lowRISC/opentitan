@@ -177,10 +177,19 @@ task pwm_monitor::collect_trans();
         end
         count_cycles = 0;
       end else if (clk_elapsed >= pulse_cycle_start + pulse_cycle_clks) begin
-        `uvm_info(`gfn, $sformatf("Idle PWM output detected (0x%0x cycle(s))", pulse_cycle_clks),
-                  UVM_HIGH)
-        // Send a pulse cycle showing no activity.
-        send_item(pulse_cycle_clks, 0);
+        // End of pulse cycle with no (further) change in the output; have we seen an 'active'
+        // phase?
+        if (!active_cycles) begin
+          `uvm_info(`gfn, $sformatf("Idle PWM output detected (0x%0x cycle(s))", pulse_cycle_clks),
+                    UVM_HIGH)
+        end
+        // Send a pulse cycle, showing any observed activity during that pulse cycle; this may be
+        // nothing in the event of an idle output.
+        //
+        // Note: when the duty cycle transitions from non-zero to zero, the final pulse cycle that
+        //       contains an assertion is reported here, because there is no ensuing transition to
+        //       the 'asserted' state.
+        send_item(pulse_cycle_clks - active_cycles, active_cycles);
         pulse_cycle_start = clk_elapsed;
         active_cycles = 0;
         count_cycles = 0;
