@@ -185,7 +185,6 @@ rust_library(
         "src/transport/dediprog/spi.rs",
         "src/transport/errors.rs",
         "src/transport/ftdi/chip.rs",
-        "src/transport/ftdi/gpio.rs",
         "src/transport/ftdi/mod.rs",
         "src/transport/hyperdebug/c2d2.rs",
         "src/transport/hyperdebug/dfu.rs",
