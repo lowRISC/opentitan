@@ -99,7 +99,7 @@ package top_${top["name"]}_pkg;
   parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
 
   // Number of LPGs for incoming alert group ${alert_group}
-  parameter int unsigned NOutgoingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
+  parameter int unsigned NIncomingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
 % endfor
 
   // Enumeration of alert modules
