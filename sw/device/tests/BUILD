@@ -107,6 +107,32 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "aes_gcm_test",
+    srcs = ["aes_gcm_test.c"],
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/ip/aes:model",
+        "//hw/top:aes_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:aes_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "aes_idle_test",
     srcs = ["aes_idle_test.c"],
     exec_env = dicts.add(
