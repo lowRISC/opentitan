@@ -21,3 +21,27 @@ updates:
       - dependency-name: "*chipwhisperer*"
     reviewers:
       - "lowRISC/ot-python-reviewers"
+
+  - package-ecosystem: "cargo"
+    directory: "/third_party/rust"
+    schedule:
+      # Updates are scheduled at the beginning of the work week.
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Etc/UTC"
+    commit-message:
+      prefix: "[dependabot]"
+    reviewers:
+      - "lowRISC/ot-rust-reviewers"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      # Updates are scheduled at the beginning of the work week.
+      interval: "weekly"
+      day: "monday"
+      time: "10:00"
+      timezone: "Etc/UTC"
+    commit-message:
+      prefix: "[dependabot]"
