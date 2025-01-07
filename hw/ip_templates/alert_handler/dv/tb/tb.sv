@@ -8,7 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import alert_handler_env_pkg::*;
   import alert_handler_test_pkg::*;
-  import alert_pkg::*;
+  import alert_handler_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"

@@ -24,7 +24,7 @@ interface rstmgr_if (
   rstmgr_pkg::rstmgr_cpu_t                              cpu_i;
 
   // Interface to alert handler
-  alert_pkg::alert_crashdump_t                          alert_dump_i;
+  alert_handler_pkg::alert_crashdump_t                          alert_dump_i;
 
   // Interface to cpu crash dump
   rv_core_ibex_pkg::cpu_crash_dump_t                    cpu_dump_i;

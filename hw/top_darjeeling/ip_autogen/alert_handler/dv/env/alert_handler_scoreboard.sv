@@ -556,8 +556,8 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     forever begin
       wait (cfg.under_reset == 0 && cfg.en_scb == 1);
       @(cfg.crashdump_vif.pins) begin
-        alert_pkg::alert_crashdump_t crashdump_val =
-            alert_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
+        alert_handler_pkg::alert_crashdump_t crashdump_val =
+            alert_handler_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
 
         // Wait two negedge clock cycles to make sure csr mirrored values are updated.
         `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_n_clks(2);, wait (cfg.under_reset == 1);)

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-package alert_pkg;
+package alert_handler_pkg;
 
   // these localparams are generated based on the system top-level configuration
   localparam int unsigned      NAlerts   = alert_handler_reg_pkg::NAlerts;   // maximum 252
@@ -98,4 +98,4 @@ package alert_pkg;
     logic [N_CLASSES-1:0][PHASE_DW-1:0]                class_crashdump_phase;
   } reg2hw_wrap_t;
 
-endpackage : alert_pkg
+endpackage : alert_handler_pkg

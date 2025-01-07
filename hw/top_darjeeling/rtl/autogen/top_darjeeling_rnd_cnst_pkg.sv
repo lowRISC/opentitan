@@ -71,12 +71,12 @@ package top_darjeeling_rnd_cnst_pkg;
   // alert_handler
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
-  parameter alert_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
+  parameter alert_handler_pkg::lfsr_seed_t RndCnstAlertHandlerLfsrSeed = {
     32'h4A52E672
   };
 
   // Compile-time random permutation for LFSR output
-  parameter alert_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
+  parameter alert_handler_pkg::lfsr_perm_t RndCnstAlertHandlerLfsrPerm = {
     160'h1626CA23_5B3B6C12_4BFE5E54_EBF4A934_783055F0
   };
 

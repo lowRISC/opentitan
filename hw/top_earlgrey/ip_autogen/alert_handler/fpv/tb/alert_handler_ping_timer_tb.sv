@@ -5,7 +5,7 @@
 // Testbench module for ping timer in alert handler. Intended to use with
 // a formal tool.
 
-module alert_handler_ping_timer_tb import alert_pkg::*; (
+module alert_handler_ping_timer_tb import alert_handler_pkg::*; (
   input                          clk_i,
   input                          rst_ni,
   output logic                   edn_req_o,

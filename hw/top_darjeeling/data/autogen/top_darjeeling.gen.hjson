@@ -2136,7 +2136,7 @@
         {
           name: RndCnstLfsrSeed
           desc: Compile-time random bits for initial LFSR seed
-          type: alert_pkg::lfsr_seed_t
+          type: alert_handler_pkg::lfsr_seed_t
           randcount: 32
           randtype: data
           name_top: RndCnstAlertHandlerLfsrSeed
@@ -2146,7 +2146,7 @@
         {
           name: RndCnstLfsrPerm
           desc: Compile-time random permutation for LFSR output
-          type: alert_pkg::lfsr_perm_t
+          type: alert_handler_pkg::lfsr_perm_t
           randcount: 32
           randtype: perm
           name_top: RndCnstAlertHandlerLfsrPerm
@@ -2159,7 +2159,7 @@
         {
           name: crashdump
           struct: alert_crashdump
-          package: alert_pkg
+          package: alert_handler_pkg
           type: uni
           act: req
           width: 1
@@ -2835,7 +2835,7 @@
           name: alert_dump
           desc: Alert handler crash dump information.
           struct: alert_crashdump
-          package: alert_pkg
+          package: alert_handler_pkg
           type: uni
           act: rcv
           width: 1
@@ -19538,7 +19538,7 @@
       {
         name: crashdump
         struct: alert_crashdump
-        package: alert_pkg
+        package: alert_handler_pkg
         type: uni
         act: req
         width: 1
@@ -19985,7 +19985,7 @@
         name: alert_dump
         desc: Alert handler crash dump information.
         struct: alert_crashdump
-        package: alert_pkg
+        package: alert_handler_pkg
         type: uni
         act: rcv
         width: 1
@@ -26284,7 +26284,7 @@
         default: prim_rom_pkg::ROM_CFG_DEFAULT
       }
       {
-        package: alert_pkg
+        package: alert_handler_pkg
         struct: alert_crashdump
         signame: alert_handler_crashdump
         width: 1
@@ -26292,7 +26292,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: alert_pkg::ALERT_CRASHDUMP_DEFAULT
+        default: alert_handler_pkg::ALERT_CRASHDUMP_DEFAULT
       }
       {
         package: prim_esc_pkg

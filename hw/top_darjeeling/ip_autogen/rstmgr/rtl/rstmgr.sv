@@ -48,7 +48,7 @@ module rstmgr
   output mubi4_t sw_rst_req_o,
 
   // Interface to alert handler
-  input alert_pkg::alert_crashdump_t alert_dump_i,
+  input alert_handler_pkg::alert_crashdump_t alert_dump_i,
 
   // Interface to cpu crash dump
   input rv_core_ibex_pkg::cpu_crash_dump_t cpu_dump_i,
@@ -1035,7 +1035,7 @@ module rstmgr
   assign dump_capture_halt = rst_hw_req;
 
   rstmgr_crash_info #(
-    .CrashDumpWidth($bits(alert_pkg::alert_crashdump_t))
+    .CrashDumpWidth($bits(alert_handler_pkg::alert_crashdump_t))
   ) u_alert_info (
     .clk_i(clk_por_i),
     .rst_ni(rst_por_ni),

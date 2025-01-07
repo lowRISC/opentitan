@@ -562,8 +562,8 @@ module top_earlgrey #(
   logic intr_edn1_edn_fatal_err;
 
   // Alert list
-  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
-  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
+  prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
 
 
   // define inter-module signals
@@ -572,7 +572,7 @@ module top_earlgrey #(
   prim_ram_2p_pkg::ram_2p_cfg_t       ast_spi_ram_2p_cfg;
   prim_ram_1p_pkg::ram_1p_cfg_t       ast_usb_ram_1p_cfg;
   prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
-  alert_pkg::alert_crashdump_t       alert_handler_crashdump;
+  alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
   logic       aon_timer_aon_nmi_wdog_timer_bark;
@@ -877,8 +877,8 @@ module top_earlgrey #(
   );
 
   // Wire up alert handler LPGs
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_rst_en;
 
 
   // peri_lc_io_div4_0

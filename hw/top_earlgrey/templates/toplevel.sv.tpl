@@ -252,11 +252,11 @@ module top_${top["name"]} #(
 % endfor
 
   // Alert list
-  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
-  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
+  prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
 
 % if not top["alert"]:
-  for (genvar k = 0; k < alert_pkg::NAlerts; k++) begin : gen_alert_tie_off
+  for (genvar k = 0; k < alert_handler_pkg::NAlerts; k++) begin : gen_alert_tie_off
     // tie off if no alerts present in the system
     assign alert_tx[k].alert_p = 1'b0;
     assign alert_tx[k].alert_n = 1'b1;
@@ -397,8 +397,8 @@ module top_${top["name"]} #(
   );
 
   // Wire up alert handler LPGs
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_rst_en;
 
 <%
 # get all known typed clocks and add them to a dict
