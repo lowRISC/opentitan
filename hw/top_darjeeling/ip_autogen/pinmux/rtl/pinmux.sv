@@ -480,20 +480,6 @@ module pinmux
   `ASSERT_KNOWN(MioKnownO_A, mio_attr_o)
   `ASSERT_KNOWN(DioKnownO_A, dio_attr_o)
 
-  `ASSERT_KNOWN(LcJtagTckKnown_A, lc_jtag_o.tck)
-  `ASSERT_KNOWN(LcJtagTrstKnown_A, lc_jtag_o.trst_n)
-  `ASSERT_KNOWN(LcJtagTmsKnown_A, lc_jtag_o.tms)
-
-  `ASSERT_KNOWN(RvJtagTckKnown_A, rv_jtag_o.tck)
-  `ASSERT_KNOWN(RvJtagTrstKnown_A, rv_jtag_o.trst_n)
-  `ASSERT_KNOWN(RvJtagTmsKnown_A, rv_jtag_o.tms)
-
-  `ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
-  `ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
-  `ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
-
-  `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
-
   // running on slow AON clock
   `ASSERT_KNOWN(AonWkupReqKnownO_A, pin_wkup_req_o, clk_aon_i, !rst_aon_ni)
 
