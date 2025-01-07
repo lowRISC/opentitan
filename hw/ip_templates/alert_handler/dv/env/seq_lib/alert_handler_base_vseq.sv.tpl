@@ -2,23 +2,23 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define RAND_AND_WR_CLASS_PHASES_CYCLE(i)                                 \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase0_cyc_shadowed,      \
-      class``i``_phase0_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase1_cyc_shadowed,      \
-      class``i``_phase1_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase2_cyc_shadowed,      \
-      class``i``_phase2_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase3_cyc_shadowed,      \
-      class``i``_phase3_cyc_shadowed.value inside {[0: max_phase_cyc]};); \
-  csr_update(ral.class``i``_phase0_cyc_shadowed);                         \
-  csr_update(ral.class``i``_phase1_cyc_shadowed);                         \
-  csr_update(ral.class``i``_phase2_cyc_shadowed);                         \
+`define RAND_AND_WR_CLASS_PHASES_CYCLE(i)                                 ${"\\"}
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase0_cyc_shadowed,      ${"\\"}
+      class``i``_phase0_cyc_shadowed.value inside {[0: max_phase_cyc]};); ${"\\"}
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase1_cyc_shadowed,      ${"\\"}
+      class``i``_phase1_cyc_shadowed.value inside {[0: max_phase_cyc]};); ${"\\"}
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase2_cyc_shadowed,      ${"\\"}
+      class``i``_phase2_cyc_shadowed.value inside {[0: max_phase_cyc]};); ${"\\"}
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_phase3_cyc_shadowed,      ${"\\"}
+      class``i``_phase3_cyc_shadowed.value inside {[0: max_phase_cyc]};); ${"\\"}
+  csr_update(ral.class``i``_phase0_cyc_shadowed);                         ${"\\"}
+  csr_update(ral.class``i``_phase1_cyc_shadowed);                         ${"\\"}
+  csr_update(ral.class``i``_phase2_cyc_shadowed);                         ${"\\"}
   csr_update(ral.class``i``_phase3_cyc_shadowed);
 
-`define RAND_WRITE_CLASS_CTRL(i, en_bit, lock_bit) \
-  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl_shadowed, \
-                                 en.value == en_bit; lock.value == lock_bit;)  \
+`define RAND_WRITE_CLASS_CTRL(i, en_bit, lock_bit) ${"\\"}
+  `DV_CHECK_RANDOMIZE_WITH_FATAL(ral.class``i``_ctrl_shadowed, ${"\\"}
+                                 en.value == en_bit; lock.value == lock_bit;)  ${"\\"}
   csr_wr(.ptr(ral.class``i``_ctrl_shadowed), .value(ral.class``i``_ctrl_shadowed.get()));
 
 class alert_handler_base_vseq extends cip_base_vseq #(

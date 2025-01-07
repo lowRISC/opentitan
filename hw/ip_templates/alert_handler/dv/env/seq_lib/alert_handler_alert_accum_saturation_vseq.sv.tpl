@@ -5,15 +5,15 @@
 // This sequence force the alert accumulation count to large value, then check if the accum count
 // will saturate and won't overflow.
 
-`define CLASS_CNT_PATH(class_i, i) \
-    string class_``class_i``_path_0 = \
-           "tb.dut.gen_classes[``i``].u_accu.u_prim_count.cnt_q[0]"; \
-    string class_``class_i``_path_1 = \
+`define CLASS_CNT_PATH(class_i, i) ${"\\"}
+    string class_``class_i``_path_0 = ${"\\"}
+           "tb.dut.gen_classes[``i``].u_accu.u_prim_count.cnt_q[0]"; ${"\\"}
+    string class_``class_i``_path_1 = ${"\\"}
            "tb.dut.gen_classes[``i``].u_accu.u_prim_count.cnt_q[1]";
 
-`define CHECK_ALERT_ACCUM_CNT(class_i, i) \
-    csr_rd_check(.ptr(ral.class``class_i``_accum_cnt), \
-                 .compare_value(saturated_class == ``i`` ? \
+`define CHECK_ALERT_ACCUM_CNT(class_i, i) ${"\\"}
+    csr_rd_check(.ptr(ral.class``class_i``_accum_cnt), ${"\\"}
+                 .compare_value(saturated_class == ``i`` ? ${"\\"}
                   MAX_ACCUM_CNT : MAX_ACCUM_CNT - num_alerts_to_saturate));
 
 class alert_handler_alert_accum_saturation_vseq extends alert_handler_smoke_vseq;

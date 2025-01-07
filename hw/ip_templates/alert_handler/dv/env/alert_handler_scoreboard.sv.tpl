@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`define ASSIGN_CLASS_PHASE_REGS(index, i) \
-  reg_esc_phase_cycs_per_class_q[``index``] = \
-      {ral.class``i``_phase0_cyc_shadowed, ral.class``i``_phase1_cyc_shadowed, \
+`define ASSIGN_CLASS_PHASE_REGS(index, i) ${"\\"}
+  reg_esc_phase_cycs_per_class_q[``index``] = ${"\\"}
+      {ral.class``i``_phase0_cyc_shadowed, ral.class``i``_phase1_cyc_shadowed, ${"\\"}
        ral.class``i``_phase2_cyc_shadowed, ral.class``i``_phase3_cyc_shadowed};
 
 class alert_handler_scoreboard extends cip_base_scoreboard #(
