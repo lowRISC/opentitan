@@ -207,6 +207,24 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
 
     if (!cfg.en_scb) return;
 
+    if (!item.is_write()) begin
+      uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(item.a_addr);
+      if (csr != null) begin
+        if (!uvm_re_match("intr_state*", csr.get_name())) begin
+          // If intr_state
+          uvm_reg_data_t pred_mask;
+          dv_base_reg dv_reg;
+          `downcast(dv_reg, csr)
+          pred_mask = dv_reg.get_predicted_mask();
+          `DV_CHECK_EQ(dv_reg.get_mirrored_value() & pred_mask,
+                       item.d_data & pred_mask,
+                       $sformatf("Register read data for %0s (prediction mask %0h)",
+                       csr.get_full_name(),
+                       pred_mask))
+        end
+      end
+    end
+
     process_tl_access(item, DataChannel, ral_name);
   endtask
 
