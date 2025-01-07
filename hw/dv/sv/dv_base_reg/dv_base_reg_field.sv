@@ -31,6 +31,9 @@ class dv_base_reg_field extends uvm_reg_field;
   // variable for shadowed coverage, which is only created when this is a shadowed reg
   local dv_base_shadowed_field_cov shadowed_cov;
 
+  // Set to 1 if prediction is intended to be carried out in the cip_base_scoreboard
+  bit has_prediction = 0;
+
   `uvm_object_utils(dv_base_reg_field)
   `uvm_object_new
 

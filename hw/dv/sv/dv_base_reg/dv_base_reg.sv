@@ -73,6 +73,21 @@ class dv_base_reg extends uvm_reg;
     `downcast(get_dv_base_reg_block, get_parent())
   endfunction
 
+  function uvm_reg_data_t get_predicted_mask();
+    uvm_reg_data_t mask = 0;
+    dv_base_reg_field fields_q[$];
+    this.get_dv_base_reg_fields(fields_q);
+
+    foreach (fields_q[i]) begin
+      if (fields_q[i].has_prediction) begin
+        for (int j = 0; j < fields_q[i].get_n_bits(); j++)
+          mask[j+fields_q[i].get_lsb_pos()] = 1'b1;
+      end
+    end
+
+    return mask;
+  endfunction
+
   // get_n_bits will return number of all the bits in the csr
   // while this function will return actual number of bits used in reg field
   function uint get_n_used_bits();
