@@ -71,20 +71,16 @@ endfunction
 
 task pwm_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
-
-  // TODO: Decide whether we want to leave the processes running.
-  forever begin
-    `DV_SPINWAIT_EXIT(
+  if (cfg.en_scb) begin
+    // Create one checker process for each PWM output.
+    foreach (item_fifo[channel]) begin
+      // Ensure that the newly-created process does not see changes to the 'channel' variable when
+      // starting.
+      automatic int ch = channel;
       fork
-        compare_trans(0);
-        compare_trans(1);
-        compare_trans(2);
-        compare_trans(3);
-        compare_trans(4);
-        compare_trans(5);
-      join,
-      @(negedge cfg.clk_rst_vif.rst_n),
-    )
+        compare_trans(ch);
+      join_none
+    end
   end
 endtask
 
@@ -100,6 +96,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
                                        string        ral_name);
   string txt;
   uvm_reg csr;
+  int unsigned idx;
   bit [TL_DW-1:0] reg_value;
   bit             do_read_check = 1'b1;
   bit             write = item.is_write();
@@ -112,13 +109,13 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
   if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
     csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
     `DV_CHECK_NE_FATAL(csr, null)
+    // Extract register index indicating the channel number.
+    idx = get_multireg_idx(csr.get_name());
   end else begin
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
   if (addr_phase_write) begin
-    string csr_name = csr.get_name();
-
     // if incoming access is a write to a valid csr, then make updates right away
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -136,7 +133,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
         channel_en = item.a_data[PWM_NUM_CHANNELS-1:0];
         foreach (channel_en[ii]) begin
           if (channel_en[ii] & !prev_en[ii]) begin
-            `uvm_info(`gfn, $sformatf("detected enabling of channel[%d]", ii), UVM_HIGH)
+            `uvm_info(`gfn, $sformatf("detected enabling of channel[%0d]", ii), UVM_HIGH)
             // Set up the prediction state for this channel.
             blink_cnt[ii] = blink[ii].X;
             blink_state[ii] = CycleA;
@@ -146,7 +143,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
             // enabled with an arbitrary phase relationship to the shared phase counter.
             ignore_state_change[ii] = SettleTime;
           end
-          txt = $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]);
+          txt = $sformatf("\n Channel[%0d] : %0b", ii, channel_en[ii]);
           if (cfg.en_cov) begin
             cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
                                    $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
@@ -176,52 +173,37 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
       "invert": begin
         invert = item.a_data[PWM_NUM_CHANNELS-1:0];
         foreach (invert[ii]) begin
-          txt = {txt, $sformatf("\n Invert Channel[%d] : %0b",ii, invert[ii])};
+          txt = {txt, $sformatf("\n Invert Channel[%0d] : %0b", ii, invert[ii])};
         end
         `uvm_info(`gfn, $sformatf("Setting channel Inverts %s ", txt), UVM_HIGH)
       end
 
-      "pwm_param_0",
-      "pwm_param_1",
-      "pwm_param_2",
-      "pwm_param_3",
-      "pwm_param_4",
-      "pwm_param_5": begin
-        int idx = get_multireg_idx(csr_name);
+      // PWM_PARAM_<i> registers; channel count is parameterized.
+      $sformatf("pwm_param_%0d", idx): begin
         channel_param[idx].PhaseDelay = get_field_val(ral.pwm_param[idx].phase_delay,
                                                       item.a_data);
         channel_param[idx].HtbtEn     = get_field_val(ral.pwm_param[idx].htbt_en, item.a_data);
         channel_param[idx].BlinkEn    = get_field_val(ral.pwm_param[idx].blink_en, item.a_data);
-        txt = $sformatf("\n Setting Param for channel[%d]", idx);
+        txt = $sformatf("\n Setting Param for channel[%0d]", idx);
         txt = {txt, $sformatf("\n ----| Phase Delay %0h", channel_param[idx].PhaseDelay)};
         txt = {txt, $sformatf("\n ----| Heart Beat enable: %0b", channel_param[idx].HtbtEn) };
         txt = {txt, $sformatf("\n ----| Blink enable: %0b", channel_param[idx].BlinkEn) };
-        `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%d], %s",idx, txt), UVM_HIGH)
+        `uvm_info(`gfn, $sformatf("Setting Channel Param for CH[%0d], %s", idx, txt), UVM_HIGH)
       end
 
-      "duty_cycle_0",
-      "duty_cycle_1",
-      "duty_cycle_2",
-      "duty_cycle_3",
-      "duty_cycle_4",
-      "duty_cycle_5": begin
-        int idx = get_multireg_idx(csr_name);
+      // DUTY_CYCLE_<i> registers; channel count is parameterized.
+      $sformatf("duty_cycle_%0d", idx): begin
         duty_cycle[idx].A = get_field_val(ral.duty_cycle[idx].a, item.a_data);
         duty_cycle[idx].B = get_field_val(ral.duty_cycle[idx].b, item.a_data);
-        `uvm_info(`gfn, $sformatf("\n Setting channel[%d] duty cycle A:%0h B:%0h", idx,
+        `uvm_info(`gfn, $sformatf("\n Setting channel[%0d] duty cycle A:%0h B:%0h", idx,
                                   duty_cycle[idx].A ,duty_cycle[idx].B), UVM_HIGH)
       end
 
-      "blink_param_0",
-      "blink_param_1",
-      "blink_param_2",
-      "blink_param_3",
-      "blink_param_4",
-      "blink_param_5": begin
-        int idx = get_multireg_idx(csr_name);
+      // BLINK_PARAM_<i> registers; channel count is parameterized.
+      $sformatf("blink_param_%0d", idx): begin
         blink[idx].X = get_field_val(ral.blink_param[idx].x, item.a_data);
         blink[idx].Y = get_field_val(ral.blink_param[idx].y, item.a_data);
-        `uvm_info(`gfn, $sformatf("\n Setting channel[%d] Blink X:%0h Y:%0h", idx,
+        `uvm_info(`gfn, $sformatf("\n Setting channel[%0d] Blink X:%0h Y:%0h", idx,
                                   blink[idx].X ,blink[idx].Y), UVM_HIGH)
       end
 

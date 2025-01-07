@@ -10,7 +10,7 @@ class pwm_heartbeat_wrap_vseq extends pwm_rand_output_vseq;
   // Enable heartbeat (since we're trying to make it wrap, so it definitely needs to be enabled)
   extern constraint with_heartbeat_c;
 
-  extern function new (string name="");
+  extern function new(string name = "");
 
   // This overrides a function from pwm_base_vseq. We want to choose a "maximal" duty cycle, where A
   // and B are near the endpoints of the 16 bit data type (to make it likely that the increment will
@@ -29,7 +29,7 @@ constraint pwm_heartbeat_wrap_vseq::with_heartbeat_c {
   }
 }
 
-function pwm_heartbeat_wrap_vseq::new (string name);
+function pwm_heartbeat_wrap_vseq::new(string name = "");
   super.new(name);
 endfunction
 

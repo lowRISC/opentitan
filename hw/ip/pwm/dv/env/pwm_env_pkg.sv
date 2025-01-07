@@ -62,11 +62,14 @@ package pwm_env_pkg;
     bit [15:0]   X;
   } blink_param_t;
 
-  // The index of a multi-reg is given by the last character of the name, since there are fewer
-  // than ten channels.
-  function automatic int get_multireg_idx(string name);
-    string s = name.getc(name.len - 1);
-    return s.atoi();
+  // The index of a multi-reg is given by the last character(s) of the name. The number of PWM
+  // channels is parameterized.
+  function automatic int unsigned get_multireg_idx(string name);
+    int str_len = name.len();
+    // Note: this extracts the final two characters which are either '_y' or 'xy',
+    //       and because '_' is permitted in (System)Verilog numbers, it works for 0-99
+    string index_str = name.substr(str_len-2, str_len-1);
+    return index_str.atoi();
   endfunction
 
   // Package sources
