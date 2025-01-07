@@ -19,7 +19,7 @@ module spi_host_fsm
   input                              command_valid_i,
   output logic                       command_ready_o,
   output logic                       sck_o,
-  output logic [CSW-1:0]             csb_o,
+  output logic [NumCS-1:0]           csb_o,
   output logic [3:0]                 sd_en_o,
   output logic                       last_read_o,
   output logic                       last_write_o,
