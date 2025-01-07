@@ -168,6 +168,11 @@ typedef enum dif_aes_mode {
    * written with any data (preferably random).
    */
   kDifAesModeCtr = (1 << 4),
+
+  /**
+   * The Galois/Counter Mode.
+   */
+  kDifAesModeGcm = (1 << 5),
 } dif_aes_mode_t;
 
 /**
@@ -349,6 +354,29 @@ dif_result_t dif_aes_load_data(const dif_aes_t *aes, const dif_aes_data_t data);
  */
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data);
+
+/**
+ * Puts the AES GCM into the provided phase.
+ *
+ * @param aes AES state data.
+ * @param phase The AES GCM phase we want to enter.
+ * @param num_valid_bytes The number of valid bytes for the AES block.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_set_gcm_phase(const dif_aes_t *aes, uint32_t phase,
+                                   size_t num_valid_bytes);
+
+/**
+ * Loads len(aad) || len(ptx) into the AES-GCM.
+ *
+ * @param aes AES state data.
+ * @param len_ptx Number of plaintext bits.
+ * @param len_aad Number of AAD bits.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_load_gcm_tag_len(const dif_aes_t *aes, uint64_t len_ptx,
+                                      uint64_t len_aad);
 
 /**
  * Process a stream of data containing the plain text and output a stream of

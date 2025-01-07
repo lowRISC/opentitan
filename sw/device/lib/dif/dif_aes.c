@@ -235,6 +235,12 @@ dif_result_t dif_aes_start(const dif_aes_t *aes,
     return result;
   }
 
+  if (transaction->mode == kDifAesModeGcm) {
+    // Put AES-GCM into init mode.
+    DIF_RETURN_IF_ERROR(dif_aes_set_gcm_phase(
+        aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_INIT, 16));
+  }
+
   if (transaction->key_provider == kDifAesKeySoftwareProvided) {
     aes_set_multireg(aes, &key->share0[0], AES_KEY_SHARE0_MULTIREG_COUNT,
                      AES_KEY_SHARE0_0_REG_OFFSET);
@@ -296,6 +302,49 @@ dif_result_t dif_aes_read_output(const dif_aes_t *aes, dif_aes_data_t *data) {
 
   aes_read_multireg(aes, data->data, AES_DATA_OUT_MULTIREG_COUNT,
                     AES_DATA_OUT_0_REG_OFFSET);
+
+  return kDifOk;
+}
+
+dif_result_t dif_aes_set_gcm_phase(const dif_aes_t *aes, uint32_t phase,
+                                   size_t num_valid_bytes) {
+  if (aes == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!aes_idle(aes)) {
+    return kDifUnavailable;
+  }
+
+  uint32_t reg = bitfield_field32_write(
+      0, AES_CTRL_GCM_SHADOWED_NUM_VALID_BYTES_FIELD, num_valid_bytes);
+  // Put AES-GCM into the given phase.
+  reg = bitfield_field32_write(reg, AES_CTRL_GCM_SHADOWED_PHASE_FIELD, phase);
+  aes_shadowed_write(aes->base_addr, AES_CTRL_GCM_SHADOWED_REG_OFFSET, reg);
+
+  return kDifOk;
+}
+
+dif_result_t dif_aes_load_gcm_tag_len(const dif_aes_t *aes, uint64_t len_ptx,
+                                      uint64_t len_aad) {
+  if (aes == NULL) {
+    return kDifBadArg;
+  }
+
+  // Ensure that the INPUT_READY bit in STATUS is 1.
+  if (!aes_input_ready(aes)) {
+    return kDifUnavailable;
+  }
+
+  // len_aad_ptx = len(aad) || len(ptx)
+  dif_aes_data_t len_aad_ptx;
+  len_aad_ptx.data[0] = __builtin_bswap32((uint32_t)(len_aad >> 32));
+  len_aad_ptx.data[1] = __builtin_bswap32((uint32_t)(len_aad & 0xFFFFFFFF));
+  len_aad_ptx.data[2] = __builtin_bswap32((uint32_t)(len_ptx >> 32));
+  len_aad_ptx.data[3] = __builtin_bswap32((uint32_t)(len_ptx & 0xFFFFFFFF));
+
+  aes_set_multireg(aes, &len_aad_ptx.data[0], AES_DATA_IN_MULTIREG_COUNT,
+                   AES_DATA_IN_0_REG_OFFSET);
 
   return kDifOk;
 }
