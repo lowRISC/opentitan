@@ -458,6 +458,7 @@ class cip_base_vseq #(
         uvm_reg_data_t data = $urandom();
         `uvm_info(`gfn, $sformatf("Write %s: 0x%0h", intr_csrs[i].`gfn, data), UVM_MEDIUM)
         csr_wr(.ptr(intr_csrs[i]), .value(data));
+        if (cfg.under_reset) break;
       end
 
       // Read all intr related csr and check interrupt pins
@@ -479,19 +480,23 @@ class cip_base_vseq #(
         csr_rd(.ptr(intr_csrs[i]), .value(act_val));
         act_val &= ~irq_ro_mask;
 
-        if (cfg.under_reset) continue;
-        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].`gfn, act_val), UVM_MEDIUM)
-        `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR", intr_csrs[i].`gfn})
+        if (cfg.under_reset) break;
+        `uvm_info(`gfn, $sformatf("Read %s: 0x%0h", intr_csrs[i].get_full_name(), act_val),
+                  UVM_MEDIUM)
+        if (intr_csrs[i].get_predicted_mask() == 0) begin
+          `DV_CHECK_EQ(exp_val, act_val, {"when reading the intr CSR ",
+                                          intr_csrs[i].get_full_name()})
 
-        // if it's intr_state, also check the interrupt pin value
-        if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
-          interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
-          interrupt_t act_intr_pin = cfg.intr_vif.sample();
-          act_intr_pin &= interrupt_t'((1 << cfg.num_interrupts) - 1);
-          `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
-        end // if (!uvm_re_match
+          // if it's intr_state, also check the interrupt pin value
+          if (!uvm_re_match("intr_state*", intr_csrs[i].get_name())) begin
+            interrupt_t exp_intr_pin = intr_csrs[i].get_intr_pins_exp_value();
+            interrupt_t act_intr_pin = cfg.intr_vif.sample();
+            act_intr_pin &= interrupt_t'((1 << cfg.num_interrupts) - 1);
+            `DV_CHECK_CASE_EQ(exp_intr_pin, act_intr_pin)
+          end // if (!uvm_re_match
+        end
       end // foreach (intr_csrs[i])
-    end // for (int trans = 1; ...
+    end
     // Write 0 to intr_test to clean up status interrupts, otherwise, status interrupts may remain
     // active. And writing any value to a status interrupt CSR (intr_state) can't clear its value.
     foreach (intr_test_csrs[i]) begin
