@@ -53,13 +53,6 @@ crate.annotation(
     repositories = ["crate_index"],
 )
 crate.annotation(
-    crate = "mdbook",
-    gen_binaries = ["mdbook"],
-    patch_args = ["-p1"],
-    patches = ["@//third_party/rust/patches:mdbook-landing-page-links.patch"],
-    repositories = ["crate_index"],
-)
-crate.annotation(
     crate = "cryptoki",
     patch_args = ["-p2"],
     patches = [
@@ -94,6 +87,21 @@ crate.annotation(
     repositories = ["crate_index"],
 )
 use_repo(crate, "crate_index")
+
+# mdbook (separate because it has a lot of dependencies):
+crate.from_cargo(
+    name = "mdbook_index",
+    cargo_lockfile = "//third_party/mdbook:Cargo.lock",
+    manifests = ["//third_party/mdbook:Cargo.toml"],
+)
+crate.annotation(
+    crate = "mdbook",
+    gen_binaries = ["mdbook"],
+    patch_args = ["-p1"],
+    patches = ["@//third_party/mdbook/patches:mdbook-landing-page-links.patch"],
+    repositories = ["mdbook_index"],
+)
+use_repo(crate, "mdbook_index")
 
 # Tock crates (must be separated to avoid them depending on `std`):
 crate.from_cargo(
