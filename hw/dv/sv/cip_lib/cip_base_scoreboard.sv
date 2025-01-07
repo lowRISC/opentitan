@@ -210,23 +210,24 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
     if (!item.is_write()) begin
       uvm_reg csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(item.a_addr);
       if (csr != null) begin
-        if (!uvm_re_match("intr_state*", csr.get_name())) begin
-          // If intr_state
-          uvm_reg_data_t pred_mask;
-          dv_base_reg dv_reg;
-          `downcast(dv_reg, csr)
-          pred_mask = dv_reg.get_predicted_mask();
-          `DV_CHECK_EQ(dv_reg.get_mirrored_value() & pred_mask,
-                       item.d_data & pred_mask,
-                       $sformatf("Register read data for %0s (prediction mask %0h)",
-                       csr.get_full_name(),
-                       pred_mask))
-        end
+        dv_base_reg dv_reg;
+        `downcast(dv_reg, csr)
+        do_read_check(dv_reg, item);
       end
     end
-
     process_tl_access(item, DataChannel, ral_name);
   endtask
+
+  // This function implements the generic read checks, any TB can override this method to
+  // expand the checks further
+  virtual function void do_read_check(dv_base_reg dv_reg, tl_seq_item item);
+    uvm_reg_data_t pred_mask = dv_reg.get_predicted_mask();
+    `DV_CHECK_EQ(dv_reg.get_mirrored_value() & pred_mask,
+                 item.d_data & pred_mask,
+                 $sformatf("Register read data for %0s (qualified by prediction mask %0h)",
+                           dv_reg.get_full_name(),
+                           pred_mask))
+  endfunction
 
   virtual task process_alert_fifos();
     foreach (alert_fifos[i]) begin
