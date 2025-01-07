@@ -23,6 +23,10 @@ ld_library(
         "@@TOP_MEMORY_LD@@": "$(location //hw/top:top_ld)",
     } | opentitan_select_top(
         {
+            "darjeeling": {
+                "@@TEST_ROM_REGION@@": "rom0",
+                "@@TEST_CODE_REGION@@": "ctn",
+            },
         },
         # Default configuration:
         {

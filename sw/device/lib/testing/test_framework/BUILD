@@ -84,6 +84,7 @@ cc_library(
 
 OTTF_REGION_ALIAS = opentitan_select_top(
     {
+        "darjeeling": {"@@OTTF_REGION_ALIAS@@": "ctn"},
     },
     # Default configuration:
     {"@@OTTF_REGION_ALIAS@@": "eflash"},
