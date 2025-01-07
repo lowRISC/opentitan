@@ -1285,6 +1285,7 @@
         'ast.lc_hw_debug_en'                   : '',
         'ast.obs_ctrl'                         : 'obs_ctrl',
         'ast.rom_cfg'                          : 'rom_cfg',
+        'i2c0.ram_cfg'                         : 'i2c_ram_1p_cfg',
         'i2c0.ram_cfg_rsp'                     : 'i2c_ram_1p_cfg_rsp',
         'sram_ctrl_ret_aon.cfg'                : 'sram_ctrl_ret_aon_ram_1p_cfg',
         'sram_ctrl_ret_aon.cfg_rsp'            : 'sram_ctrl_ret_aon_ram_1p_cfg_rsp',

@@ -906,6 +906,10 @@
           act: rcv
           width: 1
           inst_name: i2c0
+          default: ""
+          external: true
+          top_signame: i2c_ram_1p_cfg
+          conn_type: false
           index: -1
         }
         {
@@ -10284,6 +10288,7 @@
       ast.lc_hw_debug_en: ""
       ast.obs_ctrl: obs_ctrl
       ast.rom_cfg: rom_cfg
+      i2c0.ram_cfg: i2c_ram_1p_cfg
       i2c0.ram_cfg_rsp: i2c_ram_1p_cfg_rsp
       sram_ctrl_ret_aon.cfg: sram_ctrl_ret_aon_ram_1p_cfg
       sram_ctrl_ret_aon.cfg_rsp: sram_ctrl_ret_aon_ram_1p_cfg_rsp
@@ -18650,6 +18655,10 @@
         act: rcv
         width: 1
         inst_name: i2c0
+        default: ""
+        external: true
+        top_signame: i2c_ram_1p_cfg
+        conn_type: false
         index: -1
       }
       {
@@ -24839,6 +24848,18 @@
         conn_type: true
         index: -1
         netname: ast_rom_cfg
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg
+        signame: i2c_ram_1p_cfg_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: i2c_ram_1p_cfg
       }
       {
         package: prim_ram_1p_pkg
