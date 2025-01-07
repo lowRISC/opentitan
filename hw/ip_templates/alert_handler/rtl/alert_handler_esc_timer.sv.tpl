@@ -92,7 +92,7 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
 
   // SEC_CM: ESC_TIMER.FSM.SPARSE
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 8 -n 10 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 8 -n 10 ${"\\"}
   //      -s 784905746 --language=sv
   //
   // Hamming distance histogram:

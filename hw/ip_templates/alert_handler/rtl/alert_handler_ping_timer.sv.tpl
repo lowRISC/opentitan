@@ -293,7 +293,7 @@ module alert_handler_ping_timer import alert_handler_pkg::*; #(
 
   // SEC_CM: PING_TIMER.FSM.SPARSE
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 9 \
+  // $ ./util/design/sparse-fsm-encode.py -d 5 -m 6 -n 9 ${"\\"}
   //      -s 728582219 --language=sv
   //
   // Hamming distance histogram:

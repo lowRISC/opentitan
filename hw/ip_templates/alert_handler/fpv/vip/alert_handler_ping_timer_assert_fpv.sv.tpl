@@ -42,9 +42,9 @@ module alert_handler_ping_timer_assert_fpv import alert_handler_pkg::*; (
   logic [$clog2(PingEnDw)-1:0] ping_en_sel;
   logic [$clog2(N_ESC_SEV)-1:0] esc_idx;
   `ASSUME_FPV(PingEnSelRange_M, ping_en_sel < PingEnDw)
-  `ASSUME_FPV(PingEnSelStable_M, ##1 $stable(ping_en_sel))
+  `ASSUME_FPV(PingEnSelStable_M, ${"##"}1 $stable(ping_en_sel))
   `ASSUME_FPV(EscIdxRange_M, esc_idx < N_ESC_SEV)
-  `ASSUME_FPV(EscIdxStable_M, ##1 $stable(esc_idx))
+  `ASSUME_FPV(EscIdxStable_M, ${"##"}1 $stable(esc_idx))
   // assume that the alert enable configuration is locked once en_i is high
   // this is ensured by the CSR regfile on the outside
   `ASSUME_FPV(ConfigLocked0_M, en_i |-> $stable(alert_ping_en_i))
@@ -95,7 +95,7 @@ module alert_handler_ping_timer_assert_fpv import alert_handler_pkg::*; (
   `ASSERT(EscalationPingPeriodWithinBounds_A,
       $rose(esc_ping_req_o[esc_idx])
       |->
-      ##[1 : PingPeriodBound]
+      ${"##"}[1 : PingPeriodBound]
       $rose(esc_ping_req_o[esc_idx]))
 
   /////////////////////////
