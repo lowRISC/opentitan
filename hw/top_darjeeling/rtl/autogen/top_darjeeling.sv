@@ -170,6 +170,7 @@ module top_darjeeling #(
   output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
   input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  input  prim_ram_1p_pkg::ram_1p_cfg_t       i2c_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c_ram_1p_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_rsp_o,
@@ -1118,7 +1119,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[3:3] ),
 
       // Inter-module signals
-      .ram_cfg_i(prim_ram_1p_pkg::RAM_1P_CFG_DEFAULT),
+      .ram_cfg_i(i2c_ram_1p_cfg_i),
       .ram_cfg_rsp_o(i2c_ram_1p_cfg_rsp_o),
       .lsio_trigger_o(i2c0_lsio_trigger),
       .tl_i(i2c0_tl_req),
