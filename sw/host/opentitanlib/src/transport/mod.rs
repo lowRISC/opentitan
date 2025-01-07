@@ -22,7 +22,6 @@ use crate::io::uart::Uart;
 pub mod chip_whisperer;
 pub mod common;
 pub mod dediprog;
-pub mod ftdi;
 pub mod hyperdebug;
 pub mod ioexpander;
 pub mod proxy;

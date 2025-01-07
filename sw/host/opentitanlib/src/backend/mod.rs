@@ -11,7 +11,6 @@ use crate::app::config::process_config_file;
 use crate::app::{TransportWrapper, TransportWrapperBuilder};
 use crate::transport::chip_whisperer::board::{Cw310, Cw340};
 use crate::transport::dediprog::Dediprog;
-use crate::transport::ftdi::chip::Ft4232hq;
 use crate::transport::hyperdebug::{
     C2d2Flavor, ChipWhispererFlavor, ServoMicroFlavor, StandardFlavor, Ti50Flavor,
 };
@@ -19,7 +18,6 @@ use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
 mod chip_whisperer;
-mod ftdi;
 mod hyperdebug;
 mod proxy;
 mod ti50emulator;
@@ -132,10 +130,6 @@ pub fn create(args: &BackendOpts) -> Result<TransportWrapper> {
         "cw340" => (
             chip_whisperer::create::<Cw340>(args)?,
             Some(Path::new("/__builtin__/opentitan_cw340.json")),
-        ),
-        "ftdi" => (
-            ftdi::create::<Ft4232hq>(args)?,
-            Some(Path::new("/__builtin__/opentitan_ftdi_voyager.json")),
         ),
         "dediprog" => {
             let dediprog: Box<dyn Transport> = Box::new(Dediprog::new(
