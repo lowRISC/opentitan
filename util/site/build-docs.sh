@@ -129,7 +129,7 @@ buildSite () {
     echo "Doxygen build complete."
 
     # shellcheck disable=SC2086
-    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @crate_index//:mdbook__mdbook -- ${book_args}
+    ${book_env} ./bazelisk.sh run --experimental_convenience_symlinks=ignore @mdbook_index//:mdbook__mdbook -- ${book_args}
     # Copy additional font files to output directory, as currently mdBook does not have a way to specify them as part of the build.
     local font="Recursive_wght,CASL@300__800,0_5.woff2"
     cp "${proj_root}/site/book-theme/${font}" "${book_out}/site/book-theme/${font}"

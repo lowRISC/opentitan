@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 [package]
-name = "cargo_raze_deps"
+name = "cargo_opentitan_deps"
 version = "0.0.0"
 publish = false
 
@@ -106,9 +106,6 @@ libloading = "0.8"
 anstyle = "1.0"
 pest = "2.2"
 pest_derive = "2.2"
-
-# documentation generation tools
-mdbook = { version = "0.4.43", default-features = false, features = ["search"] }
 
 # elf2tab dependencies
 clap-num = "1.0.2"
