@@ -57,5 +57,11 @@
       type: "string"
       default: "lowrisc:constants:top_pkg"
     }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple alert_handler instances"
+      type: "string"
+      default: "alert_handler"
+    }
   ]
 }
