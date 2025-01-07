@@ -2587,6 +2587,8 @@ module top_darjeeling #(
       .rst_esc_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
       .rst_otp_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
+
+
   // interrupt assignments
   assign intr_vector = {
       intr_mbx_pcie1_mbx_error, // IDs [159 +: 1]
