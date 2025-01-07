@@ -109,7 +109,7 @@ pest = "2.2"
 pest_derive = "2.2"
 
 # documentation generation tools
-mdbook = { version = "0.4.31", default-features = false, features = ["search"] }
+mdbook = { version = "0.4.43", default-features = false, features = ["search"] }
 
 # elf2tab dependencies
 clap-num = "1.0.2"
