@@ -29,7 +29,7 @@ class rom_ctrl_corrupt_sig_fatal_chk_vseq extends rom_ctrl_base_vseq;
   extern task force_sig(string path, int value);
   extern task chk_fsm_state();
   extern task wait_for_fsm_state_inside(ref rom_ctrl_pkg::fsm_state_e states_to_visit[$]);
-  extern task pick_err_inj_point();
+  extern task pick_err_inj_point(bit force_early = 1'b0);
   extern function prim_mubi_pkg::mubi4_t get_invalid_mubi4();
 
 endclass : rom_ctrl_corrupt_sig_fatal_chk_vseq
@@ -154,8 +154,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::body();
                   get_invalid_mubi4());
         wait_for_fatal_alert(.check_fsm_state(1'b0));
         dut_init();
-        pick_err_inj_point();
-        force_sig("tb.dut.u_mux.sel_bus_q", get_invalid_mubi4());
+        pick_err_inj_point(1'b1);
+        force_sig("tb.dut.u_mux.sel_bus_qq", get_invalid_mubi4());
         wait_for_fatal_alert(.check_fsm_state(1'b0));
       end
       // The mux that arbitrates between the checker and the bus gives access to the checker at
@@ -283,12 +283,22 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::wait_for_fsm_state_inside(
   while (states_to_visit.pop_front() != rdata_state);
 endtask: wait_for_fsm_state_inside
 
-task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point();
+task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point(bit force_early = 1'b0);
   int wait_clks;
+  bit inject_after_done;
+
   // Pick error injection point. 1 - After ROM check completion. 0 - Before ROM check completion.
-  bit err_point;
-  `DV_CHECK_STD_RANDOMIZE_FATAL(err_point)
-  if(err_point) begin
+  //
+  // If there is a requirement of injecting error before ROM check completes,then
+  // inject_after_done getting randomized and then set to 0 won't help.
+  //
+  // force_early being true, sets inject_after_done to 0 if there is a requirement to always inject
+  // error before ROM check finishes.
+
+  if (force_early) inject_after_done = 1'b0;
+  else `DV_CHECK_STD_RANDOMIZE_FATAL(inject_after_done)
+
+  if(inject_after_done) begin
     wait (cfg.rom_ctrl_vif.pwrmgr_data.done == MuBi4True);
     wait_clks = 10;
   end
@@ -296,6 +306,8 @@ task rom_ctrl_corrupt_sig_fatal_chk_vseq::pick_err_inj_point();
     wait_clks = 10000;
   end
   wait_with_bound(wait_clks);
+
+  if (!inject_after_done) `DV_CHECK(cfg.rom_ctrl_vif.pwrmgr_data.done != MuBi4True)
 endtask
 
 function prim_mubi_pkg::mubi4_t rom_ctrl_corrupt_sig_fatal_chk_vseq::get_invalid_mubi4();
