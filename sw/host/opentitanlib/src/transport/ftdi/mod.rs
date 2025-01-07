@@ -25,7 +25,6 @@ use chip::Chip;
 use ftdi_embedded_hal as ftdi_hal;
 
 pub mod chip;
-pub mod gpio;
 
 #[derive(Default)]
 struct Inner {
@@ -102,17 +101,7 @@ impl<C: Chip> Transport for Ftdi<C> {
     }
 
     fn gpio_pin(&self, pinname: &str) -> Result<Rc<dyn GpioPin>> {
-        let mut inner = self.inner.borrow_mut();
-        Ok(match inner.gpio.entry(pinname.to_string()) {
-            Entry::Vacant(v) => {
-                let u = v.insert(Rc::new(gpio::Pin::open::<C>(
-                    &self.ftdi_interfaces,
-                    pinname.to_string(),
-                )?));
-                Rc::clone(u)
-            }
-            Entry::Occupied(o) => Rc::clone(o.get()),
-        })
+        Err(TransportError::UnsupportedOperation.into())
     }
 
     fn spi(&self, _instance: &str) -> Result<Rc<dyn Target>> {
