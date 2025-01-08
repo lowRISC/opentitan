@@ -52,6 +52,13 @@ pub struct Firmware {
         long,
         default_value_t = true,
         action = clap::ArgAction::Set,
+        help = "Render unbootable the slot not being programmed"
+    )]
+    erase_other_slot: bool,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
         help = "Reset the target to enter rescue mode"
     )]
     reset_target: bool,
@@ -93,6 +100,14 @@ impl CommandDispatch for Firmware {
         }
         rescue.wait()?;
         rescue.update_firmware(self.slot, payload)?;
+        if self.erase_other_slot {
+            // Erase the other slot by programming an empty blob.
+            if self.slot == BootSlot::SlotB {
+                rescue.update_firmware(BootSlot::SlotA, &[])?;
+            } else {
+                rescue.update_firmware(BootSlot::SlotB, &[])?;
+            }
+        }
         if self.rate.is_some() {
             rescue.set_baud(prev_baudrate)?;
         }
