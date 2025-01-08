@@ -218,8 +218,8 @@
     },
     "//third_party/coremark:extensions.bzl%coremark": {
       "general": {
-        "bzlTransitiveDigest": "oYo82g1v5+HVld/0IwdJ9ySQQ8T3TvFE4GeVWBErLKM=",
-        "usagesDigest": "2Rw2u4BdMyaIwI4YT4ljG3LsOQ4DRpLCsRYOyCC9ZfQ=",
+        "bzlTransitiveDigest": "bba6Dr4kEF8Q/Rnetvgv/RatC2LyqN3aTn15Jc8kGIY=",
+        "usagesDigest": "px58YTck1uB3dwWnuWXMOE/zEAhWU7idoHKB2ARJUzY=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -235,8 +235,8 @@
                 "https://github.com/eembc/coremark/archive/eefc986ebd3452d6adde22eafaff3e5c859f29e4.tar.gz"
               ],
               "patches": [
-                "@@//third_party/coremark:use_ottf_main.patch",
-                "@@//third_party/coremark:print_coremark_per_mhz.patch"
+                "@@//third_party/coremark/patches:use_ottf_main.patch",
+                "@@//third_party/coremark/patches:print_coremark_per_mhz.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -255,8 +255,8 @@
     },
     "//third_party/freertos:extensions.bzl%freertos": {
       "general": {
-        "bzlTransitiveDigest": "/FQJ+BTUkI8KVA6zH5bf9ISh+S5NtLe59qvFJ92eEYc=",
-        "usagesDigest": "LLGF1pNB1qTW2QYCRp1VH3TJcvhB6wtmdwscSSXF8YQ=",
+        "bzlTransitiveDigest": "oxLj5ksXUQ1fMuiY1rDSQ5WtXq4pbHrzeH5W3utkXbE=",
+        "usagesDigest": "swq0hvvScX4r7ugrQGjeMG6h93taNp+h+fJCXbqsO+Q=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -272,9 +272,9 @@
                 "https://github.com/FreeRTOS/FreeRTOS-Kernel/archive/0b1e9d79c82c1bf00e93142f9d5b1b7b62446995.tar.gz"
               ],
               "patches": [
-                "@@//third_party/freertos:0001-Remove-mtime-address-macros.patch",
-                "@@//third_party/freertos:0002-Remove-references-to-stdlib.h.patch",
-                "@@//third_party/freertos:0003-Replace-string.h-with-references-to-OT-memory.h.patch"
+                "@@//third_party/freertos/patches:0001-Remove-mtime-address-macros.patch",
+                "@@//third_party/freertos/patches:0002-Remove-references-to-stdlib.h.patch",
+                "@@//third_party/freertos/patches:0003-Replace-string.h-with-references-to-OT-memory.h.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -293,8 +293,8 @@
     },
     "//third_party/github:extensions.bzl%github_tools": {
       "general": {
-        "bzlTransitiveDigest": "EijGD0pPTUwod3bEz+vvY4dP/AJLWuVNEXIsPH9Y6Ts=",
-        "usagesDigest": "7DkmGJiB80+4T2k2zjL0cI8Af4j+MK7nqUFAFA7eJNY=",
+        "bzlTransitiveDigest": "wAFzh4wZAT7QqQyzwAmiB6/moHWV7hGoDPigZPxdMBE=",
+        "usagesDigest": "RTU2lM+4rxl82mP7yxuIKQ32a1ABU24IDxyPRZ0FBQo=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -321,22 +321,12 @@
     },
     "//third_party/hsm:extensions.bzl%hsm": {
       "general": {
-        "bzlTransitiveDigest": "N0Ig5Wjtbydk+0T+3/AbZ1OZwIU2gSl7/vCkLVDUhck=",
-        "usagesDigest": "mu3b1NhkSkrsBm0cZ6CBA9ZVEvuZ6YymSKRyvB8ZrG0=",
+        "bzlTransitiveDigest": "FyFcI4wP6+KHHK9gvzMYpFgWsKxqvGJgUz6sv4pszCE=",
+        "usagesDigest": "c1P0aAtY/p7TafKEYP79mRhKKyk+QwF1K4FgGvXbHQ4=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "cloud_kms_hsm": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/hsm:BUILD.cloud_kms_hsm.bazel",
-              "url": "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/pkcs11-v1.2/libkmsp11-1.2-linux-amd64.tar.gz",
-              "strip_prefix": "libkmsp11-1.2-linux-amd64",
-              "sha256": "81fff58d5835f05d550ff86c88fa6fb92a733bde8b232e1482d85a3cf07c6396"
-            }
-          },
           "softhsm2": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
@@ -346,7 +336,7 @@
               "strip_prefix": "SoftHSMv2-4975c0df4c7090e97a3860ae21079a9597cfedc6",
               "sha256": "72cf979ec4f74ca4555861dcae45cf7d1b667cc2e4f3ee3fb26e6ff1b99aec95",
               "patches": [
-                "@@//third_party/hsm:0001-Disable-filename-logging.patch"
+                "@@//third_party/hsm/patches:0001-Disable-filename-logging.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -361,6 +351,16 @@
               "url": "https://github.com/CardContact/sc-hsm-embedded/archive/refs/tags/V2.12.tar.gz",
               "strip_prefix": "sc-hsm-embedded-2.12",
               "sha256": "707fca9df630708e0e59a7d4a8a7a016c56c83a585957f0fd9f806c0762f1944"
+            }
+          },
+          "cloud_kms_hsm": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/hsm:BUILD.cloud_kms_hsm.bazel",
+              "url": "https://github.com/GoogleCloudPlatform/kms-integrations/releases/download/pkcs11-v1.2/libkmsp11-1.2-linux-amd64.tar.gz",
+              "strip_prefix": "libkmsp11-1.2-linux-amd64",
+              "sha256": "81fff58d5835f05d550ff86c88fa6fb92a733bde8b232e1482d85a3cf07c6396"
             }
           }
         },
@@ -404,8 +404,8 @@
     },
     "//third_party/llvm_compiler_rt:extensions.bzl%llvm_compiler_rt": {
       "general": {
-        "bzlTransitiveDigest": "9by7wGNqZ6xTeVHbEPrcTWDSPfJ9nySxFHb5oN+PilM=",
-        "usagesDigest": "zPU6Y/UeGIc1XYL+S8s9utiQWrKdW0oDmXUJf+QpxLQ=",
+        "bzlTransitiveDigest": "uZKeFGtQcvbtzHijavXPRDc1DwVXQGM+NRqcfGz95ls=",
+        "usagesDigest": "s3CPq2i25Gdirc8GHteXuG/UXuNDAppxAn036/ZC8pw=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -421,8 +421,8 @@
                 "https://github.com/llvm/llvm-project/releases/download/llvmorg-16.0.2/compiler-rt-16.0.2.src.tar.xz"
               ],
               "patches": [
-                "@@//third_party/llvm_compiler_rt:0001-Headers.patch",
-                "@@//third_party/llvm_compiler_rt:0002-invalid-data.patch"
+                "@@//third_party/llvm_compiler_rt/patches:0001-Headers.patch",
+                "@@//third_party/llvm_compiler_rt/patches:0002-invalid-data.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -441,8 +441,8 @@
     },
     "//third_party/lychee:extensions.bzl%lychee": {
       "general": {
-        "bzlTransitiveDigest": "dp7fsvt0uZMcrNBnGFx2cmYh9oABupZn0OznHP8v7gs=",
-        "usagesDigest": "C1lJ0XTlqnpJ48SmBdn/WIadQ9tEgkVJOczF9mZgztU=",
+        "bzlTransitiveDigest": "D5TqlXWMpvZUNeDDU9wbX49JxrqA4HMJCzvoaHk+33s=",
+        "usagesDigest": "MnqQFmhzkA8vvGlCiqmn8bc2S/ynxbeN3aECjLttjKg=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -468,21 +468,21 @@
     },
     "//third_party/nist_cavp_testvectors:extensions.bzl%nist_cavp": {
       "general": {
-        "bzlTransitiveDigest": "Gjp4LYJpz37w0eJZ8Zh2O5/odp2pTpQNPVNGzzySui4=",
-        "usagesDigest": "OcvHjjhd3a8vcDiholHHqKWbiCZg1Qe4uSruL97NaGI=",
+        "bzlTransitiveDigest": "TqoPtNHwsrY+tn8gg5xWof4XjN1a8utca+PT4l8p6gg=",
+        "usagesDigest": "cvLhJG9yD9gG0xC/LtYRTQLpz+QfVqzu8xUVIAjXtqs=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
-          "nist_cavp_aes_gcm": {
+          "nist_cavp_drbg_sp_800_90a_root": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
             "attributes": {
               "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
+              "sha256": "5f7e5658ebd5b4e6785a7b12fa32333511d2acc2f2d9c5ae1ffa16b699377769",
               "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/gcmtestvectors.zip"
+                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
+                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/drbgtestvectors.zip"
               ]
             }
           },
@@ -499,18 +499,6 @@
               ]
             }
           },
-          "nist_cavp_sha3_fips_202": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "cd07701af2e47f5cc889d642528b4bf11f8b6eb55797c7307a96828ed8d8fc8c",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/sha-3bytetestvectors.zip"
-              ]
-            }
-          },
           "nist_cavp_sha2_fips_180_4": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
@@ -521,6 +509,18 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/shs/shabytetestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/shabytetestvectors.zip"
+              ]
+            }
+          },
+          "nist_cavp_sha3_fips_202": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
+              "sha256": "cd07701af2e47f5cc889d642528b4bf11f8b6eb55797c7307a96828ed8d8fc8c",
+              "urls": [
+                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/sha3/sha-3bytetestvectors.zip",
+                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/sha-3bytetestvectors.zip"
               ]
             }
           },
@@ -548,30 +548,6 @@
               ]
             }
           },
-          "nist_cavp_hmac_fips_198_1": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip"
-              ]
-            }
-          },
-          "nist_cavp_drbg_sp_800_90a_root": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
-            "ruleClassName": "http_archive",
-            "attributes": {
-              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "5f7e5658ebd5b4e6785a7b12fa32333511d2acc2f2d9c5ae1ffa16b699377769",
-              "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/drbgtestvectors.zip"
-              ]
-            }
-          },
           "nist_cavp_aes_kw_sp_800_38f": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
@@ -582,6 +558,30 @@
               "urls": [
                 "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/kwtestvectors.zip",
                 "https://storage.googleapis.com/ot-crypto-test-vectors/nist/kwtestvectors.zip"
+              ]
+            }
+          },
+          "nist_cavp_aes_gcm": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
+              "sha256": "f9fc479e134cde2980b3bb7cddbcb567b2cd96fd753835243ed067699f26a023",
+              "urls": [
+                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/gcmtestvectors.zip",
+                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/gcmtestvectors.zip"
+              ]
+            }
+          },
+          "nist_cavp_ecdh_sp_800_56a": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
+              "sha256": "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",
+              "urls": [
+                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
+                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/ecccdhtestvectors.zip"
               ]
             }
           },
@@ -597,15 +597,15 @@
               ]
             }
           },
-          "nist_cavp_ecdh_sp_800_56a": {
+          "nist_cavp_hmac_fips_198_1": {
             "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
             "ruleClassName": "http_archive",
             "attributes": {
               "build_file": "@@//third_party/nist_cavp_testvectors:BUILD.nist_cavp_common.bazel",
-              "sha256": "5fff092551f2d72e89a3d9362711878708f9a14b502f0dfae819649105b0ea39",
+              "sha256": "418c3837d38f249d6668146bd0090db24dd3c02d2e6797e3de33860a387ae4bd",
               "urls": [
-                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/components/ecccdhtestvectors.zip",
-                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/ecccdhtestvectors.zip"
+                "https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/mac/hmactestvectors.zip",
+                "https://storage.googleapis.com/ot-crypto-test-vectors/nist/hmactestvectors.zip"
               ]
             }
           }
@@ -621,8 +621,8 @@
     },
     "//third_party/open-dice:extensions.bzl%open_dice": {
       "general": {
-        "bzlTransitiveDigest": "CFBwD8rTE8Hk/R2huNOcNoh+1tuu3eRvYQ6N/QK5aHk=",
-        "usagesDigest": "JS7GxioQYipTmuvH3Q9liClSKpuPbE8hW9EyTeNJMo8=",
+        "bzlTransitiveDigest": "1m6lMwBvxHBqt6tksll3OlWDHXbVABKjzuoINM6mKHM=",
+        "usagesDigest": "JEqqoL5eyewukoV72OjbsGKe+pr+9UEZe9sCx4+xLmA=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -638,7 +638,7 @@
               ],
               "sha256": "d7ce830111451afe2a255cac3b750f82e50efe2aaf6bac0b076881c964cfe78d",
               "patches": [
-                "@@//third_party/open-dice:Add-a-local-strlen-implementation.patch"
+                "@@//third_party/open-dice/patches:Add-a-local-strlen-implementation.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -701,8 +701,8 @@
     },
     "//third_party/riscv-compliance:extensions.bzl%riscv_compliance": {
       "general": {
-        "bzlTransitiveDigest": "yy13CaTTAIrDakPXT4CFPd6k3fhD8hs/HK/1/HZDyYM=",
-        "usagesDigest": "X4fjnmL/qLY3Umq+OyBElFJjNuEhyxpVugPcBohIft0=",
+        "bzlTransitiveDigest": "/XAyLWWZ++g8VnTDZr1+hVWcSk+BBt6WPMZ0yJ9hK8M=",
+        "usagesDigest": "XJA21oP13181Nwp1qsgpRivux/eS/VD3mfF1aiaQyHY=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -718,7 +718,7 @@
                 "https://github.com/riscv/riscv-compliance/archive/2636302c27557b42d99bed7e0537beffdf8e1ab4.tar.gz"
               ],
               "patches": [
-                "@@//third_party/riscv-compliance:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"
+                "@@//third_party/riscv-compliance/patches:0001-Add-configurable-trap-alignment-and-entry-point-to-p.patch"
               ],
               "patch_args": [
                 "-p1"
@@ -764,8 +764,8 @@
     },
     "//third_party/shellcheck:extensions.bzl%shellcheck": {
       "general": {
-        "bzlTransitiveDigest": "UIeragyuFpm0yynHLg1qNyWE8ghAzq2gFgyIvUXN3ek=",
-        "usagesDigest": "Rucq6bklWqi54V/TEFtVgtWWDptAoJOETXUJwpHGCWk=",
+        "bzlTransitiveDigest": "CS/eixofqydj6biAqCgNcmcKn0x1RSXnK0sjbDpr66g=",
+        "usagesDigest": "MS6JrE4VIXpsgLvyOoVYy5eJYd+R33y3SHSF/eQomJc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -853,17 +853,45 @@
     },
     "//third_party/tock:extensions.bzl%tock": {
       "general": {
-        "bzlTransitiveDigest": "UmizRybXL82LkwYxSo53UxBonqPh0KDRHy7+wQplhvs=",
-        "usagesDigest": "fQHPKaIGApMNRxDqTd07pSqd9IzEr+5D869in2Lsz48=",
+        "bzlTransitiveDigest": "0mMNhyXsdhmZnuNkQUp7k2qlfuaKpg4NcGaTIePVzKU=",
+        "usagesDigest": "E0++DPi4A+g+XGZA7s7iXugGNnQjEYNYZMZAHWrJieQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
         "generatedRepoSpecs": {
+          "tock": {
+            "bzlFile": "@@//rules:repo.bzl",
+            "ruleClassName": "bare_repository",
+            "attributes": {
+              "strip_prefix": "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
+              "url": "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
+              "sha256": "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
+              "additional_files_content": {
+                "BUILD": "exports_files(glob([\"**\"]))",
+                "arch/riscv/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"riscv\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"riscv\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=riscv\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/riscv-csr\",\n    ],\n)\n\n\n",
+                "arch/rv32i/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"rv32i\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"rv32i\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=rv32i\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//arch/riscv\",\n        \"//kernel\",\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/riscv-csr\",\n    ],\n)\n\n\n",
+                "boards/BUILD": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"kernel_layout\",\n    srcs = [\"kernel_layout.ld\"],\n)\n",
+                "boards/components/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"components\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"components\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=components\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//capsules/core:capsules-core\",\n        \"//capsules/extra:capsules-extra\",\n    ],\n)\n\n\n",
+                "boards/opentitan/earlgrey-cw310/BUILD": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"kernel_srcs\",\n    srcs = glob([\"**/*.rs\"]),\n)\n",
+                "capsules/aes_gcm/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-aes-gcm\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_aes_gcm\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_aes_gcm\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n        \"@tock_index//:ghash\",\n    ],\n)\n\n\n",
+                "capsules/core/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-core\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_core\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_core\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n    ],\n)\n\n\n",
+                "capsules/extra/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-extra\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_extra\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_extra\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n        \"//capsules/core:capsules-core\",\n    ],\n)\n\n\n",
+                "chips/earlgrey/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"earlgrey\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"earlgrey\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=earlgrey\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//chips/lowrisc\",\n        \"//arch/rv32i\",\n        \"//kernel\",\n    ],\n)\n\n\n",
+                "chips/lowrisc/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"lowrisc\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"lowrisc\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=lowrisc\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//arch/rv32i\",\n        \"//kernel\",\n    ],\n)\n\n\n",
+                "libraries/enum_primitive/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"enum_primitive\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"enum_primitive\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=enum_primitive\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
+                "libraries/riscv-csr/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"riscv-csr\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"riscv_csr\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=riscv_csr\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//libraries/tock-register-interface:tock-registers\",\n    ],\n)\n\n\n",
+                "libraries/tickv/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tickv\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tickv\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tickv\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
+                "libraries/tock-cells/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-cells\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tock_cells\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_cells\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
+                "libraries/tock-tbf/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-tbf\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tock_tbf\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_tbf\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
+                "libraries/tock-register-interface/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-registers\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \"default\",\n        \"register_types\",\n    ],\n    crate_name = \"tock_registers\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_registers\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
+                "kernel/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"kernel\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"kernel\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=kernel\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/tock-cells\",\n        \"//libraries/tock-tbf\",\n    ],\n)\n\n\n"
+              }
+            }
+          },
           "libtock": {
             "bzlFile": "@@//rules:repo.bzl",
             "ruleClassName": "bare_repository",
             "attributes": {
-              "local": "",
               "strip_prefix": "libtock-rs-a2c6ad80648e3ba073e7433b4330706df052a6ae",
               "url": "https://github.com/tock/libtock-rs/archive/a2c6ad80648e3ba073e7433b4330706df052a6ae.tar.gz",
               "sha256": "888d1925cd760e818385d13187286d6b87f763c548a4dc1bb26e55786dc95636",
@@ -900,36 +928,6 @@
               "strip_prefix": "elf2tab-2f0e2f0ef01e37799850d1b12f48b93a0b32a203",
               "build_file": "@@//third_party/tock:BUILD.elf2tab.bazel"
             }
-          },
-          "tock": {
-            "bzlFile": "@@//rules:repo.bzl",
-            "ruleClassName": "bare_repository",
-            "attributes": {
-              "local": "",
-              "strip_prefix": "tock-e81987f6a41e9b92f60fda1d5283f46b3cb597b5",
-              "url": "https://github.com/tock/tock/archive/e81987f6a41e9b92f60fda1d5283f46b3cb597b5.tar.gz",
-              "sha256": "b7c239f3bd7e7727eee99814661424e1e50587fe9068cec1943a7bb6743ed777",
-              "additional_files_content": {
-                "BUILD": "exports_files(glob([\"**\"]))",
-                "arch/riscv/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"riscv\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"riscv\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=riscv\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/riscv-csr\",\n    ],\n)\n\n\n",
-                "arch/rv32i/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"rv32i\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"rv32i\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=rv32i\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//arch/riscv\",\n        \"//kernel\",\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/riscv-csr\",\n    ],\n)\n\n\n",
-                "boards/BUILD": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"kernel_layout\",\n    srcs = [\"kernel_layout.ld\"],\n)\n",
-                "boards/components/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"components\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"components\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=components\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//capsules/core:capsules-core\",\n        \"//capsules/extra:capsules-extra\",\n    ],\n)\n\n\n",
-                "boards/opentitan/earlgrey-cw310/BUILD": "\npackage(default_visibility = [\"//visibility:public\"])\n\nfilegroup(\n    name = \"kernel_srcs\",\n    srcs = glob([\"**/*.rs\"]),\n)\n",
-                "capsules/aes_gcm/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-aes-gcm\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_aes_gcm\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_aes_gcm\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n        \"@tock_index//:ghash\",\n    ],\n)\n\n\n",
-                "capsules/core/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-core\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_core\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_core\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n    ],\n)\n\n\n",
-                "capsules/extra/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"capsules-extra\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"capsules_extra\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=capsules_extra\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//kernel\",\n        \"//libraries/enum_primitive\",\n        \"//libraries/tickv\",\n        \"//capsules/core:capsules-core\",\n    ],\n)\n\n\n",
-                "chips/earlgrey/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"earlgrey\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"earlgrey\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=earlgrey\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//chips/lowrisc\",\n        \"//arch/rv32i\",\n        \"//kernel\",\n    ],\n)\n\n\n",
-                "chips/lowrisc/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"lowrisc\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"lowrisc\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=lowrisc\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//arch/rv32i\",\n        \"//kernel\",\n    ],\n)\n\n\n",
-                "libraries/enum_primitive/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"enum_primitive\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"enum_primitive\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=enum_primitive\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
-                "libraries/riscv-csr/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"riscv-csr\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"riscv_csr\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=riscv_csr\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//libraries/tock-register-interface:tock-registers\",\n    ],\n)\n\n\n",
-                "libraries/tickv/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tickv\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tickv\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tickv\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
-                "libraries/tock-cells/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-cells\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tock_cells\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_cells\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
-                "libraries/tock-tbf/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-tbf\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"tock_tbf\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_tbf\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
-                "libraries/tock-register-interface/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"tock-registers\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \"default\",\n        \"register_types\",\n    ],\n    crate_name = \"tock_registers\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=tock_registers\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \n    ],\n)\n\n\n",
-                "kernel/BUILD": "###############################################################################\n# @generated\n# DO NOT MODIFY: This file is auto-generated by the crate_build function in\n# //rules:rust.bzl.\n###############################################################################\n\nload(\"@rules_rust//rust:defs.bzl\", \"rust_library\")\n\npackage(default_visibility = [\"//visibility:public\"])\n\nrust_library(\n    name = \"kernel\",\n    srcs = glob([\"**/*.rs\"]),\n    compile_data = glob(\n        include = [\"**\"],\n        exclude = [\n            \"**/* *\",\n            \"BUILD\",\n            \"BUILD.bazel\",\n            \"WORKSPACE\",\n            \"WORKSPACE.bazel\",\n        ],\n    ),\n    crate_features = [\n        \n    ],\n    crate_name = \"kernel\",\n    crate_root = \"src/lib.rs\",\n    edition = \"2021\",\n    rustc_flags = [\n        \"--cap-lints=allow\",\n    ],\n    tags = [\n        \"cargo-bazel\",\n        \"crate-name=kernel\",\n        \"manual\",\n        \"noclippy\",\n        \"norustfmt\",\n    ],\n    version = \"0.1.0\",\n    deps = [\n        \"//libraries/tock-register-interface:tock-registers\",\n        \"//libraries/tock-cells\",\n        \"//libraries/tock-tbf\",\n    ],\n)\n\n\n"
-              }
-            }
           }
         },
         "recordedRepoMappingEntries": [
@@ -937,11 +935,6 @@
             "",
             "",
             ""
-          ],
-          [
-            "",
-            "bazel_skylib",
-            "bazel_skylib~"
           ],
           [
             "",
@@ -953,8 +946,8 @@
     },
     "//third_party/wycheproof:extensions.bzl%wycheproof": {
       "general": {
-        "bzlTransitiveDigest": "kmt2c9L8O0JlFangp9yjBM7ywczDXTg/NqMMNMcSlaU=",
-        "usagesDigest": "dk98a4xQ9Y0k11OyordVp7uZl3+PELs8YTaEadUagiE=",
+        "bzlTransitiveDigest": "6c/ckPbAgnUrijp/UNJhpMm8FzOaRMBmjtvGYzQHEd0=",
+        "usagesDigest": "Ji2catm3fFYF/iiyGvrK+BAuO7SN2vnYvnEUN8OaU4M=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -981,8 +974,8 @@
     },
     "//third_party/xkcp:extensions.bzl%xkcp": {
       "general": {
-        "bzlTransitiveDigest": "Dz8R8hb9r3rBc3oCTg9Wf9JSXuw7jfMvoUrEckHZJoU=",
-        "usagesDigest": "qkYYTGDkeziq6h2yN6tT+eOx8e9MK0QFk+UIBidIGTE=",
+        "bzlTransitiveDigest": "1aRHdZ3VchN7P3MsI1eY6H22HfaVAEwrticu7bXiCJQ=",
+        "usagesDigest": "mwBu7J58lQOpubSRS3lkMZhfEZLE/vNg+jrmd1Qja2o=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
@@ -998,8 +991,8 @@
                 "https://github.com/XKCP/XKCP/archive/56ae09923153c3e801a6891eb19e4a3b5bb6f6e2.tar.gz"
               ],
               "patches": [
-                "@@//third_party/xkcp:add_config_header.patch",
-                "@@//third_party/xkcp:add_main_license.patch"
+                "@@//third_party/xkcp/patches:add_config_header.patch",
+                "@@//third_party/xkcp/patches:add_main_license.patch"
               ],
               "patch_args": [
                 "-p1"
