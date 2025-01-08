@@ -120,10 +120,15 @@ module prim_reg_cdc #(
   // coming from the dst clock domain. The register value may have changed from last time so should
   // be copied back.
   logic dst_to_src;
+  // The conditions below assigning to `dst_to_src` had a term originally looking like:
+  // `dst_to_src = src_busy_q && src_ack ...`
+  // The term above causes missing conditional coverage holes for "01", since src_ack will only be
+  //  set if src_busy_q is already set (see assertion above SrcAckBusyChk_A)
+  // To avoid the conditional coverage hole, `src_busy_q` has been removed from the expression
   if (DstWrReq) begin : gen_wr_req
-    assign dst_to_src = src_busy_q && src_ack || src_update && !busy;
+    assign dst_to_src = src_ack || src_update && !busy;
   end else begin : gen_passthru
-    assign dst_to_src = src_busy_q && src_ack;
+    assign dst_to_src = src_ack;
 
     logic unused_dst_wr;
     assign unused_dst_wr = src_update ^ busy;
