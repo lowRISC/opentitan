@@ -121,6 +121,9 @@ use_repo(hwtrust, "hwtrust")
 qemu = use_extension("//third_party/qemu:extensions.bzl", "qemu")
 use_repo(qemu, "qemu_opentitan")
 
+lowrisc_rv32imcb_toolchain = use_extension("//third_party/lowrisc:extensions.bzl", "lowrisc_rv32imcb_toolchain")
+use_repo(lowrisc_rv32imcb_toolchain, "lowrisc_rv32imcb_toolchain")
+
 # Extension for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
 hooks = use_extension("//rules:extensions.bzl", "hooks")
