@@ -52,6 +52,9 @@ class pwm_scoreboard extends cip_base_scoreboard #(
   // Respond to a DUT reset.
   extern virtual function void reset(string kind = "HARD");
 
+  // Monitor whether the TL-UL clock is running and whether the PWM output is changing.
+  extern task monitor_clock(int channel);
+
   // Run forever, comparing items from the monitor on the given channel with the items that we
   // expect to be generated (based on the scoreboard's model of the config registers).
   extern task compare_trans(int channel);
@@ -72,13 +75,16 @@ endfunction
 task pwm_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
   if (cfg.en_scb) begin
-    // Create one checker process for each PWM output.
+    // For each PWM output create one checker process and one clock/output monitor process.
     foreach (item_fifo[channel]) begin
-      // Ensure that the newly-created process does not see changes to the 'channel' variable when
+      // Ensure that the newly-created processes do not see changes to the 'channel' variable when
       // starting.
       automatic int ch = channel;
       fork
         compare_trans(ch);
+        if (cfg.en_cov) begin
+          monitor_clock(ch);
+        end
       join_none
     end
   end
@@ -144,10 +150,6 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
             ignore_state_change[ii] = SettleTime;
           end
           txt = $sformatf("\n Channel[%0d] : %0b", ii, channel_en[ii]);
-          if (cfg.en_cov) begin
-            cov.lowpower_cg.sample(cfg.clk_rst_vif.clk_gate,
-                                   $sformatf("cfg.m_pwm_monitor_[%0d]_vif", ii));
-          end
         end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_HIGH)
       end
@@ -247,6 +249,22 @@ function void pwm_scoreboard::reset(string kind = "HARD");
     item_fifo[i].flush();
   end
 endfunction
+
+// Monitor whether the TL-UL clock is running and whether the PWM output is changing.
+task pwm_scoreboard::monitor_clock(int channel);
+  forever begin
+    // The core clock is always running so we may use this to monitor whether the TL-UL bus clock
+    // is gated.
+    cfg.clk_rst_core_vif.wait_clks(1);
+    if (!cfg.under_reset) begin
+      bit pwm = cfg.m_pwm_monitor_cfg[channel].vif.pwm;
+      bit clk_gate = cfg.clk_rst_vif.clk_gate;
+      `uvm_info(`gfn, $sformatf("Monitor %0d clk_gate %0d pwm %0d", channel, clk_gate, pwm),
+                UVM_HIGH)
+      cov.lowpower_cg.sample(clk_gate, pwm);
+    end
+  end
+endtask
 
 task pwm_scoreboard::compare_trans(int channel);
   pwm_item compare_item = new($sformatf("expected_item_%0d", channel));
