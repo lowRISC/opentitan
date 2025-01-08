@@ -194,6 +194,7 @@ obj_transform = rv_rule(
         "format": attr.string(default = "binary"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
@@ -374,6 +375,7 @@ elf_to_disassembly = rv_rule(
         "platform": attr.string(default = OPENTITAN_PLATFORM),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
     incompatible_use_toolchain_transition = True,
 )
@@ -651,6 +653,7 @@ assemble_flash_image = rv_rule(
         "output": attr.string(),
         "binaries": attr.label_keyed_string_dict(allow_empty = False),
     },
+    fragments = ["cpp"],
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
