@@ -43,10 +43,10 @@ class pwm_base_vseq extends cip_base_vseq #(
   extern virtual function blink_param_t rand_pwm_blink();
 
   // Start the clocks of all alert agents.
-  extern function void start_alert_clks();
+  extern task start_alert_clks();
 
   // Stop the clocks of all alert agents.
-  extern function void stop_alert_clks();
+  extern task stop_alert_clks();
 
   // Wait for at least the specified number of clock cycles, monitoring and checking the DUT
   // outputs. Optionally engage low power mode in the middle of the test.
@@ -155,22 +155,22 @@ function blink_param_t pwm_base_vseq::rand_pwm_blink();
 endfunction
 
 // Start the clocks of all alert agents.
-function void pwm_base_vseq::start_alert_clks();
+task pwm_base_vseq::start_alert_clks();
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
     // Restart the clock without advancing the simulation time; `alert_esc_agent` runs on two
     // clocks (our TL-UL clock and this internal asynchronous clock).
     cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.start_clk(.wait_for_posedge(1'b0));
   end
-endfunction
+endtask
 
 // Stop the clocks of all alert agents.
-function void pwm_base_vseq::stop_alert_clks();
+task pwm_base_vseq::stop_alert_clks();
   foreach (cfg.list_of_alerts[i]) begin
     string alert_name = cfg.list_of_alerts[i];
     cfg.m_alert_agent_cfgs[alert_name].vif.clk_rst_async_if.stop_clk();
   end
-endfunction
+endtask
 
 // The PWM outputs are required to keep running with the chip in low power mode, meaning that the
 // monitor and scoreboard must continue to match predictions successfully when the TL-UL clock is
