@@ -142,7 +142,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
   ${BAZELISK} fetch \
     --repository_cache=${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR} \
     //... \
-    @lowrisc_rv32imcb_files//... \
+    @lowrisc_rv32imcb_toolchain//... \
     @local_config_platform//... \
     @python3_toolchains//... \
     @riscv-compliance//...
