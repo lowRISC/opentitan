@@ -9,6 +9,72 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
+ * otbn.fi.char.beq command handler.
+ *
+ * The goal of this test is to fault to BEQ instruction such that the jump is
+ * not performed. Then, a counter gets incremented. When no effective fault
+ * occurs, the counter is 0.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_beq(ujson_t *uj);
+
+/**
+ * otbn.fi.char.bn_rshi command handler.
+ *
+ * The goal of this test is to manipulate the BN.RSHI instruction.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bn_rshi(ujson_t *uj);
+
+/**
+ * otbn.fi.char.bn_sel command handler.
+ *
+ * The goal of this test is to manipulate the carry flag or the BN.SEL
+ * instruction.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bn_sel(ujson_t *uj);
+
+/**
+ * otbn.fi.char.bn_wsrr command handler.
+ *
+ * The goal of this test is to manipulate the BN.WSRR instruction or the content
+ * of the registers.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bn_wsrr(ujson_t *uj);
+
+/**
+ * otbn.fi.char.bne command handler.
+ *
+ * The goal of this test is to fault to BNE instruction such that the jump is
+ * not performed. Then, a counter gets incremented. When no effective fault
+ * occurs, the counter is 0.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ * It needs to be ensured that the compiler does not optimize this code.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_bne(ujson_t *uj);
+
+/**
  * otbn.fi.char_dmem_access command handler.
  *
  * OTBN loads WDRs with words from DMEM. These values are stored in different
@@ -20,6 +86,17 @@
  * @return OK or error.
  */
 status_t handle_otbn_fi_char_dmem_access(ujson_t *uj);
+
+/**
+ * otbn.fi.char_dmem_write command handler.
+ *
+ * Inject faults during Ibex writes data to DMEM.
+ *
+ * Faults are injected during the trigger_high & trigger_low.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_dmem_write(ujson_t *uj);
 
 /**
  * otbn.fi.char.hardware.dmem.op.loop command handler.
@@ -68,6 +145,15 @@ status_t handle_otbn_fi_char_hardware_reg_op_loop(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_otbn_fi_char_jal(ujson_t *uj);
+
+/**
+ * otbn.fi.char.lw command handler.
+ *
+ * The goal of this test is to manipulate LW instructions using FI.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_char_lw(ujson_t *uj);
 
 /**
  * otbn.fi.char_mem command handler.
@@ -176,6 +262,17 @@ status_t handle_otbn_fi_key_sideload(ujson_t *uj);
  * @return OK or error.
  */
 status_t handle_otbn_fi_load_integrity(ujson_t *uj);
+
+/**
+ * otbn.fi.pc command handler.
+ *
+ * The goal of this test is to fault the OTBN program counter that is passed
+ * from Ibex into OTBN. OTBN jumps to this PC. Manipulation can be detected by
+ * reading the instruction counter.
+ *
+ * @param uj The received uJSON data.
+ */
+status_t handle_otbn_fi_pc(ujson_t *uj);
 
 /**
  * OTBN FI command handler.
