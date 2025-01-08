@@ -146,7 +146,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     @bindgen_clang_linux//... \
     @rules_rust_bindgen__bindgen-0.65.1//... \
     @go_sdk//... \
-    @lowrisc_rv32imcb_files//... \
+    @lowrisc_rv32imcb_toolchain//... \
     @local_config_cc_toolchains//... \
     @local_config_platform//... \
     @local_config_sh//... \

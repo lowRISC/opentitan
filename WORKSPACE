@@ -30,6 +30,9 @@ google_repos()
 load("//third_party/google:deps.bzl", "google_deps")
 google_deps()
 
+load("//third_party/lowrisc:repos.bzl", "lowrisc_repos")
+lowrisc_repos()
+
 # CRT is the Compiler Repository Toolkit.  It contains the configuration for
 # the windows compiler.
 load("//third_party/crt:repos.bzl", "crt_repos")
