@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "alert_handler"
+  name: "${module_instance_name}"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/shadow_reg_errors_testplan.hjson",
@@ -13,7 +13,7 @@
                      "hw/dv/sv/alert_esc_agent/data/esc_agent_basic_testplan.hjson",
                      "hw/dv/sv/alert_esc_agent/data/esc_agent_additional_testplan.hjson",
                      // Generated in IP gen area (hw/{top}/ip_autogen).
-                     "alert_handler_sec_cm_testplan.hjson"]
+                     "${module_instance_name}_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: smoke
@@ -25,7 +25,7 @@
             - Support both synchronous and asynchronous settings
             '''
       stage: V1
-      tests: ["alert_handler_smoke"]
+      tests: ["${module_instance_name}_smoke"]
     }
     {
       name: esc_accum
@@ -34,7 +34,7 @@
             feature. So all the escalations in the test will be triggered by alert accumulation.
             '''
       stage: V2
-      tests: ["alert_handler_esc_alert_accum"]
+      tests: ["${module_instance_name}_esc_alert_accum"]
     }
     {
       name: esc_timeout
@@ -43,7 +43,7 @@
            feature. So all the escalations in the test will be triggered by interrupt timeout.
            '''
       stage: V2
-      tests: ["alert_handler_esc_intr_timeout"]
+      tests: ["${module_instance_name}_esc_intr_timeout"]
     }
     {
       name: entropy
@@ -52,7 +52,7 @@
             correctly pings all devices within certain period of time.
             '''
       stage: V2
-      tests: ["alert_handler_entropy"]
+      tests: ["${module_instance_name}_entropy"]
     }
     {
       name: sig_int_fail
@@ -62,7 +62,7 @@
             escalated.
             '''
       stage: V2
-      tests: ["alert_handler_sig_int_fail"]
+      tests: ["${module_instance_name}_sig_int_fail"]
     }
     {
       name: clk_skew
@@ -71,19 +71,19 @@
             alert is raised.
             '''
       stage: V2
-      tests: ["alert_handler_smoke"]
+      tests: ["${module_instance_name}_smoke"]
     }
     {
       name: random_alerts
       desc: "Input random alerts and randomly write phase cycles."
       stage: V2
-      tests: ["alert_handler_random_alerts"]
+      tests: ["${module_instance_name}_random_alerts"]
     }
     {
       name: random_classes
       desc: "Based on random_alerts test, this test will also randomly enable interrupt classes."
       stage: V2
-      tests: ["alert_handler_random_classes"]
+      tests: ["${module_instance_name}_random_classes"]
     }
     {
       name: ping_timeout
@@ -97,26 +97,26 @@
             - Verify escalation states and counts.
             '''
       stage: V2
-      tests: ["alert_handler_ping_timeout"]
+      tests: ["${module_instance_name}_ping_timeout"]
     }
     {
       name: lpg
       desc: '''
-            Test alert_handler low_power_group(lpg) request.
+            Test ${module_instance_name} low_power_group(lpg) request.
 
             Stimulus:
             - Randomly enabled alert_receivers' `alert_en` but disable their ping response.
             - Turn on their low-power control by either set `lpg_cg_en_i` or `lpg_rst_en_i`.
               Or pause the alert_handler's clk input for a random period of time.
             - Enable alert ping timeout local alert.
-            - Run alert_handler_entropy_vseq.
+            - Run ${module_instance_name}_entropy_vseq.
 
             Checks:
             - Expect no ping timeout error because the alert_receivers are disabled via low-power
               group, or because alert_handler's clk input is paused due to sleep mode.
             '''
       stage: V2
-      tests: ["alert_handler_lpg", "alert_handler_lpg_stub_clk"]
+      tests: ["${module_instance_name}_lpg", "${module_instance_name}_lpg_stub_clk"]
     }
     {
       name: stress_all
@@ -126,10 +126,10 @@
             - Ping_corner_cases sequence: included reset in the sequence
             '''
       stage: V2
-      tests: ["alert_handler_stress_all"]
+      tests: ["${module_instance_name}_stress_all"]
     }
     {
-      name: alert_handler_entropy_stress_test
+      name: ${module_instance_name}_entropy_stress_test
       desc: '''
             Stress the alert_handler's entropy request and make sure there is no spurious alert.
 
@@ -141,11 +141,11 @@
               alert being fired.
             '''
       stage: V2
-      tests: ["alert_handler_entropy_stress"]
+      tests: ["${module_instance_name}_entropy_stress"]
     }
 
     {
-      name: alert_handler_alert_accum_saturation
+      name: ${module_instance_name}_alert_accum_saturation
       desc: '''
             This sequence forces all four alert classes' accumulate counters to a large value that
             is close to the max saturation value.
@@ -156,7 +156,7 @@
             - Check the correct interrupt fires if even the count saturates.
             '''
       stage: V2
-      tests: ["alert_handler_alert_accum_saturation"]
+      tests: ["${module_instance_name}_alert_accum_saturation"]
     }
  ]
 

@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:ip:alert_handler_component:0.1")}
+name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_component:0.1")}
 description: "Alert Handler component without the CSRs"
 
 filesets:
@@ -17,15 +17,15 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:mubi
       - lowrisc:prim:sparse_fsm
-      - ${instance_vlnv("lowrisc:ip:alert_handler_reg")}
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_reg")}
     files:
-      - rtl/alert_handler_reg_wrap.sv
-      - rtl/alert_handler_lpg_ctrl.sv
-      - rtl/alert_handler_class.sv
-      - rtl/alert_handler_ping_timer.sv
-      - rtl/alert_handler_esc_timer.sv
-      - rtl/alert_handler_accu.sv
-      - rtl/alert_handler.sv
+      - rtl/${module_instance_name}_reg_wrap.sv
+      - rtl/${module_instance_name}_lpg_ctrl.sv
+      - rtl/${module_instance_name}_class.sv
+      - rtl/${module_instance_name}_ping_timer.sv
+      - rtl/${module_instance_name}_esc_timer.sv
+      - rtl/${module_instance_name}_accu.sv
+      - rtl/${module_instance_name}.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -16,8 +16,8 @@
                  .compare_value(saturated_class == ``i`` ? ${"\\"}
                   MAX_ACCUM_CNT : MAX_ACCUM_CNT - num_alerts_to_saturate));
 
-class alert_handler_alert_accum_saturation_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_alert_accum_saturation_vseq)
+class ${module_instance_name}_alert_accum_saturation_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_alert_accum_saturation_vseq)
 
   `uvm_object_new
 
@@ -105,4 +105,4 @@ class alert_handler_alert_accum_saturation_vseq extends alert_handler_smoke_vseq
     end
  endtask
 
-endclass : alert_handler_alert_accum_saturation_vseq
+endclass : ${module_instance_name}_alert_accum_saturation_vseq

@@ -18,7 +18,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_esc_timer import alert_handler_pkg::*; (
+module ${module_instance_name}_esc_timer import ${module_instance_name}_pkg::*; (
   input                        clk_i,
   input                        rst_ni,
   input                        en_i,              // enables timeout/escalation
@@ -429,4 +429,4 @@ module alert_handler_esc_timer import alert_handler_pkg::*; (
   `ASSERT(EscStateOut_A, state_q == StateEncodings[esc_state_o])
 `endif
 
-endmodule : alert_handler_esc_timer
+endmodule : ${module_instance_name}_esc_timer

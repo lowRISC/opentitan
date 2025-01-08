@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class alert_handler_lpg_vseq extends alert_handler_entropy_vseq;
-  `uvm_object_utils(alert_handler_lpg_vseq)
+class ${module_instance_name}_lpg_vseq extends ${module_instance_name}_entropy_vseq;
+  `uvm_object_utils(${module_instance_name}_lpg_vseq)
 
   `uvm_object_new
 
@@ -45,4 +45,4 @@ class alert_handler_lpg_vseq extends alert_handler_entropy_vseq;
       end // end isolation_fork
     join
   endtask : body
-endclass : alert_handler_lpg_vseq
+endclass : ${module_instance_name}_lpg_vseq

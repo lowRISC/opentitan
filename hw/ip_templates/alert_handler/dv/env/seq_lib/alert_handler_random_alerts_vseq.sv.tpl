@@ -4,8 +4,8 @@
 
 // this sequence enable random alert inputs, and rand wr phase cycles
 
-class alert_handler_random_alerts_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_random_alerts_vseq)
+class ${module_instance_name}_random_alerts_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_random_alerts_vseq)
 
   `uvm_object_new
 
@@ -17,4 +17,4 @@ class alert_handler_random_alerts_vseq extends alert_handler_smoke_vseq;
     this.enable_one_alert_c.constraint_mode(0);
   endfunction
 
-endclass : alert_handler_random_alerts_vseq
+endclass : ${module_instance_name}_random_alerts_vseq

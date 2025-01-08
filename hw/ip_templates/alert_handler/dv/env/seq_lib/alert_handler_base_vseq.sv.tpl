@@ -21,13 +21,13 @@
                                  en.value == en_bit; lock.value == lock_bit;)  ${"\\"}
   csr_wr(.ptr(ral.class``i``_ctrl_shadowed), .value(ral.class``i``_ctrl_shadowed.get()));
 
-class alert_handler_base_vseq extends cip_base_vseq #(
-    .CFG_T               (alert_handler_env_cfg),
-    .RAL_T               (alert_handler_reg_block),
-    .COV_T               (alert_handler_env_cov),
-    .VIRTUAL_SEQUENCER_T (alert_handler_virtual_sequencer)
+class ${module_instance_name}_base_vseq extends cip_base_vseq #(
+    .CFG_T               (${module_instance_name}_env_cfg),
+    .RAL_T               (${module_instance_name}_reg_block),
+    .COV_T               (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T (${module_instance_name}_virtual_sequencer)
   );
-  `uvm_object_utils(alert_handler_base_vseq)
+  `uvm_object_utils(${module_instance_name}_base_vseq)
 
   // various knobs to enable certain routines
   bit do_alert_handler_init = 1'b0;
@@ -158,9 +158,9 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] intr;
     // Wait until there is no ping handshake.
     // This will avoid the case where interrupt is set and cleared at the same cycle.
-    `DV_WAIT((cfg.alert_handler_vif.alert_ping_reqs || cfg.alert_handler_vif.esc_ping_reqs) == 0)
+    `DV_WAIT((cfg.${module_instance_name}_vif.alert_ping_reqs || cfg.${module_instance_name}_vif.esc_ping_reqs) == 0)
     csr_rd(.ptr(ral.intr_state), .value(intr));
-    `DV_WAIT((cfg.alert_handler_vif.alert_ping_reqs || cfg.alert_handler_vif.esc_ping_reqs) == 0)
+    `DV_WAIT((cfg.${module_instance_name}_vif.alert_ping_reqs || cfg.${module_instance_name}_vif.esc_ping_reqs) == 0)
     csr_wr(.ptr(ral.intr_state), .value('1));
   endtask
 
@@ -275,15 +275,15 @@ class alert_handler_base_vseq extends cip_base_vseq #(
   // Because one LPG will turn off a set of alert sensers. So this task will also set all LPG's
   // alert_host_cfgs' `en_alert_lpg` to 1.
   virtual function void set_alert_lpg(int alert_i);
-    int       lpg_i = alert_handler_reg_pkg::LpgMap[alert_i];
+    int       lpg_i = ${module_instance_name}_reg_pkg::LpgMap[alert_i];
     bit [1:0] set_lpg;
 
-    if (cfg.alert_handler_vif.get_lpg_status(lpg_i) == 0) begin
+    if (cfg.${module_instance_name}_vif.get_lpg_status(lpg_i) == 0) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(set_lpg, set_lpg > 0;);
-      if (set_lpg[0]) cfg.alert_handler_vif.set_lpg_cg_en(lpg_i);
-      if (set_lpg[1]) cfg.alert_handler_vif.set_lpg_rst_en(lpg_i);
-      foreach (alert_handler_reg_pkg::LpgMap[i]) begin
-        if (alert_handler_reg_pkg::LpgMap[i] == lpg_i) cfg.alert_host_cfg[i].en_alert_lpg = 1;
+      if (set_lpg[0]) cfg.${module_instance_name}_vif.set_lpg_cg_en(lpg_i);
+      if (set_lpg[1]) cfg.${module_instance_name}_vif.set_lpg_rst_en(lpg_i);
+      foreach (${module_instance_name}_reg_pkg::LpgMap[i]) begin
+        if (${module_instance_name}_reg_pkg::LpgMap[i] == lpg_i) cfg.alert_host_cfg[i].en_alert_lpg = 1;
       end
     end
   endfunction
@@ -347,7 +347,7 @@ class alert_handler_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-endclass : alert_handler_base_vseq
+endclass : ${module_instance_name}_base_vseq
 
 `undef RAND_AND_WR_CLASS_PHASES_CYCLE
 `undef RAND_WRITE_CLASS_CTRL

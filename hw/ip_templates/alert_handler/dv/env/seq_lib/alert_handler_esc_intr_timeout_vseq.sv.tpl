@@ -4,8 +4,8 @@
 
 // this sequence triggers escalation by the interrupt timeout
 
-class alert_handler_esc_intr_timeout_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_esc_intr_timeout_vseq)
+class ${module_instance_name}_esc_intr_timeout_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_esc_intr_timeout_vseq)
 
   `uvm_object_new
 
@@ -19,4 +19,4 @@ class alert_handler_esc_intr_timeout_vseq extends alert_handler_smoke_vseq;
     this.enable_classa_only_c.constraint_mode(0);
   endfunction
 
-endclass : alert_handler_esc_intr_timeout_vseq
+endclass : ${module_instance_name}_esc_intr_timeout_vseq

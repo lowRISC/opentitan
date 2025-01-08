@@ -6,8 +6,8 @@
 
 `include "prim_assert.sv"
 
-module alert_handler
-  import alert_handler_pkg::*;
+module ${module_instance_name}
+  import ${module_instance_name}_pkg::*;
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 #(
@@ -67,7 +67,7 @@ module alert_handler
   // SEC_CM: ALERT.CONFIG.REGWEN
   // SEC_CM: ALERT_LOC.CONFIG.REGWEN
   // SEC_CM: CLASS.CONFIG.REGWEN
-  alert_handler_reg_wrap u_reg_wrap (
+  ${module_instance_name}_reg_wrap u_reg_wrap (
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
@@ -117,7 +117,7 @@ module alert_handler
     .edn_i       ( edn_i    )
   );
 
-  alert_handler_ping_timer #(
+  ${module_instance_name}_ping_timer #(
     .RndCnstLfsrSeed(RndCnstLfsrSeed),
     .RndCnstLfsrPerm(RndCnstLfsrPerm)
   ) u_ping_timer (
@@ -166,7 +166,7 @@ module alert_handler
   /////////////////////////////
 
   prim_mubi_pkg::mubi4_t [NAlerts-1:0] alert_init_trig;
-  alert_handler_lpg_ctrl u_alert_handler_lpg_ctrl (
+  ${module_instance_name}_lpg_ctrl u_alert_handler_lpg_ctrl (
     .clk_i,
     .rst_ni,
     // SEC_CM: LPG.INTERSIG.MUBI
@@ -206,7 +206,7 @@ module alert_handler
   // Set alert cause bits and classify //
   ///////////////////////////////////////
 
-  alert_handler_class u_class (
+  ${module_instance_name}_class u_class (
     .alert_trig_i      ( alert_trig                  ),
     .loc_alert_trig_i  ( loc_alert_trig              ),
     .alert_en_i        ( reg2hw_wrap.alert_en        ),
@@ -226,7 +226,7 @@ module alert_handler
 
   for (genvar k = 0; k < N_CLASSES; k++) begin : gen_classes
     logic class_accu_fail, class_accu_trig;
-    alert_handler_accu u_accu (
+    ${module_instance_name}_accu u_accu (
       .clk_i,
       .rst_ni,
       .class_en_i    ( reg2hw_wrap.class_en[k]           ),
@@ -241,7 +241,7 @@ module alert_handler
         u_accu.u_prim_count,
         esc_tx_o[0].esc_p & esc_tx_o[1].esc_p & esc_tx_o[2].esc_p & esc_tx_o[3].esc_p)
 
-    alert_handler_esc_timer u_esc_timer (
+    ${module_instance_name}_esc_timer u_esc_timer (
       .clk_i,
       .rst_ni,
       .en_i              ( reg2hw_wrap.class_en[k]              ),

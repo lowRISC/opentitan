@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
-ALERT_HANDLER = opentitan_ip(
-    name = "alert_handler",
-    hjson = "//hw/top_${topname}/ip_autogen/alert_handler:data/alert_handler.hjson",
+${module_instance_name.upper()} = opentitan_ip(
+    name = "${module_instance_name}",
+    hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}:data/${module_instance_name}.hjson",
 )

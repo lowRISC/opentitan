@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // basic smoke test vseq
-class alert_handler_smoke_vseq extends alert_handler_base_vseq;
-  `uvm_object_utils(alert_handler_smoke_vseq)
+class ${module_instance_name}_smoke_vseq extends ${module_instance_name}_base_vseq;
+  `uvm_object_utils(${module_instance_name}_smoke_vseq)
 
   `uvm_object_new
 
@@ -218,4 +218,4 @@ class alert_handler_smoke_vseq extends alert_handler_base_vseq;
     wait_esc_handshake_done();
   endtask
 
-endclass : alert_handler_smoke_vseq
+endclass : ${module_instance_name}_smoke_vseq

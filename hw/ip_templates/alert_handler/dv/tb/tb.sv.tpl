@@ -6,9 +6,9 @@ module tb;
   // dep packages
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import alert_handler_env_pkg::*;
-  import alert_handler_test_pkg::*;
-  import alert_handler_pkg::*;
+  import ${module_instance_name}_env_pkg::*;
+  import ${module_instance_name}_test_pkg::*;
+  import ${module_instance_name}_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -25,7 +25,7 @@ module tb;
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(interrupts);
   pins_if #(NUM_CRASHDUMP) crashdump_if(crashdump);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
-  alert_handler_if alert_handler_if(.clk(clk), .rst_n(rst_n));
+  ${module_instance_name}_if ${module_instance_name}_if(.clk(clk), .rst_n(rst_n));
   alert_esc_if esc_device_if [NUM_ESCS](.clk(clk), .rst_n(rst_n));
   alert_esc_if alert_host_if [NUM_ALERTS](.clk(clk), .rst_n(rst_n));
   alert_esc_probe_if probe_if[NUM_ESCS](.clk(clk), .rst_n(rst_n));
@@ -44,7 +44,7 @@ module tb;
     assign alert_host_if[k].alert_rx.ack_n  = alert_rx[k].ack_n;
     assign alert_host_if[k].alert_rx.ping_p = alert_rx[k].ping_p;
     assign alert_host_if[k].alert_rx.ping_n = alert_rx[k].ping_n;
-    assign alert_handler_if.alert_ping_reqs[k] = dut.gen_alerts[k].u_alert_receiver.ping_req_i;
+    assign ${module_instance_name}_if.alert_ping_reqs[k] = dut.gen_alerts[k].u_alert_receiver.ping_req_i;
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.alert_host_agent[%0d]", k),
                                                 "vif", alert_host_if[k]);
@@ -58,7 +58,7 @@ module tb;
     assign esc_device_if[k].esc_tx.esc_p = esc_tx[k].esc_p;
     assign esc_device_if[k].esc_tx.esc_n = esc_tx[k].esc_n;
     assign probe_if[k].esc_en = dut.esc_sig_req[k];
-    assign alert_handler_if.esc_ping_reqs[k] = dut.gen_esc_sev[k].u_esc_sender.ping_req_i;
+    assign ${module_instance_name}_if.esc_ping_reqs[k] = dut.gen_esc_sev[k].u_esc_sender.ping_req_i;
     initial begin
       uvm_config_db#(virtual alert_esc_if)::set(null, $sformatf("*.env.esc_device_agent[%0d]", k),
                                                 "vif", esc_device_if[k]);
@@ -71,7 +71,7 @@ module tb;
   `DV_EDN_IF_CONNECT
 
   // main dut
-  alert_handler dut (
+  ${module_instance_name} dut (
     .clk_i                ( clk           ),
     .rst_ni               ( rst_n         ),
     .rst_shadowed_ni      ( rst_shadowed_n),
@@ -83,8 +83,8 @@ module tb;
     .intr_classb_o        ( interrupts[1] ),
     .intr_classc_o        ( interrupts[2] ),
     .intr_classd_o        ( interrupts[3] ),
-    .lpg_cg_en_i          ( alert_handler_if.lpg_cg_en  ),
-    .lpg_rst_en_i         ( alert_handler_if.lpg_rst_en ),
+    .lpg_cg_en_i          ( ${module_instance_name}_if.lpg_cg_en  ),
+    .lpg_rst_en_i         ( ${module_instance_name}_if.lpg_rst_en ),
     .crashdump_o          ( crashdump     ),
     .edn_o                ( edn_if[0].req    ),
     .edn_i                ( {edn_if[0].ack, edn_if[0].d_data} ),
@@ -103,8 +103,8 @@ module tb;
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     uvm_config_db#(crashdump_vif)::set(null, "*.env", "crashdump_vif", crashdump_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
-    uvm_config_db#(virtual alert_handler_if)::set(null, "*.env", "alert_handler_vif",
-                   alert_handler_if);
+    uvm_config_db#(virtual ${module_instance_name}_if)::set(null, "*.env", "${module_instance_name}_vif",
+                   ${module_instance_name}_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end

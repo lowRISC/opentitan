@@ -7,7 +7,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_ping_timer_assert_fpv import alert_handler_pkg::*; (
+module ${module_instance_name}_ping_timer_assert_fpv import ${module_instance_name}_pkg::*; (
   input                   clk_i,
   input                   rst_ni,
   input                   edn_req_o,
@@ -129,4 +129,4 @@ module alert_handler_ping_timer_assert_fpv import alert_handler_pkg::*; (
   // 3) ping ok after timeout -> alert
   // 4) no ping response -> alert
 
-endmodule : alert_handler_ping_timer_assert_fpv
+endmodule : ${module_instance_name}_ping_timer_assert_fpv

@@ -7,12 +7,12 @@
       {ral.class``i``_phase0_cyc_shadowed, ral.class``i``_phase1_cyc_shadowed, ${"\\"}
        ral.class``i``_phase2_cyc_shadowed, ral.class``i``_phase3_cyc_shadowed};
 
-class alert_handler_scoreboard extends cip_base_scoreboard #(
-    .CFG_T(alert_handler_env_cfg),
-    .RAL_T(alert_handler_reg_block),
-    .COV_T(alert_handler_env_cov)
+class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(
+    .CFG_T(${module_instance_name}_env_cfg),
+    .RAL_T(${module_instance_name}_reg_block),
+    .COV_T(${module_instance_name}_env_cov)
   );
-  `uvm_component_utils(alert_handler_scoreboard)
+  `uvm_component_utils(${module_instance_name}_scoreboard)
 
   // esc_phase_cyc_per_class_q: each class has four phase cycles, stores each cycle length
   // --- class --- phase0_cyc    ---    phase1_cyc   ---    phase2_cyc   ---     phase3_cyc  ---
@@ -84,15 +84,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task process_alert_fifo();
     foreach (alert_fifo[i]) begin
       automatic int index = i;
-      automatic int lpg_index = alert_handler_reg_pkg::LpgMap[index];
+      automatic int lpg_index = ${module_instance_name}_reg_pkg::LpgMap[index];
       fork
         forever begin
           bit alert_en, loc_alert_en;
           alert_esc_seq_item act_item;
           alert_fifo[index].get(act_item);
           alert_en = ral.alert_en_shadowed[index].get_mirrored_value() &&
-              prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_cg_en[lpg_index]) &&
-              prim_mubi_pkg::mubi4_test_false_loose(cfg.alert_handler_vif.lpg_rst_en[lpg_index]);
+              prim_mubi_pkg::mubi4_test_false_loose(cfg.${module_instance_name}_vif.lpg_cg_en[lpg_index]) &&
+              prim_mubi_pkg::mubi4_test_false_loose(cfg.${module_instance_name}_vif.lpg_rst_en[lpg_index]);
 
           // Check that ping mechanism will only ping alerts that have been enabled and locked.
           if (act_item.alert_esc_type == AlertEscPingTrans) begin
@@ -531,15 +531,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
   virtual task check_ping_triggered_cycles();
     int ping_wait_cycs;
     while (ping_wait_cycs <= MAX_PING_WAIT_CYCLES * 2) begin
-    if (cfg.alert_handler_vif.alert_ping_reqs > 0) begin
+    if (cfg.${module_instance_name}_vif.alert_ping_reqs > 0) begin
       if (cfg.en_cov) begin
-        int alert_id = $clog2(cfg.alert_handler_vif.alert_ping_reqs);
+        int alert_id = $clog2(cfg.${module_instance_name}_vif.alert_ping_reqs);
         cov.ping_with_lpg_cg_wrap[alert_id].alert_ping_with_lpg_cg.sample(
             cfg.alert_host_cfg[alert_id].en_alert_lpg);
       end
       break;
     end
-    if (cfg.alert_handler_vif.esc_ping_reqs > 0) break;
+    if (cfg.${module_instance_name}_vif.esc_ping_reqs > 0) break;
       cfg.clk_rst_vif.wait_clks(1);
       ping_wait_cycs++;
     end
@@ -549,15 +549,15 @@ class alert_handler_scoreboard extends cip_base_scoreboard #(
     if (cfg.en_cov) cov.cycles_between_pings_cg.sample(ping_wait_cycs);
 
     // Wait for ping request to finish to avoid infinite loop.
-    wait (cfg.alert_handler_vif.alert_ping_reqs == 0 && cfg.alert_handler_vif.esc_ping_reqs == 0);
+    wait (cfg.${module_instance_name}_vif.alert_ping_reqs == 0 && cfg.${module_instance_name}_vif.esc_ping_reqs == 0);
   endtask
 
   virtual task check_crashdump();
     forever begin
       wait (cfg.under_reset == 0 && cfg.en_scb == 1);
       @(cfg.crashdump_vif.pins) begin
-        alert_handler_pkg::alert_crashdump_t crashdump_val =
-            alert_handler_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
+        ${module_instance_name}_pkg::alert_crashdump_t crashdump_val =
+            ${module_instance_name}_pkg::alert_crashdump_t'(cfg.crashdump_vif.sample());
 
         // Wait two negedge clock cycles to make sure csr mirrored values are updated.
         `DV_SPINWAIT_EXIT(cfg.clk_rst_vif.wait_n_clks(2);, wait (cfg.under_reset == 1);)

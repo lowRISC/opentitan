@@ -4,7 +4,7 @@
 //
 // Breakout / remapping wrapper for register file.
 
-module alert_handler_reg_wrap import alert_handler_pkg::*; (
+module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
   input                                   clk_i,
   input                                   rst_ni,
   input                                   rst_shadowed_ni,
@@ -30,10 +30,10 @@ module alert_handler_reg_wrap import alert_handler_pkg::*; (
   //////////////////
 
   logic [N_CLASSES-1:0] class_autolock_en;
-  alert_handler_reg_pkg::alert_handler_reg2hw_t reg2hw;
-  alert_handler_reg_pkg::alert_handler_hw2reg_t hw2reg;
+  ${module_instance_name}_reg_pkg::${module_instance_name}_reg2hw_t reg2hw;
+  ${module_instance_name}_reg_pkg::${module_instance_name}_hw2reg_t hw2reg;
 
-  alert_handler_reg_top u_reg (
+  ${module_instance_name}_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
@@ -357,4 +357,4 @@ module alert_handler_reg_wrap import alert_handler_pkg::*; (
   // Once any of the classes has triggered the latching, we switch to the latched snapshot.
   assign crashdump_o = (|crashdump_latched_q) ? crashdump_q : crashdump_d;
 
-endmodule : alert_handler_reg_wrap
+endmodule : ${module_instance_name}_reg_wrap
