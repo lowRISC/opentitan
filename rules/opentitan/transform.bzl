@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//rules:common_settings.bzl", "BuildSettingInfo")
+load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_override")
@@ -21,6 +22,17 @@ def obj_transform(ctx, **kwargs):
       The transformed File.
     """
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objcopy = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OBJ_COPY_ACTION_NAME,
+    )
+
     output = kwargs.get("output")
     if not output:
         name = get_override(ctx, "attr.name", kwargs)
@@ -40,7 +52,7 @@ def obj_transform(ctx, **kwargs):
             src.path,
             output.path,
         ],
-        executable = cc_toolchain.objcopy_executable,
+        executable = objcopy,
     )
     return output
 

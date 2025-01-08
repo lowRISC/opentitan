@@ -53,6 +53,7 @@ obj_transform = rv_rule(
         "format": attr.string(default = "binary"),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 

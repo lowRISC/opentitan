@@ -7,6 +7,7 @@
 # Inspired by:
 # https://gist.github.com/shareefj/4e314b16148fded3a8ec874e71b07143
 
+load("@rules_cc//cc:action_names.bzl", "CPP_LINK_STATIC_LIBRARY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
@@ -15,6 +16,16 @@ def _ot_static_library_impl(ctx):
     output_flags = ctx.actions.declare_file("lib{}.link".format(ctx.attr.name))
 
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    archiver = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = CPP_LINK_STATIC_LIBRARY_ACTION_NAME,
+    )
 
     # Aggregate linker inputs of all dependencies
     lib_sets = []
@@ -42,11 +53,9 @@ def _ot_static_library_impl(ctx):
 
     lib_paths = [lib.path for lib in libs]
 
-    ar_path = cc_toolchain.ar_executable
-
     ctx.actions.run_shell(
         command = "\"{0}\" rcT {1} {2} && echo -e 'create {1}\naddlib {1}\nsave\nend' | \"{0}\" -M".format(
-            ar_path,
+            archiver,
             output_lib.path,
             " ".join(lib_paths),
         ),
