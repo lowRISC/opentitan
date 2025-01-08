@@ -461,6 +461,34 @@
         ]
       }
     },
+    "//third_party/lowrisc:extensions.bzl%lowrisc_rv32imcb_toolchain": {
+      "general": {
+        "bzlTransitiveDigest": "IbPdtrqtNad6eRZUQrtbfvSw8jNtKo/MiQwDVIbC3VI=",
+        "usagesDigest": "qfRPSdY68XE9qYqrH+OPSbrYr4VghX7wrRp51FohToY=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "lowrisc_rv32imcb_toolchain": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "url": "https://github.com/lowRISC/lowrisc-toolchains/releases/download/20240923-1/lowrisc-toolchain-rv32imcb-20240923-1.tar.xz",
+              "sha256": "aeea1983553f4c81c6409abcf0d6ca33b5ed4716b2b694e7ff030523cf13486a",
+              "strip_prefix": "lowrisc-toolchain-rv32imcb-20240923-1",
+              "build_file": "@@//third_party/lowrisc:BUILD.lowrisc_rv32imcb_toolchain.bazel"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/lychee:extensions.bzl%lychee": {
       "general": {
         "bzlTransitiveDigest": "dp7fsvt0uZMcrNBnGFx2cmYh9oABupZn0OznHP8v7gs=",
@@ -5761,7 +5789,7 @@
           "@@//third_party/rust/Cargo.lock": "18e7bab3feba348ad70ccce9888b8e41b05cc15fb6a0abda2c5bb027f4e31997",
           "@@//third_party/tock/Cargo.lock": "b5a7a833ae205f1e3697a510e97e3185b44b195d7a22879b4669bff95febd5c8",
           "@@//third_party/tock/Cargo.toml": "5a939bd934aef4775b65a82e678f1180ec00aa78cf214f6052cc82353c975cc4",
-          "@@//MODULE.bazel": "98d23b16341e43b3644ff529039f1006d25ed0665b778d4ba3b23d3b06d4abf8",
+          "@@//MODULE.bazel": "02468948d6cbf4066292068671e0fc5aeed70b5a88ed02c7e05844e3428d95f4",
           "@@//third_party/rust/Cargo.toml": "2fbe1a86bcee488ed55298ff7aa0b08965e9f57bc922f7edbc2386443f95c32b",
           "@@rules_rust~~rust_host_tools~rust_host_tools//WORKSPACE.bazel": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
         },
