@@ -217,7 +217,7 @@ def generate_alert_handler(top: Dict[str, object], out_path: Path) -> None:
                 for _ in range(alert["width"]):
                     async_on.append(async_on_format.format(int(alert["async"])))
                     lpg_map.append(lpg_idx_format.format(lpg_prev_offset + int(alert["lpg_idx"])))
-                lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
+            lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
 
     params = {
         "n_alerts": n_alerts,
