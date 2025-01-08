@@ -150,3 +150,5 @@ use_repo(
 )
 
 register_toolchains("//rules/opentitan:localtools")
+
+register_toolchains("//toolchain:cc_toolchain_opentitan")
