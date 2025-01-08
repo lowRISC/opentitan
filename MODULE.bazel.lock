@@ -439,6 +439,34 @@
         ]
       }
     },
+    "//third_party/lowrisc:extensions.bzl%lowrisc_rv32imcb_toolchain": {
+      "general": {
+        "bzlTransitiveDigest": "W9Z9C5PMascfbcutgU86P2kcAUi2PZ7c0ud3w1QEMPI=",
+        "usagesDigest": "hbpdCo9aSLLeAkIPhlXazY3BiqGQ4s6FXsWgmlfBrJQ=",
+        "recordedFileInputs": {},
+        "recordedDirentsInputs": {},
+        "envVariables": {},
+        "generatedRepoSpecs": {
+          "lowrisc_rv32imcb_toolchain": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:http.bzl",
+            "ruleClassName": "http_archive",
+            "attributes": {
+              "url": "https://github.com/lowRISC/lowrisc-toolchains/releases/download/20240923-1/lowrisc-toolchain-rv32imcb-20240923-1.tar.xz",
+              "sha256": "aeea1983553f4c81c6409abcf0d6ca33b5ed4716b2b694e7ff030523cf13486a",
+              "strip_prefix": "lowrisc-toolchain-rv32imcb-20240923-1",
+              "build_file": "@@//third_party/lowrisc:BUILD.lowrisc_rv32imcb_toolchain.bazel"
+            }
+          }
+        },
+        "recordedRepoMappingEntries": [
+          [
+            "",
+            "bazel_tools",
+            "bazel_tools"
+          ]
+        ]
+      }
+    },
     "//third_party/lychee:extensions.bzl%lychee": {
       "general": {
         "bzlTransitiveDigest": "D5TqlXWMpvZUNeDDU9wbX49JxrqA4HMJCzvoaHk+33s=",
