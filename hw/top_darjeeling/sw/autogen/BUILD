@@ -21,6 +21,7 @@ cc_library(
         "top_darjeeling.h",
         "top_darjeeling_memory.h",
     ],
+    defines = ["OPENTITAN_IS_DARJEELING"],
     target_compatible_with = opentitan_require_top("darjeeling"),
 )
 
