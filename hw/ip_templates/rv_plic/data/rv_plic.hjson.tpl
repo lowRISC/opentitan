@@ -117,16 +117,19 @@
 
   regwidth: "32",
   registers: [
-% for i in range(src):
-    { name: "PRIO${i}",
-      desc: "Interrupt Source ${i} Priority",
-      swaccess: "rw",
-      hwaccess: "hro",
-      fields: [
-        { bits: "${(prio).bit_length()-1}:0" }
-      ],
+    { multireg:
+      { name: "PRIO",
+        desc: "Interrupt Source Priority",
+        count: "NumSrc",
+        cname: "${(module_instance_name).upper()}",
+        swaccess: "rw",
+        hwaccess: "hro",
+        compact: false,
+        fields: [
+          { bits: "${(prio).bit_length()-1}:0" }
+        ],
+      }
     }
-% endfor
     { skipto: "0x00001000" }
     { multireg: {
         name: "IP",
