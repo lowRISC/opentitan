@@ -50,8 +50,15 @@ class ResetItem:
             'domains': self.domains,
             'shadowed': self.shadowed,
             'sw': self.sw,
-            'path': self.path
+            'path': self.path,
+            'shadow_path': self.shadow_path,
         }
+
+        if getattr(self, "shadow_lpg_path", None):
+            ret['shadow_lpg_path'] = self.shadow_lpg_path
+
+        if getattr(self, "lpg_path", None):
+            ret['lpg_path'] = self.lpg_path
 
         if self.parent:
             ret['parent'] = self.parent
