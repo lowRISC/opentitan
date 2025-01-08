@@ -10,6 +10,7 @@ use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -90,16 +91,13 @@ impl CommandDispatch for Firmware {
             prev_baudrate = uart.get_baudrate()?;
             rescue.set_baud(rate)?;
         }
-        if self.wait {
-            rescue.wait()?;
-        }
+        rescue.wait()?;
         rescue.update_firmware(self.slot, payload)?;
         if self.rate.is_some() {
-            if self.wait {
-                rescue.set_baud(prev_baudrate)?;
-            } else {
-                uart.set_baudrate(prev_baudrate)?;
-            }
+            rescue.set_baud(prev_baudrate)?;
+        }
+        if !self.wait {
+            transport.reset_target(Duration::from_millis(50), false)?;
         }
         Ok(None)
     }
