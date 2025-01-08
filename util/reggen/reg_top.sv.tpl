@@ -33,7 +33,9 @@
   reg2hw_t = gen_rtl.get_iface_tx_type(block, if_name, False)
   hw2reg_t = gen_rtl.get_iface_tx_type(block, if_name, True)
 
-  racl_support = block.bus_interfaces.racl_support[if_name]
+  dynamic_racl_support = block.bus_interfaces.racl_support[if_name]
+  static_racl_support = block.bus_interfaces.static_racl_support[if_name]
+  racl_support = dynamic_racl_support or static_racl_support
 
   win_array_decl = f'  [{num_wins}]' if num_wins > 1 else ''
 
@@ -121,8 +123,10 @@ module ${mod_name}${' (' if not racl_support else ''}
 % if racl_support:
   # (
     parameter bit          EnableRacl           = 1'b0,
-    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter bit          RaclErrorRsp         = 1'b1${"," if dynamic_racl_support else ""}
+  % if dynamic_racl_support:
     parameter int unsigned RaclPolicySelVec[${len(rb.flat_regs)}] = '{${len(rb.flat_regs)}{0}}
+  % endif
   ) (
 % endif
   input clk_i,
@@ -158,7 +162,9 @@ module ${mod_name}${' (' if not racl_support else ''}
 %endif
 % if racl_support:
   // RACL interface
+% if dynamic_racl_support:
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+% endif
   output logic                           racl_error_o,
   output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
@@ -700,12 +706,20 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
 
     if (EnableRacl) begin : gen_racl_hit
       for (int unsigned slice_idx = 0; slice_idx < ${len(regs_flat)}; slice_idx++) begin
+      % if dynamic_racl_support:
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
         racl_addr_hit_write[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
                                       & racl_role_vec));
+      % else:
+        // Static RACL protection with ROT_PRIVATE policy
+        racl_addr_hit_read[slice_idx] =
+          addr_hit[slice_idx] & (|(top_racl_pkg::RACL_POLICY_ROT_PRIVATE_RD & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+          addr_hit[slice_idx] & (|(top_racl_pkg::RACL_POLICY_ROT_PRIVATE_WR & racl_role_vec));
+      % endif
       end
     end else begin : gen_no_racl
       racl_addr_hit_read  = addr_hit;
@@ -915,7 +929,7 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
 % endif
-% if racl_support:
+% if dynamic_racl_support:
   logic unused_policy_sel;
   assign unused_policy_sel = ^racl_policies_i;
 % endif

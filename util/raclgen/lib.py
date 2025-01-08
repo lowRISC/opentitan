@@ -25,6 +25,8 @@ racl_required = {
 DEFAULT_RACL_CONFIG = {
     'nr_policies': 1,
     'policies': {},
+    'rot_private_policy_rd': 0,
+    'rot_private_policy_wr': 0
 }
 
 
@@ -52,6 +54,7 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config['nr_policies'] = max(
         len(policies) for policies in racl_config['policies'].values())
 
+    rot_private_policy = None
     for racl_group, policies in racl_config['policies'].items():
         for policy in policies:
 
@@ -64,6 +67,18 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
 
             policy['rd_default'] = compute_policy_value('allowed_rd')
             policy['wr_default'] = compute_policy_value('allowed_wr')
+            if policy.get('rot_private'):
+                if rot_private_policy:
+                    raise ValueError('Only one policy can be the ROT_PRIVATE policy')
+                rot_private_policy = policy
+
+    if not rot_private_policy:
+        raise ValueError('No ROT_PRIVATE policy defined')
+
+    # Get the default ROT private policy for static RACL protection of the racl_ctrl IP(s)
+    racl_config['rot_private_policy_rd'] = rot_private_policy['rd_default']
+    racl_config['rot_private_policy_wr'] = rot_private_policy['wr_default']
+
     return racl_config
 
 
