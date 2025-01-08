@@ -136,6 +136,16 @@
       tests: ["pwm_perf"]
     }
     {
+      name: regwen
+      desc: '''
+            Set the DUT operating with a configuration that produces clear variation on all of the PWM outputs.
+            Lock the configuration using REGWEN and then attempt to change the configuration.
+            The DUT, monitors and scoreboard should continue unaffected until the DUT is reset.
+            '''
+      stage: V2
+      tests: ["pwm_regwen"]
+    }
+    {
       name: stress_all
       desc: '''
             Combine above sequences in one test then randomly select for running

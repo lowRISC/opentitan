@@ -50,10 +50,10 @@ class pwm_base_vseq extends cip_base_vseq #(
 
   // Wait for at least the specified number of clock cycles, monitoring and checking the DUT
   // outputs. Optionally engage low power mode in the middle of the test.
-  extern task monitor_dut_outputs(bit low_power_mode, uint cycles);
+  extern virtual task monitor_dut_outputs(bit low_power_mode, uint cycles);
 
   // Shutdown the dut in a way that helps the last item to finish gracefully.
-  extern task shutdown_dut();
+  extern virtual task shutdown_dut();
 endclass : pwm_base_vseq
 
 function pwm_base_vseq::new (string name = "");
