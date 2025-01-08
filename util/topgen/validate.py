@@ -215,6 +215,8 @@ module_optional = {
                            'module'],
     'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
                             'group'],
+    'incoming_alert': ['l', 'optional list of paths to incoming alert configurations for the '
+                            'alert_handler'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
 }
 
