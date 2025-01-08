@@ -9,6 +9,7 @@ load(
 )
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
+load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load(
     "//sw/device/silicon_creator/rom_ext/imm_section:defs.bzl",
@@ -17,6 +18,16 @@ load(
 
 def _bin_to_imm_section_object_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objcopy = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OBJ_COPY_ACTION_NAME,
+    )
 
     for src in ctx.files.src:
         if src.extension != "bin":
@@ -40,7 +51,7 @@ def _bin_to_imm_section_object_impl(ctx):
                 src.path,
                 object.path,
             ],
-            executable = cc_toolchain.objcopy_executable,
+            executable = objcopy,
         )
 
         # e2e/exec_env tests ensure the immutable rom_ext is the same across all
@@ -59,6 +70,7 @@ bin_to_imm_section_object = rv_rule(
         "src": attr.label(allow_files = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
