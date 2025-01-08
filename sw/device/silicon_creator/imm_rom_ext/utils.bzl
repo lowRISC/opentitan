@@ -2,11 +2,23 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 
 def _bin_to_imm_rom_ext_object_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
+    feature_config = cc_common.configure_features(
+        ctx = ctx,
+        cc_toolchain = cc_toolchain,
+        requested_features = ctx.features,
+        unsupported_features = ctx.disabled_features,
+    )
+    objcopy = cc_common.get_tool_for_action(
+        feature_configuration = feature_config,
+        action_name = OBJ_COPY_ACTION_NAME,
+    )
+
     outputs = []
     for src in ctx.files.srcs:
         if src.extension != "bin":
@@ -30,7 +42,7 @@ def _bin_to_imm_rom_ext_object_impl(ctx):
                 src.path,
                 object.path,
             ],
-            executable = cc_toolchain.objcopy_executable,
+            executable = objcopy,
         )
         outputs.append(object)
     return [DefaultInfo(files = depset(outputs), runfiles = ctx.runfiles(files = outputs))]
@@ -41,6 +53,7 @@ bin_to_imm_rom_ext_object = rv_rule(
         "srcs": attr.label_list(allow_files = True),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
+    fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
