@@ -159,7 +159,6 @@ module prim_fifo_sync #(
     // The latter can be '0' when under reset, while the former is an indication that no more
     // entries can be written.
     assign wready_o = ~full_o & ~under_rst;
-    assign rvalid_o = ~empty & ~under_rst;
 
     prim_fifo_sync_cnt #(
       .Depth(Depth),
@@ -194,9 +193,11 @@ module prim_fifo_sync #(
     if (Pass == 1'b1) begin : gen_pass
       assign rdata_int = (fifo_empty && wvalid_i) ? wdata_i : storage_rdata;
       assign empty = fifo_empty & ~wvalid_i;
+      assign rvalid_o = ~empty & ~under_rst;
     end else begin : gen_nopass
       assign rdata_int = storage_rdata;
       assign empty = fifo_empty;
+      assign rvalid_o = ~empty;
     end
 
     if (OutputZeroIfEmpty == 1'b1) begin : gen_output_zero
@@ -206,6 +207,7 @@ module prim_fifo_sync #(
     end
 
     `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth_o <= DepthW'(Depth))
+    `ASSERT(OnlyRvalidWhenNotUnderRst_A, rvalid_o -> ~under_rst)
   end // block: gen_normal_fifo
 
 
