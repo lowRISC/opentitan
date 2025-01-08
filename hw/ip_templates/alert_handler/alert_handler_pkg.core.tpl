@@ -2,18 +2,18 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:ip:alert_handler_pkg:0.1")}
+name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_pkg:0.1")}
 description: "Alert Handler constants in packages"
 virtual:
-  - "lowrisc:ip_interfaces:alert_handler_pkg"
+  - "lowrisc:ip_interfaces:${module_instance_name}_pkg"
 
 filesets:
   files_rtl:
     depend:
       - lowrisc:tlul:headers
     files:
-      - rtl/alert_handler_reg_pkg.sv
-      - rtl/alert_handler_pkg.sv
+      - rtl/${module_instance_name}_reg_pkg.sv
+      - rtl/${module_instance_name}_pkg.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

@@ -3,11 +3,11 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-module alert_handler_ping_timer_bind_fpv;
+module ${module_instance_name}_ping_timer_bind_fpv;
 
 
-  bind alert_handler_ping_timer
-      alert_handler_ping_timer_assert_fpv i_alert_handler_ping_timer_assert_fpv (
+  bind ${module_instance_name}_ping_timer
+      ${module_instance_name}_ping_timer_assert_fpv i_alert_handler_ping_timer_assert_fpv (
     .clk_i,
     .rst_ni,
     .edn_req_o,
@@ -26,4 +26,4 @@ module alert_handler_ping_timer_bind_fpv;
   );
 
 
-endmodule : alert_handler_ping_timer_bind_fpv
+endmodule : ${module_instance_name}_ping_timer_bind_fpv

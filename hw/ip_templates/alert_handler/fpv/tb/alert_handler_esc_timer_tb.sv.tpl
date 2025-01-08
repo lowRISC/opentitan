@@ -5,7 +5,7 @@
 // Testbench module for alert_handler_esc_timer.
 // Intended to be used with a formal tool.
 
-module alert_handler_esc_timer_tb import alert_handler_pkg::*; (
+module ${module_instance_name}_esc_timer_tb import ${module_instance_name}_pkg::*; (
   input  clk_i,
   input  rst_ni,
   input  en_i,
@@ -25,7 +25,7 @@ module alert_handler_esc_timer_tb import alert_handler_pkg::*; (
   output cstate_e esc_state_o
 );
 
-  alert_handler_esc_timer i_alert_handler_esc_timer (
+  ${module_instance_name}_esc_timer i_alert_handler_esc_timer (
     .clk_i,
     .rst_ni,
     .en_i,
@@ -46,4 +46,4 @@ module alert_handler_esc_timer_tb import alert_handler_pkg::*; (
   );
 
 
-endmodule : alert_handler_esc_timer_tb
+endmodule : ${module_instance_name}_esc_timer_tb

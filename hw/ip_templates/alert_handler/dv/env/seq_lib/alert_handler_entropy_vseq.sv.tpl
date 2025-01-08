@@ -4,8 +4,8 @@
 
 // this sequence enable entropy by writing 1 to the lock_regen register.
 
-class alert_handler_entropy_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_entropy_vseq)
+class ${module_instance_name}_entropy_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_entropy_vseq)
 
   `uvm_object_new
 
@@ -14,7 +14,7 @@ class alert_handler_entropy_vseq extends alert_handler_smoke_vseq;
     num_trans inside {[400:1000]};
   }
 
-  // increase the possibility to enable more alerts, because alert_handler only sends ping on
+  // increase the possibility to enable more alerts, because ${module_instance_name} only sends ping on
   // enabled alerts
   constraint enable_one_alert_c {
     alert_en        dist {'1 :/ 9, [0:('1-1'b1)] :/ 1};
@@ -38,4 +38,4 @@ class alert_handler_entropy_vseq extends alert_handler_smoke_vseq;
     verbosity = UVM_HIGH;
   endfunction
 
-endclass : alert_handler_entropy_vseq
+endclass : ${module_instance_name}_entropy_vseq

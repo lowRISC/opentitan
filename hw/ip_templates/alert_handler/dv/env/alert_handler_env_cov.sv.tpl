@@ -17,8 +17,8 @@ class alert_ping_with_lpg_cg_wrap;
   endfunction
 endclass
 
-class alert_handler_env_cov extends cip_base_env_cov #(.CFG_T(alert_handler_env_cfg));
-  `uvm_component_utils(alert_handler_env_cov)
+class ${module_instance_name}_env_cov extends cip_base_env_cov #(.CFG_T(${module_instance_name}_env_cfg));
+  `uvm_component_utils(${module_instance_name}_env_cov)
 
   alert_ping_with_lpg_cg_wrap ping_with_lpg_cg_wrap[NUM_ALERTS];
 

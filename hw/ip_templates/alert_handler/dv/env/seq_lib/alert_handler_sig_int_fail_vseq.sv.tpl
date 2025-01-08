@@ -4,8 +4,8 @@
 
 // this sequence enable signal intergrity fail.
 
-class alert_handler_sig_int_fail_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_sig_int_fail_vseq)
+class ${module_instance_name}_sig_int_fail_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_sig_int_fail_vseq)
 
   `uvm_object_new
 
@@ -19,4 +19,4 @@ class alert_handler_sig_int_fail_vseq extends alert_handler_smoke_vseq;
     this.sig_int_c.constraint_mode(0);
   endfunction
 
-endclass : alert_handler_sig_int_fail_vseq
+endclass : ${module_instance_name}_sig_int_fail_vseq

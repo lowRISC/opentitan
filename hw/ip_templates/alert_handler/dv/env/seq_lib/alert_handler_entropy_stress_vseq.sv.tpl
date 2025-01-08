@@ -7,8 +7,8 @@
 // Randomly force the `wait_cyc_mask_i` from design to a valid small number to fasten the ping
 // request mechanism.
 // Finally this sequence wait until alerts are pinged certain times.
-class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_entropy_stress_vseq)
+class ${module_instance_name}_entropy_stress_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_entropy_stress_vseq)
 
   `uvm_object_new
 
@@ -30,7 +30,7 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
 
   virtual task pre_start();
     `DV_CHECK_RANDOMIZE_FATAL(this)
-    cfg.alert_handler_vif.set_wait_cyc_mask(forced_mask_val);
+    cfg.${module_instance_name}_vif.set_wait_cyc_mask(forced_mask_val);
 
     foreach (cfg.alert_host_cfg[i]) begin
       cfg.alert_host_cfg[i].alert_delay_max = 0;
@@ -96,8 +96,8 @@ class alert_handler_entropy_stress_vseq extends alert_handler_smoke_vseq;
     // This will allow the test to pass ok_to_end check from alert/esc_monitors and
     // push_pull_agent.
     cfg.clk_rst_vif.wait_clks($urandom_range(0, 5));
-    cfg.alert_handler_vif.release_wait_cyc_mask();
+    cfg.${module_instance_name}_vif.release_wait_cyc_mask();
     dut_init();
   endtask
 
-endclass : alert_handler_entropy_stress_vseq
+endclass : ${module_instance_name}_entropy_stress_vseq

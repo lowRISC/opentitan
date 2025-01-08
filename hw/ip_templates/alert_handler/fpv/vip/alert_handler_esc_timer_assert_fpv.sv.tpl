@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// Assertions for alert_handler_esc_timer.
+// Assertions for ${module_instance_name}_esc_timer.
 // Intended to be used with a formal tool.
 
 `include "prim_assert.sv"
 
-module alert_handler_esc_timer_assert_fpv import alert_handler_pkg::*; (
+module ${module_instance_name}_esc_timer_assert_fpv import ${module_instance_name}_pkg::*; (
   input  clk_i,
   input  rst_ni,
   input  en_i,
@@ -66,9 +66,9 @@ module alert_handler_esc_timer_assert_fpv import alert_handler_pkg::*; (
   // if the class is not enabled and we are in IDLE state,
   // neither of the two escalation mechanisms shall fire
   `ASSERT(ClassDisabledNoEscTrig_A, esc_state_o == Idle && !en_i |-> !esc_trig_o)
-  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i && !alert_handler_esc_timer.fsm_error
+  `ASSERT(ClassDisabledNoEsc_A, esc_state_o == Idle && !en_i && !${module_instance_name}_esc_timer.fsm_error
           |-> !esc_sig_req_o)
-  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && !alert_handler_esc_timer.fsm_error |->
+  `ASSERT(EscDisabledNoEsc_A, !esc_en_i[esc_sel] && !${module_instance_name}_esc_timer.fsm_error |->
       !esc_sig_req_o[esc_sel])
 
   // if timeout counter is enabled due to a pending interrupt, check escalation
@@ -82,7 +82,7 @@ module alert_handler_esc_timer_assert_fpv import alert_handler_pkg::*; (
       esc_has_triggered_q, clk_i, !rst_ni || clr_i || accu_fail_i)
 
   // check escalation cnt and state out
-  `ASSERT(EscCntOut_A, alert_handler_esc_timer.u_prim_count.cnt_q[0] == esc_cnt_o)
+  `ASSERT(EscCntOut_A, ${module_instance_name}_esc_timer.u_prim_count.cnt_q[0] == esc_cnt_o)
 
   // check clr input
   // we cannot use clr to exit from the timeout state
@@ -118,7 +118,7 @@ module alert_handler_esc_timer_assert_fpv import alert_handler_pkg::*; (
   // escalation signals can only be asserted in the escalation phase states, or
   // if we are in the terminal FsmError state
   `ASSERT(EscBkwd_A, esc_sig_req_o[esc_sel] |-> esc_en_i[esc_sel] &&
-      esc_has_triggered_q || alert_handler_esc_timer.fsm_error)
+      esc_has_triggered_q || ${module_instance_name}_esc_timer.fsm_error)
   `ASSERT(NoEscBkwd_A, !esc_sig_req_o[esc_sel] |-> !esc_en_i[esc_sel] ||
       esc_state_o != Phases[esc_map_i[esc_sel]] && esc_state_o != FsmError,
       clk_i, !rst_ni || clr_i)
@@ -136,4 +136,4 @@ module alert_handler_esc_timer_assert_fpv import alert_handler_pkg::*; (
     end
   end
 
-endmodule : alert_handler_esc_timer_assert_fpv
+endmodule : ${module_instance_name}_esc_timer_assert_fpv

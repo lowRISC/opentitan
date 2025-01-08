@@ -2,23 +2,23 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: ${instance_vlnv("lowrisc:dv:alert_handler_env:0.1")}
-description: "ALERT_HANDLER DV UVM environment"
+name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_env:0.1")}
+description: "${module_instance_name.upper()} DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:cip_lib
-      - ${instance_vlnv("lowrisc:ip:alert_handler_pkg:0.1")}
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_pkg:0.1")}
       - lowrisc:prim:mubi_pkg
       - ${top_pkg_vlnv}
     files:
-      - alert_handler_env_pkg.sv
-      - alert_handler_if.sv
-      - alert_handler_env_cfg.sv: {is_include_file: true}
-      - alert_handler_env_cov.sv: {is_include_file: true}
-      - alert_handler_virtual_sequencer.sv: {is_include_file: true}
-      - alert_handler_scoreboard.sv: {is_include_file: true}
-      - alert_handler_env.sv: {is_include_file: true}
+      - ${module_instance_name}_env_pkg.sv
+      - ${module_instance_name}_if.sv
+      - ${module_instance_name}_env_cfg.sv: {is_include_file: true}
+      - ${module_instance_name}_env_cov.sv: {is_include_file: true}
+      - ${module_instance_name}_virtual_sequencer.sv: {is_include_file: true}
+      - ${module_instance_name}_scoreboard.sv: {is_include_file: true}
+      - ${module_instance_name}_env.sv: {is_include_file: true}
       - seq_lib/alert_handler_vseq_list.sv: {is_include_file: true}
       - seq_lib/alert_handler_base_vseq.sv: {is_include_file: true}
       - seq_lib/alert_handler_common_vseq.sv: {is_include_file: true}

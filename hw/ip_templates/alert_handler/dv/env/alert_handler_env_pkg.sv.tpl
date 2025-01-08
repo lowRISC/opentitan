@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-package alert_handler_env_pkg;
+package ${module_instance_name}_env_pkg;
   // dep packages
   import uvm_pkg::*;
   import top_pkg::*;
@@ -10,7 +10,7 @@ package alert_handler_env_pkg;
   import csr_utils_pkg::*;
   import tl_agent_pkg::*;
   import alert_esc_agent_pkg::*;
-  import alert_handler_ral_pkg::*;
+  import ${module_instance_name}_ral_pkg::*;
   import dv_base_reg_pkg::*;
   import cip_base_pkg::*;
   import push_pull_agent_pkg::*;
@@ -21,7 +21,7 @@ package alert_handler_env_pkg;
   `include "dv_macros.svh"
 
   // parameters
-  parameter uint NUM_ALERTS                = alert_handler_reg_pkg::NAlerts;
+  parameter uint NUM_ALERTS                = ${module_instance_name}_reg_pkg::NAlerts;
   parameter uint NUM_EDN                   = 1;
   parameter uint NUM_ESCS                  = 4;
   parameter uint NUM_MAX_ESC_SEV           = 8;
@@ -31,7 +31,7 @@ package alert_handler_env_pkg;
   parameter uint NUM_ALERT_CLASS_MSB       = $clog2(NUM_ALERT_CLASSES) - 1;
   parameter uint MIN_CYCLE_PER_PHASE       = 2;
   parameter uint NUM_LOCAL_ALERTS          = 7;
-  parameter bit  [NUM_ALERTS-1:0] ASYNC_ON = alert_handler_reg_pkg::AsyncOn;
+  parameter bit  [NUM_ALERTS-1:0] ASYNC_ON = ${module_instance_name}_reg_pkg::AsyncOn;
   // ignore esc signal cycle count after ping occurs - as ping response might ended up adding one
   // extra cycle to the calculated cnt, or even combine two signals into one.
   parameter uint IGNORE_CNT_CHECK_NS       = 100_000_000;
@@ -42,8 +42,8 @@ package alert_handler_env_pkg;
   // cycles. We set the threshold to 600k clock cycles.
   parameter uint MAX_EDN_REQ_WAIT_CYCLES   = 600_000;
 
-  parameter uint NUM_CRASHDUMP             = NUM_ALERT_CLASSES * (alert_handler_reg_pkg::AccuCntDw
-                                             + alert_handler_reg_pkg::EscCntDw + 3) +
+  parameter uint NUM_CRASHDUMP             = NUM_ALERT_CLASSES * (${module_instance_name}_reg_pkg::AccuCntDw
+                                             + ${module_instance_name}_reg_pkg::EscCntDw + 3) +
                                              NUM_ALERTS + NUM_LOCAL_ALERTS;
   parameter bit[15:0] MAX_PING_WAIT_CYCLES = '1;
 
@@ -91,16 +91,16 @@ package alert_handler_env_pkg;
   // forward declare classes to allow typedefs below
   typedef virtual pins_if #(NUM_MAX_ESC_SEV) esc_en_vif;
   typedef virtual pins_if #(NUM_CRASHDUMP) crashdump_vif;
-  typedef virtual alert_handler_if alert_handler_vif;
+  typedef virtual ${module_instance_name}_if ${module_instance_name}_vif;
 
   // functions
 
   // package sources
-  `include "alert_handler_env_cfg.sv"
-  `include "alert_handler_env_cov.sv"
-  `include "alert_handler_virtual_sequencer.sv"
-  `include "alert_handler_scoreboard.sv"
-  `include "alert_handler_env.sv"
+  `include "${module_instance_name}_env_cfg.sv"
+  `include "${module_instance_name}_env_cov.sv"
+  `include "${module_instance_name}_virtual_sequencer.sv"
+  `include "${module_instance_name}_scoreboard.sv"
+  `include "${module_instance_name}_env.sv"
   `include "alert_handler_vseq_list.sv"
 
 endpackage

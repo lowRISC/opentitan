@@ -21,7 +21,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_ping_timer import alert_handler_pkg::*; #(
+module ${module_instance_name}_ping_timer import ${module_instance_name}_pkg::*; #(
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t        RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t        RndCnstLfsrPerm = RndCnstLfsrPermDefault,
@@ -439,4 +439,4 @@ module alert_handler_ping_timer import alert_handler_pkg::*; #(
   `ASSERT(AlertPingOH_A, alert_ping_en |-> $onehot(alert_ping_req_o))
   `ASSERT(EscPingOH_A, esc_ping_en |-> $onehot(esc_ping_req_o))
 
-endmodule : alert_handler_ping_timer
+endmodule : ${module_instance_name}_ping_timer

@@ -5,7 +5,7 @@
 // Testbench module for ping timer in alert handler. Intended to use with
 // a formal tool.
 
-module alert_handler_ping_timer_tb import alert_handler_pkg::*; (
+module ${module_instance_name}_ping_timer_tb import ${module_instance_name}_pkg::*; (
   input                          clk_i,
   input                          rst_ni,
   output logic                   edn_req_o,
@@ -23,7 +23,7 @@ module alert_handler_ping_timer_tb import alert_handler_pkg::*; (
   output logic                   esc_ping_fail_o
 );
 
-  alert_handler_ping_timer #(
+  ${module_instance_name}_ping_timer #(
     // disable max length check in FPV, otherwise this
     // will not converge within acceptable compute time
     .MaxLenSVA  ( 1'b0 )
@@ -45,4 +45,4 @@ module alert_handler_ping_timer_tb import alert_handler_pkg::*; (
     .esc_ping_fail_o
   );
 
-endmodule : alert_handler_ping_timer_tb
+endmodule : ${module_instance_name}_ping_timer_tb

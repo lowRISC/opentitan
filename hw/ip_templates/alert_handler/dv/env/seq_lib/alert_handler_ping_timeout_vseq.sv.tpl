@@ -8,8 +8,8 @@
 // 3). escalation ping interrupted by real escalation signal (this could happen because escalation
 //     ping and real escalation share the same esc_p/n signals)
 
-class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
-  `uvm_object_utils(alert_handler_ping_timeout_vseq)
+class ${module_instance_name}_ping_timeout_vseq extends ${module_instance_name}_entropy_vseq;
+  `uvm_object_utils(${module_instance_name}_ping_timeout_vseq)
 
   `uvm_object_new
 
@@ -76,4 +76,4 @@ class alert_handler_ping_timeout_vseq extends alert_handler_entropy_vseq;
     super.wait_alert_esc_done();
   endtask
 
-endclass : alert_handler_ping_timeout_vseq
+endclass : ${module_instance_name}_ping_timeout_vseq

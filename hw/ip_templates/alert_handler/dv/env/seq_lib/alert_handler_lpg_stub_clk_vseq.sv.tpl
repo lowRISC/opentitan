@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// This sequence check LPG by randomly turn off alert_handler's clock, and check if ping timer can
+// This sequence check LPG by randomly turn off ${module_instance_name}'s clock, and check if ping timer can
 // resume correctly without sending some spurious ping errors.
-class alert_handler_lpg_stub_clk_vseq extends alert_handler_lpg_vseq;
-  `uvm_object_utils(alert_handler_lpg_stub_clk_vseq)
+class ${module_instance_name}_lpg_stub_clk_vseq extends ${module_instance_name}_lpg_vseq;
+  `uvm_object_utils(${module_instance_name}_lpg_stub_clk_vseq)
 
   `uvm_object_new
 
@@ -40,4 +40,4 @@ class alert_handler_lpg_stub_clk_vseq extends alert_handler_lpg_vseq;
     end
   endtask
 
-endclass : alert_handler_lpg_stub_clk_vseq
+endclass : ${module_instance_name}_lpg_stub_clk_vseq

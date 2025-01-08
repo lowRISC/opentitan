@@ -5,8 +5,8 @@
 // this sequence triggers escalation by accumulating alerts in the same class.
 // difference from smoke test, this sequence set the threshold to larger numbers.
 
-class alert_handler_esc_alert_accum_vseq extends alert_handler_smoke_vseq;
-  `uvm_object_utils(alert_handler_esc_alert_accum_vseq)
+class ${module_instance_name}_esc_alert_accum_vseq extends ${module_instance_name}_smoke_vseq;
+  `uvm_object_utils(${module_instance_name}_esc_alert_accum_vseq)
 
   `uvm_object_new
 
@@ -31,4 +31,4 @@ class alert_handler_esc_alert_accum_vseq extends alert_handler_smoke_vseq;
     this.enable_classa_only_c.constraint_mode(0);
   endfunction
 
-endclass : alert_handler_esc_alert_accum_vseq
+endclass : ${module_instance_name}_esc_alert_accum_vseq

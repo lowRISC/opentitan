@@ -12,7 +12,7 @@
 
 `include "prim_assert.sv"
 
-module alert_handler_accu import alert_handler_pkg::*; (
+module ${module_instance_name}_accu import ${module_instance_name}_pkg::*; (
   input                        clk_i,
   input                        rst_ni,
   input                        class_en_i,   // class enable
@@ -62,4 +62,4 @@ module alert_handler_accu import alert_handler_pkg::*; (
   `ASSERT(DisabledNoTrigFwd_A, !class_en_i |-> !accu_trig_o)
   `ASSERT(DisabledNoTrigBkwd_A, accu_trig_o |-> class_en_i)
   `ASSERT(CountSaturateStable_A, accu_cnt_o == {AccuCntDw{1'b1}} |=> $stable(accu_cnt_o))
-endmodule : alert_handler_accu
+endmodule : ${module_instance_name}_accu

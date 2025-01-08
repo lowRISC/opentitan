@@ -3,27 +3,27 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-package alert_handler_pkg;
+package ${module_instance_name}_pkg;
 
   // these localparams are generated based on the system top-level configuration
-  localparam int unsigned      NAlerts   = alert_handler_reg_pkg::NAlerts;   // maximum 252
-  localparam int unsigned      EscCntDw  = alert_handler_reg_pkg::EscCntDw;  // maximum 32
-  localparam int unsigned      AccuCntDw = alert_handler_reg_pkg::AccuCntDw; // maximum 32
-  localparam int unsigned      NLpg      = alert_handler_reg_pkg::NLpg;
-  localparam int unsigned      NLpgWidth = alert_handler_reg_pkg::NLpgWidth;
-  localparam logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = alert_handler_reg_pkg::LpgMap;
+  localparam int unsigned      NAlerts   = ${module_instance_name}_reg_pkg::NAlerts;   // maximum 252
+  localparam int unsigned      EscCntDw  = ${module_instance_name}_reg_pkg::EscCntDw;  // maximum 32
+  localparam int unsigned      AccuCntDw = ${module_instance_name}_reg_pkg::AccuCntDw; // maximum 32
+  localparam int unsigned      NLpg      = ${module_instance_name}_reg_pkg::NLpg;
+  localparam int unsigned      NLpgWidth = ${module_instance_name}_reg_pkg::NLpgWidth;
+  localparam logic [NAlerts-1:0][NLpgWidth-1:0] LpgMap = ${module_instance_name}_reg_pkg::LpgMap;
   // enable async transitions for specific RX/TX pairs
-  localparam bit [NAlerts-1:0] AsyncOn   = alert_handler_reg_pkg::AsyncOn;
+  localparam bit [NAlerts-1:0] AsyncOn   = ${module_instance_name}_reg_pkg::AsyncOn;
 
   // common constants, do not change
-  localparam int unsigned N_CLASSES   = alert_handler_reg_pkg::N_CLASSES;
-  localparam int unsigned N_ESC_SEV   = alert_handler_reg_pkg::N_ESC_SEV;
-  localparam int unsigned N_PHASES    = alert_handler_reg_pkg::N_PHASES;
-  localparam int unsigned N_LOC_ALERT = alert_handler_reg_pkg::N_LOC_ALERT;
+  localparam int unsigned N_CLASSES   = ${module_instance_name}_reg_pkg::N_CLASSES;
+  localparam int unsigned N_ESC_SEV   = ${module_instance_name}_reg_pkg::N_ESC_SEV;
+  localparam int unsigned N_PHASES    = ${module_instance_name}_reg_pkg::N_PHASES;
+  localparam int unsigned N_LOC_ALERT = ${module_instance_name}_reg_pkg::N_LOC_ALERT;
 
-  localparam int unsigned PING_CNT_DW = alert_handler_reg_pkg::PING_CNT_DW;
-  localparam int unsigned PHASE_DW    = alert_handler_reg_pkg::PHASE_DW;
-  localparam int unsigned CLASS_DW    = alert_handler_reg_pkg::CLASS_DW;
+  localparam int unsigned PING_CNT_DW = ${module_instance_name}_reg_pkg::PING_CNT_DW;
+  localparam int unsigned PHASE_DW    = ${module_instance_name}_reg_pkg::PHASE_DW;
+  localparam int unsigned CLASS_DW    = ${module_instance_name}_reg_pkg::CLASS_DW;
 
   // do not change the phase encoding
   typedef enum logic [2:0] {Idle = 3'b000, Timeout = 3'b001, Terminal = 3'b011,
@@ -98,4 +98,4 @@ package alert_handler_pkg;
     logic [N_CLASSES-1:0][PHASE_DW-1:0]                class_crashdump_phase;
   } reg2hw_wrap_t;
 
-endpackage : alert_handler_pkg
+endpackage : ${module_instance_name}_pkg

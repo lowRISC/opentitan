@@ -2,19 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-# ALERT_HANDLER register template
+# ${(module_instance_name).upper()} register template
 <%
 import math
 chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
 %>
 {
-  name:               "alert_handler",
+  name:               "${module_instance_name}",
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "32",
   design_spec:        "../doc",
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_alert_handler"
+  sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name.lower()}"
   version:            "1.0.1",
   life_stage:         "L1",
   design_stage:       "D3",
@@ -34,13 +34,13 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
     // Random netlist constants
     { name:      "RndCnstLfsrSeed",
       desc:      "Compile-time random bits for initial LFSR seed",
-      type:      "alert_handler_pkg::lfsr_seed_t"
+      type:      "${module_instance_name}_pkg::lfsr_seed_t"
       randcount: "32",
       randtype:  "data", // randomize randcount databits
     }
     { name:      "RndCnstLfsrPerm",
       desc:      "Compile-time random permutation for LFSR output",
-      type:      "alert_handler_pkg::lfsr_perm_t"
+      type:      "${module_instance_name}_pkg::lfsr_perm_t"
       randcount: "32",
       randtype:  "perm", // random permutation for randcount elements
     }
@@ -213,7 +213,7 @@ chars = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H']
       type:    "uni",
       name:    "crashdump",
       act:     "req",
-      package: "alert_handler_pkg"
+      package: "${module_instance_name}_pkg"
     },
     { struct:  "edn"
       type:    "req_rsp"

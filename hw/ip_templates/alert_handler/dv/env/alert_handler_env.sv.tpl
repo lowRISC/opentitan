@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-class alert_handler_env extends cip_base_env #(
-    .CFG_T              (alert_handler_env_cfg),
-    .COV_T              (alert_handler_env_cov),
-    .VIRTUAL_SEQUENCER_T(alert_handler_virtual_sequencer),
-    .SCOREBOARD_T       (alert_handler_scoreboard)
+class ${module_instance_name}_env extends cip_base_env #(
+    .CFG_T              (${module_instance_name}_env_cfg),
+    .COV_T              (${module_instance_name}_env_cov),
+    .VIRTUAL_SEQUENCER_T(${module_instance_name}_virtual_sequencer),
+    .SCOREBOARD_T       (${module_instance_name}_scoreboard)
   );
-  `uvm_component_utils(alert_handler_env)
+  `uvm_component_utils(${module_instance_name}_env)
 
   `uvm_component_new
 
@@ -45,9 +45,9 @@ class alert_handler_env extends cip_base_env #(
     if (!uvm_config_db#(crashdump_vif)::get(this, "", "crashdump_vif", cfg.crashdump_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get crashdump_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(alert_handler_vif)::get(this, "", "alert_handler_vif",
-                                                cfg.alert_handler_vif)) begin
-      `uvm_fatal(`gfn, "failed to get alert_handler_vif from uvm_config_db")
+    if (!uvm_config_db#(${module_instance_name}_vif)::get(this, "", "${module_instance_name}_vif",
+                                                cfg.${module_instance_name}_vif)) begin
+      `uvm_fatal(`gfn, "failed to get ${module_instance_name}_vif from uvm_config_db")
     end
   endfunction
 
