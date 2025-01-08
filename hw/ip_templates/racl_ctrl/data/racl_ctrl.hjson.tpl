@@ -30,7 +30,7 @@
     {clock: "clk_i", reset: "rst_ni"},
   ]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device" }
+    { protocol: "tlul", direction: "device", static_racl_support: true }
   ],
   alert_list: [
   % if enable_shadow_reg:
