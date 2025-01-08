@@ -92,7 +92,7 @@
             Check that the relative phase between pulses matches the setting in the phase_delay field in the PWM_PARAM register.
             '''
         stage: V2
-        tests: ["pwm_rand_output"]
+        tests: ["pwm_phase", "pwm_rand_output"]
     }
     {
       name: lowpower
