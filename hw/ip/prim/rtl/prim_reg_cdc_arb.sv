@@ -154,7 +154,11 @@ module prim_reg_cdc_arb #(
     always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
       if (!rst_dst_ni) begin
         id_q <= SelSwReq;
-      end else if (dst_update_req && dst_update_ack) begin
+      end else if (dst_update_ack) begin
+        // The condition above was originally `dst_update_req && dst_update_ack`.
+        // However, since there can't be an ACK without a REQ that means the condition
+        // can be simplified to `dst_update_ack` only.
+        // Assertion `DstAckReqChk_A` checks the above always happens
         id_q <= SelSwReq;
       end else if (dst_req && dst_lat_d) begin
         id_q <= SelSwReq;
@@ -164,6 +168,10 @@ module prim_reg_cdc_arb #(
         id_q <= SelHwReq;
       end
     end
+
+    // dst_update_ack should only be sent if there was a dst_update_req.
+    // By association, whenever src_ack is seen, then src_busy must be high.
+    `ASSERT(DstAckReqChk_A, dst_update_ack |-> dst_update_req, clk_dst_i, !rst_dst_ni)
 
     // if a destination update is received when the system is idle and there is no
     // software side request, hw update must be selected.
