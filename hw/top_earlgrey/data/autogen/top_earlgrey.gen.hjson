@@ -5490,7 +5490,17 @@
             pgm_resolution_bytes: 64
             bytes_per_page: 2048
             bytes_per_bank: 524288
+            data_width: 64
+            metadata_width: 12
+            infos_per_bank:
+            [
+              10
+              1
+              2
+            ]
             size: 0x100000
+            pwrmgr_vlnv_prefix: top_earlgrey_
+            top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
           }
           size: 0x100000
         }

@@ -757,6 +757,10 @@
             banks: 2,
             pages_per_bank: 256,
             program_resolution: 8, // maximum number of flash words allowed to program at one time
+            words_per_page: 256,
+            data_width: 64,
+            metadata_width: 12,
+            infos_per_bank: [10, 1, 2],
           }
         }
       },

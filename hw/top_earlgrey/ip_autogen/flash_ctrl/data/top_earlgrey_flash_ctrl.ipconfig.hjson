@@ -11,13 +11,13 @@
     words_per_page: 256
     data_width: 64
     metadata_width: 12
-    info_types: 3
     infos_per_bank:
     [
       10
       1
       2
     ]
+    info_types: 3
     word_bytes: 8
     pgm_resolution_bytes: 64
     bytes_per_page: 2048

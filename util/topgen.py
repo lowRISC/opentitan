@@ -529,9 +529,6 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     params = vars(flash_mems[0]["memory"]["mem"]["config"])
     # Additional parameters not provided in the top config.
     params.update({
-        "metadata_width": 12,
-        "info_types": 3,
-        "infos_per_bank": [10, 1, 2],
         # TODO: Register VLNVs and look this up instead of hard-coding.
         "pwrmgr_vlnv_prefix": f"top_{topname}_",
         "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
