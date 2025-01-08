@@ -9,4 +9,5 @@
 `include "pwm_perf_vseq.sv"
 `include "pwm_phase_vseq.sv"
 `include "pwm_heartbeat_wrap_vseq.sv"
+`include "pwm_regwen_vseq.sv"
 `include "pwm_stress_all_vseq.sv"

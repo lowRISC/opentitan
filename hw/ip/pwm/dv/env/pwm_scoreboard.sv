@@ -143,7 +143,8 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
     `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
   end
 
-  if (addr_phase_write) begin
+  // The REGWEN register controls write access to all of the DUT registers, including itself.
+  if (addr_phase_write && `gmv(ral.regwen.regwen)) begin
     // if incoming access is a write to a valid csr, then make updates right away
     void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
 
@@ -170,7 +171,7 @@ task pwm_scoreboard::process_tl_access(tl_seq_item   item,
           // Alas we presently must ignore the first couple of items because the PWM configuration
           // is set up with an arbitrary phase relationship to the shared phase counter.
           ignore_state_change[ii] = SettleTime;
-          txt = $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii]);
+          txt = {txt, $sformatf("\n Channel[%d] : %0b", ii, channel_en[ii])};
         end
         `uvm_info(`gfn, $sformatf("Setting channel enables %s ", txt), UVM_MEDIUM)
       end
@@ -272,8 +273,10 @@ endtask
 
 function void pwm_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
-  for (int i = 0; i < PWM_NUM_CHANNELS; i++) begin
-    item_fifo[i].flush();
+  `uvm_info(`gfn, "Reset flushing all channels", UVM_MEDIUM)
+  for (int unsigned channel = 0; channel < PWM_NUM_CHANNELS; channel++) begin
+    // Discard any lingering pulse descriptions from the monitor.
+    item_fifo[channel].flush();
   end
 endfunction
 
@@ -340,6 +343,13 @@ task pwm_scoreboard::compare_trans(int unsigned channel);
     if (!cfg.under_reset) begin
       bit matched;
       item_fifo[channel].get(input_item);
+      if (cfg.under_reset) begin
+        // In the event that `regwen` has been set it is not possible to shut down the DUT cleanly
+        // because the register cannot be altered; the DUT must be reset whilst it is still
+        // operating at the end of `pwm_regwen_vseq` and we may still be awaiting a further sequence
+        // item at that point.
+        continue;
+      end
 
       // We may need to ignore the first detected sequence item after initialization, but our
       // expectations change before the DUT blink state changes (after 'BLINK_PARAM.X+1' pulse
