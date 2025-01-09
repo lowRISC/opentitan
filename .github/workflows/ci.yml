@@ -72,6 +72,8 @@ jobs:
         run: ./ci/scripts/check-links.sh
       - name: Generated documentation
         run: ./ci/scripts/check-cmdgen.sh
+      - name: Lock files
+        run: ./ci/scripts/check-lock-files.sh
 
   slow_lint:
     name: Lint (slow)
