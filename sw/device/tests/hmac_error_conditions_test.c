@@ -58,7 +58,6 @@ static const char kData[142] =
     "one of the few honest people that I have ever "
     "known";
 
-
 static uint32_t kHmacKey[8] = {
     0xec4e6c89, 0x082efa98, 0x299f31d0, 0xa4093822,
     0x03707344, 0x13198a2e, 0x85a308d3, 0x243f6a88,

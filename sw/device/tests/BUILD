@@ -7280,15 +7280,16 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_utils",
     ],
 )
+
 opentitan_test(
     name = "hmac_error_conditions_test",
     srcs = ["hmac_error_conditions_test.c"],
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-           "//hw/top_earlgrey:sim_verilator": None,
-           "//hw/top_earlgrey:fpga_cw340_sival": None,
-           "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+            "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
     verilator = verilator_params(
