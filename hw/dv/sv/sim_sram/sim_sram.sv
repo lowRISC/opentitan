@@ -71,12 +71,16 @@ module sim_sram #(
       .tl_i(tl_in_i),
       .tl_o(tl_in_o),
 
+      .en_ifetch_i                (prim_mubi_pkg::MuBi4False),
       .req_o                      (sram_req),
+      .req_type_o                 (),
       .gnt_i                      (1'b1),
       .we_o                       (sram_we),
       .addr_o                     (sram_addr),
       .wdata_o                    (sram_wdata),
       .wmask_o                    (sram_wmask),
+      .intg_error_o               (),
+      .user_rsvd_o                (),
       .rdata_i                    (sram_rdata),
       .rvalid_i                   (sram_rvalid),
       .rerror_i                   (2'b00),
@@ -94,12 +98,14 @@ module sim_sram #(
     ) u_sram (
       .clk_i,
       .rst_ni,
-      .req_i  (sram_req),
-      .write_i(sram_we),
-      .addr_i (sram_addr),
-      .wdata_i(sram_wdata),
-      .wmask_i(sram_wmask),
-      .rdata_o(sram_rdata)
+      .cfg_i     ('0),
+      .cfg_rsp_o (),
+      .req_i     (sram_req),
+      .write_i   (sram_we),
+      .addr_i    (sram_addr),
+      .wdata_i   (sram_wdata),
+      .wmask_i   (sram_wmask),
+      .rdata_o   (sram_rdata)
     );
 
     // Valid data from the SRAM appears 1 cycle after the sram_req.
