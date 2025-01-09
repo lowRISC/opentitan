@@ -8846,6 +8846,9 @@
         PMPNumRegions: "16"
         MHPMCounterNum: "10"
         MHPMCounterWidth: "32"
+        PMPRstCfg: ibex_pmp_reset_pkg::PmpCfgRst
+        PMPRstAddr: ibex_pmp_reset_pkg::PmpAddrRst
+        PMPRstMsecCfg: ibex_pmp_reset_pkg::PmpMseccfgRst
         RV32E: "0"
         RV32M: ibex_pkg::RV32MSingleCycle
         RV32B: ibex_pkg::RV32BOTEarlGrey
@@ -9028,7 +9031,7 @@
           desc: Reset value of PMP config CSRs
           type: ibex_pkg::pmp_cfg_t
           unpacked_dimensions: "[16]"
-          default: ibex_pkg::PmpCfgRst
+          default: ibex_pmp_reset_pkg::PmpCfgRst
           local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstCfg
@@ -9038,7 +9041,7 @@
           desc: Reset value of PMP address CSRs
           type: logic [33:0]
           unpacked_dimensions: "[16]"
-          default: ibex_pkg::PmpAddrRst
+          default: ibex_pmp_reset_pkg::PmpAddrRst
           local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstAddr
@@ -9047,7 +9050,7 @@
           name: PMPRstMsecCfg
           desc: Reset value of MSECCFG CSR
           type: ibex_pkg::pmp_mseccfg_t
-          default: ibex_pkg::PmpMseccfgRst
+          default: ibex_pmp_reset_pkg::PmpMseccfgRst
           local: "false"
           expose: "true"
           name_top: RvCoreIbexPMPRstMsecCfg
