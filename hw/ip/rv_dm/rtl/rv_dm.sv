@@ -711,7 +711,7 @@ module rv_dm
   if (UseDmiInterface) begin : gen_dmi_assertions
     `ASSERT(DmiRspOneCycleAfterReq_A, dmi_req_valid |=> dmi_rsp_valid)
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DbgTlLcGateFsm_A,
-      u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg, alert_tx_o[0])
+      gen_dmi_gating.u_rv_dm_dmi_gate.u_tlul_lc_gate_dbg.u_state_regs, alert_tx_o[0])
   end else begin : gen_jtag_assertions
     // JTAG TDO is driven by an inverted TCK in dmi_jtag_tap.sv
     `ASSERT_KNOWN(JtagRspOTdoKnown_A, jtag_o.tdo, !jtag_i.tck, !jtag_i.trst_n)
