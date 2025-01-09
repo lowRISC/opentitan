@@ -74,6 +74,9 @@ html.sidebar-visible #menu-bar {
     line-height: var(--menu-bar-height);
     cursor: pointer;
     transition: color 0.5s;
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
 }
 @media only screen and (max-width: 420px) {
     #menu-bar i, #menu-bar .icon-button {
@@ -495,7 +498,7 @@ html:not(.sidebar-resizing) .sidebar {
 .sidebar-resize-handle .sidebar-resize-indicator {
     width: 100%;
     height: 12px;
-    background-color: var(--icons);
+    background-color: var(--scrollbar);
     margin-inline-start: var(--sidebar-resize-indicator-space);
 }
 
