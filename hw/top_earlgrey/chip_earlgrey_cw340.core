@@ -67,10 +67,6 @@ parameters:
   AST_BYPASS_CLK:
     datatype: bool
     paramtype: vlogdefine
-  IBEX_CUSTOM_PMP_RESET_VALUES:
-    datatype: bool
-    default: true
-    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -79,7 +75,6 @@ targets:
       - files_ascentlint_waiver
     toplevel: chip_earlgrey_cw340
     parameters:
-      - IBEX_CUSTOM_PMP_RESET_VALUES
       - AST_BYPASS_CLK=true
 
   synth:
@@ -93,7 +88,6 @@ targets:
       - BootRomInitFile
       - OtpCtrlMemInitFile
       - PRIM_DEFAULT_IMPL=prim_pkg::ImplXilinx_ultrascale
-      - IBEX_CUSTOM_PMP_RESET_VALUES
       - AST_BYPASS_CLK=true
     tools:
       vivado:
