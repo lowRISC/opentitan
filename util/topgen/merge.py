@@ -928,7 +928,7 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
                 'clock_connection': clock,
                 'unmanaged_clock': unmanaged_clock,
                 'unmanaged_reset': is_unmanaged_reset(top, reset_name),
-                'reset_connection': primary_reset
+                'reset_connection': primary_reset,
             })
 
         alert_group = module.get('outgoing_alert')

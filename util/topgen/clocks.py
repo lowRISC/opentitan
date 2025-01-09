@@ -20,6 +20,16 @@ def _bool_to_yn(val: bool) -> str:
     return 'yes' if val else 'no'
 
 
+def _bool_from_yn(val: str, what: str) -> bool:
+    if val == 'yes':
+        return True
+    if val == 'no':
+        return False
+
+    raise ValueError('{} is not a boolean: {} (expected "yes" or "no")'
+                     .format(what, val))
+
+
 def _to_int(val: object) -> int:
     if isinstance(val, int):
         return val
@@ -66,6 +76,14 @@ class SourceClock:
             'ref': self.ref
         }
 
+    @classmethod
+    def fromdict(cls, src: Dict[str, object]) -> object:
+        src['aon'] = _bool_from_yn(src['aon'], f"SourceClock from {src}: aon field")
+        src['freq'] = int(src['freq'])
+        c = cls.__new__(cls)
+        c.__dict__.update(**src)
+        return c
+
 
 class DerivedSourceClock(SourceClock):
     '''A derived source clock (divided down from some other clock).'''
@@ -81,6 +99,12 @@ class DerivedSourceClock(SourceClock):
         ret['div'] = str(self.div)
         ret['src'] = self.src.name
         return ret
+
+    @classmethod
+    def fromdict(cls, src: Dict[str, object], clocks: Dict[str, SourceClock]) -> object:
+        src['div'] = int(src['div'])
+        src['src'] = clocks[src['src']]
+        return super().fromdict.__func__(cls, src)
 
 
 class ClockSignal:
@@ -141,6 +165,17 @@ class Group:
              for name, sig in self.clocks.items()}
         }
 
+    @classmethod
+    def fromdict(cls, src: Dict[str, object], clocks: Dict[str, SourceClock]) -> object:
+        src['unique'] = _bool_from_yn(src['unique'], f"Group from {src}: unique field")
+        src['clocks'] = {
+            name: ClockSignal(name, clocks[sig_src_name])
+            for (name, sig_src_name) in src['clocks'].items()
+        }
+        c = cls.__new__(cls)
+        c.__dict__.update(**src)
+        return c
+
 
 class GroupProxy:
     """
@@ -157,6 +192,14 @@ class GroupProxy:
         return {
             "name": self._grp.name
         }
+
+    @classmethod
+    def fromdict(cls, proxy: Dict[str, object], clocks: object) -> object:
+        proxy["_grp"] = clocks.groups[proxy["name"]]
+        del proxy["name"]
+        c = cls.__new__(cls)
+        c.__dict__.update(**proxy)
+        return c
 
 
 class TypedClocks(NamedTuple):
@@ -289,6 +332,25 @@ class Clocks:
             'derived_srcs': list(self.derived_srcs.values()),
             'groups': list(self.groups.values())
         }
+
+    @classmethod
+    def fromdict(cls, clocks: Dict[str, object]) -> object:
+        clocks['srcs'] = {
+            src["name"]: SourceClock.fromdict(src) for src in clocks['srcs']
+        }
+        clocks['derived_srcs'] = {
+            src["name"]: DerivedSourceClock.fromdict(src, clocks['srcs'])
+            for src in clocks['derived_srcs']
+        }
+        clocks['all_srcs'] = clocks['srcs'].copy()
+        clocks['all_srcs'].update(clocks['derived_srcs'])
+        all_clocks = clocks['all_srcs']
+        clocks['groups'] = {
+            src["name"]: Group.fromdict(src, all_clocks) for src in clocks['groups']
+        }
+        c = cls.__new__(cls)
+        c.__dict__.update(clocks)
+        return c
 
     def add_clock_to_group(self, grp: Group, clk_name: str,
                            src_name: str) -> ClockSignal:

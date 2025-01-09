@@ -90,8 +90,21 @@ class InterSignal:
         ret['width'] = self.width
         if self.default is not None:
             ret['default'] = self.default
+        ret['class'] = 'InterSignal'  # This will let fromdict() know it has to create the class
 
         return ret
+
+    @classmethod
+    def fromdict(cls, item: Dict[str, object]) -> object:
+        if 'class' not in item or item['class'] == 'InterSignal':
+            return item
+        item["package"] = item.get("package", None)
+        item["default"] = item.get("default", None)
+        item["signal_type"] = item["type"]
+        del item["type"]
+        c = cls.__new__(cls)
+        c.__dict__.update(**item)
+        return c
 
     def as_dict(self) -> Dict[str, object]:
         return self._asdict()

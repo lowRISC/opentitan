@@ -694,6 +694,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: uart0
           index: -1
         }
@@ -704,6 +705,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: uart0
           default: ""
           end_idx: -1
@@ -759,6 +761,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: uart1
           index: -1
         }
@@ -769,6 +772,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: uart1
           default: ""
           end_idx: -1
@@ -824,6 +828,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: uart2
           index: -1
         }
@@ -834,6 +839,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: uart2
           default: ""
           end_idx: -1
@@ -889,6 +895,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: uart3
           index: -1
         }
@@ -899,6 +906,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: uart3
           default: ""
           end_idx: -1
@@ -976,6 +984,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: gpio
           index: -1
         }
@@ -988,6 +997,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: gpio
           index: -1
         }
@@ -998,6 +1008,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: gpio
           default: ""
           end_idx: -1
@@ -1063,6 +1074,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: spi_device
           default: ""
           top_signame: ast_spi_ram_2p_cfg
@@ -1075,6 +1087,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_device
           index: -1
         }
@@ -1085,6 +1098,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: spi_device
           default: ""
           top_signame: ast_spi_ram_2p_cfg
@@ -1097,6 +1111,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_device
           index: -1
         }
@@ -1107,6 +1122,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_device
           default: ""
           end_idx: -1
@@ -1119,6 +1135,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: spi_device
           index: -1
         }
@@ -1128,6 +1145,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_device
           default: ""
           package: ""
@@ -1143,6 +1161,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: spi_device
           default: ""
           end_idx: -1
@@ -1210,6 +1229,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: i2c0
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -1222,6 +1242,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c0
           index: -1
         }
@@ -1236,6 +1257,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c0
           index: -1
         }
@@ -1246,6 +1268,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: i2c0
           default: ""
           end_idx: -1
@@ -1313,6 +1336,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: i2c1
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -1325,6 +1349,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c1
           index: -1
         }
@@ -1339,6 +1364,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c1
           index: -1
         }
@@ -1349,6 +1375,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: i2c1
           default: ""
           end_idx: -1
@@ -1416,6 +1443,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: i2c2
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -1428,6 +1456,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c2
           index: -1
         }
@@ -1442,6 +1471,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: i2c2
           index: -1
         }
@@ -1452,6 +1482,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: i2c2
           default: ""
           end_idx: -1
@@ -1503,6 +1534,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: pattgen
           default: ""
           end_idx: -1
@@ -1554,6 +1586,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_timer
           default: ""
           end_idx: -1
@@ -1665,6 +1698,7 @@
           act: none
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           package: ""
           external: true
@@ -1681,6 +1715,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           external: true
           top_signame: otp_ctrl_otp_ast_pwr_seq
@@ -1696,6 +1731,7 @@
           act: rcv
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           external: true
           top_signame: otp_ctrl_otp_ast_pwr_seq_h
@@ -1710,6 +1746,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: otp_ctrl
           default: ""
           top_signame: edn0_edn
@@ -1724,6 +1761,7 @@
           act: rsp
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: pwrmgr_aon_pwr_otp
           index: -1
@@ -1737,6 +1775,7 @@
           act: rsp
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_otp_vendor_test
           index: -1
@@ -1750,6 +1789,7 @@
           act: rsp
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_otp_program
           index: -1
@@ -1767,6 +1807,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           end_idx: -1
           top_type: broadcast
@@ -1786,6 +1827,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -1803,6 +1845,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
           index: -1
@@ -1820,6 +1863,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           index: -1
         }
@@ -1836,6 +1880,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_seed_hw_rd_en
           index: -1
@@ -1853,6 +1898,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_dft_en
           index: -1
@@ -1870,6 +1916,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: lc_ctrl_lc_check_byp_en
           index: -1
@@ -1883,6 +1930,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           end_idx: -1
           top_type: broadcast
@@ -1898,6 +1946,7 @@
           act: rsp
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: flash_ctrl_otp
           index: -1
@@ -1911,6 +1960,7 @@
           act: rsp
           width: 4
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           end_idx: 3
           top_type: partial-one-to-N
@@ -1926,6 +1976,7 @@
           act: rsp
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           end_idx: -1
           top_signame: otp_ctrl_otbn_otp_key
@@ -1940,6 +1991,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otp_ctrl
           top_signame: otp_ctrl_otp_broadcast
           index: -1
@@ -1952,6 +2004,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: otp_ctrl
           default: ""
           top_signame: ast_obs_ctrl
@@ -1964,6 +2017,7 @@
           type: uni
           act: req
           width: 8
+          class: InterSignal
           inst_name: otp_ctrl
           default: ""
           package: ""
@@ -1979,6 +2033,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: otp_ctrl
           default: ""
           end_idx: -1
@@ -1992,6 +2047,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: otp_ctrl
           default: ""
           end_idx: -1
@@ -2197,6 +2253,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: pinmux_aon_lc_jtag
@@ -2209,6 +2266,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: alert_handler_esc_tx
@@ -2221,6 +2279,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: alert_handler_esc_rx
@@ -2233,6 +2292,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: alert_handler_esc_tx
@@ -2245,6 +2305,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: alert_handler_esc_rx
@@ -2257,6 +2318,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           top_signame: pwrmgr_aon_pwr_lc
@@ -2270,6 +2332,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_signame: lc_ctrl_lc_otp_vendor_test
@@ -2283,6 +2346,7 @@
           act: rcv
           width: 1
           default: otp_ctrl_pkg::OTP_LC_DATA_DEFAULT
+          class: InterSignal
           inst_name: lc_ctrl
           top_signame: otp_ctrl_otp_lc_data
           index: -1
@@ -2295,6 +2359,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_signame: lc_ctrl_lc_otp_program
@@ -2308,6 +2373,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           top_signame: kmac_app
           index: 1
@@ -2320,6 +2386,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           index: -1
         }
@@ -2331,6 +2398,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2345,6 +2413,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2359,6 +2428,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2373,6 +2443,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2387,6 +2458,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2401,6 +2473,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2415,6 +2488,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2429,6 +2503,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2443,6 +2518,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2457,6 +2533,7 @@
           act: rcv
           width: 2
           default: lc_ctrl_pkg::On
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: one-to-N
@@ -2471,6 +2548,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           top_signame: flash_ctrl_rma_seed
           index: -1
@@ -2483,6 +2561,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2497,6 +2576,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2511,6 +2591,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2525,6 +2606,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2539,6 +2621,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2553,6 +2636,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2567,6 +2651,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           end_idx: -1
           top_type: broadcast
@@ -2581,6 +2666,7 @@
           act: rcv
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           top_signame: lc_ctrl_otp_device_id
           index: -1
@@ -2593,6 +2679,7 @@
           act: rcv
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           top_signame: lc_ctrl_otp_manuf_state
           index: -1
@@ -2605,6 +2692,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: lc_ctrl
           index: -1
         }
@@ -2622,6 +2710,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: lc_ctrl
           package: ""
           end_idx: -1
@@ -2636,6 +2725,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           default: ""
           end_idx: -1
@@ -2649,6 +2739,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: lc_ctrl
           index: -1
         }
@@ -2721,6 +2812,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: alert_handler
           default: ""
           end_idx: -1
@@ -2735,6 +2827,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: alert_handler
           default: ""
           top_signame: edn0_edn
@@ -2747,6 +2840,7 @@
           type: uni
           act: rcv
           width: 4
+          class: InterSignal
           inst_name: alert_handler
           default: ""
           end_idx: -1
@@ -2761,6 +2855,7 @@
           type: uni
           act: req
           width: 4
+          class: InterSignal
           inst_name: alert_handler
           default: ""
           end_idx: -1
@@ -2775,6 +2870,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: alert_handler
           default: ""
           end_idx: -1
@@ -2838,6 +2934,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: spi_host0
           default: ""
           top_signame: spi_device_passthrough
@@ -2854,6 +2951,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_host0
           index: -1
         }
@@ -2864,6 +2962,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: spi_host0
           default: ""
           end_idx: -1
@@ -2927,6 +3026,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: spi_host1
           index: -1
         }
@@ -2941,6 +3041,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: spi_host1
           index: -1
         }
@@ -2951,6 +3052,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: spi_host1
           default: ""
           end_idx: -1
@@ -3033,6 +3135,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3048,6 +3151,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3063,6 +3167,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3078,6 +3183,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3093,6 +3199,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3108,6 +3215,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3123,6 +3231,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3138,6 +3247,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3153,6 +3263,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3168,6 +3279,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3183,6 +3295,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3198,6 +3311,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3213,6 +3327,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3228,6 +3343,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3243,6 +3359,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           package: ""
@@ -3256,6 +3373,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           top_signame: ast_usb_ram_1p_cfg
@@ -3268,6 +3386,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: usbdev
           index: -1
         }
@@ -3278,6 +3397,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: usbdev
           default: ""
           end_idx: -1
@@ -3382,6 +3502,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           external: true
@@ -3396,6 +3517,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3409,6 +3531,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3422,6 +3545,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3435,6 +3559,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3448,6 +3573,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3462,6 +3588,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: alert_handler_esc_tx
@@ -3474,6 +3601,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: alert_handler_esc_rx
@@ -3486,6 +3614,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: rv_core_ibex_pwrmgr
@@ -3497,6 +3626,7 @@
           type: uni
           act: rcv
           width: 6
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3511,6 +3641,7 @@
           type: uni
           act: rcv
           width: 2
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3525,6 +3656,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3537,6 +3669,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3551,6 +3684,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3567,6 +3701,7 @@
           act: rcv
           width: 1
           default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
+          class: InterSignal
           inst_name: pwrmgr_aon
           top_signame: rom_ctrl_pwrmgr_data
           index: -1
@@ -3578,6 +3713,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3592,6 +3728,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: lc_ctrl_lc_dft_en
@@ -3604,6 +3741,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: lc_ctrl_lc_hw_debug_en
@@ -3616,6 +3754,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           top_signame: rstmgr_aon_sw_rst_req
@@ -3628,6 +3767,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: pwrmgr_aon
           default: ""
           end_idx: -1
@@ -3733,6 +3873,7 @@
           type: uni
           act: rcv
           width: 2
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           package: ""
@@ -3752,6 +3893,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           package: pwrmgr_pkg
@@ -3766,6 +3908,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           top_signame: rstmgr_aon_resets
@@ -3779,6 +3922,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           top_signame: rstmgr_aon_rst_en
@@ -3792,6 +3936,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           top_signame: alert_handler_crashdump
@@ -3805,6 +3950,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           top_signame: rv_core_ibex_crash_dump
@@ -3818,6 +3964,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           end_idx: -1
@@ -3832,6 +3979,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rstmgr_aon
           default: ""
           end_idx: -1
@@ -3968,6 +4116,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           top_signame: clkmgr_aon_clocks
@@ -3980,6 +4129,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           top_signame: clkmgr_aon_cg_en
@@ -3992,6 +4142,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           top_signame: lc_ctrl_lc_hw_debug_en
@@ -4004,6 +4155,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4018,6 +4170,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4032,6 +4185,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4046,6 +4200,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4060,6 +4215,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4074,6 +4230,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4088,6 +4245,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           top_signame: lc_ctrl_lc_clk_byp_req
@@ -4100,6 +4258,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           top_signame: lc_ctrl_lc_clk_byp_ack
@@ -4112,6 +4271,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           external: true
@@ -4125,6 +4285,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           package: pwrmgr_pkg
@@ -4138,6 +4299,7 @@
           type: uni
           act: rcv
           width: 4
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           end_idx: -1
@@ -4154,6 +4316,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi4True
+          class: InterSignal
           inst_name: clkmgr_aon
           external: true
           top_signame: calib_rdy
@@ -4167,6 +4330,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: clkmgr_aon
           default: ""
           end_idx: -1
@@ -4224,6 +4388,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: sysrst_ctrl_aon
           default: ""
           package: ""
@@ -4236,6 +4401,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: sysrst_ctrl_aon
           default: ""
           package: ""
@@ -4249,6 +4415,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sysrst_ctrl_aon
           default: ""
           end_idx: -1
@@ -4307,6 +4474,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: adc_ctrl_aon
           default: ""
           external: true
@@ -4320,6 +4488,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: adc_ctrl_aon
           default: ""
           package: ""
@@ -4333,6 +4502,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: adc_ctrl_aon
           default: ""
           end_idx: -1
@@ -4391,6 +4561,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: pwm_aon
           default: ""
           end_idx: -1
@@ -4489,6 +4660,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: pinmux_aon
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
@@ -4502,6 +4674,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: pinmux_aon
           top_signame: lc_ctrl_lc_dft_en
           index: -1
@@ -4519,6 +4692,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: pinmux_aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -4539,6 +4713,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: pinmux_aon
           top_signame: lc_ctrl_lc_check_byp_en
           index: -1
@@ -4556,6 +4731,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: pinmux_aon
           end_idx: -1
           top_type: broadcast
@@ -4570,6 +4746,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           end_idx: -1
@@ -4584,6 +4761,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           end_idx: -1
@@ -4598,6 +4776,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           top_signame: pinmux_aon_dft_jtag
@@ -4612,6 +4791,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: pinmux_aon
           external: true
           top_signame: dft_strap_test
@@ -4626,6 +4806,7 @@
           act: rcv
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           external: true
@@ -4641,6 +4822,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_low_power
@@ -4654,6 +4836,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_strap
@@ -4673,6 +4856,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: lc_ctrl_strap_en_override
@@ -4686,6 +4870,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
@@ -4698,6 +4883,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           package: ""
@@ -4711,6 +4897,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           package: ""
@@ -4725,6 +4912,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           external: true
@@ -4740,6 +4928,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           external: true
@@ -4755,6 +4944,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
@@ -4767,6 +4957,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           package: ""
@@ -4780,6 +4971,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           package: ""
@@ -4794,6 +4986,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: usbdev_usb_aon_bus_not_idle
@@ -4807,6 +5000,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: usbdev_usb_aon_bus_reset
@@ -4820,6 +5014,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           top_signame: usbdev_usb_aon_sense_lost
@@ -4833,6 +5028,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: pinmux_aon
           package: ""
           end_idx: -1
@@ -4847,6 +5043,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: pinmux_aon
           default: ""
           end_idx: -1
@@ -4905,6 +5102,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: aon_timer_aon
           package: ""
           end_idx: -1
@@ -4919,6 +5117,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_wakeups
@@ -4931,6 +5130,7 @@
           act: req
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: aon_timer_aon
           package: ""
           top_signame: pwrmgr_aon_rstreqs
@@ -4944,6 +5144,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: aon_timer_aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -4954,6 +5155,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: aon_timer_aon
           default: ""
           package: ""
@@ -4967,6 +5169,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: aon_timer_aon
           default: ""
           end_idx: -1
@@ -5079,6 +5282,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: ast
           index: -1
         }
@@ -5135,6 +5339,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           default: ""
           external: true
@@ -5149,6 +5354,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           default: ""
           external: true
@@ -5164,6 +5370,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi4True
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           external: true
           top_signame: ast_init_done
@@ -5176,6 +5383,7 @@
           type: uni
           act: rcv
           width: 9
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           default: ""
           package: ""
@@ -5190,6 +5398,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           default: ""
           package: ""
@@ -5204,6 +5413,7 @@
           act: req
           width: 4
           default: "'0"
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           external: true
           top_signame: sensor_ctrl_manual_pad_attr
@@ -5217,6 +5427,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sensor_ctrl_aon
           default: ""
           end_idx: -1
@@ -5387,6 +5598,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           default: ""
           top_signame: otp_ctrl_sram_otp_key
@@ -5402,14 +5614,15 @@
           {
             name: NumRamInst
             desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
+            type: int
             name_top: SramCtrlRetAonNumRamInst
+            default: 1
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
           default: "'0"
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           external: true
           top_signame: sram_ctrl_ret_aon_cfg
@@ -5426,14 +5639,15 @@
           {
             name: NumRamInst
             desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
+            type: int
             name_top: SramCtrlRetAonNumRamInst
+            default: 1
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
           default: "'0"
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           index: -1
         }
@@ -5445,6 +5659,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -5457,6 +5672,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           index: -1
         }
@@ -5468,6 +5684,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8False
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           index: -1
         }
@@ -5478,6 +5695,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           default: ""
           end_idx: -1
@@ -5491,6 +5709,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_ret_aon
           default: ""
           end_idx: -1
@@ -5552,6 +5771,7 @@
           byte_write: False
           config:
           {
+            class: Flash
             banks: 2
             pages_per_bank: 256
             program_resolution: 8
@@ -5672,6 +5892,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -5685,6 +5906,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_nvm_debug_en
@@ -5697,6 +5919,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           external: true
@@ -5710,6 +5933,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           package: ""
@@ -5724,6 +5948,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           package: ""
@@ -5738,6 +5963,7 @@
           type: io
           act: none
           width: 2
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           package: ""
@@ -5752,6 +5978,7 @@
           type: io
           act: none
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           package: ""
@@ -5767,6 +5994,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
@@ -5779,6 +6007,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
@@ -5791,6 +6020,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_iso_part_sw_rd_en
@@ -5803,6 +6033,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_iso_part_sw_wr_en
@@ -5815,6 +6046,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_seed_hw_rd_en
@@ -5827,6 +6059,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_escalate_en
@@ -5839,6 +6072,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_flash_rma_req
@@ -5851,6 +6085,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: lc_ctrl_lc_flash_rma_ack
@@ -5863,6 +6098,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -5877,6 +6113,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: pwrmgr_aon_pwr_flash
@@ -5889,6 +6126,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -5903,6 +6141,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           top_signame: ast_obs_ctrl
@@ -5914,6 +6153,7 @@
           type: uni
           act: req
           width: 8
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           package: ""
@@ -5929,6 +6169,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -5942,6 +6183,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -5955,6 +6197,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: flash_ctrl
           default: ""
           end_idx: -1
@@ -6068,6 +6311,7 @@
           act: rcv
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6079,6 +6323,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           top_signame: pinmux_aon_rv_jtag
@@ -6097,6 +6342,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: rv_dm
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
@@ -6114,6 +6360,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: rv_dm
           top_signame: lc_ctrl_lc_dft_en
           index: -1
@@ -6133,6 +6380,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: rv_dm
           top_signame: pinmux_aon_pinmux_hw_debug_en
           index: -1
@@ -6145,6 +6393,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8False
+          class: InterSignal
           inst_name: rv_dm
           top_signame: rv_dm_otp_dis_rv_dm_late_debug
           index: -1
@@ -6161,6 +6410,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6171,6 +6421,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           package: ""
@@ -6190,6 +6441,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6200,6 +6452,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           package: ""
@@ -6221,6 +6474,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6240,6 +6494,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6251,6 +6506,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6268,6 +6524,7 @@
           act: rcv
           width: 1
           default: 1'b0
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6278,6 +6535,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           top_signame: main_tl_rv_dm__sba
@@ -6290,6 +6548,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           end_idx: -1
@@ -6303,6 +6562,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           default: ""
           end_idx: -1
@@ -6316,6 +6576,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_dm
           index: -1
         }
@@ -6356,6 +6617,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_plic
           default: ""
           package: ""
@@ -6370,6 +6632,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_plic
           index: -1
         }
@@ -6379,6 +6642,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_plic
           default: ""
           package: ""
@@ -6394,6 +6658,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_plic
           default: ""
           end_idx: -1
@@ -6581,6 +6846,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: aes
           default: ""
           top_signame: clkmgr_aon_idle
@@ -6594,6 +6860,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: aes
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -6605,6 +6872,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: aes
           default: ""
           top_signame: edn0_edn
@@ -6617,6 +6885,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: aes
           default: ""
           top_signame: keymgr_aes_key
@@ -6629,6 +6898,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: aes
           default: ""
           end_idx: -1
@@ -6680,6 +6950,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: hmac
           default: ""
           top_signame: clkmgr_aon_idle
@@ -6692,6 +6963,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: hmac
           default: ""
           end_idx: -1
@@ -6872,6 +7144,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: kmac
           default: ""
           top_signame: keymgr_kmac_key
@@ -6887,13 +7160,14 @@
           {
             name: NumAppIntf
             desc: Number of application interfaces
-            param_type: int
-            unpacked_dimensions: null
-            default: 3
-            local: false
-            expose: true
+            type: int
             name_top: KmacNumAppIntf
+            default: 3
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
+          class: InterSignal
           inst_name: kmac
           default: ""
           end_idx: -1
@@ -6908,6 +7182,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: kmac
           default: ""
           top_signame: edn0_edn
@@ -6920,6 +7195,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: kmac
           default: ""
           top_signame: clkmgr_aon_idle
@@ -6931,6 +7207,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: kmac
           default: ""
           package: ""
@@ -6947,6 +7224,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: kmac
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -6958,6 +7236,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: kmac
           default: ""
           end_idx: -1
@@ -7115,6 +7394,7 @@
           act: req
           width: 1
           default: "'0"
+          class: InterSignal
           inst_name: otbn
           top_signame: otp_ctrl_otbn_otp_key
           index: -1
@@ -7126,6 +7406,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: edn1_edn
@@ -7138,6 +7419,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: edn0_edn
@@ -7150,6 +7432,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: clkmgr_aon_idle
@@ -7162,6 +7445,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -7174,6 +7458,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -7186,6 +7471,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: otbn
           index: -1
         }
@@ -7196,6 +7482,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: otbn
           index: -1
         }
@@ -7207,6 +7494,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otbn
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -7219,6 +7507,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otbn
           top_signame: lc_ctrl_lc_flash_rma_req
           index: -1
@@ -7231,6 +7520,7 @@
           act: req
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: otbn
           top_signame: lc_ctrl_lc_flash_rma_ack
           index: 1
@@ -7242,6 +7532,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           top_signame: keymgr_otbn_key
@@ -7254,6 +7545,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: otbn
           default: ""
           end_idx: -1
@@ -7479,6 +7771,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: edn0_edn
@@ -7491,6 +7784,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           end_idx: -1
@@ -7505,6 +7799,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           end_idx: -1
@@ -7519,6 +7814,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           end_idx: -1
@@ -7533,6 +7829,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: kmac_app
@@ -7545,6 +7842,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: otp_ctrl_otp_keymgr_key
@@ -7557,6 +7855,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: keymgr_otp_device_id
@@ -7569,6 +7868,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: flash_ctrl_keymgr
@@ -7582,6 +7882,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::On
+          class: InterSignal
           inst_name: keymgr
           top_signame: lc_ctrl_lc_keymgr_en
           index: -1
@@ -7593,6 +7894,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: lc_ctrl_lc_keymgr_div
@@ -7605,6 +7907,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           top_signame: rom_ctrl_keymgr_data
@@ -7616,6 +7919,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           package: ""
@@ -7629,6 +7933,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: keymgr
           default: ""
           end_idx: -1
@@ -7712,6 +8017,7 @@
           type: req_rsp
           act: rsp
           width: 2
+          class: InterSignal
           inst_name: csrng
           default: ""
           end_idx: -1
@@ -7726,6 +8032,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: csrng
           default: ""
           end_idx: -1
@@ -7744,6 +8051,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: csrng
           default: ""
           end_idx: -1
@@ -7758,6 +8066,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8True
+          class: InterSignal
           inst_name: csrng
           top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
@@ -7770,6 +8079,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: csrng
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
@@ -7781,6 +8091,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: csrng
           default: ""
           end_idx: -1
@@ -7862,6 +8173,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           default: ""
           top_signame: csrng_entropy_src_hw_if
@@ -7881,6 +8193,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           default: ""
           top_signame: csrng_cs_aes_halt
@@ -7893,6 +8206,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           default: ""
           external: true
@@ -7907,6 +8221,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           index: -1
         }
@@ -7918,6 +8233,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8True
+          class: InterSignal
           inst_name: entropy_src
           index: -1
         }
@@ -7929,6 +8245,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8True
+          class: InterSignal
           inst_name: entropy_src
           index: -1
         }
@@ -7938,6 +8255,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           default: ""
           package: ""
@@ -7953,6 +8271,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: entropy_src
           default: ""
           end_idx: -1
@@ -8005,6 +8324,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: edn0
           default: ""
           top_signame: csrng_csrng_cmd
@@ -8026,6 +8346,7 @@
           act: rsp
           width: 8
           default: "'0"
+          class: InterSignal
           inst_name: edn0
           end_idx: -1
           top_type: one-to-N
@@ -8039,6 +8360,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: edn0
           default: ""
           end_idx: -1
@@ -8091,6 +8413,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: edn1
           default: ""
           top_signame: csrng_csrng_cmd
@@ -8112,6 +8435,7 @@
           act: rsp
           width: 8
           default: "'0"
+          class: InterSignal
           inst_name: edn1
           end_idx: 1
           top_type: partial-one-to-N
@@ -8125,6 +8449,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: edn1
           default: ""
           end_idx: -1
@@ -8296,6 +8621,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_main
           default: ""
           top_signame: otp_ctrl_sram_otp_key
@@ -8311,14 +8637,15 @@
           {
             name: NumRamInst
             desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
+            type: int
             name_top: SramCtrlMainNumRamInst
+            default: 1
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
           default: "'0"
+          class: InterSignal
           inst_name: sram_ctrl_main
           external: true
           top_signame: sram_ctrl_main_cfg
@@ -8335,14 +8662,15 @@
           {
             name: NumRamInst
             desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-            param_type: int
-            unpacked_dimensions: null
-            default: 1
-            local: false
-            expose: true
+            type: int
             name_top: SramCtrlMainNumRamInst
+            default: 1
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
           default: "'0"
+          class: InterSignal
           inst_name: sram_ctrl_main
           index: -1
         }
@@ -8354,6 +8682,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: sram_ctrl_main
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
@@ -8366,6 +8695,7 @@
           act: rcv
           width: 1
           default: lc_ctrl_pkg::Off
+          class: InterSignal
           inst_name: sram_ctrl_main
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
@@ -8378,6 +8708,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi8False
+          class: InterSignal
           inst_name: sram_ctrl_main
           top_signame: sram_ctrl_main_otp_en_sram_ifetch
           index: -1
@@ -8389,6 +8720,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_main
           default: ""
           end_idx: -1
@@ -8402,6 +8734,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: sram_ctrl_main
           default: ""
           end_idx: -1
@@ -8525,6 +8858,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           top_signame: ast_rom_cfg
@@ -8537,6 +8871,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           end_idx: -1
@@ -8551,6 +8886,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           end_idx: -1
@@ -8565,6 +8901,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           top_signame: kmac_app
@@ -8577,6 +8914,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           end_idx: -1
@@ -8590,6 +8928,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rom_ctrl
           default: ""
           end_idx: -1
@@ -8998,6 +9337,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           index: -1
         }
@@ -9008,6 +9348,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -9023,13 +9364,14 @@
           {
             name: ICacheNWays
             desc: Number of instruction cache ways
-            param_type: int unsigned
-            unpacked_dimensions: null
-            default: 2
-            local: false
-            expose: true
+            type: int unsigned
             name_top: RvCoreIbexICacheNWays
+            default: 2
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
+          class: InterSignal
           inst_name: rv_core_ibex
           index: -1
         }
@@ -9040,6 +9382,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: ast_ram_1p_cfg
@@ -9055,13 +9398,14 @@
           {
             name: ICacheNWays
             desc: Number of instruction cache ways
-            param_type: int unsigned
-            unpacked_dimensions: null
-            default: 2
-            local: false
-            expose: true
+            type: int unsigned
             name_top: RvCoreIbexICacheNWays
+            default: 2
+            local: "false"
+            expose: "true"
+            class: Parameter
           }
+          class: InterSignal
           inst_name: rv_core_ibex
           index: -1
         }
@@ -9071,6 +9415,7 @@
           type: uni
           act: rcv
           width: 32
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9083,6 +9428,7 @@
           type: uni
           act: rcv
           width: 32
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9095,6 +9441,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9107,6 +9454,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9119,6 +9467,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9132,6 +9481,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: alert_handler_esc_tx
@@ -9144,6 +9494,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: alert_handler_esc_rx
@@ -9155,6 +9506,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9168,6 +9520,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           end_idx: -1
@@ -9182,6 +9535,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: lc_ctrl_lc_cpu_en
@@ -9194,6 +9548,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: pwrmgr_aon_fetch_en
@@ -9206,6 +9561,7 @@
           type: uni
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           end_idx: -1
@@ -9219,6 +9575,7 @@
           type: uni
           act: rcv
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9232,6 +9589,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: edn0_edn
@@ -9244,6 +9602,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: otp_ctrl_sram_otp_key
@@ -9255,6 +9614,7 @@
           type: uni
           act: rcv
           width: 32
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           package: ""
@@ -9270,6 +9630,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: main_tl_rv_core_ibex__corei
@@ -9282,6 +9643,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           top_signame: main_tl_rv_core_ibex__cored
@@ -9294,6 +9656,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: rv_core_ibex
           default: ""
           end_idx: -1
@@ -10798,6 +11161,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           end_idx: -1
@@ -10811,6 +11175,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           end_idx: -1
@@ -10824,6 +11189,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           end_idx: -1
@@ -10837,6 +11203,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rv_dm_regs_tl_d
@@ -10849,6 +11216,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rv_dm_mem_tl_d
@@ -10861,6 +11229,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rom_ctrl_rom_tl
@@ -10873,6 +11242,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rom_ctrl_regs_tl
@@ -10885,6 +11255,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           end_idx: -1
@@ -10898,6 +11269,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: spi_host0_tl
@@ -10910,6 +11282,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: spi_host1_tl
@@ -10922,6 +11295,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: usbdev_tl
@@ -10934,6 +11308,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: flash_ctrl_core_tl
@@ -10946,6 +11321,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: flash_ctrl_prim_tl
@@ -10958,6 +11334,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: flash_ctrl_mem_tl
@@ -10970,6 +11347,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: hmac_tl
@@ -10982,6 +11360,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: kmac_tl
@@ -10994,6 +11373,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: aes_tl
@@ -11006,6 +11386,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: entropy_src_tl
@@ -11018,6 +11399,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: csrng_tl
@@ -11030,6 +11412,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: edn0_tl
@@ -11042,6 +11425,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: edn1_tl
@@ -11054,6 +11438,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rv_plic_tl
@@ -11066,6 +11451,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: otbn_tl
@@ -11078,6 +11464,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: keymgr_tl
@@ -11090,6 +11477,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: rv_core_ibex_cfg_tl_d
@@ -11102,6 +11490,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: sram_ctrl_main_regs_tl
@@ -11114,6 +11503,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: main
           default: ""
           top_signame: sram_ctrl_main_ram_tl
@@ -11776,6 +12166,7 @@
           type: req_rsp
           act: rsp
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: main_tl_peri
@@ -11788,6 +12179,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: uart0_tl
@@ -11800,6 +12192,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: uart1_tl
@@ -11812,6 +12205,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: uart2_tl
@@ -11824,6 +12218,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: uart3_tl
@@ -11836,6 +12231,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: i2c0_tl
@@ -11848,6 +12244,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: i2c1_tl
@@ -11860,6 +12257,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: i2c2_tl
@@ -11872,6 +12270,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: pattgen_tl
@@ -11884,6 +12283,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: pwm_aon_tl
@@ -11896,6 +12296,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: gpio_tl
@@ -11908,6 +12309,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: spi_device_tl
@@ -11920,6 +12322,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: rv_timer_tl
@@ -11932,6 +12335,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: pwrmgr_aon_tl
@@ -11944,6 +12348,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: rstmgr_aon_tl
@@ -11956,6 +12361,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: clkmgr_aon_tl
@@ -11968,6 +12374,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: pinmux_aon_tl
@@ -11980,6 +12387,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: otp_ctrl_core_tl
@@ -11992,6 +12400,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: otp_ctrl_prim_tl
@@ -12004,6 +12413,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: lc_ctrl_regs_tl
@@ -12016,6 +12426,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: sensor_ctrl_aon_tl
@@ -12028,6 +12439,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: alert_handler_tl
@@ -12040,6 +12452,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: sram_ctrl_ret_aon_regs_tl
@@ -12052,6 +12465,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: sram_ctrl_ret_aon_ram_tl
@@ -12064,6 +12478,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: aon_timer_aon_tl
@@ -12076,6 +12491,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: sysrst_ctrl_aon_tl
@@ -12088,6 +12504,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           top_signame: adc_ctrl_aon_tl
@@ -12100,6 +12517,7 @@
           type: req_rsp
           act: req
           width: 1
+          class: InterSignal
           inst_name: peri
           default: ""
           external: true
@@ -17247,6 +17665,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: uart0
         index: -1
       }
@@ -17257,6 +17676,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: uart0
         default: ""
         end_idx: -1
@@ -17274,6 +17694,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: uart1
         index: -1
       }
@@ -17284,6 +17705,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: uart1
         default: ""
         end_idx: -1
@@ -17301,6 +17723,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: uart2
         index: -1
       }
@@ -17311,6 +17734,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: uart2
         default: ""
         end_idx: -1
@@ -17328,6 +17752,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: uart3
         index: -1
       }
@@ -17338,6 +17763,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: uart3
         default: ""
         end_idx: -1
@@ -17352,6 +17778,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: gpio
         index: -1
       }
@@ -17364,6 +17791,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: gpio
         index: -1
       }
@@ -17374,6 +17802,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: gpio
         default: ""
         end_idx: -1
@@ -17387,6 +17816,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: spi_device
         default: ""
         top_signame: ast_spi_ram_2p_cfg
@@ -17399,6 +17829,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_device
         index: -1
       }
@@ -17409,6 +17840,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: spi_device
         default: ""
         top_signame: ast_spi_ram_2p_cfg
@@ -17421,6 +17853,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_device
         index: -1
       }
@@ -17431,6 +17864,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_device
         default: ""
         end_idx: -1
@@ -17443,6 +17877,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: spi_device
         index: -1
       }
@@ -17452,6 +17887,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_device
         default: ""
         package: ""
@@ -17467,6 +17903,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: spi_device
         default: ""
         end_idx: -1
@@ -17480,6 +17917,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: i2c0
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -17492,6 +17930,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c0
         index: -1
       }
@@ -17506,6 +17945,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c0
         index: -1
       }
@@ -17516,6 +17956,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: i2c0
         default: ""
         end_idx: -1
@@ -17529,6 +17970,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: i2c1
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -17541,6 +17983,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c1
         index: -1
       }
@@ -17555,6 +17998,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c1
         index: -1
       }
@@ -17565,6 +18009,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: i2c1
         default: ""
         end_idx: -1
@@ -17578,6 +18023,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: i2c2
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -17590,6 +18036,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c2
         index: -1
       }
@@ -17604,6 +18051,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: i2c2
         index: -1
       }
@@ -17614,6 +18062,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: i2c2
         default: ""
         end_idx: -1
@@ -17627,6 +18076,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: pattgen
         default: ""
         end_idx: -1
@@ -17640,6 +18090,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_timer
         default: ""
         end_idx: -1
@@ -17653,6 +18104,7 @@
         act: none
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         package: ""
         external: true
@@ -17669,6 +18121,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         external: true
         top_signame: otp_ctrl_otp_ast_pwr_seq
@@ -17684,6 +18137,7 @@
         act: rcv
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         external: true
         top_signame: otp_ctrl_otp_ast_pwr_seq_h
@@ -17698,6 +18152,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: otp_ctrl
         default: ""
         top_signame: edn0_edn
@@ -17712,6 +18167,7 @@
         act: rsp
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: pwrmgr_aon_pwr_otp
         index: -1
@@ -17725,6 +18181,7 @@
         act: rsp
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_otp_vendor_test
         index: -1
@@ -17738,6 +18195,7 @@
         act: rsp
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_otp_program
         index: -1
@@ -17755,6 +18213,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         end_idx: -1
         top_type: broadcast
@@ -17774,6 +18233,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -17791,6 +18251,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
         index: -1
@@ -17808,6 +18269,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         index: -1
       }
@@ -17824,6 +18286,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_seed_hw_rd_en
         index: -1
@@ -17841,6 +18304,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_dft_en
         index: -1
@@ -17858,6 +18322,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: lc_ctrl_lc_check_byp_en
         index: -1
@@ -17871,6 +18336,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         end_idx: -1
         top_type: broadcast
@@ -17886,6 +18352,7 @@
         act: rsp
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: flash_ctrl_otp
         index: -1
@@ -17899,6 +18366,7 @@
         act: rsp
         width: 4
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         end_idx: 3
         top_type: partial-one-to-N
@@ -17914,6 +18382,7 @@
         act: rsp
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         end_idx: -1
         top_signame: otp_ctrl_otbn_otp_key
@@ -17928,6 +18397,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otp_ctrl
         top_signame: otp_ctrl_otp_broadcast
         index: -1
@@ -17940,6 +18410,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: otp_ctrl
         default: ""
         top_signame: ast_obs_ctrl
@@ -17952,6 +18423,7 @@
         type: uni
         act: req
         width: 8
+        class: InterSignal
         inst_name: otp_ctrl
         default: ""
         package: ""
@@ -17967,6 +18439,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: otp_ctrl
         default: ""
         end_idx: -1
@@ -17980,6 +18453,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: otp_ctrl
         default: ""
         end_idx: -1
@@ -17993,6 +18467,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: pinmux_aon_lc_jtag
@@ -18005,6 +18480,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: alert_handler_esc_tx
@@ -18017,6 +18493,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: alert_handler_esc_rx
@@ -18029,6 +18506,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: alert_handler_esc_tx
@@ -18041,6 +18519,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: alert_handler_esc_rx
@@ -18053,6 +18532,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         top_signame: pwrmgr_aon_pwr_lc
@@ -18066,6 +18546,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_signame: lc_ctrl_lc_otp_vendor_test
@@ -18079,6 +18560,7 @@
         act: rcv
         width: 1
         default: otp_ctrl_pkg::OTP_LC_DATA_DEFAULT
+        class: InterSignal
         inst_name: lc_ctrl
         top_signame: otp_ctrl_otp_lc_data
         index: -1
@@ -18091,6 +18573,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_signame: lc_ctrl_lc_otp_program
@@ -18104,6 +18587,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         top_signame: kmac_app
         index: 1
@@ -18116,6 +18600,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         index: -1
       }
@@ -18127,6 +18612,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18141,6 +18627,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18155,6 +18642,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18169,6 +18657,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18183,6 +18672,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18197,6 +18687,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18211,6 +18702,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18225,6 +18717,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18239,6 +18732,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18253,6 +18747,7 @@
         act: rcv
         width: 2
         default: lc_ctrl_pkg::On
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: one-to-N
@@ -18267,6 +18762,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         top_signame: flash_ctrl_rma_seed
         index: -1
@@ -18279,6 +18775,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18293,6 +18790,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18307,6 +18805,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18321,6 +18820,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18335,6 +18835,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18349,6 +18850,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18363,6 +18865,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         end_idx: -1
         top_type: broadcast
@@ -18377,6 +18880,7 @@
         act: rcv
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         top_signame: lc_ctrl_otp_device_id
         index: -1
@@ -18389,6 +18893,7 @@
         act: rcv
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         top_signame: lc_ctrl_otp_manuf_state
         index: -1
@@ -18401,6 +18906,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: lc_ctrl
         index: -1
       }
@@ -18418,6 +18924,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: lc_ctrl
         package: ""
         end_idx: -1
@@ -18432,6 +18939,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         default: ""
         end_idx: -1
@@ -18445,6 +18953,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: lc_ctrl
         index: -1
       }
@@ -18455,6 +18964,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: alert_handler
         default: ""
         end_idx: -1
@@ -18469,6 +18979,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: alert_handler
         default: ""
         top_signame: edn0_edn
@@ -18481,6 +18992,7 @@
         type: uni
         act: rcv
         width: 4
+        class: InterSignal
         inst_name: alert_handler
         default: ""
         end_idx: -1
@@ -18495,6 +19007,7 @@
         type: uni
         act: req
         width: 4
+        class: InterSignal
         inst_name: alert_handler
         default: ""
         end_idx: -1
@@ -18509,6 +19022,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: alert_handler
         default: ""
         end_idx: -1
@@ -18522,6 +19036,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: spi_host0
         default: ""
         top_signame: spi_device_passthrough
@@ -18538,6 +19053,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_host0
         index: -1
       }
@@ -18548,6 +19064,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: spi_host0
         default: ""
         end_idx: -1
@@ -18561,6 +19078,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: spi_host1
         index: -1
       }
@@ -18575,6 +19093,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: spi_host1
         index: -1
       }
@@ -18585,6 +19104,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: spi_host1
         default: ""
         end_idx: -1
@@ -18598,6 +19118,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18613,6 +19134,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18628,6 +19150,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18643,6 +19166,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18658,6 +19182,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18673,6 +19198,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18688,6 +19214,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18703,6 +19230,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18718,6 +19246,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18733,6 +19262,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18748,6 +19278,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18763,6 +19294,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18778,6 +19310,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18793,6 +19326,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18808,6 +19342,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         package: ""
@@ -18821,6 +19356,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         top_signame: ast_usb_ram_1p_cfg
@@ -18833,6 +19369,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: usbdev
         index: -1
       }
@@ -18843,6 +19380,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: usbdev
         default: ""
         end_idx: -1
@@ -18856,6 +19394,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         external: true
@@ -18870,6 +19409,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -18883,6 +19423,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -18896,6 +19437,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -18909,6 +19451,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -18922,6 +19465,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -18936,6 +19480,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: alert_handler_esc_tx
@@ -18948,6 +19493,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: alert_handler_esc_rx
@@ -18960,6 +19506,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: rv_core_ibex_pwrmgr
@@ -18971,6 +19518,7 @@
         type: uni
         act: rcv
         width: 6
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -18985,6 +19533,7 @@
         type: uni
         act: rcv
         width: 2
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -18999,6 +19548,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -19011,6 +19561,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -19025,6 +19576,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -19041,6 +19593,7 @@
         act: rcv
         width: 1
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
+        class: InterSignal
         inst_name: pwrmgr_aon
         top_signame: rom_ctrl_pwrmgr_data
         index: -1
@@ -19052,6 +19605,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -19066,6 +19620,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: lc_ctrl_lc_dft_en
@@ -19078,6 +19633,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: lc_ctrl_lc_hw_debug_en
@@ -19090,6 +19646,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         top_signame: rstmgr_aon_sw_rst_req
@@ -19102,6 +19659,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: pwrmgr_aon
         default: ""
         end_idx: -1
@@ -19119,6 +19677,7 @@
         type: uni
         act: rcv
         width: 2
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         package: ""
@@ -19138,6 +19697,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         package: pwrmgr_pkg
@@ -19152,6 +19712,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         top_signame: rstmgr_aon_resets
@@ -19165,6 +19726,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         top_signame: rstmgr_aon_rst_en
@@ -19178,6 +19740,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         top_signame: alert_handler_crashdump
@@ -19191,6 +19754,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         top_signame: rv_core_ibex_crash_dump
@@ -19204,6 +19768,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         end_idx: -1
@@ -19218,6 +19783,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rstmgr_aon
         default: ""
         end_idx: -1
@@ -19231,6 +19797,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         top_signame: clkmgr_aon_clocks
@@ -19243,6 +19810,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         top_signame: clkmgr_aon_cg_en
@@ -19255,6 +19823,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         top_signame: lc_ctrl_lc_hw_debug_en
@@ -19267,6 +19836,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19281,6 +19851,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19295,6 +19866,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19309,6 +19881,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19323,6 +19896,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19337,6 +19911,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19351,6 +19926,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         top_signame: lc_ctrl_lc_clk_byp_req
@@ -19363,6 +19939,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         top_signame: lc_ctrl_lc_clk_byp_ack
@@ -19375,6 +19952,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         external: true
@@ -19388,6 +19966,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         package: pwrmgr_pkg
@@ -19401,6 +19980,7 @@
         type: uni
         act: rcv
         width: 4
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         end_idx: -1
@@ -19417,6 +19997,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi4True
+        class: InterSignal
         inst_name: clkmgr_aon
         external: true
         top_signame: calib_rdy
@@ -19430,6 +20011,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: clkmgr_aon
         default: ""
         end_idx: -1
@@ -19442,6 +20024,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: sysrst_ctrl_aon
         default: ""
         package: ""
@@ -19454,6 +20037,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: sysrst_ctrl_aon
         default: ""
         package: ""
@@ -19467,6 +20051,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sysrst_ctrl_aon
         default: ""
         end_idx: -1
@@ -19480,6 +20065,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: adc_ctrl_aon
         default: ""
         external: true
@@ -19493,6 +20079,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: adc_ctrl_aon
         default: ""
         package: ""
@@ -19506,6 +20093,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: adc_ctrl_aon
         default: ""
         end_idx: -1
@@ -19519,6 +20107,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: pwm_aon
         default: ""
         end_idx: -1
@@ -19534,6 +20123,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: pinmux_aon
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
@@ -19547,6 +20137,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: pinmux_aon
         top_signame: lc_ctrl_lc_dft_en
         index: -1
@@ -19564,6 +20155,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: pinmux_aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -19584,6 +20176,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: pinmux_aon
         top_signame: lc_ctrl_lc_check_byp_en
         index: -1
@@ -19601,6 +20194,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: pinmux_aon
         end_idx: -1
         top_type: broadcast
@@ -19615,6 +20209,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         end_idx: -1
@@ -19629,6 +20224,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         end_idx: -1
@@ -19643,6 +20239,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         top_signame: pinmux_aon_dft_jtag
@@ -19657,6 +20254,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: pinmux_aon
         external: true
         top_signame: dft_strap_test
@@ -19671,6 +20269,7 @@
         act: rcv
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         external: true
@@ -19686,6 +20285,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_low_power
@@ -19699,6 +20299,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_strap
@@ -19718,6 +20319,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: lc_ctrl_strap_en_override
@@ -19731,6 +20333,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
@@ -19743,6 +20346,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         package: ""
@@ -19756,6 +20360,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         package: ""
@@ -19770,6 +20375,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         external: true
@@ -19785,6 +20391,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         external: true
@@ -19800,6 +20407,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
@@ -19812,6 +20420,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         package: ""
@@ -19825,6 +20434,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         package: ""
@@ -19839,6 +20449,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: usbdev_usb_aon_bus_not_idle
@@ -19852,6 +20463,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: usbdev_usb_aon_bus_reset
@@ -19865,6 +20477,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         top_signame: usbdev_usb_aon_sense_lost
@@ -19878,6 +20491,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: pinmux_aon
         package: ""
         end_idx: -1
@@ -19892,6 +20506,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: pinmux_aon
         default: ""
         end_idx: -1
@@ -19905,6 +20520,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: aon_timer_aon
         package: ""
         end_idx: -1
@@ -19919,6 +20535,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_wakeups
@@ -19931,6 +20548,7 @@
         act: req
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: aon_timer_aon
         package: ""
         top_signame: pwrmgr_aon_rstreqs
@@ -19944,6 +20562,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: aon_timer_aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -19954,6 +20573,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: aon_timer_aon
         default: ""
         package: ""
@@ -19967,6 +20587,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: aon_timer_aon
         default: ""
         end_idx: -1
@@ -19980,6 +20601,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: ast
         index: -1
       }
@@ -19990,6 +20612,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         default: ""
         external: true
@@ -20004,6 +20627,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         default: ""
         external: true
@@ -20019,6 +20643,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi4True
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         external: true
         top_signame: ast_init_done
@@ -20031,6 +20656,7 @@
         type: uni
         act: rcv
         width: 9
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         default: ""
         package: ""
@@ -20045,6 +20671,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         default: ""
         package: ""
@@ -20059,6 +20686,7 @@
         act: req
         width: 4
         default: "'0"
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         external: true
         top_signame: sensor_ctrl_manual_pad_attr
@@ -20072,6 +20700,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sensor_ctrl_aon
         default: ""
         end_idx: -1
@@ -20085,6 +20714,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         default: ""
         top_signame: otp_ctrl_sram_otp_key
@@ -20100,14 +20730,15 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlRetAonNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         default: "'0"
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         external: true
         top_signame: sram_ctrl_ret_aon_cfg
@@ -20124,14 +20755,15 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlRetAonNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         default: "'0"
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         index: -1
       }
@@ -20143,6 +20775,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -20155,6 +20788,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         index: -1
       }
@@ -20166,6 +20800,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8False
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         index: -1
       }
@@ -20176,6 +20811,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         default: ""
         end_idx: -1
@@ -20189,6 +20825,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_ret_aon
         default: ""
         end_idx: -1
@@ -20202,6 +20839,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20215,6 +20853,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_nvm_debug_en
@@ -20227,6 +20866,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         external: true
@@ -20240,6 +20880,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         package: ""
@@ -20254,6 +20895,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         package: ""
@@ -20268,6 +20910,7 @@
         type: io
         act: none
         width: 2
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         package: ""
@@ -20282,6 +20925,7 @@
         type: io
         act: none
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         package: ""
@@ -20297,6 +20941,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_creator_seed_sw_rw_en
@@ -20309,6 +20954,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_owner_seed_sw_rw_en
@@ -20321,6 +20967,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_iso_part_sw_rd_en
@@ -20333,6 +20980,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_iso_part_sw_wr_en
@@ -20345,6 +20993,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_seed_hw_rd_en
@@ -20357,6 +21006,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_escalate_en
@@ -20369,6 +21019,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_flash_rma_req
@@ -20381,6 +21032,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: lc_ctrl_lc_flash_rma_ack
@@ -20393,6 +21045,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20407,6 +21060,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: pwrmgr_aon_pwr_flash
@@ -20419,6 +21073,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20433,6 +21088,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         top_signame: ast_obs_ctrl
@@ -20444,6 +21100,7 @@
         type: uni
         act: req
         width: 8
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         package: ""
@@ -20459,6 +21116,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20472,6 +21130,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20485,6 +21144,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: flash_ctrl
         default: ""
         end_idx: -1
@@ -20504,6 +21164,7 @@
         act: rcv
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20515,6 +21176,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         top_signame: pinmux_aon_rv_jtag
@@ -20533,6 +21195,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: rv_dm
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
@@ -20550,6 +21213,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: rv_dm
         top_signame: lc_ctrl_lc_dft_en
         index: -1
@@ -20569,6 +21233,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: rv_dm
         top_signame: pinmux_aon_pinmux_hw_debug_en
         index: -1
@@ -20581,6 +21246,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8False
+        class: InterSignal
         inst_name: rv_dm
         top_signame: rv_dm_otp_dis_rv_dm_late_debug
         index: -1
@@ -20597,6 +21263,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20607,6 +21274,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         package: ""
@@ -20626,6 +21294,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20636,6 +21305,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         package: ""
@@ -20657,6 +21327,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20676,6 +21347,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20687,6 +21359,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20704,6 +21377,7 @@
         act: rcv
         width: 1
         default: 1'b0
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20714,6 +21388,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         top_signame: main_tl_rv_dm__sba
@@ -20726,6 +21401,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         end_idx: -1
@@ -20739,6 +21415,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         default: ""
         end_idx: -1
@@ -20752,6 +21429,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_dm
         index: -1
       }
@@ -20761,6 +21439,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_plic
         default: ""
         package: ""
@@ -20775,6 +21454,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_plic
         index: -1
       }
@@ -20784,6 +21464,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_plic
         default: ""
         package: ""
@@ -20799,6 +21480,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_plic
         default: ""
         end_idx: -1
@@ -20812,6 +21494,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: aes
         default: ""
         top_signame: clkmgr_aon_idle
@@ -20825,6 +21508,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: aes
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -20836,6 +21520,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: aes
         default: ""
         top_signame: edn0_edn
@@ -20848,6 +21533,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: aes
         default: ""
         top_signame: keymgr_aes_key
@@ -20860,6 +21546,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: aes
         default: ""
         end_idx: -1
@@ -20873,6 +21560,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: hmac
         default: ""
         top_signame: clkmgr_aon_idle
@@ -20885,6 +21573,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: hmac
         default: ""
         end_idx: -1
@@ -20898,6 +21587,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: kmac
         default: ""
         top_signame: keymgr_kmac_key
@@ -20913,13 +21603,14 @@
         {
           name: NumAppIntf
           desc: Number of application interfaces
-          param_type: int
-          unpacked_dimensions: null
-          default: 3
-          local: false
-          expose: true
+          type: int
           name_top: KmacNumAppIntf
+          default: 3
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
+        class: InterSignal
         inst_name: kmac
         default: ""
         end_idx: -1
@@ -20934,6 +21625,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: kmac
         default: ""
         top_signame: edn0_edn
@@ -20946,6 +21638,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: kmac
         default: ""
         top_signame: clkmgr_aon_idle
@@ -20957,6 +21650,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: kmac
         default: ""
         package: ""
@@ -20973,6 +21667,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: kmac
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -20984,6 +21679,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: kmac
         default: ""
         end_idx: -1
@@ -20998,6 +21694,7 @@
         act: req
         width: 1
         default: "'0"
+        class: InterSignal
         inst_name: otbn
         top_signame: otp_ctrl_otbn_otp_key
         index: -1
@@ -21009,6 +21706,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: edn1_edn
@@ -21021,6 +21719,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: edn0_edn
@@ -21033,6 +21732,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: clkmgr_aon_idle
@@ -21045,6 +21745,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -21057,6 +21758,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -21069,6 +21771,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: otbn
         index: -1
       }
@@ -21079,6 +21782,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: otbn
         index: -1
       }
@@ -21090,6 +21794,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otbn
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -21102,6 +21807,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otbn
         top_signame: lc_ctrl_lc_flash_rma_req
         index: -1
@@ -21114,6 +21820,7 @@
         act: req
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: otbn
         top_signame: lc_ctrl_lc_flash_rma_ack
         index: 1
@@ -21125,6 +21832,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         top_signame: keymgr_otbn_key
@@ -21137,6 +21845,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: otbn
         default: ""
         end_idx: -1
@@ -21150,6 +21859,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: edn0_edn
@@ -21162,6 +21872,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         end_idx: -1
@@ -21176,6 +21887,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         end_idx: -1
@@ -21190,6 +21902,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         end_idx: -1
@@ -21204,6 +21917,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: kmac_app
@@ -21216,6 +21930,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: otp_ctrl_otp_keymgr_key
@@ -21228,6 +21943,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: keymgr_otp_device_id
@@ -21240,6 +21956,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: flash_ctrl_keymgr
@@ -21253,6 +21970,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::On
+        class: InterSignal
         inst_name: keymgr
         top_signame: lc_ctrl_lc_keymgr_en
         index: -1
@@ -21264,6 +21982,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: lc_ctrl_lc_keymgr_div
@@ -21276,6 +21995,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         top_signame: rom_ctrl_keymgr_data
@@ -21287,6 +22007,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         package: ""
@@ -21300,6 +22021,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: keymgr
         default: ""
         end_idx: -1
@@ -21313,6 +22035,7 @@
         type: req_rsp
         act: rsp
         width: 2
+        class: InterSignal
         inst_name: csrng
         default: ""
         end_idx: -1
@@ -21327,6 +22050,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: csrng
         default: ""
         end_idx: -1
@@ -21345,6 +22069,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: csrng
         default: ""
         end_idx: -1
@@ -21359,6 +22084,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8True
+        class: InterSignal
         inst_name: csrng
         top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
@@ -21371,6 +22097,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: csrng
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
@@ -21382,6 +22109,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: csrng
         default: ""
         end_idx: -1
@@ -21395,6 +22123,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         default: ""
         top_signame: csrng_entropy_src_hw_if
@@ -21414,6 +22143,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         default: ""
         top_signame: csrng_cs_aes_halt
@@ -21426,6 +22156,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         default: ""
         external: true
@@ -21440,6 +22171,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         index: -1
       }
@@ -21451,6 +22183,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8True
+        class: InterSignal
         inst_name: entropy_src
         index: -1
       }
@@ -21462,6 +22195,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8True
+        class: InterSignal
         inst_name: entropy_src
         index: -1
       }
@@ -21471,6 +22205,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         default: ""
         package: ""
@@ -21486,6 +22221,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: entropy_src
         default: ""
         end_idx: -1
@@ -21500,6 +22236,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: edn0
         default: ""
         top_signame: csrng_csrng_cmd
@@ -21521,6 +22258,7 @@
         act: rsp
         width: 8
         default: "'0"
+        class: InterSignal
         inst_name: edn0
         end_idx: -1
         top_type: one-to-N
@@ -21534,6 +22272,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: edn0
         default: ""
         end_idx: -1
@@ -21548,6 +22287,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: edn1
         default: ""
         top_signame: csrng_csrng_cmd
@@ -21569,6 +22309,7 @@
         act: rsp
         width: 8
         default: "'0"
+        class: InterSignal
         inst_name: edn1
         end_idx: 1
         top_type: partial-one-to-N
@@ -21582,6 +22323,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: edn1
         default: ""
         end_idx: -1
@@ -21595,6 +22337,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_main
         default: ""
         top_signame: otp_ctrl_sram_otp_key
@@ -21610,14 +22353,15 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlMainNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         default: "'0"
+        class: InterSignal
         inst_name: sram_ctrl_main
         external: true
         top_signame: sram_ctrl_main_cfg
@@ -21634,14 +22378,15 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlMainNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         default: "'0"
+        class: InterSignal
         inst_name: sram_ctrl_main
         index: -1
       }
@@ -21653,6 +22398,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: sram_ctrl_main
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
@@ -21665,6 +22411,7 @@
         act: rcv
         width: 1
         default: lc_ctrl_pkg::Off
+        class: InterSignal
         inst_name: sram_ctrl_main
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
@@ -21677,6 +22424,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi8False
+        class: InterSignal
         inst_name: sram_ctrl_main
         top_signame: sram_ctrl_main_otp_en_sram_ifetch
         index: -1
@@ -21688,6 +22436,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_main
         default: ""
         end_idx: -1
@@ -21701,6 +22450,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: sram_ctrl_main
         default: ""
         end_idx: -1
@@ -21714,6 +22464,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         top_signame: ast_rom_cfg
@@ -21726,6 +22477,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         end_idx: -1
@@ -21740,6 +22492,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         end_idx: -1
@@ -21754,6 +22507,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         top_signame: kmac_app
@@ -21766,6 +22520,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         end_idx: -1
@@ -21779,6 +22534,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rom_ctrl
         default: ""
         end_idx: -1
@@ -21791,6 +22547,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         index: -1
       }
@@ -21801,6 +22558,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -21816,13 +22574,14 @@
         {
           name: ICacheNWays
           desc: Number of instruction cache ways
-          param_type: int unsigned
-          unpacked_dimensions: null
-          default: 2
-          local: false
-          expose: true
+          type: int unsigned
           name_top: RvCoreIbexICacheNWays
+          default: 2
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
+        class: InterSignal
         inst_name: rv_core_ibex
         index: -1
       }
@@ -21833,6 +22592,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: ast_ram_1p_cfg
@@ -21848,13 +22608,14 @@
         {
           name: ICacheNWays
           desc: Number of instruction cache ways
-          param_type: int unsigned
-          unpacked_dimensions: null
-          default: 2
-          local: false
-          expose: true
+          type: int unsigned
           name_top: RvCoreIbexICacheNWays
+          default: 2
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
+        class: InterSignal
         inst_name: rv_core_ibex
         index: -1
       }
@@ -21864,6 +22625,7 @@
         type: uni
         act: rcv
         width: 32
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21876,6 +22638,7 @@
         type: uni
         act: rcv
         width: 32
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21888,6 +22651,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21900,6 +22664,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21912,6 +22677,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21925,6 +22691,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: alert_handler_esc_tx
@@ -21937,6 +22704,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: alert_handler_esc_rx
@@ -21948,6 +22716,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -21961,6 +22730,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         end_idx: -1
@@ -21975,6 +22745,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: lc_ctrl_lc_cpu_en
@@ -21987,6 +22758,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: pwrmgr_aon_fetch_en
@@ -21999,6 +22771,7 @@
         type: uni
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         end_idx: -1
@@ -22012,6 +22785,7 @@
         type: uni
         act: rcv
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -22025,6 +22799,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: edn0_edn
@@ -22037,6 +22812,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: otp_ctrl_sram_otp_key
@@ -22048,6 +22824,7 @@
         type: uni
         act: rcv
         width: 32
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         package: ""
@@ -22063,6 +22840,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: main_tl_rv_core_ibex__corei
@@ -22075,6 +22853,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         top_signame: main_tl_rv_core_ibex__cored
@@ -22087,6 +22866,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: rv_core_ibex
         default: ""
         end_idx: -1
@@ -22100,6 +22880,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         end_idx: -1
@@ -22113,6 +22894,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         end_idx: -1
@@ -22126,6 +22908,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         end_idx: -1
@@ -22139,6 +22922,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rv_dm_regs_tl_d
@@ -22151,6 +22935,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rv_dm_mem_tl_d
@@ -22163,6 +22948,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rom_ctrl_rom_tl
@@ -22175,6 +22961,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rom_ctrl_regs_tl
@@ -22187,6 +22974,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         end_idx: -1
@@ -22200,6 +22988,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: spi_host0_tl
@@ -22212,6 +23001,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: spi_host1_tl
@@ -22224,6 +23014,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: usbdev_tl
@@ -22236,6 +23027,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: flash_ctrl_core_tl
@@ -22248,6 +23040,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: flash_ctrl_prim_tl
@@ -22260,6 +23053,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: flash_ctrl_mem_tl
@@ -22272,6 +23066,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: hmac_tl
@@ -22284,6 +23079,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: kmac_tl
@@ -22296,6 +23092,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: aes_tl
@@ -22308,6 +23105,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: entropy_src_tl
@@ -22320,6 +23118,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: csrng_tl
@@ -22332,6 +23131,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: edn0_tl
@@ -22344,6 +23144,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: edn1_tl
@@ -22356,6 +23157,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rv_plic_tl
@@ -22368,6 +23170,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: otbn_tl
@@ -22380,6 +23183,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: keymgr_tl
@@ -22392,6 +23196,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: rv_core_ibex_cfg_tl_d
@@ -22404,6 +23209,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: sram_ctrl_main_regs_tl
@@ -22416,6 +23222,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: main
         default: ""
         top_signame: sram_ctrl_main_ram_tl
@@ -22428,6 +23235,7 @@
         type: req_rsp
         act: rsp
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: main_tl_peri
@@ -22440,6 +23248,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: uart0_tl
@@ -22452,6 +23261,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: uart1_tl
@@ -22464,6 +23274,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: uart2_tl
@@ -22476,6 +23287,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: uart3_tl
@@ -22488,6 +23300,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: i2c0_tl
@@ -22500,6 +23313,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: i2c1_tl
@@ -22512,6 +23326,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: i2c2_tl
@@ -22524,6 +23339,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: pattgen_tl
@@ -22536,6 +23352,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: pwm_aon_tl
@@ -22548,6 +23365,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: gpio_tl
@@ -22560,6 +23378,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: spi_device_tl
@@ -22572,6 +23391,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: rv_timer_tl
@@ -22584,6 +23404,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: pwrmgr_aon_tl
@@ -22596,6 +23417,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: rstmgr_aon_tl
@@ -22608,6 +23430,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: clkmgr_aon_tl
@@ -22620,6 +23443,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: pinmux_aon_tl
@@ -22632,6 +23456,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: otp_ctrl_core_tl
@@ -22644,6 +23469,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: otp_ctrl_prim_tl
@@ -22656,6 +23482,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: lc_ctrl_regs_tl
@@ -22668,6 +23495,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: sensor_ctrl_aon_tl
@@ -22680,6 +23508,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: alert_handler_tl
@@ -22692,6 +23521,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: sram_ctrl_ret_aon_regs_tl
@@ -22704,6 +23534,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: sram_ctrl_ret_aon_ram_tl
@@ -22716,6 +23547,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: aon_timer_aon_tl
@@ -22728,6 +23560,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: sysrst_ctrl_aon_tl
@@ -22740,6 +23573,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         top_signame: adc_ctrl_aon_tl
@@ -22752,6 +23586,7 @@
         type: req_rsp
         act: req
         width: 1
+        class: InterSignal
         inst_name: peri
         default: ""
         external: true
@@ -22962,12 +23797,12 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlMainNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         type: uni
         default: "'0"
@@ -22984,12 +23819,12 @@
         {
           name: NumRamInst
           desc: Number of internal RAM instances. Must be the same as ceil(MemSizeRam / InstSize) .
-          param_type: int
-          unpacked_dimensions: null
-          default: 1
-          local: false
-          expose: true
+          type: int
           name_top: SramCtrlRetAonNumRamInst
+          default: 1
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         type: uni
         default: "'0"
@@ -24190,12 +25025,12 @@
         {
           name: NumAppIntf
           desc: Number of application interfaces
-          param_type: int
-          unpacked_dimensions: null
-          default: 3
-          local: false
-          expose: true
+          type: int
           name_top: KmacNumAppIntf
+          default: 3
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         type: req_rsp
         end_idx: -1
@@ -24211,12 +25046,12 @@
         {
           name: NumAppIntf
           desc: Number of application interfaces
-          param_type: int
-          unpacked_dimensions: null
-          default: 3
-          local: false
-          expose: true
+          type: int
           name_top: KmacNumAppIntf
+          default: 3
+          local: "false"
+          expose: "true"
+          class: Parameter
         }
         type: req_rsp
         end_idx: -1

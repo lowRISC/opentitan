@@ -68,6 +68,17 @@ class ResetItem:
 
         return ret
 
+    @classmethod
+    def fromdict(cls, item: Dict[str, object], clocks: Clocks) -> object:
+        # rst_type can be None which is serialized as "null", also the name is different
+        item["rst_type"] = None if item["type"] == "null" else item["type"]
+        del item["type"]
+        item["clock"] = clocks.get_clock_by_name(item["clock"])
+        item["parent"] = item.get("parent", "")
+        c = cls.__new__(cls)
+        c.__dict__.update(**item)
+        return c
+
 
 class Resets:
     '''Resets for the chip'''
@@ -92,6 +103,16 @@ class Resets:
         }
 
         return ret
+
+    @classmethod
+    def fromdict(cls, resets: Dict[str, object], clocks: Clocks) -> object:
+        # Reconstruct dict.
+        resets['nodes'] = {
+            node["name"]: ResetItem.fromdict(node, clocks) for node in resets['nodes']
+        }
+        c = cls.__new__(cls)
+        c.__dict__.update(**resets)
+        return c
 
     def get_reset_by_name(self, name: str) -> ResetItem:
 
@@ -240,6 +261,12 @@ class UnmanagedReset:
             'rst_en_signal_name': self.rst_en_signal_name
         }
 
+    @classmethod
+    def fromdict(cls, param: Dict[str, object]) -> object:
+        c = cls.__new__(cls)
+        c.__dict__.update(**param)
+        return c
+
 
 class UnmanagedResets:
     '''Unmanaged reset connections for the chip.'''
@@ -249,6 +276,16 @@ class UnmanagedResets:
 
     def _asdict(self) -> Dict[str, object]:
         return self.resets
+
+    @classmethod
+    def fromdict(cls, resets: Dict[str, object]) -> object:
+        resets = {
+            'resets': UnmanagedReset.fromdict(r)
+            for r in resets
+        }
+        c = cls.__new__(cls)
+        c.resets = resets
+        return c
 
     def get(self, name: str) -> object:
         try:

@@ -346,7 +346,9 @@ class Flash:
             raise ValueError('flash number of banks and pages per bank too large')
 
     def _asdict(self):
+        # Do not include base_addrs as it will get removed later.
         return {
+            'class': 'Flash',
             'banks': self.banks,
             'pages_per_bank': self.pages_per_bank,
             'program_resolution': self.program_resolution,
@@ -361,6 +363,17 @@ class Flash:
             'pwrmgr_vlnv_prefix': self.pwrmgr_vlnv_prefix,
             'top_pkg_vlnv': self.top_pkg_vlnv,
         }
+
+    @classmethod
+    def fromdict(cls, item: Dict[str, object]) -> object:
+        del item["class"]
+        item["word_bytes"] = int(item["data_width"] / 8)
+        item["words_per_page"] = int(item["bytes_per_page"] / item["word_bytes"])
+        item["pages_per_bank"] = int(item["bytes_per_bank"] / item["bytes_per_page"])
+        item["info_types"] = len(item["infos_per_bank"])
+        c = cls.__new__(cls)
+        c.__dict__.update(**item)
+        return c
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
