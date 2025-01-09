@@ -107,7 +107,7 @@
         "USBDEV.CONN.REF_PULSE",
       ]
       stage: V2
-      si_stage: SV3
+      si_stage: NA
       lc_states: ["PROD"]
       tests: []
       bazel: []
