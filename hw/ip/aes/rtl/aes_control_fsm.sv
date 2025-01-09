@@ -186,8 +186,8 @@ module aes_control_fsm
   logic                     input_ready_we;
 
   logic                     gcm_init, gcm_restore, gcm_aad, gcm_txt, gcm_save, gcm_tag;
-  logic                     start_common_gcm, start_gcm;
-  logic                     start_gcm_init, start_gcm_hash_subkey, start_gcm_s;
+  logic                     start_common_gcm, start_ghash;
+  logic                     start_gcm_init, start_gcm_hsk, start_gcm_s;
   logic                     start_gcm_restore, start_gcm_aad, start_gcm_txt, start_gcm_save;
   logic                     start_gcm_tag;
   logic                     doing_gcm_hsk, doing_gcm_s, doing_gcm_txt;
@@ -230,41 +230,6 @@ module aes_control_fsm
   assign start_ofb = (mode_i == AES_OFB) & iv_ready;
   assign start_ctr = (mode_i == AES_CTR) & iv_ready & ctr_ready_i;
 
-  // For the initial GCM phase, we need key and IV but then encrypt two blocks. The input data
-  // is not required.
-  assign gcm_init = (mode_i == AES_GCM) & (gcm_phase_i == GCM_INIT);
-  assign start_common_gcm      = key_init_ready & (sideload_i ? key_sideload_valid_i : 1'b1);
-  assign start_gcm_hash_subkey = gcm_init & ~hash_subkey_ready_q & iv_ready & ctr_ready_i;
-  assign start_gcm_s           = gcm_init & ~s_ready_q           & iv_ready & ctr_ready_i;
-  assign start_gcm_init        = (start_gcm_hash_subkey | start_gcm_s) & start_common_gcm;
-
-  // For the restore phase of GCM, we need key, IV and input data.
-  assign gcm_restore = (mode_i == AES_GCM) & (gcm_phase_i == GCM_RESTORE);
-  assign start_gcm_restore = gcm_restore & iv_ready & ctr_ready_i & data_in_new & start_common_gcm;
-
-  // For the AAD and ciphertext/plaintext phases of GCM, we need key, IV and input data. But for
-  // the AAD phase, only the input data is really used and marked as used.
-  assign gcm_aad = (mode_i == AES_GCM) & (gcm_phase_i == GCM_AAD);
-  assign gcm_txt = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TEXT);
-  assign start_gcm_aad = gcm_aad & iv_ready & ctr_ready_i & data_in_new;
-  assign start_gcm_txt = gcm_txt & iv_ready & ctr_ready_i & data_in_new;
-  assign start_gcm     = start_gcm_aad | start_gcm_txt;
-
-  // For the save phase of GCM, we need no inputs.
-  assign gcm_save = (mode_i == AES_GCM) & (gcm_phase_i == GCM_SAVE);
-  assign start_gcm_save = gcm_save & hash_subkey_ready_q & s_ready_q;
-
-  // For the tag phase of GCM, we just need the input data.
-  assign gcm_tag = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TAG);
-  assign start_gcm_tag = gcm_tag & data_in_new;
-
-  // The GHASH block is idle whenever it's ready to receive inputs and where not about to start
-  // a GCM related operation.
-  assign ghash_idle = ghash_in_ready_i & ~(start_gcm_init | start_gcm | start_gcm_tag);
-
-  // In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
-  assign ctr_inc32_o = (mode_i == AES_GCM);
-
   // If set to start manually, we just wait for the trigger. Otherwise, check common as well as
   // mode-specific start conditions.
   assign start = cfg_valid & no_alert &
@@ -275,12 +240,11 @@ module aes_control_fsm
             start_cbc |
             start_cfb |
             start_ofb |
-            start_ctr |
-            start_gcm) & start_common) |
-            start_gcm_init    |
-            start_gcm_restore |
-            start_gcm_save    |
-            start_gcm_tag);
+            start_ctr) & start_common) |
+          // Only the initial as well as the ciphertext/plaintext phases of GCM require operating
+          // the AES cipher core. Common start conditions are already factored into these signals.
+           (start_gcm_init |
+            start_gcm_txt));
 
   // If not set to overwrite data, we wait for any previous output data to be read. data_out_read
   // synchronously clears output_valid_q, unless new output data is written in the exact same
@@ -290,6 +254,72 @@ module aes_control_fsm
       (manual_operation_i ? 1'b1 :
           // Make sure previous output data has been read.
           (~output_valid_q | data_out_read));
+
+  //////////////////////////
+  // GCM Start Conditions //
+  //////////////////////////
+  // Note that only the initial as well as the ciphertext/plaintext phases of GCM require operating
+  // the AES cipher core. The start conditions for these phases are factored into the regular start
+  // signal above. In contrast, the restore, AAD, save and tag phases use the GHASH block only. The
+  // corresponding start conditions are handled separately by the FSM and we need to explicilty
+  // factor in manual operation below.
+
+  assign gcm_init    = (mode_i == AES_GCM) & (gcm_phase_i == GCM_INIT);
+  assign gcm_restore = (mode_i == AES_GCM) & (gcm_phase_i == GCM_RESTORE);
+  assign gcm_aad     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_AAD);
+  assign gcm_txt     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TEXT);
+  assign gcm_save    = (mode_i == AES_GCM) & (gcm_phase_i == GCM_SAVE);
+  assign gcm_tag     = (mode_i == AES_GCM) & (gcm_phase_i == GCM_TAG);
+
+  // The common start conditions for GCM don't include the input data.
+  assign start_common_gcm = key_init_ready &
+      // If key sideload is enabled, we only start if the key is valid.
+      (sideload_i ? key_sideload_valid_i : 1'b1);
+
+  // For the initial GCM phase, we need key and IV but then encrypt two blocks. The input data
+  // is not required. Requires operating the AES cipher core and thus factors into the regular
+  // start signal.
+  assign start_gcm_hsk  = gcm_init & ~hash_subkey_ready_q & iv_ready & ctr_ready_i;
+  assign start_gcm_s    = gcm_init & ~s_ready_q           & iv_ready & ctr_ready_i;
+  assign start_gcm_init = (start_gcm_hsk | start_gcm_s) & start_common_gcm;
+
+  // For the restore phase of GCM, we need key, IV and input data. If set to start manually, we
+  // just wait for the trigger.
+  assign start_gcm_restore = gcm_restore & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : iv_ready & ctr_ready_i & data_in_new & start_common_gcm);
+
+  // For the AAD and ciphertext/plaintext phases of GCM, we need key, IV and input data. But for
+  // the AAD phase, only the input data is really used and marked as used. The start condition for
+  // the AAD phase is handled separately by the FSM and we need to factor in the manual operation
+  // mode here.
+  assign start_gcm_aad = gcm_aad & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : iv_ready & ctr_ready_i & start_common);
+  // The ciphertext/plaintext phase requires operating AES cipher core and thus factors into the
+  // regular start signal.
+  assign start_gcm_txt = gcm_txt & iv_ready & ctr_ready_i & start_common;
+
+  // For the save phase of GCM, we need no inputs. But the hash subkey and S must not yet have been
+  // cleared (happens upon saving the GHASH state).
+  assign start_gcm_save = gcm_save & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : hash_subkey_ready_q & s_ready_q);
+
+  // For the tag phase of GCM, we also need the input data.
+  assign start_gcm_tag = gcm_tag & cfg_valid & no_alert &
+      // Manual operation has priority.
+      (manual_operation_i ? start_i : hash_subkey_ready_q & s_ready_q & data_in_new);
+
+  // The restore, AAD, save and tag phases use the GHASH block only.
+  assign start_ghash = start_gcm_restore | start_gcm_aad | start_gcm_save | start_gcm_tag;
+
+  // The GHASH block is idle whenever it's ready to receive inputs and we're not about to start
+  // a GCM related operation.
+  assign ghash_idle = ghash_in_ready_i & ~start_ghash;
+
+  // In GCM, the counter performs inc32() instead of inc128(), i.e., the counter wraps at 32 bits.
+  assign ctr_inc32_o = (mode_i == AES_GCM);
 
   // Helper signals for FSM
   assign crypt = cipher_crypt_o | cipher_crypt_i;
@@ -417,10 +447,12 @@ module aes_control_fsm
           // is enabled, software writes to the initial key registers are ignored.
           key_init_we_o = sideload_i ? {NumSharesKey * NumRegsKey{key_sideload}} : key_init_qe_i;
           iv_we_o       = iv_qe;
+        end
 
-          // Updates to the main and GCM control registers are only allowed if the core is not
-          // about to start and there isn't a storage error. A storage error is unrecoverable and
-          // requires a reset.
+        if (!start_core && !start_ghash) begin
+          // Updates to the main and GCM control registers are only allowed if the cipher core and
+          // the GHASH block are not about to start and there isn't a storage error. A storage
+          // error is unrecoverable and requires a reset.
           ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i     : 1'b0;
           ctrl_gcm_we_o  = !ctrl_err_storage_i ? ctrl_gcm_qe_i : 1'b0;
 
