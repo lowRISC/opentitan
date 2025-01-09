@@ -497,6 +497,19 @@ module rv_core_ibex
     .rvfi_mem_wmask,
     .rvfi_mem_rdata,
     .rvfi_mem_wdata,
+    // Unused ports from the RVFI interface
+    .rvfi_ext_pre_mip         (),
+    .rvfi_ext_post_mip        (),
+    .rvfi_ext_nmi             (),
+    .rvfi_ext_nmi_int         (),
+    .rvfi_ext_debug_req       (),
+    .rvfi_ext_debug_mode      (),
+    .rvfi_ext_rf_wr_suppress  (),
+    .rvfi_ext_mcycle          (),
+    .rvfi_ext_mhpmcounters    (),
+    .rvfi_ext_mhpmcountersh   (),
+    .rvfi_ext_ic_scr_key_valid(),
+    .rvfi_ext_irq_valid       (),
 `endif
     // SEC_CM: FETCH.CTRL.LC_GATED
     .fetch_enable_i         (fetch_enable),
