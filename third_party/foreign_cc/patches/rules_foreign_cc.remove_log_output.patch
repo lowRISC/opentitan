@@ -1,0 +1,13 @@
+diff --git foreign_cc/private/framework.bzl foreign_cc/private/framework.bzl
+index c84c217..f43da2c 100644
+--- foreign_cc/private/framework.bzl
++++ foreign_cc/private/framework.bzl
+@@ -561,7 +561,7 @@ def wrap_outputs(ctx, lib_name, configure_name, script_text, build_script_file =
+     cleanup_on_success_function = create_function(
+         ctx,
+         "cleanup_on_success",
+-        "rm -rf $BUILD_TMPDIR $EXT_BUILD_DEPS",
++        "rm -rf $BUILD_TMPDIR $EXT_BUILD_DEPS && echo > $BUILD_LOG",
+     )
+     cleanup_on_failure_function = create_function(
+         ctx,
