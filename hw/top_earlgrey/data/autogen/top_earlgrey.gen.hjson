@@ -16875,17 +16875,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -16901,17 +16890,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -16927,17 +16905,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -16953,17 +16920,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -16979,17 +16935,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -17005,14 +16950,6 @@
       clock_group:
       {
         name: timers
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_timers: io_div4
-          clk_aon_timers: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
       unmanaged_clock: false
@@ -17028,15 +16965,6 @@
       clock_group:
       {
         name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
       unmanaged_clock: false
@@ -17052,17 +16980,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_peri
       unmanaged_clock: false
@@ -17078,17 +16995,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div2_peri
       unmanaged_clock: false
@@ -17104,17 +17010,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_usb_peri
       unmanaged_clock: false
@@ -17130,18 +17025,6 @@
       clock_group:
       {
         name: powerup
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_powerup: io_div4
-          clk_aon_powerup: aon
-          clk_main_powerup: main
-          clk_io_powerup: io
-          clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
       unmanaged_clock: false
@@ -17157,18 +17040,6 @@
       clock_group:
       {
         name: powerup
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_powerup: io_div4
-          clk_aon_powerup: aon
-          clk_main_powerup: main
-          clk_io_powerup: io
-          clk_usb_powerup: usb
-          clk_io_div2_powerup: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_powerup
       unmanaged_clock: false
@@ -17184,15 +17055,6 @@
       clock_group:
       {
         name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
       unmanaged_clock: false
@@ -17208,17 +17070,6 @@
       clock_group:
       {
         name: peri
-        src: top
-        sw_cg: yes
-        unique: no
-        clocks:
-        {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_peri
       unmanaged_clock: false
@@ -17234,14 +17085,6 @@
       clock_group:
       {
         name: timers
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_timers: io_div4
-          clk_aon_timers: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_timers
       unmanaged_clock: false
@@ -17257,17 +17100,6 @@
       clock_group:
       {
         name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_infra: io_div4
-          clk_main_infra: main
-          clk_usb_infra: usb
-          clk_io_infra: io
-          clk_io_div2_infra: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
       unmanaged_clock: false
@@ -17283,17 +17115,6 @@
       clock_group:
       {
         name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_infra: io_div4
-          clk_main_infra: main
-          clk_usb_infra: usb
-          clk_io_infra: io
-          clk_io_div2_infra: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_infra
       unmanaged_clock: false
@@ -17309,17 +17130,6 @@
       clock_group:
       {
         name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_infra: io_div4
-          clk_main_infra: main
-          clk_usb_infra: usb
-          clk_io_infra: io
-          clk_io_div2_infra: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
       unmanaged_clock: false
@@ -17335,17 +17145,6 @@
       clock_group:
       {
         name: infra
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_infra: io_div4
-          clk_main_infra: main
-          clk_usb_infra: usb
-          clk_io_infra: io
-          clk_io_div2_infra: io_div2
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_infra
       unmanaged_clock: false
@@ -17361,15 +17160,6 @@
       clock_group:
       {
         name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_secure
       unmanaged_clock: false
@@ -17385,16 +17175,6 @@
       clock_group:
       {
         name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-          clk_main_hmac: main
-          clk_main_kmac: main
-          clk_main_otbn: main
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_aes
       unmanaged_clock: false
@@ -17410,16 +17190,6 @@
       clock_group:
       {
         name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-          clk_main_hmac: main
-          clk_main_kmac: main
-          clk_main_otbn: main
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_hmac
       unmanaged_clock: false
@@ -17435,16 +17205,6 @@
       clock_group:
       {
         name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-          clk_main_hmac: main
-          clk_main_kmac: main
-          clk_main_otbn: main
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_kmac
       unmanaged_clock: false
@@ -17460,16 +17220,6 @@
       clock_group:
       {
         name: trans
-        src: top
-        sw_cg: hint
-        unique: yes
-        clocks:
-        {
-          clk_main_aes: main
-          clk_main_hmac: main
-          clk_main_kmac: main
-          clk_main_otbn: main
-        }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_otbn
       unmanaged_clock: false

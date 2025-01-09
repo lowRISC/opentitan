@@ -142,6 +142,23 @@ class Group:
         }
 
 
+class GroupProxy:
+    """
+    The sole purpose of this class is to use an object as if it's an object
+    but when serializing, we only print the group name instead of the definition.
+    """
+    def __init__(self, grp):
+        self._grp = grp
+
+    def __getattr__(self, name):
+        return getattr(self._grp, name)
+
+    def _asdict(self):
+        return {
+            "name": self._grp.name
+        }
+
+
 class TypedClocks(NamedTuple):
     # External clocks that are consumed only inside the clkmgr and are fed from
     # an external ast source.

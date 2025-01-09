@@ -11,7 +11,7 @@ from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
 from topgen import lib, secure_prng
-from .clocks import Clocks
+from .clocks import Clocks, GroupProxy
 from .resets import Resets, UnmanagedResets
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
@@ -905,8 +905,9 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
         else:
             clk = clk.split(".")[-1]
 
-            # Discover what clock group we are related to
-            clock_group = clock_groups[clk]
+            # Discover what clock group we are related to.
+            # We create a proxy so that it is only serialized by name.
+            clock_group = GroupProxy(clock_groups[clk])
 
             # using this info, we can create an LPG identifier
             # and uniquify it via a dict.
