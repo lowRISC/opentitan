@@ -8,6 +8,7 @@ This script fetches the hw block data the diagram needs
 and bundles it into one json file.
 """
 from urllib.request import urlopen
+from urllib.error import HTTPError
 import itertools as it
 import json
 from pathlib import Path
@@ -57,8 +58,12 @@ block_level_urls = {
 
 
 def parse_report(path: str) -> Tuple[int, int]:
-    with urlopen(f'https://reports.opentitan.org/{path}/report.json') as response:
-        report = json.load(response)
+    try:
+        with urlopen(f'https://reports.opentitan.org/{path}/report.json') as response:
+            report = json.load(response)
+    except HTTPError:
+        # URL does not exist, there are no test runs yet for that
+        return (0, 0)
 
     # Extract all tests from the report.
     testpoints = report['results']['testpoints']
