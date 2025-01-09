@@ -138,12 +138,12 @@ endtask
 task rom_ctrl_base_vseq::read_digest_regs();
   uvm_status_e status;
   for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-    ral.digest[i].mirror(.status(status), .check(UVM_CHECK));
+    ral.digest[i].mirror(.status(status), .check(UVM_CHECK), .prior(100));
     if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(status, UVM_IS_OK)
   end
   for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-    ral.exp_digest[i].mirror(.status(status), .check(UVM_CHECK));
+    ral.exp_digest[i].mirror(.status(status), .check(UVM_CHECK), .prior(100));
     if (!cfg.clk_rst_vif.rst_n) return;
     `DV_CHECK_EQ(status, UVM_IS_OK)
   end
