@@ -106,7 +106,7 @@ opentitan_test(
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -143,7 +143,7 @@ opentitan_test(
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -169,7 +169,7 @@ opentitan_test(
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
         deps = [
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//sw/device/lib/testing/test_framework:ottf_main",
             "//sw/device/silicon_creator/lib/drivers:lifecycle",
             "//sw/device/silicon_creator/lib/drivers:otp",
@@ -379,8 +379,8 @@ opentitan_test(
         exit_success = MSG_PASS,
     ),
     deps = [
-        "//hw/ip/uart/data:uart_c_regs",
-        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+        "//hw/top:pinmux_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
@@ -409,7 +409,7 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -432,7 +432,7 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:otp",
@@ -463,7 +463,7 @@ opentitan_test(
     ),
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",

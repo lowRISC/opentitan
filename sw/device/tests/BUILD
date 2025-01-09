@@ -292,7 +292,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -322,7 +322,7 @@ opentitan_test(
     fpga = fpga_params(timeout = "moderate"),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -362,7 +362,7 @@ opentitan_test(
     ),
     fpga = fpga_params(timeout = "moderate"),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -404,7 +404,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -453,11 +453,11 @@ opentitan_test(
         timeout = "moderate",
     ),
     deps = [
-        "//hw/ip/i2c/data:i2c_c_regs",
-        "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
-        "//hw/ip/usbdev/data:usbdev_c_regs",
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
+        "//hw/top:i2c_c_regs",
+        "//hw/top:spi_device_c_regs",
+        "//hw/top:spi_host_c_regs",
+        "//hw/top:usbdev_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -505,7 +505,7 @@ opentitan_test(
         timeout = "moderate",
     ),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:mmio",
@@ -1216,7 +1216,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crypto/drivers:otbn",
@@ -1254,7 +1254,7 @@ opentitan_test(
         timeout = "eternal",
     ),
     deps = [
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -1289,7 +1289,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/ip/aes:model",
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
@@ -1320,7 +1320,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
-        "//hw/ip/edn/data:edn_c_regs",
+        "//hw/top:edn_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
@@ -1491,7 +1491,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -1708,7 +1708,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
@@ -1855,7 +1855,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
+        "//hw/top:otp_ctrl_c_regs",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -1904,7 +1904,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -1930,7 +1930,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top:flash_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -2310,9 +2310,9 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/ip/aes/data:aes_c_regs",
-        "//hw/ip/keymgr/data:keymgr_c_regs",
-        "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:aes_c_regs",
+        "//hw/top:keymgr_c_regs",
+        "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:aes",
@@ -2341,8 +2341,8 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/keymgr/data:keymgr_c_regs",
-        "//hw/ip/kmac/data:kmac_c_regs",
+        "//hw/top:keymgr_c_regs",
+        "//hw/top:kmac_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -2368,7 +2368,7 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -2398,7 +2398,7 @@ opentitan_test(
     silicon = silicon_params(tags = ["broken"]),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/otbn/data:otbn_c_regs",
+        "//hw/top:otbn_c_regs",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr",
@@ -3282,7 +3282,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -3317,7 +3317,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -3360,7 +3360,7 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:pwrmgr",
@@ -3422,7 +3422,7 @@ opentitan_test(
     srcs = ["pwrmgr_sensor_ctrl_deep_sleep_wake_up.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/dif:pwrmgr",
         "//sw/device/lib/dif:rv_plic",
@@ -3596,10 +3596,10 @@ opentitan_test(
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
-        "//hw/ip/i2c/data:i2c_c_regs",
-        "//hw/ip/spi_device/data:spi_device_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
-        "//hw/ip/usbdev/data:usbdev_c_regs",
+        "//hw/top:i2c_c_regs",
+        "//hw/top:spi_device_c_regs",
+        "//hw/top:spi_host_c_regs",
+        "//hw/top:usbdev_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -3997,7 +3997,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
@@ -4040,7 +4040,7 @@ opentitan_test(
         tags = ["manual"],
     ),
     deps = [
-        "//hw/top_earlgrey/ip/sensor_ctrl/data:sensor_ctrl_c_regs",
+        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
@@ -4074,7 +4074,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
+        "//hw/top:pwm_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aon_timer",
@@ -5152,7 +5152,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey:alert_handler_c_regs",
+        "//hw/top:alert_handler_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/arch:device",
@@ -5362,19 +5362,19 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
         "//hw/ip/aes:model",
-        "//hw/ip/aes/data:aes_c_regs",
-        "//hw/ip/csrng/data:csrng_c_regs",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
-        "//hw/ip/gpio/data:gpio_c_regs",
-        "//hw/ip/hmac/data:hmac_c_regs",
-        "//hw/ip/i2c/data:i2c_c_regs",
-        "//hw/ip/kmac/data:kmac_c_regs",
-        "//hw/ip/pattgen/data:pattgen_c_regs",
-        "//hw/ip/pwm/data:pwm_c_regs",
-        "//hw/ip/spi_host/data:spi_host_c_regs",
-        "//hw/ip/uart/data:uart_c_regs",
+        "//hw/top:adc_ctrl_c_regs",
+        "//hw/top:aes_c_regs",
+        "//hw/top:csrng_c_regs",
+        "//hw/top:entropy_src_c_regs",
+        "//hw/top:gpio_c_regs",
+        "//hw/top:hmac_c_regs",
+        "//hw/top:i2c_c_regs",
+        "//hw/top:kmac_c_regs",
+        "//hw/top:pattgen_c_regs",
+        "//hw/top:pwm_c_regs",
+        "//hw/top:spi_host_c_regs",
+        "//hw/top:uart_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:math",
         "//sw/device/lib/base:multibits",
@@ -5831,12 +5831,12 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
-            "//hw/ip/adc_ctrl/data:adc_ctrl_c_regs",
-            "//hw/ip/keymgr/data:keymgr_c_regs",
-            "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
-            "//hw/ip/sysrst_ctrl/data:sysrst_ctrl_c_regs",
-            "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+            "//hw/top:adc_ctrl_c_regs",
+            "//hw/top:flash_ctrl_c_regs",
+            "//hw/top:keymgr_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
+            "//hw/top:pinmux_c_regs",
+            "//hw/top:sysrst_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:adc_ctrl",
@@ -6764,9 +6764,9 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/ip/lc_ctrl/data:lc_ctrl_c_regs",
-        "//hw/top_earlgrey/ip_autogen/clkmgr:clkmgr_c_regs",
-        "//hw/top_earlgrey/ip_autogen/pinmux:pinmux_c_regs",
+        "//hw/top:clkmgr_c_regs",
+        "//hw/top:lc_ctrl_c_regs",
+        "//hw/top:pinmux_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
@@ -6837,8 +6837,8 @@ opentitan_binary(
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:pwm_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -6866,8 +6866,8 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/ip/pwm/data:pwm_c_regs",
-        "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top:pwm_c_regs",
+        "//hw/top:rv_timer_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
@@ -6989,7 +6989,7 @@ opentitan_test(
     verilator = verilator_params(tags = ["manual"]),
     deps = [
         ":otbn_randomness_impl",
-        "//hw/ip/entropy_src/data:entropy_src_c_regs",
+        "//hw/top:entropy_src_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -7109,7 +7109,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     deps = [
-        "//hw/top_earlgrey/ip_autogen/pwrmgr:pwrmgr_c_regs",
+        "//hw/top:pwrmgr_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
