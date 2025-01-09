@@ -44,10 +44,6 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
-  IBEX_CUSTOM_PMP_RESET_VALUES:
-    datatype: bool
-    default: true
-    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -57,8 +53,6 @@ targets:
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
     toplevel: chip_earlgrey_asic
-    parameters:
-      - IBEX_CUSTOM_PMP_RESET_VALUES
 
   lint:
     <<: *default_target

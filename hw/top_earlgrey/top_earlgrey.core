@@ -97,10 +97,6 @@ parameters:
   SYNTHESIS:
     datatype: bool
     paramtype: vlogdefine
-  IBEX_CUSTOM_PMP_RESET_VALUES:
-    datatype: bool
-    default: true
-    paramtype: vlogdefine
 
 targets:
   default: &default_target
@@ -110,8 +106,6 @@ targets:
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl_generic
     toplevel: top_earlgrey
-    parameters:
-      - IBEX_CUSTOM_PMP_RESET_VALUES
 
   sim:
     default_tool: icarus
