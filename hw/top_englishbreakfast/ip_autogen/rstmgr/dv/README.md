@@ -32,7 +32,7 @@ All common types and methods defined at the package level can be found in
 `rstmgr_env_pkg`. Some of them in use are:
 ```systemverilog
   typedef logic [NumSwResets-1:0] sw_rst_t;
-  typedef logic [$bits(alert_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
+  typedef logic [$bits(alert_handler_pkg::alert_crashdump_t)-1:0] linearized_alert_dump_t;
   typedef virtual pwrmgr_rstmgr_sva_if #(.CHECK_RSTREQS(0)) parameterized_pwrmgr_rstmgr_sva_vif;
 ```
 The RSTMGR testbench instantiates (already handled in CIP base env) [tl_agent](../../../../dv/sv/tl_agent/README.md).
