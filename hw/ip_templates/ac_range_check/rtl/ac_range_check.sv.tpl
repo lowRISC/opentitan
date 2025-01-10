@@ -6,7 +6,9 @@ module ${module_instance_name}
   import tlul_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
+  parameter bit                   RaclErrorRsp = 1'b1,
+  parameter int unsigned          RaclPolicySelVec[${3 + 5*num_ranges}] = '{${3 + 5*num_ranges}{0}}
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -14,6 +16,10 @@ module ${module_instance_name}
   // Alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t            racl_policies_i,
+  output logic                                      racl_error_o,
+  output top_racl_pkg::racl_error_log_t             racl_error_log_o,
   // Access range check interrupts
   output logic                                      intr_deny_cnt_reached_o,
   // Inter module signals
@@ -33,7 +39,11 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
   logic reg_intg_error, shadowed_storage_err, shadowed_update_err;
   // SEC_CM: BUS.INTEGRITY
-  ${module_instance_name}_reg_top u_ac_range_check_reg (
+  ${module_instance_name}_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_ac_range_check_reg (
     .clk_i                  ( clk_i                ),
     .rst_ni                 ( rst_ni               ),
     .rst_shadowed_ni        ( rst_shadowed_ni      ),
@@ -41,6 +51,9 @@ module ${module_instance_name}
     .tl_o                   ( tl_o                 ),
     .reg2hw                 ( reg2hw               ),
     .hw2reg                 ( hw2reg               ),
+    .racl_policies_i        ( racl_policies_i      ),
+    .racl_error_o           ( racl_error_o         ),
+    .racl_error_log_o       ( racl_error_log_o     ),
     .shadowed_storage_err_o ( shadowed_storage_err ),
     .shadowed_update_err_o  ( shadowed_update_err  ),
     .intg_err_o             ( reg_intg_error       )
