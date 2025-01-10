@@ -1748,7 +1748,7 @@
           name: alert_dump
           desc: Alert handler crash dump information.
           struct: alert_crashdump
-          package: alert_pkg
+          package: alert_handler_pkg
           type: uni
           act: rcv
           width: 1
@@ -9504,7 +9504,7 @@
         name: alert_dump
         desc: Alert handler crash dump information.
         struct: alert_crashdump
-        package: alert_pkg
+        package: alert_handler_pkg
         type: uni
         act: rcv
         width: 1

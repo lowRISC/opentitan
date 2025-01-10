@@ -288,8 +288,8 @@ module top_englishbreakfast #(
   logic intr_flash_ctrl_corr_err;
 
   // Alert list
-  prim_alert_pkg::alert_tx_t [alert_pkg::NAlerts-1:0]  alert_tx;
-  prim_alert_pkg::alert_rx_t [alert_pkg::NAlerts-1:0]  alert_rx;
+  prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0]  alert_tx;
+  prim_alert_pkg::alert_rx_t [alert_handler_pkg::NAlerts-1:0]  alert_rx;
 
 
   // define inter-module signals
@@ -415,8 +415,8 @@ module top_englishbreakfast #(
   );
 
   // Wire up alert handler LPGs
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_cg_en;
-  prim_mubi_pkg::mubi4_t [alert_pkg::NLpg-1:0] lpg_rst_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_cg_en;
+  prim_mubi_pkg::mubi4_t [alert_handler_pkg::NLpg-1:0] lpg_rst_en;
 
 
   // peri_lc_io_div4_0
@@ -874,7 +874,7 @@ module top_englishbreakfast #(
       .pwr_o(pwrmgr_aon_pwr_rst_rsp),
       .resets_o(rstmgr_aon_resets),
       .rst_en_o(rstmgr_aon_rst_en),
-      .alert_dump_i(alert_pkg::ALERT_CRASHDUMP_DEFAULT),
+      .alert_dump_i(alert_handler_pkg::ALERT_CRASHDUMP_DEFAULT),
       .cpu_dump_i(rv_core_ibex_crash_dump),
       .sw_rst_req_o(rstmgr_aon_sw_rst_req),
       .tl_i(rstmgr_aon_tl_req),
