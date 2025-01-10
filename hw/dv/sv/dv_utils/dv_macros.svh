@@ -387,6 +387,26 @@
   end
 `endif
 
+// Wait for one of two statements but stop early if the EXIT statement completes.
+//
+// Example usage:
+//
+//    `DV_SPINWAIT_EXIT_MULTI(do_something_time_consuming();,
+//                      do_something_else_time_consuming();,
+//                      wait(stop_now_flag);,
+//                      "The stop flag was set when we were working")
+`ifndef DV_SPINWAIT_EXIT_MULTI
+`define DV_SPINWAIT_EXIT_MULTI(WAIT_1_, WAIT_2_, EXIT_, MSG_ = "exit condition occurred!", ID_ =`gfn) \
+  `DV_SPINWAIT_EXIT(fork begin \
+                      fork \
+                        begin WAIT_1_ end \
+                        begin WAIT_2_ end \
+                      join_any \
+                      disable fork; \
+                    end join, \
+                    EXIT_, MSG_, ID_)
+`endif
+
 // macro that waits for a given delay and then reports an error
 `ifndef DV_WAIT_TIMEOUT
 `define DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_  = `gfn, ERROR_MSG_ = "timeout occurred!", REPORT_FATAL_ = 1) \
@@ -407,6 +427,12 @@
 `ifndef DV_WAIT
 `define DV_WAIT(WAIT_COND_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
   `DV_SPINWAIT(wait (WAIT_COND_);, MSG_, TIMEOUT_NS_, ID_)
+`endif
+
+// Wait for one of two statements, but exit early after a timeout
+`ifndef DV_WAIT_MULTI
+`define DV_WAIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, MSG_ = "wait timeout occurred!", TIMEOUT_NS_ = default_spinwait_timeout_ns, ID_ =`gfn) \
+  `DV_SPINWAIT_EXIT_MULTI(WAIT_COND_1_, WAIT_COND_2_, `DV_WAIT_TIMEOUT(TIMEOUT_NS_, ID_, MSG_);, "", ID_)
 `endif
 
 // Control assertions in the DUT.

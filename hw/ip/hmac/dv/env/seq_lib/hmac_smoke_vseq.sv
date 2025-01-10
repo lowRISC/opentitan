@@ -165,11 +165,15 @@ task hmac_smoke_vseq::body();
         begin
           if (do_wipe_secret == WipeSecretBeforeProcess) begin
             `uvm_info(`gfn, $sformatf("wiping before process"), UVM_HIGH)
-            cfg.clk_rst_vif.wait_clks($urandom_range(0, msg.size() * 10));
-            wipe_secrets();
+            cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(0, msg.size() * 10));
+            if (!cfg.under_reset) begin
+              wipe_secrets();
+            end
           end
         end
       join
+
+      if (cfg.under_reset) return;   // Skip if a reset is ongoing...
 
       if (invalid_cfg) begin
         rd_digest(); // capture the digest CSRs before moving on to next transaction
@@ -186,11 +190,15 @@ task hmac_smoke_vseq::body();
         end
       end
 
+      if (cfg.under_reset) return;   // Skip if a reset is ongoing...
+
       if (do_hash_start_when_active && do_hash_start) begin
         trigger_hash_when_active();
         `DV_CHECK_MEMBER_RANDOMIZE_FATAL(msg)
         wr_msg(msg);
       end
+
+      if (cfg.under_reset) return;   // Skip if a reset is ongoing...
 
       // msg stream in finished, start hash
       if (do_hash_start) begin
@@ -213,17 +221,17 @@ task hmac_smoke_vseq::body();
       end else begin
         key_process_cycles = HMAC_KEY_PROCESS_CYCLES_512;
       end
-      cfg.clk_rst_vif.wait_clks((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
-                                key_process_cycles * 2 :
-                                $urandom_range(0, key_process_cycles * 2));
-
+      cfg.clk_rst_vif.wait_clks_or_rst((msg.size() % 4 || !legal_seq_c.constraint_mode()) ?
+                                       key_process_cycles * 2 :
+                                       $urandom_range(0, key_process_cycles * 2));
+      if (cfg.under_reset) return;   // Skip if a reset is ongoing...
       if (do_hash_start) begin
         fork
           begin
             if (!invalid_cfg) begin
               // wait for interrupt to assert, check status and clear it
               if (intr_hmac_done_en) begin
-                `DV_WAIT(cfg.intr_vif.pins[HmacDone] === 1'b1)
+                `DV_WAIT_MULTI(wait(cfg.intr_vif.pins[HmacDone] === 1'b1);, wait(cfg.under_reset);)
               end else begin
                 csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
               end
@@ -232,12 +240,15 @@ task hmac_smoke_vseq::body();
           begin
             if (do_wipe_secret == WipeSecretBeforeDone) begin
               `uvm_info(`gfn, $sformatf("wiping before done"), UVM_HIGH)
-              cfg.clk_rst_vif.wait_clks($urandom_range(0, 100));
-              wipe_secrets();
+              cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(0, 100));
+              if (!cfg.under_reset) begin
+                wipe_secrets();
+              end
             end
           end
         join
       end
+      if (cfg.under_reset) return;   // Skip if a reset is ongoing...
       csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
       csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
     end

@@ -44,4 +44,7 @@ function void hmac_env_cfg::initialize(bit [TL_AW-1:0] csr_base_addr = '1);
 
   // only support 1 outstanding TL items in tlul_adapter
   m_tl_agent_cfg.max_outstanding_req = 1;
+
+  // Used to allow reset operations without waiting for CSR accesses to complete
+  can_reset_with_csr_accesses = 1;
 endfunction : initialize

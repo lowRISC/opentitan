@@ -280,13 +280,17 @@ endfunction : clear_wipe_secret
 task hmac_base_vseq::csr_rd_digest(output bit [TL_DW-1:0] digest[16]);
   foreach (digest[i]) begin
     csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
+    if (cfg.under_reset) break;   // Skip if a reset is ongoing...
     `uvm_info(`gfn, $sformatf("digest[%0d]=32'h%08x", i, digest[i]), UVM_MEDIUM)
   end
 endtask : csr_rd_digest
 
 // Write digest value
 task hmac_base_vseq::csr_wr_digest(bit [TL_DW-1:0] digest[16]);
-  foreach (digest[i]) csr_wr(.ptr(ral.digest[i]), .value(digest[i]));
+  foreach (digest[i]) begin
+    csr_wr(.ptr(ral.digest[i]), .value(digest[i]));
+    if (cfg.under_reset) break;   // Skip if a reset is ongoing...
+  end
 endtask : csr_wr_digest
 
 // Read digest size and update mirrored value
@@ -307,6 +311,7 @@ task hmac_base_vseq::wr_key(bit [TL_DW-1:0] key[]);
   foreach (key[i]) begin
     ral.key[i].set(key[i]);
     csr_update(.csr(ral.key[i]));
+    if (cfg.under_reset) break;   // Skip if a reset is ongoing...
     `uvm_info(`gfn, $sformatf("key[%0d] = 0x%0h", i, key[i]), UVM_HIGH)
   end
 endtask : wr_key
@@ -342,6 +347,7 @@ task hmac_base_vseq::wr_msg(bit [7:0] msg[], bit no_sar=0);
         bit [TL_DW-1:0] word;
         `DV_CHECK_FATAL(randomize(wr_addr, wr_mask) with {$countones(wr_mask) <= msg_q.size();})
 
+        if (cfg.under_reset) break;   // Skip if a reset is ongoing...
         foreach (wr_mask[i]) begin
           // wr_mask is a packed array, word_unpacked is unpack, has different index
           if (wr_mask[i]) begin
@@ -397,6 +403,7 @@ task hmac_base_vseq::wr_msg(bit [7:0] msg[], bit no_sar=0);
     end
   join
   sar_window.reset();
+  if (cfg.under_reset) return;   // Skip if a reset is ongoing...
   // ensure all msg fifo are written before trigger hmac_process
   if ($urandom_range(0, 1)) begin
     rd_msg_length();
@@ -427,6 +434,7 @@ task hmac_base_vseq::burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
                     .compare_op(CompareOpLe));
         if (msg_q.size() >= burst_wr_length * 4) begin
           repeat (burst_wr_length) begin
+            if (cfg.under_reset) break;   // Skip if a reset is ongoing...
             for (int i = 0; i < 4; i++) word_unpack[i] = msg_q.pop_front();
             word = {>>byte{word_unpack}};
             `uvm_info(`gfn, $sformatf("wr_addr = %0h, wr_mask = %0h, words = 0x%0h",
@@ -460,10 +468,12 @@ task hmac_base_vseq::burst_wr_msg(bit [7:0] msg[], int burst_wr_length);
         end else begin
           wr_msg(msg_q, 1); // Do not S&R on the last piece as message boundary could be wrong
           msg_q.delete();   // Flush the queue to avoid infinite loop
+          if (cfg.under_reset) break;   // Skip if a reset is ongoing...
         end
         if ($urandom_range(0, 1)) begin
           rd_msg_length();
         end
+        if (cfg.under_reset) break;   // Skip if a reset is ongoing...
         read_status_intr_clr();
       end
       // Keep it alive only if needed
@@ -497,6 +507,7 @@ task hmac_base_vseq::read_status_intr_clr();
   csr_rd(ral.intr_state, rdata);
   csr_wr(.ptr(ral.intr_state), .value(rdata));
 endtask : read_status_intr_clr
+
 // This task is called when sha_en=0 and sequence set hash_start, or streamed in msg.
 // It will check intr_pin, intr_state, and error_code registers.
 // Default check_err is 1, if set to 0, means user is not sure if it is error case or not,
@@ -559,12 +570,15 @@ task hmac_base_vseq::save_and_restore();
   // or 1024 bits SHA-2 384/512)
   sar_window.wait_trigger();
 
-  // Insert random delay to mimic the SW accesses which can take some time because of potential
-  // incoming interrupts. To cover the particular case where the stop command is issued while the
-  // hash has already been processed, this delay should exceed the number clock cycles required
-  // for this operation, which is 64 for SHA2-256 and 80 for SHA2-384/512 with the current RTL.
-  cfg.clk_rst_vif.wait_clks($urandom_range(HMAC_MSG_PROCESS_CYCLES_256-10,
-                                           HMAC_MSG_PROCESS_CYCLES_512+10));
+  // Insert random delay to mimic the SW accesses which can take some time because of
+  // potential incoming interrupts. To cover the particular case where the stop command is
+  // issued while the hash has already been processed, this delay should exceed the number
+  // clock cycles required for this operation, which is 64 for SHA2-256 and 80 for
+  // SHA2-384/512 with the current RTL.
+  cfg.clk_rst_vif.wait_clks_or_rst($urandom_range(HMAC_MSG_PROCESS_CYCLES_256-10,
+                                                  HMAC_MSG_PROCESS_CYCLES_512+10));
+
+  if (cfg.under_reset) return;   // Skip if a reset is ongoing...
 
   randcase
     1:  sar_stop_and_continue();
@@ -585,6 +599,7 @@ task hmac_base_vseq::sar_stop_and_continue();
   save_ctx_ongoing = 1;
   // Wait for hash to be done so the digest is updated.
   csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+  if (cfg.under_reset) return;   // Skip if a reset is ongoing...
   // Clear the interrupt.
   csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
   save_ctx_ongoing = 0;
@@ -607,6 +622,7 @@ task hmac_base_vseq::sar_same_context();
   save_ctx_ongoing = 1;
   // Wait for hash to be done so the digest is updated.
   csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+  if (cfg.under_reset) return;   // Skip if a reset is ongoing...
   // Clear the interrupt.
   csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
   // Read the digest and save it.
@@ -656,6 +672,7 @@ task hmac_base_vseq::sar_different_context();
   save_ctx_ongoing = 1;
   // Wait for hash to be done so the digest is updated.
   csr_spinwait(.ptr(ral.intr_state.hmac_done), .exp_data(1'b1));
+  if (cfg.under_reset) return;   // Skip if a reset is ongoing...
   // Clear the interrupt.
   csr_wr(.ptr(ral.intr_state.hmac_done), .value(1'b1));
 
@@ -688,6 +705,7 @@ task hmac_base_vseq::sar_different_context();
           trigger_hash();
           // Write complete message for B context
           wr_msg(msg_b, 1);
+          if (cfg.under_reset) return;   // Skip if a reset is ongoing...
           // Start hash
           trigger_process();
           // Wait for hash to be done so the digest is updated.
@@ -708,6 +726,7 @@ task hmac_base_vseq::sar_different_context();
           trigger_hash_continue();
           // Write complete message for B context
           wr_msg(msg_b, 1);
+          if (cfg.under_reset) return;   // Skip if a reset is ongoing...
           // Start hash
           trigger_process();
           // Wait for hash to be done so the digest is updated.
