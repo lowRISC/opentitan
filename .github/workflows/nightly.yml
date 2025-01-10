@@ -61,7 +61,11 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test \
+            --build_tests_only \
+            --cache_test_results=no \
+            --test_tag_filters=-slow_test \
+            --target_pattern_file="$bazel_tests"
 
       - name: Run tests after ROM_EXT boot stage
         if: success() || failure()
@@ -72,7 +76,11 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test \
+            --build_tests_only \
+            --cache_test_results=no \
+            --test_tag_filters=-slow_test \
+            --target_pattern_file="$bazel_tests"
 
       - name: Compute bucket destination
         id: bucket_destination
@@ -128,7 +136,11 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test \
+            --build_tests_only \
+            --cache_test_results=no \
+            --test_tag_filters=-slow_test \
+            --target_pattern_file="$bazel_tests"
 
       - name: Run tests after ROM_EXT boot stage
         if: success() || failure()
@@ -139,7 +151,11 @@ jobs:
                                                     | grep -v examples \
                                                     | grep -v penetrationtests \
                                                     > "$bazel_tests"
-          ./bazelisk.sh test --build_tests_only --test_tag_filters=-slow_test --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test \
+            --build_tests_only \
+            --cache_test_results=no \
+            --test_tag_filters=-slow_test \
+            --target_pattern_file="$bazel_tests"
 
       - name: Compute bucket destination
         id: bucket_destination
@@ -198,7 +214,10 @@ jobs:
                                                                   | grep -v penetrationtests \
                                                                   > "$bazel_tests"
 
-          ./bazelisk.sh test --build_tests_only --target_pattern_file="$bazel_tests"
+          ./bazelisk.sh test \
+            --build_tests_only \
+            --cache_test_results=no \
+            --target_pattern_file="$bazel_tests"
 
       - name: Compute bucket destination
         id: bucket_destination
@@ -234,6 +253,7 @@ jobs:
             --define bitstream=gcp_splice \
             --test_tag_filters=-verilator,-dv,-broken \
             --build_tests_only \
+            --cache_test_results=no \
             --test_output=errors \
             //sw/device/silicon_creator/rom/e2e/...
       - name: Publish Bazel test results
@@ -256,7 +276,10 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Run the tests
         run: |
-          ./bazelisk.sh test --test_tag_filters=nightly //sw/otbn/crypto/...
+          ./bazelisk.sh test \
+            --cache_test_results=no \
+            --test_tag_filters=nightly \
+            //sw/otbn/crypto/...
       - name: Publish Bazel test results
         uses: ./.github/actions/publish-bazel-test-results
         if: ${{ !cancelled() }}
@@ -282,6 +305,7 @@ jobs:
             --define DISABLE_VERILATOR_BUILD=true \
             --define bitstream=gcp_splice \
             --build_tests_only \
+            --cache_test_results=no \
             --test_output=errors \
             --test_tag_filters="cw310_test_rom" \
             $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
@@ -292,6 +316,7 @@ jobs:
             --define DISABLE_VERILATOR_BUILD=true \
             --define bitstream=gcp_splice \
             --build_tests_only \
+            --cache_test_results=no \
             --test_output=errors \
             --test_tag_filters=cw310_sival,-broken \
             $(./bazelisk.sh query 'attr("tags", "[\[ ]pmod[,\]]", tests(//...))')
