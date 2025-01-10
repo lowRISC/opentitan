@@ -19,7 +19,7 @@ import math
 
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true}]
   bus_interfaces: [
-    { protocol: "tlul", direction: "device", hier_path: "u_ac_range_check_reg" }
+    { protocol: "tlul", direction: "device", hier_path: "u_ac_range_check_reg", racl_support: true }
   ]
   param_list: [
     { name:    "NumRanges",
