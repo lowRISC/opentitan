@@ -25,8 +25,8 @@ package(default_visibility = ["//visibility:public"])
 [
     otp_image(
         name = "img_{}_exec_disabled".format(lc_state),
-        src = "//hw/ip/otp_ctrl/data:otp_json_" + lc_state,
-        overlays = STD_OTP_OVERLAYS + ["//hw/ip/otp_ctrl/data:otp_json_exec_disabled"],
+        src = "//hw/top_earlgrey/data/otp:otp_json_" + lc_state,
+        overlays = STD_OTP_OVERLAYS + ["//hw/top_earlgrey/data/otp:otp_json_exec_disabled"],
         visibility = ["//visibility:private"],
     )
     for lc_state, _ in get_lc_items()

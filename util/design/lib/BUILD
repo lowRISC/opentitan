@@ -49,7 +49,7 @@ py_library(
     # manually (by dvsim.py), and imported by the `gen-flash-img.py` script,
     # which is invoked automatically (via Bazel), we cannot use full package
     # includes within this module yet. Adding `util/design` to the imports path,
-    # temporarily resovles this issue until the entire hw/ subtree can be
+    # temporarily resolves this issue until the entire hw/ subtree can be
     # Bazelfied.
     imports = [
         "../",

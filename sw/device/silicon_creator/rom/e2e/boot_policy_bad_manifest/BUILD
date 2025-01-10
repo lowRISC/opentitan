@@ -206,7 +206,7 @@ BOOT_POLICY_BAD_MANIFEST_CASES = [
             lc_state,
             sec_ver,
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_sec_ver_{}".format(sec_ver)],
         visibility = ["//visibility:private"],
     )

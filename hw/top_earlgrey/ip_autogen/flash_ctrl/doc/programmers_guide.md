@@ -43,7 +43,7 @@ Once the address is discovered, further steps can be taken to triage the issue.
 
 ### Hardware Initiated Reads
 
-If the root secrets have been provisioned in OTP and the life cycle state is in either DEV, PROD* or RMA, the special info pages holding the creator and owner seeds will be read out automatically by the flash controller and sent to the keymanager upon flash initialization (see [life cycle controller documentation](../../../../ip/lc_ctrl/doc/theory_of_operation.md#life-cycle-access-control-signals) and [OTP controller documentation](../../../../ip/otp_ctrl/doc/theory_of_operation.md#life-cycle-interfaces) for more details).
+If the root secrets have been provisioned and the life cycle state is in either DEV, PROD* or RMA, the special info pages holding the creator and owner seeds will be read out automatically by the flash controller and sent to the keymanager upon flash initialization.
 Hence, it is important that these pages are initialized with valid data, since otherwise the hardware will likely encounter ECC errors during the automatic readout.
 
 Note that by default, hardware assumes that scrambling and ECC is enabled on these special info pages.

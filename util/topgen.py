@@ -19,6 +19,7 @@ import tlgen
 import version_file
 from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
                    IpTemplate, TemplateRenderError)
+from design.lib.OtpMemMap import OtpMemMap
 from mako import exceptions
 from mako.template import Template
 from raclgen.lib import DEFAULT_RACL_CONFIG, parse_racl_config
@@ -541,6 +542,20 @@ def generate_flash(topcfg: Dict[str, object], out_path: Path) -> None:
     ipgen_render("flash_ctrl", topname, params, out_path)
 
 
+def get_params_for_otp_ctrl(out_path: Path, seed: int = None) -> Dict[str, object]:
+    """Returns the parameters extracted from the otp_mmap.hjson file."""
+    otp_mmap_path = out_path / "data" / "otp" / "otp_ctrl_mmap.hjson"
+    return OtpMemMap.from_mmap_path(otp_mmap_path, seed).config
+
+
+def generate_otp_ctrl(topcfg: Dict[str, object], cfg_path: Path, out_path: Path,
+                      seed: int = None) -> None:
+    log.info("Generating otp_ctrl with ipgen")
+    params = {"otp_mmap": get_params_for_otp_ctrl(cfg_path, seed)}
+    topname = topcfg["name"]
+    ipgen_render("otp_ctrl", topname, params, out_path)
+
+
 # generate ac_range_check with ipgen
 def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
     # Not all tops have an ac range check instance
@@ -830,10 +845,15 @@ def _process_top(
                     "Falling back to the default configuration of template "
                     f"{ip_name} for initial validation.")
 
+                log.info(f"Dealing with {ip_name} ipgen")
+                if ip_name == "otp_ctrl":
+                    params = {"otp_mmap": get_params_for_otp_ctrl(cfg_path)}
+                else:
+                    params = {}
                 tpl_path = IP_TEMPLATES_PATH / ip_name
                 ip_template = IpTemplate.from_template_path(tpl_path)
                 ip_config = IpConfig(ip_template.params,
-                                     f"{top_name}_{ip_name}")
+                                     f"{top_name}_{ip_name}", params)
 
                 try:
                     ip_desc = IpDescriptionOnlyRenderer(
@@ -916,6 +936,10 @@ def _process_top(
 
     # Generate outgoing alerts
     generate_outgoing_alerts(completecfg, out_path)
+
+    # Generate otp_ctrl if there is an instance
+    if lib.find_module(completecfg['module'], 'otp_ctrl'):
+        generate_otp_ctrl(completecfg, cfg_path, out_path)
 
     # Generate Pinmux
     if lib.find_module(completecfg['module'], 'pinmux'):

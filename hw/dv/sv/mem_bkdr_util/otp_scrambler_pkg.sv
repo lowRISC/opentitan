@@ -9,7 +9,6 @@
 package otp_scrambler_pkg;
 
   import uvm_pkg::*;
-  import otp_ctrl_reg_pkg::*;
   import otp_ctrl_part_pkg::*;
   import bus_params_pkg::*;
 

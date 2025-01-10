@@ -29,8 +29,6 @@ filesets:
       - lowrisc:ip:hmac
       - lowrisc:ip:kmac
       - lowrisc:ip:keymgr
-      - lowrisc:constants:top_earlgrey_top_pkg
-      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:usbdev
       - lowrisc:top_englishbreakfast:xbar_main

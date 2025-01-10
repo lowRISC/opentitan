@@ -68,17 +68,19 @@ Instead the system goes into a terminal non-responsive state where a user or hos
 
 The fast clock domain FSM (referred to as fast FSM from here on) resets to `Low Power` state and waits for a power-up request from the slow FSM.
 
-Once received, the fast FSM releases the life cycle reset stage (see [reset controller](../../rstmgr/README.md) for more details).
-This allows the [OTP](../../../../ip/otp_ctrl/README.md) to begin sensing.
+Once received, the fast FSM sequences the initialization of various units before the system is put in active state.
+Depending on the system configuration some units may not be present and the sequence skips over.
+This describes the default sequence assuming all the units are present.
+
+The fast FSM notifies the clock manager to enable all second level clock gating.
+The fast FSM notifies the reset manager to release the life cycle reset stage, which allows the otp controller (OTP) to begin sensing.
 Once OTP sensing completes, the life cycle controller is initialized.
-The initialization of the life cycle controller puts the device into its allowed operating state (see [life cycle controller](../../../../ip/lc_ctrl/README.md) for more details).
+The initialization of the life cycle controller puts the device into its allowed operating state.
 
-Once life cycle initialization is done, the fast FSM enables all second level clock gating (see [clock controller](../../clkmgr/README.md) for more details) and initiates strap sampling.
-For more details on what exactly the strap samples, please see [here](https://docs.google.com/spreadsheets/d/1pH8T1MhQ7TXtP_bFNT85T9jSVIHlxHAfbMnPbsMdjc0/edit?usp=sharing).
-
-Once strap sampling is complete, the system is ready to begin normal operations (note `flash_ctrl` initialization is explicitly not done here, please see [sections below](#flash-handling) for more details).
-The fast FSM acknowledges the slow FSM (which made the original power up request) and releases the system reset stage - this enables the processor to begin operation.
-Afterwards, the fast FSM transitions to `Active` state and waits for a software low power entry request.
+Once life cycle initialization is done, the fast FSM acknowledges the slow FSM rquest and initiates strap sampling.
+Once strap sampling is complete, the sequence continues once the rom controller finishes its checks.
+Note that `flash_ctrl` initialization is explicitly not done here, please see [sections below](#flash-handling) for more details.
+The processor is allowed to start executing, the fast FSM transitions to `Active` state and waits for a software low power entry request.
 
 A low power request is initiated by software through a combination of WFI and software low power hint in [`CONTROL`](registers.md#control).
 Specifically, this means if software issues only WFI, the power manager does not treat it as a power down request.
@@ -128,7 +130,7 @@ If the entry conditions are no longer true, the fast FSM "falls through" the ent
 
 ### Abort Handling
 
-If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl`.
+If the entry conditions are still true, the fast FSM then checks there are no ongoing non-volatile activities from `otp_ctrl`, `lc_ctrl` and `flash_ctrl` (if they re part of the system).
 If any module is active, the fast FSM "aborts" entry handling and returns the system to active state, thus terminating the entry process.
 
 ## Reset Request Handling

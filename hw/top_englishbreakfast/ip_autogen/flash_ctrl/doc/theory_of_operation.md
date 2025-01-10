@@ -39,7 +39,7 @@ It is expected that after an RMA transition, the entire system will be rebooted.
 #### Initialization
 
 The flash protocol controller is initialized through [`INIT`](registers.md#init).
-When initialization is invoked, the flash controller requests the address and data scrambling keys from an external entity, [otp_ctrl](../../../../ip/otp_ctrl/README.md#interface-to-flash-scrambler) in this case.
+When initialization is invoked, the flash controller requests the address and data scrambling keys from an external source, for example the otp controller.
 
 After the scrambling keys are requested, the flash protocol controller reads the root seeds out of the [secret partitions](#secret-information-partitions) and sends them to the key manager.
 Once the above steps are completed, the read buffers in the flash physical controller are enabled for operation.

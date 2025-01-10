@@ -7,7 +7,7 @@ import sys
 import io
 import re
 from pathlib import Path
-from typing import Union, Tuple, List, Dict
+from typing import Dict, List
 
 import dashboard.gen_dashboard_entry as dashboard
 from mdbook import utils as md_utils
@@ -18,8 +18,8 @@ DASHBOARD_PATTERN = re.compile(r'\{\{#dashboard\s+?(.+?)\s*\}\}')
 IP_CFG_PATTERN = re.compile(r'.+/data/(?!.+(_testplan|example)).+\.hjson')
 REPO_TOP = Path(__file__).resolve().parents[1]
 
-# FIXME: It would be nice if this isn't hard coded.
-DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
+# FIXME: This should be generated via topgen.
+DASHBOARDS: Dict[str, List[Path]] = {
     'comportable': [
         REPO_TOP / "hw/ip/aes/data/aes.hjson",
         REPO_TOP / "hw/ip/aon_timer/data/aon_timer.hjson",
@@ -49,29 +49,15 @@ DASHBOARDS: Dict[str, List[Union[Path, Tuple[Path, Path]]]] = {
         REPO_TOP / "hw/ip/usbdev/data/usbdev.hjson",
     ],
     'top_earlgrey': [
-        (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/",
-        ),
-        (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/",
-        ),
-        (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/",
-        ),
-        (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/",
-        ),
-        (
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
-            REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/",
-        ),
         REPO_TOP / "hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson",
-        REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson",
         REPO_TOP / "hw/top_earlgrey/ip_autogen/rv_plic/data/rv_plic.hjson",
+        REPO_TOP / "hw/top_earlgrey/ip/sensor_ctrl/data/sensor_ctrl.hjson",
     ],
 }
 
@@ -130,11 +116,7 @@ def replace_with_dashboard(m: re.Match) -> str:
 
     buffer = io.StringIO()
     # Generate the rows for the hardware blocks in a sorted order.
-    for cfg_file in sorted(
-        cfg_files,
-        # if tuple sort using the first element.
-        key=lambda file: file[0] if isinstance(file, Tuple) else file
-    ):
+    for cfg_file in sorted(cfg_files):
         dashboard.gen_dashboard_row_html(cfg_file, buffer)
 
     return DASHBOARD_TEMPLATE.format(buffer.getvalue())

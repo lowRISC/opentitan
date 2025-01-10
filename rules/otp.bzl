@@ -45,35 +45,35 @@ load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
 def get_otp_images():
     """Returns a list of (otp_name, img_target) tuples.
 
-    Each tuple corresponds to an OTP image defined in //hw/ip/otp_ctrl/data. The
+    Each tuple corresponds to an OTP image defined in //util/design/data. The
     otp_name is a short, unique suffix of the image target, e.g. "rma". The
     img_target is the full path of the OTP image target.
     """
 
     img_targets = [
-        "//hw/ip/otp_ctrl/data:img_dev",
-        "//hw/ip/otp_ctrl/data:img_rma",
-        "//hw/ip/otp_ctrl/data:img_test_locked0",
-        "//hw/ip/otp_ctrl/data:img_test_locked1",
-        "//hw/ip/otp_ctrl/data:img_test_locked2",
-        "//hw/ip/otp_ctrl/data:img_test_locked3",
-        "//hw/ip/otp_ctrl/data:img_test_locked4",
-        "//hw/ip/otp_ctrl/data:img_test_locked5",
-        "//hw/ip/otp_ctrl/data:img_test_locked6",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked0",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked1",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked1_initial",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked2",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked3",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked4",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked5",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked6",
-        "//hw/ip/otp_ctrl/data:img_test_unlocked7",
-        "//hw/ip/otp_ctrl/data:img_prod",
-        "//hw/ip/otp_ctrl/data:img_prod_end",
-        "//hw/ip/otp_ctrl/data:img_exec_disabled",
-        "//hw/ip/otp_ctrl/data:img_bootstrap_disabled",
-        "//hw/ip/otp_ctrl/data:img_raw",
+        "//hw/top_earlgrey/data/otp:img_dev",
+        "//hw/top_earlgrey/data/otp:img_rma",
+        "//hw/top_earlgrey/data/otp:img_test_locked0",
+        "//hw/top_earlgrey/data/otp:img_test_locked1",
+        "//hw/top_earlgrey/data/otp:img_test_locked2",
+        "//hw/top_earlgrey/data/otp:img_test_locked3",
+        "//hw/top_earlgrey/data/otp:img_test_locked4",
+        "//hw/top_earlgrey/data/otp:img_test_locked5",
+        "//hw/top_earlgrey/data/otp:img_test_locked6",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked0",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked1",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked1_initial",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked2",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked3",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked4",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked5",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked6",
+        "//hw/top_earlgrey/data/otp:img_test_unlocked7",
+        "//hw/top_earlgrey/data/otp:img_prod",
+        "//hw/top_earlgrey/data/otp:img_prod_end",
+        "//hw/top_earlgrey/data/otp:img_exec_disabled",
+        "//hw/top_earlgrey/data/otp:img_bootstrap_disabled",
+        "//hw/top_earlgrey/data/otp:img_raw",
     ]
 
     out = []
@@ -277,23 +277,23 @@ otp_image = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:img_seed",
+            default = "//util/design/data:img_seed",
             doc = "Configuration override seed used to randomize field values in an OTP image.",
         ),
         "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
+            default = "//util/design/data:lc_seed",
             doc = "Configuration override seed used to randomize LC netlist constants.",
         ),
         "otp_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:otp_seed",
+            default = "//util/design/data:otp_seed",
             doc = "Configuration override seed used to randomize OTP netlist constants.",
         ),
         "data_perm": attr.label(
-            default = "//hw/ip/otp_ctrl/data:data_perm",
+            default = "//util/design/data:data_perm",
             doc = "Post-processing option to trigger permuting bit positions in memfile.",
         ),
         "verbose": attr.bool(
@@ -357,24 +357,24 @@ otp_image_consts = rule(
         ),
         "mmap_def": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/otp_ctrl/data:otp_ctrl_mmap.hjson",
+            default = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
             doc = "OTP Controller memory map file in Hjson format.",
         ),
         "img_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:img_seed",
+            default = "//util/design/data:img_seed",
             doc = "Configuration override seed used to randomize field values in an OTP image.",
         ),
         "lc_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:lc_seed",
+            default = "//util/design/data:lc_seed",
             doc = "Configuration override seed used to randomize LC netlist constants.",
         ),
         "otp_seed": attr.label(
-            default = "//hw/ip/otp_ctrl/data:otp_seed",
+            default = "//util/design/data:otp_seed",
             doc = "Configuration override seed used to randomize OTP netlist constants.",
         ),
         "c_template": attr.label(
             allow_single_file = True,
-            default = "//hw/ip/otp_ctrl/data:otp_ctrl_img.c.tpl",
+            default = "//util/design/data:otp_ctrl_img.c.tpl",
             doc = "OTP image header template.",
         ),
         "verbose": attr.bool(
@@ -400,19 +400,19 @@ OTP_SIGVERIFY_FAKE_KEYS = [
 # Additional overlays can be applied on top to further customize the OTP.
 # This set overlays does not include any of the SECRET[0-2] partitions.
 STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS = OTP_SIGVERIFY_FAKE_KEYS + [
-    "//hw/ip/otp_ctrl/data:otp_json_creator_sw_cfg",
-    "//hw/ip/otp_ctrl/data:otp_json_owner_sw_cfg",
-    "//hw/ip/otp_ctrl/data:otp_json_alert_digest_cfg",
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg0",
-    "//hw/ip/otp_ctrl/data:otp_json_hw_cfg1",
+    "//hw/top_earlgrey/data/otp:otp_json_creator_sw_cfg",
+    "//hw/top_earlgrey/data/otp:otp_json_owner_sw_cfg",
+    "//hw/top_earlgrey/data/otp:otp_json_alert_digest_cfg",
+    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg0",
+    "//hw/top_earlgrey/data/otp:otp_json_hw_cfg1",
 ]
 
 # This is a set of overlays to generate a generic, standard OTP image.
 # Additional overlays can be applied on top to further customize the OTP.
 STD_OTP_OVERLAYS = STD_OTP_OVERLAYS_WITHOUT_SECRET_PARTITIONS + [
-    "//hw/ip/otp_ctrl/data:otp_json_secret0",
-    "//hw/ip/otp_ctrl/data:otp_json_secret1",
-    "//hw/ip/otp_ctrl/data:otp_json_secret2_unlocked",
+    "//hw/top_earlgrey/data/otp:otp_json_secret0",
+    "//hw/top_earlgrey/data/otp:otp_json_secret1",
+    "//hw/top_earlgrey/data/otp:otp_json_secret2_unlocked",
 ]
 
 def otp_hex(v):

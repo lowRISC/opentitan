@@ -48,8 +48,8 @@ dual_cc_library(
     ),
     deps = dual_inputs(
         device = [
-            "//hw/top:otp_ctrl_c_regs",
             "//hw/top:alert_handler_c_regs",
+            "//hw/top:otp_ctrl_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         ],
         host = [

@@ -12,7 +12,7 @@ load(
 # individualization binaries that configure OTP with the constants defined in
 # these bazel targets.
 EARLGREY_OTP_CFGS = {
-    "sival": "//hw/ip/otp_ctrl/data/earlgrey_skus/sival:otp_consts",
+    "sival": "//hw/top_earlgrey/data/otp/sival_skus:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
 # A dictionary of SKU configurations that will be used to generate FT

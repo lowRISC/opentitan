@@ -110,7 +110,7 @@ BOOT_DATA_RECOVERY_CASES = [
             case["lc_state"],
             case["default_boot_data"],
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(case["lc_state"]),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(case["lc_state"]),
         overlays = STD_OTP_OVERLAYS + [":boot_data_recovery_creator_sw_cfg_{}_{}".format(
             case["lc_state"],
             case["default_boot_data"],

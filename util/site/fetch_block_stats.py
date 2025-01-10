@@ -36,7 +36,7 @@ block_level_urls = {
     "kmac": "hw/ip/kmac_masked/dv/2024.01.22_10.57.17/",
     "life-cycle": "hw/ip/lc_ctrl/dv/2024.01.22_10.59.35/",
     "otbn": "hw/ip/otbn/dv/uvm/2024.01.22_11.00.27/",
-    "otp-fuse-controller": "hw/ip/otp_ctrl/dv/2024.01.22_11.01.45/",
+    "otp-fuse-controller": "hw/top_earlgrey/ip_autogen/otp_ctrl/dv/2024.01.22_11.01.45/",
     "pattern-generators": "hw/ip/pattgen/dv/2024.01.22_11.02.37/",
     "pwm": "hw/ip/pwm/dv/2024.01.22_11.04.36/",
     "power-manager": "hw/top_earlgrey/ip_autogen/pwrmgr/dv/2024.01.22_11.16.53/",

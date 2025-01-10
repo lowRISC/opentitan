@@ -24,7 +24,7 @@ _CW310_TESTROM = "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_scr_vmem"
 
 _CW340_TESTROM = _CW310_TESTROM
 
-_OTP_RMA = "//hw/ip/otp_ctrl/data:img_rma"
+_OTP_RMA = "//hw/top_earlgrey/data/otp:img_rma"
 
 _CW310_TESTROM_PATH = "{}/$(location {})".format(_PREFIX, _CW310_TESTROM)
 

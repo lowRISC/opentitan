@@ -1,0 +1,77 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Use the gen-otp-img.py script to convert this configuration into
+// a MEM file for preloading the OTP in FPGA synthesis or simulation.
+//
+
+{
+    // 256 bit seed to be used for generation of partition randomized values.
+    // Can be overridden on the command line with the --seed switch.
+    // The default seed was generated using secrets.py module.
+    seed: 85452983286950371191603618368782861611109037138182535346147818831008789508651
+
+    // The partition and item names must correspond with the OTP memory map.
+    partitions: [
+        {
+            name:  "SECRET0",
+            lock:  "True",
+            items: [
+                {
+                    name:  "TEST_UNLOCK_TOKEN",
+                    value: "<random>",
+                }
+                {
+                    name:  "TEST_EXIT_TOKEN",
+                    value: "<random>",
+                }
+            ],
+        }
+        {
+            name:  "SECRET1",
+            lock:  "True",
+            items: [
+                {
+                    name:  "FLASH_ADDR_KEY_SEED",
+                    value: "<random>",
+                }
+                {
+                    name:  "FLASH_DATA_KEY_SEED",
+                    value: "<random>",
+                }
+                {
+                    name:  "SRAM_DATA_KEY_SEED",
+                    value: "<random>",
+                }
+            ],
+        }
+        {
+            name:  "SECRET2",
+            lock:  "False",
+            items: [
+                {
+                    name:  "RMA_TOKEN",
+                    value: "<random>",
+                }
+                {
+                    name:  "CREATOR_ROOT_KEY_SHARE0",
+                    value: "<random>",
+                }
+                {
+                    name:  "CREATOR_ROOT_KEY_SHARE1",
+                    value: "<random>",
+                }
+            ],
+        }
+        {
+            name:  "LIFE_CYCLE",
+            // Can be one of the following strings:
+            // RAW, TEST_UNLOCKED0-3, TEST_LOCKED0-2, DEV, PROD, PROD_END, RMA, SCRAP
+            state: "DEV",
+            // Can range from 0 to 16.
+            // Note that a value of 0 is only permissible in RAW state.
+            count: "5"
+        }
+    ]
+}

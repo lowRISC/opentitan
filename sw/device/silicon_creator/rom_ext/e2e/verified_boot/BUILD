@@ -55,7 +55,7 @@ filegroup(
     otp_image(
         name = "otp_img_with_{}_imm_romext_enabled".format(name),
         testonly = True,
-        src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+        src = "//hw/top_earlgrey/data/otp:otp_json_prod",
         overlays = STD_OTP_OVERLAYS + [
             "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
             ":otp_json_with_{}_imm_romext_enabled".format(name),

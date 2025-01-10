@@ -67,7 +67,7 @@ REDACT.update({"INVALID": 0x0})
             lc_state,
             redact.lower(),
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [":otp_json_{}_overlay".format(redact.lower())],
         visibility = ["//visibility:private"],
     )

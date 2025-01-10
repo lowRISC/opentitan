@@ -230,7 +230,7 @@
                    "{tool}_dpi_build_opts"]
 
   // Setup for generating OTP images.
-  gen_otp_images_cfg_dir: "{proj_root}/hw/ip/otp_ctrl/data"
+  gen_otp_images_cfg_dir: "{proj_root}/hw/top_earlgrey/data/otp"
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
                             "--img-seed {seed}",

@@ -200,7 +200,6 @@ However, these are the requirements that the manifest format is required to supp
 [key-manager]: ../../../../hw/ip/keymgr/README.md
 [manifest-format]: ../../../../sw/device/silicon_creator/rom_ext/doc/manifest.md
 [rom-epmp]: ../../../../sw/device/silicon_creator/rom/doc/memory_protection.md
-[otp-mmap]: ../../../../hw/ip/otp_ctrl/README.md#direct-access-memory-map
 [ot-flash]: #
 [ot-unlock-flow]: #
 [ownership-transfer]: ../ownership_transfer/README.md

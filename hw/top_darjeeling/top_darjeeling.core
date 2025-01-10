@@ -35,7 +35,6 @@ filesets:
       - lowrisc:constants:top_darjeeling_top_pkg
       - lowrisc:constants:top_darjeeling_jtag_id_pkg
       - lowrisc:constants:top_darjeeling_ibex_pmp_reset_pkg
-      - lowrisc:ip:otp_ctrl
       - lowrisc:ip:lc_ctrl
       - lowrisc:ip:mbx
       - lowrisc:top_darjeeling:xbar_dbg
@@ -44,10 +43,11 @@ filesets:
       - lowrisc:top_darjeeling:xbar_peri
       - lowrisc:opentitan:top_darjeeling_alert_handler
       - lowrisc:opentitan:top_darjeeling_clkmgr
-      - lowrisc:opentitan:top_darjeeling_rstmgr
-      - lowrisc:opentitan:top_darjeeling_rv_plic
+      - lowrisc:opentitan:top_darjeeling_otp_ctrl
       - lowrisc:opentitan:top_darjeeling_pinmux
       - lowrisc:opentitan:top_darjeeling_pwrmgr
+      - lowrisc:opentitan:top_darjeeling_rstmgr
+      - lowrisc:opentitan:top_darjeeling_rv_plic
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl

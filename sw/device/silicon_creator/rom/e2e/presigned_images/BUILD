@@ -23,7 +23,7 @@ vmem_file(
 scramble_flash_vmem(
     name = "rom_e2e_self_hash_sim_dv_scr_vmem64",
     src = ":rom_e2e_self_hash_sim_dv_vmem64",
-    otp = "//hw/ip/otp_ctrl/data:img_test_unlocked0",
+    otp = "//hw/top_earlgrey/data/otp:img_test_unlocked0",
 )
 
 [
