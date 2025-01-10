@@ -849,6 +849,17 @@ def amend_resets(top, name_to_block):
     top["resets"] = top_resets
 
 
+def get_alerts_with_unique_lpg_idx(incoming_alerts: List[Dict]):
+    unique_lpgs = set()
+    result = []
+
+    for alert in incoming_alerts:
+        if alert['lpg_idx'] not in unique_lpgs:
+            unique_lpgs.add(alert['lpg_idx'])
+            result.append(alert)
+    return result
+
+
 def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
     '''Loop over modules and determine number of unique LPGs'''
     lpg_dict = {}

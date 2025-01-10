@@ -9,7 +9,7 @@ import topgen.lib as lib
 from reggen.params import Parameter
 from topgen.clocks import Clocks
 from topgen.resets import Resets
-from topgen.merge import is_unmanaged_reset
+from topgen.merge import is_unmanaged_reset, get_alerts_with_unique_lpg_idx
 
 num_mio_inputs = top['pinmux']['io_counts']['muxed']['inouts'] + \
                  top['pinmux']['io_counts']['muxed']['inputs']
@@ -439,6 +439,13 @@ for rst in output_rsts:
 %>\
   assign lpg_cg_en[${k}] = ${cg_en};
   assign lpg_rst_en[${k}] = ${rst_en};
+% endfor
+% for alert_group, alerts in top['incoming_alert'].items():
+  % for unique_alert_lpg_entry in get_alerts_with_unique_lpg_idx(alerts):
+<% k += 1 %>\
+  assign lpg_cg_en[${k}] = incoming_lpg_cg_en_${alert_group}_i[${unique_alert_lpg_entry["lpg_idx"]}];
+  assign lpg_rst_en[${k}] = incoming_lpg_rst_en_${alert_group}_i[${unique_alert_lpg_entry["lpg_idx"]}];
+  % endfor
 % endfor
 
 % for alert_group, lpgs in top['outgoing_alert_lpgs'].items():
