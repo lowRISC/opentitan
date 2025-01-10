@@ -169,7 +169,6 @@ sim_dv = rule(
 def dv_params(
         tags = [],
         timeout = "short",
-        local = False,
         test_harness = None,
         binaries = None,
         rom = None,
@@ -184,7 +183,6 @@ def dv_params(
     Args:
       tags: The test tags to apply to the test rule.
       timeout: The timeout to apply to the test rule.
-      local: Whether to set the `local` flag on this test.
       test_harness: Use an alternative test harness for this test.
       binaries: Dict of binaries labels to substitution parameter names.
       rom: Use an alternate ROM for this test.
@@ -199,7 +197,6 @@ def dv_params(
     return struct(
         tags = ["dv"] + tags,
         timeout = timeout,
-        local = local,
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
