@@ -20,7 +20,6 @@ interface lc_ctrl_if #(
   import lc_ctrl_reg_pkg::*;
   import lc_ctrl_state_pkg::*;
   import otp_ctrl_pkg::*;
-  import otp_ctrl_part_pkg::*;
 
   `include "uvm_macros.svh"
 

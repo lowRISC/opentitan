@@ -77,8 +77,9 @@ def parse_otp_init_strings(init_line_groups: List[List[str]]) -> List[int]:
     """Parse a sequence of 22-bit OTP words from Vivado INIT_XX lines.
 
     The data layout was determined by running a full Vivado bitstream build and
-    comparing the OTP image (//hw/ip/otp_ctrl/data:img_rma) with the INIT_XX
-    strings that Vivado produces (see the otp_init_strings.txt artifact).
+    comparing the OTP image (//hw/top_earlgrey/data/otp:img_rma) with the
+    INIT_XX strings that Vivado produces (see the otp_init_strings.txt
+    artifact).
     """
 
     out = []

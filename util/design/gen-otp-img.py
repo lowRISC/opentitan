@@ -17,11 +17,11 @@ from lib.common import vmem_permutation_string, wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
 # Get the memory map definition.
-MMAP_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson'
+MMAP_DEFINITION_FILE = 'hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson'
 # Life cycle state and ECC poly definitions.
 LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
 # Default image file definition (can be overridden on the command line).
-IMAGE_DEFINITION_FILE = 'hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson'
+IMAGE_DEFINITION_FILE = 'hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson'
 # Default output path (can be overridden on the command line). Note that
 # "BITWIDTH" will be replaced with the architecture's bitness.
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'

@@ -21,7 +21,7 @@ set -e
 ./bazelisk.sh build  \
     --copt=-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_ \
     --features=-rv32_bitmanip \
-    //sw/host/opentitantool //hw/ip/otp_ctrl/data:img_rma
+    //sw/host/opentitantool //hw/top_earlgrey/data/otp:img_rma
 
 # Run the one test.
 # This needs to be run outside the bazel sandbox, so we do not use `bazel run`

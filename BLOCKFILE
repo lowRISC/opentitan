@@ -1,7 +1,7 @@
 # If a PR changes a file that matches a pattern in this file it will be blocked
 # from merged by CI. The patterns as glob-like patterns matched using python
 # fnmatch. In particular note there is no special handling for '/' so '*' can
-# match multiple directory levels e.g. 'this/is/*/a/path' matches both
+# match multiple directory levels e.g. 'this/is/a/*/path' matches both
 # 'this/is/a/foo/path' and 'this/is/a/foo/bar/path'.
 #
 # Anyone on the COMMITTERS list can authorize a change by adding a comment
@@ -49,7 +49,6 @@ hw/ip/keymgr/rtl/*
 hw/ip/kmac/rtl/*
 hw/ip/lc_ctrl/rtl/*
 hw/ip/otbn/rtl/*
-hw/ip/otp_ctrl/rtl/*
 hw/ip/pattgen/rtl/*
 hw/ip/prim/rtl/*
 hw/ip/prim_generic/rtl/*
@@ -92,19 +91,19 @@ hw/ip/otbn/data/otbn.hjson
 hw/ip/entropy_src/data/entropy_src.hjson
 hw/ip/aes/data/aes.hjson
 hw/ip/i2c/data/i2c.hjson
-hw/ip/otp_ctrl/data/otp_ctrl.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_rma.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_dev.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked0.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_locked1.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked0.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_creator_sw_cfg.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_hw_cfg.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_raw.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_mmap.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked1.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_prod.hjson
-hw/ip/otp_ctrl/data/otp_ctrl_img_test_unlocked2.hjson
+hw/top_earlgrey/data/otp/otp_ctrl.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_rma.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_test_locked0.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_test_locked1.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked0.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_creator_sw_cfg.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_hw_cfg.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_raw.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked1.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_prod.hjson
+hw/top_earlgrey/data/otp/otp_ctrl_img_test_unlocked2.hjson
 hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
 hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson

@@ -197,7 +197,7 @@ KEY_VALIDITY_TESTS = [
             test["name"],
             lc_state,
         ),
-        src = "//hw/ip/otp_ctrl/data:otp_json_{}".format(lc_state),
+        src = "//hw/top_earlgrey/data/otp:otp_json_{}".format(lc_state),
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_sigverify_key_validity_{}".format(test["name"]),
         ],

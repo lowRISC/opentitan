@@ -69,7 +69,7 @@ Specifically, you can build the [`//hw/bitstream/universal:splice`](https://gith
 For example, to splice a CW310 bitstream with the mask ROM image and a specific OTP image, you can run
 ```sh
 bazel build \
-    --//hw/bitstream/universal:otp=//hw/ip/otp_ctrl/data:img_dev \
+    --//hw/bitstream/universal:otp=//hw/top_earlgrey/data/otp:img_dev \
     --//hw/bitstream/universal:env=//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys \
     //hw/bitstream/universal:splice
 ```

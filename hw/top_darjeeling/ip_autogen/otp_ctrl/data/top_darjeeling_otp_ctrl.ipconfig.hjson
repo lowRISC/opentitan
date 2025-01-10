@@ -1,0 +1,1992 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_darjeeling_otp_ctrl
+  param_values:
+  {
+    otp_mmap:
+    {
+      seed: 36021179872380457113239299468132194022238108125576166239904535336103582949069
+      otp:
+      {
+        width: 2
+        depth: 8192
+        size: 16384
+        addr_width: 13
+        byte_addr_width: 14
+      }
+      scrambling:
+      {
+        key_size: 16
+        iv_size: 8
+        cnst_size: 16
+        keys:
+        [
+          {
+            name: Secret0Key
+            value: 79261096542507317550041524418378318810
+          }
+          {
+            name: Secret1Key
+            value: 318985785134653313354004803705056942690
+          }
+          {
+            name: Secret2Key
+            value: 177669530988656006400383198120896388291
+          }
+          {
+            name: Secret3Key
+            value: 253454544458117277620971692296657999195
+          }
+        ]
+        digests:
+        [
+          {
+            name: CnstyDigest
+            iv_value: 5573918854495152458
+            cnst_value: 298124614738804023684088847145512094502
+          }
+          {
+            name: FlashDataKey
+            iv_value: 13142649492737956675
+            cnst_value: 15226184123672563655096903138034867314
+          }
+          {
+            name: FlashAddrKey
+            iv_value: 10432573278431539239
+            cnst_value: 331706166944643955321785563334435677807
+          }
+          {
+            name: SramDataKey
+            iv_value: 13755002077647639451
+            cnst_value: 132555613982997757926354237115728852983
+          }
+        ]
+      }
+      partitions:
+      [
+        {
+          name: VENDOR_TEST
+          variant: Unbuffered
+          absorb: false
+          size: 64
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: false
+          bkout_type: false
+          items:
+          [
+            {
+              name: SCRATCH
+              size: 56
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 0
+            }
+            {
+              name: VENDOR_TEST_DIGEST
+              size: 8
+              offset: 56
+              ismubi: false
+              isdigest: true
+              inv_default: 12267607958787918204
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Vendor test partition.
+            This is reserved for manufacturing smoke checks. The OTP wrapper
+            control logic inside prim_otp is allowed to read/write to this
+            region. ECC uncorrectable errors seen on the functional prim_otp
+            interface will not lead to an alert for this partition.
+            Instead, such errors will be reported as correctable ECC errors.
+            '''
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          offset: 0
+        }
+        {
+          name: CREATOR_SW_CFG
+          variant: Unbuffered
+          absorb: false
+          size: 320
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: CREATOR_SW_CFG_AST_CFG
+              size: 124
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 64
+            }
+            {
+              name: CREATOR_SW_CFG_AST_INIT_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 188
+            }
+            {
+              name: CREATOR_SW_CFG_OVERRIDES
+              size: 32
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 192
+            }
+            {
+              name: CREATOR_SW_CFG_ROM_EXT_SKU
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 224
+            }
+            {
+              name: CREATOR_SW_CFG_SIGVERIFY_RSA_MOD_EXP_IBEX_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 228
+            }
+            {
+              name: CREATOR_SW_CFG_SIGVERIFY_RSA_KEY_EN
+              size: 8
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 232
+            }
+            {
+              name: CREATOR_SW_CFG_SIGVERIFY_SPX_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 240
+            }
+            {
+              name: CREATOR_SW_CFG_SIGVERIFY_SPX_KEY_EN
+              size: 8
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 244
+            }
+            {
+              name: CREATOR_SW_CFG_FLASH_DATA_DEFAULT_CFG
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 252
+            }
+            {
+              name: CREATOR_SW_CFG_FLASH_INFO_BOOT_DATA_CFG
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 256
+            }
+            {
+              name: CREATOR_SW_CFG_FLASH_HW_INFO_CFG_OVERRIDE
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 260
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 264
+            }
+            {
+              name: CREATOR_SW_CFG_JITTER_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 268
+            }
+            {
+              name: CREATOR_SW_CFG_RET_RAM_RESET_MASK
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 272
+            }
+            {
+              name: CREATOR_SW_CFG_MANUF_STATE
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 276
+            }
+            {
+              name: CREATOR_SW_CFG_ROM_EXEC_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 280
+            }
+            {
+              name: CREATOR_SW_CFG_CPUCTRL
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 284
+            }
+            {
+              name: CREATOR_SW_CFG_MIN_SEC_VER_ROM_EXT
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 288
+            }
+            {
+              name: CREATOR_SW_CFG_MIN_SEC_VER_BL0
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 292
+            }
+            {
+              name: CREATOR_SW_CFG_DEFAULT_BOOT_DATA_IN_PROD_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 296
+            }
+            {
+              name: CREATOR_SW_CFG_RMA_SPIN_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 300
+            }
+            {
+              name: CREATOR_SW_CFG_RMA_SPIN_CYCLES
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 304
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_REPCNT_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 308
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_REPCNTS_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 312
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_ADAPTP_HI_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 316
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_ADAPTP_LO_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 320
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_BUCKET_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 324
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_MARKOV_HI_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 328
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_MARKOV_LO_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 332
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_EXTHT_HI_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 336
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_EXTHT_LO_THRESHOLDS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 340
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_ALERT_THRESHOLD
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 344
+            }
+            {
+              name: CREATOR_SW_CFG_RNG_HEALTH_CONFIG_DIGEST
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 348
+            }
+            {
+              name: CREATOR_SW_CFG_SRAM_KEY_RENEW_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 352
+            }
+            {
+              name: CREATOR_SW_CFG_DIGEST
+              size: 8
+              offset: 376
+              ismubi: false
+              isdigest: true
+              inv_default: 7474818370217309020
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Software configuration partition.
+            This is for device-specific calibration data. For example, clock,
+            LDO, RNG.
+            '''
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          offset: 64
+        }
+        {
+          name: OWNER_SW_CFG
+          variant: Unbuffered
+          absorb: false
+          size: 632
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: OWNER_SW_CFG_ROM_ERROR_REPORTING
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 384
+            }
+            {
+              name: OWNER_SW_CFG_ROM_BOOTSTRAP_DIS
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 388
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_CLASS_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 392
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_ESCALATION
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 396
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_CLASSIFICATION
+              size: 400
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 400
+            }
+            {
+              name: OWNER_SW_CFG_ROM_LOCAL_ALERT_CLASSIFICATION
+              size: 64
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 800
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_ACCUM_THRESH
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 864
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_TIMEOUT_CYCLES
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 880
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_PHASE_CYCLES
+              size: 64
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 896
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 960
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 964
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 968
+            }
+            {
+              name: OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 972
+            }
+            {
+              name: OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 976
+            }
+            {
+              name: OWNER_SW_CFG_ROM_KEYMGR_ROM_EXT_MEAS_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 980
+            }
+            {
+              name: OWNER_SW_CFG_MANUF_STATE
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 984
+            }
+            {
+              name: OWNER_SW_CFG_ROM_RSTMGR_INFO_EN
+              size: 4
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 988
+            }
+            {
+              name: OWNER_SW_CFG_DIGEST
+              size: 8
+              offset: 1008
+              ismubi: false
+              isdigest: true
+              inv_default: 503838644190341903
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Software configuration partition.
+            This contains data that changes software behavior in the ROM, for
+            example enabling defensive features in ROM or selecting failure
+            modes if verification fails.
+            '''
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          offset: 384
+        }
+        {
+          name: OWNERSHIP_SLOT_STATE
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: false
+          hw_digest: false
+          write_lock: None
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: OWNERSHIP_SLOT_STATE_ROT_OWNER_AUTH
+              size: 16
+              desc:
+                '''
+                Creator Ownership transfer state management
+                OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1016
+            }
+            {
+              name: OWNERSHIP_SLOT_STATE_PLAT_INTEG_AUTH
+              size: 16
+              desc:
+                '''
+                Creator Ownership transfer state management
+                OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1032
+            }
+            {
+              name: OWNERSHIP_SLOT_STATE_PLAT_OWNER_AUTH
+              size: 16
+              desc:
+                '''
+                Creator Ownership transfer state management
+                OWNERSHIP_ST_RAW:       ownership not yet claimed (factory default)
+                OWNERSHIP_ST_LOCKED0:   first ownership slot claimed
+                OWNERSHIP_ST_RELEASED0: first ownership slot released (assets have been cleared, ready to xfer)
+                OWNERSHIP_ST_LOCKED1:   second ownership slot claimed
+                OWNERSHIP_ST_RELEASED1: second ownership slot released (assets have been cleared, ready to xfer)
+                OWNERSHIP_ST_LOCKED2:   third ownership slot claimed
+                OWNERSHIP_ST_RELEASED2: third ownership slot released (assets have been cleared, ready to xfer)
+                OWNERSHIP_ST_LOCKED3:   fourth ownership slot claimed
+                OWNERSHIP_ST_SCRAPPED:  scrap state - terminal
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1048
+            }
+          ]
+          desc:
+            '''
+            SW managed asset ownership states partition.
+
+            Multibit enable value for the tracking the asset ownership states.
+            Note that the states can be written multiple times in a device lifetime.
+            The values to be written are engineered in the same way as the LC_CTRL
+            state encoding words so that the ECC encoding remains valid even after
+            updating the values.
+
+            The constants can be found in the lc_ctrl_state_pkg.sv package.
+
+            The programming order has to adhere to:
+
+            OWNERSHIP_ST_RAW (factory all-zero state) ->
+            OWNERSHIP_ST_LOCKED0 ->
+            OWNERSHIP_ST_RELEASED0 ->
+            ...
+            OWNERSHIP_ST_SCRAPPED
+
+            Note that if there are less than 4 slots available the higher slot states
+            become logically equivalent to OWNERSHIP_SCRAPPED (firmware has to handle
+            this correctly).
+            '''
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 48
+          offset: 1016
+        }
+        {
+          name: ROT_CREATOR_AUTH
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: ROT_CREATOR_AUTH_NON_RAW_MFW_CODESIGN_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the manufacturing provisioning Software container
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1064
+            }
+            {
+              name: ROT_CREATOR_AUTH_OWNERSHIP_STATE
+              size: 4
+              desc:
+                '''
+                Creator Ownership transfer state management
+                UNLOCKED - ownership of ROT not yet claimed
+                LOCKED   - ownership claimed and
+                RELEASED - Release ownership (assets have been cleared, ready to xfer)
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1224
+            }
+            {
+              name: ROT_CREATOR_AUTH_ROM2_PATCH_SIGVERIFY_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROM2 OTP based patch
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                  OTP based key (instead of ROM) facilitates easy key rotation
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1228
+            }
+            {
+              name: ROT_CREATOR_AUTH_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT CREATOR KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1388
+            }
+            {
+              name: ROT_CREATOR_AUTH_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT CREATOR KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1548
+            }
+            {
+              name: ROT_CREATOR_AUTH_IDENTITY_CERT
+              size: 768
+              desc: ROT Device Identity Certificate endorsed by Silicon Creator stable off device PKI
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 1708
+            }
+            {
+              name: ROT_CREATOR_AUTH_DIGEST
+              size: 8
+              offset: 2480
+              ismubi: false
+              isdigest: true
+              inv_default: 4720744928697992353
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed creator partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 1424
+          offset: 1064
+        }
+        {
+          name: ROT_OWNER_AUTH_SLOT0
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: ROT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 2488
+            }
+            {
+              name: ROT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 2648
+            }
+            {
+              name: ROT_OWNER_AUTH_SLOT0_DIGEST
+              size: 8
+              offset: 2808
+              ismubi: false
+              isdigest: true
+              inv_default: 4321159426593998838
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed owner slot 0 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 2488
+        }
+        {
+          name: ROT_OWNER_AUTH_SLOT1
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: ROT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 2816
+            }
+            {
+              name: ROT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 2976
+            }
+            {
+              name: ROT_OWNER_AUTH_SLOT1_DIGEST
+              size: 8
+              offset: 3136
+              ismubi: false
+              isdigest: true
+              inv_default: 3300532900599057395
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed owner slot 1 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 2816
+        }
+        {
+          name: PLAT_INTEG_AUTH_SLOT0
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_INTEG_AUTH_SLOT0_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3144
+            }
+            {
+              name: PLAT_INTEG_AUTH_SLOT0_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3304
+            }
+            {
+              name: PLAT_INTEG_AUTH_SLOT0_DIGEST
+              size: 8
+              offset: 3464
+              ismubi: false
+              isdigest: true
+              inv_default: 6970134785508705831
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform integrator slot 0 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 3144
+        }
+        {
+          name: PLAT_INTEG_AUTH_SLOT1
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_INTEG_AUTH_SLOT1_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3472
+            }
+            {
+              name: PLAT_INTEG_AUTH_SLOT1_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3632
+            }
+            {
+              name: PLAT_INTEG_AUTH_SLOT1_DIGEST
+              size: 8
+              offset: 3792
+              ismubi: false
+              isdigest: true
+              inv_default: 13321159437274557062
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform integrator slot 1 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 3472
+        }
+        {
+          name: PLAT_OWNER_AUTH_SLOT0
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_OWNER_AUTH_SLOT0_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3800
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT0_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 3960
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT0_DIGEST
+              size: 8
+              offset: 4120
+              ismubi: false
+              isdigest: true
+              inv_default: 13771798441966885772
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform owner slot 0 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 3800
+        }
+        {
+          name: PLAT_OWNER_AUTH_SLOT1
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_OWNER_AUTH_SLOT1_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4128
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT1_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4288
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT1_DIGEST
+              size: 8
+              offset: 4448
+              ismubi: false
+              isdigest: true
+              inv_default: 7227229721152720746
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform owner slot 1 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 4128
+        }
+        {
+          name: PLAT_OWNER_AUTH_SLOT2
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_OWNER_AUTH_SLOT2_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4456
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT2_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4616
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT2_DIGEST
+              size: 8
+              offset: 4776
+              ismubi: false
+              isdigest: true
+              inv_default: 388365934790665074
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform owner slot 2 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 4456
+        }
+        {
+          name: PLAT_OWNER_AUTH_SLOT3
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: PLAT_OWNER_AUTH_SLOT3_KEYMANIFEST_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                KM is used to provisioning additional keys in (external) flash
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                It is expected to be provisioned at Chip Probe stage when LC = TEST
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4784
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY
+              size: 160
+              desc:
+                '''
+                Pub Key used to verify the ROT OWNER KEY MANIFEST.
+                Used to authenticate the Unlock Ownership payload. Key Type: ECC NIST-P384 Curve.
+                160B = Custom Cert --> {PubKey:48, Signature:48, Device ID:32, metadata:16}
+                Can be made part bound i.e. unique per part key cert
+                i.e. provisioning protected under proper lifecycle logistics / secure supplychain management
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 4944
+            }
+            {
+              name: PLAT_OWNER_AUTH_SLOT3_DIGEST
+              size: 8
+              offset: 5104
+              ismubi: false
+              isdigest: true
+              inv_default: 5138760742690312726
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: Software managed platform owner slot 3 partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 328
+          offset: 4784
+        }
+        {
+          name: EXT_NVM
+          variant: Unbuffered
+          absorb: false
+          secret: false
+          sw_digest: false
+          hw_digest: false
+          write_lock: None
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: false
+          bkout_type: false
+          items:
+          [
+            {
+              name: EXT_NVM_ANTIREPLAY_FRESHNESS_CNT
+              size: 1024
+              desc:
+                '''
+                Fully SW managed patition
+                1 bit (double bit allocated for redundancy - i.e. 2 physical bits for every logical bit) per day
+                assuming 10 year product lifecycle, allocating 8192 bits of freshness protection.
+                Implemented as thermometer encoding. Redundant bit programming & logical OR-ing managed by
+                software. Cannot be ECC protected since different bits in a fuse row are programmed at different times.
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 5112
+            }
+          ]
+          desc: Anti-replay protection Strike Counters partition.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 1024
+          offset: 5112
+        }
+        {
+          name: ROM_PATCH
+          variant: Unbuffered
+          absorb: true
+          secret: false
+          sw_digest: true
+          hw_digest: false
+          write_lock: Digest
+          read_lock: CSR
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: ROM_PATCH_DATA
+              size: 9192
+              desc:
+                '''
+                Fully SW managed patition
+                ROM patch section
+                signed patch(es)
+                Each patch Contains header, signature, patch match/redirect configuration and patch code
+                Please refer to the ROM boot & patching specification for Integrated OT for more details
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              inv_default: 0
+              offset: 6136
+            }
+            {
+              name: ROM_PATCH_DIGEST
+              size: 8
+              offset: 15912
+              ismubi: false
+              isdigest: true
+              inv_default: 5553021194950512605
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc: ROM Patch Code section. May contain multiple signed ROM2 patches.
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 9784
+          offset: 6136
+        }
+        {
+          name: HW_CFG0
+          variant: Buffered
+          secret: false
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: None
+          key_sel: NoKey
+          integrity: true
+          bkout_type: true
+          items:
+          [
+            {
+              name: DEVICE_ID
+              size: 32
+              inv_default: 81256773759085553590251771618097271052792280600555849662047277760132860422574
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 15920
+            }
+            {
+              name: MANUF_STATE
+              size: 32
+              inv_default: 28979123207589896436497502269821436538902023475862784930259344116068944661506
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 15952
+            }
+            {
+              name: HW_CFG0_DIGEST
+              size: 8
+              offset: 15984
+              ismubi: false
+              isdigest: true
+              inv_default: 13231792541330219804
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Hardware configuration 0 partition.
+            This contains
+            - DEVICE_ID: Unique device identifier.
+            - MANUF_STATE: Vector for capturing the manufacturing status.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 72
+          offset: 15920
+        }
+        {
+          name: HW_CFG1
+          variant: Buffered
+          secret: false
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: None
+          key_sel: NoKey
+          integrity: true
+          bkout_type: true
+          items:
+          [
+            {
+              name: SOC_DBG_STATE
+              size: 4
+              inv_default: 0
+              desc:
+                '''
+                Multibit enable value for the SOC debug authorization.
+                Encoding:
+                SOC_DBG_RAW: this value is all-zeroes and will be the NOP state;
+                the LC controller will take precedence.
+                SOC_DBG_PRE_PROD: this is where the ROT will be in PROD state
+                but SOC will be in the pre-production unlock state
+                SOC_DBG_PROD: this is the state where the SOC moves to production,
+                and the challenge-response based authentication protocol is
+                required to unlock SOC debug features
+                '''
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 15992
+            }
+            {
+              name: EN_SRAM_IFETCH
+              size: 1
+              ismubi: true
+              inv_default: 105
+              isdigest: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 15996
+            }
+            {
+              name: HW_CFG1_DIGEST
+              size: 8
+              offset: 16000
+              ismubi: false
+              isdigest: true
+              inv_default: 13264097316726039890
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Hardware configuration 1 partition.
+            This contains
+            EN_SRAM_IFETCH: Enable / disable execute from SRAM CSR switch.
+            SOC_DBG_STATE: Multibit enable value for the SOC debug authorization.
+            Note SOC_DBG_STATE will be written twice in a device lifetime. The
+            values to be written are engineered in the same way as the LC_CTRL
+            state encoding words: the ECC encoding remains valid even after
+            writing the second value on top of the first.
+
+            The constants can be found in the lc_ctrl_state_pkg.sv package.
+
+            The programming order has to adhere to:
+
+            SOC_DBG_RAW -> SOC_DBG_PRE_PROD -> SOC_DBG_PROD.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 16
+          offset: 15992
+        }
+        {
+          name: SECRET0
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          key_sel: Secret0Key
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: TEST_UNLOCK_TOKEN
+              inv_default: 150353733052794565317978902093985221175
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16008
+            }
+            {
+              name: TEST_EXIT_TOKEN
+              inv_default: 292140191890949749780621917839409679837
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16024
+            }
+            {
+              name: SECRET0_DIGEST
+              size: 8
+              offset: 16040
+              ismubi: false
+              isdigest: true
+              inv_default: 364196237501841799
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 0.
+            This contains TEST lifecycle unlock tokens.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 40
+          offset: 16008
+        }
+        {
+          name: SECRET1
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          key_sel: Secret1Key
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: FLASH_ADDR_KEY_SEED
+              inv_default: 99384293387760300854449600575324305105411001866428193504478753183549638555178
+              size: 32
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16048
+            }
+            {
+              name: FLASH_DATA_KEY_SEED
+              inv_default: 38814441500057672017335312405494979779257105989744047190036253646062333315222
+              size: 32
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16080
+            }
+            {
+              name: SRAM_DATA_KEY_SEED
+              inv_default: 197791420282250691661260177080212266122
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16112
+            }
+            {
+              name: SECRET1_DIGEST
+              size: 8
+              offset: 16128
+              ismubi: false
+              isdigest: true
+              inv_default: 8239982531674452350
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 1.
+            This contains SRAM and flash scrambling keys.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 88
+          offset: 16048
+        }
+        {
+          name: SECRET2
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          key_sel: Secret2Key
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: RMA_TOKEN
+              inv_default: 277449187385066184202615139448003396941
+              size: 16
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16136
+            }
+            {
+              name: CREATOR_ROOT_KEY_SHARE0
+              inv_default: 42674330470926980475213495781321682493466151735469203603345579470514264688031
+              size: 32
+              iskeymgr_creator: true
+              isdigest: false
+              ismubi: false
+              iskeymgr_owner: false
+              offset: 16152
+            }
+            {
+              name: CREATOR_ROOT_KEY_SHARE1
+              inv_default: 1120155637374664855185290527946769138206986700190628506580202980715210922324
+              size: 32
+              iskeymgr_creator: true
+              isdigest: false
+              ismubi: false
+              iskeymgr_owner: false
+              offset: 16184
+            }
+            {
+              name: CREATOR_SEED
+              inv_default: 486631087464711132701499347019667055309060048237121089079485173130930646974
+              size: 32
+              iskeymgr_creator: true
+              isdigest: false
+              ismubi: false
+              iskeymgr_owner: false
+              offset: 16216
+            }
+            {
+              name: SECRET2_DIGEST
+              size: 8
+              offset: 16248
+              ismubi: false
+              isdigest: true
+              inv_default: 4468065780390625656
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 2.
+            This contains RMA unlock token, creator root key, and creator seed.
+            '''
+          absorb: false
+          iskeymgr_creator: true
+          iskeymgr_owner: false
+          size: 120
+          offset: 16136
+        }
+        {
+          name: SECRET3
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          key_sel: Secret3Key
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: OWNER_SEED
+              inv_default: 66811761207540413034971297187170994293973443726025940164646970994927536258183
+              size: 32
+              iskeymgr_owner: true
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              offset: 16256
+            }
+            {
+              name: SECRET3_DIGEST
+              size: 8
+              offset: 16288
+              ismubi: false
+              isdigest: true
+              inv_default: 15941764794715087011
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 3.
+            This contains the owner seed.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: true
+          size: 40
+          offset: 16256
+        }
+        {
+          name: LIFE_CYCLE
+          variant: LifeCycle
+          secret: false
+          sw_digest: false
+          hw_digest: false
+          write_lock: None
+          read_lock: None
+          key_sel: NoKey
+          integrity: true
+          bkout_type: false
+          items:
+          [
+            {
+              name: LC_TRANSITION_CNT
+              inv_default: 25283854627019714730581267052739223508902103880390507329789576351568549647905897976711414103002515926044760045076405
+              size: 48
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16296
+            }
+            {
+              name: LC_STATE
+              inv_default: 2073276575949915156582572495874492333682185188009011646190809543994273356493467859637226911344936
+              size: 40
+              isdigest: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 16344
+            }
+          ]
+          desc:
+            '''
+            Lifecycle partition.
+            This contains lifecycle transition count and state. This partition
+            cannot be locked since the life cycle state needs to advance to RMA
+            in-field. Note that while this partition is not marked secret, it
+            is not readable nor writeable via the DAI. Only the LC controller
+            can access this partition, and even via the LC controller it is not
+            possible to read the raw manufacturing life cycle state in encoded
+            form, since that encoding is considered a netlist secret. The LC
+            controller only exposes a decoded version of this state.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 88
+          offset: 16296
+        }
+      ]
+    }
+    topname: darjeeling
+  }
+}

@@ -7,13 +7,15 @@ documentation, and to create OTP memory images for preloading.
 """
 import logging as log
 from math import ceil, log2
+from pathlib import Path
 from typing import Dict, List
 
-from mubi.prim_mubi import is_width_valid, mubi_value_as_int
+from design.mubi.prim_mubi import is_width_valid, mubi_value_as_int
+import hjson
 from tabulate import tabulate
 from topgen import secure_prng as sp
 
-from lib.common import check_bool, check_int, random_or_hexvalue
+from design.lib.common import check_bool, check_int, random_or_hexvalue
 
 DIGEST_SUFFIX = "_DIGEST"
 DIGEST_SIZE = 8
@@ -208,7 +210,8 @@ def _validate_part(part: Dict, key_names: List[str], is_last: bool):
 
     # Make sure partition size is aligned.
     if part["size"] % SCRAMBLE_BLOCK_WIDTH:
-        raise RuntimeError("Partition size must be 64bit aligned")
+        raise RuntimeError(
+            f"Partition size must be {SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
 
 def _validate_item(item: Dict, buffered: bool, secret: bool):
@@ -296,8 +299,8 @@ def _validate_mmap(config: Dict) -> Dict:
         part['offset'] = offset
         if check_int(part['offset']) % SCRAMBLE_BLOCK_WIDTH:
             raise RuntimeError(
-                "Partition {} offset must be 64bit aligned".format(
-                    part['name']))
+                f"Partition {part['name']} offset must be "
+                f"{SCRAMBLE_BLOCK_WIDTH * 8}-bit aligned")
 
         log.info("Partition {} at offset {} size {}".format(
             part["name"], part["offset"], part["size"]))
@@ -429,6 +432,35 @@ class OtpMemMap():
         log.info('')
         log.info('Successfully parsed and translated OTP memory map.')
         log.info('')
+
+    @classmethod
+    def from_mmap_path(cls, mmap_path: Path, seed: int = None) -> 'OtpMemMap':
+        try:
+            with open(mmap_path, 'r') as infile:
+                config = hjson.load(infile)
+        except OSError as e:
+            log.error(f"Failed to open file: {e}")
+            exit(1)
+        except Exception as e:
+            log.error(f"Some error loading {mmap_path} into hjson: {e}")
+            exit(1)
+
+        # If specified, override the seed for random netlist constant
+        # computation.
+        if seed:
+            log.warning('Commandline override of seed with {}.'.format(seed))
+            config['seed'] = seed
+        # Otherwise we make sure a seed exists in the HJSON config file.
+        elif 'seed' not in config:
+            log.error('Seed not found in configuration HJSON.')
+            exit(1)
+
+        try:
+            otp_mmap = cls(config)
+        except RuntimeError as err:
+            log.error(err)
+            exit(1)
+        return otp_mmap
 
     def create_partitions_table(self) -> str:
         header = [

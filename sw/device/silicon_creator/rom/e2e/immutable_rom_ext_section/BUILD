@@ -193,7 +193,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             s["name"],
         ),
         testonly = True,
-        src = "//hw/ip/otp_ctrl/data:otp_json_prod",
+        src = "//hw/top_earlgrey/data/otp:otp_json_prod",
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_immutable_rom_ext_{}_{}".format(
                 t["name"],

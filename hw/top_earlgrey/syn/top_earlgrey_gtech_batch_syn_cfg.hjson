@@ -19,8 +19,8 @@
              "{proj_root}/hw/ip/kmac/syn/kmac_gtech_syn_cfg.hjson",
              "{proj_root}/hw/ip/lc_ctrl/syn/lc_ctrl_gtech_syn_cfg.hjson",
              "{proj_root}/hw/ip/otbn/syn/otbn_gtech_syn_cfg.hjson",
-             "{proj_root}/hw/ip/otp_ctrl/syn/otp_ctrl_gtech_syn_cfg.hjson",
              "{proj_root}/hw/ip/rv_core_ibex/syn/rv_core_ibex_gtech_syn_cfg.hjson",
+             "{proj_root}/hw/top_earlgrey/ip_autogen/otp_ctrl/syn/otp_ctrl_gtech_syn_cfg.hjson",
              // Top-level GTECH synthesis flows.
              // TODO: align Verilator and ASIC versions.
              "{proj_root}/hw/top_earlgrey/syn/top_earlgrey_gtech_syn_cfg.hjson"]

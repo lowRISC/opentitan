@@ -30,7 +30,7 @@
                   ]
              },
              {    name: otp_ctrl
-                  fusesoc_core: lowrisc:ip:otp_ctrl
+                  fusesoc_core: lowrisc:opentitan:top_englishbreakfast_otp_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/otp_ctrl/lint/{tool}"
                   overrides: [

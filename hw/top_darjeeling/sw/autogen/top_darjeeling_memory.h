@@ -189,7 +189,7 @@
  * address between #TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR + TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x1000
+#define TOP_DARJEELING_OTP_CTRL_CORE_SIZE_BYTES 0x8000
 /**
  * Peripheral base address for prim device on otp_ctrl in top darjeeling.
  *

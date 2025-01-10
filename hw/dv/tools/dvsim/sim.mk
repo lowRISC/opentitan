@@ -101,13 +101,13 @@ ifneq (${sw_images},)
 			echo "Building SW image \"$${bazel_label}\"."; \
 			bazel_airgapped_opts=""; \
 			bazel_opts="${sw_build_opts} --define DISABLE_VERILATOR_BUILD=true"; \
-			bazel_opts+=" --//hw/ip/otp_ctrl/data:img_seed=${seed}"; \
+			bazel_opts+=" --//util/design/data:img_seed=${seed}"; \
 			if [[ "${build_seed}" != "None" ]]; then \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:lc_seed=${build_seed}"; \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:otp_seed=${build_seed}"; \
+				bazel_opts+=" --//util/design/data:lc_seed=${build_seed}"; \
+				bazel_opts+=" --//util/design/data:otp_seed=${build_seed}"; \
 			fi; \
 			if [[ -n $${BAZEL_OTP_DATA_PERM_FLAG} ]]; then \
-				bazel_opts+=" --//hw/ip/otp_ctrl/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
+				bazel_opts+=" --//util/design/data:data_perm=$${BAZEL_OTP_DATA_PERM_FLAG}"; \
 			fi; \
 			if [[ $${OT_AIRGAPPED} != true ]]; then \
 				echo "Building \"$${bazel_label}\" on network connected machine."; \
@@ -165,7 +165,7 @@ ifneq (${sw_images},)
 					`# Bazel 6 cquery outputs repository targets in canonical format (@//blabla) whereas bazel 5 does not, ` \
 					`# so we use a custom starlark printer to remove in leading @ when needed.` \
 					--starlark:expr='str(target.label)[1:] if str(target.label).startswith("@//") else target.label'); do \
-					if [[ $$dep == //hw/ip/otp_ctrl/data* ]] || \
+					if [[ $$dep == //hw/top_*/ip_autogen/otp_ctrl/data* ]] || \
 					  ([[ $$dep != //hw* ]] && [[ $$dep != //util* ]] && [[ $$dep != //sw/host* ]]); then \
 						for artifact in $$($${bazel_cmd} cquery $${bazel_airgapped_opts} $${dep} \
 							--ui_event_filters=-info \

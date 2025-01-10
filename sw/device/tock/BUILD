@@ -45,6 +45,7 @@ filegroup(
         "//hw/top:ast_rust_regs",
         "//hw/top:clkmgr_rust_regs",
         "//hw/top:flash_ctrl_rust_regs",
+        "//hw/top:otp_ctrl_rust_regs",
         "//hw/top:pinmux_rust_regs",
         "//hw/top:pwrmgr_rust_regs",
         "//hw/top:rstmgr_rust_regs",

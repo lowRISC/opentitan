@@ -39,7 +39,7 @@ otp_json(
 # OTP images that enable the watchdog.
 otp_image(
     name = "otp_img_reset_reason",
-    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    src = "//hw/top_earlgrey/data/otp:otp_json_rma",
     overlays = STD_OTP_OVERLAYS + [":otp_json_reset_reason"],
 )
 
@@ -131,7 +131,7 @@ RESET_CORRUPTION_SCENARIOS = [
 [
     otp_image(
         name = "otp_img_reset_reason_{}".format(t["name"]),
-        src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+        src = "//hw/top_earlgrey/data/otp:otp_json_rma",
         overlays = STD_OTP_OVERLAYS + [
             ":otp_json_reset_reason_{}".format(t["name"]),
         ],
