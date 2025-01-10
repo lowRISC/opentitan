@@ -116,12 +116,11 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     --output bazel
   chmod +x bazel
 
-  # Make Bazel sync its own dependencies to the repository cache:
+  # Make Bazel fetch its own dependencies to the repository cache:
   # https://bazel.build/run/build#repository_cache_with_bazel_7_or_later
   mkdir -p "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
   pushd "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
     touch MODULE.bazel
-    touch WORKSPACE
     cp "${REPO_TOP}/.bazelversion" .
     bazel fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
   popd
