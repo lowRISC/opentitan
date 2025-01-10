@@ -76,10 +76,6 @@ gen_hw_and_check_clean "LC state"         lc-state-enc     || bad=1
 gen_hw_and_check_clean "top and cmdgen"   top_and_cmdgen   || bad=1
 
 gen_and_check_clean \
-    "python-requirements.txt" \
-    util/sh/scripts/gen-python-requirements.sh || bad=1
-
-gen_and_check_clean \
     "secded primitive code" \
     util/design/secded_gen.py --no_fpv || bad=1
 
