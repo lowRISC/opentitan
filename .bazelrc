@@ -148,3 +148,8 @@ cquery --output=files
 # This prevents having to build Verilator or an FPGA bitstream when not needed.
 # https://bazel.build/docs/user-manual#build-tests-only
 test --build_tests_only
+
+# We have Verilator DPIs that use pseudoterminals, so we need to be able to use
+# these when running sandboxed tests.
+test --sandbox_explicit_pseudoterminal
+run --sandbox_explicit_pseudoterminal
