@@ -178,6 +178,25 @@ function main() {
             # We are intentionally using $command_template as a format string.
             eval "$(printf "$command_template" "$outfile")"
             ;;
+        sync)
+            # The `sync` command has been disabled when using Bzlmod in favour of
+            # `fetch`. For some reason Bazel crashes when you try to use `sync`
+            # rather than printing a helpful error message.
+            #
+            # When run interactively, print a deprecation error and exit.
+            # When run in a script, intercept `sync` commands and forward them
+            # to `fetch` which is more or less identical. This ensures Git hooks
+            # will continue working on this branch and older branches which do
+            # not support `bazel fetch --configure` yet.
+            if [ -t 0 ]; then
+                echo 'ERROR: The `bazel sync` command has been deprecated.' >&2
+                echo '       Use `bazel fetch` instead.'                    >&2
+                exit 1
+            else
+                shift
+                exec "$file" "${pre_cmd_args[@]}" fetch "$@"
+            fi
+            ;;
         *)
             exec "$file" "${pre_cmd_args[@]}" "$@"
             ;;
