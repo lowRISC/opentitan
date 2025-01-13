@@ -184,6 +184,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
     ],
