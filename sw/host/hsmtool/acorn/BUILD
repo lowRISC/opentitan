@@ -17,6 +17,7 @@ rust_library(
     crate_root = "lib.rs",
     deps = [
         "//sw/host/hsmtool/acorn/vendor:acorn_bindgen",
+        "//sw/host/sphincsplus",
         "@crate_index//:anyhow",
         "@crate_index//:bitflags",
         "@crate_index//:libloading",

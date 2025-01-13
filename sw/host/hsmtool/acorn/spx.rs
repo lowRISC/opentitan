@@ -4,6 +4,7 @@
 
 use anyhow::Result;
 use bitflags::bitflags;
+use sphincsplus::SpxDomain;
 
 #[derive(Debug, Default)]
 pub struct KeyEntry {
@@ -71,13 +72,20 @@ pub trait SpxInterface {
     ) -> Result<KeyEntry>;
 
     /// Sign a message.
-    fn sign(&self, alias: Option<&str>, key_hash: Option<&str>, message: &[u8]) -> Result<Vec<u8>>;
+    fn sign(
+        &self,
+        alias: Option<&str>,
+        key_hash: Option<&str>,
+        domain: SpxDomain,
+        message: &[u8],
+    ) -> Result<Vec<u8>>;
 
     /// Verify a message.
     fn verify(
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
+        domain: SpxDomain,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool>;
