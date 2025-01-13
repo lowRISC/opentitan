@@ -78,13 +78,13 @@ rust_library(
     version = "0.1.58",
     deps = select({
         "@rules_rust//rust/platform:aarch64-apple-darwin": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-apple-ios-sim": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:aarch64-linux-android": [
             "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
@@ -96,7 +96,7 @@ rust_library(
             "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
         ],
         "@rules_rust//rust/platform:i686-apple-darwin": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:i686-linux-android": [
             "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
@@ -106,17 +106,17 @@ rust_library(
         ],
         "@rules_rust//rust/platform:wasm32-unknown-unknown": [
             "@crate_index__js-sys-0.3.64//:js_sys",  # cfg(target_arch = "wasm32")
-            "@crate_index__wasm-bindgen-0.2.87//:wasm_bindgen",  # cfg(target_arch = "wasm32")
+            "@crate_index__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(target_arch = "wasm32")
         ],
         "@rules_rust//rust/platform:wasm32-wasi": [
             "@crate_index__js-sys-0.3.64//:js_sys",  # cfg(target_arch = "wasm32")
-            "@crate_index__wasm-bindgen-0.2.87//:wasm_bindgen",  # cfg(target_arch = "wasm32")
+            "@crate_index__wasm-bindgen-0.2.100//:wasm_bindgen",  # cfg(target_arch = "wasm32")
         ],
         "@rules_rust//rust/platform:x86_64-apple-darwin": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-apple-ios": [
-            "@crate_index__core-foundation-sys-0.8.4//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
+            "@crate_index__core-foundation-sys-0.8.7//:core_foundation_sys",  # cfg(any(target_os = "macos", target_os = "ios"))
         ],
         "@rules_rust//rust/platform:x86_64-linux-android": [
             "@crate_index__android_system_properties-0.1.5//:android_system_properties",  # cfg(target_os = "android")
