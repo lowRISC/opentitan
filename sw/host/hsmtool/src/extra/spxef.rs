@@ -187,13 +187,19 @@ impl SpxInterface for SpxEf {
     }
 
     /// Sign a message.
-    fn sign(&self, alias: Option<&str>, key_hash: Option<&str>, message: &[u8]) -> Result<Vec<u8>> {
+    fn sign(
+        &self,
+        alias: Option<&str>,
+        key_hash: Option<&str>,
+        domain: SpxDomain,
+        message: &[u8],
+    ) -> Result<Vec<u8>> {
         let alias = alias.ok_or(HsmError::NoSearchCriteria)?;
         if key_hash.is_some() {
             log::warn!("ignored key_hash {key_hash:?}");
         }
         let sk = self.load_key(alias)?;
-        Ok(sk.sign(SpxDomain::None, message)?)
+        Ok(sk.sign(domain, message)?)
     }
 
     /// Verify a message.
@@ -201,6 +207,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
+        domain: SpxDomain,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool> {
@@ -210,7 +217,7 @@ impl SpxInterface for SpxEf {
         }
         let sk = self.load_key(alias)?;
         let pk = SpxPublicKey::from(&sk);
-        match pk.verify(SpxDomain::None, signature, message) {
+        match pk.verify(domain, signature, message) {
             Ok(()) => Ok(true),
             Err(SpxError::BadSignature) => Ok(false),
             Err(e) => Err(e.into()),

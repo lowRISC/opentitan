@@ -104,37 +104,30 @@ impl SignData {
         match self {
             SignData::PlainText => {
                 match domain {
-                    // Plaintext in domain None or Pure: prepare.
-                    SpxDomain::None | SpxDomain::Pure => Ok(domain.prepare(input).into()),
-                    // Plaintext in domain PreHashed: hash first, then prepare.
-                    SpxDomain::PreHashedSha256 => {
-                        let digest = Sha256::digest(input).as_slice().to_vec();
-                        Ok(domain.prepare(&digest).into())
-                    }
+                    // Plaintext in domain None or Pure: nothing to do.
+                    SpxDomain::None | SpxDomain::Pure => Ok(input.into()),
+                    // Plaintext in domain PreHashed: compute hash.
+                    SpxDomain::PreHashedSha256 => Ok(Sha256::digest(input).as_slice().to_vec()),
                 }
             }
             SignData::Sha256Hash => {
-                // Sha256 input in any domain: perform the domain preparation.
+                // Sha256 input in any domain:
                 // If the `little_endian` flag is true, we assume the pre-hashed input came
                 // from opentitantool, which writes out the hash in little endian order,
                 // and therefore, needs to be reversed before the signing operation.
-                let digest = Self::data_raw(input, little_endian)?;
-                Ok(domain.prepare(&digest).into())
+                Self::data_raw(input, little_endian)
             }
             SignData::Raw => {
-                // Raw data in any domain: perform the domain preparation.
-                Ok(domain.prepare(input).into())
+                // Raw data in any domain: nothing to do.
+                Ok(input.into())
             }
             SignData::Slice(a, b) => {
                 let input = &input[*a..*b];
                 match domain {
-                    // A slice of the input in domain None or Pure: prepare.
-                    SpxDomain::None | SpxDomain::Pure => Ok(domain.prepare(input).into()),
-                    // A slice of the input in domain PreHashed: hash first, then prepare.
-                    SpxDomain::PreHashedSha256 => {
-                        let digest = Sha256::digest(input).as_slice().to_vec();
-                        Ok(domain.prepare(&digest).into())
-                    }
+                    // A slice of the input in domain None or Pure: nothing to do.
+                    SpxDomain::None | SpxDomain::Pure => Ok(input.into()),
+                    // A slice of the input in domain PreHashed: hash the input.
+                    SpxDomain::PreHashedSha256 => Ok(Sha256::digest(input).as_slice().to_vec()),
                 }
             }
         }

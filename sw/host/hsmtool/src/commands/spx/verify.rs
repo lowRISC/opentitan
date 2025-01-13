@@ -50,7 +50,13 @@ impl Dispatch for Verify {
             .format
             .spx_prepare(self.domain, &data, self.little_endian)?;
         let signature = helper::read_file(&self.signature)?;
-        let result = spx.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
+        let result = spx.verify(
+            self.label.as_deref(),
+            self.id.as_deref(),
+            self.domain,
+            &data,
+            &signature,
+        )?;
         Ok(Box::new(BasicResult {
             success: result,
             error: if result {
