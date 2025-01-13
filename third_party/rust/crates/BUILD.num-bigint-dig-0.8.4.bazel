@@ -94,7 +94,7 @@ rust_library(
         "@crate_index__num-traits-0.2.17//:num_traits",
         "@crate_index__rand-0.8.5//:rand",
         "@crate_index__serde-1.0.189//:serde",
-        "@crate_index__smallvec-1.11.0//:smallvec",
+        "@crate_index__smallvec-1.13.2//:smallvec",
         "@crate_index__zeroize-1.8.1//:zeroize",
     ],
 )

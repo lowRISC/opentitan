@@ -75,7 +75,7 @@ rust_library(
     }),
     version = "0.2.36",
     deps = [
-        "@crate_index__libc-0.2.149//:libc",
+        "@crate_index__libc-0.2.169//:libc",
         "@crate_index__rand-0.3.23//:rand",
         "@crate_index__rust-crypto-0.2.36//:build_script_build",
         "@crate_index__rustc-serialize-0.3.25//:rustc_serialize",

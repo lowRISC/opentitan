@@ -75,7 +75,7 @@ rust_library(
     }),
     version = "0.9.102",
     deps = [
-        "@crate_index__libc-0.2.149//:libc",
+        "@crate_index__libc-0.2.169//:libc",
         "@crate_index__openssl-sys-0.9.102//:build_script_main",
     ],
 )
