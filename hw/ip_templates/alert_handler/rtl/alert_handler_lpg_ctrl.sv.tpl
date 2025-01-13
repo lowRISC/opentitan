@@ -71,18 +71,21 @@ module ${module_instance_name}_lpg_ctrl import ${module_instance_name}_pkg::*; (
     );
   end
 
-  // explicitly read all unused lpg triggers to avoid lint errors.
-  logic [NLpg-1:0] lpg_used;
-  logic unused_lpg_init_trig;
-  always_comb begin
-    lpg_used = '0;
-    unused_lpg_init_trig = 1'b0;
-    for (int j=0; j < NAlerts; j++) begin
-      lpg_used[LpgMap[j]] |= 1'b1;
-    end
-    for (int k=0; k < NLpg; k++) begin
-      if (!lpg_used) begin
-        unused_lpg_init_trig ^= ^lpg_init_trig[k];
+  if (NLpg > 1) begin : gen_read_unused_lpg
+    // explicitly read all unused lpg triggers to avoid lint errors.
+    // Only needed when there are at least two LPGs.
+    logic [NLpg-1:0] lpg_used;
+    logic unused_lpg_init_trig;
+    always_comb begin
+      lpg_used = '0;
+      unused_lpg_init_trig = 1'b0;
+      for (int j=0; j < NAlerts; j++) begin
+        lpg_used[LpgMap[j]] |= 1'b1;
+      end
+      for (int k=0; k < NLpg; k++) begin
+        if (!lpg_used) begin
+          unused_lpg_init_trig ^= ^lpg_init_trig[k];
+        end
       end
     end
   end
