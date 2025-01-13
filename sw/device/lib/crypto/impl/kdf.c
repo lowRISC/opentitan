@@ -291,10 +291,10 @@ otcrypto_status_t otcrypto_kdf_kmac(
     }
     // No need to further check key size against security level because
     // `kmac_key_length_check` ensures that the key is at least 128-bit.
-    HARDENED_TRY(kmac_kmac_128(&kmac_key, kdf_context.data, kdf_context.len,
-                               kdf_label.data, kdf_label.len,
-                               keying_material->keyblob,
-                               required_byte_len / sizeof(uint32_t)));
+    HARDENED_TRY(kmac_kmac_128(
+        &kmac_key, /*masked_digest=*/kHardenedBoolTrue, kdf_context.data,
+        kdf_context.len, kdf_label.data, kdf_label.len,
+        keying_material->keyblob, required_byte_len / sizeof(uint32_t)));
   } else if (kmac_mode == kOtcryptoKmacModeKmac256) {
     // Check if `key_mode` of the key derivation key matches `kmac_mode`.
     if (key_derivation_key.config.key_mode != kOtcryptoKeyModeKdfKmac256) {
@@ -305,10 +305,10 @@ otcrypto_status_t otcrypto_kdf_kmac(
     if (key_derivation_key.config.key_length < 256 / 8) {
       return OTCRYPTO_BAD_ARGS;
     }
-    HARDENED_TRY(kmac_kmac_256(&kmac_key, kdf_context.data, kdf_context.len,
-                               kdf_label.data, kdf_label.len,
-                               keying_material->keyblob,
-                               required_byte_len / sizeof(uint32_t)));
+    HARDENED_TRY(kmac_kmac_256(
+        &kmac_key, /*masked_digest=*/kHardenedBoolTrue, kdf_context.data,
+        kdf_context.len, kdf_label.data, kdf_label.len,
+        keying_material->keyblob, required_byte_len / sizeof(uint32_t)));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
