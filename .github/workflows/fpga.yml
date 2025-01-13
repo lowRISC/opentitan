@@ -69,7 +69,7 @@ jobs:
               //sw/host/opentitantool:opentitantool -- \
               --interface=hyperdebug_dfu transport update-firmware || true
 
-      - name: Execute tests
+      - name: Execute tests (test_output=all)
         run: |
           . util/build_consts.sh
           module load "xilinx/vivado/${{ inputs.vivado_version }}"
@@ -82,7 +82,27 @@ jobs:
 
           # Run FPGA tests
           if [[ -s target_pattern_file.txt ]]; then
-            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt || {
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt all || {
+              res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
+            }
+          else
+            echo "No tests to run after filtering"
+          fi
+
+      - name: Execute tests (test_output=error)
+        run: |
+          . util/build_consts.sh
+          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+
+          # Execute a query to find all targets that match the test tags and store them in a file.
+          ci/scripts/run-bazel-test-query.sh \
+            target_pattern_file.txt \
+            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            //... @manufacturer_test_hooks//...
+
+          # Run FPGA tests
+          if [[ -s target_pattern_file.txt ]]; then
+            ci/scripts/run-fpga-tests.sh "${{ inputs.interface }}" target_pattern_file.txt error || {
               res=$?; echo "To reproduce failures locally, follow the instructions at https://opentitan.org/book/doc/getting_started/setup_fpga.html#reproducing-fpga-ci-failures-locally"; exit "${res}";
             }
           else
