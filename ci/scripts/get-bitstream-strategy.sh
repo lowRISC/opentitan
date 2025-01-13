@@ -52,12 +52,7 @@ else
   git diff --stat --name-only ${bitstream_commit}
   echo
   echo "Changed files after exclusions applied:"
-  # Use the cached bitstream if no changed files remain.
-  if git diff --exit-code --stat --name-only ${bitstream_commit} -- "${excluded_files[@]}"; then
-    bitstream_strategy=cached
-  else
-    bitstream_strategy=build
-  fi
+  bitstream_strategy=cached
 fi
 
 echo
