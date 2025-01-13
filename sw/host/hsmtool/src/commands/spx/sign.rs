@@ -45,7 +45,12 @@ impl Dispatch for Sign {
 
         let data = helper::read_file(&self.input)?;
         let data = self.format.spx_prepare(self.domain, &data)?;
-        let result = spx.sign(self.label.as_deref(), self.id.as_deref(), &data)?;
+        let result = spx.sign(
+            self.label.as_deref(),
+            self.id.as_deref(),
+            self.domain,
+            &data,
+        )?;
         helper::write_file(&self.output, &result)?;
         Ok(Box::<BasicResult>::default())
     }

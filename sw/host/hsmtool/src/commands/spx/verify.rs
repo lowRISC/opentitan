@@ -45,7 +45,13 @@ impl Dispatch for Verify {
         let data = helper::read_file(&self.input)?;
         let data = self.format.spx_prepare(self.domain, &data)?;
         let signature = helper::read_file(&self.signature)?;
-        let result = spx.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
+        let result = spx.verify(
+            self.label.as_deref(),
+            self.id.as_deref(),
+            self.domain,
+            &data,
+            &signature,
+        )?;
         Ok(Box::new(BasicResult {
             success: result,
             error: if result {
