@@ -1267,6 +1267,11 @@
 
       // Reset manager software reset request to pwrmgr
       'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
+
+      // SOC Proxy TLUL Muxing
+      'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
+      'soc_proxy.dma_tl_d2h' : ['dma.ctn_tl_d2h']
+
     }
 
     // top is to connect to top net/struct.
@@ -1343,8 +1348,6 @@
         'clkmgr_aon.calib_rdy'                 : 'calib_rdy',
         'csrng.entropy_src_hw_if'              : 'entropy_src_hw_if',
         'dma.sys'                              : 'dma_sys',
-        'dma.ctn_tl_h2d'                       : 'dma_ctn_tl_h2d',
-        'dma.ctn_tl_d2h'                       : 'dma_ctn_tl_d2h',
         'mbx.tl_mbx'                           : 'mbx_tl',
         'mbx0.doe_intr'                        : 'mbx0_doe_intr',
         'mbx0.doe_intr_en'                     : 'mbx0_doe_intr_en',
@@ -1399,7 +1402,9 @@
         'rstmgr_aon.por_n'                     : 'por_n'
         'rv_core_ibex.fpga_info'               : 'fpga_info'
         'soc_proxy.ctn_tl_h2d'                 : 'ctn_tl_h2d',
-        'soc_proxy.ctn_tl_d2h'                 : 'ctn_tl_d2h',
+        'soc_proxy.ctn_tl_d2h'                 : 'ctn_tl_d2h'
+        'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
+        'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
         'soc_proxy.soc_fatal_alert'            : 'soc_fatal_alert',
         'soc_proxy.soc_recov_alert'            : 'soc_recov_alert',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
