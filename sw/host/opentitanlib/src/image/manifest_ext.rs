@@ -6,7 +6,7 @@ use anyhow::Result;
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
