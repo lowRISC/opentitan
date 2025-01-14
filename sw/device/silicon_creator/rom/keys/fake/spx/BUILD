@@ -55,9 +55,12 @@ filegroup(
 
 key_sphincs_plus(
     name = "prod_key_1_spx_key",
-    config = {"domain": "Pure"},
+    config = {
+        "domain": "PreHashedSha256",
+        "byte-reversal-bug": "true",
+    },
     method = "local",
-    private_key = "prod_key_0_spx.pem",
-    pub_key = "prod_key_0_spx.pub.pem",
+    private_key = "prod_key_1_spx.pem",
+    pub_key = "prod_key_1_spx.pub.pem",
     type = "TestKey",
 )
