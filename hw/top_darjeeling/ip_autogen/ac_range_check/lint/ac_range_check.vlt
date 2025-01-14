@@ -1,13 +1,5 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{
-  instance_name: top_darjeeling_rv_plic
-  param_values:
-  {
-    src: 161
-    target: 1
-    prio: 3
-    topname: darjeeling
-  }
-}
+//
+// waiver file for ac_range_check
