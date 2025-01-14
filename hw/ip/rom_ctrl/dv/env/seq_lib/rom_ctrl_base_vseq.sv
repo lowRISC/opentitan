@@ -180,7 +180,7 @@ task rom_ctrl_base_vseq::tl_access(
                           input bit [TL_DW-1:0]  exp_data = 0,
                           input bit [TL_DW-1:0]  compare_mask = '1,
                           input bit              check_exp_data = 1'b0,
-                          input bit              blocking,
+                          input bit              blocking = csr_utils_pkg::default_csr_blocking,
                           input mubi4_t          instr_type = MuBi4False,
                           tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
                           input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone);
@@ -214,7 +214,7 @@ task rom_ctrl_base_vseq::tl_access_w_abort(
                           input bit [TL_DW-1:0]  exp_data = 0,
                           input bit [TL_DW-1:0]  compare_mask = '1,
                           input bit              check_exp_data = 1'b0,
-                          input bit              blocking,
+                          input bit              blocking = csr_utils_pkg::default_csr_blocking,
                           input mubi4_t          instr_type = MuBi4False,
                           tl_sequencer           tl_sequencer_h = p_sequencer.tl_sequencer_h,
                           input tl_intg_err_e    tl_intg_err_type = TlIntgErrNone,
