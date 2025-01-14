@@ -66,6 +66,8 @@ enum {
    */
   kFlashInfoFieldCpDeviceIdStartOffset = 384,
   kFlashInfoFieldCpDeviceIdSizeIn32BitWords = 4,
+  kFlashInfoFieldCpDeviceIdSizeInBytes =
+      kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t),
 
   // Creator/Owner Seeds - Bank 0, Pages 1 and 2
   kFlashInfoFieldKeySeedSizeIn32BitWords = 32 / sizeof(uint32_t),

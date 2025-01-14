@@ -57,7 +57,7 @@ UJSON_SERDE_STRUCT(ManufCpTestData, \
 // clang-format off
 #define STRUCT_MANUF_FT_INDIVIDUALIZE_DATA(field, string) \
     field(use_ext_clk, bool) \
-    field(device_id, uint32_t, 8)
+    field(ft_device_id, uint32_t, 4)
 UJSON_SERDE_STRUCT(ManufFtIndividualizeData, \
                    manuf_ft_individualize_data_t, \
                    STRUCT_MANUF_FT_INDIVIDUALIZE_DATA);
