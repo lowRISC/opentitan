@@ -98,6 +98,11 @@ def main(args_in):
         help="Run flow on FPGA (instead of silicon).",
     )
     parser.add_argument(
+        "--fpga-dont-clear-bitstream",
+        action="store_true",
+        help="If set, the FPGA bitsream will not be cleared before CP.",
+    )
+    parser.add_argument(
         "--use-ext-clk",
         action="store_true",
         default=False,
@@ -158,6 +163,7 @@ def main(args_in):
                 test_unlock_token=args.test_unlock_token,
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
+                fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
                 use_ext_clk=args.use_ext_clk,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()
