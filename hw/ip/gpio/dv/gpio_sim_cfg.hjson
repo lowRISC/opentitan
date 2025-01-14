@@ -180,6 +180,10 @@
       build_mode: en_cdc_prims
       run_opts: ["+no_pullup_pulldown=1"]
     }
+    {
+      name: gpio_rand_straps
+      uvm_test_seq: gpio_rand_straps_vseq
+    }
   ]
 
   // List of regressions.
