@@ -150,6 +150,52 @@ INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
 Condition 7 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst)))
                            1 -1" (2 "10")
 
+// The condition !rvalid_o & rready_i is non-occuring. rready_i is reqfifo_rready in
+// u_tl_adapter_rom. reqfifo_rready is driven by d_ack, which is only true if tl_o_int.d_valid is
+// true. Which means that ROM is responding to a request which should be in u_reqfifo as soon as it
+// was out. This implies that u_reqfifo is not empty and both rvaid_o and rready_i must be true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// If rready_i is true, it means that it is true in u_tl_adapter_rom as rspfifo_rready. If
+// rspfifo_rready is true, this means that reqfifo_rdata.op = OpRead, reqfifo_rdata.error is false
+// and reqfifo_rready is true. The latter signal is driven by d_ack, which can only be true if
+// tl_o_int.d_valid is true. Since we want reqfifo_rdata.op = OpRead and reqfifo_rdata.error as
+// false, the logic that drive d_valid yields rspfifo_rvalid=1. That signal is rvalid_o in
+// u_rspfifo. As a result, if rready_i is true then, rvalid_o must be true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// If rready_i is true, it means that it is true in u_tl_adapter_rom as sramreqfifo_rready. That
+// signal is driven by rspfifo_wvalid. If rspfifo_wvalid can be true when both rvalid_i and
+// reqfifo_rvalid is true. This means that the ROM is responding to a request and it is available
+// in u_reqfifo. ROM always responds in one cycle which means that u_sramreqfifo must contain that
+// request. This implies that u_sramreqfifo is not empty and rvalid_o must be true. As a result, if
+// rready_i is true, then rvalid_o must be true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// We can't get rvalid_o and rready_i as true when fifo is under reset. Since Pass is false in case
+// of u_reqfifo, rvalid_o can only be true if the fifo is not empty. But when rst_ni is low, the
+// fifo clears its contents. Therefore it cannot be true in the first cycle after reset as that is
+// the last cycle for under_rst to hold itself true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// By the same argument as that given for the previous condition, the u_rspfifo storage cannot be
+// nonempty when the under_rst flag is true. But u_rspfifo was has a Pass parameter of 1, which
+// would give another way for rvalid_o to be true. For that to apply, we would need wvalid_i to be
+// true, which is rspfifo_wvalid in tlul_adapter_sram. This depends on reqfifo_rvalid, which can
+// only be true when u_reqfifo is nonempty. The reasoning for the previous condition shows that this
+// cannot happen.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// Since Pass is false for u_sramreqfifo, the same reasoning for the analogous condition for
+// u_reqfifo applies here as well.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
 Toggle 0to1 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
