@@ -97,9 +97,6 @@ def obj_disassemble(ctx, **kwargs):
             src.path,
             output.path,
         ],
-        execution_requirements = {
-            "no-sandbox": "",
-        },
         command = "$1 -wx --disassemble --line-numbers --disassemble-zeroes --source --visualize-jumps $2 | expand > $3",
     )
     return output
