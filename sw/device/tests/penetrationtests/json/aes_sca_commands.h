@@ -66,7 +66,7 @@ UJSON_SERDE_STRUCT(CryptotestAesScaNumBlocks, aes_sca_num_blocks_t, AES_SCA_NUM_
 UJSON_SERDE_STRUCT(CryptotestAesScaBlock, aes_sca_block_t, AES_SCA_BLOCK);
 
 #define AES_SCA_GCM_TRIGGERS(field, string) \
-    field(triggers, bool, 3) \
+    field(triggers, bool, 4) \
     field(block, size_t)
 UJSON_SERDE_STRUCT(CryptotestAesScaGcmTriggers, aes_sca_gcm_triggers_t, AES_SCA_GCM_TRIGGERS);
 
