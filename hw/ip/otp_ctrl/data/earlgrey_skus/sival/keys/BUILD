@@ -16,7 +16,6 @@ package(default_visibility = ["//visibility:public"])
 
 key_ecdsa(
     name = "ecdsa_prod_0",
-    config = "EcdsaP256",
     method = "hsmtool",
     pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-0.pub.der",
     type = "ProdKey",
@@ -24,7 +23,6 @@ key_ecdsa(
 
 key_ecdsa(
     name = "ecdsa_prod_1",
-    config = "EcdsaP256",
     method = "hsmtool",
     pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-1.pub.der",
     type = "ProdKey",
@@ -32,7 +30,6 @@ key_ecdsa(
 
 key_ecdsa(
     name = "ecdsa_prod_2",
-    config = "EcdsaP256",
     method = "hsmtool",
     pub_key = "sv00-earlgrey-a1-root-ecdsa-prod-2.pub.der",
     type = "ProdKey",
@@ -40,7 +37,6 @@ key_ecdsa(
 
 key_ecdsa(
     name = "ecdsa_test_0",
-    config = "EcdsaP256",
     method = "hsmtool",
     pub_key = "sv00-earlgrey-a1-root-ecdsa-test-0.pub.der",
     type = "TestKey",
@@ -48,7 +44,6 @@ key_ecdsa(
 
 key_ecdsa(
     name = "ca_dice_0",
-    config = "EcdsaP256",
     method = "hsmtool",
     pub_key = "sv00-earlgrey-a1-ca-dice-0.pub.der",
     type = "TestKey",

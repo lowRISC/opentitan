@@ -82,7 +82,6 @@ filegroup(
 
 key_ecdsa(
     name = "app_prod_ecdsa",
-    config = "EcdsaP256",
     method = "local",
     private_key = "app_prod_ecdsa_p256.der",
     pub_key = "app_prod_ecdsa_p256.pub.der",
@@ -91,7 +90,7 @@ key_ecdsa(
 
 key_sphincs_plus(
     name = "app_prod_spx",
-    config = "Sha2128s",
+    config = {"domain": "Pure"},
     method = "local",
     private_key = "app_prod_spx.pem",
     pub_key = "app_prod_spx.pub.pem",
@@ -100,7 +99,6 @@ key_sphincs_plus(
 
 key_ecdsa(
     name = "app_dev_ecdsa",
-    config = "EcdsaP256",
     method = "local",
     private_key = "app_dev_ecdsa_p256.der",
     pub_key = "app_dev_ecdsa_p256.pub.der",
@@ -111,7 +109,7 @@ key_sphincs_plus(
     name = "app_dev_spx",
     # TODO(cfrantz): Change this to Prehash after putting
     # the prehash infrastructure in place.
-    config = "Sha2128s",
+    config = {"domain": "Pure"},
     method = "local",
     private_key = "app_dev_spx.pem",
     pub_key = "app_dev_spx.pub.pem",
@@ -120,7 +118,6 @@ key_sphincs_plus(
 
 key_ecdsa(
     name = "app_test_ecdsa",
-    config = "EcdsaP256",
     method = "local",
     private_key = "app_test_ecdsa_p256.der",
     pub_key = "app_test_ecdsa_p256.pub.der",
@@ -129,7 +126,6 @@ key_ecdsa(
 
 key_ecdsa(
     name = "app_unauthorized_ecdsa",
-    config = "EcdsaP256",
     method = "local",
     private_key = "app_unauthorized_ecdsa_p256.der",
     pub_key = "app_unauthorized_ecdsa_p256.pub.der",
