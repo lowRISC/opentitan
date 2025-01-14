@@ -438,7 +438,7 @@ impl SizeExpression<'_> {
             }
         };
 
-        itertools::Itertools::intersperse(terms.into_iter(), " + ".to_owned()).collect()
+        terms.join(" + ")
     }
 
     // Generate the expression to compute `item_size`.
