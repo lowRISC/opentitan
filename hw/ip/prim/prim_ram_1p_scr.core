@@ -15,7 +15,6 @@ filesets:
       - lowrisc:prim:buf
       - lowrisc:prim:cipher
       - lowrisc:prim:util_get_scramble_params
-      - lowrisc:dv_verilator:memutil_dpi_scrambled
     files:
       - rtl/prim_ram_1p_scr.sv
     file_type: systemVerilogSource
