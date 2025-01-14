@@ -225,7 +225,7 @@ _KEYS = {
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    "dev_hybrid": {
+    "dev_hybrid_spx_prehashed": {
         "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_ecdsa": "dev_key_0"},
         "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_dev_spx": "dev_key_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
@@ -237,7 +237,7 @@ _KEYS = {
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
         "exit_failure": DEFAULT_TEST_FAILURE_MSG,
     },
-    "prod_hybrid": {
+    "prod_hybrid_spx_pure": {
         "ecdsa": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_ecdsa": "prod_key_0"},
         "spx": {"//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx": "prod_key_0"},
         "exit_success": DEFAULT_TEST_SUCCESS_MSG,
