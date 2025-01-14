@@ -6,7 +6,7 @@ use anyhow::Result;
 use sha2::{Digest, Sha256};
 use std::time::Duration;
 use thiserror::Error;
-use zerocopy::AsBytes;
+use zerocopy::{Immutable, IntoBytes};
 
 use crate::app::TransportWrapper;
 use crate::bootstrap::{Bootstrap, BootstrapOptions, UpdateProtocol};
@@ -14,7 +14,7 @@ use crate::impl_serializable_error;
 use crate::io::spi::Transfer;
 use crate::transport::{Capability, ProgressIndicator};
 
-#[derive(AsBytes, Debug, Default)]
+#[derive(Immutable, IntoBytes, Debug, Default)]
 #[repr(C)]
 struct FrameHeader {
     hash: [u8; Frame::HASH_LEN],
@@ -22,7 +22,7 @@ struct FrameHeader {
     flash_offset: u32,
 }
 
-#[derive(AsBytes, Debug)]
+#[derive(Immutable, IntoBytes, Debug)]
 #[repr(C)]
 struct Frame {
     header: FrameHeader,

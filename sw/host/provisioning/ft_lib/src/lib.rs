@@ -10,7 +10,7 @@ use std::time::Duration;
 
 use anyhow::{bail, Result};
 use arrayvec::ArrayVec;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use cert_lib::{parse_and_endorse_x509_cert, validate_cert_chain, CaConfig, CaKey, EndorsedCert};
 use ft_ext_lib::ft_ext;
