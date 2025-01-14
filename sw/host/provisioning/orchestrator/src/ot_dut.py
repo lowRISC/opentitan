@@ -50,6 +50,7 @@ class OtDut():
     test_unlock_token: str
     test_exit_token: str
     fpga: str
+    fpga_dont_clear_bitstream: bool
     use_ext_clk: bool
     require_confirmation: bool = True
 
@@ -107,9 +108,10 @@ class OtDut():
             host_flags = host_flags.format(target=self.fpga,
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
-            host_flags += " --clear-bitstream"
-            bitstream = resolve_runfile(_FPGA_UNIVERSAL_SPLICE_BITSTREAM)
-            host_flags += f" --bitstream={bitstream}"
+            if not self.fpga_dont_clear_bitstream:
+                host_flags += " --clear-bitstream"
+                bitstream = resolve_runfile(_FPGA_UNIVERSAL_SPLICE_BITSTREAM)
+                host_flags += f" --bitstream={bitstream}"
             device_elf = device_elf.format(
                 base_dir=self._base_dev_dir(),
                 target=f"fpga_{self.fpga}_rom_with_fake_keys")
