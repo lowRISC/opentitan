@@ -365,12 +365,14 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   return OK_STATUS();
 }
 
-static status_t trigger_aes_gcm(
-    dif_aes_key_share_t key, dif_aes_iv_t iv, dif_aes_data_t aad[kMaxGcmBlocks],
-    size_t aad_num_blocks, size_t aad_last_block_size,
-    dif_aes_data_t ptx[kMaxGcmBlocks], size_t ptx_num_blocks,
-    size_t ptx_last_block_size, dif_aes_data_t *ctx, dif_aes_data_t *tag,
-    aes_sca_gcm_triggers_t trigger) {
+static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
+                                dif_aes_data_t aad[kMaxGcmBlocks],
+                                size_t aad_num_blocks,
+                                size_t aad_last_block_size,
+                                dif_aes_data_t ptx[kMaxGcmBlocks],
+                                size_t ptx_num_blocks,
+                                size_t ptx_last_block_size, dif_aes_data_t *tag,
+                                aes_sca_gcm_triggers_t trigger) {
   // AES GCM configuration used for this test.
   dif_aes_transaction_t transaction = {
       .operation = kDifAesOperationEncrypt,
@@ -493,11 +495,6 @@ static status_t trigger_aes_gcm(
   } else {
     aes_manual_trigger();
   }
-
-  // Read the last CTX block from the AES.
-  AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
-                                kIbexAesGcmSleepCycles * 2);
-  TRY(dif_aes_read_output(&aes, ctx));
 
   // Generate tag.
   size_t ptx_total_bytes = (ptx_num_blocks - 1) * 16 + ptx_last_block_size;
@@ -637,39 +634,27 @@ status_t handle_aes_sca_gcm_fvsr_batch(ujson_t *uj) {
   }
 
   // Trigger the AES GCM operation.
-  dif_aes_data_t aes_ctx_acc;
   dif_aes_data_t aes_tag_acc;
-  memset(aes_ctx_acc.data, 0,
-         sizeof(aes_ctx_acc.data[0] * ARRAYSIZE(aes_ctx_acc.data)));
   memset(aes_tag_acc.data, 0,
          sizeof(aes_tag_acc.data[0] * ARRAYSIZE(aes_tag_acc.data)));
   for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
-    dif_aes_data_t aes_ctx;
     dif_aes_data_t aes_tag;
-    TRY(trigger_aes_gcm(
-        key_fvsr[it], aes_iv_fvsr[it], aes_aad, uj_aad_blocks.num_blocks,
-        aes_aad_last_block_size, aes_ptx, uj_ptx_blocks.num_blocks,
-        aes_ptx_last_block_size, &aes_ctx, &aes_tag, uj_triggers));
-    // Accumulate (i.e., XOR) TAG and CTX for sending back to host.
-    for (size_t i = 0; i < ARRAYSIZE(aes_ctx_acc.data); i++) {
-      aes_ctx_acc.data[i] ^= aes_ctx.data[i];
+    TRY(trigger_aes_gcm(key_fvsr[it], aes_iv_fvsr[it], aes_aad,
+                        uj_aad_blocks.num_blocks, aes_aad_last_block_size,
+                        aes_ptx, uj_ptx_blocks.num_blocks,
+                        aes_ptx_last_block_size, &aes_tag, uj_triggers));
+    // Accumulate (i.e., XOR) TAG for sending back to host.
+    for (size_t i = 0; i < ARRAYSIZE(aes_tag_acc.data); i++) {
       aes_tag_acc.data[i] ^= aes_tag.data[i];
     }
   }
 
-  // Send accumulated CTX and TAG back to host.
-  aes_sca_block_t uj_ctx;
+  // Send accumulated TAG back to host.
   aes_sca_block_t uj_tag;
-
-  uj_ctx.num_valid_bytes = 16;
-  memset(uj_ctx.block, 0, sizeof(uj_ctx.block));
-  memcpy(uj_ctx.block, (uint8_t *)aes_ctx_acc.data, uj_ctx.num_valid_bytes);
-
   uj_tag.num_valid_bytes = 16;
   memset(uj_tag.block, 0, sizeof(uj_tag.block));
   memcpy(uj_tag.block, (uint8_t *)aes_tag_acc.data, uj_tag.num_valid_bytes);
 
-  RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_ctx);
   RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_tag);
 
   return OK_STATUS();
@@ -753,26 +738,18 @@ status_t handle_aes_sca_gcm_single_encrypt(ujson_t *uj) {
   }
 
   // Trigger the AES GCM operation.
-  dif_aes_data_t aes_ctx;
   dif_aes_data_t aes_tag;
   TRY(trigger_aes_gcm(key, aes_iv, aes_aad, uj_aad_blocks.num_blocks,
                       aes_aad_last_block_size, aes_ptx,
                       uj_ptx_blocks.num_blocks, aes_ptx_last_block_size,
-                      &aes_ctx, &aes_tag, uj_triggers));
+                      &aes_tag, uj_triggers));
 
-  // Send last CTX and TAG back to host.
-  aes_sca_block_t uj_ctx;
+  // Send TAG back to host.
   aes_sca_block_t uj_tag;
-
-  uj_ctx.num_valid_bytes = 16;
-  memset(uj_ctx.block, 0, sizeof(uj_ctx.block));
-  memcpy(uj_ctx.block, (uint8_t *)aes_ctx.data, uj_ctx.num_valid_bytes);
-
   uj_tag.num_valid_bytes = 16;
   memset(uj_tag.block, 0, sizeof(uj_tag.block));
   memcpy(uj_tag.block, (uint8_t *)aes_tag.data, uj_tag.num_valid_bytes);
 
-  RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_ctx);
   RESP_OK(ujson_serialize_aes_sca_block_t, uj, &uj_tag);
 
   return OK_STATUS();
