@@ -3961,9 +3961,9 @@
           width: 1
           inst_name: soc_proxy
           default: ""
-          external: true
-          top_signame: ctn_tl_h2d
-          conn_type: false
+          end_idx: -1
+          top_type: broadcast
+          top_signame: soc_proxy_ctn_tl_h2d
           index: -1
         }
         {
@@ -3976,9 +3976,9 @@
           width: 1
           inst_name: soc_proxy
           default: ""
-          external: true
-          top_signame: ctn_tl_d2h
-          conn_type: false
+          end_idx: -1
+          top_type: broadcast
+          top_signame: soc_proxy_ctn_tl_d2h
           index: -1
         }
         {
@@ -9984,6 +9984,174 @@
       generate_dif: true
     }
     {
+      name: ac_range_check
+      type: ac_range_check
+      template_type: ac_range_check
+      clock_srcs:
+      {
+        clk_i: main
+      }
+      clock_group: secure
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: lc
+          domain: "0"
+        }
+      }
+      ipgen_param:
+      {
+        num_ranges: 32
+      }
+      attr: ipgen
+      clock_connections:
+      {
+        clk_i: clkmgr_aon_clocks.clk_main_secure
+      }
+      domain:
+      [
+        "0"
+      ]
+      param_decl: {}
+      param_list: []
+      inter_signal_list:
+      [
+        {
+          name: range_check_overwrite
+          desc: Overwrites all ranges and let all requests pass through.
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          external: true
+          top_signame: ac_range_check_overwrite
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ctn_tl_h2d
+          desc: TL-UL input port (request part), synchronous
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          top_signame: soc_proxy_ctn_tl_h2d
+          index: -1
+        }
+        {
+          name: ctn_tl_d2h
+          desc: TL-UL input port (response part), synchronous
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          top_signame: soc_proxy_ctn_tl_d2h
+          index: -1
+        }
+        {
+          name: ctn_filtered_tl_h2d
+          desc: Filtered TL-UL output port (request part), synchronous
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          external: true
+          top_signame: ctn_tl_h2d
+          conn_type: false
+          index: -1
+        }
+        {
+          name: ctn_filtered_tl_d2h
+          desc: Filtered TL-UL output port (response part), synchronous
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          external: true
+          top_signame: ctn_tl_d2h
+          conn_type: false
+          index: -1
+        }
+        {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: ac_range_check
+          index: -1
+        }
+        {
+          name: racl_error
+          desc:
+            '''
+            RACL error indication signal.
+            If 1, the error log contains valid information.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: ac_range_check
+          index: -1
+        }
+        {
+          name: racl_error_log
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: ac_range_check
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: ac_range_check
+          default: ""
+          end_idx: -1
+          top_signame: ac_range_check_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          soc_mbx: 0x01464000
+        }
+      }
+      generate_dif: true
+    }
+    {
       name: rv_core_ibex
       type: rv_core_ibex
       param_decl:
@@ -11074,6 +11242,14 @@
       [
         dma.ctn_tl_d2h
       ]
+      soc_proxy.ctn_tl_h2d:
+      [
+        ac_range_check.ctn_tl_h2d
+      ]
+      soc_proxy.ctn_tl_d2h:
+      [
+        ac_range_check.ctn_tl_d2h
+      ]
       pwrmgr_aon.wakeups:
       [
         pinmux_aon.pin_wkup_req
@@ -11390,6 +11566,10 @@
       [
         mbx.tl_racl_ctrl
       ]
+      ac_range_check.tl:
+      [
+        mbx.tl_ac_range_check
+      ]
       rv_dm.dbg_tl_d:
       [
         dbg.tl_rv_dm__dbg
@@ -11548,8 +11728,6 @@
       otp_ctrl.cfg_rsp: otp_cfg_rsp
       rstmgr_aon.por_n: por_n
       rv_core_ibex.fpga_info: fpga_info
-      soc_proxy.ctn_tl_h2d: ctn_tl_h2d
-      soc_proxy.ctn_tl_d2h: ctn_tl_d2h
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
       soc_proxy.soc_fatal_alert: soc_fatal_alert
@@ -11566,6 +11744,9 @@
       racl_ctrl.racl_policies: racl_policies
       racl_ctrl.racl_error_external: racl_error
       racl_ctrl.racl_error_log_external: racl_error_log
+      ac_range_check.range_check_overwrite: ac_range_check_overwrite
+      ac_range_check.ctn_filtered_tl_h2d: ctn_tl_h2d
+      ac_range_check.ctn_filtered_tl_d2h: ctn_tl_d2h
     }
   }
   xbar:
@@ -14029,6 +14210,7 @@
           mbx_pcie0.soc
           mbx_pcie1.soc
           racl_ctrl
+          ac_range_check
         ]
       }
       nodes:
@@ -14266,6 +14448,28 @@
           stub: false
           req_fifo_pass: true
         }
+        {
+          name: ac_range_check
+          type: device
+          addr_space: soc_mbx
+          clock: clk_mbx_i
+          reset: rst_mbx_ni
+          pipeline: false
+          inst_type: ac_range_check
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                soc_mbx: 0x1464000
+              }
+              size_byte: 0x400
+            }
+          ]
+          xbar: false
+          stub: false
+          req_fifo_pass: true
+        }
       ]
       addr_spaces:
       [
@@ -14407,6 +14611,18 @@
           inst_name: mbx
           default: ""
           top_signame: racl_ctrl_tl
+          index: -1
+        }
+        {
+          name: tl_ac_range_check
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: mbx
+          default: ""
+          top_signame: ac_range_check_tl
           index: -1
         }
       ]
@@ -17325,6 +17541,7 @@
     mbx_jtag
     mbx_pcie0
     mbx_pcie1
+    ac_range_check
   ]
   interrupt:
   [
@@ -18183,6 +18400,15 @@
       default_val: false
       incoming: false
     }
+    {
+      name: ac_range_check_deny_cnt_reached
+      width: 1
+      type: interrupt
+      module_name: ac_range_check
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+    }
   ]
   alert_module:
   [
@@ -18228,6 +18454,7 @@
     mbx_pcie1
     soc_dbg_ctrl
     racl_ctrl
+    ac_range_check
     rv_core_ibex
   ]
   outgoing_alert_module: {}
@@ -19105,6 +19332,24 @@
       module_name: racl_ctrl
       lpg_name: infra_lc_0
       lpg_idx: 10
+    }
+    {
+      name: ac_range_check_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: ac_range_check
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: ac_range_check_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: ac_range_check
+      lpg_name: secure_lc_0
+      lpg_idx: 13
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -21892,9 +22137,9 @@
         width: 1
         inst_name: soc_proxy
         default: ""
-        external: true
-        top_signame: ctn_tl_h2d
-        conn_type: false
+        end_idx: -1
+        top_type: broadcast
+        top_signame: soc_proxy_ctn_tl_h2d
         index: -1
       }
       {
@@ -21907,9 +22152,9 @@
         width: 1
         inst_name: soc_proxy
         default: ""
-        external: true
-        top_signame: ctn_tl_d2h
-        conn_type: false
+        end_idx: -1
+        top_type: broadcast
+        top_signame: soc_proxy_ctn_tl_d2h
         index: -1
       }
       {
@@ -25499,6 +25744,130 @@
         index: -1
       }
       {
+        name: range_check_overwrite
+        desc: Overwrites all ranges and let all requests pass through.
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        external: true
+        top_signame: ac_range_check_overwrite
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ctn_tl_h2d
+        desc: TL-UL input port (request part), synchronous
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        top_signame: soc_proxy_ctn_tl_h2d
+        index: -1
+      }
+      {
+        name: ctn_tl_d2h
+        desc: TL-UL input port (response part), synchronous
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        top_signame: soc_proxy_ctn_tl_d2h
+        index: -1
+      }
+      {
+        name: ctn_filtered_tl_h2d
+        desc: Filtered TL-UL output port (request part), synchronous
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        external: true
+        top_signame: ctn_tl_h2d
+        conn_type: false
+        index: -1
+      }
+      {
+        name: ctn_filtered_tl_d2h
+        desc: Filtered TL-UL output port (response part), synchronous
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        external: true
+        top_signame: ctn_tl_d2h
+        conn_type: false
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: ac_range_check
+        index: -1
+      }
+      {
+        name: racl_error
+        desc:
+          '''
+          RACL error indication signal.
+          If 1, the error log contains valid information.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: ac_range_check
+        index: -1
+      }
+      {
+        name: racl_error_log
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: ac_range_check
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: ac_range_check
+        default: ""
+        end_idx: -1
+        top_signame: ac_range_check_tl
+        index: -1
+      }
+      {
         name: rst_cpu_n
         struct: logic
         type: uni
@@ -26783,6 +27152,18 @@
         inst_name: mbx
         default: ""
         top_signame: racl_ctrl_tl
+        index: -1
+      }
+      {
+        name: tl_ac_range_check
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: mbx
+        default: ""
+        top_signame: ac_range_check_tl
         index: -1
       }
       {
@@ -28155,30 +28536,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: ctn_tl_h2d_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: ctn_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: ctn_tl_d2h_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: ctn_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: ctn_misc_tl_h2d_i
         width: 1
         type: uni
@@ -28411,6 +28768,42 @@
         conn_type: false
         index: -1
         netname: racl_error_log
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        signame: ac_range_check_overwrite_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ac_range_check_overwrite
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: ctn_tl_h2d_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: ctn_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: ctn_tl_d2h_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ctn_tl_d2h
       }
     ]
     definitions:
@@ -29235,6 +29628,28 @@
         type: uni
         end_idx: -1
         act: req
+        suffix: ""
+        default: tlul_pkg::TL_D2H_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: soc_proxy_ctn_tl_h2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: soc_proxy_ctn_tl_d2h
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
         suffix: ""
         default: tlul_pkg::TL_D2H_DEFAULT
       }
@@ -30925,6 +31340,28 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: racl_ctrl_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: ac_range_check_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: ac_range_check_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

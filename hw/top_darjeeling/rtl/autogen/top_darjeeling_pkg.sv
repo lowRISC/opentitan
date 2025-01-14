@@ -646,7 +646,8 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralMbxPcie1 = 39,
     TopDarjeelingAlertPeripheralSocDbgCtrl = 40,
     TopDarjeelingAlertPeripheralRaclCtrl = 41,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 42,
+    TopDarjeelingAlertPeripheralAcRangeCheck = 42,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 43,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -749,10 +750,12 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 94,
     TopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr = 95,
     TopDarjeelingAlertIdRaclCtrlFatalFault = 96,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 97,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 98,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 99,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 100,
+    TopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr = 97,
+    TopDarjeelingAlertIdAcRangeCheckFatalFault = 98,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 99,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 100,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 101,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 102,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 

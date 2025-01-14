@@ -7,7 +7,7 @@
 //
 // Interconnect
 // mbx
-//   -> s1n_11
+//   -> s1n_12
 //     -> mbx0.soc
 //     -> mbx1.soc
 //     -> mbx2.soc
@@ -18,6 +18,7 @@
 //     -> mbx_pcie0.soc
 //     -> mbx_pcie1.soc
 //     -> racl_ctrl
+//     -> ac_range_check
 
 module xbar_mbx (
   input clk_mbx_i,
@@ -48,6 +49,8 @@ module xbar_mbx (
   input  tlul_pkg::tl_d2h_t tl_mbx_pcie1__soc_i,
   output tlul_pkg::tl_h2d_t tl_racl_ctrl_o,
   input  tlul_pkg::tl_d2h_t tl_racl_ctrl_i,
+  output tlul_pkg::tl_h2d_t tl_ac_range_check_o,
+  input  tlul_pkg::tl_d2h_t tl_ac_range_check_i,
 
   input prim_mubi_pkg::mubi4_t scanmode_i
 );
@@ -60,93 +63,100 @@ module xbar_mbx (
   logic unused_scanmode;
   assign unused_scanmode = ^scanmode_i;
 
-  tl_h2d_t tl_s1n_11_us_h2d ;
-  tl_d2h_t tl_s1n_11_us_d2h ;
+  tl_h2d_t tl_s1n_12_us_h2d ;
+  tl_d2h_t tl_s1n_12_us_d2h ;
 
 
-  tl_h2d_t tl_s1n_11_ds_h2d [10];
-  tl_d2h_t tl_s1n_11_ds_d2h [10];
+  tl_h2d_t tl_s1n_12_ds_h2d [11];
+  tl_d2h_t tl_s1n_12_ds_d2h [11];
 
   // Create steering signal
-  logic [3:0] dev_sel_s1n_11;
+  logic [3:0] dev_sel_s1n_12;
 
 
 
-  assign tl_mbx0__soc_o = tl_s1n_11_ds_h2d[0];
-  assign tl_s1n_11_ds_d2h[0] = tl_mbx0__soc_i;
+  assign tl_mbx0__soc_o = tl_s1n_12_ds_h2d[0];
+  assign tl_s1n_12_ds_d2h[0] = tl_mbx0__soc_i;
 
-  assign tl_mbx1__soc_o = tl_s1n_11_ds_h2d[1];
-  assign tl_s1n_11_ds_d2h[1] = tl_mbx1__soc_i;
+  assign tl_mbx1__soc_o = tl_s1n_12_ds_h2d[1];
+  assign tl_s1n_12_ds_d2h[1] = tl_mbx1__soc_i;
 
-  assign tl_mbx2__soc_o = tl_s1n_11_ds_h2d[2];
-  assign tl_s1n_11_ds_d2h[2] = tl_mbx2__soc_i;
+  assign tl_mbx2__soc_o = tl_s1n_12_ds_h2d[2];
+  assign tl_s1n_12_ds_d2h[2] = tl_mbx2__soc_i;
 
-  assign tl_mbx3__soc_o = tl_s1n_11_ds_h2d[3];
-  assign tl_s1n_11_ds_d2h[3] = tl_mbx3__soc_i;
+  assign tl_mbx3__soc_o = tl_s1n_12_ds_h2d[3];
+  assign tl_s1n_12_ds_d2h[3] = tl_mbx3__soc_i;
 
-  assign tl_mbx4__soc_o = tl_s1n_11_ds_h2d[4];
-  assign tl_s1n_11_ds_d2h[4] = tl_mbx4__soc_i;
+  assign tl_mbx4__soc_o = tl_s1n_12_ds_h2d[4];
+  assign tl_s1n_12_ds_d2h[4] = tl_mbx4__soc_i;
 
-  assign tl_mbx5__soc_o = tl_s1n_11_ds_h2d[5];
-  assign tl_s1n_11_ds_d2h[5] = tl_mbx5__soc_i;
+  assign tl_mbx5__soc_o = tl_s1n_12_ds_h2d[5];
+  assign tl_s1n_12_ds_d2h[5] = tl_mbx5__soc_i;
 
-  assign tl_mbx6__soc_o = tl_s1n_11_ds_h2d[6];
-  assign tl_s1n_11_ds_d2h[6] = tl_mbx6__soc_i;
+  assign tl_mbx6__soc_o = tl_s1n_12_ds_h2d[6];
+  assign tl_s1n_12_ds_d2h[6] = tl_mbx6__soc_i;
 
-  assign tl_mbx_pcie0__soc_o = tl_s1n_11_ds_h2d[7];
-  assign tl_s1n_11_ds_d2h[7] = tl_mbx_pcie0__soc_i;
+  assign tl_mbx_pcie0__soc_o = tl_s1n_12_ds_h2d[7];
+  assign tl_s1n_12_ds_d2h[7] = tl_mbx_pcie0__soc_i;
 
-  assign tl_mbx_pcie1__soc_o = tl_s1n_11_ds_h2d[8];
-  assign tl_s1n_11_ds_d2h[8] = tl_mbx_pcie1__soc_i;
+  assign tl_mbx_pcie1__soc_o = tl_s1n_12_ds_h2d[8];
+  assign tl_s1n_12_ds_d2h[8] = tl_mbx_pcie1__soc_i;
 
-  assign tl_racl_ctrl_o = tl_s1n_11_ds_h2d[9];
-  assign tl_s1n_11_ds_d2h[9] = tl_racl_ctrl_i;
+  assign tl_racl_ctrl_o = tl_s1n_12_ds_h2d[9];
+  assign tl_s1n_12_ds_d2h[9] = tl_racl_ctrl_i;
 
-  assign tl_s1n_11_us_h2d = tl_mbx_i;
-  assign tl_mbx_o = tl_s1n_11_us_d2h;
+  assign tl_ac_range_check_o = tl_s1n_12_ds_h2d[10];
+  assign tl_s1n_12_ds_d2h[10] = tl_ac_range_check_i;
+
+  assign tl_s1n_12_us_h2d = tl_mbx_i;
+  assign tl_mbx_o = tl_s1n_12_us_d2h;
 
   always_comb begin
     // default steering to generate error response if address is not within the range
-    dev_sel_s1n_11 = 4'd10;
-    if ((tl_s1n_11_us_h2d.a_address &
+    dev_sel_s1n_12 = 4'd11;
+    if ((tl_s1n_12_us_h2d.a_address &
          ~(ADDR_MASK_MBX0__SOC)) == ADDR_SPACE_MBX0__SOC) begin
-      dev_sel_s1n_11 = 4'd0;
+      dev_sel_s1n_12 = 4'd0;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX1__SOC)) == ADDR_SPACE_MBX1__SOC) begin
-      dev_sel_s1n_11 = 4'd1;
+      dev_sel_s1n_12 = 4'd1;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX2__SOC)) == ADDR_SPACE_MBX2__SOC) begin
-      dev_sel_s1n_11 = 4'd2;
+      dev_sel_s1n_12 = 4'd2;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX3__SOC)) == ADDR_SPACE_MBX3__SOC) begin
-      dev_sel_s1n_11 = 4'd3;
+      dev_sel_s1n_12 = 4'd3;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX4__SOC)) == ADDR_SPACE_MBX4__SOC) begin
-      dev_sel_s1n_11 = 4'd4;
+      dev_sel_s1n_12 = 4'd4;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX5__SOC)) == ADDR_SPACE_MBX5__SOC) begin
-      dev_sel_s1n_11 = 4'd5;
+      dev_sel_s1n_12 = 4'd5;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX6__SOC)) == ADDR_SPACE_MBX6__SOC) begin
-      dev_sel_s1n_11 = 4'd6;
+      dev_sel_s1n_12 = 4'd6;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX_PCIE0__SOC)) == ADDR_SPACE_MBX_PCIE0__SOC) begin
-      dev_sel_s1n_11 = 4'd7;
+      dev_sel_s1n_12 = 4'd7;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_MBX_PCIE1__SOC)) == ADDR_SPACE_MBX_PCIE1__SOC) begin
-      dev_sel_s1n_11 = 4'd8;
+      dev_sel_s1n_12 = 4'd8;
 
-    end else if ((tl_s1n_11_us_h2d.a_address &
+    end else if ((tl_s1n_12_us_h2d.a_address &
                   ~(ADDR_MASK_RACL_CTRL)) == ADDR_SPACE_RACL_CTRL) begin
-      dev_sel_s1n_11 = 4'd9;
+      dev_sel_s1n_12 = 4'd9;
+
+    end else if ((tl_s1n_12_us_h2d.a_address &
+                  ~(ADDR_MASK_AC_RANGE_CHECK)) == ADDR_SPACE_AC_RANGE_CHECK) begin
+      dev_sel_s1n_12 = 4'd10;
 end
   end
 
@@ -155,17 +165,17 @@ end
   tlul_socket_1n #(
     .HReqDepth (4'h0),
     .HRspDepth (4'h0),
-    .DReqDepth (40'h0),
-    .DRspDepth (40'h0),
-    .N         (10)
-  ) u_s1n_11 (
+    .DReqDepth (44'h0),
+    .DRspDepth (44'h0),
+    .N         (11)
+  ) u_s1n_12 (
     .clk_i        (clk_mbx_i),
     .rst_ni       (rst_mbx_ni),
-    .tl_h_i       (tl_s1n_11_us_h2d),
-    .tl_h_o       (tl_s1n_11_us_d2h),
-    .tl_d_o       (tl_s1n_11_ds_h2d),
-    .tl_d_i       (tl_s1n_11_ds_d2h),
-    .dev_select_i (dev_sel_s1n_11)
+    .tl_h_i       (tl_s1n_12_us_h2d),
+    .tl_h_o       (tl_s1n_12_us_d2h),
+    .tl_d_o       (tl_s1n_12_ds_h2d),
+    .tl_d_i       (tl_s1n_12_ds_d2h),
+    .dev_select_i (dev_sel_s1n_12)
   );
 
 endmodule

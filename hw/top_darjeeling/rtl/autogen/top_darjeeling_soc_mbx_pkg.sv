@@ -111,5 +111,15 @@ package top_darjeeling_soc_mbx_pkg;
    */
   parameter int unsigned TOP_DARJEELING_SOC_MBX_RACL_CTRL_SIZE_BYTES = 32'h20;
 
+  /**
+   * Peripheral base address for ac_range_check in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_MBX_AC_RANGE_CHECK_BASE_ADDR = 32'h1464000;
+
+  /**
+   * Peripheral size in bytes for ac_range_check in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_MBX_AC_RANGE_CHECK_SIZE_BYTES = 32'h400;
+
 
 endpackage

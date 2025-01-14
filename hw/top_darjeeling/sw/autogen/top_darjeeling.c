@@ -16,7 +16,7 @@
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[101] = {
+    top_darjeeling_alert_for_peripheral[103] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -114,6 +114,8 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr] = kTopDarjeelingAlertPeripheralSocDbgCtrl,
   [kTopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr] = kTopDarjeelingAlertPeripheralRaclCtrl,
   [kTopDarjeelingAlertIdRaclCtrlFatalFault] = kTopDarjeelingAlertPeripheralRaclCtrl,
+  [kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr] = kTopDarjeelingAlertPeripheralAcRangeCheck,
+  [kTopDarjeelingAlertIdAcRangeCheckFatalFault] = kTopDarjeelingAlertPeripheralAcRangeCheck,
   [kTopDarjeelingAlertIdRvCoreIbexFatalSwErr] = kTopDarjeelingAlertPeripheralRvCoreIbex,
   [kTopDarjeelingAlertIdRvCoreIbexRecovSwErr] = kTopDarjeelingAlertPeripheralRvCoreIbex,
   [kTopDarjeelingAlertIdRvCoreIbexFatalHwErr] = kTopDarjeelingAlertPeripheralRvCoreIbex,
@@ -127,7 +129,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[158] = {
+    top_darjeeling_plic_interrupt_for_peripheral[159] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -286,4 +288,5 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxReady] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort] = kTopDarjeelingPlicPeripheralMbxPcie1,
   [kTopDarjeelingPlicIrqIdMbxPcie1MbxError] = kTopDarjeelingPlicPeripheralMbxPcie1,
+  [kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached] = kTopDarjeelingPlicPeripheralAcRangeCheck,
 };
