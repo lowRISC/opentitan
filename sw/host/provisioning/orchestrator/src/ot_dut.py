@@ -71,7 +71,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
-        with open(log_file, "r") as f:
+        with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
         pattern = key + r':\s*({.*})'
