@@ -9,6 +9,7 @@
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
+#include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -30,8 +31,8 @@ static dif_lc_ctrl_t lc_ctrl;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_rstmgr_t rstmgr;
 
-static uint32_t kDeviceIdFromHost[kHwCfgDeviceIdSizeIn32BitWords] = {
-    0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB,
+// CP and FT portions of the device ID are the same size.
+static uint32_t kFtDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
     0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
 
 static dif_flash_ctrl_region_properties_t kFlashInfoPage0Permissions = {
@@ -80,29 +81,26 @@ bool test_main(void) {
         kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
         kFlashInfoPage0Permissions, &byte_address));
 
-    // Write a bad CP device ID to flash info page 0 and try to program HW_CFG0
-    // partition, expecting a failure.
-    uint32_t kBadCpDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
-        0xAAAAAAAA, 0xBBBBBBBB, 0xAAAA0AAA, 0xBBBBBBBB};
-    CHECK_STATUS_OK(manuf_flash_info_field_write(
-        &flash_state, kFlashInfoFieldCpDeviceId, kBadCpDeviceId,
-        kFlashInfoFieldCpDeviceIdSizeIn32BitWords,
-        /*erase_page_before_write=*/true));
-    CHECK_STATUS_NOT_OK(manuf_individualize_device_hw_cfg(
-        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions,
-        kDeviceIdFromHost));
-
-    // Write a good CP device ID to flash info page 0 and try to program HW_CFG0
-    // partition, expecting success.
-    uint32_t kGoodCpDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
+    // Write the CP device ID to flash info page 0 and try to program HW_CFG0
+    // partition.
+    uint32_t kCpDeviceId[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
         0xAAAAAAAA, 0xBBBBBBBB, 0xAAAAAAAA, 0xBBBBBBBB};
     CHECK_STATUS_OK(manuf_flash_info_field_write(
-        &flash_state, kFlashInfoFieldCpDeviceId, kGoodCpDeviceId,
+        &flash_state, kFlashInfoFieldCpDeviceId, kCpDeviceId,
         kFlashInfoFieldCpDeviceIdSizeIn32BitWords,
         /*erase_page_before_write=*/true));
     CHECK_STATUS_OK(manuf_individualize_device_hw_cfg(
-        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions,
-        kDeviceIdFromHost));
+        &flash_state, &otp_ctrl, kFlashInfoPage0Permissions, kFtDeviceId));
+
+    // Check the value of the DeviceId in the HW_CFG0 partition.
+    uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
+    CHECK_STATUS_OK(otp_ctrl_testutils_dai_read32_array(
+        &otp_ctrl, kDifOtpCtrlPartitionHwCfg0, 0, device_id,
+        kHwCfgDeviceIdSizeIn32BitWords));
+    CHECK_ARRAYS_EQ(device_id, kCpDeviceId,
+                    kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
+    CHECK_ARRAYS_EQ(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords],
+                    kFtDeviceId, kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
 
     sw_reset();
   }

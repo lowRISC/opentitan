@@ -161,6 +161,7 @@ opentitan_test(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:lc_ctrl_testutils",
+        "//sw/device/lib/testing:otp_ctrl_testutils",
         "//sw/device/lib/testing:rstmgr_testutils",
         "//sw/device/lib/testing/json:provisioning_data",
         "//sw/device/lib/testing/test_framework:ottf_main",
