@@ -8,6 +8,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:ip:soc_dbg_ctrl_pkg
+      - lowrisc:prim:flop_en
+      - lowrisc:prim:edge_detector
     files:
       - rtl/soc_dbg_ctrl_decode.sv
     file_type: systemVerilogSource
