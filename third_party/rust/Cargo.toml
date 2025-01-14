@@ -93,7 +93,7 @@ thiserror = "1.0"
 tiny-keccak = {version = "2.0.2", features = ["cshake"]}
 typetag = "0.2"
 x509-cert = "0.2.5"
-zerocopy = { version = "0.7.1", features = ["derive"] }
+zerocopy = { version = "0.8", features = ["derive"] }
 zeroize = "1.8.1"
 
 # hsmtool dependencies

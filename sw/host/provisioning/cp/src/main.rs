@@ -6,7 +6,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, CpResponse, ManufCpProvisioningDataInput};
 use opentitanlib::console::spi::SpiConsoleDevice;

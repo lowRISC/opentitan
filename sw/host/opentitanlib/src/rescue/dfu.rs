@@ -4,10 +4,10 @@
 
 use crate::with_unknown;
 use anyhow::Result;
-use zerocopy::{AsBytes, FromBytes, FromZeroes};
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 with_unknown! {
-    #[derive(FromBytes, FromZeroes, AsBytes)]
+    #[derive(FromBytes, Immutable, IntoBytes)]
     pub enum DfuState: u8 [default = Self::AppIdle] {
       AppIdle = 0,
       AppDetach= 1,
@@ -24,7 +24,7 @@ with_unknown! {
 }
 
 with_unknown! {
-    #[derive(FromBytes, FromZeroes, AsBytes)]
+    #[derive(FromBytes, Immutable, IntoBytes)]
     pub enum DfuError: u8 [default = Self::Ok] {
       Ok = 0,
       Target = 1,
@@ -72,7 +72,7 @@ impl From<DfuRequestType> for u8 {
     }
 }
 
-#[derive(Clone, FromBytes, FromZeroes, AsBytes, Default)]
+#[derive(Clone, FromBytes, Immutable, IntoBytes, Default)]
 #[repr(C)]
 pub struct DfuStatus {
     status: DfuError,
@@ -170,7 +170,7 @@ pub trait DfuOperations {
             DfuRequest::GetStatus.into(),
             /*wValue=*/ 0,
             /*wIndex=*/ self.get_interface() as u16,
-            status.as_bytes_mut(),
+            status.as_mut_bytes(),
         )?;
         Ok(status)
     }
