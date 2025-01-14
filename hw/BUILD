@@ -35,12 +35,20 @@ string_list_flag(
 fusesoc_build(
     name = "verilator_real",
     srcs = [
-        ":all_files",
-    ],
+        ":rtl_files",
+        "//hw/ip:verilator_files",
+    ] + glob(
+        # Verilator needs additional DV files.
+        [
+            "dv/verilator/**",
+            "dv/dpi/**",
+            "dv/sv/**",
+        ],
+    ),
     cores = [
         "//:cores",
     ],
-    data = ["//hw/ip/otbn:all_files"],
+    data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
     output_groups = {
         "binary": ["sim-verilator/Vchip_sim_tb"],
@@ -105,14 +113,22 @@ genrule(
 # is a bit of a hack.  Longer term, we need proper rules for expressing the
 # relationships between verilog components.
 filegroup(
-    name = "all_files",
+    name = "rtl_files",
     srcs = glob(
         ["**"],
-        # TODO(lowRISC/opentitan#15882): make Verilator work with foundry repo present.
-        exclude = ["foundry/**"],
+        # NOTE(lowRISC/opentitan#15882): verilator does not work with foundry repo present.
+        # Exclude it and DV files since we don't need it anyway.
+        exclude = [
+            "foundry/**",
+            "**/dv/**",
+            "doc/**",
+        ],
+    ) + glob(
+        # dv_macros are needed by Ibex, so include this back in.
+        ["dv/sv/dv_utils/**"],
     ) + [
         "//:tool_requirements.py",
-        "//hw/ip:all_files",
+        "//hw/ip:rtl_files",
         "//hw/ip_templates:all_files",
         "//hw/top_earlgrey:all_files",
         "//util:check_tool_requirements.py",
