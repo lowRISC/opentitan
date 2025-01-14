@@ -36,6 +36,8 @@ include("//third_party/python:python.MODULE.bazel")
 
 include("//third_party/foreign_cc:foreign_cc.MODULE.bazel")
 
+include("//third_party/tock:tock.MODULE.bazel")
+
 # Repository rules:
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
 
@@ -57,9 +59,6 @@ use_repo(serde_annotate, "lowrisc_serde_annotate")
 
 shellcheck = use_extension("//third_party/shellcheck:extensions.bzl", "shellcheck")
 use_repo(shellcheck, "shellcheck")
-
-tock = use_extension("//third_party/tock:extensions.bzl", "tock")
-use_repo(tock, "elf2tab", "libtock", "tock")
 
 openocd = use_extension("//third_party/openocd:extensions.bzl", "openocd")
 use_repo(openocd, "openocd")
