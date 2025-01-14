@@ -89,7 +89,6 @@ zeroize = "1.8.1"
 cryptoki = "0.5.0"
 cryptoki-sys = "0.1.6"
 indexmap = { version = "2.0", features = ["serde"] }
-secrecy = "0.8"
 strum = { version = "0.25", features = ["derive"] }
 libloading = "0.8"
 
