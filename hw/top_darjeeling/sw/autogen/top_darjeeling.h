@@ -1065,7 +1065,8 @@ typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralMbxJtag = 27, /**< mbx_jtag */
   kTopDarjeelingPlicPeripheralMbxPcie0 = 28, /**< mbx_pcie0 */
   kTopDarjeelingPlicPeripheralMbxPcie1 = 29, /**< mbx_pcie1 */
-  kTopDarjeelingPlicPeripheralLast = 29, /**< \internal Final PLIC peripheral */
+  kTopDarjeelingPlicPeripheralAcRangeCheck = 30, /**< ac_range_check */
+  kTopDarjeelingPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
 } top_darjeeling_plic_peripheral_t;
 
 /**
@@ -1233,7 +1234,8 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdMbxPcie1MbxReady = 155, /**< mbx_pcie1_mbx_ready */
   kTopDarjeelingPlicIrqIdMbxPcie1MbxAbort = 156, /**< mbx_pcie1_mbx_abort */
   kTopDarjeelingPlicIrqIdMbxPcie1MbxError = 157, /**< mbx_pcie1_mbx_error */
-  kTopDarjeelingPlicIrqIdLast = 157, /**< \internal The Last Valid Interrupt ID. */
+  kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached = 158, /**< ac_range_check_deny_cnt_reached */
+  kTopDarjeelingPlicIrqIdLast = 158, /**< \internal The Last Valid Interrupt ID. */
 } top_darjeeling_plic_irq_id_t;
 
 /**
@@ -1243,7 +1245,7 @@ typedef enum top_darjeeling_plic_irq_id {
  * `top_darjeeling_plic_peripheral_t`.
  */
 extern const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[158];
+    top_darjeeling_plic_interrupt_for_peripheral[159];
 
 /**
  * PLIC Interrupt Target.
@@ -1305,8 +1307,9 @@ typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralMbxPcie1 = 39, /**< mbx_pcie1 */
   kTopDarjeelingAlertPeripheralSocDbgCtrl = 40, /**< soc_dbg_ctrl */
   kTopDarjeelingAlertPeripheralRaclCtrl = 41, /**< racl_ctrl */
-  kTopDarjeelingAlertPeripheralRvCoreIbex = 42, /**< rv_core_ibex */
-  kTopDarjeelingAlertPeripheralLast = 42, /**< \internal Final Alert peripheral */
+  kTopDarjeelingAlertPeripheralAcRangeCheck = 42, /**< ac_range_check */
+  kTopDarjeelingAlertPeripheralRvCoreIbex = 43, /**< rv_core_ibex */
+  kTopDarjeelingAlertPeripheralLast = 43, /**< \internal Final Alert peripheral */
 } top_darjeeling_alert_peripheral_t;
 
 /**
@@ -1413,11 +1416,13 @@ typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 94, /**< soc_dbg_ctrl_recov_ctrl_update_err */
   kTopDarjeelingAlertIdRaclCtrlRecovCtrlUpdateErr = 95, /**< racl_ctrl_recov_ctrl_update_err */
   kTopDarjeelingAlertIdRaclCtrlFatalFault = 96, /**< racl_ctrl_fatal_fault */
-  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 97, /**< rv_core_ibex_fatal_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 98, /**< rv_core_ibex_recov_sw_err */
-  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 99, /**< rv_core_ibex_fatal_hw_err */
-  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 100, /**< rv_core_ibex_recov_hw_err */
-  kTopDarjeelingAlertIdLast = 100, /**< \internal The Last Valid Alert ID. */
+  kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr = 97, /**< ac_range_check_recov_ctrl_update_err */
+  kTopDarjeelingAlertIdAcRangeCheckFatalFault = 98, /**< ac_range_check_fatal_fault */
+  kTopDarjeelingAlertIdRvCoreIbexFatalSwErr = 99, /**< rv_core_ibex_fatal_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovSwErr = 100, /**< rv_core_ibex_recov_sw_err */
+  kTopDarjeelingAlertIdRvCoreIbexFatalHwErr = 101, /**< rv_core_ibex_fatal_hw_err */
+  kTopDarjeelingAlertIdRvCoreIbexRecovHwErr = 102, /**< rv_core_ibex_recov_hw_err */
+  kTopDarjeelingAlertIdLast = 102, /**< \internal The Last Valid Alert ID. */
 } top_darjeeling_alert_id_t;
 
 /**
@@ -1427,7 +1432,7 @@ typedef enum top_darjeeling_alert_id {
  * `top_darjeeling_alert_peripheral_t`.
  */
 extern const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[101];
+    top_darjeeling_alert_for_peripheral[103];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

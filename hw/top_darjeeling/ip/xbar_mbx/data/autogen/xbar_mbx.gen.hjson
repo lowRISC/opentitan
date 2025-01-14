@@ -44,6 +44,7 @@
       mbx_pcie0.soc
       mbx_pcie1.soc
       racl_ctrl
+      ac_range_check
     ]
   }
   nodes:
@@ -275,6 +276,28 @@
             soc_mbx: 0x1463000
           }
           size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: ac_range_check
+      type: device
+      addr_space: soc_mbx
+      clock: clk_mbx_i
+      reset: rst_mbx_ni
+      pipeline: false
+      inst_type: ac_range_check
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_mbx: 0x1464000
+          }
+          size_byte: 0x400
         }
       ]
       xbar: false

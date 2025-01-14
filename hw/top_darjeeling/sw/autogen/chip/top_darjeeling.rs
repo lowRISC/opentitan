@@ -852,6 +852,8 @@ pub enum PlicPeripheral {
     MbxPcie0 = 28,
     /// mbx_pcie1
     MbxPcie1 = 29,
+    /// ac_range_check
+    AcRangeCheck = 30,
 }
 
 impl TryFrom<u32> for PlicPeripheral {
@@ -888,6 +890,7 @@ impl TryFrom<u32> for PlicPeripheral {
             27 => Ok(Self::MbxJtag),
             28 => Ok(Self::MbxPcie0),
             29 => Ok(Self::MbxPcie1),
+            30 => Ok(Self::AcRangeCheck),
             _ => Err(val),
         }
     }
@@ -1216,6 +1219,8 @@ pub enum PlicIrqId {
     MbxPcie1MbxAbort = 156,
     /// mbx_pcie1_mbx_error
     MbxPcie1MbxError = 157,
+    /// ac_range_check_deny_cnt_reached
+    AcRangeCheckDenyCntReached = 158,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1380,6 +1385,7 @@ impl TryFrom<u32> for PlicIrqId {
             155 => Ok(Self::MbxPcie1MbxReady),
             156 => Ok(Self::MbxPcie1MbxAbort),
             157 => Ok(Self::MbxPcie1MbxError),
+            158 => Ok(Self::AcRangeCheckDenyCntReached),
             _ => Err(val),
         }
     }
@@ -1400,7 +1406,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 158] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 159] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1717,6 +1723,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 158] = [
     PlicPeripheral::MbxPcie1,
     // MbxPcie1MbxError -> PlicPeripheral::MbxPcie1
     PlicPeripheral::MbxPcie1,
+    // AcRangeCheckDenyCntReached -> PlicPeripheral::AcRangeCheck
+    PlicPeripheral::AcRangeCheck,
 ];
 
 /// Alert Handler Source Peripheral.
@@ -1810,8 +1818,10 @@ pub enum AlertPeripheral {
     SocDbgCtrl = 40,
     /// racl_ctrl
     RaclCtrl = 41,
+    /// ac_range_check
+    AcRangeCheck = 42,
     /// rv_core_ibex
-    RvCoreIbex = 42,
+    RvCoreIbex = 43,
 }
 
 /// Alert Handler Alert Source.
@@ -2015,14 +2025,18 @@ pub enum AlertId {
     RaclCtrlRecovCtrlUpdateErr = 95,
     /// racl_ctrl_fatal_fault
     RaclCtrlFatalFault = 96,
+    /// ac_range_check_recov_ctrl_update_err
+    AcRangeCheckRecovCtrlUpdateErr = 97,
+    /// ac_range_check_fatal_fault
+    AcRangeCheckFatalFault = 98,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 97,
+    RvCoreIbexFatalSwErr = 99,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 98,
+    RvCoreIbexRecovSwErr = 100,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 99,
+    RvCoreIbexFatalHwErr = 101,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 100,
+    RvCoreIbexRecovHwErr = 102,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2126,10 +2140,12 @@ impl TryFrom<u32> for AlertId {
             94 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
             95 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
             96 => Ok(Self::RaclCtrlFatalFault),
-            97 => Ok(Self::RvCoreIbexFatalSwErr),
-            98 => Ok(Self::RvCoreIbexRecovSwErr),
-            99 => Ok(Self::RvCoreIbexFatalHwErr),
-            100 => Ok(Self::RvCoreIbexRecovHwErr),
+            97 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
+            98 => Ok(Self::AcRangeCheckFatalFault),
+            99 => Ok(Self::RvCoreIbexFatalSwErr),
+            100 => Ok(Self::RvCoreIbexRecovSwErr),
+            101 => Ok(Self::RvCoreIbexFatalHwErr),
+            102 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2139,7 +2155,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 101] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 103] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2334,6 +2350,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 101] = [
     AlertPeripheral::RaclCtrl,
     // RaclCtrlFatalFault -> AlertPeripheral::RaclCtrl
     AlertPeripheral::RaclCtrl,
+    // AcRangeCheckRecovCtrlUpdateErr -> AlertPeripheral::AcRangeCheck
+    AlertPeripheral::AcRangeCheck,
+    // AcRangeCheckFatalFault -> AlertPeripheral::AcRangeCheck
+    AlertPeripheral::AcRangeCheck,
     // RvCoreIbexFatalSwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> AlertPeripheral::RvCoreIbex

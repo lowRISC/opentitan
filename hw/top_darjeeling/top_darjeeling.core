@@ -41,6 +41,7 @@ filesets:
       - lowrisc:top_darjeeling:xbar_main
       - lowrisc:top_darjeeling:xbar_mbx
       - lowrisc:top_darjeeling:xbar_peri
+      - lowrisc:opentitan:top_darjeeling_ac_range_check
       - lowrisc:opentitan:top_darjeeling_alert_handler
       - lowrisc:opentitan:top_darjeeling_clkmgr
       - lowrisc:opentitan:top_darjeeling_otp_ctrl

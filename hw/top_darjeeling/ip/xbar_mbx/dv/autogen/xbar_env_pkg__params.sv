@@ -36,6 +36,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"racl_ctrl", '{
         '{32'h01463000, 32'h0146301f}
+    }},
+    '{"ac_range_check", '{
+        '{32'h01464000, 32'h014643ff}
 }}};
 
   // List of Xbar hosts
@@ -50,5 +53,6 @@ tl_host_t xbar_hosts[$] = '{
         "mbx6__soc",
         "mbx_pcie0__soc",
         "mbx_pcie1__soc",
-        "racl_ctrl"}}
+        "racl_ctrl",
+        "ac_range_check"}}
 };

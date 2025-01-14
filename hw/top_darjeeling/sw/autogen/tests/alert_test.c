@@ -10,6 +10,7 @@
 // -o hw/top_darjeeling
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
+#include "sw/device/lib/dif/dif_ac_range_check.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
@@ -51,6 +52,7 @@
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
+static dif_ac_range_check_t ac_range_check;
 static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
 static dif_clkmgr_t clkmgr_aon;
@@ -101,6 +103,9 @@ static void init_peripherals(void) {
   mmio_region_t base_addr;
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
+
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_MBX_AC_RANGE_CHECK_BASE_ADDR);
+  CHECK_DIF_OK(dif_ac_range_check_init(base_addr, &ac_range_check));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR);
   CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
@@ -285,6 +290,21 @@ static void alert_handler_config(void) {
 static void trigger_alert_test(void) {
   bool is_cause;
   dif_alert_handler_alert_t exp_alert;
+
+  // Write ac_range_check's alert_test reg and check alert_cause.
+  for (dif_ac_range_check_alert_t i = 0; i < 2; ++i) {
+    CHECK_DIF_OK(dif_ac_range_check_alert_force(&ac_range_check, kDifAcRangeCheckAlertRecovCtrlUpdateErr + i));
+
+    // Verify that alert handler received it.
+    exp_alert = kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
 
   // Write aes's alert_test reg and check alert_cause.
   for (dif_aes_alert_t i = 0; i < 2; ++i) {

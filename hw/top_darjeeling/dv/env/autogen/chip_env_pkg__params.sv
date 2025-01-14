@@ -102,10 +102,12 @@ parameter string LIST_OF_ALERTS[] = {
   "soc_dbg_ctrl_recov_ctrl_update_err",
   "racl_ctrl_recov_ctrl_update_err",
   "racl_ctrl_fatal_fault",
+  "ac_range_check_recov_ctrl_update_err",
+  "ac_range_check_fatal_fault",
   "rv_core_ibex_fatal_sw_err",
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 101;
+parameter uint NUM_ALERTS = 103;
