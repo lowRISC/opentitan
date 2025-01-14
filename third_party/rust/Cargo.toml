@@ -16,7 +16,7 @@ path = "empty_file_to_appease_cargo.rs"
 aes = "0.8.2"
 anyhow = { version = "1.0.57", features=["backtrace"] }
 arrayvec = { version = "0.7", features=["serde"] }
-asn1 = "0.15.5"
+asn1 = "0.20"
 bitflags = { version = "2.1", features = ["serde"] }
 bitvec = "1.0.1"
 byteorder = "1.4.3"
@@ -26,11 +26,11 @@ clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
-directories = "5.0.1"
+directories = "6"
 ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "sha2", "std"] }
-env_logger = "0.10"
+env_logger = "0.11"
 elliptic-curve = { version = "0.13.4", features = ["ecdh", "pkcs8", "sec1", "std"] }
-erased-serde = "0.3.12"
+erased-serde = "0.4"
 # Note: this is needed because openssl does not re-rexports this, we cannot use a
 # too recent version because it break things.
 foreign-types = "0.3.2"
@@ -38,12 +38,12 @@ ftdi = "0.1.3"
 ftdi-embedded-hal = "0.22.0"
 ftdi-mpsse = "0.1.1"
 embedded-hal = "1.0.0"
-heck = "0.4.1"
+heck = "0.5"
 hex = { version = "0.4.3", features = ["serde"] }
 humantime = "2.1.0"
 humantime-serde = "1.1"
 indicatif = "0.17.9"
-itertools = "0.13.0"
+itertools = "0.14.0"
 log = "0.4"
 memchr = "2.6.4"
 memoffset = "0.9.0"
@@ -79,7 +79,7 @@ sha3 = {version = "0.10", features = ["oid"] }
 shellwords = "1.1.0"
 syn = "2.0"
 tempfile = "3.3.0"
-thiserror = "1.0"
+thiserror = "2"
 tiny-keccak = {version = "2.0.2", features = ["cshake"]}
 typetag = "0.2"
 zerocopy = { version = "0.7.35", features = ["derive"] }
@@ -89,7 +89,7 @@ zeroize = "1.8.1"
 cryptoki = "0.8.0"
 cryptoki-sys = "0.2.0"
 indexmap = { version = "2.0", features = ["serde"] }
-strum = { version = "0.25", features = ["derive"] }
+strum = { version = "0.26", features = ["derive"] }
 libloading = "0.8"
 
 # We'd like to reference serde_annotate by its Git repo, but we also need to
