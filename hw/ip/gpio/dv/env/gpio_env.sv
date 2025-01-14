@@ -17,6 +17,9 @@ class gpio_env extends cip_base_env #(
     if (!uvm_config_db#(gpio_vif)::get(this, "", "gpio_vif", cfg.gpio_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get gpio_vif from uvm_config_db")
     end
+    if (!uvm_config_db#(straps_vif)::get(this, "", "straps_vif", cfg.straps_vif_inst)) begin
+      `uvm_fatal(get_full_name(), "Virtual interface straps_vif_inst is not set")
+    end
   endfunction
 
 endclass
