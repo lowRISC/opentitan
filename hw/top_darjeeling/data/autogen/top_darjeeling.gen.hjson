@@ -3856,6 +3856,66 @@
       inter_signal_list:
       [
         {
+          name: dma_tl_h2d
+          desc: TL-UL host port for the DMA to egress into CTN (request part), synchronous
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: soc_proxy_dma_tl_h2d
+          index: -1
+        }
+        {
+          name: dma_tl_d2h
+          desc: TL-UL host port for the DMA to egress into CTN (response part), synchronous
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: soc_proxy_dma_tl_d2h
+          index: -1
+        }
+        {
+          name: misc_tl_h2d
+          desc: TL-UL host port for the MISC to egress into CTN (request part), synchronous
+          struct: tl_h2d
+          package: tlul_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          external: true
+          top_signame: ctn_misc_tl_h2d
+          conn_type: false
+          index: -1
+        }
+        {
+          name: misc_tl_d2h
+          desc: TL-UL host port for the MISC to egress into CTN (response part), synchronous
+          struct: tl_d2h
+          package: tlul_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: soc_proxy
+          default: ""
+          external: true
+          top_signame: ctn_misc_tl_d2h
+          conn_type: false
+          index: -1
+        }
+        {
           name: wkup_internal_req
           struct: logic
           type: uni
@@ -7523,9 +7583,7 @@
           width: 1
           inst_name: dma
           default: ""
-          external: true
-          top_signame: dma_ctn_tl_h2d
-          conn_type: false
+          top_signame: soc_proxy_dma_tl_h2d
           index: -1
         }
         {
@@ -7538,9 +7596,7 @@
           width: 1
           inst_name: dma
           default: ""
-          external: true
-          top_signame: dma_ctn_tl_d2h
-          conn_type: false
+          top_signame: soc_proxy_dma_tl_d2h
           index: -1
         }
         {
@@ -11010,6 +11066,14 @@
       [
         pwrmgr_aon.sw_rst_req
       ]
+      soc_proxy.dma_tl_h2d:
+      [
+        dma.ctn_tl_h2d
+      ]
+      soc_proxy.dma_tl_d2h:
+      [
+        dma.ctn_tl_d2h
+      ]
       pwrmgr_aon.wakeups:
       [
         pinmux_aon.pin_wkup_req
@@ -11431,8 +11495,6 @@
       clkmgr_aon.calib_rdy: calib_rdy
       csrng.entropy_src_hw_if: entropy_src_hw_if
       dma.sys: dma_sys
-      dma.ctn_tl_h2d: dma_ctn_tl_h2d
-      dma.ctn_tl_d2h: dma_ctn_tl_d2h
       mbx.tl_mbx: mbx_tl
       mbx0.doe_intr: mbx0_doe_intr
       mbx0.doe_intr_en: mbx0_doe_intr_en
@@ -11488,6 +11550,8 @@
       rv_core_ibex.fpga_info: fpga_info
       soc_proxy.ctn_tl_h2d: ctn_tl_h2d
       soc_proxy.ctn_tl_d2h: ctn_tl_d2h
+      soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
+      soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
       soc_proxy.soc_fatal_alert: soc_fatal_alert
       soc_proxy.soc_recov_alert: soc_recov_alert
       soc_proxy.soc_wkup_async: soc_wkup_async
@@ -21723,6 +21787,66 @@
         index: -1
       }
       {
+        name: dma_tl_h2d
+        desc: TL-UL host port for the DMA to egress into CTN (request part), synchronous
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: soc_proxy_dma_tl_h2d
+        index: -1
+      }
+      {
+        name: dma_tl_d2h
+        desc: TL-UL host port for the DMA to egress into CTN (response part), synchronous
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: soc_proxy_dma_tl_d2h
+        index: -1
+      }
+      {
+        name: misc_tl_h2d
+        desc: TL-UL host port for the MISC to egress into CTN (request part), synchronous
+        struct: tl_h2d
+        package: tlul_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        external: true
+        top_signame: ctn_misc_tl_h2d
+        conn_type: false
+        index: -1
+      }
+      {
+        name: misc_tl_d2h
+        desc: TL-UL host port for the MISC to egress into CTN (response part), synchronous
+        struct: tl_d2h
+        package: tlul_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: soc_proxy
+        default: ""
+        external: true
+        top_signame: ctn_misc_tl_d2h
+        conn_type: false
+        index: -1
+      }
+      {
         name: wkup_internal_req
         struct: logic
         type: uni
@@ -23659,9 +23783,7 @@
         width: 1
         inst_name: dma
         default: ""
-        external: true
-        top_signame: dma_ctn_tl_h2d
-        conn_type: false
+        top_signame: soc_proxy_dma_tl_h2d
         index: -1
       }
       {
@@ -23674,9 +23796,7 @@
         width: 1
         inst_name: dma
         default: ""
-        external: true
-        top_signame: dma_ctn_tl_d2h
-        conn_type: false
+        top_signame: soc_proxy_dma_tl_d2h
         index: -1
       }
       {
@@ -27351,30 +27471,6 @@
       {
         package: tlul_pkg
         struct: tl_h2d
-        signame: dma_ctn_tl_h2d_o
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: dma_ctn_tl_h2d
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: dma_ctn_tl_d2h_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: dma_ctn_tl_d2h
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
         signame: mbx_tl_req_i
         width: 1
         type: req_rsp
@@ -28079,6 +28175,30 @@
         conn_type: false
         index: -1
         netname: ctn_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: ctn_misc_tl_h2d_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: ctn_misc_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: ctn_misc_tl_d2h_o
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: ctn_misc_tl_d2h
       }
       {
         package: soc_proxy_pkg
@@ -29095,6 +29215,28 @@
         act: req
         suffix: ""
         default: prim_mubi_pkg::MUBI4_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        signame: soc_proxy_dma_tl_h2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        signame: soc_proxy_dma_tl_d2h
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: tlul_pkg::TL_D2H_DEFAULT
       }
       {
         package: ""

@@ -207,8 +207,6 @@ module top_darjeeling #(
   input  entropy_src_pkg::entropy_src_hw_if_rsp_t       entropy_src_hw_if_rsp_i,
   output dma_pkg::sys_req_t       dma_sys_req_o,
   input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
-  output tlul_pkg::tl_h2d_t       dma_ctn_tl_h2d_o,
-  input  tlul_pkg::tl_d2h_t       dma_ctn_tl_d2h_i,
   input  tlul_pkg::tl_h2d_t       mbx_tl_req_i,
   output tlul_pkg::tl_d2h_t       mbx_tl_rsp_o,
   output logic       mbx0_doe_intr_o,
@@ -268,6 +266,8 @@ module top_darjeeling #(
   input  logic [31:0] fpga_info_i,
   output tlul_pkg::tl_h2d_t       ctn_tl_h2d_o,
   input  tlul_pkg::tl_d2h_t       ctn_tl_d2h_i,
+  input  tlul_pkg::tl_h2d_t       ctn_misc_tl_h2d_i,
+  output tlul_pkg::tl_d2h_t       ctn_misc_tl_d2h_o,
   input  soc_proxy_pkg::soc_alert_req_t [23:0] soc_fatal_alert_req_i,
   output soc_proxy_pkg::soc_alert_rsp_t [23:0] soc_fatal_alert_rsp_o,
   input  soc_proxy_pkg::soc_alert_req_t [3:0] soc_recov_alert_req_i,
@@ -577,6 +577,8 @@ module top_darjeeling #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
+  tlul_pkg::tl_h2d_t       soc_proxy_dma_tl_h2d;
+  tlul_pkg::tl_d2h_t       soc_proxy_dma_tl_d2h;
   logic [3:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
@@ -1628,6 +1630,10 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[49:21] ),
 
       // Inter-module signals
+      .dma_tl_h2d_i(soc_proxy_dma_tl_h2d),
+      .dma_tl_d2h_o(soc_proxy_dma_tl_d2h),
+      .misc_tl_h2d_i(ctn_misc_tl_h2d_i),
+      .misc_tl_d2h_o(ctn_misc_tl_d2h_o),
       .wkup_internal_req_o(pwrmgr_aon_wakeups[2]),
       .wkup_external_req_o(pwrmgr_aon_wakeups[3]),
       .rst_req_external_o(pwrmgr_aon_rstreqs[1]),
@@ -2180,8 +2186,8 @@ module top_darjeeling #(
       .lsio_trigger_i(dma_lsio_trigger),
       .sys_o(dma_sys_req_o),
       .sys_i(dma_sys_rsp_i),
-      .ctn_tl_h2d_o(dma_ctn_tl_h2d_o),
-      .ctn_tl_d2h_i(dma_ctn_tl_d2h_i),
+      .ctn_tl_h2d_o(soc_proxy_dma_tl_h2d),
+      .ctn_tl_d2h_i(soc_proxy_dma_tl_d2h),
       .host_tl_h_o(main_tl_dma__host_req),
       .host_tl_h_i(main_tl_dma__host_rsp),
       .tl_d_i(dma_tl_d_req),
