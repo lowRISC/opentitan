@@ -28,7 +28,7 @@ module tb;
   tl_if tl_rom_if(.clk(clk), .rst_n(rst_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   kmac_app_intf kmac_app_if(.clk(clk), .rst_n(rst_n));
-  rom_ctrl_if rom_ctrl_if();
+  rom_ctrl_if rom_ctrl_if(.clk_i(clk), .rst_ni(rst_n));
 
   `DV_ALERT_IF_CONNECT()
 

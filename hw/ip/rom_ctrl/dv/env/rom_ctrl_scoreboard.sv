@@ -144,22 +144,36 @@ function void rom_ctrl_scoreboard::update_ral_digests();
   end
 endfunction
 
-// Montitor and check outputs sent to pwrmgr and keymgr
+// Monitor and check outputs sent to pwrmgr and keymgr
 task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
   if (!cfg.en_scb) return;
   forever begin
-    @(cfg.rom_ctrl_vif.pwrmgr_data or cfg.rom_ctrl_vif.keymgr_data or cfg.under_reset);
-    if (cfg.under_reset) continue;
+    // Wait until a change to pwrmgr_data or keymgr_data (dropping out early on reset)
+    fork begin : isolation_fork
+      fork
+        @(cfg.rom_ctrl_vif.cb.pwrmgr_data);
+        @(cfg.rom_ctrl_vif.cb.keymgr_data);
+        wait(cfg.under_reset);
+      join_any
+      disable fork;
+    end join
+
+    if (cfg.under_reset) begin
+      wait(!cfg.under_reset);
+      continue;
+    end
+
     // Check data sent to pwrmgr
-    if (prim_mubi_pkg::mubi4_test_true_strict(cfg.rom_ctrl_vif.pwrmgr_data.done)) begin
+    if (prim_mubi_pkg::mubi4_test_true_strict(cfg.rom_ctrl_vif.cb.pwrmgr_data.done)) begin
       `DV_CHECK_EQ(pwrmgr_complete, 1'b0, "Spurious pwrmgr signal")
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.pwrmgr_data.good, digest_good, "Incorrect pwrmgr result")
+      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.pwrmgr_data.good, digest_good, "Incorrect pwrmgr result")
       pwrmgr_complete = 1'b1;
     end
     // Check data sent to keymgr
-    if (cfg.rom_ctrl_vif.keymgr_data.valid) begin
+    if (cfg.rom_ctrl_vif.cb.keymgr_data.valid) begin
       `DV_CHECK_EQ(keymgr_complete, 1'b0, "Spurious keymgr signal")
-      `DV_CHECK_EQ(cfg.rom_ctrl_vif.keymgr_data.data, kmac_digest[DIGEST_SIZE-1:0], "Incorrect keymgr digest")
+      `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest[DIGEST_SIZE-1:0],
+                   "Incorrect keymgr digest")
       keymgr_complete = 1'b1;
     end
   end
