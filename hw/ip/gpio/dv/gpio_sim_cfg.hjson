@@ -47,8 +47,15 @@
   // Add GPIO specific exclusion files.
   vcs_cov_excl_files: ["{proj_root}/hw/ip/gpio/dv/cov/gpio_cov_excl.el"]
 
+  overrides: [
+    {
+      name: default_vcs_cov_cfg_file
+      value: "-cm_hier {dv_root}/tools/vcs/cover.cfg+{proj_root}/hw/ip/gpio/dv/cov/gpio_cover.cfg"
+    }
+  ]
+
   // Enable cdc instrumentation.
-  run_opts: ["+cdc_instrumentation_enabled=1"]
+  run_opts: ["+cdc_instrumentation_enabled=1", "+interface", "+vcs+dumpinterface", "+define+UVM_DUMP_INTERFACES", "+cover=all"]
 
   // Add a second build mode to test the input synchronizers.
   // Note that since the scoreboard has a cycle accurate model
@@ -179,6 +186,10 @@
       uvm_test_seq: gpio_smoke_vseq
       build_mode: en_cdc_prims
       run_opts: ["+no_pullup_pulldown=1"]
+    }
+    {
+      name: gpio_rand_straps
+      uvm_test_seq: gpio_rand_straps_vseq
     }
   ]
 
