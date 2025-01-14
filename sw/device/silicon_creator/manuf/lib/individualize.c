@@ -75,7 +75,7 @@ static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
 status_t manuf_individualize_device_hw_cfg(
     dif_flash_ctrl_state_t *flash_state, const dif_otp_ctrl_t *otp_ctrl,
     dif_flash_ctrl_region_properties_t flash_info_page_0_permissions,
-    uint32_t *device_id) {
+    uint32_t *ft_device_id) {
   bool is_locked;
 
   // Provision HW_CFG0 if it is not locked.
@@ -83,7 +83,7 @@ status_t manuf_individualize_device_hw_cfg(
                                       &is_locked));
   if (!is_locked) {
     // Configure flash info page permissions in case we started from a cold
-    // boot. Note: device_id and manuf_state are on the same flash info page.
+    // boot. Note: cp_device_id and manuf_state are on the same flash info page.
     TRY(flash_ctrl_testutils_info_region_setup_properties(
         flash_state, kFlashInfoFieldCpDeviceId.page,
         kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
@@ -91,55 +91,40 @@ status_t manuf_individualize_device_hw_cfg(
         /*offset=*/NULL));
 
     // Read CpDeviceId from flash info page 0.
-    uint32_t cp_device_id_from_flash[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
-    uint32_t empty_cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords] = {
-        0};
+    uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
     TRY(manuf_flash_info_field_read(flash_state, kFlashInfoFieldCpDeviceId,
-                                    cp_device_id_from_flash,
+                                    cp_device_id,
                                     kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
 
     // Check if CP device ID from flash is empty.
     bool flash_cp_device_id_empty = true;
-    for (size_t i = 0; flash_cp_device_id_empty &&
-                       i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords;
-         ++i) {
-      flash_cp_device_id_empty &= cp_device_id_from_flash[i] == 0;
+    for (size_t i = 0; i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords; ++i) {
+      if (cp_device_id[i] != 0) {
+        flash_cp_device_id_empty = false;
+        break;
+      }
     }
 
-    // Check if CP device ID provided is empty (i.e., all ones). This means CP
-    // stage was skipped or already run in the past.
-    bool provided_din_empty = true;
-    for (size_t i = 1;
-         provided_din_empty && i < kFlashInfoFieldCpDeviceIdSizeIn32BitWords;
-         ++i) {
-      provided_din_empty &= device_id[i] == 0;
-    }
-
-    // If the CP device ID read from flash is non-empty, then it must match the
-    // first 128-bits of device ID provided, unless the first 128-bits are all
-    // ones (in which case we use the CP device ID in flash).
-    //
-    // If the device ID read from flash is empty, we check to ensure the device
-    // ID provided is also not empty, and the CP portion is not all ones. An
-    // empty (all zero) device ID will prevent the keymgr from advancing.
-    if (!flash_cp_device_id_empty) {
-      if (!provided_din_empty) {
-        TRY_CHECK_ARRAYS_EQ(cp_device_id_from_flash, device_id,
-                            kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
+    // On non-silicon targets, we expect the CP device ID from flash to be
+    // empty. In this case we set the HW origin portion of the CP device ID.
+    // Otherwise, we expect the CP device ID to be present and non-zero.
+    if (flash_cp_device_id_empty) {
+      if (kDeviceType != kDeviceSilicon) {
+        memset(&cp_device_id, 0, sizeof(cp_device_id));
+        cp_device_id[0] = 0x00024001u;
       } else {
-        // Extract CP device ID from flash again.
-        memcpy(device_id, cp_device_id_from_flash,
-               kFlashInfoFieldCpDeviceIdSizeIn32BitWords * sizeof(uint32_t));
+        return NOT_FOUND();
       }
-    } else {
-      // On FPGA, we expect the provided DIN to be empty and CP device ID from
-      // flash to be empty.
-      if (kDeviceType == kDeviceSilicon) {
-        TRY_CHECK(!provided_din_empty);
-      }
-      TRY_CHECK_ARRAYS_NE(device_id, empty_cp_device_id,
-                          kFlashInfoFieldCpDeviceIdSizeIn32BitWords);
     }
+
+    // Construct the complete device ID.
+    uint32_t device_id[kHwCfgDeviceIdSizeIn32BitWords];
+    memcpy(device_id, cp_device_id, kFlashInfoFieldCpDeviceIdSizeInBytes);
+    // CP and FT device IDs are the same length (128 bit words).
+    memcpy(&device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords], ft_device_id,
+           kFlashInfoFieldCpDeviceIdSizeInBytes);
+
+    // Write the complete device ID to OTP.
     TRY(otp_ctrl_testutils_dai_write32(otp_ctrl, kDifOtpCtrlPartitionHwCfg0,
                                        kHwCfgDeviceIdOffset, device_id,
                                        kHwCfgDeviceIdSizeIn32BitWords));

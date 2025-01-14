@@ -34,11 +34,11 @@ use util_lib::{
 /// Provisioning data command-line parameters.
 #[derive(Debug, Args, Clone)]
 pub struct ManufFtProvisioningDataInput {
-    /// Device ID to provision.
+    /// FT Device ID to provision in big-endian.
     ///
-    /// Must match the device ID provisioned in to flash during CP, if one was provisioned then.
+    /// Contains the SKU-specific portion of the device ID.
     #[arg(long)]
-    pub device_id: String,
+    pub ft_device_id: String,
 
     #[arg(long)]
     pub use_ext_clk_during_individualize: bool,
@@ -151,17 +151,13 @@ fn main() -> Result<()> {
     log::info!("Encrypted rma_unlock_token = {}", response.rma_unlock_token);
 
     // Parse and prepare individualization ujson data payload.
-    let mut device_id = hex_string_to_u32_arrayvec::<8>(opts.provisioning_data.device_id.as_str())?;
-    response.device_id = device_id
-        .iter()
-        .map(|v| format!("{v:08X}"))
-        .collect::<Vec<String>>()
-        .join("");
-    // We feed the device ID to the DUT in little endian order.
-    device_id.reverse();
+    let mut ft_device_id =
+        hex_string_to_u32_arrayvec::<4>(opts.provisioning_data.ft_device_id.as_str())?;
+    // The FT device ID is sent to the DUT in little endian order.
+    ft_device_id.reverse();
     let ft_individualize_data_in = ManufFtIndividualizeData {
         use_ext_clk: opts.provisioning_data.use_ext_clk_during_individualize,
-        device_id,
+        ft_device_id,
     };
 
     // Parse and prepare CA key.
@@ -317,11 +313,6 @@ fn main() -> Result<()> {
         opts.owner_success_text,
     )?;
     log::info!("Provisioning Done");
-    let doc = if opts.provisioning_data.pretty {
-        serde_json::to_string_pretty(&response)?
-    } else {
-        serde_json::to_string(&response)?
-    };
 
     // Extract final device ID.
     let mut final_device_id = read_device_id(
@@ -338,6 +329,12 @@ fn main() -> Result<()> {
         .collect::<Vec<String>>()
         .join("");
 
+    // Log JSON data to console.
+    let doc = if opts.provisioning_data.pretty {
+        serde_json::to_string_pretty(&response)?
+    } else {
+        serde_json::to_string(&response)?
+    };
     println!("PROVISIONING_DATA: {doc}");
 
     Ok(())

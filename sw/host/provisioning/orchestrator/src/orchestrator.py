@@ -13,7 +13,7 @@ from pathlib import Path
 import hjson
 
 import db
-from device_id import DeviceId
+from device_id import DeviceId, DeviceIdentificationNumber
 from ot_dut import OtDut
 from sku_config import SkuConfig
 from util import confirm, parse_hexstring_to_int, resolve_runfile
@@ -142,10 +142,10 @@ def main(args_in):
 
     # The device identification number is determined during CP by extracting data
     # from the device.
-    din = None
+    din = DeviceIdentificationNumber(0)
     device_id = DeviceId(sku_config, din)
 
-    # TODO: Setup remote and/or local DV connections.
+    # TODO: Setup remote and/or local DB connections.
     # TODO: Check if the device ID is present in the DB.
 
     # Generate commit hash of current provisioning run.
