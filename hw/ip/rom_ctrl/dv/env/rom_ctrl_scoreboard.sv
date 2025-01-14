@@ -26,7 +26,12 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   extern function void build_phase(uvm_phase phase);
   extern task run_phase(uvm_phase phase);
-  extern virtual task process_kmac_req_fifo();
+
+  // Follow requests sent to KMAC. One of these is sent when rom_ctrl has finished the contents of
+  // ROM. This task checks that rom_ctrl doesn't send more than one request to KMAC after a reset
+  // and uses check_kmac_data to check the request itself looks right.
+  extern task process_kmac_req_fifo();
+
   extern virtual function void check_kmac_data(const ref byte byte_data_q[$]);
   extern virtual task process_kmac_rsp_fifo();
   extern virtual function void get_expected_digest();
@@ -62,8 +67,8 @@ task rom_ctrl_scoreboard::process_kmac_req_fifo();
     if (!cfg.en_scb) continue;
 
     `uvm_info(`gfn, $sformatf("Detected a KMAC req:\n%0s", kmac_req.sprint()), UVM_HIGH)
-    // We shouldn't see any further requests one the check has completed
-    `DV_CHECK_EQ(rom_check_complete, 1'b0, "Spurious ROM request received")
+    // We shouldn't see any further requests once the check has completed
+    `DV_CHECK(!rom_check_complete, "KMAC request sent after ROM check had already completed.")
     // Check the data is valid
     check_kmac_data(kmac_req.byte_data_q);
   end
