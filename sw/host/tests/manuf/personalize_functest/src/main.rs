@@ -7,7 +7,7 @@ use std::time::Duration;
 
 use anyhow::Result;
 use clap::Parser;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::dif::lc_ctrl::DifLcCtrlState;

@@ -256,7 +256,6 @@ rust_bindgen_library(
         "--allowlist-function=status_err",
         "--allowlist-function=status_ok",
         "--generate-inline-functions",
-        "--with-derive-custom=ot_status_create_record=zerocopy::FromZeroes",
         "--with-derive-custom=ot_status_create_record=zerocopy::FromBytes",
     ],
     cc_lib = "//sw/device/lib/base:status",

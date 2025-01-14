@@ -235,7 +235,7 @@ pub fn load_elf(elf_file: &PathBuf) -> Result<StatusCreateRecords> {
     // it really is safe.
     let records = status_create_records
         .chunks(RECORD_SIZE)
-        .map(|chunk| ot_status_create_record_t::read_from(chunk).unwrap())
+        .map(|chunk| ot_status_create_record_t::read_from_bytes(chunk).unwrap())
         .map(StatusCreateRecord::try_from)
         .collect::<Result<_>>()?;
     Ok(StatusCreateRecords { records })

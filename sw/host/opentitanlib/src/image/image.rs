@@ -13,6 +13,7 @@ use std::io::{Read, Write};
 use std::mem::{align_of, size_of};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
+use zerocopy::FromBytes;
 
 use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature};
 use crate::crypto::rsa::Modulus;
@@ -512,8 +513,7 @@ impl Image {
         let mut offset = 0;
         while offset < self.size {
             let m = &self.data.bytes[offset..offset + size_of::<Manifest>()];
-            let manifest: zerocopy::Ref<_, Manifest> =
-                zerocopy::Ref::new(m).ok_or(ImageError::Parse)?;
+            let manifest = Manifest::ref_from_bytes(m).map_err(|_| ImageError::Parse)?;
             let kind = ManifestKind(manifest.identifier);
             let mut size = 1;
             if kind.is_known_value() {
@@ -521,7 +521,7 @@ impl Image {
                 result.push(SubImage {
                     kind,
                     offset,
-                    manifest: manifest.into_ref(),
+                    manifest,
                     data: &self.data.bytes[offset..offset + size],
                 });
             }
@@ -537,17 +537,13 @@ impl Image {
 
     pub fn borrow_manifest(&self) -> Result<&Manifest> {
         let manifest_slice = &self.data.bytes[0..size_of::<Manifest>()];
-        let manifest_layout: zerocopy::Ref<_, Manifest> =
-            zerocopy::Ref::new(manifest_slice).ok_or(ImageError::Parse)?;
-        let manifest: &Manifest = manifest_layout.into_ref();
+        let manifest = Manifest::ref_from_bytes(manifest_slice).map_err(|_| ImageError::Parse)?;
         Ok(manifest)
     }
 
     pub fn borrow_manifest_mut(&mut self) -> Result<&mut Manifest> {
         let manifest_slice = &mut self.data.bytes[0..size_of::<Manifest>()];
-        let manifest_layout: zerocopy::Ref<_, Manifest> =
-            zerocopy::Ref::new(manifest_slice).ok_or(ImageError::Parse)?;
-        let manifest: &mut Manifest = manifest_layout.into_mut();
+        let manifest = Manifest::mut_from_bytes(manifest_slice).map_err(|_| ImageError::Parse)?;
         Ok(manifest)
     }
 

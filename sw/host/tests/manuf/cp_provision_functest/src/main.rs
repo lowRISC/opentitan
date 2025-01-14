@@ -9,7 +9,7 @@ use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
 use rand::RngCore;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use cp_lib::{reset_and_lock, run_sram_cp_provision, unlock_raw, CpResponse};
 use opentitanlib::app::TransportWrapper;

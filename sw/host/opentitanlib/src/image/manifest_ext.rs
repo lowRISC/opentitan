@@ -6,7 +6,7 @@ use anyhow::Result;
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
-use zerocopy::AsBytes;
+use zerocopy::IntoBytes;
 
 use crate::chip::boolean::HardenedBool;
 use crate::image::manifest::*;
