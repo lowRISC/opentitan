@@ -55,5 +55,10 @@ task rom_ctrl_stress_all_vseq::body();
       common_vseq.common_seq_type = "intr_test";
     end
     rom_ctrl_vseq.start(p_sequencer);
+
+    // We've just got to the end of a sequence. Since we don't do anything after this loop, copy the
+    // sequence's expected alert status to *this* sequence so that the post_start task expects the
+    // same thing as the sequence we just ran.
+    expect_fatal_alerts = rom_ctrl_vseq.expect_fatal_alerts;
   end
 endtask : body
