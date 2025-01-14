@@ -23,6 +23,8 @@ module soc_dbg_ctrl_decode #(
   prim_mubi_pkg::mubi4_t valid, relocked;
 
   if (SyncDbgPolicy) begin : gen_dbg_policy_sync
+    logic [prim_mubi_pkg::MuBi4Width-1:0] logic_valid, logic_relocked;
+
     prim_flop_2sync #(
       .Width      ( prim_mubi_pkg::MuBi4Width   ),
       .ResetValue ( {prim_mubi_pkg::MuBi4False} )
@@ -30,7 +32,7 @@ module soc_dbg_ctrl_decode #(
       .clk_i  ( clk_i                      ),
       .rst_ni ( rst_ni                     ),
       .d_i    ( soc_dbg_policy_bus_i.valid ),
-      .q_o    ( valid                      )
+      .q_o    ( logic_valid                )
     );
 
     prim_flop_2sync #(
@@ -40,8 +42,12 @@ module soc_dbg_ctrl_decode #(
       .clk_i  ( clk_i                         ),
       .rst_ni ( rst_ni                        ),
       .d_i    ( soc_dbg_policy_bus_i.relocked ),
-      .q_o    ( relocked                      )
+      .q_o    ( logic_relocked                )
     );
+
+    // Cast from logic to the actual type to avoid strong SV type linting errors
+    assign valid    = prim_mubi_pkg::mubi4_t'(logic_valid);
+    assign relocked = prim_mubi_pkg::mubi4_t'(logic_relocked);
   end else begin: gen_dbg_policy_async
     assign valid    = soc_dbg_policy_bus_i.valid;
     assign relocked = soc_dbg_policy_bus_i.relocked;
