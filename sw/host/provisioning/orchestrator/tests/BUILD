@@ -70,3 +70,21 @@ sh_test(
         "manuf",
     ],
 )
+
+# TODO: this test seems to work locally but fails in CI.
+# sh_test(
+#     name = "e2e_multistage_test",
+#     srcs = ["e2e_multistage.sh"],
+#     data = [
+#         ":orchestrator_zip",
+#         "@rules_python//python:current_py_toolchain",
+#     ],
+#     env = {
+#         "PYTHON": "$(PYTHON3)",
+#     },
+#     tags = [
+#         "hyper310",
+#         "manuf",
+#     ],
+#     toolchains = ["@rules_python//python:current_py_toolchain"],
+# )
