@@ -13,6 +13,7 @@
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
+#include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/boot_svc/boot_svc_empty.h"
@@ -207,7 +208,7 @@ static rom_error_t rom_ext_spx_verify(
     const sigverify_spx_signature_t *signature, const sigverify_spx_key_t *key,
     uint32_t key_alg, const void *msg_prefix_1, size_t msg_prefix_1_len,
     const void *msg_prefix_2, size_t msg_prefix_2_len, const void *msg,
-    size_t msg_len, const hmac_digest_t *digest) {
+    size_t msg_len, hmac_digest_t digest) {
   /*
    * Shares for producing kErrorOk if SPHINCS+ verification succeeds.  The first
    * three shares are generated using the `sparse-fsm-encode` script while the
@@ -251,12 +252,13 @@ static rom_error_t rom_ext_spx_verify(
       break;
 
     case kOwnershipKeyAlgSpxPrehash:
+      util_reverse_bytes(digest.digest, sizeof(digest.digest));
       HARDENED_RETURN_IF_ERROR(
           spx_verify(signature->data, kSpxVerifyPrehashDomainSep,
                      kSpxVerifyPrehashDomainSepSize,
                      /*msg_prefix_2=*/NULL, /*msg_prefix_2_len=*/0,
                      /*msg_prefix_3=*/NULL, /*msg_prefix_3_len=*/0,
-                     (unsigned char *)digest->digest, sizeof(digest->digest),
+                     (unsigned char *)digest.digest, sizeof(digest.digest),
                      key->data, actual_root.data));
       break;
     default:
@@ -351,7 +353,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
         &ext_spx_signature->signature,
         &keyring.key[verify_key]->data.hybrid.spx, key_alg,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
-        digest_region.start, digest_region.length, &act_digest);
+        digest_region.start, digest_region.length, act_digest);
   } else {
     // TODO: consider whether an SPX+-only verify is sufficent.
     return kErrorOwnershipInvalidAlgorithm;

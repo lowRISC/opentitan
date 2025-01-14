@@ -107,9 +107,7 @@ key_ecdsa(
 
 key_sphincs_plus(
     name = "app_dev_spx",
-    # TODO(cfrantz): Change this to Prehash after putting
-    # the prehash infrastructure in place.
-    config = {"domain": "Pure"},
+    config = {"domain": "PreHashedSha256"},
     method = "local",
     private_key = "app_dev_spx.pem",
     pub_key = "app_dev_spx.pub.pem",
