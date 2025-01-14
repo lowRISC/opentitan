@@ -111,6 +111,8 @@ pub struct SpxSignResult {
 
 #[derive(Debug, Args)]
 pub struct SpxSignCommand {
+    #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
+    input_bytes_reversed: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -130,7 +132,10 @@ impl CommandDispatch for SpxSignCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let message = std::fs::read(&self.message)?;
+        let mut message = std::fs::read(&self.message)?;
+        if self.input_bytes_reversed {
+            message.reverse();
+        }
         let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
         let signature = private_key.sign(self.domain, &message)?;
         if let Some(output) = &self.output {
@@ -143,6 +148,8 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
+    #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
+    input_bytes_reversed: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -161,7 +168,10 @@ impl CommandDispatch for SpxVerifyCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
-        let message = std::fs::read(&self.message)?;
+        let mut message = std::fs::read(&self.message)?;
+        if self.input_bytes_reversed {
+            message.reverse();
+        }
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;
         let signature = std::fs::read(&self.signature)?;
         public_key.verify(self.domain, &signature, &message)?;

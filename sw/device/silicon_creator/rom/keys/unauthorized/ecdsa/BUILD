@@ -8,7 +8,6 @@ package(default_visibility = ["//visibility:public"])
 
 key_ecdsa(
     name = "unauthorized_key_0_ecdsa_p256",
-    config = "EcdsaP256",
     method = "local",
     private_key = "unauthorized_key_0_ecdsa_p256.der",
     pub_key = "unauthorized_key_0_ecdsa_p256.pub.der",
