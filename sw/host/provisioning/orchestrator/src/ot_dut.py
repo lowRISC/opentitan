@@ -166,6 +166,8 @@ class OtDut():
                 logging.error("cp_device_id not found in CHIP_PROBE_DATA.")
                 confirm()
             else:
+                # This can occur if the orchestrator is provisioning a chip that
+                # has already run through CP, and only needs to execute FT.
                 if chip_probe_data["cp_device_id"] == "":
                     logging.warning(
                         "cp_device_id empty; setting default of all zeros.")
@@ -263,7 +265,7 @@ class OtDut():
             --elf={individ_elf} \
             --bootstrap={perso_bin} \
             --second-bootstrap={fw_bundle_bin} \
-            --device-id="{self.device_id}" \
+            --ft-device-id="0x{hex(self.device_id.sku_specific)[2:].zfill(32)}" \
             --test-unlock-token="{format_hex(self.test_unlock_token, width=32)}" \
             --test-exit-token="{format_hex(self.test_exit_token, width=32)}" \
             --target-mission-mode-lc-state="{self.sku_config.target_lc_state}" \
@@ -296,7 +298,15 @@ class OtDut():
             self.ft_data = self._extract_json_data("PROVISIONING_DATA",
                                                    stdout_logfile)
 
-            # TODO: check device ID from device matches one constructed on host.
-            self.device_id = DeviceId.from_hexstr(self.ft_data["device_id"])
+            # Check device ID from OTP matches one constructed on host.
+            device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
+            if device_id_in_otp != self.device_id:
+                logging.error(
+                    "Device ID from OTP does not match expected on host.")
+                logging.error(
+                    f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
+                logging.error(
+                    f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
+                confirm()
 
             logging.info("FT completed successfully.")

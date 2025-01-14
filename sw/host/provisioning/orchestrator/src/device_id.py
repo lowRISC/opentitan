@@ -5,7 +5,6 @@
 
 import struct
 from dataclasses import dataclass
-from typing import Optional
 
 import util
 from sku_config import SkuConfig
@@ -93,8 +92,7 @@ class DeviceId():
         sku_id: A 32-bit string indicating the SKU the chip was provisioned for.
     """
 
-    def __init__(self, sku_config: SkuConfig,
-                 din: Optional[DeviceIdentificationNumber]):
+    def __init__(self, sku_config: SkuConfig, din: DeviceIdentificationNumber):
         # Save string keys for easier printing.
         self._product = sku_config.product
         self._si_creator = sku_config.si_creator
@@ -117,16 +115,13 @@ class DeviceId():
         # - Wafer X coord.
         # - Wafer Y coord.
         self.din = din
+        din_as_int = self.din.to_int()
 
-        din_as_int = 0
-        if self.din is not None:
-            din_as_int = self.din.to_int()
-
-        # Build base unique ID.
+        # Build base unique ID (i.e., CP device ID).
         self._base_uid = util.bytes_to_int(
             struct.pack("<IQI", self._hw_origin, din_as_int, 0))
 
-        # Build SKU specific field.
+        # Build SKU specific field (i.e., FT device ID).
         self.package_id = sku_config.package_id
         self.sku_id = util.bytes_to_int(
             self.sku.upper()[:4].encode("utf-8")[::-1])
@@ -226,3 +221,6 @@ class DeviceId():
 
     def __str__(self):
         return self.to_hexstr()
+
+    def __eq__(self, other):
+        return self.device_id == other.device_id
