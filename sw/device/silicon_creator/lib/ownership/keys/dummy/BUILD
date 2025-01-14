@@ -32,7 +32,6 @@ filegroup(
 
 key_ecdsa(
     name = "app_prod_ecdsa",
-    config = "EcdsaP256",
     method = "local",
     private_key = "app_prod_ecdsa_p256.der",
     pub_key = "app_prod_ecdsa_p256.pub.der",

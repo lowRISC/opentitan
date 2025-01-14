@@ -147,6 +147,9 @@ pub struct ManifestUpdateCommand {
     /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
+    /// Set to true if the firmware uses a byte-reversed representation of the hash.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "false")]
+    spx_hash_reversed: bool,
     /// Filename to write the output to instead of updating the input file.
     #[arg(short, long)]
     output: Option<PathBuf>,
@@ -308,7 +311,12 @@ impl CommandDispatch for ManifestUpdateCommand {
                     image.map_signed_region(|buf| key.sign(self.domain, buf))??
                 }
                 SpxDomain::PreHashedSha256 => {
-                    let digest = image.compute_digest()?.to_le_bytes();
+                    let digest = image.compute_digest()?;
+                    let digest = if self.spx_hash_reversed {
+                        digest.to_le_bytes()
+                    } else {
+                        digest.to_be_bytes()
+                    };
                     key.sign(self.domain, &digest)?
                 }
             };
