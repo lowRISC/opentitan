@@ -4,10 +4,12 @@
 load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY")
 load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING")
+load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST")
 
 ALL_TOPS = [
     EARLGREY,
     DARJEELING,
+    ENGLISHBREAKFAST,
 ]
 
 ALL_TOP_NAMES = [
