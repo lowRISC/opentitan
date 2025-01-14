@@ -40,12 +40,12 @@ fusesoc_build(
     name = "fpga_cw310",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw:rtl_files",
         _CW310_TESTROM,
         _OTP_RMA,
     ],
     cores = ["//:cores"],
-    data = ["//hw/ip/otbn:all_files"],
+    data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
@@ -81,12 +81,12 @@ fusesoc_build(
     name = "fpga_cw310_hyperdebug",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw:rtl_files",
         _CW310_TESTROM,
         _OTP_RMA,
     ],
     cores = ["//:cores"],
-    data = ["//hw/ip/otbn:all_files"],
+    data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
@@ -122,12 +122,12 @@ fusesoc_build(
     name = "fpga_cw340",
     testonly = True,
     srcs = [
-        "//hw:all_files",
+        "//hw:rtl_files",
         _CW340_TESTROM,
         _OTP_RMA,
     ],
     cores = ["//:cores"],
-    data = ["//hw/ip/otbn:all_files"],
+    data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,
         "--OtpCtrlMemInitFile=" + _OTP_RMA_PATH,
