@@ -446,6 +446,11 @@ class cip_base_vseq #(
       end
     end
 
+    // Checking the intr_test register works only makes sense if there is at least one interrupt
+    // register. We shouldn't call this sequence for blocks that don't have one, so let's fail
+    // understandably if we have done so by accident.
+    `DV_CHECK(intr_csrs.size() > 0, "Called intr_test vseq without any interrupt register.")
+
     num_times = num_times * intr_csrs.size();
     for (int trans = 1; trans <= num_times; trans++) begin
       bit [BUS_DW-1:0] num_used_bits;
