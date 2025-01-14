@@ -31,6 +31,12 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   //  (i) indicate that write to INTR_STATE register just happened, and
   // (ii) store information of which all interupt bits were cleared
   bit [TL_DW-1:0] cleared_intr_bits;
+  // hw straps_data_in_valid register
+  bit straps_data_in_valid;
+  // hw straps_data_in register
+  bit [NUM_GPIOS-1:0] straps_data_in;
+  // Flag to indicate that the strap was trigered
+  bit first_strap_trigged;
 
   // mask are WO, store the values in scb
   uvm_reg_data_t masked_out_lower_mask;
@@ -40,7 +46,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   `uvm_component_utils(gpio_scoreboard)
 
-  `uvm_component_new
+  function new (string name = "gpio_scoreboard", uvm_component parent = null);
+    super.new (name, parent);
+  endfunction
 
   // Function: build_phase
   function void build_phase(uvm_phase phase);
@@ -54,6 +62,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     fork
       monitor_gpio_i();
       monitor_gpio_interrupt_pins();
+      monitor_gpio_straps();
     join_none
   endtask
 
@@ -360,6 +369,38 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     end
   endtask : monitor_gpio_interrupt_pins
 
+  // Task: monitor_gpio_straps
+  virtual task monitor_gpio_straps();
+    forever begin : monitor_gpio_intr
+      @(posedge cfg.clk_rst_vif.clk)
+        `uvm_info(`gfn, "Monitor gpio_straps on!", UVM_HIGH)
+        if (|gpio_i_driven === 1'b1) begin
+          @(negedge cfg.straps_vif_inst.strap_en_i) begin
+            if (first_strap_trigged == 0) begin
+              // Update data_in ral register value based on result of input
+              void'(ral.hw_straps_data_in.predict(.value(gpio_i_driven), .kind(UVM_PREDICT_DIRECT)));
+              // Update data_in register value based on result of input
+              void'(ral.hw_straps_data_in_valid.predict(.value('b1), .kind(UVM_PREDICT_DIRECT)));
+              check_straps();
+            end
+          end
+        end
+    end
+  endtask : monitor_gpio_straps
+
+  // Function: check_straps
+  // Used to check the behavior of the straps register data.
+  // Based on strap_en input value, the straps register data should contains the snapshot of the data_in pins
+  function void check_straps();
+    // Checker: Compare actual values of gpio pins with straps register.
+    // Check the register hw_straps_data_in against gpio_i pins
+    `DV_CHECK_CASE_EQ(gpio_i_driven, cfg.straps_vif_inst.sampled_straps_o.data)
+    // Check the register hw_straps_data_in_valid
+    `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.sampled_straps_o.valid)
+    // Turn-off the checker after the first strap trigger.
+    first_strap_trigged = 'b1;
+  endfunction : check_straps
+
   // Function: actual_gpio_i_activity
   function bit actual_gpio_i_activity();
     return ~((prv_gpio_i_pins_o === cfg.gpio_vif.pins_o) &&
@@ -478,6 +519,16 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
         end
         "ctrl_en_input_filter": begin
         end
+        "hw_straps_data_in_valid": begin
+          straps_data_in_valid = csr.get_mirrored_value();
+          `uvm_info(`gfn, $sformatf("straps_data_in_valid updated to 0x%0h", straps_data_in_valid),
+                    UVM_HIGH)
+        end
+        "hw_straps_data_in": begin
+          straps_data_in = csr.get_mirrored_value();
+          `uvm_info(`gfn, $sformatf("straps_data_in updated to 0x%0h", straps_data_in),
+                    UVM_HIGH)
+        end
         default: begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end
@@ -561,6 +612,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
         `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
       end
+
     end
 
   endfunction : gpio_predict_and_compare
