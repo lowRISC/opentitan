@@ -511,7 +511,15 @@ static status_t trigger_aes_gcm(
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                 kIbexAesGcmSleepCycles * 2);
   TRY(dif_aes_load_gcm_tag_len(&aes, len_ptx, len_aad));
-  aes_manual_trigger();
+  if (trigger.triggers[3]) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+  } else {
+    aes_manual_trigger();
+  }
 
   // Read the TAG block from the AES.
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusOutputValid, true,
@@ -540,6 +548,7 @@ status_t handle_aes_sca_gcm_fvsr_batch(ujson_t *uj) {
   // uj_triggers.triggers[0] = True/False - process initial counter block.
   // uj_triggers.triggers[1] = True/False - process AAD blocks.
   // uj_triggers.triggers[2] = True/False - process PTX blocks.
+  // uj_triggers.triggers[3] = True/False - process TAG block.
   // uj_triggers.block = int - which AAD or PTX block is captured?
   TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
   // Get fixed IV and fixed KEY.
@@ -679,6 +688,7 @@ status_t handle_aes_sca_gcm_single_encrypt(ujson_t *uj) {
   // uj_triggers.triggers[0] = True/False - process initial counter block.
   // uj_triggers.triggers[1] = True/False - process AAD blocks.
   // uj_triggers.triggers[2] = True/False - process PTX blocks.
+  // uj_triggers.triggers[3] = True/False - process TAG block.
   // uj_triggers.block = int - which AAD or PTX block is captured?
   TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
   // Get IV and KEY.
