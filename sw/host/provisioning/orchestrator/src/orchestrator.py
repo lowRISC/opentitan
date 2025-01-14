@@ -170,13 +170,20 @@ def main(args_in):
     if args.cp_only:
         logging.info("FT skipped since --cp-only was provided")
         return
-
     dut.run_ft()
 
+    # Open the local SQLite registry database.
     db_path = Path(args.db_path)
     db_handle = db.DB(db.DBConfig(db_path=db_path))
     db.DeviceRecord.create_table(db_handle)
 
+    # Check device ID exists in the database.
+    if db.DeviceRecord.query(db_handle, dut.device_id.to_hexstr()) is not None:
+        logging.warning(
+            "DeviceId already exists in database. Overwrite record?")
+        confirm()
+
+    # Register the DUT in the database.
     device_record = db.DeviceRecord.from_dut(dut)
     device_record.upsert(db_handle)
     logging.info(f"Added DeviceRecord to database: {device_record}")
