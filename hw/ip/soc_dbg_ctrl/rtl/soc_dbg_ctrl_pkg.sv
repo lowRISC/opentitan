@@ -43,6 +43,16 @@ package soc_dbg_ctrl_pkg;
     prim_mubi_pkg::mubi4_t relocked;
   } soc_dbg_policy_t;
 
+  // TODO(#25880): This parameter is intended for DV so should be moved into a DV package file once
+  // that exists.
+  //
+  // Valid CAT 3 policy for DV purposes
+  parameter soc_dbg_policy_t SOC_DBG_POLICY_CAT3_VALID = '{
+    valid:    prim_mubi_pkg::MuBi4True,
+    category: DbgCategory3,
+    relocked: prim_mubi_pkg::MuBi4False
+  };
+
   // Encoding generated with:
   // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
   //     -s 1870242553 --language=sv
