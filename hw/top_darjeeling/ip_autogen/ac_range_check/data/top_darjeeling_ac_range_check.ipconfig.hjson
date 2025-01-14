@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  instance_name: top_darjeeling_rv_plic
+  instance_name: top_darjeeling_ac_range_check
   param_values:
   {
-    src: 159
-    target: 1
-    prio: 3
-    module_instance_name: rv_plic
+    nr_role_bits: 4
+    nr_ctn_uid_bits: 5
+    num_ranges: 16
+    module_instance_name: ac_range_check
     topname: darjeeling
   }
 }

@@ -832,26 +832,28 @@ pub enum PlicPeripheral {
     Edn1 = 18,
     /// dma
     Dma = 19,
+    /// ac_range_check
+    AcRangeCheck = 20,
     /// mbx0
-    Mbx0 = 20,
+    Mbx0 = 21,
     /// mbx1
-    Mbx1 = 21,
+    Mbx1 = 22,
     /// mbx2
-    Mbx2 = 22,
+    Mbx2 = 23,
     /// mbx3
-    Mbx3 = 23,
+    Mbx3 = 24,
     /// mbx4
-    Mbx4 = 24,
+    Mbx4 = 25,
     /// mbx5
-    Mbx5 = 25,
+    Mbx5 = 26,
     /// mbx6
-    Mbx6 = 26,
+    Mbx6 = 27,
     /// mbx_jtag
-    MbxJtag = 27,
+    MbxJtag = 28,
     /// mbx_pcie0
-    MbxPcie0 = 28,
+    MbxPcie0 = 29,
     /// mbx_pcie1
-    MbxPcie1 = 29,
+    MbxPcie1 = 30,
 }
 
 impl TryFrom<u32> for PlicPeripheral {
@@ -878,16 +880,17 @@ impl TryFrom<u32> for PlicPeripheral {
             17 => Ok(Self::Edn0),
             18 => Ok(Self::Edn1),
             19 => Ok(Self::Dma),
-            20 => Ok(Self::Mbx0),
-            21 => Ok(Self::Mbx1),
-            22 => Ok(Self::Mbx2),
-            23 => Ok(Self::Mbx3),
-            24 => Ok(Self::Mbx4),
-            25 => Ok(Self::Mbx5),
-            26 => Ok(Self::Mbx6),
-            27 => Ok(Self::MbxJtag),
-            28 => Ok(Self::MbxPcie0),
-            29 => Ok(Self::MbxPcie1),
+            20 => Ok(Self::AcRangeCheck),
+            21 => Ok(Self::Mbx0),
+            22 => Ok(Self::Mbx1),
+            23 => Ok(Self::Mbx2),
+            24 => Ok(Self::Mbx3),
+            25 => Ok(Self::Mbx4),
+            26 => Ok(Self::Mbx5),
+            27 => Ok(Self::Mbx6),
+            28 => Ok(Self::MbxJtag),
+            29 => Ok(Self::MbxPcie0),
+            30 => Ok(Self::MbxPcie1),
             _ => Err(val),
         }
     }
@@ -1156,66 +1159,68 @@ pub enum PlicIrqId {
     DmaDmaChunkDone = 126,
     /// dma_dma_error
     DmaDmaError = 127,
+    /// ac_range_check_deny_cnt_reached
+    AcRangeCheckDenyCntReached = 128,
     /// mbx0_mbx_ready
-    Mbx0MbxReady = 128,
+    Mbx0MbxReady = 129,
     /// mbx0_mbx_abort
-    Mbx0MbxAbort = 129,
+    Mbx0MbxAbort = 130,
     /// mbx0_mbx_error
-    Mbx0MbxError = 130,
+    Mbx0MbxError = 131,
     /// mbx1_mbx_ready
-    Mbx1MbxReady = 131,
+    Mbx1MbxReady = 132,
     /// mbx1_mbx_abort
-    Mbx1MbxAbort = 132,
+    Mbx1MbxAbort = 133,
     /// mbx1_mbx_error
-    Mbx1MbxError = 133,
+    Mbx1MbxError = 134,
     /// mbx2_mbx_ready
-    Mbx2MbxReady = 134,
+    Mbx2MbxReady = 135,
     /// mbx2_mbx_abort
-    Mbx2MbxAbort = 135,
+    Mbx2MbxAbort = 136,
     /// mbx2_mbx_error
-    Mbx2MbxError = 136,
+    Mbx2MbxError = 137,
     /// mbx3_mbx_ready
-    Mbx3MbxReady = 137,
+    Mbx3MbxReady = 138,
     /// mbx3_mbx_abort
-    Mbx3MbxAbort = 138,
+    Mbx3MbxAbort = 139,
     /// mbx3_mbx_error
-    Mbx3MbxError = 139,
+    Mbx3MbxError = 140,
     /// mbx4_mbx_ready
-    Mbx4MbxReady = 140,
+    Mbx4MbxReady = 141,
     /// mbx4_mbx_abort
-    Mbx4MbxAbort = 141,
+    Mbx4MbxAbort = 142,
     /// mbx4_mbx_error
-    Mbx4MbxError = 142,
+    Mbx4MbxError = 143,
     /// mbx5_mbx_ready
-    Mbx5MbxReady = 143,
+    Mbx5MbxReady = 144,
     /// mbx5_mbx_abort
-    Mbx5MbxAbort = 144,
+    Mbx5MbxAbort = 145,
     /// mbx5_mbx_error
-    Mbx5MbxError = 145,
+    Mbx5MbxError = 146,
     /// mbx6_mbx_ready
-    Mbx6MbxReady = 146,
+    Mbx6MbxReady = 147,
     /// mbx6_mbx_abort
-    Mbx6MbxAbort = 147,
+    Mbx6MbxAbort = 148,
     /// mbx6_mbx_error
-    Mbx6MbxError = 148,
+    Mbx6MbxError = 149,
     /// mbx_jtag_mbx_ready
-    MbxJtagMbxReady = 149,
+    MbxJtagMbxReady = 150,
     /// mbx_jtag_mbx_abort
-    MbxJtagMbxAbort = 150,
+    MbxJtagMbxAbort = 151,
     /// mbx_jtag_mbx_error
-    MbxJtagMbxError = 151,
+    MbxJtagMbxError = 152,
     /// mbx_pcie0_mbx_ready
-    MbxPcie0MbxReady = 152,
+    MbxPcie0MbxReady = 153,
     /// mbx_pcie0_mbx_abort
-    MbxPcie0MbxAbort = 153,
+    MbxPcie0MbxAbort = 154,
     /// mbx_pcie0_mbx_error
-    MbxPcie0MbxError = 154,
+    MbxPcie0MbxError = 155,
     /// mbx_pcie1_mbx_ready
-    MbxPcie1MbxReady = 155,
+    MbxPcie1MbxReady = 156,
     /// mbx_pcie1_mbx_abort
-    MbxPcie1MbxAbort = 156,
+    MbxPcie1MbxAbort = 157,
     /// mbx_pcie1_mbx_error
-    MbxPcie1MbxError = 157,
+    MbxPcie1MbxError = 158,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1350,36 +1355,37 @@ impl TryFrom<u32> for PlicIrqId {
             125 => Ok(Self::DmaDmaDone),
             126 => Ok(Self::DmaDmaChunkDone),
             127 => Ok(Self::DmaDmaError),
-            128 => Ok(Self::Mbx0MbxReady),
-            129 => Ok(Self::Mbx0MbxAbort),
-            130 => Ok(Self::Mbx0MbxError),
-            131 => Ok(Self::Mbx1MbxReady),
-            132 => Ok(Self::Mbx1MbxAbort),
-            133 => Ok(Self::Mbx1MbxError),
-            134 => Ok(Self::Mbx2MbxReady),
-            135 => Ok(Self::Mbx2MbxAbort),
-            136 => Ok(Self::Mbx2MbxError),
-            137 => Ok(Self::Mbx3MbxReady),
-            138 => Ok(Self::Mbx3MbxAbort),
-            139 => Ok(Self::Mbx3MbxError),
-            140 => Ok(Self::Mbx4MbxReady),
-            141 => Ok(Self::Mbx4MbxAbort),
-            142 => Ok(Self::Mbx4MbxError),
-            143 => Ok(Self::Mbx5MbxReady),
-            144 => Ok(Self::Mbx5MbxAbort),
-            145 => Ok(Self::Mbx5MbxError),
-            146 => Ok(Self::Mbx6MbxReady),
-            147 => Ok(Self::Mbx6MbxAbort),
-            148 => Ok(Self::Mbx6MbxError),
-            149 => Ok(Self::MbxJtagMbxReady),
-            150 => Ok(Self::MbxJtagMbxAbort),
-            151 => Ok(Self::MbxJtagMbxError),
-            152 => Ok(Self::MbxPcie0MbxReady),
-            153 => Ok(Self::MbxPcie0MbxAbort),
-            154 => Ok(Self::MbxPcie0MbxError),
-            155 => Ok(Self::MbxPcie1MbxReady),
-            156 => Ok(Self::MbxPcie1MbxAbort),
-            157 => Ok(Self::MbxPcie1MbxError),
+            128 => Ok(Self::AcRangeCheckDenyCntReached),
+            129 => Ok(Self::Mbx0MbxReady),
+            130 => Ok(Self::Mbx0MbxAbort),
+            131 => Ok(Self::Mbx0MbxError),
+            132 => Ok(Self::Mbx1MbxReady),
+            133 => Ok(Self::Mbx1MbxAbort),
+            134 => Ok(Self::Mbx1MbxError),
+            135 => Ok(Self::Mbx2MbxReady),
+            136 => Ok(Self::Mbx2MbxAbort),
+            137 => Ok(Self::Mbx2MbxError),
+            138 => Ok(Self::Mbx3MbxReady),
+            139 => Ok(Self::Mbx3MbxAbort),
+            140 => Ok(Self::Mbx3MbxError),
+            141 => Ok(Self::Mbx4MbxReady),
+            142 => Ok(Self::Mbx4MbxAbort),
+            143 => Ok(Self::Mbx4MbxError),
+            144 => Ok(Self::Mbx5MbxReady),
+            145 => Ok(Self::Mbx5MbxAbort),
+            146 => Ok(Self::Mbx5MbxError),
+            147 => Ok(Self::Mbx6MbxReady),
+            148 => Ok(Self::Mbx6MbxAbort),
+            149 => Ok(Self::Mbx6MbxError),
+            150 => Ok(Self::MbxJtagMbxReady),
+            151 => Ok(Self::MbxJtagMbxAbort),
+            152 => Ok(Self::MbxJtagMbxError),
+            153 => Ok(Self::MbxPcie0MbxReady),
+            154 => Ok(Self::MbxPcie0MbxAbort),
+            155 => Ok(Self::MbxPcie0MbxError),
+            156 => Ok(Self::MbxPcie1MbxReady),
+            157 => Ok(Self::MbxPcie1MbxAbort),
+            158 => Ok(Self::MbxPcie1MbxError),
             _ => Err(val),
         }
     }
@@ -1400,7 +1406,7 @@ pub enum PlicTarget {
 ///
 /// This array is a mapping from `PlicIrqId` to
 /// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 158] = [
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 159] = [
     // None -> PlicPeripheral::Unknown
     PlicPeripheral::Unknown,
     // Uart0TxWatermark -> PlicPeripheral::Uart0
@@ -1657,6 +1663,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 158] = [
     PlicPeripheral::Dma,
     // DmaDmaError -> PlicPeripheral::Dma
     PlicPeripheral::Dma,
+    // AcRangeCheckDenyCntReached -> PlicPeripheral::AcRangeCheck
+    PlicPeripheral::AcRangeCheck,
     // Mbx0MbxReady -> PlicPeripheral::Mbx0
     PlicPeripheral::Mbx0,
     // Mbx0MbxAbort -> PlicPeripheral::Mbx0
@@ -1786,30 +1794,32 @@ pub enum AlertPeripheral {
     RomCtrl1 = 28,
     /// dma
     Dma = 29,
+    /// ac_range_check
+    AcRangeCheck = 30,
     /// mbx0
-    Mbx0 = 30,
+    Mbx0 = 31,
     /// mbx1
-    Mbx1 = 31,
+    Mbx1 = 32,
     /// mbx2
-    Mbx2 = 32,
+    Mbx2 = 33,
     /// mbx3
-    Mbx3 = 33,
+    Mbx3 = 34,
     /// mbx4
-    Mbx4 = 34,
+    Mbx4 = 35,
     /// mbx5
-    Mbx5 = 35,
+    Mbx5 = 36,
     /// mbx6
-    Mbx6 = 36,
+    Mbx6 = 37,
     /// mbx_jtag
-    MbxJtag = 37,
+    MbxJtag = 38,
     /// mbx_pcie0
-    MbxPcie0 = 38,
+    MbxPcie0 = 39,
     /// mbx_pcie1
-    MbxPcie1 = 39,
+    MbxPcie1 = 40,
     /// soc_dbg_ctrl
-    SocDbgCtrl = 40,
+    SocDbgCtrl = 41,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -1965,58 +1975,62 @@ pub enum AlertId {
     RomCtrl1Fatal = 71,
     /// dma_fatal_fault
     DmaFatalFault = 72,
+    /// ac_range_check_recov_ctrl_update_err
+    AcRangeCheckRecovCtrlUpdateErr = 73,
+    /// ac_range_check_fatal_fault
+    AcRangeCheckFatalFault = 74,
     /// mbx0_fatal_fault
-    Mbx0FatalFault = 73,
+    Mbx0FatalFault = 75,
     /// mbx0_recov_fault
-    Mbx0RecovFault = 74,
+    Mbx0RecovFault = 76,
     /// mbx1_fatal_fault
-    Mbx1FatalFault = 75,
+    Mbx1FatalFault = 77,
     /// mbx1_recov_fault
-    Mbx1RecovFault = 76,
+    Mbx1RecovFault = 78,
     /// mbx2_fatal_fault
-    Mbx2FatalFault = 77,
+    Mbx2FatalFault = 79,
     /// mbx2_recov_fault
-    Mbx2RecovFault = 78,
+    Mbx2RecovFault = 80,
     /// mbx3_fatal_fault
-    Mbx3FatalFault = 79,
+    Mbx3FatalFault = 81,
     /// mbx3_recov_fault
-    Mbx3RecovFault = 80,
+    Mbx3RecovFault = 82,
     /// mbx4_fatal_fault
-    Mbx4FatalFault = 81,
+    Mbx4FatalFault = 83,
     /// mbx4_recov_fault
-    Mbx4RecovFault = 82,
+    Mbx4RecovFault = 84,
     /// mbx5_fatal_fault
-    Mbx5FatalFault = 83,
+    Mbx5FatalFault = 85,
     /// mbx5_recov_fault
-    Mbx5RecovFault = 84,
+    Mbx5RecovFault = 86,
     /// mbx6_fatal_fault
-    Mbx6FatalFault = 85,
+    Mbx6FatalFault = 87,
     /// mbx6_recov_fault
-    Mbx6RecovFault = 86,
+    Mbx6RecovFault = 88,
     /// mbx_jtag_fatal_fault
-    MbxJtagFatalFault = 87,
+    MbxJtagFatalFault = 89,
     /// mbx_jtag_recov_fault
-    MbxJtagRecovFault = 88,
+    MbxJtagRecovFault = 90,
     /// mbx_pcie0_fatal_fault
-    MbxPcie0FatalFault = 89,
+    MbxPcie0FatalFault = 91,
     /// mbx_pcie0_recov_fault
-    MbxPcie0RecovFault = 90,
+    MbxPcie0RecovFault = 92,
     /// mbx_pcie1_fatal_fault
-    MbxPcie1FatalFault = 91,
+    MbxPcie1FatalFault = 93,
     /// mbx_pcie1_recov_fault
-    MbxPcie1RecovFault = 92,
+    MbxPcie1RecovFault = 94,
     /// soc_dbg_ctrl_fatal_fault
-    SocDbgCtrlFatalFault = 93,
+    SocDbgCtrlFatalFault = 95,
     /// soc_dbg_ctrl_recov_ctrl_update_err
-    SocDbgCtrlRecovCtrlUpdateErr = 94,
+    SocDbgCtrlRecovCtrlUpdateErr = 96,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 95,
+    RvCoreIbexFatalSwErr = 97,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 96,
+    RvCoreIbexRecovSwErr = 98,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 97,
+    RvCoreIbexFatalHwErr = 99,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 98,
+    RvCoreIbexRecovHwErr = 100,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2096,32 +2110,34 @@ impl TryFrom<u32> for AlertId {
             70 => Ok(Self::RomCtrl0Fatal),
             71 => Ok(Self::RomCtrl1Fatal),
             72 => Ok(Self::DmaFatalFault),
-            73 => Ok(Self::Mbx0FatalFault),
-            74 => Ok(Self::Mbx0RecovFault),
-            75 => Ok(Self::Mbx1FatalFault),
-            76 => Ok(Self::Mbx1RecovFault),
-            77 => Ok(Self::Mbx2FatalFault),
-            78 => Ok(Self::Mbx2RecovFault),
-            79 => Ok(Self::Mbx3FatalFault),
-            80 => Ok(Self::Mbx3RecovFault),
-            81 => Ok(Self::Mbx4FatalFault),
-            82 => Ok(Self::Mbx4RecovFault),
-            83 => Ok(Self::Mbx5FatalFault),
-            84 => Ok(Self::Mbx5RecovFault),
-            85 => Ok(Self::Mbx6FatalFault),
-            86 => Ok(Self::Mbx6RecovFault),
-            87 => Ok(Self::MbxJtagFatalFault),
-            88 => Ok(Self::MbxJtagRecovFault),
-            89 => Ok(Self::MbxPcie0FatalFault),
-            90 => Ok(Self::MbxPcie0RecovFault),
-            91 => Ok(Self::MbxPcie1FatalFault),
-            92 => Ok(Self::MbxPcie1RecovFault),
-            93 => Ok(Self::SocDbgCtrlFatalFault),
-            94 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            95 => Ok(Self::RvCoreIbexFatalSwErr),
-            96 => Ok(Self::RvCoreIbexRecovSwErr),
-            97 => Ok(Self::RvCoreIbexFatalHwErr),
-            98 => Ok(Self::RvCoreIbexRecovHwErr),
+            73 => Ok(Self::AcRangeCheckRecovCtrlUpdateErr),
+            74 => Ok(Self::AcRangeCheckFatalFault),
+            75 => Ok(Self::Mbx0FatalFault),
+            76 => Ok(Self::Mbx0RecovFault),
+            77 => Ok(Self::Mbx1FatalFault),
+            78 => Ok(Self::Mbx1RecovFault),
+            79 => Ok(Self::Mbx2FatalFault),
+            80 => Ok(Self::Mbx2RecovFault),
+            81 => Ok(Self::Mbx3FatalFault),
+            82 => Ok(Self::Mbx3RecovFault),
+            83 => Ok(Self::Mbx4FatalFault),
+            84 => Ok(Self::Mbx4RecovFault),
+            85 => Ok(Self::Mbx5FatalFault),
+            86 => Ok(Self::Mbx5RecovFault),
+            87 => Ok(Self::Mbx6FatalFault),
+            88 => Ok(Self::Mbx6RecovFault),
+            89 => Ok(Self::MbxJtagFatalFault),
+            90 => Ok(Self::MbxJtagRecovFault),
+            91 => Ok(Self::MbxPcie0FatalFault),
+            92 => Ok(Self::MbxPcie0RecovFault),
+            93 => Ok(Self::MbxPcie1FatalFault),
+            94 => Ok(Self::MbxPcie1RecovFault),
+            95 => Ok(Self::SocDbgCtrlFatalFault),
+            96 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
+            97 => Ok(Self::RvCoreIbexFatalSwErr),
+            98 => Ok(Self::RvCoreIbexRecovSwErr),
+            99 => Ok(Self::RvCoreIbexFatalHwErr),
+            100 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2131,7 +2147,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 101] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2278,6 +2294,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
     AlertPeripheral::RomCtrl1,
     // DmaFatalFault -> AlertPeripheral::Dma
     AlertPeripheral::Dma,
+    // AcRangeCheckRecovCtrlUpdateErr -> AlertPeripheral::AcRangeCheck
+    AlertPeripheral::AcRangeCheck,
+    // AcRangeCheckFatalFault -> AlertPeripheral::AcRangeCheck
+    AlertPeripheral::AcRangeCheck,
     // Mbx0FatalFault -> AlertPeripheral::Mbx0
     AlertPeripheral::Mbx0,
     // Mbx0RecovFault -> AlertPeripheral::Mbx0

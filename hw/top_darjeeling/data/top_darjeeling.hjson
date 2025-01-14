@@ -171,6 +171,11 @@
     ]
   }
 
+  // AC Range check configuration for the egress port
+  ac_range_check: {
+    num_ranges: 16
+  }
+
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 
@@ -866,6 +871,17 @@
       reset_connections: {rst_ni: "lc"},
       base_addr: {hart: "0x22010000"},
     },
+    { name: "ac_range_check",
+      type: "ac_range_check",
+      template_type: "ac_range_check",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        soc_mbx: "0x01464000"
+      },
+      attr: "ipgen",
+    },
     { name: "mbx0",
       type: "mbx",
       clock_srcs: {clk_i: "main"}
@@ -1246,6 +1262,9 @@
       'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
       'soc_proxy.dma_tl_d2h' : ['dma.ctn_tl_d2h']
 
+      'soc_proxy.ctn_tl_h2d' : ['ac_range_check.ctn_tl_h2d']
+      'soc_proxy.ctn_tl_d2h' : ['ac_range_check.ctn_tl_d2h']
+
     }
 
     // top is to connect to top net/struct.
@@ -1388,6 +1407,9 @@
         'spi_device.sck_monitor'               : 'sck_monitor',
         'soc_dbg_ctrl.soc_dbg_policy_bus'      : 'soc_dbg_policy_bus',
         'soc_dbg_ctrl.halt_cpu_boot'           : 'debug_halt_cpu_boot',
+        'ac_range_check.range_check_overwrite' : 'ac_range_check_overwrite',
+        'ac_range_check.ctn_filtered_tl_h2d'   : 'ctn_tl_h2d',
+        'ac_range_check.ctn_filtered_tl_d2h'   : 'ctn_tl_d2h'
     },
   },
 
