@@ -132,7 +132,7 @@ class ${module_instance_name}_base_vseq extends cip_base_vseq #(
                       delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
                       force_positive -> delay > 0;
                     })
-    cfg.clk_rst_vif.wait_clks(delay);
+    cfg.clk_rst_vif.wait_clks_or_rst(delay);
   endtask
 
 endclass : ${module_instance_name}_base_vseq
