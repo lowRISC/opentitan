@@ -161,9 +161,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
               .tag = kTlvTagApplicationKey,
               .length = kTlvLenApplicationKeyHybrid,
           },
-      // TODO(cfrantz): Change this to Prehash after putting
-      // the prehash infrastructure in place.
-      .key_alg = kOwnershipKeyAlgHybridSpxPure,
+      .key_alg = kOwnershipKeyAlgHybridSpxPrehash,
       .key_domain = kOwnerAppDomainDev,
       .key_diversifier = {0},
       .usage_constraint = 0,
