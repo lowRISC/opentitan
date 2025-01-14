@@ -31,6 +31,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   //  (i) indicate that write to INTR_STATE register just happened, and
   // (ii) store information of which all interupt bits were cleared
   bit [TL_DW-1:0] cleared_intr_bits;
+  // Flag to indicate that the strap was triggered
+  bit first_strap_triggered;
 
   // mask are WO, store the values in scb
   uvm_reg_data_t masked_out_lower_mask;
@@ -40,7 +42,9 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   `uvm_component_utils(gpio_scoreboard)
 
-  `uvm_component_new
+  function new (string name = "gpio_scoreboard", uvm_component parent = null);
+    super.new (name, parent);
+  endfunction
 
   // Function: build_phase
   function void build_phase(uvm_phase phase);
@@ -54,6 +58,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     fork
       monitor_gpio_i();
       monitor_gpio_interrupt_pins();
+      monitor_gpio_straps();
     join_none
   endtask
 
@@ -211,7 +216,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end // if (write)
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
-        `uvm_info(`gfn, $sformatf("csr read on %0s", csr.get_name()), UVM_HIGH)
         // If do_read_check, is set, then check mirrored_value against item.d_data
         if (do_read_check) begin
           // Checker-2: Check if reg read data matches expected value or not
@@ -359,6 +363,50 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end
     end
   endtask : monitor_gpio_interrupt_pins
+
+  virtual task update_gpio_straps_regs(logic [NUM_GPIOS-1:0] gpio_i_sampled);
+    // Update data_in and data_in_valid ral register value based on result of input
+    `DV_CHECK_FATAL(ral.hw_straps_data_in.predict(.value(gpio_i_sampled),
+                                                  .kind(UVM_PREDICT_READ)));
+    `DV_CHECK_FATAL(ral.hw_straps_data_in_valid.predict(.value('b1),
+                                                        .kind(UVM_PREDICT_READ)));
+  endtask : update_gpio_straps_regs
+
+  // Task: monitor_gpio_straps
+  // The task monitors the gpio straps enable signal
+  // and checks the straps output signal after the first strap trigger
+  virtual task monitor_gpio_straps();
+    logic [NUM_GPIOS-1:0] gpio_i_sampled;
+    forever begin : monitor_gpio_straps
+      // Wait for going out of reset operation.
+      wait(!cfg.under_reset);
+      // Wait until the strap_en input be triggered
+      // if a reset comes in the middle, step-out of the loop.
+      while (!cfg.straps_vif_inst.tb_port.strap_en) begin
+        cfg.clk_rst_vif.wait_clks_or_rst(1);
+        if (cfg.under_reset) break;
+      end
+      // Step out to the next iteration if a reset happens.
+      if (cfg.under_reset) continue;
+      // Get the gpio_i input data from the pins interface.
+      gpio_i_sampled = cfg.gpio_vif.pins;
+      // Wait for one clock cycle to update the register model.
+      cfg.clk_rst_vif.wait_clks_or_rst(1);
+      // Step out from the loop if a reset comes.
+      if (cfg.under_reset) continue;
+      // Update the register model.
+      update_gpio_straps_regs(gpio_i_sampled);
+
+      // Checker: Compare actual values of gpio pins with straps register.
+      // Check the register hw_straps_data_in against gpio_i pins
+      `DV_CHECK_CASE_EQ(gpio_i_sampled, cfg.straps_vif_inst.tb_port.sampled_straps.data)
+      // Check the register hw_straps_data_in_valid
+      `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.tb_port.sampled_straps.valid)
+
+      // Wait for the next reset, if it happens.
+      wait(cfg.under_reset);
+    end
+  endtask : monitor_gpio_straps
 
   // Function: actual_gpio_i_activity
   function bit actual_gpio_i_activity();
@@ -561,6 +609,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
         `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
       end
+
     end
 
   endfunction : gpio_predict_and_compare
@@ -804,6 +853,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     last_intr_update_except_clearing = '0;
     last_intr_test_event = '0;
     cleared_intr_bits = '0;
+    first_strap_triggered = 0;
   endfunction
 
   // Function: check_phase

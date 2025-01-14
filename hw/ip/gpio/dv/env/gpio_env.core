@@ -28,6 +28,7 @@ filesets:
       - seq_lib/gpio_stress_all_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_intr_rand_pgm_vseq.sv: {is_include_file: true}
       - seq_lib/gpio_intr_with_filter_rand_intr_event_vseq.sv: {is_include_file: true}
+      - seq_lib/gpio_rand_straps_vseq.sv : {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:

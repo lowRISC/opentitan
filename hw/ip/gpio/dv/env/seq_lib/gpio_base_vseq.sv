@@ -124,4 +124,15 @@ class gpio_base_vseq extends cip_base_vseq #(
     end
   endtask : pgm_intr_regs
 
+  // Wait a few cycles. If force_positive is true, Wait at least one clock cycle.
+  task short_wait(bit force_positive);
+    int unsigned delay;
+    `DV_CHECK_FATAL(std::randomize(delay) with
+                    {
+                      delay dist {0 :/ 20, [1:5] :/ 40, [6:15] :/ 30, [20:25] :/ 10};
+                      force_positive -> delay > 0;
+                    })
+    cfg.clk_rst_vif.wait_clks(delay);
+  endtask
+
 endclass : gpio_base_vseq
