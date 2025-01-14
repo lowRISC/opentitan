@@ -3,6 +3,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# Test Description:
+#
+# This tests fully provisioning an OpenTitan chip by executing both CP and FT
+# stages in a single execution of the orchestrator script.
+
 set -ex
 
 cp sw/host/provisioning/orchestrator/src/orchestrator.zip $TEST_TMPDIR
