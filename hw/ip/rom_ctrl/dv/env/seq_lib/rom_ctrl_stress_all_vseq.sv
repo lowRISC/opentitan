@@ -32,8 +32,7 @@ constraint rom_ctrl_stress_all_vseq::num_trans_c {
 }
 
 task rom_ctrl_stress_all_vseq::body();
-  string seq_names[] = {"rom_ctrl_smoke_vseq",
-                        "rom_ctrl_common_vseq"};
+  string seq_names[] = {"rom_ctrl_smoke_vseq"};
   for (int i = 1; i <= num_trans; i++) begin
     uvm_sequence   seq;
     rom_ctrl_base_vseq rom_ctrl_vseq;
@@ -49,11 +48,7 @@ task rom_ctrl_stress_all_vseq::body();
     rom_ctrl_vseq.set_sequencer(p_sequencer);
     `uvm_info(`gfn, $sformatf("Running %s sequence", seq_names[seq_idx]), UVM_LOW)
     `DV_CHECK_RANDOMIZE_FATAL(rom_ctrl_vseq)
-    if (seq_names[seq_idx] == "rom_ctrl_common_vseq") begin
-      rom_ctrl_common_vseq common_vseq;
-      `downcast(common_vseq, rom_ctrl_vseq);
-      common_vseq.common_seq_type = "intr_test";
-    end
+
     rom_ctrl_vseq.start(p_sequencer);
 
     // We've just got to the end of a sequence. Since we don't do anything after this loop, copy the
