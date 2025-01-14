@@ -34,7 +34,7 @@
   inter_signal_list: [
     { name:    "range_check_overwrite"
       type:    "uni",
-      act:     "req",
+      act:     "rcv",
       package: "prim_mubi_pkg",
       struct:  "mubi8",
       width:   "1"
