@@ -314,7 +314,6 @@ dependencies = [
  "rusb",
  "rustix",
  "scopeguard",
- "secrecy",
  "serde",
  "serde_bytes",
  "serde_json",
