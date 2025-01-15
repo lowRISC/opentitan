@@ -203,8 +203,7 @@ impl Xmodem {
             let cancel = block != bnum || bnum != 255 - bcom;
 
             // The next `block_len` bytes are the packet itself.
-            let mut buffer = Vec::new();
-            buffer.resize(block_len, 0);
+            let mut buffer = vec![0; block_len];
             let mut total = 0;
             while total < block_len {
                 let n = uart.read(&mut buffer[total..])?;
