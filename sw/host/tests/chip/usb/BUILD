@@ -50,6 +50,7 @@ rust_binary(
         "@crate_index//:humantime",
         "@crate_index//:log",
         "@crate_index//:rusb",
+        "@crate_index//:strum",
     ],
 )
 

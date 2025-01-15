@@ -50,9 +50,9 @@ impl Ti50Uart {
     }
 
     pub fn get_socket(&self) -> Result<RefMut<UnixStream>> {
-        return Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
+        Ok(RefMut::map(self.socket.borrow_mut(), |socket| {
             socket.as_mut().unwrap()
-        }));
+        }))
     }
 }
 
