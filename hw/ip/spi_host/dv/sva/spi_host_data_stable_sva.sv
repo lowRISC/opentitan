@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+import uvm_pkg::*;
+
 module spi_host_data_stable_sva #(
   parameter int unsigned NumCS = 1
 ) (
@@ -38,11 +40,10 @@ module spi_host_data_stable_sva #(
   assign sampled_negedge_enable = !csbs & (configopts.cpha.q ^ configopts.cpol.q);
   assign sampled_posedge_enable = !csbs & !sampled_negedge_enable;
 
-
   whole_cycle_data_stable_signal_checker #(.VECTOR_WIDTH(4))
   u_sva_cio_sd_i_whole_cycle_data_stable_check (
      .rst_ni (rst_ni),
-     .sck_o (sck_o),
+     .sck_o (cio_sck_o),
      .csb_o (csbs),
      .signal2check_i (cio_sd_i),
      .sampled_negedge_enable (sampled_negedge_enable),
@@ -53,7 +54,7 @@ module spi_host_data_stable_sva #(
   whole_cycle_data_stable_signal_checker #(.VECTOR_WIDTH(4))
   u_sva_cio_sd_en_o_whole_cycle_data_stable_check (
      .rst_ni (rst_ni),
-     .sck_o (sck_o),
+     .sck_o (cio_sck_o),
      .csb_o (csbs),
      .signal2check_i (cio_sd_en_o),
      .sampled_negedge_enable (sampled_negedge_enable),
@@ -76,81 +77,47 @@ module whole_cycle_data_stable_signal_checker #( parameter int VECTOR_WIDTH = 4 
  input logic                    passthrough_en
  );
 
-  import uvm_pkg::*;
-`include "uvm_macros.svh"
 
   for (genvar i = 0; i < VECTOR_WIDTH; i++) begin : g_signal_stable_sva
     logic neg_value, pos_value;
-    event check_posedge, check_negedge;
 
-    always  @(negedge csb_o) begin
-      // Initialising the neg/pos_value signals here, so they are ready for the first SPI cycle
-      pos_value <= signal2check_i[i];
+    // Always_ff below are used just for the printout in case of the SVA firing
+    always_ff @(negedge sck_o) begin
       neg_value <= signal2check_i[i];
-      if (sampled_posedge_enable) begin
-        @(negedge sck_o);
-        pos_value <= signal2check_i[i];
-      end
-      if (sampled_negedge_enable) begin
-        @(posedge sck_o);
-        neg_value <= signal2check_i[i];
-      end
-    end // always  @ (negedge csb_o)
-
-
-  always @(negedge sck_o or negedge rst_ni) begin
-    if (!rst_ni) begin
-      neg_value <= 0;
-    end else if (!csb_o) begin
-      neg_value <= signal2check_i[i];
-      if (sampled_negedge_enable) begin
-        // TODO: remove IF below when passthrough mode is handled thorougly
-        // SPI-host block level TB drives gibberish to test passthru, which
-        // causes the assertion to fire. Until passthrough is tested via driving
-        // sensible SPI data is best to disable this SVA
-        if (!passthrough_en)
-          -> check_negedge;
-      end
-    end
-  end
-
-  always @(posedge sck_o or negedge rst_ni) begin
-    if (!rst_ni) begin
-      pos_value <= 0;
-    end else if (!csb_o) begin
+    end // always_ff @ (negedge sck_o)
+    always_ff @(posedge sck_o) begin
       pos_value <= signal2check_i[i];
-      if (sampled_posedge_enable) begin
-        // TODO: remove IF below when passthrough mode is handled thorougly
-        // SPI-host block level TB drives gibberish to test passthru, which
-        // causes the assertion to fire. Until passthrough is tested via driving
-        // sensible SPI data is best to disable this SVA
-        if (!passthrough_en)
-          -> check_posedge;
-      end
+    end // always_ff @ (posedge sck_o)
+
+    // The data bus is driven on one edge and sampled on the next. Hence the value can't
+    // toggle in the "sample phase"
+    property posedge_no_change_check_p;
+      @(posedge sck_o) disable iff (rst_ni)
+        sampled_posedge_enable |-> !$changed(signal2check_i[i]);
+    endproperty
+
+    property negedge_no_change_check_p;
+      @(negedge sck_o) disable iff (rst_ni)
+        sampled_negedge_enable |-> !$changed(signal2check_i[i]);
+    endproperty
+
+    NEGEDGE_SAME_VALUE_CHECK_P: assert property (negedge_no_change_check_p)
+    else begin
+      uvm_report_error("NEGEDGE_SAME_VALUE_CHECK_P",
+                       {$sformatf("%m: [i=%0d] - ASSERTION FAILED",i),
+                        $sformatf(" pos_value (0x%0x) != neg_value (0x%0x)",
+                                  $sampled(pos_value), $sampled(neg_value)),
+                        $sformatf(" - time=%t", $time)});
     end
-  end // always @ (posedge sck_o or negedge rst_ni)
 
-  NEGEDGE_SAME_VALUE_CHECK_P: assert property (@(check_negedge) pos_value == neg_value) begin
-    `uvm_info("NEGEDGE_SAME_VALUE_CHECK_P", $sformatf("%m: [i=%0d] - ASSERTION PASSED %t",i, $time),
-              UVM_DEBUG);
-  end
-  else begin
-    `uvm_error("NEGEDGE_SAME_VALUE_CHECK_P", {$sformatf("%m: [i=%0d] - ASSERTION FAILED",i),
-                                              $sformatf(" pos_value (0x%0x) != neg_value (0x%0x)",
-                                                        pos_value, neg_value),
-                                              $sformatf(" - time=%t", $time)})
-  end
-  POSEDGE_SAME_VALUE_CHECK_P: assert property (@(check_posedge) pos_value == neg_value) begin
-    `uvm_info("POSEDGE_SAME_VALUE_CHECK_P", $sformatf("%m: [i=%0d] - ASSERTION PASSED %t",i, $time),
-              UVM_DEBUG);
-  end
-  else begin
-    `uvm_error("POSEDGE_SAME_VALUE_CHECK_P", {$sformatf("%m: [i=%0d] - ASSERTION FAILED",i),
-                                              $sformatf(" pos_value (0x%0x) != neg_value (0x%0x)",
-                                                        pos_value, neg_value),
-                                              $sformatf(" - time=%t", $time)})
-  end
-end // block: g_signal_stable_sva
-
+    POSEDGE_SAME_VALUE_CHECK_P: assert property (posedge_no_change_check_p)
+    else begin
+       uvm_report_error("POSEDGE_SAME_VALUE_CHECK_P",
+                        {$sformatf("%m: [i=%0d] - ASSERTION FAILED",i),
+                         $sformatf(" pos_value (0x%0x) != neg_value (0x%0x)",
+                                   $sampled(pos_value), $sampled(neg_value)),
+                         $sformatf(" - time=%t", $time)});
+    end
+  end // block: g_signal_stable_sva
 
 endmodule
