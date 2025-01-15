@@ -536,6 +536,7 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
                                         bit [31:0] addr, bit wait_on_busy = 1);
     spi_host_flash_seq m_spi_host_seq;
     bit [7:0] byte_addr_q[$];
+    bit       cmd_in_mbx;
     `uvm_create_on(m_spi_host_seq, p_sequencer.spi_sequencer_h)
 
     if (op inside {READ_CMD_LIST} && cfg.spi_host_agent_cfg.is_opcode_supported(op)) begin
@@ -549,12 +550,14 @@ class spi_device_pass_base_vseq extends spi_device_base_vseq;
       end
     end
 
+    cmd_in_mbx = cfg.is_in_mailbox_region(convert_addr_from_byte_queue(byte_addr_q));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(m_spi_host_seq,
                                    opcode == op;
                                    address_q.size() == byte_addr_q.size();
                                    foreach (byte_addr_q[i]) address_q[i] == byte_addr_q[i];
                                    payload_q.size() == payload_size;
-                                   read_size == payload_size;)
+                                   read_size == payload_size;
+                                   cmd_in_mbx == local::cmd_in_mbx;)
     `uvm_send(m_spi_host_seq)
 
     if (cfg.is_read_buffer_cmd(m_spi_host_seq.rsp)) begin

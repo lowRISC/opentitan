@@ -31,6 +31,8 @@ class chip_virtual_sequencer extends cip_base_virtual_sequencer #(
     foreach (i2c_rd_fifos[i]) i2c_rd_fifos[i] = new($sformatf("i2c_rd_fifo%0d", i), this);
     foreach (pwm_rx_fifo[i]) pwm_rx_fifo[i] = new($sformatf("pwm_rx_fifo%0d", i), this);
     foreach (pattgen_rx_fifo[i]) pattgen_rx_fifo[i] = new($sformatf("pattgen_rx_fifo%0d", i), this);
+
+    cov = chip_env_cov::type_id::create("cov", null);
   endfunction
 
 endclass
