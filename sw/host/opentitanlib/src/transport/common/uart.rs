@@ -35,7 +35,7 @@ impl SerialPortUart {
 
     /// Open the given serial device, such as `/dev/ttyUSB0`.
     pub fn open(port_name: &str, baud: u32) -> Result<Self> {
-        let port = TTYPort::open(&serialport::new(port_name, baud))
+        let port = TTYPort::open(&serialport::new(port_name, baud).preserve_dtr_on_open())
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
@@ -49,7 +49,7 @@ impl SerialPortUart {
 
     /// Open a pseudo port (e.g. a verilator pts device).
     pub fn open_pseudo(port_name: &str, baud: u32) -> Result<Self> {
-        let port = TTYPort::open(&serialport::new(port_name, baud))
+        let port = TTYPort::open(&serialport::new(port_name, baud).preserve_dtr_on_open())
             .map_err(|e| UartError::OpenError(e.to_string()))?;
         flock_serial(&port, port_name)?;
         Ok(SerialPortUart {
