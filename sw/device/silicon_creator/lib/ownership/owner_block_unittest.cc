@@ -238,7 +238,9 @@ const owner_flash_info_config_t info_config = {
 };
 
 TEST_F(OwnerBlockTest, FlashConfigApplyBad) {
-  rom_error_t error = owner_block_flash_apply(&bad_flash_config, kBootSlotA, 0);
+  rom_error_t error = owner_block_flash_apply(&bad_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/0,
+                                              /*owner_lockdown=*/0);
   EXPECT_EQ(error, kErrorOwnershipFlashConfigLenth);
 }
 
@@ -269,15 +271,16 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotA, 0);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/0,
+                                              /*owner_lockdown=*/0);
   EXPECT_EQ(error, kErrorOk);
 }
 
 // Tests that the flash parameters get applied for side A and the
-// ProtectWhenPrimary disables erase and program on the ROM_EXT and FIRMWARE
+// ProtectWhenActive disables erase and program on the ROM_EXT and FIRMWARE
 // regions.
-TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
+TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(0, 0, 32,
@@ -303,13 +306,16 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotA, kBootSlotA);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/kBootSlotA,
+                                              /*owner_lockdown=*/kBootSlotA);
   EXPECT_EQ(error, kErrorOk);
 }
 
-// Tests that the flash parameters get applied for side B.
-TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
+// Tests that the flash parameters get applied for side B when B is not the
+// active slot.  Check that ProtectWhenActive does not change the write/erase
+// permissions for slot B.
+TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(3, 256 + 0, 32,
@@ -335,8 +341,9 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotB, 0);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotB,
+                                              /*creator_lockdown=*/kBootSlotA,
+                                              /*owner_lockdown=*/kBootSlotA);
   EXPECT_EQ(error, kErrorOk);
 }
 

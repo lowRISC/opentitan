@@ -615,7 +615,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Lock the flash according to the ownership configuration.
   HARDENED_RETURN_IF_ERROR(
-      ownership_flash_lockdown(boot_data, boot_log->bl0_slot, &owner_config));
+      ownership_flash_lockdown(boot_data, boot_log, &owner_config));
 
   dbg_print_epmp();
 
