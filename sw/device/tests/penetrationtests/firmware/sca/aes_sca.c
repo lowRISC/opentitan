@@ -636,8 +636,10 @@ status_t handle_aes_sca_gcm_fvsr_batch(ujson_t *uj) {
 
   // Trigger the AES GCM operation.
   dif_aes_data_t aes_tag_acc;
-  memset(aes_tag_acc.data, 0,
-         sizeof(aes_tag_acc.data[0] * ARRAYSIZE(aes_tag_acc.data)));
+  aes_tag_acc.data[0] = 0;
+  aes_tag_acc.data[1] = 0;
+  aes_tag_acc.data[2] = 0;
+  aes_tag_acc.data[3] = 0;
   for (size_t it = 0; it < uj_num_ops.num_batch_ops; it++) {
     dif_aes_data_t aes_tag;
     TRY(trigger_aes_gcm(key_fvsr[it], aes_iv_fvsr[it], aes_aad,
