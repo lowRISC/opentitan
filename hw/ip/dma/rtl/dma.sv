@@ -539,8 +539,8 @@ module dma
       end
       SocSystemAddr: begin
         write_gnt       = 1'b1;  // No requirement to wait
-        write_rsp_valid = sys_resp_q.grant_vec[SysCmdWrite];
-        write_rsp_error = 1'b0;  // Write errors do not occur on SoC System bus
+        write_rsp_valid = sys_resp_q.grant_vec[SysCmdWrite] | sys_resp_q.error_vld;
+        write_rsp_error = sys_resp_q.error_vld;
       end
       // SocControlAddr is handled here
       //   (other ASID values prevented in configuration validation).
