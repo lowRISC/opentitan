@@ -198,8 +198,14 @@ module aon_timer import aon_timer_reg_pkg::*;
   );
 
   // Registers to interrupt
-  assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe |
-                                  reg2hw.intr_test.wdog_timer_bark.qe;
+  assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe;
+  // To avoid excluding conditional coverage for how the assignment above was originally written:
+  // intr_test_qe = reg2hw.intr_test.wkup_timer_expired.qe | reg2hw.intr_test.wdog_timer_bark.qe;
+  // the condition is simplified and the assertion below ensures correctness since both Qe signals
+  // are connected to the same 'intr_test_qe' in the register top
+  `ASSERT(IntrTestFieldsQeMatch_A,
+          reg2hw.intr_test.wkup_timer_expired.qe == reg2hw.intr_test.wdog_timer_bark.qe)
+
   assign intr_test_q [AON_WKUP] = reg2hw.intr_test.wkup_timer_expired.q;
   assign intr_state_q[AON_WKUP] = reg2hw.intr_state.wkup_timer_expired.q;
   assign intr_test_q [AON_WDOG] = reg2hw.intr_test.wdog_timer_bark.q;
