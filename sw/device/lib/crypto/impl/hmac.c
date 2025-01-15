@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
-#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/hash.h"
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('m', 'a', 'c')
+#define MODULE_ID MAKE_MODULE_ID('h', 'm', 'c')
 
 /**
  * Ensure that the hash context is large enough for HMAC driver struct.

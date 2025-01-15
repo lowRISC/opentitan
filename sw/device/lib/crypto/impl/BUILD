@@ -116,9 +116,9 @@ cc_library(
     srcs = ["hkdf.c"],
     hdrs = ["//sw/device/lib/crypto/include:hkdf.h"],
     deps = [
+        ":hmac",
         ":integrity",
         ":keyblob",
-        ":mac",
         ":status",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/include:datatypes",
@@ -140,9 +140,9 @@ cc_library(
     srcs = ["kdf_ctr.c"],
     hdrs = ["//sw/device/lib/crypto/include:kdf_ctr.h"],
     deps = [
+        ":hmac",
         ":integrity",
         ":keyblob",
-        ":mac",
         ":status",
         "//sw/device/lib/base:math",
         "//sw/device/lib/crypto/include:datatypes",
@@ -263,10 +263,10 @@ cc_test(
 )
 
 cc_library(
-    name = "mac",
-    srcs = ["mac.c"],
+    name = "hmac",
+    srcs = ["hmac.c"],
     hdrs = [
-        "//sw/device/lib/crypto/include:mac.h",
+        "//sw/device/lib/crypto/include:hmac.h",
     ],
     deps = [
         ":hash",
@@ -275,6 +275,20 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:hmac",
+    ],
+)
+
+cc_library(
+    name = "kmac",
+    srcs = ["kmac.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/include:kmac.h",
+    ],
+    deps = [
+        ":integrity",
+        ":keyblob",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:kmac",
     ],
 )

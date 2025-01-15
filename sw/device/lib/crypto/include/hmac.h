@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_MAC_H_
-#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_MAC_H_
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HMAC_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HMAC_H_
 
 #include "datatypes.h"
 #include "hash.h"
@@ -53,6 +53,7 @@ typedef struct otcrypto_hmac_context {
  * @param[out] tag Output authentication tag.
  * @return The result of the HMAC operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
                                 otcrypto_word32_buf_t tag);
@@ -70,6 +71,7 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * @param hash_mode Hash function to use.
  * @return Result of the HMAC init operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
                                      const otcrypto_blinded_key_t *key);
 
@@ -87,6 +89,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
  * @param input_message Input message to be hashed.
  * @return Result of the HMAC update operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
                                        otcrypto_const_byte_buf_t input_message);
 
@@ -107,6 +110,7 @@ otcrypto_status_t otcrypto_hmac_update(otcrypto_hmac_context_t *const ctx,
  * @param[out] tag Output authentication tag.
  * @return Result of the HMAC final operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                       otcrypto_word32_buf_t tag);
 
@@ -114,4 +118,4 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
 }  // extern "C"
 #endif  // __cplusplus
 
-#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_MAC_H_
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HMAC_H_
