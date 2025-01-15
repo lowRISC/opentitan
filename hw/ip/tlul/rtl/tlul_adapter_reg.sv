@@ -151,9 +151,7 @@ module tlul_adapter_reg
 
   tlul_pkg::tl_d2h_t tl_o_pre;
   assign tl_o_pre = '{
-    // busy is selected based on address
-    // thus if there is no valid transaction, we should ignore busy
-    a_ready:  ~(outstanding_q | tl_i.a_valid & busy_i),
+    a_ready:  ~(outstanding_q | busy_i),
     d_valid:  outstanding_q,
     d_opcode: rspop_q,
     d_param:  '0,
