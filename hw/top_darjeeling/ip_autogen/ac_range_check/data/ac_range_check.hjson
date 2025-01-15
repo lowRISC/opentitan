@@ -22,7 +22,7 @@
     { name:    "NumRanges",
       desc:    "Number of range registers",
       type:    "int",
-      default: "${num_ranges}",
+      default: "16",
     },
     { name:    "DenyCountWidth",
       desc:    "Witdth of the deny counter",

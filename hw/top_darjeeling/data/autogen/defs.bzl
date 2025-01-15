@@ -8,6 +8,7 @@
 # -o hw/top_darjeeling
 
 load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//hw/top_darjeeling/ip_autogen/ac_range_check:defs.bzl", "AC_RANGE_CHECK")
 load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_darjeeling/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
 load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
@@ -47,6 +48,7 @@ DARJEELING = opentitan_top(
     top_lib = "//hw/top_darjeeling/sw/autogen:top_darjeeling",
     top_ld = "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     ips = [
+        AC_RANGE_CHECK,
         AES,
         ALERT_HANDLER,
         AON_TIMER,

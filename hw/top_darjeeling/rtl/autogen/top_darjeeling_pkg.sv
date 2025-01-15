@@ -422,6 +422,16 @@ package top_darjeeling_pkg;
   parameter int unsigned TOP_DARJEELING_DMA_SIZE_BYTES = 32'h200;
 
   /**
+   * Peripheral base address for ac_range_check in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_AC_RANGE_CHECK_BASE_ADDR = 32'h1464000;
+
+  /**
+   * Peripheral size in bytes for ac_range_check in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_AC_RANGE_CHECK_SIZE_BYTES = 32'h200;
+
+  /**
    * Peripheral base address for core device on mbx0 in top darjeeling.
    */
   parameter int unsigned TOP_DARJEELING_MBX0_CORE_BASE_ADDR = 32'h22000000;
@@ -645,18 +655,19 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertPeripheralRomCtrl0 = 28,
     TopDarjeelingAlertPeripheralRomCtrl1 = 29,
     TopDarjeelingAlertPeripheralDma = 30,
-    TopDarjeelingAlertPeripheralMbx0 = 31,
-    TopDarjeelingAlertPeripheralMbx1 = 32,
-    TopDarjeelingAlertPeripheralMbx2 = 33,
-    TopDarjeelingAlertPeripheralMbx3 = 34,
-    TopDarjeelingAlertPeripheralMbx4 = 35,
-    TopDarjeelingAlertPeripheralMbx5 = 36,
-    TopDarjeelingAlertPeripheralMbx6 = 37,
-    TopDarjeelingAlertPeripheralMbxJtag = 38,
-    TopDarjeelingAlertPeripheralMbxPcie0 = 39,
-    TopDarjeelingAlertPeripheralMbxPcie1 = 40,
-    TopDarjeelingAlertPeripheralSocDbgCtrl = 41,
-    TopDarjeelingAlertPeripheralRvCoreIbex = 42,
+    TopDarjeelingAlertPeripheralAcRangeCheck = 31,
+    TopDarjeelingAlertPeripheralMbx0 = 32,
+    TopDarjeelingAlertPeripheralMbx1 = 33,
+    TopDarjeelingAlertPeripheralMbx2 = 34,
+    TopDarjeelingAlertPeripheralMbx3 = 35,
+    TopDarjeelingAlertPeripheralMbx4 = 36,
+    TopDarjeelingAlertPeripheralMbx5 = 37,
+    TopDarjeelingAlertPeripheralMbx6 = 38,
+    TopDarjeelingAlertPeripheralMbxJtag = 39,
+    TopDarjeelingAlertPeripheralMbxPcie0 = 40,
+    TopDarjeelingAlertPeripheralMbxPcie1 = 41,
+    TopDarjeelingAlertPeripheralSocDbgCtrl = 42,
+    TopDarjeelingAlertPeripheralRvCoreIbex = 43,
     TopDarjeelingAlertPeripheralCount
   } alert_peripheral_e;
 
@@ -737,32 +748,34 @@ package top_darjeeling_pkg;
     TopDarjeelingAlertIdRomCtrl0Fatal = 72,
     TopDarjeelingAlertIdRomCtrl1Fatal = 73,
     TopDarjeelingAlertIdDmaFatalFault = 74,
-    TopDarjeelingAlertIdMbx0FatalFault = 75,
-    TopDarjeelingAlertIdMbx0RecovFault = 76,
-    TopDarjeelingAlertIdMbx1FatalFault = 77,
-    TopDarjeelingAlertIdMbx1RecovFault = 78,
-    TopDarjeelingAlertIdMbx2FatalFault = 79,
-    TopDarjeelingAlertIdMbx2RecovFault = 80,
-    TopDarjeelingAlertIdMbx3FatalFault = 81,
-    TopDarjeelingAlertIdMbx3RecovFault = 82,
-    TopDarjeelingAlertIdMbx4FatalFault = 83,
-    TopDarjeelingAlertIdMbx4RecovFault = 84,
-    TopDarjeelingAlertIdMbx5FatalFault = 85,
-    TopDarjeelingAlertIdMbx5RecovFault = 86,
-    TopDarjeelingAlertIdMbx6FatalFault = 87,
-    TopDarjeelingAlertIdMbx6RecovFault = 88,
-    TopDarjeelingAlertIdMbxJtagFatalFault = 89,
-    TopDarjeelingAlertIdMbxJtagRecovFault = 90,
-    TopDarjeelingAlertIdMbxPcie0FatalFault = 91,
-    TopDarjeelingAlertIdMbxPcie0RecovFault = 92,
-    TopDarjeelingAlertIdMbxPcie1FatalFault = 93,
-    TopDarjeelingAlertIdMbxPcie1RecovFault = 94,
-    TopDarjeelingAlertIdSocDbgCtrlFatalFault = 95,
-    TopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 96,
-    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 97,
-    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 98,
-    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 99,
-    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 100,
+    TopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr = 75,
+    TopDarjeelingAlertIdAcRangeCheckFatalFault = 76,
+    TopDarjeelingAlertIdMbx0FatalFault = 77,
+    TopDarjeelingAlertIdMbx0RecovFault = 78,
+    TopDarjeelingAlertIdMbx1FatalFault = 79,
+    TopDarjeelingAlertIdMbx1RecovFault = 80,
+    TopDarjeelingAlertIdMbx2FatalFault = 81,
+    TopDarjeelingAlertIdMbx2RecovFault = 82,
+    TopDarjeelingAlertIdMbx3FatalFault = 83,
+    TopDarjeelingAlertIdMbx3RecovFault = 84,
+    TopDarjeelingAlertIdMbx4FatalFault = 85,
+    TopDarjeelingAlertIdMbx4RecovFault = 86,
+    TopDarjeelingAlertIdMbx5FatalFault = 87,
+    TopDarjeelingAlertIdMbx5RecovFault = 88,
+    TopDarjeelingAlertIdMbx6FatalFault = 89,
+    TopDarjeelingAlertIdMbx6RecovFault = 90,
+    TopDarjeelingAlertIdMbxJtagFatalFault = 91,
+    TopDarjeelingAlertIdMbxJtagRecovFault = 92,
+    TopDarjeelingAlertIdMbxPcie0FatalFault = 93,
+    TopDarjeelingAlertIdMbxPcie0RecovFault = 94,
+    TopDarjeelingAlertIdMbxPcie1FatalFault = 95,
+    TopDarjeelingAlertIdMbxPcie1RecovFault = 96,
+    TopDarjeelingAlertIdSocDbgCtrlFatalFault = 97,
+    TopDarjeelingAlertIdSocDbgCtrlRecovCtrlUpdateErr = 98,
+    TopDarjeelingAlertIdRvCoreIbexFatalSwErr = 99,
+    TopDarjeelingAlertIdRvCoreIbexRecovSwErr = 100,
+    TopDarjeelingAlertIdRvCoreIbexFatalHwErr = 101,
+    TopDarjeelingAlertIdRvCoreIbexRecovHwErr = 102,
     TopDarjeelingAlertIdCount
   } alert_id_e;
 
@@ -980,6 +993,7 @@ package top_darjeeling_pkg;
 
   // List of peripheral instantiated in this chip.
   typedef enum {
+    PeripheralAcRangeCheck,
     PeripheralAes,
     PeripheralAlertHandler,
     PeripheralAonTimerAon,

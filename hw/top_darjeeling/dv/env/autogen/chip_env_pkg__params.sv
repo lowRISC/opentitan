@@ -80,6 +80,8 @@ parameter string LIST_OF_ALERTS[] = {
   "rom_ctrl0_fatal",
   "rom_ctrl1_fatal",
   "dma_fatal_fault",
+  "ac_range_check_recov_ctrl_update_err",
+  "ac_range_check_fatal_fault",
   "mbx0_fatal_fault",
   "mbx0_recov_fault",
   "mbx1_fatal_fault",
@@ -108,4 +110,4 @@ parameter string LIST_OF_ALERTS[] = {
   "rv_core_ibex_recov_hw_err"
 };
 
-parameter uint NUM_ALERTS = 101;
+parameter uint NUM_ALERTS = 103;

@@ -786,6 +786,23 @@
  */
 #define TOP_DARJEELING_DMA_SIZE_BYTES 0x200
 /**
+ * Peripheral base address for ac_range_check in top darjeeling.
+ *
+ * This should be used with #mmio_region_from_addr to access the memory-mapped
+ * registers associated with the peripheral (usually via a DIF).
+ */
+#define TOP_DARJEELING_AC_RANGE_CHECK_BASE_ADDR 0x1464000
+
+/**
+ * Peripheral size for ac_range_check in top darjeeling.
+ *
+ * This is the size (in bytes) of the peripheral's reserved memory area. All
+ * memory-mapped registers associated with this peripheral should have an
+ * address between #TOP_DARJEELING_AC_RANGE_CHECK_BASE_ADDR and
+ * `TOP_DARJEELING_AC_RANGE_CHECK_BASE_ADDR + TOP_DARJEELING_AC_RANGE_CHECK_SIZE_BYTES`.
+ */
+#define TOP_DARJEELING_AC_RANGE_CHECK_SIZE_BYTES 0x200
+/**
  * Peripheral base address for core device on mbx0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
