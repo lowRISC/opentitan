@@ -188,7 +188,7 @@ impl Subst for Template {
         let mut variables = self.variables.clone();
         let mut new_data = SubstData::new();
         for (var_name, val) in data.values.iter() {
-            let Some(var_type) = variables.remove(var_name) else {
+            let Some(var_type) = variables.shift_remove(var_name) else {
                 // Variable does not appear in the template: ignore it.
                 continue;
             };

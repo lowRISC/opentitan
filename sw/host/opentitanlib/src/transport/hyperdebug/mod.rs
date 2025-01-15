@@ -466,9 +466,12 @@ impl Inner {
             .console_tty
             .to_str()
             .ok_or(TransportError::UnicodePathError)?;
-        let port =
-            TTYPort::open(&serialport::new(port_name, 115_200).timeout(Self::COMMAND_TIMEOUT))
-                .context("Failed to open HyperDebug console")?;
+        let port = TTYPort::open(
+            &serialport::new(port_name, 115_200)
+                .preserve_dtr_on_open()
+                .timeout(Self::COMMAND_TIMEOUT),
+        )
+        .context("Failed to open HyperDebug console")?;
         flock_serial(&port, port_name)?;
         let conn = Rc::new(Conn {
             console_port: RefCell::new(port),

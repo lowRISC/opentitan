@@ -1,4 +1,4 @@
 [advisories]
 ignore = [
-    "RUSTSEC-2020-0168", # `mach`, dependency of `serialport`, only affects MacOS
+    "RUSTSEC-2023-0071", # `rsa`, decryption is vulnerable to timing attack. We only sign/verify.
 ]

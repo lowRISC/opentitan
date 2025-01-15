@@ -108,7 +108,6 @@ rust_binary(
         "@crate_index//:cryptoki",
         "@crate_index//:env_logger",
         "@crate_index//:log",
-        "@crate_index//:secrecy",
     ],
 )
 
