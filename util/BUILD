@@ -54,6 +54,20 @@ py_binary(
     ],
 )
 
+py_binary(
+    name = "autogen_dif",
+    srcs = ["autogen_dif.py"],
+    data = [
+        "//util/make_new_dif:tpl_files",
+    ],
+    deps = [
+        ":repo_top",
+        "//util/make_new_dif:ip",
+        requirement("hjson"),
+        requirement("mako"),
+    ],
+)
+
 py_test(
     name = "generate_compilation_db_test",
     srcs = [
@@ -84,6 +98,11 @@ py_binary(
 py_library(
     name = "version_file",
     srcs = ["version_file.py"],
+)
+
+py_library(
+    name = "repo_top",
+    srcs = ["repo_top.py"],
 )
 
 cc_library(

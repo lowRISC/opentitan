@@ -368,6 +368,22 @@ def search_ips(ip_path):  # return list of config files
     return ips
 
 
+def get_ip_hjson_path(ip_name_snake: str, topcfg: Dict[str, object], repotop: Path) -> Path:
+    """
+    Return the location of an IP's hjson file for a given top.
+    """
+    m = find_module(topcfg["module"], ip_name_snake)
+    if is_ipgen(m):
+        data_dir = repotop / "hw/top_{}/ip_autogen/{}/data".format(
+            topcfg["name"], ip_name_snake)
+    elif is_top_reggen(m):
+        data_dir = repotop / "hw/top_{}/ip/{}/data/".format(
+            topcfg["name"], ip_name_snake)
+    else:
+        data_dir = repotop / "hw/ip/{}/data".format(ip_name_snake)
+    return data_dir / "{}.hjson".format(ip_name_snake)
+
+
 def is_xbarcfg(xbar_obj):
     if "type" in xbar_obj and xbar_obj["type"] == "xbar":
         return True
