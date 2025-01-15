@@ -10,15 +10,14 @@
  * This linker script generates a binary to run rom.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+INCLUDE @@TOP_MEMORY_LD@@
+INCLUDE @@OTTF_LD_ALIAS@@
 
 /**
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the Silicon Creator boot stage in slot B.
  */
-_ottf_size = LENGTH(eflash) / 2;
-_ottf_start_address = ORIGIN(eflash) + _ottf_size;
+_ottf_size = LENGTH(ottf_flash) / 2;
+_ottf_start_address = ORIGIN(ottf_flash) + _ottf_size;
 
-REGION_ALIAS("ottf_flash", eflash);
-
-INCLUDE sw/device/lib/testing/test_framework/ottf_common.ld
+INCLUDE @@OTTF_LD_COMMON@@

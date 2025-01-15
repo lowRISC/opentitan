@@ -53,9 +53,9 @@ _manifest_entry_point = _ottf_start - _ottf_start_address;
  * the flash region.  Otherwise, the value kHardenedBoolTrue (0x739) is
  * selected.
  */
-_manifest_address_translation = (_text_start >= ORIGIN(eflash) &&
-                                 _text_start < (ORIGIN(eflash)
-                                              + LENGTH(eflash))) ? 0x1d4 : 0x739;
+_manifest_address_translation = (_text_start >= ORIGIN(@@OTTF_REGION_ALIAS@@) &&
+                                 _text_start < (ORIGIN(@@OTTF_REGION_ALIAS@@)
+                                              + LENGTH(@@OTTF_REGION_ALIAS@@))) ? 0x1d4 : 0x739;
 
 PHDRS {
   static_critical_segment PT_LOAD;
