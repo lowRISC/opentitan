@@ -87,12 +87,15 @@ void owner_config_default(owner_config_t *config);
  * Parse an owner block, extracting pointers to keys and configuration items.
  *
  * @param block The owner block to parse.
+ * @param check_only Check the owner_block for validity, but do not parse into
+ *                   config and keyring structs.
  * @param config A pointer to a config struct holding pointers to config items.
  * @param keyring A pointer to a keyring struct holding application key
  * pointers.
  * @return error code.
  */
 rom_error_t owner_block_parse(const owner_block_t *block,
+                              hardened_bool_t check_only,
                               owner_config_t *config,
                               owner_application_keyring_t *keyring);
 
@@ -112,9 +115,6 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
  *
  * @param flash A pointer to a flash configuration struct.
  * @param config_side Which side of the flash to configure.
- * @param creator_lockdown Apply any special lockdown configuration to
- *                         silicon_creator regions on the specified side of the
- *                         flash.  May use kHardenedBoolFalse to skip lockdown.
  * @param owner_lockdown Apply any special lockdown configuration to
  *                       silicon_owner regions on the specified side of the
  *                       flash.  May use kHardenedBoolFalse to skip lockdown.
@@ -122,7 +122,6 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
  */
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
                                     uint32_t config_side,
-                                    uint32_t creator_lockdown,
                                     uint32_t owner_lockdown);
 
 /**
