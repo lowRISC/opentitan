@@ -57,6 +57,19 @@
 #include "hw/top/sram_ctrl_regs.h"                    // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 
+// Useful constants for flash sizes and ROM_EXT locations.
+enum {
+  kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
+  kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+  kFlashTotalSize = 2 * kFlashBankSize,
+
+  kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
+  kRomExtAStart = 0 / kFlashPageSize,
+  kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
+  kRomExtBStart = kFlashBankSize + kRomExtAStart,
+  kRomExtBEnd = kRomExtBStart + kRomExtSizeInPages,
+};
+
 // Declaration for the ROM_EXT manifest start address, populated by the linker
 extern char _rom_ext_start_address[];
 // Declaration for the chip_info structure stored in ROM.
@@ -491,7 +504,7 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
 
   // Lock the flash according to the ownership configuration.
   HARDENED_RETURN_IF_ERROR(
-      ownership_flash_lockdown(boot_data, boot_log->bl0_slot, &owner_config));
+      ownership_flash_lockdown(boot_data, boot_log, &owner_config));
 
   dbg_print_epmp();
 
@@ -698,6 +711,26 @@ static rom_error_t rom_ext_try_next_stage(boot_data_t *boot_data,
   return error;
 }
 
+static void rom_ext_flash_protect_self(uint32_t rom_ext_slot) {
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  flash_ctrl_perms_t read = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  };
+  flash_ctrl_perms_t write = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4True,
+      .erase = kMultiBitBool4True,
+  };
+  flash_ctrl_data_region_protect(0, kRomExtAStart, kRomExtSizeInPages,
+                                 rom_ext_slot == kBootSlotA ? read : write, cfg,
+                                 kHardenedBoolTrue);
+  flash_ctrl_data_region_protect(1, kRomExtBStart, kRomExtSizeInPages,
+                                 rom_ext_slot == kBootSlotB ? read : write, cfg,
+                                 kHardenedBoolTrue);
+}
+
 static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   HARDENED_RETURN_IF_ERROR(rom_ext_init(boot_data));
   const manifest_t *self = rom_ext_manifest();
@@ -733,6 +766,9 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   // it here so the "SetNextBl0" can do a one-time override of the RAM copy
   // of `boot_data`.
   boot_log->primary_bl0_slot = boot_data->primary_bl0_slot;
+
+  // Protect the flash pages where the ROM_EXT is located.
+  rom_ext_flash_protect_self(boot_log->rom_ext_slot);
 
   // Initialize the chip ownership state.
   rom_error_t error;

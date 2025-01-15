@@ -38,6 +38,10 @@ enum {
   // The start page used by this test. Points to the start of the owner
   // partition in bank 1, otherwise known as owner partition B.
   kBank1StartPageNum = 256 + kRomExtPageCount,
+
+  // The ROM_EXT protects itself using regions 0-1.
+  kFlashRegionNum = 2,
+
 };
 
 // The `flash_word_verify()` function will need to be updated if this assertion
@@ -114,7 +118,7 @@ bool test_main(void) {
   }
 
   LOG_INFO("ECC enabled with high endurance disabled.");
-  flash_ctrl_write_clear_test(/*mp_region_index=*/0,
+  flash_ctrl_write_clear_test(/*mp_region_index=*/kFlashRegionNum,
                               (dif_flash_ctrl_data_region_properties_t){
                                   .base = kBank1StartPageNum,
                                   .size = 1,
@@ -128,7 +132,7 @@ bool test_main(void) {
                                   }});
 
   LOG_INFO("ECC enabled with high endurance enabled.");
-  flash_ctrl_write_clear_test(/*mp_region_index=*/1,
+  flash_ctrl_write_clear_test(/*mp_region_index=*/kFlashRegionNum,
                               (dif_flash_ctrl_data_region_properties_t){
                                   .base = kBank1StartPageNum + 1,
                                   .size = 1,

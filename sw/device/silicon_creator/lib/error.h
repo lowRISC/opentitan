@@ -214,7 +214,7 @@ enum module_ {
   X(kErrorOwnershipInvalidTag,        ERROR_(5, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipInvalidTagLength,  ERROR_(6, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipDuplicateItem,     ERROR_(7, kModuleOwnership, kAlreadyExists)), \
-  X(kErrorOwnershipFlashConfigLenth,  ERROR_(8, kModuleOwnership, kOutOfRange)), \
+  X(kErrorOwnershipFlashConfigLength, ERROR_(8, kModuleOwnership, kOutOfRange)), \
   X(kErrorOwnershipInvalidInfoPage,   ERROR_(9, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipBadInfoPage,       ERROR_(10, kModuleOwnership, kInternal)), \
   X(kErrorOwnershipNoOwner,           ERROR_(11, kModuleOwnership, kInternal)), \
@@ -222,7 +222,8 @@ enum module_ {
   X(kErrorOwnershipInvalidDin,        ERROR_(13, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipUnlockDenied,      ERROR_(14, kModuleOwnership, kPermissionDenied)), \
   X(kErrorOwnershipFlashConfigRomExt, ERROR_(15, kModuleOwnership, kInvalidArgument)), \
-  X(kErrorOwnershipInvalidAlgorithm,  ERROR_(16, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipFlashConfigBounds, ERROR_(16, kModuleOwnership, kInvalidArgument)), \
+  X(kErrorOwnershipInvalidAlgorithm,  ERROR_(17, kModuleOwnership, kInvalidArgument)), \
   /* Group all of the tag version error codes together */ \
   X(kErrorOwnershipOWNRVersion,       ERROR_(0x70, kModuleOwnership, kInvalidArgument)), \
   X(kErrorOwnershipAPPKVersion,       ERROR_(0x71, kModuleOwnership, kInvalidArgument)), \

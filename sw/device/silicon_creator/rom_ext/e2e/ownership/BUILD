@@ -58,6 +58,8 @@ opentitan_binary(
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
 
@@ -400,16 +402,43 @@ ownership_transfer_test(
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_flash_permission_test
 # Note: rescue-after-activate tests that rescue correctly accesses regions with
 # different scrambling/ECC properties than the default flash configuration.
+_FLASH_PERMISSION_TESTS = {
+    "aa": {
+        "rom_ext_slot": "SlotA",
+        "owner_slot": "SlotA",
+        "rom_ext_offset": "0",
+    },
+    "ab": {
+        "rom_ext_slot": "SlotA",
+        "owner_slot": "SlotB",
+        "rom_ext_offset": "0",
+    },
+    "ba": {
+        "rom_ext_slot": "SlotB",
+        "owner_slot": "SlotA",
+        "rom_ext_offset": "0x80000",
+    },
+    "bb": {
+        "rom_ext_slot": "SlotB",
+        "owner_slot": "SlotB",
+        "rom_ext_offset": "0x80000",
+    },
+}
+
 [
     ownership_transfer_test(
-        name = "flash_permission_test_slot_{}".format(slot),
+        name = "flash_permission_test_slot_{}".format(name),
         srcs = ["flash_regions.c"],
         fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_offset} {firmware}@0x10000",
             binaries = {
                 ":flash_regions": "flash_regions",
             },
             changes_otp = True,
-            slot = "Slot{}".format(slot.upper()),
+            owner_slot = param["owner_slot"],
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_virtual",
+            rom_ext_offset = param["rom_ext_offset"],
+            rom_ext_slot = param["rom_ext_slot"],
             test_cmd = """
                 --clear-bitstream
                 --bootstrap={firmware}
@@ -421,7 +450,8 @@ ownership_transfer_test(
                 --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_ecdsa_pub)
                 --config-kind=with-flash-locked
                 --rescue-after-activate={flash_regions}
-                --rescue-slot={slot}
+                --rescue-slot={owner_slot}
+                --expected-rom-ext-slot={rom_ext_slot}
             """,
             test_harness = "//sw/host/tests/ownership:flash_permission_test",
         ),
@@ -431,9 +461,11 @@ ownership_transfer_test(
             "//sw/device/lib/base:status",
             "//sw/device/lib/dif:flash_ctrl",
             "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
         ],
     )
-    for slot in ("a", "b")
+    for name, param in _FLASH_PERMISSION_TESTS.items()
 ]
 
 # Tests that a owner config with an improper flash configuration cannot be activated.

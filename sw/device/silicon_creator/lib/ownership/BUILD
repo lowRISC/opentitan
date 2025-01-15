@@ -110,6 +110,7 @@ cc_library(
         ":ownership_key",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_log",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
