@@ -398,6 +398,12 @@ alias(
 )
 
 alias(
+    name = "reqwest",
+    actual = "@crate_index__reqwest-0.12.12//:reqwest",
+    tags = ["manual"],
+)
+
+alias(
     name = "ring",
     actual = "@crate_index__ring-0.16.20//:ring",
     tags = ["manual"],

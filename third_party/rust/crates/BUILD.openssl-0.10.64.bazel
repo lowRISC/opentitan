@@ -87,7 +87,7 @@ rust_library(
         "@crate_index__bitflags-2.4.0//:bitflags",
         "@crate_index__cfg-if-1.0.0//:cfg_if",
         "@crate_index__foreign-types-0.3.2//:foreign_types",
-        "@crate_index__libc-0.2.149//:libc",
+        "@crate_index__libc-0.2.169//:libc",
         "@crate_index__once_cell-1.18.0//:once_cell",
         "@crate_index__openssl-0.10.64//:build_script_build",
         "@crate_index__openssl-sys-0.9.102//:openssl_sys",
