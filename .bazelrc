@@ -139,6 +139,9 @@ build:ubsan --linkopt -fsanitize=undefined
 # Enable the rust nightly toolchain
 build --@rules_rust//rust/toolchain/channel=nightly
 
+#Add Centos bin link
+build --@rules_rust//:extra_rustc_toolchain_dirs=/tools/foss/llvm/13.0.1/x86_64/centos.7/bin
+
 # Configure the rust 'clippy' linter.
 build --aspects=@rules_rust//rust:defs.bzl%rust_clippy_aspect
 build --output_groups=+clippy_checks
