@@ -531,7 +531,6 @@ module hmac
   assign reg_fifo_wentry.data = conv_endian32(reg_fifo_wdata, 1'b1); // always convert
   assign reg_fifo_wentry.mask = {reg_fifo_wmask[0],  reg_fifo_wmask[8],
                                  reg_fifo_wmask[16], reg_fifo_wmask[24]};
-  assign fifo_full   = ~fifo_wready;
   assign fifo_empty  = ~fifo_rvalid;
   assign fifo_wvalid = (hmac_fifo_wsel && fifo_wready) ? hmac_fifo_wvalid : reg_fifo_wvalid;
 
@@ -570,7 +569,7 @@ module hmac
     .wdata_i (fifo_wdata),
 
     .depth_o (fifo_depth),
-    .full_o  (),
+    .full_o  (fifo_full),
 
     .rvalid_o(fifo_rvalid),
     .rready_i(fifo_rready),
