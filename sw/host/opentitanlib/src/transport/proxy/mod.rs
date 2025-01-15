@@ -136,7 +136,7 @@ impl Inner {
         let conn: &mut std::net::TcpStream = &mut self.conn.borrow_mut();
         let mut writer = BufWriter::new(conn);
         serde_json::to_writer(&mut writer, &Message::Req(req))?;
-        writer.write_all(&[b'\n'])?;
+        writer.write_all(b"\n")?;
         writer.flush()?;
         Ok(())
     }
