@@ -16,8 +16,15 @@ class mem_bkdr_util extends uvm_object;
   // Hierarchical path to the memory.
   protected string path;
 
+  // If set to a value different to "", a path to the tile memory, based on path and tiling_path,
+  // is used to perform the backdoor access
+  protected string tiling_path;
+
   // The depth of the memory.
   protected uint32_t depth;
+
+  // The depth of a single SRAM tile.
+  protected uint32_t tile_depth;
 
   // The width of the memory.
   protected uint32_t width;
@@ -60,26 +67,60 @@ class mem_bkdr_util extends uvm_object;
   // Number of PRINCE half rounds for scrambling, can be [1..5].
   protected int num_prince_rounds_half;
 
-  // Initialize the class instance.
-  // `extra_bits_per_subword` is the width any additional metadata that is not captured in secded
-  // package.
+  // Construct an instance called name.
+  //
+  // Required arguments:
+  //
+  //   path:                 A hierarchical HDL path to the memory.
+  //
+  //   depth:                The number memory rows.
+  //
+  //   n_bits:               The total size of the memory in bits.
+  //
+  //   err_detection_scheme  The error detection scheme that is implemented for the memory.
+  //
+  // Optional arguments:
+  //
+  //  num_prince_rounds_half   The number of rounds of PRINCE used to scramble the memory. This is
+  //                           used for scrambled memories. This defaults to 3.
+  //
+  //  extra_bits_per_subword   When ECC is enabled, the words of the memory are divided into
+  //                           separate subwords that are used for ECC checks. This gives the number
+  //                           of extra bits added to each subword (to contain additional SECDED
+  //                           metadata). This defaults to zero.
+  //
+  //  system_base_addr         The memory words accessed through this backdoor would normally be
+  //                           indexed from zero. If this value is non-zero, the backdoor starts at
+  //                           some higher index.
+  //
+  //  tiling_path              A path used for constructing HDL paths to individual tiles (used
+  //                           when tile_depth < depth). By default this is empty because there are
+  //                           no tiles that would need paths at all.
+  //
+  //  tile_depth               The number of rows of a single tle. By default, this is the entire
+  //                           memory.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
                int num_prince_rounds_half = 3,
-               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
-
-
-    bit res;
+               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0,
+               string tiling_path = "", int unsigned tile_depth = depth);
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
-    res = uvm_hdl_check_path(path);
-    `DV_CHECK_EQ_FATAL(res, 1, $sformatf("Hierarchical path %0s appears to be invalid.", path))
 
-    this.path  = path;
-    this.depth = depth;
-    this.width = n_bits / depth;
-    this.err_detection_scheme = err_detection_scheme;
+    this.path                  = path;
+    this.tiling_path           = tiling_path;
+    this.depth                 = depth;
+    this.tile_depth            = tile_depth;
+    this.width                 = n_bits / depth;
+    this.err_detection_scheme  = err_detection_scheme;
     this.num_prince_rounds_half = num_prince_rounds_half;
+
+    // Check if the inferred path to each tile (or the whole memory) really exist
+    for (int i = 0; i < (depth + tile_depth - 1) / tile_depth; i++) begin
+      string full_path = get_full_path(i);
+      `DV_CHECK_FATAL(uvm_hdl_check_path(get_full_path(i)) == 1,
+                      $sformatf("Hierarchical path %0s appears to be invalid.", full_path))
+    end
 
     if (`HAS_ECC) begin
       import prim_secded_pkg::prim_secded_e;
@@ -147,8 +188,26 @@ class mem_bkdr_util extends uvm_object;
     return path;
   endfunction
 
+  function string get_full_path(int unsigned tile);
+    string base = get_path();
+    string tile_suffix = "";
+
+    `DV_CHECK_FATAL(tile > 0 -> tiling_path.size() > 0,
+                    $sformatf("Positive tile index (%0d) with empty tiling path.", tile))
+
+    if (tiling_path != "") begin
+      tile_suffix = $sformatf(".gen_ram_inst[%0d].%s", tile, tiling_path);
+    end
+
+    return {base, tile_suffix};
+  endfunction
+
   function uint32_t get_depth();
     return depth;
+  endfunction
+
+  function uint32_t get_tile_depth();
+    return tile_depth;
   endfunction
 
   function uint32_t get_width();
@@ -220,11 +279,12 @@ class mem_bkdr_util extends uvm_object;
   // encryption is enabled.
   virtual function uvm_hdl_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
     bit res;
-    uint32_t index;
+    uint32_t index, ram_tile;
     uvm_hdl_data_t data;
     if (!check_addr_valid(addr)) return 'x;
-    index = addr >> addr_lsb;
-    res   = uvm_hdl_read($sformatf("%0s[%0d]", path, index), data);
+    index    = addr >> addr_lsb;
+    ram_tile = index / tile_depth;
+    res      = uvm_hdl_read($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_read failed at index %0d", index))
     return data;
   endfunction
@@ -334,10 +394,11 @@ class mem_bkdr_util extends uvm_object;
   // Updates the entire width of the memory at the given address, including the ECC bits.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
     bit res;
-    uint32_t index;
+    uint32_t index, ram_tile;
     if (!check_addr_valid(addr)) return;
-    index = addr >> addr_lsb;
-    res = uvm_hdl_deposit($sformatf("%0s[%0d]", path, index), data);
+    index    = addr >> addr_lsb;
+    ram_tile = index / tile_depth;
+    res      = uvm_hdl_deposit($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_deposit failed at index %0d", index))
   endfunction
 
