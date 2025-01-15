@@ -55,6 +55,12 @@ struct Opts {
     rescue_after_activate: Option<PathBuf>,
     #[arg(long, default_value = "SlotA", help = "Which slot to rescue into")]
     rescue_slot: BootSlot,
+    #[arg(
+        long,
+        default_value = "SlotA",
+        help = "Which slot the ROM_EXT is expected to execute from"
+    )]
+    expected_rom_ext_slot: BootSlot,
 
     #[arg(long, default_value_t = true, action = clap::ArgAction::Set, help = "Check the firmware boot in dual-owner mode")]
     dual_owner_boot_check: bool,
@@ -248,18 +254,19 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         return RomError(u32::from_str_radix(&capture[3], 16)?).into();
     }
     let region = FlashRegion::find_all(&capture[1])?;
-    // The rescue_slot shoudl be the active side and has protect_when_active = true.
-    let (romext_region, app_region) = match opts.rescue_slot {
-        BootSlot::SlotA => (
-            ["RD-xx-xx-xx-xx-xx", "RD-WR-ER-xx-xx-xx"],
-            ["RD-xx-xx-SC-EC-xx", "RD-WR-ER-SC-EC-xx"],
-        ),
-        BootSlot::SlotB => (
-            ["RD-WR-ER-xx-xx-xx", "RD-xx-xx-xx-xx-xx"],
-            ["RD-WR-ER-SC-EC-xx", "RD-xx-xx-SC-EC-xx"],
-        ),
+    // The expected_rom_ext_slot is where we expect the ROM_EXT to execute.
+    let romext_region = match opts.expected_rom_ext_slot {
+        BootSlot::SlotA => ["RD-xx-xx-xx-xx-xx", "RD-WR-ER-xx-xx-xx"],
+        BootSlot::SlotB => ["RD-WR-ER-xx-xx-xx", "RD-xx-xx-xx-xx-xx"],
         _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
     };
+    // The rescue_slot should be the active side and has protect_when_active = true.
+    let app_region = match opts.rescue_slot {
+        BootSlot::SlotA => ["RD-xx-xx-SC-EC-xx", "RD-WR-ER-SC-EC-xx"],
+        BootSlot::SlotB => ["RD-WR-ER-SC-EC-xx", "RD-xx-xx-SC-EC-xx"],
+        _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
+    };
+
     //
     // Since we are in a locked ownership state, we expect the region configuration
     // to reflect both the `protect_when_active` and `lock` properties of the

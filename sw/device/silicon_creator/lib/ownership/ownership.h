@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
@@ -25,8 +26,7 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
  * @param config The current owner configuration.
  * @return error state.
  */
-rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
-                                     uint32_t active_slot,
+rom_error_t ownership_flash_lockdown(boot_data_t *bootdata, boot_log_t *bootlog,
                                      const owner_config_t *config);
 
 /**
