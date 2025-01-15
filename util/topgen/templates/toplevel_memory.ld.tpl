@@ -57,7 +57,9 @@ MEMORY {
 % for m in top["module"]:
   % if "memory" in m:
     % for key, mem in m["memory"].items():
+      % if helper.addr_space in m["base_addrs"][key]:
   ${mem["label"]}(${flags(mem)}) : ORIGIN = ${m["base_addrs"][key][helper.addr_space]}, LENGTH = ${mem["size"]}
+      % endif
     % endfor
   % endif
 % endfor

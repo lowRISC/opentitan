@@ -12,7 +12,7 @@ from .lib import CArrayMapping, CEnum, TopGen
 
 
 class TopGenC(TopGen):
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock]):
-        super().__init__(top_info, name_to_block, CEnum, CArrayMapping)
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], addr_space: str):
+        super().__init__(top_info, name_to_block, addr_space, CEnum, CArrayMapping)
         # The .c file needs the .h file's relative path, store it here
         self.header_path = None

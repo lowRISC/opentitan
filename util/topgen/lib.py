@@ -86,7 +86,7 @@ class CArrayMapping(object):
             "% for in_name, out_name in mapping.mapping.items():\n"
             "  [${in_name.as_c_enum()}] = ${out_name.as_c_enum()},\n"
             "% endfor\n"
-            "};\n")
+            "};")
         return Template(template).render(mapping=self)
 
 
@@ -855,8 +855,18 @@ def get_device_ranges(devices, device_name):
     return ranges
 
 
+def get_addr_space_suffix(addr_space):
+    default_addr_space = addr_space.get('default', False)
+
+    addr_space_suffix = ""
+    if not default_addr_space:
+        addr_space_suffix = "_" + addr_space['name']
+    return addr_space_suffix
+
+
 class TopGen:
-    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], enum_type, array_mapping_type):
+    def __init__(self, top_info, name_to_block: Dict[str, IpBlock], addr_space: str,
+                 enum_type, array_mapping_type):
         self.top = top_info
         self._top_name = Name(["top"]) + Name.from_snake_case(top_info["name"])
         self._name_to_block = name_to_block
@@ -868,8 +878,15 @@ class TopGen:
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
 
-        # TODO: Don't hardcode the address space used for software.
-        self.addr_space = "hart"
+        self.addr_space = addr_space
+
+        # Determine default address space from the top config
+        self.default_addr_space = None
+        for addr_space in top_info['addr_spaces']:
+            default = addr_space.get('default', False)
+            if default:
+                self.default_addr_space = addr_space['name']
+        assert self.default_addr_space is not None, "Missing default addr_space"
 
         self._init_plic_targets()
         self._init_plic_mapping()
@@ -893,8 +910,30 @@ class TopGen:
             self._init_clkmgr_clocks()
         self._init_subranges()
 
+    def all_device_regions(self) -> Dict[str, MemoryRegion]:
+        '''Return a list of MemoryRegion objects for all devices on the bus.
+        '''
+        device_regions = defaultdict(dict)
+        for inst in self.top['module']:
+            block = self._name_to_block[inst['type']]
+            for if_name, rb in block.reg_blocks.items():
+                full_if = (inst['name'], if_name)
+                full_if_name = Name.from_snake_case(full_if[0])
+                if if_name is not None:
+                    full_if_name += Name.from_snake_case(if_name)
+
+                name = full_if_name
+                base, size = get_base_and_size(self._name_to_block,
+                                               inst, if_name)
+
+                base_address_int = list(base.values())[0]
+                region = MemoryRegion(self._top_name, name, base_address_int, size)
+                device_regions[inst['name']].update({if_name: region})
+
+        return device_regions
+
     def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
-        '''Return a list of MemoryRegion objects for devices on the bus
+        '''Return a list of MemoryRegion objects for devices on the bus.
 
         The list returned is pairs (full_if, region) where full_if is itself a
         pair (inst_name, if_name). inst_name is the name of some IP block

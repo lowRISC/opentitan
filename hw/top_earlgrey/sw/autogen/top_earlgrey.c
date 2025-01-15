@@ -84,7 +84,6 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdRvCoreIbexRecovHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
 };
 
-
 /**
  * PLIC Interrupt Source to Peripheral Map
  *
