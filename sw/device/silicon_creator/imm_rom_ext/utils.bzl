@@ -5,6 +5,7 @@
 load("@rules_cc//cc:action_names.bzl", "OBJ_COPY_ACTION_NAME")
 load("@rules_cc//cc:find_cc_toolchain.bzl", "find_cc_toolchain")
 load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
+load("@lowrisc_opentitan//rules/opentitan:exec_env.bzl", "ExecEnvInfo")
 
 def _bin_to_imm_rom_ext_object_impl(ctx):
     cc_toolchain = find_cc_toolchain(ctx)
@@ -20,9 +21,8 @@ def _bin_to_imm_rom_ext_object_impl(ctx):
     )
 
     outputs = []
-    for src in ctx.files.srcs:
-        if src.extension != "bin":
-            continue
+    exec_env_name = ctx.attr.exec_env[ExecEnvInfo].exec_env
+    for src in ctx.attr.src.output_groups[exec_env_name + "_binary"].to_list():
         object = ctx.actions.declare_file(
             "{}.{}".format(
                 src.basename.replace("." + src.extension, ""),
@@ -45,23 +45,40 @@ def _bin_to_imm_rom_ext_object_impl(ctx):
             executable = objcopy,
         )
         outputs.append(object)
-    return [DefaultInfo(files = depset(outputs), runfiles = ctx.runfiles(files = outputs))]
+    if len(outputs) != 1:
+        fail("Generated zero or more than one binary: {}".format(outputs))
+    return [
+        DefaultInfo(
+            files = depset(outputs),
+            runfiles = ctx.runfiles(files = outputs),
+        ),
+    ]
 
 bin_to_imm_rom_ext_object = rv_rule(
     implementation = _bin_to_imm_rom_ext_object_impl,
     attrs = {
-        "srcs": attr.label_list(allow_files = True),
+        "src": attr.label(allow_files = True),
+        "exec_env": attr.label(
+            providers = [ExecEnvInfo],
+            doc = "The execution environment for this target.",
+        ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type"],
 )
 
-def imm_rom_ext_section(name, srcs):
-    object_target_name = name + "_object"
-    bin_to_imm_rom_ext_object(name = object_target_name, srcs = srcs)
+def create_imm_rom_ext_targets(src, exec_env, base_name):
+    exec_env_name = Label(exec_env).name
+    object_target_name = "{}_{}_object".format(base_name, exec_env_name)
+    cc_import_name = "{}_{}".format(base_name, exec_env_name)
+    bin_to_imm_rom_ext_object(
+        name = object_target_name,
+        src = src,
+        exec_env = exec_env,
+    )
     native.cc_import(
-        name = name,
+        name = cc_import_name,
         objects = [object_target_name],
         data = [object_target_name],
         alwayslink = 1,

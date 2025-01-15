@@ -2,8 +2,41 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+DEFAULT_EXEC_ENV = [
+    "//hw/top_earlgrey:fpga_cw310",
+    "//hw/top_earlgrey:fpga_cw340",
+    "//hw/top_earlgrey:sim_dv_base",
+    "//hw/top_earlgrey:sim_verilator_base",
+    "//hw/top_earlgrey:silicon_creator_without_manifest",
+]
+
 # The target list should contian prebuilt artifacts and run-time build targets.
-IMM_ROM_EXT_TARGETS = {
-    "nop": "//sw/device/silicon_creator/imm_rom_ext/prebuilts:nop_imm_rom_ext",
-    "hello_world": "//sw/device/silicon_creator/imm_rom_ext:hello_world_section",
+SLOT_A_IMM_ROM_EXT_SECTIONS = {
+    "main": [
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_a_silicon_creator_without_manifest",
+    ],
+}
+
+SLOT_B_IMM_ROM_EXT_SECTIONS = {
+    "main": [
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_b_silicon_creator_without_manifest",
+    ],
+}
+
+SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS = {
+    "main": [
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_fpga_cw310",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_fpga_cw340",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_sim_dv_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_sim_verilator_base",
+        "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_silicon_creator_without_manifest",
+    ],
 }
