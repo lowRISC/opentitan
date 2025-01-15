@@ -293,7 +293,7 @@ jobs:
 
   verilator_earlgrey:
     name: Verilated Earl Grey
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     needs: quick_lint
     timeout-minutes: 240
     steps:
