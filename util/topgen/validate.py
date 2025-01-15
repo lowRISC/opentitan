@@ -8,6 +8,7 @@ from enum import Enum
 from typing import Dict, List
 
 from reggen.validate import check_keys
+from reggen.lib import check_int
 from reggen.ip_block import IpBlock
 
 # For the reference
@@ -184,6 +185,10 @@ eflash_required = {
     'banks': ['d', 'number of flash banks'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
     'program_resolution': ['d', 'maximum number of flash words allowed to program'],
+    'words_per_page': ['d', 'The number of words per page'],
+    'data_width': ['d', 'The number of bits per word'],
+    'metadata_width': ['d', 'The extra bits needed for ecc and integrity checks'],
+    'infos_per_bank': ['l', 'The number of pages for each info type']
 }
 
 eflash_optional = {}
@@ -301,14 +306,17 @@ class Flash:
 
     def __init__(self, mem, base_addrs):
         self.base_addrs = {asid: int(base, 16) for (asid, base) in base_addrs.items()}
-        self.banks = mem.get('banks', 2)
-        self.pages_per_bank = mem.get('pages_per_bank', 8)
-        self.program_resolution = mem.get('program_resolution', 128)
-        self.words_per_page = 256
-        self.data_width = 64
-        self.metadata_width = 12
-        self.info_types = 3
-        self.infos_per_bank = [10, 1, 2]
+        self.banks = mem['banks']
+        self.pages_per_bank = mem['pages_per_bank']
+        self.program_resolution = mem['program_resolution']
+        self.words_per_page = mem['words_per_page']
+        self.data_width = mem['data_width']
+        self.metadata_width = mem['metadata_width']
+        self.infos_per_bank = [
+            check_int(x, "number of info pages")
+            for x in mem['infos_per_bank']
+        ]
+        self.info_types = len(self.infos_per_bank)
         self.word_bytes = int(self.data_width / 8)
         self.pgm_resolution_bytes = int(self.program_resolution * self.word_bytes)
         self.check_values()
@@ -338,15 +346,34 @@ class Flash:
             raise ValueError('flash number of banks and pages per bank too large')
 
     def _asdict(self):
+        # Do not include base_addrs as it will get removed later.
         return {
+            'class': 'Flash',
             'banks': self.banks,
             'pages_per_bank': self.pages_per_bank,
             'program_resolution': self.program_resolution,
             'pgm_resolution_bytes': self.pgm_resolution_bytes,
             'bytes_per_page': self.bytes_per_page,
             'bytes_per_bank': self.bytes_per_bank,
-            'size': self.size
+            'data_width': self.data_width,
+            'metadata_width': self.metadata_width,
+            'infos_per_bank': self.infos_per_bank,
+            'size': self.size,
+            # The following fields are manually added in topgen.py during generation.
+            'pwrmgr_vlnv_prefix': self.pwrmgr_vlnv_prefix,
+            'top_pkg_vlnv': self.top_pkg_vlnv,
         }
+
+    @classmethod
+    def fromdict(cls, item: Dict[str, object]) -> object:
+        del item["class"]
+        item["word_bytes"] = int(item["data_width"] / 8)
+        item["words_per_page"] = int(item["bytes_per_page"] / item["word_bytes"])
+        item["pages_per_bank"] = int(item["bytes_per_bank"] / item["bytes_per_page"])
+        item["info_types"] = len(item["infos_per_bank"])
+        c = cls.__new__(cls)
+        c.__dict__.update(**item)
+        return c
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson

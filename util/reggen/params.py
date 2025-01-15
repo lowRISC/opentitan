@@ -55,7 +55,28 @@ class BaseParam:
         rd['type'] = self.param_type
         if self.unpacked_dimensions is not None:
             rd['unpacked_dimensions'] = self.unpacked_dimensions
+        # topgen sometimes manually adds a 'name_top' field after creation.
+        if getattr(self, "name_top", None):
+            rd['name_top'] = getattr(self, "name_top")
         return rd
+
+    def _asdict(self) -> Dict[str, object]:
+        # Add an attribute to distinguished between manual serialization (as_dict())
+        # or automatic by hjson.
+        d = self.as_dict()
+        d['class'] = self.__class__.__name__
+        return d
+
+    @classmethod
+    def fromdict(cls, param: Dict[str, object]) -> object:
+        param['desc'] = param.get('desc', None)
+        param['unpacked_dimensions'] = param.get('unpacked_dimensions', None)
+        del param['class']
+        param['param_type'] = param['type']
+        del param['type']
+        c = cls.__new__(cls)
+        c.__dict__.update(**param)
+        return c
 
 
 class LocalParam(BaseParam):
@@ -82,6 +103,12 @@ class LocalParam(BaseParam):
         rd['default'] = self.value
         return rd
 
+    @classmethod
+    def fromdict(cls, param: Dict[str, object]) -> object:
+        assert param['local']
+        del param['local']
+        return super().fromdict.__func__(cls, param)  # type: ignore
+
 
 class Parameter(BaseParam):
     def __init__(self,
@@ -105,6 +132,12 @@ class Parameter(BaseParam):
         rd['expose'] = 'true' if self.expose else 'false'
         rd['name_top'] = self.name_top
         return rd
+
+    @classmethod
+    def fromdict(cls, param: Dict[str, object]) -> object:
+        param['local'] = param['local'] == 'true'
+        param['expose'] = param['expose'] == 'true'
+        return super().fromdict.__func__(cls, param)  # type: ignore
 
 
 class RandParameter(BaseParam):
@@ -130,6 +163,10 @@ class RandParameter(BaseParam):
         rd['randcount'] = self.randcount
         rd['randtype'] = self.randtype
         return rd
+
+    @classmethod
+    def fromdict(cls, param: Dict[str, object]) -> object:
+        return super().fromdict.__func__(cls, param)  # type: ignore
 
 
 class MemSizeParameter(BaseParam):
