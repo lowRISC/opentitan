@@ -62,9 +62,10 @@ enum {
    * AES-GCM executes and we are measuring the power consumption of the
    * operation. The number of cycles were determined by using ibex_mcycle_read()
    * between calling dif_aes_trigger() and waiting until the IDLE bit has been
-   * seen.
+   * seen. Here, up to 300 cycles were measured. Moreover, we are using a start
+   * trigger delay of 320.
    */
-  kIbexAesGcmSleepCycles = 5100,
+  kIbexAesGcmSleepCycles = 1000,
 };
 
 static dif_aes_t aes;
