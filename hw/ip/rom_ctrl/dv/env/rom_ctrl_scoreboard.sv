@@ -11,7 +11,11 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
 
   // local variables
   bit [DIGEST_SIZE-1:0]          expected_digest;
+
+  // The digest of ROM contents that has been returned from KMAC. This is valid if
+  // rom_check_complete is true.
   bit [kmac_pkg::AppDigestW-1:0] kmac_digest;
+
   bit                            rom_check_complete;
   prim_mubi_pkg::mubi4_t         digest_good;
   bit                            pwrmgr_complete;
@@ -37,7 +41,15 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // successfully read the contents of ROM.
   extern function void check_kmac_data(const ref byte byte_data_q[$]);
 
-  extern virtual task process_kmac_rsp_fifo();
+  // Follow responses sent from KMAC. There will be one after each reset and it will be a response
+  // to a request that was seen in process_kmac_req_fifo.
+  //
+  // This function updates the model of the digest that came from KMAC (used for the contents of the
+  // DIGEST registers and also for a check on the digest sent to keymgr later). It also updates the
+  // model of the EXP_DIGEST registers. Finally, it updates the model of whether the two digests
+  // agree (to check the GOOD field of the signal that will be sent to pwrmgr).
+  extern task process_kmac_rsp_fifo();
+
   extern virtual function void get_expected_digest();
   extern virtual function void update_ral_digests();
   extern virtual task monitor_rom_ctrl_if();
@@ -111,8 +123,11 @@ task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
     if (!cfg.en_scb) continue;
 
     `uvm_info(`gfn, $sformatf("Detected a KMAC response:\n%0s", kmac_rsp.sprint()), UVM_HIGH)
-    // We shouldn't see any further responses one the check has completed
-    `DV_CHECK_EQ(rom_check_complete, 1'b0, "Spurious ROM response received")
+
+    // Check that we haven't seen one of these responses already since the last reset. If we have,
+    // it's a DV bug: we should already have failed when the KMAC request was sent a few cycles ago.
+    `DV_CHECK_FATAL(!rom_check_complete, "Extra KMAC response seen.")
+
     kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
     get_expected_digest();
     update_ral_digests();
