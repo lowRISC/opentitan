@@ -14,7 +14,6 @@ $ util/autogen_testutils.py
 """
 
 import argparse
-import glob
 import logging
 import sys
 from pathlib import Path
@@ -51,18 +50,17 @@ def main():
     topcfg = hjson.loads(topcfg_text, use_decimal=True)
 
     # Define autogen DIF directory.
-    autogen_dif_directory = REPO_TOP / "sw/device/lib/dif/autogen"
+    autogen_dif_directory = REPO_TOP / "sw/device/lib/dif"
 
     # Create list of IPs to generate shared testutils code for. This is all IPs
     # that have a DIF library, that the testutils functions can use. Note, the
     # templates will take care of only generating ISR testutil functions for IPs
     # that can actually generate interrupts.
     ips_with_difs = []
-    for autogen_dif_filename in glob.iglob(str(autogen_dif_directory / "*.h")):
-        # NOTE: the line below takes as input a file path
-        # (/path/to/dif_uart_autogen.c) and returns the IP name in lower
-        # case snake mode (i.e., uart).
-        ip_name_snake = Path(autogen_dif_filename).stem[4:-8]
+
+    for ip_name_snake in sorted({m["type"] for m in topcfg["module"]}):
+        if not (autogen_dif_directory / f"dif_{ip_name_snake}.h").exists():
+            continue
 
         hjson_file = topgen_lib.get_ip_hjson_path(ip_name_snake, topcfg, REPO_TOP)
 
