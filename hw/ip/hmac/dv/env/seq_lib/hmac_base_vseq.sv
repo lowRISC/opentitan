@@ -144,6 +144,7 @@ endtask : dut_init
 task hmac_base_vseq::apply_reset(string kind = "HARD");
   super.apply_reset(kind);
   cfg.hash_process_triggered = 0;
+  cfg.sar_skip_ctxt          = 0;
 endtask : apply_reset
 
 task hmac_base_vseq::hmac_init( bit sha_en             = 1'b1,
@@ -554,22 +555,35 @@ endtask : compare_digest
 //    - Test with context A and B, alternatively saved and restored. Ensure to randomize again:
 //      key length, digest size, digest swap, endian swap and secret key
 task hmac_base_vseq::save_and_restore();
-  // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
-  // or 1024 bits SHA-2 384/512)
-  sar_window.wait_trigger();
+  // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+  // processes at the same level from the base classes
+  fork begin : isolation_fork
+    fork
+      begin : main_thread
+        // Wait until message transmission is on a block boundary (multiple of 512 bits in SHA-2 256
+        // or 1024 bits SHA-2 384/512)
+        sar_window.wait_trigger();
 
-  // Insert random delay to mimic the SW accesses which can take some time because of potential
-  // incoming interrupts. To cover the particular case where the stop command is issued while the
-  // hash has already been processed, this delay should exceed the number clock cycles required
-  // for this operation, which is 64 for SHA2-256 and 80 for SHA2-384/512 with the current RTL.
-  cfg.clk_rst_vif.wait_clks($urandom_range(HMAC_MSG_PROCESS_CYCLES_256-10,
-                                           HMAC_MSG_PROCESS_CYCLES_512+10));
+        // Insert random delay to mimic the SW accesses which can take some time because of
+        // potential incoming interrupts. To cover the particular case where the stop command is
+        // issued while the hash has already been processed, this delay should exceed the number
+        // clock cycles required for this operation, which is 64 for SHA2-256 and 80 for
+        // SHA2-384/512 with the current RTL.
+        cfg.clk_rst_vif.wait_clks($urandom_range(HMAC_MSG_PROCESS_CYCLES_256-10,
+                                                  HMAC_MSG_PROCESS_CYCLES_512+10));
 
-  randcase
-    1:  sar_stop_and_continue();
-    1:  sar_same_context();
-    1:  sar_different_context();
-  endcase
+        randcase
+          1:  sar_stop_and_continue();
+          1:  sar_same_context();
+          1:  sar_different_context();
+        endcase
+      end
+      begin : reset_thread
+        wait(cfg.under_reset);
+      end
+    join_any
+    disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+  end join
 endtask : save_and_restore
 
 task hmac_base_vseq::sar_stop_and_continue();
