@@ -238,7 +238,9 @@ const owner_flash_info_config_t info_config = {
 };
 
 TEST_F(OwnerBlockTest, FlashConfigApplyBad) {
-  rom_error_t error = owner_block_flash_apply(&bad_flash_config, kBootSlotA, 0);
+  rom_error_t error = owner_block_flash_apply(&bad_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/0,
+                                              /*owner_lockdown=*/0);
   EXPECT_EQ(error, kErrorOwnershipFlashConfigLenth);
 }
 
@@ -269,15 +271,16 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideA) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotA, 0);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/0,
+                                              /*owner_lockdown=*/0);
   EXPECT_EQ(error, kErrorOk);
 }
 
 // Tests that the flash parameters get applied for side A and the
-// ProtectWhenPrimary disables erase and program on the ROM_EXT and FIRMWARE
+// ProtectWhenActive disables erase and program on the ROM_EXT and FIRMWARE
 // regions.
-TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
+TEST_F(OwnerBlockTest, FlashConfigApplySideA_Active) {
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(0, 0, 32,
@@ -303,13 +306,16 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideAPrimary) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotA, kBootSlotA);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotA,
+                                              /*creator_lockdown=*/kBootSlotA,
+                                              /*owner_lockdown=*/kBootSlotA);
   EXPECT_EQ(error, kErrorOk);
 }
 
-// Tests that the flash parameters get applied for side B.
-TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
+// Tests that the flash parameters get applied for side B when B is not the
+// active slot.  Check that ProtectWhenActive does not change the write/erase
+// permissions for slot B.
+TEST_F(OwnerBlockTest, FlashConfigApplySideB_NotActive) {
   EXPECT_CALL(
       flash_ctrl_,
       DataRegionProtect(3, 256 + 0, 32,
@@ -335,8 +341,9 @@ TEST_F(OwnerBlockTest, FlashConfigApplySideB) {
                                  kMultiBitBool4True),
                         kHardenedBoolFalse));
 
-  rom_error_t error =
-      owner_block_flash_apply(&simple_flash_config, kBootSlotB, 0);
+  rom_error_t error = owner_block_flash_apply(&simple_flash_config, kBootSlotB,
+                                              /*creator_lockdown=*/kBootSlotA,
+                                              /*owner_lockdown=*/kBootSlotA);
   EXPECT_EQ(error, kErrorOk);
 }
 
@@ -722,5 +729,54 @@ INSTANTIATE_TEST_SUITE_P(AllCases, RomExtFlashConfigTest,
                          testing::Values(&invalid_flash_0, &invalid_flash_1,
                                          &invalid_flash_2, &invalid_flash_3,
                                          &invalid_flash_4));
+
+struct FlashRegion {
+  uint32_t start;
+  uint32_t end;
+  bool overlap;
+  bool exclusive;
+};
+
+class RomExtFlashBoundsTest : public OwnerBlockTest,
+                              public testing::WithParamInterface<FlashRegion> {
+};
+
+extern "C" {
+// These functions aren't defined in owner_block.h because they aren't meant
+// to be public APIs.  They aren't static so we can access the symbols here
+// for testing.
+hardened_bool_t rom_ext_flash_overlap(uint32_t, uint32_t);
+hardened_bool_t rom_ext_flash_exclusive(uint32_t, uint32_t);
+}
+
+// Test the flash bounds checking functions.
+TEST_P(RomExtFlashBoundsTest, FlashBoundsTest) {
+  FlashRegion p = GetParam();
+  hardened_bool_t overlap = rom_ext_flash_overlap(p.start, p.end);
+  hardened_bool_t exclusive = rom_ext_flash_exclusive(p.start, p.end);
+  EXPECT_EQ(overlap, p.overlap ? kHardenedBoolTrue : kHardenedBoolFalse);
+  EXPECT_EQ(exclusive, p.exclusive ? kHardenedBoolTrue : kHardenedBoolFalse);
+}
+
+// clang-format off
+INSTANTIATE_TEST_SUITE_P(AllCases, RomExtFlashBoundsTest,
+testing::Values(
+  // The ROM_EXT A region is blocks [0x00 .. 0x20).
+  // The ROM_EXT B region is blocks [0x100 .. 0x120).
+  // The ranges expressed are half-open: [start .. end).
+  FlashRegion{0x000, 0x020, /*overlap=*/true, /*exclusive=*/true}, // Full ROM_EXT A region.
+  FlashRegion{0x100, 0x120, /*overlap=*/true, /*exclusive=*/true}, // Full ROM_EXT B region.
+  FlashRegion{0x005, 0x010, /*overlap=*/true, /*exclusive=*/true}, // Partial ROM_EXT A region.
+  FlashRegion{0x105, 0x110, /*overlap=*/true, /*exclusive=*/true}, // Partial ROM_EXT B region.
+  FlashRegion{0x000, 0x040, /*overlap=*/true, /*exclusive=*/false}, // Overlapped ROM_EXT A region.
+  FlashRegion{0x100, 0x140, /*overlap=*/true, /*exclusive=*/false}, // Overlapped ROM_EXT B region.
+  FlashRegion{0x020, 0x040, /*overlap=*/false, /*exclusive=*/false}, // Not ROM_EXT A region.
+  FlashRegion{0x120, 0x140, /*overlap=*/false, /*exclusive=*/false}, // Not ROM_EXT B region.
+  FlashRegion{0x005, 0x105, /*overlap=*/true, /*exclusive=*/false}, // Mid RX_A to mid RX_B.
+  FlashRegion{0x020, 0x100, /*overlap=*/false, /*exclusive=*/false}, // Full not ROM_EXT side A.
+  FlashRegion{0x020, 0x101, /*overlap=*/true, /*exclusive=*/false}, // Side A intrudes in to RX_B.
+  FlashRegion{0x000, 0x200, /*overlap=*/true, /*exclusive=*/false} // Full flash region.
+));
+// clang-format on
 
 }  // namespace

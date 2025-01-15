@@ -6,6 +6,8 @@
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -48,7 +50,10 @@ void flash_info_region_print(dif_flash_ctrl_info_region_t region,
            locked ? "LK" : "UN");
 }
 
-status_t flash_regions_print(dif_flash_ctrl_state_t *f) {
+status_t flash_regions_print(boot_log_t *boot_log, dif_flash_ctrl_state_t *f) {
+  TRY(boot_log_check(boot_log));
+  LOG_INFO("boot_log rom_ext_slot = %C", boot_log->rom_ext_slot);
+  LOG_INFO("boot_log bl0_slot = %C", boot_log->bl0_slot);
   for (uint32_t i = 0; i < 8; ++i) {
     dif_flash_ctrl_data_region_properties_t p;
     bool locked;
@@ -77,7 +82,8 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_flash_ctrl_init_state(
       &flash_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
-  status_t sts = flash_regions_print(&flash_state);
+  status_t sts = flash_regions_print(&retention_sram_get()->creator.boot_log,
+                                     &flash_state);
 
   if (status_err(sts)) {
     LOG_ERROR("flash_regions_print: %r", sts);
