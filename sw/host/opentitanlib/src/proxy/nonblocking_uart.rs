@@ -144,9 +144,8 @@ impl Hash for UartKey {
 }
 impl PartialEq for UartKey {
     /// Determines whether the two `Rc`s point to the same `Uart` instance.
-    #[allow(clippy::vtable_address_comparisons)]
     fn eq(&self, other: &Self) -> bool {
-        Rc::as_ptr(&self.0) == Rc::as_ptr(&other.0)
+        Rc::ptr_eq(&self.0, &other.0)
     }
 }
 

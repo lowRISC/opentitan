@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //! This module is capable of generating C code for generating a binary X.509
-//! certificate according to a [`Template`](crate::template::Template).
+//! certificate according to a [`Template`].
 
 use anyhow::{Context, Result};
 use heck::ToUpperCamelCase;

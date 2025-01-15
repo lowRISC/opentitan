@@ -93,7 +93,11 @@ impl CommandDispatch for OwnershipConfigCommand {
         }
 
         if let Some(output) = &self.output {
-            let mut f = OpenOptions::new().write(true).create(true).open(output)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(output)?;
             config.write(&mut f)?;
             Ok(None)
         } else {
