@@ -528,20 +528,12 @@ module pwrmgr
                                           {NumDebugRstReqs{1'b1}},
                                           {NumIntRstReqs{1'b1}},
                                           slow_reset_en};
-  // TODO(#22711): Make this work also when `rstreqs` is structured differently.
   logic strap_sampled;
   logic internal_reset_req;
   logic ext_reset_req;
 
-  assign internal_reset_req            =|(
-                                         slow_peri_reqs.rstreqs &
-                                         {{NumSwRstReq{1'b1}},      // SW driven reset
-                                          {NumDebugRstReqs{1'b1}},  // debugger reset
-                                          {NumIntRstReqs{1'b1}},    // {ESC reset, slow_fsm}
-                                          // exclude the external async reset
-                                          {1'b0, slow_reset_en[0]}
-                                         }
-                                        );
+  // Make the SoC see what the slow FSM sees to to generate the light_reset to the SoC
+  assign internal_reset_req = |slow_peri_reqs_masked.rstreqs;
 
   // The MSB of `slow_peri_reqs.rstreqs` is the external reset request. We want it to always
   // propagate, in order to continue from the Reset Wait state in the fast FSM.
