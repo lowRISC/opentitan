@@ -50,7 +50,10 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // Return the top words of the ROM image, which give an expected digest value
   extern function bit [DIGEST_SIZE-1:0] get_expected_digest();
 
-  extern virtual function void update_ral_digests(bit [DIGEST_SIZE-1:0] expected_digest);
+  // Update the RAL model for the contents of the DIGEST and EXP_DIGEST registers.
+  extern function void update_ral_digests(bit [DIGEST_SIZE-1:0] kmac_digest,
+                                          bit [DIGEST_SIZE-1:0] expected_digest);
+
   extern virtual task monitor_rom_ctrl_if();
   extern virtual function void check_rom_access(tl_seq_item item);
   extern virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -131,7 +134,7 @@ task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
 
     kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
     expected_digest = get_expected_digest();
-    update_ral_digests(expected_digest);
+    update_ral_digests(kmac_digest, expected_digest);
     digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(
                   kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
     rom_check_complete = 1'b1;
@@ -153,13 +156,12 @@ function bit [DIGEST_SIZE-1:0] rom_ctrl_scoreboard::get_expected_digest();
   return digest;
 endfunction
 
-// Update the RAL model with expected values for the digest registers
-//
-// This works by using the predict function with UVM_PREDICT_READ. This tells the register model
-// that we've just read the given value from the registers. We do this rather than using
-// UVM_PREDICT_DIRECT (the default) because it avoids UVM thinking that there might be a race
-// against CSR operations that are already in flight.
-function void rom_ctrl_scoreboard::update_ral_digests(bit [DIGEST_SIZE-1:0] expected_digest);
+function void rom_ctrl_scoreboard::update_ral_digests(bit [DIGEST_SIZE-1:0] kmac_digest,
+                                                      bit [DIGEST_SIZE-1:0] expected_digest);
+  // The prediction works with kind UVM_PREDICT_READ. This tells the register model that we've just
+  // read the given value from the registers. We do this rather than using UVM_PREDICT_DIRECT (the
+  // default) because it avoids UVM thinking that there might be a race against CSR operations that
+  // are already in flight.
   for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
     `DV_CHECK(ral.digest[i].predict(.value(kmac_digest[i*TL_DW+:TL_DW]),
                                     .kind(UVM_PREDICT_READ)))
