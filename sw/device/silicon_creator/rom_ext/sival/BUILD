@@ -45,6 +45,10 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
+    ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
@@ -67,6 +71,10 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
+    ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
@@ -85,6 +93,10 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
+    ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     deps = [
@@ -100,6 +112,10 @@ opentitan_binary(
     exec_env = [
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
+    ],
+    extra_bazel_features = [
+        "minsize",
+        "use_lld",
     ],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,

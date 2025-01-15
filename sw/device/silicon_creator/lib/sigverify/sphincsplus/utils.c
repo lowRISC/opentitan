@@ -17,7 +17,18 @@
 uint64_t spx_utils_bytes_to_u64(const uint8_t *in, size_t inlen) {
   uint64_t retval = 0;
   for (size_t i = 0; i < inlen; i++) {
-    retval |= ((uint64_t)in[i]) << (8 * (inlen - 1 - i));
+    // Perform native shift on u32 first to avoid __ashldi3 polyfill.
+    //
+    // The following code is equivalent to:
+    //     retval |= ((uint64_t)in[i]) << (8 * (inlen - 1 - i));
+    //
+    // See also pull #11451.
+    size_t offset = 8 * (inlen - 1 - i);
+    if (offset < 32) {
+      retval |= ((uint32_t)in[i]) << offset;
+    } else {
+      retval |= ((uint64_t)(((uint32_t)in[i]) << (offset - 32))) << 32;
+    }
   }
   return retval;
 }
