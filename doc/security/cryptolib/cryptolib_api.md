@@ -139,10 +139,6 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_digest }}
 
-#### Message authentication data structures
-
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac_mode }}
-
 #### RSA data structures
 
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_padding }}
@@ -155,7 +151,7 @@ The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
 {{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_context }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
 
 ## AES
 
@@ -242,8 +238,8 @@ The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 1
 
 ### One-shot mode
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac }}
+{{#header-snippet sw/device/lib/crypto/include/kmac.h otcrypto_kmac }}
 
 ### Streaming mode
 
@@ -251,9 +247,9 @@ The streaming mode API is used for incremental hashing use-case, where the data 
 
 To avoid locking up the KMAC hardware, the streaming mode is supported **only for HMAC**.
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_init }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_update }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_final }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_init }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_update }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_final }}
 
 ## RSA
 
