@@ -950,6 +950,21 @@ typedef enum top_englishbreakfast_hintable_clocks {
 } top_englishbreakfast_hintable_clocks_t;
 
 /**
+ * Clock IDs for peripherals to map against properties.
+ */
+typedef enum top_englishbreakfast_clock_src {
+  kTopEnglishbreakfastClockSrcUnknown = 0, /**< ID representing unknown clock */
+  kTopEnglishbreakfastClockSrcMain = 1, /**< Clock main */
+  kTopEnglishbreakfastClockSrcIo = 2, /**< Clock io */
+  kTopEnglishbreakfastClockSrcUsb = 3, /**< Clock usb */
+  kTopEnglishbreakfastClockSrcAon = 4, /**< Clock aon */
+  kTopEnglishbreakfastClockSrcIoDiv2 = 5, /**< Clock io_div2 */
+  kTopEnglishbreakfastClockSrcIoDiv4 = 6, /**< Clock io_div4 */
+  kTopEnglishbreakfastClockSrcCount = 7, /**< Number of clock IDs */
+} top_englishbreakfast_clock_src_t;
+
+
+/**
  * MMIO Region
  *
  * MMIO region excludes any memory that is separate from the module

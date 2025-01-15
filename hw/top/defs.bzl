@@ -4,10 +4,12 @@
 load("//rules/opentitan:hw.bzl", "opentitan_top")
 load("//hw/top_earlgrey/data/autogen:defs.bzl", "EARLGREY")
 load("//hw/top_darjeeling/data/autogen:defs.bzl", "DARJEELING")
+load("//hw/top_englishbreakfast/data/autogen:defs.bzl", "ENGLISHBREAKFAST")
 
 ALL_TOPS = [
     EARLGREY,
     DARJEELING,
+    ENGLISHBREAKFAST,
 ]
 
 ALL_TOP_NAMES = [
@@ -52,3 +54,40 @@ def opentitan_require_ip(ip):
     )
     """
     return opentitan_if_ip(ip, [], ["@platforms//:incompatible"])
+
+def opentitan_select_top(values, default):
+    """
+    Select a value based on the top. If not top matches, a default
+    value is returned. The values must be a dictionary where each key
+    is either a string, or an array of strings.
+
+    Example:
+    alias(
+      name = "bla",
+      actual = opentitan_select_top({
+        "earlgrey": "//something:earlgrey",
+        ["english_breakfast", "darjeeling"]: "//something:else",
+      }, "//something:error")
+    )
+    """
+    branches = {}
+    for (tops, value) in values.items():
+        if type(tops) == "string":
+            tops = [tops]
+        for top in tops:
+            branches["//hw/top:is_{}".format(top)] = value
+    branches["//conditions:default"] = default
+    return select(branches)
+
+def opentitan_require_top(top):
+    """
+    Return a value that can be used with `target_compatible_with` to
+    express that this target only works on the requested top.
+
+    Example:
+    cc_library(
+      name = "bla",
+      target_compatible_with = opentitan_require_ip("uart"),
+    )
+    """
+    return opentitan_select_top({top: []}, ["@platforms//:incompatible"])
