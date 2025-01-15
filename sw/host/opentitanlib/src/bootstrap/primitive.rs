@@ -63,7 +63,7 @@ impl Frame {
     /// Creates a sequence of frames based on a `payload` binary.
     fn from_payload(payload: &[u8]) -> Vec<Frame> {
         let mut frames = Vec::new();
-        let last_frame = (payload.len() + Frame::DATA_LEN - 1) / Frame::DATA_LEN - 1;
+        let last_frame = payload.len().div_ceil(Frame::DATA_LEN) - 1;
         for (i, chunk) in payload.chunks(Frame::DATA_LEN).enumerate() {
             let mut frame = Frame {
                 header: FrameHeader {

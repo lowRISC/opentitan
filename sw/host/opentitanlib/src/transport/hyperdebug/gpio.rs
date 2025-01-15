@@ -1007,7 +1007,7 @@ fn encode_waveform(waveform: &[BitbangEntry], num_pins: usize) -> Result<Vec<u8>
 /// open drain or pure input pins).
 fn decode_waveform(
     waveform: &mut [BitbangEntry],
-    encoded_response: &Vec<u8>,
+    encoded_response: &[u8],
     num_pins: usize,
 ) -> Result<()> {
     ensure!(

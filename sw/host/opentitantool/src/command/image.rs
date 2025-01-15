@@ -371,13 +371,14 @@ impl CommandDispatch for ManifestVerifyCommand {
 
         if self.spx {
             image.map_signed_region(|b| {
-                sigverify_params.spx_verify(b, self.domain).map_err(|x| {
-                    eprintln!(
-                        "SPX+ signature verification for domain '{}' failed",
-                        self.domain
-                    );
-                    x
-                })
+                sigverify_params
+                    .spx_verify(b, self.domain)
+                    .inspect_err(|_| {
+                        eprintln!(
+                            "SPX+ signature verification for domain '{}' failed",
+                            self.domain
+                        );
+                    })
             })??;
         }
 
