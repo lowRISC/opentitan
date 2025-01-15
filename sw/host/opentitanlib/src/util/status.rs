@@ -203,7 +203,7 @@ impl StatusCreateRecords {
         let iter = self
             .records
             .iter()
-            .filter(|rec| rec.get_module_id().map_or(false, |id| id == *mod_id))
+            .filter(|rec| rec.get_module_id().is_ok_and(|id| id == *mod_id))
             .map(|rec| rec.filename.clone());
         std::collections::HashSet::<String>::from_iter(iter)
             .into_iter()
