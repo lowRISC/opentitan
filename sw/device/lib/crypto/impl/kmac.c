@@ -1,8 +1,20 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
-OT_WARN_UNUSED_RESULT
+#include "sw/device/lib/crypto/include/kmac.h"
+
+#include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
+#include "sw/device/lib/crypto/impl/integrity.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
+#include "sw/device/lib/crypto/impl/status.h"
+
+// Module ID for status codes.
+#define MODULE_ID MAKE_MODULE_ID('k', 'm', 'c')
+
 otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
-                                otcrypto_kmac_mode_t kmac_mode,
                                 otcrypto_const_byte_buf_t customization_string,
                                 size_t required_output_len,
                                 otcrypto_word32_buf_t tag) {
@@ -67,23 +79,14 @@ otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  switch (kmac_mode) {
-    case kOtcryptoKmacModeKmac128:
-      // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kOtcryptoKeyModeKmac128) {
-        return OTCRYPTO_BAD_ARGS;
-      }
+  switch (key->config.key_mode) {
+    case kOtcryptoKeyModeKmac128:
       HARDENED_TRY(kmac_kmac_128(
           &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
           input_message.len, customization_string.data,
           customization_string.len, tag.data, tag.len));
       break;
-    case kOtcryptoKmacModeKmac256:
-      // Check `key_mode` matches `mac_mode`
-      if (key->config.key_mode != kOtcryptoKeyModeKmac256) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-
+    case kOtcryptoKeyModeKmac256:
       HARDENED_TRY(kmac_kmac_256(
           &kmac_key, /*masked_digest=*/kHardenedBoolFalse, input_message.data,
           input_message.len, customization_string.data,

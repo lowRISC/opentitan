@@ -7,7 +7,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/kmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -288,27 +288,6 @@ status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
 }
 
 /**
- * Get the mode for KMAC based on the security strength.
- *
- * @param security_str Security strength (in bits).
- * @param[out] mode KMAC mode enum value.
- */
-status_t get_kmac_mode(size_t security_strength, otcrypto_kmac_mode_t *mode) {
-  switch (security_strength) {
-    case 128:
-      *mode = kOtcryptoKmacModeKmac128;
-      break;
-    case 256:
-      *mode = kOtcryptoKmacModeKmac256;
-      break;
-    default:
-      LOG_INFO("Invalid size for KMAC: %d bits", security_strength);
-      return INVALID_ARGUMENT();
-  }
-  return OK_STATUS();
-}
-
-/**
  * Run the test pointed to by `current_test_vector`.
  */
 static status_t run_test_vector(void) {
@@ -321,9 +300,6 @@ static status_t run_test_vector(void) {
 
   current_test_vector->key.checksum =
       integrity_blinded_checksum(&current_test_vector->key);
-
-  otcrypto_kmac_mode_t mode;
-  TRY(get_kmac_mode(current_test_vector->security_strength, &mode));
 
   otcrypto_word32_buf_t tag_buf1 = {
       .data = digest1,
@@ -347,7 +323,7 @@ static status_t run_test_vector(void) {
 
   LOG_INFO("Running the first KMAC sideload operation.");
   TRY(otcrypto_kmac(&current_test_vector->key, current_test_vector->input_msg,
-                    mode, current_test_vector->cust_str,
+                    current_test_vector->cust_str,
                     current_test_vector->digest.len, tag_buf1));
 
   // Run a SHA-3 operation in between the two KMAC operations.
@@ -357,7 +333,7 @@ static status_t run_test_vector(void) {
 
   LOG_INFO("Running the second KMAC sideload operation for comparison.");
   TRY(otcrypto_kmac(&current_test_vector->key, current_test_vector->input_msg,
-                    mode, current_test_vector->cust_str,
+                    current_test_vector->cust_str,
                     current_test_vector->digest.len, tag_buf2));
 
   TRY_CHECK_ARRAYS_EQ((unsigned char *)tag_buf1.data,

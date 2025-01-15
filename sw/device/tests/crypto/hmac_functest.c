@@ -5,7 +5,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -17,7 +17,7 @@
 #include "hmac_testvectors.h"
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('h', 'm', 'a')
+#define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // Global pointer to the current test vector.
 static hmac_test_vector_t *current_test_vector = NULL;
