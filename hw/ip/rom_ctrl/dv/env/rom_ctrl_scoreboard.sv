@@ -61,7 +61,10 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // keymgr_data.data signals match what we expect (based on the response from KMAC).
   extern task monitor_rom_ctrl_if();
 
-  extern virtual function void check_rom_access(tl_seq_item item);
+  // Check a TL item thac corresponds to a ROM access, making sure that invalid requests return
+  // errors and any other operation returns the correct ROM data.
+  extern function void check_rom_access(tl_seq_item item);
+
   extern virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern virtual function void reset(string kind = "HARD");
   extern function void check_phase(uvm_phase phase);
@@ -214,7 +217,7 @@ function void rom_ctrl_scoreboard::check_rom_access(tl_seq_item item);
   bit [ROM_MEM_W-1:0] exp_data;
 
   if (item.is_write()) begin
-    `DV_CHECK_EQ(item.d_error, 1'b1, "Attempted write did not return error")
+    `DV_CHECK(item.d_error, "Writes to ROM should return an error.")
   end
   `DV_CHECK_EQ(item.d_error, item.get_exp_d_error(), "TLUL ROM read error incorrect")
 
