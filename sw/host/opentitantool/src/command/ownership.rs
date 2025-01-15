@@ -85,7 +85,11 @@ impl CommandDispatch for OwnershipConfigCommand {
         }
 
         if let Some(output) = &self.output {
-            let mut f = OpenOptions::new().write(true).create(true).open(output)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(output)?;
             config.write(&mut f)?;
             Ok(None)
         } else {
@@ -151,7 +155,11 @@ impl CommandDispatch for OwnershipActivateCommand {
             .params
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
         if let Some(output) = &self.output {
-            let mut f = OpenOptions::new().write(true).create(true).open(output)?;
+            let mut f = OpenOptions::new()
+                .write(true)
+                .create(true)
+                .truncate(true)
+                .open(output)?;
             activate.write(&mut f)?;
         }
         Ok(Some(Box::new(activate)))

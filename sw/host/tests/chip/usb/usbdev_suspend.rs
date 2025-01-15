@@ -54,7 +54,7 @@ struct Opts {
 // Test phases
 // - the tests controlled by this sequence presently run a contiguous sequence of phases
 //   within this full sequence.
-#[derive(Clone, Debug, PartialEq, Eq, ValueEnum)]
+#[derive(Clone, Debug, PartialEq, Eq, ValueEnum, strum::Display)]
 enum SuspendPhase {
     // Resume Signaling stimulus when suspended but not in a sleep state.
     Suspend,
@@ -71,21 +71,6 @@ enum SuspendPhase {
     DeepDisconnect,
     // Final test state; device disconnects and test completes.
     Shutdown,
-}
-
-impl ToString for SuspendPhase {
-    fn to_string(&self) -> String {
-        match self {
-            SuspendPhase::Suspend => String::from("Suspend"),
-            SuspendPhase::SleepResume => String::from("SleepResume"),
-            SuspendPhase::SleepReset => String::from("SleepReset"),
-            SuspendPhase::SleepDisconnect => String::from("SleepDisconnect"),
-            SuspendPhase::DeepResume => String::from("DeepResume"),
-            SuspendPhase::DeepReset => String::from("DeepReset"),
-            SuspendPhase::DeepDisconnect => String::from("DeepDisconnect"),
-            SuspendPhase::Shutdown => String::from("Shutdown"),
-        }
-    }
 }
 
 // Wait for a device to appear and then return the parent device and port number.

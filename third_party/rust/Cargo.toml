@@ -30,7 +30,7 @@ directories = "5.0.1"
 ecdsa = { version = "0.16.9", features = ["pkcs8", "pem", "signing", "verifying", "sha2", "std"] }
 env_logger = "0.10"
 elliptic-curve = { version = "0.13.4", features = ["ecdh", "pkcs8", "sec1", "std"] }
-erased-serde = "0.3.12"
+erased-serde = "0.4"
 # Note: this is needed because openssl does not re-rexports this, we cannot use a
 # too recent version because it break things.
 foreign-types = "0.3.2"
