@@ -421,10 +421,7 @@ fn write_vcd_header(
 /// Appends the VCD data to the end of the file specified. Note the order of the gpios should
 /// be consistent between calls and match the order from the gpio start command.
 fn append_vcd_data(file: &str, read_response: &MonitoringReadResponse, last: bool) -> Result<()> {
-    let mut file = std::fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open(file)?;
+    let mut file = std::fs::OpenOptions::new().append(true).open(file)?;
     for event in &read_response.events {
         writeln!(&mut file, "#{}", event.timestamp)?;
         writeln!(
