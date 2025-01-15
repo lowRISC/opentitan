@@ -40,9 +40,17 @@
                 "-sv_seed {seed}",
                 "-c",
                 "-sv_lib {QUESTA_HOME}/uvm-1.2/linux_x86_64/uvm_dpi",
-                // dv_macros.svh has a macro printing null using %0d
-                // format specifier, Questa throws an error on this
-                // we demote this error in Questa
+                // Questa throws error on some LRM violations & restrictions. We demoted these errors since they will not impact the flow:
+                  //8323: dv_macros.svh has a macro printing null using %0d format specifier, Questa throws an error on this.
+                  //7034: The strict rule for unpacked array assignment/comparison requires that the packed elements must match exactly as do the keys for associative arrays.
+                  //7033: In SystemVerilog, a variable assigned inside an always_comb, always_latch, or always_ff may not be assigned by any other process.
+                  //7041: The strict rule for string type assignment requires a cast if a string type is assigned to a packed type or a packed type is assigned to a string type.
+                  //      Note that a string literal is not the same as a string type.
+                  //7067: Index out of bounds for unpacked array of packed elements in constraint.
+                  //8111: The path specified is incorrect.
+                  //16133,16132:  It is missing +acc/-access in vopt which is necessary for the uvm_reg_pkg backdoor calls to work.
+                  //              Using +acc or -access for the target objects in vopt so that they can be found by the
+                  //              uvm_reg_pkg::uvm_hdl_read() function for backdoor register access.
                 "-suppress 8323,7034,7033,7067,8111,16133,16132,7041",
                 // Questa forces all declared virtual interfaces to be allocated,
                 // even in classes that are not even created at runtime. The switch
