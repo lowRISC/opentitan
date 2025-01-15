@@ -5,6 +5,7 @@
 load(
     "//rules/opentitan:defs.bzl",
     "fpga_params",
+    "opentitan_binary",
     "opentitan_test",
 )
 load(
@@ -18,6 +19,42 @@ package(default_visibility = ["//visibility:public"])
 # but they don't change OTP.  They modify the ownership INFO pages,
 # so we need to clear the bitstream after the test, which is what the
 # `changes_otp` parameter actually does.
+
+opentitan_binary(
+    name = "boot_test",
+    testonly = True,
+    srcs = ["//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    rsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+opentitan_binary(
+    name = "flash_regions",
+    testonly = True,
+    srcs = ["flash_regions.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+    },
+    rsa_key = {
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod": "app_prod",
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
 
 # rom_ext_e2e_testplan.hjson%rom_ext_e2e_transfer_any_test
 ownership_transfer_test(
@@ -104,7 +141,7 @@ ownership_transfer_test(
             --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
             --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
             --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
-            --corrupt-owner-block-signature=true
+            --config-kind=corrupt
             --dual-owner-boot-check=false
             --expected-error=OwnershipInvalidInfoPage
         """,
@@ -247,4 +284,87 @@ ownership_transfer_test(
         """,
         test_harness = "//sw/host/tests/ownership:transfer_test",
     ),
+)
+
+# rom_ext_e2e_testplan.hjson%rom_ext_e2e_rescue_limit_test
+ownership_transfer_test(
+    name = "rescue_limit_test",
+    srcs = ["flash_contents.c"],
+    fpga = fpga_params(
+        timeout = "long",
+        # We boot on Side B since rescue will rewrite side A.
+        assemble = "{rom_ext}@0 {firmware}@0x90000",
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+        """,
+        test_harness = "//sw/host/tests/ownership:rescue_limit_test",
+    ),
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
+    deps = [
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+# rom_ext_e2e_testplan.hjson%rom_ext_e2e_rescue_permission_test
+ownership_transfer_test(
+    name = "rescue_permission_test",
+    fpga = fpga_params(
+        changes_otp = True,
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+        """,
+        test_harness = "//sw/host/tests/ownership:rescue_permission_test",
+    ),
+)
+
+# rom_ext_e2e_testplan.hjson%rom_ext_e2e_flash_permission_test
+# Note: rescue-after-activate tests that rescue correctly accesses regions with
+# different scrambling/ECC properties than the default flash configuration.
+ownership_transfer_test(
+    name = "flash_permission_test",
+    srcs = ["flash_regions.c"],
+    fpga = fpga_params(
+        binaries = {
+            ":flash_regions": "flash_regions",
+        },
+        test_cmd = """
+            --clear-bitstream
+            --bootstrap={firmware}
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+            --next-application-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:app_prod_pub)
+            --config-kind=with-flash-locked
+            --rescue-after-activate={flash_regions}
+        """,
+        test_harness = "//sw/host/tests/ownership:flash_permission_test",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/dif:flash_ctrl",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
 )
