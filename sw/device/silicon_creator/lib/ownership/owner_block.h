@@ -112,13 +112,18 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
  *
  * @param flash A pointer to a flash configuration struct.
  * @param config_side Which side of the flash to configure.
- * @param lockdown Apply any special lockdown configuration to the specified
- *                 side of the flash.  May use kHardenedBoolFalse to skip
- *                 lockdown.
+ * @param creator_lockdown Apply any special lockdown configuration to
+ *                         silicon_creator regions on the specified side of the
+ *                         flash.  May use kHardenedBoolFalse to skip lockdown.
+ * @param owner_lockdown Apply any special lockdown configuration to
+ *                       silicon_owner regions on the specified side of the
+ *                       flash.  May use kHardenedBoolFalse to skip lockdown.
  * @return error code.
  */
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side, uint32_t lockdown);
+                                    uint32_t config_side,
+                                    uint32_t creator_lockdown,
+                                    uint32_t owner_lockdown);
 
 /**
  * Apply the flash info configuration parameters from the owner block.

@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/boot_log.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -125,10 +126,12 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   HARDENED_RETURN_IF_ERROR(owner_block_parse(&owner_page[0], config, keyring));
   HARDENED_RETURN_IF_ERROR(
       owner_block_flash_apply(config->flash, kBootSlotA,
-                              /*lockdown=*/kHardenedBoolFalse));
+                              /*creator_lockdown=*/kHardenedBoolFalse,
+                              /*owner_lockdown=*/kHardenedBoolFalse));
   HARDENED_RETURN_IF_ERROR(
       owner_block_flash_apply(config->flash, kBootSlotB,
-                              /*lockdown=*/kHardenedBoolFalse));
+                              /*creator_lockdown=*/kHardenedBoolFalse,
+                              /*owner_lockdown=*/kHardenedBoolFalse));
   HARDENED_RETURN_IF_ERROR(owner_block_info_apply(config->info));
   return kErrorOk;
 }
@@ -153,7 +156,8 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
         owner_block_parse(&owner_page[0], config, keyring));
     HARDENED_RETURN_IF_ERROR(
         owner_block_flash_apply(config->flash, bootdata->primary_bl0_slot,
-                                /*lockdown=*/kHardenedBoolFalse));
+                                /*creator_lockdown=*/kHardenedBoolFalse,
+                                /*owner_lockdown=*/kHardenedBoolFalse));
   }
 
   if (owner_block_page1_valid_for_transfer(bootdata) == kHardenedBoolTrue) {
@@ -171,7 +175,8 @@ static rom_error_t unlocked_init(boot_data_t *bootdata, owner_config_t *config,
   }
   HARDENED_RETURN_IF_ERROR(
       owner_block_flash_apply(config->flash, secondary,
-                              /*lockdown=*/kHardenedBoolFalse));
+                              /*creator_lockdown=*/kHardenedBoolFalse,
+                              /*owner_lockdown=*/kHardenedBoolFalse));
   HARDENED_RETURN_IF_ERROR(owner_block_info_apply(config->info));
   return kErrorOk;
 }
@@ -271,14 +276,17 @@ rom_error_t ownership_init(boot_data_t *bootdata, owner_config_t *config,
   return error;
 }
 
-rom_error_t ownership_flash_lockdown(boot_data_t *bootdata,
-                                     uint32_t active_slot,
+rom_error_t ownership_flash_lockdown(boot_data_t *bootdata, boot_log_t *bootlog,
                                      const owner_config_t *config) {
   if (bootdata->ownership_state == kOwnershipStateLockedOwner) {
-    HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotA,
-                                                     /*lockdown=*/active_slot));
-    HARDENED_RETURN_IF_ERROR(owner_block_flash_apply(config->flash, kBootSlotB,
-                                                     /*lockdown=*/active_slot));
+    HARDENED_RETURN_IF_ERROR(
+        owner_block_flash_apply(config->flash, kBootSlotA,
+                                /*creator_lockdown=*/bootlog->rom_ext_slot,
+                                /*owner_lockdown=*/bootlog->bl0_slot));
+    HARDENED_RETURN_IF_ERROR(
+        owner_block_flash_apply(config->flash, kBootSlotB,
+                                /*creator_lockdown=*/bootlog->rom_ext_slot,
+                                /*owner_lockdown=*/bootlog->bl0_slot));
   } else {
     HARDENED_CHECK_NE(bootdata->ownership_state, kOwnershipStateLockedOwner);
   }

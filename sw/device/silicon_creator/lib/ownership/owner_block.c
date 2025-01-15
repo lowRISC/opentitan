@@ -24,6 +24,12 @@ owner_page_status_t owner_page_valid[2];
 enum {
   kFlashBankSize = FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
+  kFlashTotalSize = 2 * kFlashBankSize,
+
+  kRomExtAStart = 0 / kFlashPageSize,
+  kRomExtAEnd = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
+  kRomExtBStart = kFlashBankSize + kRomExtAStart,
+  kRomExtBEnd = kFlashBankSize + kRomExtAEnd,
 };
 
 hardened_bool_t owner_block_newversion_mode(void) {
@@ -150,6 +156,31 @@ rom_error_t owner_block_parse(const owner_block_t *block,
   return kErrorOk;
 }
 
+// These functions aren't defined in owner_block.h because they aren't meant
+// to be public APIs.  They aren't static so we can access the symbols in the
+// unit test program.
+
+// Checks if the half-open range [start..end) overlaps with the ROM_EXT region.
+// The RomExt_Start/End constants are also expressed as half-open ranges.
+hardened_bool_t rom_ext_flash_overlap(uint32_t start, uint32_t end) {
+  return (start < kRomExtAEnd && end > kRomExtAStart) ||
+                 (start < kRomExtBEnd && end > kRomExtBStart)
+             ? kHardenedBoolTrue
+             : kHardenedBoolFalse;
+}
+
+// Checks if the half-open range [start..end) is exclusively within the ROM_EXT
+// region. The RomExt_Start/End constants are also expressed as half-open
+// ranges.
+hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
+  return (kRomExtAStart <= start && start < kRomExtAEnd &&
+          kRomExtAStart < end && end <= kRomExtAEnd) ||
+                 (kRomExtBStart <= start && start < kRomExtBEnd &&
+                  kRomExtBStart < end && end <= kRomExtBEnd)
+             ? kHardenedBoolTrue
+             : kHardenedBoolFalse;
+}
+
 rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
   size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
                sizeof(owner_flash_region_t);
@@ -157,20 +188,19 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
     return kErrorOwnershipFlashConfigLenth;
   }
 
-  const uint32_t kRomExtAStart = 0 / kFlashPageSize;
-  const uint32_t kRomExtAEnd = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize;
-  const uint32_t kRomExtBStart = kFlashBankSize + kRomExtAStart;
-  const uint32_t kRomExtBEnd = kFlashBankSize + kRomExtAEnd;
-
   const owner_flash_region_t *config = flash->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     uint32_t start = config->start;
     uint32_t end = start + config->size;
-    if ((kRomExtAStart >= start && kRomExtAStart < end) ||
-        (kRomExtAEnd > start && kRomExtAEnd <= end) ||
-        (kRomExtBStart >= start && kRomExtBStart < end) ||
-        (kRomExtBEnd > start && kRomExtBEnd <= end)) {
+    if (end > kFlashTotalSize) {
+      return kErrorOwnershipFlashConfigBounds;
+    }
+    // When checking the flash configuration, a region is a ROM_EXT region if
+    // it overlaps the ROM_EXT bounds.  This detects if the defined ROM_EXT
+    // region has the same ecc/scrambling parameters as the default flash
+    // configuration.
+    if (rom_ext_flash_overlap(start, end) == kHardenedBoolTrue) {
       uint32_t val = config->properties ^ crypt;
       flash_ctrl_cfg_t cfg = {
           .scrambling = bitfield_field32_read(val, FLASH_CONFIG_SCRAMBLE),
@@ -195,7 +225,9 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
 }
 
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
-                                    uint32_t config_side, uint32_t lockdown) {
+                                    uint32_t config_side,
+                                    uint32_t creator_lockdown,
+                                    uint32_t owner_lockdown) {
   if ((hardened_bool_t)flash == kHardenedBoolFalse)
     return kErrorOk;
   // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
@@ -229,19 +261,45 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
           .erase = bitfield_field32_read(val, FLASH_CONFIG_ERASE),
       };
 
-      if (lockdown == config_side) {
-        if (bitfield_field32_read(val, FLASH_CONFIG_PROTECT_WHEN_PRIMARY) !=
-            kMultiBitBool4False) {
+      uint32_t pwp =
+          bitfield_field32_read(val, FLASH_CONFIG_PROTECT_WHEN_PRIMARY);
+      hardened_bool_t lock =
+          bitfield_field32_read(val, FLASH_CONFIG_LOCK) != kMultiBitBool4False
+              ? kHardenedBoolTrue
+              : kHardenedBoolFalse;
+      uint32_t region_start = config->start;
+      uint32_t region_end = region_start + config->size;
+
+      // When applying the flash configuration, a region is a ROM_EXT region if
+      // it is exclusively within the ROM_EXT bounds.  This sets the creator
+      // the lockdown policy for a region that is exclusively the creator
+      // region.
+      if (rom_ext_flash_exclusive(region_start, region_end) ==
+          kHardenedBoolTrue) {
+        // Flash region is a ROM_EXT region.
+        // If the config_side is the same as the creator lockdown side, and
+        // protect_when_primary is requested, deny write/erase to the region.
+        if (config_side == creator_lockdown && pwp != kMultiBitBool4False) {
           perm.write = kMultiBitBool4False;
           perm.erase = kMultiBitBool4False;
         }
-      }
-
-      hardened_bool_t lock = kHardenedBoolFalse;
-      if (lockdown != kHardenedBoolFalse) {
-        if (bitfield_field32_read(val, FLASH_CONFIG_LOCK) !=
-            kMultiBitBool4False) {
-          lock = kHardenedBoolTrue;
+        // If we aren't in a lockdown state, then do not lock the region
+        // configuration via the flash_ctrl regwen bits.
+        if (creator_lockdown == kHardenedBoolFalse) {
+          lock = kHardenedBoolFalse;
+        }
+      } else {
+        // Flash region is an owner region.
+        // If the config_side is the same as the owner lockdown side, and
+        // protect_when_primary is requested, deny write/erase to the region.
+        if (config_side == owner_lockdown && pwp != kMultiBitBool4False) {
+          perm.write = kMultiBitBool4False;
+          perm.erase = kMultiBitBool4False;
+        }
+        // If we aren't in a lockdown state, then do not lock the region
+        // configuration via the flash_ctrl regwen bits.
+        if (owner_lockdown == kHardenedBoolFalse) {
+          lock = kHardenedBoolFalse;
         }
       }
       flash_ctrl_data_region_protect(i, config->start, config->size, perm, cfg,
