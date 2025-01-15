@@ -85,7 +85,7 @@ package dma_pkg;
 
   parameter int unsigned SYS_NUM_REQ_CH      = 2;
   parameter int unsigned SYS_ADDR_WIDTH      = 64;
-  parameter int unsigned SYS_METADATA_WIDTH  = 7;
+  parameter int unsigned SYS_METADATA_WIDTH  = 3;
   parameter int unsigned SYS_RACL_WIDTH      = 4;
   parameter int unsigned SYS_DATA_BYTEWIDTH  = 4;
   parameter int unsigned SYS_DATA_WIDTH      = SYS_DATA_BYTEWIDTH * 8;
