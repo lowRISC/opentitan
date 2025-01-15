@@ -884,7 +884,7 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   assign reg_busy = shadow_busy;
   % else:
   logic reg_busy_sel;
-  assign reg_busy = reg_busy_sel | shadow_busy;
+  assign reg_busy = (reg_busy_sel | shadow_busy) & tl_i.a_valid;
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
