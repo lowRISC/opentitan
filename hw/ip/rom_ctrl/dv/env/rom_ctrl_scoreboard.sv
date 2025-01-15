@@ -9,9 +9,6 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   );
   `uvm_component_utils(rom_ctrl_scoreboard)
 
-  // local variables
-  bit [DIGEST_SIZE-1:0]          expected_digest;
-
   // The digest of ROM contents that has been returned from KMAC. This is valid if
   // rom_check_complete is true.
   bit [kmac_pkg::AppDigestW-1:0] kmac_digest;
@@ -50,8 +47,10 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // agree (to check the GOOD field of the signal that will be sent to pwrmgr).
   extern task process_kmac_rsp_fifo();
 
-  extern virtual function void get_expected_digest();
-  extern virtual function void update_ral_digests();
+  // Return the top words of the ROM image, which give an expected digest value
+  extern function bit [DIGEST_SIZE-1:0] get_expected_digest();
+
+  extern virtual function void update_ral_digests(bit [DIGEST_SIZE-1:0] expected_digest);
   extern virtual task monitor_rom_ctrl_if();
   extern virtual function void check_rom_access(tl_seq_item item);
   extern virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -117,7 +116,9 @@ function void rom_ctrl_scoreboard::check_kmac_data(const ref byte byte_data_q[$]
 endfunction
 
 task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
+  bit [DIGEST_SIZE-1:0] expected_digest;
   kmac_app_item kmac_rsp;
+
   forever begin
     kmac_rsp_fifo.get(kmac_rsp);
     if (!cfg.en_scb) continue;
@@ -129,16 +130,15 @@ task rom_ctrl_scoreboard::process_kmac_rsp_fifo();
     `DV_CHECK_FATAL(!rom_check_complete, "Extra KMAC response seen.")
 
     kmac_digest = kmac_rsp.rsp_digest_share0 ^ kmac_rsp.rsp_digest_share1;
-    get_expected_digest();
-    update_ral_digests();
+    expected_digest = get_expected_digest();
+    update_ral_digests(expected_digest);
     digest_good = prim_mubi_pkg::mubi4_bool_to_mubi(
                   kmac_digest[DIGEST_SIZE-1:0] == expected_digest);
     rom_check_complete = 1'b1;
   end
 endtask
 
-// Pull the expected digest value from the top of rom
-function void rom_ctrl_scoreboard::get_expected_digest();
+function bit [DIGEST_SIZE-1:0] rom_ctrl_scoreboard::get_expected_digest();
   bit [DIGEST_SIZE-1:0]    digest;
   bit [`ROM_BYTE_ADDR_WIDTH-1:0] dig_addr;
   // Get the digest from rom
@@ -150,7 +150,7 @@ function void rom_ctrl_scoreboard::get_expected_digest();
     digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
     dig_addr += (TL_DW / 8);
   end
-  expected_digest = digest;
+  return digest;
 endfunction
 
 // Update the RAL model with expected values for the digest registers
@@ -159,7 +159,7 @@ endfunction
 // that we've just read the given value from the registers. We do this rather than using
 // UVM_PREDICT_DIRECT (the default) because it avoids UVM thinking that there might be a race
 // against CSR operations that are already in flight.
-function void rom_ctrl_scoreboard::update_ral_digests();
+function void rom_ctrl_scoreboard::update_ral_digests(bit [DIGEST_SIZE-1:0] expected_digest);
   for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
     `DV_CHECK(ral.digest[i].predict(.value(kmac_digest[i*TL_DW+:TL_DW]),
                                     .kind(UVM_PREDICT_READ)))
