@@ -359,6 +359,7 @@ Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid
 
 ## HW_STRAPS_DATA_IN
 GPIO Input data sampled as straps during cold boot read value
+The GPIO input data is sampled after the first one pulse cycle of straps_en input after reset.
 - Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`

@@ -145,5 +145,17 @@
       stage: V2
       tests: ["gpio_stress_all"]
     }
+    {
+      name: straps_data
+      desc: '''Verify the straps data/valid ouput expected values based on the strap_en and gpio_i inputs:
+      - Drives gpio_i input with random values
+      - Set the expected strap_data_in based on the condition if is the first triggered strap_en or not
+      - Updates the RAL model with the expected strap_data_in and strap_data_in_valid
+      - Trigger the strap_en with one clock cycle
+      - Read the registers hw_straps_data_in and hw_straps_data_in_valid
+      - Check the expected behavior in the scoreboard and also on csr checks'''
+      stage: V3
+      tests: ["gpio_rand_straps"]
+    }
   ]
 }

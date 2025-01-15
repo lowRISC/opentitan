@@ -390,7 +390,9 @@
       ],
     },
     { name: "HW_STRAPS_DATA_IN",
-      desc: "GPIO Input data sampled as straps during cold boot read value",
+      desc: '''GPIO Input data sampled as straps during cold boot read value
+            The GPIO input data is sampled after the first one pulse cycle of straps_en input after reset.
+            ''',
       swaccess: "ro",
       hwaccess: "hrw",
       tags: [// Value in the register is determined by GPIO pin values that are sampled
