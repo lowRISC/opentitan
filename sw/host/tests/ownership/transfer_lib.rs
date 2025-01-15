@@ -227,19 +227,34 @@ where
         ..Default::default()
     };
     if cfg & CFG_FLASH1 != 0 {
+        let flash_config = if cfg & CFG_FLASH_ERROR != 0 {
+            // It is an error set have a flash config that overlaps the ROM_EXT
+            // region.
+
+            // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
+            vec![
+                OwnerFlashRegion::new(0, 32, config.rom_ext()),
+                OwnerFlashRegion::new(32, 192, config.firmware()),
+                OwnerFlashRegion::new(224, 32, config.filesystem()),
+                // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
+                OwnerFlashRegion::new(256, 32, config.rom_ext()),
+                OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
+                OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
+            ]
+        } else {
+            vec![
+                // Side A: 64-448K firmware, 448-512K filesystem.
+                OwnerFlashRegion::new(32, 192, config.firmware()),
+                OwnerFlashRegion::new(224, 32, config.filesystem()),
+                // Side B: 64-448K firmware, 448-512K filesystem.
+                OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
+                OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
+            ]
+        };
         owner
             .data
             .push(OwnerConfigItem::FlashConfig(OwnerFlashConfig {
-                config: vec![
-                    // Side A: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(0, 32, config.rom_ext()),
-                    OwnerFlashRegion::new(32, 192, config.firmware()),
-                    OwnerFlashRegion::new(224, 32, config.filesystem()),
-                    // Side B: 0-64K romext, 64-448K firmware, 448-512K filesystem.
-                    OwnerFlashRegion::new(256, 32, config.rom_ext()),
-                    OwnerFlashRegion::new(256 + 32, 192, config.firmware()),
-                    OwnerFlashRegion::new(256 + 224, 32, config.filesystem()),
-                ],
+                config: flash_config,
                 ..Default::default()
             }));
         owner

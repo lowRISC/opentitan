@@ -17,10 +17,8 @@
 rom_error_t ownership_activate(boot_data_t *bootdata,
                                hardened_bool_t write_both_pages) {
   // Check if page1 parses correctly.
-  owner_config_t config;
-  owner_application_keyring_t keyring;
-  HARDENED_RETURN_IF_ERROR(
-      owner_block_parse(&owner_page[1], &config, &keyring));
+  HARDENED_RETURN_IF_ERROR(owner_block_parse(
+      &owner_page[1], /*check_only*/ kHardenedBoolTrue, NULL, NULL));
 
   // Seal page one to this chip.
   ownership_seal_page(/*page=*/1);

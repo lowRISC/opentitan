@@ -49,8 +49,9 @@ static_assert(kDtFlashCtrlCount >= 1,
 static volatile bool irq_serviced = false;
 
 enum {
-  kFlashDataRegion = 0,
-  kRegionBasePageIndex = 256,  // First page in bank 1 (avoids program code.)
+  kFlashDataRegion = 2,  // The ROM_EXT protects itself using regions 0-1.
+  kRegionBasePageIndex =
+      256 + 32,  // First non-ROM_EXT page in bank 1 (avoids program code.)
   kPartitionId = 0,
   kRegionSize = 1,
   kNumWords = 128,
