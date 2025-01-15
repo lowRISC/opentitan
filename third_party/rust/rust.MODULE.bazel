@@ -3,25 +3,56 @@
 # SPDX-License-Identifier: Apache-2.0
 
 # Dependencies:
-bazel_dep(name = "rules_rust", version = "0.49.3")
+bazel_dep(name = "rules_rust", version = "0.56.0")
+bazel_dep(name = "rules_rust_bindgen", version = "0.56.0")
 bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
 # Overrides and patches:
 single_version_override(
     module_name = "rules_rust",
     patches = [
-        "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
         "//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
     ],
-    version = "0.49.3",
+    patch_strip = 1,
+    version = "0.56.0",
+)
+
+single_version_override(
+    module_name = "rules_rust_bindgen",
+    patches = [
+        "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+    ],
+    patch_strip = 3,
+    version = "0.56.0",
 )
 
 # Rust toolchain:
 rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
-rust.toolchain(
+rust.repository_set(
+    name = "rust_host",
     edition = "2021",
-    extra_target_triples = [
-        "riscv32imc-unknown-none-elf",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    target_triple = "x86_64-unknown-linux-gnu",
+    sha256s = {
+        "2024-11-22/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "02ef1e3ca25a03ccb9828a4e932b27f59a0625ed9772463d556539da38b7fd7b",
+        "2024-11-22/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "9f888010e1f01373d401c65ab0adf6f9fc76cbd0034f4346352c1bd211471339",
+        "2024-11-22/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "19cb321daca3e733a6b0baf06f70112ea037842e2c716d8eebb1791047fa1d88",
+        "2024-11-22/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "8f245a660be95f0b45fb174f0af5f0401a436bf67c332543dfd829db8b9d6f1f",
+        "2024-11-22/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "7e74dd19bb929dc7d53dacd595c3dff8d498a3f5485ea7ab057188c9d2f50224",
+    },
+    # Use nightly that Rust 1.84 branches from.
+    versions = ["nightly/2024-11-22"],
+)
+rust.repository_set(
+    name = "rust_tock",
+    edition = "2021",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "@platforms//cpu:riscv32",
     ],
     sha256s = {
         "2023-07-30/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "ecdee8821a57efbb699b7e3aa4cbfbd60b7970bce89a8cfb9bc7d65b9058ee42",
@@ -31,10 +62,10 @@ rust.toolchain(
         "2023-07-30/rust-std-nightly-riscv32imc-unknown-none-elf.tar.xz": "9790d50d4510443bbf4c13b68227a273345d28b84d29372bc5f5ea2d14d05f2d",
         "2023-07-30/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "b5a589a243923c5fa2a1f08e7b902bb0a64ae08010067b9074501a6e1fb8b042",
     },
-    versions = [
-        "1.71.1",
-        "nightly/2023-07-30",
-    ],
+    target_triple = "riscv32imc-unknown-none-elf",
+    # For RISC-V toolchain, we currently don't support LLVM 16+ due to old binutils version.
+    # Rust updated its LLVM 17 on 2023-08-08.
+    versions = ["nightly/2023-07-30"],
 )
 use_repo(rust, "rust_toolchains")
 register_toolchains("@rust_toolchains//:all")
