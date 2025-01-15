@@ -86,6 +86,11 @@ py_library(
     srcs = ["version_file.py"],
 )
 
+py_library(
+    name = "repo_top",
+    srcs = ["repo_top.py"],
+)
+
 cc_library(
     name = "bfv_decoder",
     srcs = ["bfv_decoder.c"],
