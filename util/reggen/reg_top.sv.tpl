@@ -33,7 +33,9 @@
   reg2hw_t = gen_rtl.get_iface_tx_type(block, if_name, False)
   hw2reg_t = gen_rtl.get_iface_tx_type(block, if_name, True)
 
-  racl_support = block.bus_interfaces.racl_support[if_name]
+  dynamic_racl_support = block.bus_interfaces.racl_support[if_name]
+  static_racl_support = block.bus_interfaces.static_racl_support[if_name]
+  racl_support = dynamic_racl_support or static_racl_support
 
   win_array_decl = f'  [{num_wins}]' if num_wins > 1 else ''
 
@@ -120,8 +122,11 @@
 module ${mod_name}${' (' if not racl_support else ''}
 % if racl_support:
   # (
-    parameter bit EnableRacl   = 1'b0,
-    parameter bit RaclErrorRsp = 1'b1
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1${"," if dynamic_racl_support else ""}
+  % if dynamic_racl_support:
+    parameter int unsigned RaclPolicySelVec[${len(rb.flat_regs)}] = '{${len(rb.flat_regs)}{0}}
+  % endif
   ) (
 % endif
   input clk_i,
@@ -157,10 +162,11 @@ module ${mod_name}${' (' if not racl_support else ''}
 %endif
 % if racl_support:
   // RACL interface
+% if dynamic_racl_support:
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  input  integer racl_policy_sel_vec_i[${len(rb.flat_regs)}],
-  output logic racl_error_o,
-  output top_racl_pkg::racl_error_log_t racl_error_log_o,
+% endif
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
 % endif
   // Integrity check errors
@@ -674,7 +680,7 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
     assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
 
     prim_onehot_enc #(
-      .OneHotWidth( $bits(prim_onehot_enc) )
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
     ) u_racl_role_encode (
       .in_i ( racl_role     ),
       .en_i ( 1'b1          ),
@@ -699,11 +705,22 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
   % if racl_support:
 
     if (EnableRacl) begin : gen_racl_hit
-    % for i,r in enumerate(regs_flat):
-<% slice = '{}'.format(i).rjust(max_regs_char) %>\
-      racl_addr_hit_read [${slice}] = addr_hit[${slice}] & (|(racl_policies_i[racl_policy_sel_vec_i[${slice}]].read_perm  & racl_role_vec));
-      racl_addr_hit_write[${slice}] = addr_hit[${slice}] & (|(racl_policies_i[racl_policy_sel_vec_i[${slice}]].write_perm & racl_role_vec));
-    % endfor
+      for (int unsigned slice_idx = 0; slice_idx < ${len(regs_flat)}; slice_idx++) begin
+      % if dynamic_racl_support:
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      % else:
+        // Static RACL protection with ROT_PRIVATE policy
+        racl_addr_hit_read[slice_idx] =
+          addr_hit[slice_idx] & (|(top_racl_pkg::RACL_POLICY_ROT_PRIVATE_RD & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+          addr_hit[slice_idx] & (|(top_racl_pkg::RACL_POLICY_ROT_PRIVATE_WR & racl_role_vec));
+      % endif
+      end
     end else begin : gen_no_racl
       racl_addr_hit_read  = addr_hit;
       racl_addr_hit_write = addr_hit;
@@ -718,7 +735,8 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
   assign racl_error_log_o.racl_role  = racl_role;
 
   if (EnableRacl) begin : gen_racl_log
-    assign racl_error_log_o.ctn_uid        = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.ctn_uid        =
+      top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
     assign racl_error_log_o.read_not_write = tl_i.a_opcode == tlul_pkg::Get;
   end else begin : gen_no_racl_log
     assign racl_error_log_o.ctn_uid        = '0;
@@ -911,6 +929,10 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+% endif
+% if dynamic_racl_support:
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 % endif
 % if rb.all_regs:
 

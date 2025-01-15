@@ -1085,6 +1085,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart0_tl_req),
       .tl_o(uart0_tl_rsp),
 
@@ -1119,6 +1122,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart1_tl_req),
       .tl_o(uart1_tl_rsp),
 
@@ -1153,6 +1159,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart2_tl_req),
       .tl_o(uart2_tl_rsp),
 
@@ -1187,6 +1196,9 @@ module top_earlgrey #(
 
       // Inter-module signals
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(uart3_tl_req),
       .tl_o(uart3_tl_rsp),
 
@@ -1309,6 +1321,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c0_tl_req),
       .tl_o(i2c0_tl_rsp),
 
@@ -1355,6 +1370,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c1_tl_req),
       .tl_o(i2c1_tl_rsp),
 
@@ -1401,6 +1419,9 @@ module top_earlgrey #(
       .ram_cfg_i(ast_ram_1p_cfg),
       .ram_cfg_rsp_o(),
       .lsio_trigger_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(i2c2_tl_req),
       .tl_o(i2c2_tl_rsp),
 
@@ -1986,6 +2007,9 @@ module top_earlgrey #(
       .alert_rx_i  ( alert_rx[29:29] ),
 
       // Inter-module signals
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(pwm_aon_tl_req),
       .tl_o(pwm_aon_tl_rsp),
 

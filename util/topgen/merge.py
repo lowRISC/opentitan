@@ -240,6 +240,16 @@ def elaborate_instance(instance, block: IpBlock):
             raise ValueError(f'generate_dif contains invalid value {instance["generate_dif"]}')
         instance['generate_dif'] = converted_value
 
+    # An instance can either have a 'racl_mapping' or 'racl_mappings' but can't have both.
+    # 'racl_mapping' is used when the device only has a single register interface and
+    # 'racl_mappings' when there are more. Translate to always use unified racl_mappings entry.
+    racl_mapping = instance.get('racl_mapping')
+    if racl_mapping is not None:
+        if instance.get('racl_mappings') is not None:
+            raise ValueError("Cannot specify both 'racl_mapping' and 'racl_mappings'")
+        del instance['racl_mapping']
+        instance['racl_mappings'] = {None: racl_mapping}
+
 
 # TODO: Replace this part to be configurable from Hjson or template
 predefined_modules = {

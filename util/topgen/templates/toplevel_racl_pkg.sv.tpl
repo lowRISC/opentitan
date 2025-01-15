@@ -31,6 +31,15 @@ package top_racl_pkg;
   // RACL policy vector for distributing RACL policies from the RACL widget to the subscribing IP
   typedef racl_policy_t [NrRaclPolicies-1:0] racl_policy_vec_t;
 
+  // Default policy vector for unconnected RACL IPs
+  parameter racl_policy_vec_t RACL_POLICY_VEC_DEFAULT = '0;
+
+  // Default ROT Private read policy value
+  parameter racl_policy_vec_t RACL_POLICY_ROT_PRIVATE_RD = 16'h${f"{racl_config['rot_private_policy_rd']:x}"};
+
+  // Default ROT Private write policy value
+  parameter racl_policy_vec_t RACL_POLICY_ROT_PRIVATE_WR = 16'h${f"{racl_config['rot_private_policy_wr']:x}"};
+
   // RACL information logged in case of a denial
   typedef struct packed {
     racl_role_t racl_role;
@@ -79,4 +88,16 @@ package top_racl_pkg;
   % endfor
 % endfor
 
+% for m in topcfg['module']:
+  % if 'racl_mappings' in m:
+    % for if_name, mapping in m['racl_mappings'].items():
+  /**
+   * Policy selection vector for ${m["name"]}
+   */
+<% if_prefix = f"_{if_name.upper()}" if if_name else "" %>\
+  parameter int unsigned RACL_POLICY_SEL_${m["name"].upper()}${if_prefix} [${len(mapping)}] = '{${", ".join(map(str, reversed(mapping.values())))}};
+  
+    % endfor
+  % endif
+% endfor
 endpackage

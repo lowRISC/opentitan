@@ -4,7 +4,8 @@
 
 module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}},
-  parameter int unsigned          NumSubscribingIps = 1
+  parameter int unsigned          NumSubscribingIps = 1,
+  parameter bit                   RaclErrorRsp      = 1'b1
 ) (
   input  logic                                                 clk_i,
   input  logic                                                 rst_ni,
@@ -18,7 +19,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]            alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]            alert_tx_o,
   // Output policy vector for distribution
-  output top_racl_pkg::racl_policy_vec_t                       policies_o,
+  output top_racl_pkg::racl_policy_vec_t                       racl_policies_o,
   // RACL violation information.
   input logic            [NumSubscribingIps-1:0]               racl_error_i,
   input top_racl_pkg::racl_error_log_t [NumSubscribingIps-1:0] racl_error_log_i
@@ -38,21 +39,26 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 % if enable_shadow_reg:
   // SEC_CM: RACL_POLICY.CONFIG.SHADOW
 % endif
-  ${module_instance_name}_reg_top u_racl_ctrl_reg (
-    .clk_i                  ( clk_i                ),
-    .rst_ni                 ( rst_ni               ),
+  ${module_instance_name}_reg_top u_racl_ctrl_reg #(
+    .EnableRacl   ( 1'b1         ),
+    .RaclErrorRsp ( RaclErrorRsp )
+  u_racl_ctrl_reg (
+    .clk_i                  ( clk_i                    ),
+    .rst_ni                 ( rst_ni                   ),
 % if enable_shadow_reg:
-    .rst_shadowed_ni        ( rst_shadowed_ni      ),
+    .rst_shadowed_ni        ( rst_shadowed_ni          ),
 % endif
-    .tl_i                   ( tl_i                 ),
-    .tl_o                   ( tl_o                 ),
-    .reg2hw                 ( reg2hw               ),
-    .hw2reg                 ( hw2reg               ),
+    .tl_i                   ( tl_i                     ),
+    .tl_o                   ( tl_o                     ),
+    .reg2hw                 ( reg2hw                   ),
+    .hw2reg                 ( hw2reg                   ),
 % if enable_shadow_reg:
-    .shadowed_storage_err_o ( shadowed_storage_err ),
-    .shadowed_update_err_o  ( shadowed_update_err  ),
+    .shadowed_storage_err_o ( shadowed_storage_err     ),
+    .shadowed_update_err_o  ( shadowed_update_err      ),
 % endif
-    .intg_err_o             ( reg_intg_error       )
+    .racl_error_o           ( racl_ctrl_racl_error     ),
+    .racl_error_log_o       ( racl_ctrl_racl_error_log ),
+    .intg_err_o             ( reg_intg_error           )
   );
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
@@ -114,7 +120,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
 % endfor
   // Broadcast all policies via policy vector
-  assign policies_o = {
+  assign racl_policies_o = {
 % for policy in policies:
     policy_${policy['name'].lower()}${',' if not loop.last else ''}
 % endfor
@@ -123,28 +129,32 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   //////////////////////////////////////////////////////////////////////////////////////////////////
   // Error handling
   //////////////////////////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
 
   // A RACL error can only happen for one IP at a time in one RACL domain. Therefore, it is
   // safe to OR all RACL error bits together and no arbitration is needed. This is true also
   // for the corresponding RACL role or Write/Read information.
+  `ASSERT(OneHotRaclError_A, $onehot0(racl_error_i))
+
   logic racl_error;
-  assign racl_error = |racl_error_i;
+  // A combined RACL error from external subscribing IPs in the racl_ctrl internal reg_top
+  assign racl_error = |racl_error_i | racl_ctrl_racl_error;
 
   top_racl_pkg::racl_role_t racl_error_role;
   top_racl_pkg::ctn_uid_t racl_error_ctn_uid;
-  logic racl_error_write_read;
+  logic racl_error_read_not_write;
 
   // Reduce all incoming error vectors to a single role and write/read bit.
   // Only a single IP can have a RACL error at one time.
   always_comb begin
-    racl_error_role       = '0;
-    racl_error_ctn_uid    = '0;
-    racl_error_write_read = 1'b0;
+    // Default to the racl_ctrl reg_top error information. Possible since only
+    // one error allowed at a time.
+    racl_error_role           = racl_ctrl_racl_error_log.racl_role;
+    racl_error_ctn_uid        = racl_ctrl_racl_error_log.ctn_uid;
+    racl_error_read_not_write = racl_ctrl_racl_error_log.read_not_write;
     for (int i = 0; i < NumSubscribingIps; i++) begin
-      racl_error_role       |= racl_error_log_i[i].racl_role;
-      racl_error_ctn_uid    |= racl_error_log_i[i].ctn_uid;
-      racl_error_write_read |= racl_error_log_i[i].write_read;
+      racl_error_role           |= racl_error_log_i[i].racl_role;
+      racl_error_ctn_uid        |= racl_error_log_i[i].ctn_uid;
+      racl_error_read_not_write |= racl_error_log_i[i].read_not_write;
     end
   end
 
@@ -162,7 +172,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   assign hw2reg.error_log.overflow.d  = ~clear_log;
   assign hw2reg.error_log.overflow.de = (reg2hw.error_log.valid.q & racl_error) | clear_log;
 
-  assign hw2reg.error_log.write_read.d  = clear_log ? '0 : racl_error_write_read;
+  assign hw2reg.error_log.write_read.d  = clear_log ? '0 : racl_error_read_not_write;
   assign hw2reg.error_log.write_read.de = first_error | clear_log;
 
   assign hw2reg.error_log.role.d  = clear_log ? '0 : racl_error_role;

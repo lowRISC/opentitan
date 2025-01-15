@@ -502,6 +502,17 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
 %>\
   % if m["param_list"] or block.alerts:
   ${m["type"]} #(
+  % if m.get('racl_mappings'):
+    .EnableRacl(1'b1),
+    .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
+    % for if_name in m['racl_mappings'].keys():
+<% if_prefix = f"_{if_name.upper()}" if if_name else "" %>\
+    .RaclPolicySelVec(top_racl_pkg::RACL_POLICY_SEL_${m["name"].upper()}${if_prefix}),
+    % endfor
+  % endif
+  % if m['type'].startswith('racl_ctrl'):
+    .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
+  % endif
   % if block.alerts:
 <%
 w = len(block.alerts)
