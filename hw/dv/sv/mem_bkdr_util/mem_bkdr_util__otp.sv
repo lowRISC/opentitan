@@ -142,8 +142,11 @@ virtual function void otp_write_hw_cfg0_partition(
   write64(HwCfg0DigestOffset, digest);
 endfunction
 
+// TODO(#25883): The size of these parameters depends on the top-level. This injected a fact about
+// the top-level into the mem_bkdr_util class. For now, we're replacing "EnCsrngSwAppReadSize" with
+// 1 as a short-term hack.
 virtual function void otp_write_hw_cfg1_partition(
-    bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
+    bit [1*8-1:0] en_csrng_sw_app_read,
     bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
     bit [EnSramIfetchSize*8-1:0] dis_rv_dm_late_debug);
   bit [HwCfg1DigestSize*8-1:0] digest;
