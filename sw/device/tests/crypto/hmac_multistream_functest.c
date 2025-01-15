@@ -5,7 +5,7 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/rand_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -18,7 +18,7 @@
 #include "hmac_testvectors.h"
 
 // Module ID for status codes.
-#define MODULE_ID MAKE_MODULE_ID('h', 's', 't')
+#define MODULE_ID MAKE_MODULE_ID('t', 's', 't')
 
 // We need the following assertion, because we are using hash context struct
 // also for hmac contexts.

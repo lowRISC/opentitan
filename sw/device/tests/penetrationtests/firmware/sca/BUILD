@@ -93,8 +93,8 @@ cc_library(
     deps = [
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:hmac",
         "//sw/device/lib/crypto/impl:keyblob",
-        "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/crypto/include:datatypes",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ujson_ottf",
