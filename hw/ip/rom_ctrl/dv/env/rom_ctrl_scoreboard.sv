@@ -65,7 +65,13 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // errors and any other operation returns the correct ROM data.
   extern function void check_rom_access(tl_seq_item item);
 
+  // Check a TL item that corresponds to a register access on the given channel
+  extern function void check_reg_access(tl_seq_item item, tl_channels_e channel);
+
+  // Check a TL item seen on the given channel for the given RAL interface. This overrides a task
+  // from cip_base_scoreboard.
   extern virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
+
   extern virtual function void reset(string kind = "HARD");
   extern function void check_phase(uvm_phase phase);
   extern virtual function void phase_ready_to_end(uvm_phase phase);
@@ -231,10 +237,8 @@ function void rom_ctrl_scoreboard::check_rom_access(tl_seq_item item);
   end
 endfunction
 
-task rom_ctrl_scoreboard::process_tl_access(tl_seq_item item,
-                                            tl_channels_e channel,
-                                            string ral_name);
-  dv_base_reg_block ral_model = cfg.ral_models[ral_name];
+function void rom_ctrl_scoreboard::check_reg_access(tl_seq_item item, tl_channels_e channel);
+  dv_base_reg_block ral_model = cfg.ral_models["rom_ctrl_regs_reg_block"];
   uvm_reg_addr_t    csr_addr = ral_model.get_word_aligned_addr(item.a_addr);
   uvm_reg           csr = ral_model.default_map.get_reg_by_offset(csr_addr);
 
@@ -246,25 +250,11 @@ task rom_ctrl_scoreboard::process_tl_access(tl_seq_item item,
   bit data_phase_read   = (!write && channel == DataChannel);
   bit data_phase_write  = (write && channel == DataChannel);
 
-  if (ral_name == "rom_ctrl_prim_reg_block") begin
-    if (channel == DataChannel && !disable_rom_acc_chk) begin
-      check_rom_access(item);
-    end
+  // If this is an access to an address that doesn't correspond to a CSR, there is nothing to check:
+  // the base classes should already predict an error response.
+  if (csr == null) begin
     return;
   end
-
-  // if access was to a valid csr, get the csr handle
-  if (csr_addr inside {cfg.ral_models[ral_name].csr_addrs}) begin
-    csr = cfg.ral_models[ral_name].default_map.get_reg_by_offset(csr_addr);
-    `DV_CHECK_NE_FATAL(csr, null)
-  end else begin
-    `uvm_fatal(`gfn, $sformatf("Access unexpected addr 0x%0h", csr_addr))
-  end
-
-  // If we get here, then the access was on the register channel. If it was to an invalid CSR,
-  // there's nothing more to do. The base classes should already predict an error response.
-  if (csr == null)
-    return;
 
   // if incoming access is a write to a valid csr, then make updates right away
   if (addr_phase_write) begin
@@ -301,6 +291,20 @@ task rom_ctrl_scoreboard::process_tl_access(tl_seq_item item,
                    $sformatf("reg name: %0s", csr.get_full_name()))
     end
     void'(csr.predict(.value(item.d_data), .kind(UVM_PREDICT_READ)));
+  end
+endfunction
+
+task rom_ctrl_scoreboard::process_tl_access(tl_seq_item item,
+                                            tl_channels_e channel,
+                                            string ral_name);
+  if (ral_name == "rom_ctrl_prim_reg_block") begin
+    if (channel == DataChannel && !disable_rom_acc_chk) begin
+      check_rom_access(item);
+    end
+  end else if (ral_name == "rom_ctrl_regs_reg_block") begin
+    check_reg_access(item, channel);
+  end else begin
+    `uvm_fatal(`gfn, $sformatf("Access through unknown ral_name: %s", ral_name))
   end
 endtask
 
