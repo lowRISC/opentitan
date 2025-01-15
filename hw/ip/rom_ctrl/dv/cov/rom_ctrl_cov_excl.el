@@ -146,6 +146,135 @@ Condition 37 "2164803938" "(tl_i_int.a_valid & reqfifo_wready & ((~error_interna
 // u_sram_byte. But this makes req_o false and hence sram_ack false.
 Condition 43 "2041272341" "(sram_ack & ((~we_o))) 1 -1" (2 "10")
 
+// The case 1101 is non-occuring for the conditional statement below.
+//
+// One reason is that the depth of the fifos is 2. When we write something in the fifo, we read the
+// same thing on the next cycle and update the wptr and rptr respectively. It can happen if we
+// delay reads and make them happen after writing to both of the location of the fifos. This will
+// lead to increment only wptr. But this can't happen for u_sramreqfifo because when we write into
+// the fifo we will get rvalid_o in u_sramreqfifo which depends on empty and under_rst. For not
+// having sramreqfifo_rready when we write to the fifo is not possible as it depends on
+// reqfifo_rvalid and we can't hope for not having a reqfifo_rvalid if there was a request to
+// write something in u_sramreqfifo on the last cycle.
+CHECKSUM: "1909897872 4057018282"
+INSTANCE: tb.dut.u_tl_adapter_rom
+Condition 35 "3680494467" "((gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready
+                            & sramreqaddrfifo_wready) 1 -1" (3 "1101")
+
+// The case 011 for the conditional statements below is non-occuring.
+//
+// When rvalid_o=0, the fifo is empty and it is seen as reqfifo_rvalid in tlul_adapter_sram.sv.
+// rready_i comes in as input from tlul_adapter_sram. If rready_i=1, it means d_valid is true which
+// goes to u_sram_byte as one of the port of tl_o_int and d_ready port of tl_i_int is true which
+// comes out from u_sram_byte. But d_valid to be true requires reqfifo_rvalid true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// For u_rspfifo, Pass=1 and rvalid_o is ~(fifo_empty & ~wvalid_i) & ~under_rst. wvalid_i comes
+// from u_tl_adapter_rom as rspfifo_wvalid. rspfifo_wvalid needs both rvalid_i (response from rom)
+// and reqfifo_rvalid. If we want rready_i=1, we want reqfifo_rready=1 in u_tl_adapter_rom.
+// reqfifo_rready further gets assigned by tl_o_int.dvalid and tl_i_int.d_ready. For
+// tl_o_int.dvalid to set itself true requires reqfifo_rvalid. Which means that read from reqfifo
+// is happening and u_rspfifo needs to respond to that read on the same cycle. So, we will get
+// rvalid_o with rready_i.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// For u_sramreqfifo, the rready_i needs reqfifo_rvalid true in u_tl_adapter_rom. But this means
+// that we are reading the request we wrote earlier. If this is the case then we can't get rvalid_o
+// low as this means that the fifo is empty.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (1 "011")
+
+// The case 110 for the conditional statements below is non-occuring.
+//
+// To cover 110, all the bits of the conditional statements should be true. If under_rst is true,
+// then we get empty_o in u_fifo_cnt is true. empty_o=1 when wptr_wrap_cnt_o = rptr_wrapt_cnt_o in
+// u_fifo_cnt. As Secure is true in case of rom_ctrl, wptr_wrap_cnt_o and rptr_wrap_cnt_o comes out
+// as cnt_o from u_wptr and u_rptr respectively. Both u_wptr and u_rptr are instances of same
+// module (prim_count). Then cnt_o gets assigned by cnt_q[0] which is updated as a result of
+// fpv_force[0] + cnt_unforced_q. fpv_force is wired to 0 as rom_ctrl doesn't define the macro
+// PrimCountFPV. cnt_unforced_q comes out as q_o from u_cnt_flop. In u_cnt_flop, q_o comes out from
+// u_impl_generic instance which contains non-blocking assignments to q_o. If !rst_ni, then q_o
+// will get assigned by a ResetValue which is 0 in this case. Otherwise, q_o will be delayed by
+// d_i. This will get cnt_q=0 in both u_ptr and w_ptr which leads to cnt_o=0. When cnt_o in both
+// w_ptr and r_ptr is 0 leads wptr_wrap_cnt_q and rptr_wrap_cnt_q to be equal. Which means the
+// empty_o=1 in u_fifo_cnt and it will be seen as fifo_empty in u_**fifo.
+//
+// For u_reqfifo, Pass=0 so fifo_empty is rvalid_o. Hence, we can't see rvalid_o when under_rst is
+// true. With no rvalid_o, we can't get rready_i and the reasoning above for case 011 for the same
+// conditional statement explains why.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// For u_rspfifo, Pass=1 and rvalid_o is (fifo_empty & ~wvalid_i) & ~under_rst. wvalid_i comes from
+// u_tl_adapter_rom as rspfifo_wvalid. rspfifo_wvalid needs both rvalid_i (response from rom) and
+// reqfifo_rvalid. But as explained above that we can't get rvalid_o when under_rst=1. This gets
+// the (fifo_empty & ~wvalid_i) term true which means empty=1. Since to cover 110, we need
+// under_rst=1 which then negates to 0 inside the assignment leads to no rvalid_o. So, same
+// conclusion as u_reqfifo that we can't get rvalid_o when under_rst=1.
+//
+// For rready_i, it comes in as rspfifo_rready from u_tl_adapter_rom through a conditional
+// assignment. If the condition is true, reqfifo_rready gets assigned otherwise 1'b0 is assigned
+// to rspfifo_rready. In either case, rspfifo_rready should be false as when under_rst=1, we can't
+// get rvalid_o and with no rvalid_o there shouldn't be any rready_i in case of u_reqfifo.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// For u_sramreqfifo, the reasoning is similar as u_reqfifo i.e when under_rst=1 we can't get
+// rvalid_o. For rready_i, it comes in from u_tl_adapter_rom and gets assigned by rspfifo_wvalid.
+// As explained above in the case of u_rspfifo about how to get rspfifo_wvalid which requires
+// reqfifo_rvalid true to set itself true which is impossible if under_rst=1
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// The case 101 for the conditional statements below is non-occuring.
+//
+// For u_reqfifo, if wready_o=0 this means that the fifo is either in reset or full. wvalid_i comes
+// from u_tl_adapter_rom as reqfifo_wvalid. It gets continuous assignment through a_ack. a_ack is
+// true if we get a_valid coming from u_sram_byte as one of the ports of tl_i_int and a_ready going
+// into u_sram_byte as one of the ports of tl_o_int. In order to set tl_o_int.a_ready as true, we
+// need reqfifo_wready as true. Hence, if we don't have wready_o as true, we can't get
+// tl_o_int.a_ready in u_tl_adapter_rom which means that a_ack should be false leading to wvalid_i
+// being false.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "101")
+
+// For u_rspfifo, wvalid_i comes from u_tl_adapter_rom as rspfifo_wvalid. In order to set it true,
+// we need reqfifo_rvalid true. Which means that we are reading the write that happened earlier and
+// u_rspfifo needs to respond to that. If u_rspfifo is responding now then it means that it is not
+// full and we can have wready_o with wvalid_i.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "101")
+
+// For u_sramreqfifo, we can get wready_o=1 when under_rst=0 if the sram fifo is full. But we can't
+// get the sramreqfifo full as the sram req goes out to rom and rom responds in one cycle. So, we
+// can't queue the request into the sramreqfifo.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (2 "101")
+
+// The case 110 for the conditional statements below is non-occuring.
+//
+// For each fifo, if under_rst=1 then we can't get wready_o as for wready_o to set itself true,
+// requires under_rst=0.
+//
+// For wvalid_i=1 (in case of u_reqfifo) needs wready_o as true and the reasoning for that is
+// explained above for the case 101 of the same conditional statement.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// In case of u_rspfifo, wvalid_i to set itself true requires reqfifo_rvalid=1 but we can't get
+// that when under_reset. (Refer to the reasoning of case 110 for u_reqfifo of the conditional
+// statement rvalid_o & rready_i & under_rst)
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// For u_sramreqfifo, wvalid_i to set itself true requires sram_ack=1 and we_o=0 in
+// u_tl_adapter_rom. When sram_ack=1, req_o in u_tl_adapter_rom should be true which requires
+// reqfifo_wready=1. This is impossible if under_rst is true.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 3 "786039886" "(wvalid_i & wready_o & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
 Toggle 0to1 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
