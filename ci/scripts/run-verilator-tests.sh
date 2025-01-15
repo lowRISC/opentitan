@@ -14,7 +14,7 @@ set -e
     --local_test_jobs=8 \
     --local_resources=cpu=8 \
     --test_tag_filters=verilator,-broken \
-    --test_output=errors \
+    --test_output=all \
     --//hw:verilator_options=--threads,1 \
     --//hw:make_options=-j,8 \
     //sw/device/tests:aes_smoketest_sim_verilator \
