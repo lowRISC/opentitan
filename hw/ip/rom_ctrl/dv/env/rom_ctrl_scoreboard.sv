@@ -32,7 +32,11 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   // and uses check_kmac_data to check the request itself looks right.
   extern task process_kmac_req_fifo();
 
-  extern virtual function void check_kmac_data(const ref byte byte_data_q[$]);
+  // Check the data in a KMAC request. This is what rom_ctrl sent to KMAC and it should be a copy of
+  // the contents of ROM, which we can read through a memory backdoor. This checks that rom_ctrl has
+  // successfully read the contents of ROM.
+  extern function void check_kmac_data(const ref byte byte_data_q[$]);
+
   extern virtual task process_kmac_rsp_fifo();
   extern virtual function void get_expected_digest();
   extern virtual function void update_ral_digests();
