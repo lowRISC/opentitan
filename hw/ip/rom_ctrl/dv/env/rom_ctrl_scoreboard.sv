@@ -54,7 +54,13 @@ class rom_ctrl_scoreboard extends cip_base_scoreboard #(
   extern function void update_ral_digests(bit [DIGEST_SIZE-1:0] kmac_digest,
                                           bit [DIGEST_SIZE-1:0] expected_digest);
 
-  extern virtual task monitor_rom_ctrl_if();
+  // Monitor values sent to pwrmgr and keymgr.
+  //
+  // The pwrmgr_data done and the keymgr_data valid flags should each pulse for a single cycle. This
+  // task checks that they don't go high more than once and checks that the pwrmgr_data.good and
+  // keymgr_data.data signals match what we expect (based on the response from KMAC).
+  extern task monitor_rom_ctrl_if();
+
   extern virtual function void check_rom_access(tl_seq_item item);
   extern virtual task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern virtual function void reset(string kind = "HARD");
@@ -170,7 +176,6 @@ function void rom_ctrl_scoreboard::update_ral_digests(bit [DIGEST_SIZE-1:0] kmac
   end
 endfunction
 
-// Monitor and check outputs sent to pwrmgr and keymgr
 task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
   if (!cfg.en_scb) return;
   forever begin
@@ -191,13 +196,13 @@ task rom_ctrl_scoreboard::monitor_rom_ctrl_if();
 
     // Check data sent to pwrmgr
     if (prim_mubi_pkg::mubi4_test_true_strict(cfg.rom_ctrl_vif.cb.pwrmgr_data.done)) begin
-      `DV_CHECK_EQ(pwrmgr_complete, 1'b0, "Spurious pwrmgr signal")
+      `DV_CHECK(!pwrmgr_complete, "Spurious pwrmgr signal")
       `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.pwrmgr_data.good, digest_good, "Incorrect pwrmgr result")
       pwrmgr_complete = 1'b1;
     end
     // Check data sent to keymgr
     if (cfg.rom_ctrl_vif.cb.keymgr_data.valid) begin
-      `DV_CHECK_EQ(keymgr_complete, 1'b0, "Spurious keymgr signal")
+      `DV_CHECK(!keymgr_complete, "Spurious keymgr signal")
       `DV_CHECK_EQ(cfg.rom_ctrl_vif.cb.keymgr_data.data, kmac_digest[DIGEST_SIZE-1:0],
                    "Incorrect keymgr digest")
       keymgr_complete = 1'b1;
