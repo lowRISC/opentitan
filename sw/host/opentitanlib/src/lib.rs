@@ -4,6 +4,8 @@
 
 // Stabilised in Rust 1.74, can be removed when we upgrade.
 #![feature(io_error_other)]
+// Used for serde_annotate.
+#![feature(min_specialization)]
 
 pub mod app;
 pub mod backend;

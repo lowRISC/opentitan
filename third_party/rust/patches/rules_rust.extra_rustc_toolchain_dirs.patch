@@ -21,35 +21,24 @@ Date:   Wed Sep 13 09:56:21 2023 -0700
     Signed-off-by: Tim Trippel <ttrippel@google.com>
 
 diff --git a/BUILD.bazel b/BUILD.bazel
---- BUILD.bazel
-+++ BUILD.bazel
-@@ -10,6 +10,7 @@ load(
-     "extra_exec_rustc_flags",
-     "extra_rustc_flag",
-     "extra_rustc_flags",
-+    "extra_rustc_toolchain_dirs",
-     "no_std",
-     "per_crate_rustc_flag",
-     "rustc_output_diagnostics",
-@@ -94,6 +95,15 @@ per_crate_rustc_flag(
+--- a/BUILD.bazel
++++ b/BUILD.bazel
+@@ -72,6 +72,12 @@ alias(
      visibility = ["//visibility:public"],
  )
  
-+# This setting is to enable passing additional `-B` options to the CC toolchain driver binary to
-+# aid in locating toolchain directories on systems where not all toolchain tools are installed in
-+# the same system location.
-+extra_rustc_toolchain_dirs(
++alias(
 +    name = "extra_rustc_toolchain_dirs",
-+    build_setting_default = "",
++    actual = "//rust/settings:extra_rustc_toolchain_dirs",
 +    visibility = ["//visibility:public"],
 +)
 +
- # This setting is used by the clippy rules. See https://bazelbuild.github.io/rules_rust/rust_clippy.html
- label_flag(
+ alias(
      name = "clippy.toml",
+     actual = "//rust/settings:clippy.toml",
 diff --git a/rust/defs.bzl b/rust/defs.bzl
---- rust/defs.bzl
-+++ rust/defs.bzl
+--- a/rust/defs.bzl
++++ b/rust/defs.bzl
 @@ -49,6 +49,7 @@ load(
      _extra_exec_rustc_flags = "extra_exec_rustc_flags",
      _extra_rustc_flag = "extra_rustc_flag",
@@ -69,11 +58,11 @@ diff --git a/rust/defs.bzl b/rust/defs.bzl
  # See @rules_rust//rust/private:rustc.bzl for a complete description.
  
 diff --git a/rust/private/rust.bzl b/rust/private/rust.bzl
---- rust/private/rust.bzl
-+++ rust/private/rust.bzl
-@@ -527,6 +527,9 @@ RUSTC_ATTRS = {
+--- a/rust/private/rust.bzl
++++ b/rust/private/rust.bzl
+@@ -552,6 +552,9 @@ RUSTC_ATTRS = {
      "_extra_rustc_flags": attr.label(
-         default = Label("//:extra_rustc_flags"),
+         default = Label("//rust/settings:extra_rustc_flags"),
      ),
 +    "_extra_rustc_toolchain_dirs": attr.label(
 +        default = Label("//:extra_rustc_toolchain_dirs"),
@@ -82,9 +71,9 @@ diff --git a/rust/private/rust.bzl b/rust/private/rust.bzl
          default = Label("//rust/private:is_proc_macro_dep"),
      ),
 diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
---- rust/private/rustc.bzl
-+++ rust/private/rustc.bzl
-@@ -78,6 +78,11 @@ PerCrateRustcFlagsInfo = provider(
+--- a/rust/private/rustc.bzl
++++ b/rust/private/rustc.bzl
+@@ -79,6 +79,11 @@ PerCrateRustcFlagsInfo = provider(
      fields = {"per_crate_rustc_flags": "List[string] Extra flags to pass to rustc in non-exec configuration"},
  )
  
@@ -96,7 +85,7 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
  IsProcMacroDepInfo = provider(
      doc = "Records if this is a transitive dependency of a proc-macro.",
      fields = {"is_proc_macro_dep": "Boolean"},
-@@ -455,6 +460,10 @@ def get_linker_and_args(ctx, attr, crate_type, cc_toolchain, feature_configurati
+@@ -449,6 +454,10 @@ def get_linker_and_args(ctx, crate_type, cc_toolchain, feature_configuration, rp
          action_name = action_name,
          variables = link_variables,
      )
@@ -107,8 +96,8 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
      link_env = cc_common.get_environment_variables(
          feature_configuration = feature_configuration,
          action_name = action_name,
-@@ -2242,6 +2251,19 @@ per_crate_rustc_flag = rule(
-     build_setting = config.string(flag = True, allow_multiple = True),
+@@ -2273,6 +2282,19 @@ per_crate_rustc_flag = rule(
+     build_setting = config.string_list(flag = True, repeatable = True),
  )
  
 +def _extra_rustc_toolchain_dirs_impl(ctx):
@@ -127,3 +116,31 @@ diff --git a/rust/private/rustc.bzl b/rust/private/rustc.bzl
  def _no_std_impl(ctx):
      value = str(ctx.attr._no_std[BuildSettingInfo].value)
      if is_exec_configuration(ctx):
+diff --git a/rust/settings/BUILD.bazel b/rust/settings/BUILD.bazel
+--- a/rust/settings/BUILD.bazel
++++ b/rust/settings/BUILD.bazel
+@@ -10,6 +10,7 @@ load(
+     "extra_exec_rustc_flags",
+     "extra_rustc_flag",
+     "extra_rustc_flags",
++    "extra_rustc_toolchain_dirs",
+     "no_std",
+     "per_crate_rustc_flag",
+     "rustc_output_diagnostics",
+@@ -148,6 +149,15 @@ bool_flag(
+     visibility = ["//visibility:public"],
+ )
+ 
++# This setting is to enable passing additional `-B` options to the CC toolchain driver binary to
++# aid in locating toolchain directories on systems where not all toolchain tools are installed in
++# the same system location.
++extra_rustc_toolchain_dirs(
++    name = "extra_rustc_toolchain_dirs",
++    build_setting_default = "",
++    visibility = ["//visibility:public"],
++)
++
+ # This setting is used by the clippy rules. See https://bazelbuild.github.io/rules_rust/rust_clippy.html
+ label_flag(
+     name = "clippy.toml",
+
