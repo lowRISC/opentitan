@@ -16,8 +16,15 @@ class mem_bkdr_util extends uvm_object;
   // Hierarchical path to the memory.
   protected string path;
 
+  // If set to a value different to "", the combination of path + tiling_path (formatted to the
+  // right tile) is used to perform the backdoor access
+  protected string tiling_path;
+
   // The depth of the memory.
   protected uint32_t depth;
+
+  // The depth of a single SRAM tile.
+  protected uint32_t inst_depth;
 
   // The width of the memory.
   protected uint32_t width;
@@ -66,19 +73,36 @@ class mem_bkdr_util extends uvm_object;
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
                int num_prince_rounds_half = 3,
-               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
+               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0,
+               string tiling_path = "", int unsigned inst_depth = depth);
 
 
     bit res;
+    string full_path;
+
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
-    res = uvm_hdl_check_path(path);
-    `DV_CHECK_EQ_FATAL(res, 1, $sformatf("Hierarchical path %0s appears to be invalid.", path))
 
-    this.path  = path;
-    this.depth = depth;
-    this.width = n_bits / depth;
-    this.err_detection_scheme = err_detection_scheme;
+    this.path                  = path;
+    this.tiling_path           = tiling_path;
+
+    // Check if all paths really exist
+    if (tiling_path != "") begin
+      for (int i = 0; i < $ceil(depth / inst_depth); i++) begin
+        full_path = get_full_path(i);
+        res = uvm_hdl_check_path(full_path);
+       `DV_CHECK_EQ_FATAL(res, 1, $sformatf("Hierarchical path %0s appears to be invalid.",
+                                            full_path))
+      end
+    end else begin
+      res = uvm_hdl_check_path(get_full_path(0));
+      `DV_CHECK_EQ_FATAL(res, 1, $sformatf("Hierarchical path %0s appears to be invalid.", path))
+    end
+
+    this.depth                 = depth;
+    this.inst_depth            = inst_depth;
+    this.width                 = n_bits / depth;
+    this.err_detection_scheme  = err_detection_scheme;
     this.num_prince_rounds_half = num_prince_rounds_half;
 
     if (`HAS_ECC) begin
@@ -147,8 +171,23 @@ class mem_bkdr_util extends uvm_object;
     return path;
   endfunction
 
+  function string get_full_path(int tile);
+    if (tiling_path  != "") begin
+      // Render full path for given memory tile
+      // gen_ram_inst is the for-loop block name of the tiling loop in prim_ram_1p_adv
+      return $sformatf("%s.gen_ram_inst[%0d].%s", path, tile, tiling_path);
+    end else begin
+      // No tiling, directly use the path
+      return get_path();
+    end
+  endfunction
+
   function uint32_t get_depth();
     return depth;
+  endfunction
+
+  function uint32_t get_inst_depth();
+    return inst_depth;
   endfunction
 
   function uint32_t get_width();
@@ -220,11 +259,12 @@ class mem_bkdr_util extends uvm_object;
   // encryption is enabled.
   virtual function uvm_hdl_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
     bit res;
-    uint32_t index;
+    uint32_t index, ram_tile;
     uvm_hdl_data_t data;
     if (!check_addr_valid(addr)) return 'x;
     index = addr >> addr_lsb;
-    res   = uvm_hdl_read($sformatf("%0s[%0d]", path, index), data);
+    ram_tile = index / inst_depth;
+    res   = uvm_hdl_read($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_read failed at index %0d", index))
     return data;
   endfunction
@@ -334,10 +374,11 @@ class mem_bkdr_util extends uvm_object;
   // Updates the entire width of the memory at the given address, including the ECC bits.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
     bit res;
-    uint32_t index;
+    uint32_t index, ram_tile;
     if (!check_addr_valid(addr)) return;
     index = addr >> addr_lsb;
-    res = uvm_hdl_deposit($sformatf("%0s[%0d]", path, index), data);
+    ram_tile = index / inst_depth;
+    res = uvm_hdl_deposit($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_deposit failed at index %0d", index))
   endfunction
 
@@ -622,5 +663,17 @@ endclass
       file = inst.get_file(); \
       `uvm_info(inst.`gfn, $sformatf("Writing mem to file:\n%0s", file), UVM_LOW) \
       $writememh(file, path); \
+    end \
+  join_none
+
+
+`define MEM_BKDR_UTIL_MULTI_TILE_FILE_OP(inst) \
+  fork \
+    forever begin \
+      string file; \
+      @(inst.readmemh_event); \
+      file = inst.get_file(); \
+      `uvm_info(inst.`gfn, $sformatf("Loading mem from file without preloading:\n%0s", file), UVM_LOW) \
+      $readmemh(file, inst.image_arr); \
     end \
   join_none
