@@ -10,6 +10,7 @@ use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
 use std::rc::Rc;
+use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -47,6 +48,13 @@ pub struct Firmware {
         help = "Wait after upload (no automatic reboot)"
     )]
     wait: bool,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "Render unbootable the slot not being programmed"
+    )]
+    erase_other_slot: bool,
     #[arg(
         long,
         default_value_t = true,
@@ -90,16 +98,21 @@ impl CommandDispatch for Firmware {
             prev_baudrate = uart.get_baudrate()?;
             rescue.set_baud(rate)?;
         }
-        if self.wait {
-            rescue.wait()?;
-        }
+        rescue.wait()?;
         rescue.update_firmware(self.slot, payload)?;
-        if self.rate.is_some() {
-            if self.wait {
-                rescue.set_baud(prev_baudrate)?;
+        if self.erase_other_slot {
+            // Erase the other slot by programming an empty blob.
+            if self.slot == BootSlot::SlotB {
+                rescue.update_firmware(BootSlot::SlotA, &[])?;
             } else {
-                uart.set_baudrate(prev_baudrate)?;
+                rescue.update_firmware(BootSlot::SlotB, &[])?;
             }
+        }
+        if self.rate.is_some() {
+            rescue.set_baud(prev_baudrate)?;
+        }
+        if !self.wait {
+            transport.reset_target(Duration::from_millis(50), false)?;
         }
         Ok(None)
     }
