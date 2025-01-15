@@ -1,16 +1,22 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
 
+#ifndef OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KMAC_H_
+#define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KMAC_H_
+
+#include "datatypes.h"
 
 /**
- * Enum to define KMAC mode.
+ * @file
+ * @brief Message authentication codes for the OpenTitan cryptography library.
  *
- * Values are hardened.
+ * Supports message authentication based on either HMAC or KMAC.
  */
-typedef enum otcrypto_kmac_mode {
-  // KMAC128 mode.
-  kOtcryptoKmacModeKmac128 = 0x336,
-  // KMAC256 mode.
-  kOtcryptoKmacModeKmac256 = 0xec4,
-} otcrypto_kmac_mode_t;
+
+#ifdef __cplusplus
+extern "C" {
+#endif  // __cplusplus
 
 /**
  * Performs the KMAC function on the input data.
@@ -25,6 +31,8 @@ typedef enum otcrypto_kmac_mode {
  * [16, 24, 32, 48, 64]. If any other size is given, the function will return
  * an error.
  *
+ * The KMAC mode (KMAC-128 or KMAC-256) is inferred from the key mode.
+ *
  * The caller should allocate enough space in the `tag` buffer to hold
  * `required_output_len` bytes, rounded up to the nearest word, and then set
  * the `len` field of `tag` to the word length. If the word length is not long
@@ -33,16 +41,20 @@ typedef enum otcrypto_kmac_mode {
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
- * @param mac_mode Required KMAC mode.
  * @param customization_string Customization string.
  * @param required_output_len Required output length, in bytes.
  * @param[out] tag Output authentication tag.
  * @return The result of the KMAC operation.
  */
+OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_kmac(const otcrypto_blinded_key_t *key,
                                 otcrypto_const_byte_buf_t input_message,
-                                otcrypto_kmac_mode_t kmac_mode,
                                 otcrypto_const_byte_buf_t customization_string,
                                 size_t required_output_len,
                                 otcrypto_word32_buf_t tag);
 
+#ifdef __cplusplus
+}  // extern "C"
+#endif  // __cplusplus
+
+#endif  // OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_KMAC_H_

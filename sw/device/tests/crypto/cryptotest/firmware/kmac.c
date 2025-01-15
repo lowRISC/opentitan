@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/crypto/include/kmac.h"
+
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/mac.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
@@ -50,16 +51,13 @@ status_t handle_kmac(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_kmac_customization_string_t(
       uj, &uj_customization_string));
 
-  otcrypto_kmac_mode_t mode;
   otcrypto_key_mode_t key_mode;
   switch (uj_mode) {
     case kCryptotestKmacModeKmac128:
       key_mode = kOtcryptoKeyModeKmac128;
-      mode = kOtcryptoKmacModeKmac128;
       break;
     case kCryptotestKmacModeKmac256:
       key_mode = kOtcryptoKeyModeKmac256;
-      mode = kOtcryptoKmacModeKmac256;
       break;
     default:
       LOG_ERROR("Unsupported KMAC mode: %d", uj_mode);
@@ -111,7 +109,7 @@ status_t handle_kmac(ujson_t *uj) {
       .data = tag_buf,
   };
   otcrypto_status_t status =
-      otcrypto_kmac(&key, input_message, mode, customization_string,
+      otcrypto_kmac(&key, input_message, customization_string,
                     uj_required_tag_length.required_tag_length, tag);
   if (status.value != kOtcryptoStatusValueOk) {
     return INTERNAL(status.value);
