@@ -9878,7 +9878,7 @@ module usbdev_reg_top (
 
   // register busy
   logic reg_busy_sel;
-  assign reg_busy = reg_busy_sel | shadow_busy;
+  assign reg_busy = (reg_busy_sel | shadow_busy) & tl_i.a_valid;
   always_comb begin
     reg_busy_sel = '0;
     unique case (1'b1)
