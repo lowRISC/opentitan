@@ -262,7 +262,6 @@ module tlul_adapter_sram
   logic sramreqfifo_rready;
   sram_req_t sramreqfifo_wdata, sramreqfifo_rdata;
 
-  logic sramreqaddrfifo_wready;
   logic [SramBusBankAW-1:0] sramreqaddrfifo_wdata, sramreqaddrfifo_rdata;
 
   logic rspfifo_wvalid, rspfifo_wready;
@@ -377,8 +376,7 @@ module tlul_adapter_sram
       d_data   : d_data,
       d_user   : '{default: '0, data_intg: data_intg},
       d_error  : d_valid && d_error,
-      a_ready  : (gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready &
-                  sramreqaddrfifo_wready
+      a_ready  : (gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready
   };
 
   // a_ready depends on the FIFO full condition and grant from SRAM (or SRAM arbiter)
@@ -594,6 +592,8 @@ module tlul_adapter_sram
   // sramreqaddrfifo:
   //    This fifo holds the address used for undoing the address XOR data infection.
   if (DataXorAddr) begin : gen_data_xor_addr_fifo
+    logic sramreqaddrfifo_wready;
+
     prim_fifo_sync #(
       .Width              (SramBusBankAW),
       .Pass               (1'b0),
@@ -613,8 +613,14 @@ module tlul_adapter_sram
       .depth_o (),
       .err_o   ()
     );
+
+    `ASSERT(SramReqAddrFifoFullSync_A, sramreqaddrfifo_wready == sramreqfifo_wready)
+
+    // Tie-off unused signals
+    logic unused_sramreqaddrfifo;
+    assign unused_sramreqaddrfifo = ^{sramreqaddrfifo_wready};
+
   end else begin : gen_no_data_xor_addr_fifo
-    assign sramreqaddrfifo_wready = 1'b1;
     assign sramreqaddrfifo_rdata = '0;
 
     // Tie-off unused signals
