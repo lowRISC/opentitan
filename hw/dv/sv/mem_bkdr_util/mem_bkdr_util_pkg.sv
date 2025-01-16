@@ -10,7 +10,6 @@ package mem_bkdr_util_pkg;
   import otp_ctrl_part_pkg::*;
   import otp_ctrl_top_specific_pkg::*;
   import otp_ctrl_reg_pkg::*;
-  import otp_scrambler_pkg::*;
   import prim_secded_pkg::*;
   import sram_scrambler_pkg::*;
   import uvm_pkg::*;
