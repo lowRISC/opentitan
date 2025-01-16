@@ -80,6 +80,14 @@ void ibex_addr_remap_lockdown(uint32_t index) {
   sec_mmio_write32(kBase + RV_CORE_IBEX_DBUS_REGWEN_0_REG_OFFSET + index, 0);
 }
 
+void ibex_enable_nmi(ibex_nmi_source_t nmi_src) {
+  abs_mmio_write32(kBase + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, nmi_src);
+}
+
+void ibex_clear_nmi(ibex_nmi_source_t nmi_src) {
+  abs_mmio_write32(kBase + RV_CORE_IBEX_NMI_STATE_REG_OFFSET, nmi_src);
+}
+
 // `extern` declarations to give the inline functions in the corresponding
 // header a link location.
 extern void ibex_mcycle_zero(void);

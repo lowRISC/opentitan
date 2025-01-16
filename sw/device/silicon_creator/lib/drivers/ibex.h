@@ -140,6 +140,35 @@ uint32_t ibex_addr_remap_get(uint32_t index);
  */
 void ibex_addr_remap_lockdown(uint32_t index);
 
+typedef enum ibex_nmi_source {
+  /**
+   * NMI alert handler.
+   */
+  kIbexNmiSourceAlert = 1 << 0,
+  /**
+   * NMI watchdog bark.
+   */
+  kIbexNmiSourceWdog = 1 << 1,
+  /**
+   * All NMIs.
+   */
+  kIbexNmiSourceAll = 0x3,
+} ibex_nmi_source_t;
+
+/**
+ * Enables the specified NMI sources.
+ *
+ * @param nmi_src The NMI source(s) to enable.
+ */
+void ibex_enable_nmi(ibex_nmi_source_t nmi_src);
+
+/**
+ * Clears the specified NMI sources.
+ *
+ * @param nmi_src The NMI source(s) to clear.
+ */
+void ibex_clear_nmi(ibex_nmi_source_t nmi_src);
+
 #ifdef __cplusplus
 }
 #endif
