@@ -29,6 +29,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit             hmac_stopped_last;
   bit             hmac_start_last;
   bit             hmac_continue_last;
+  bit             hmac_fifo_full_last;
   bit [TL_DW-1:0] intr_test;
   bit [TL_DW-1:0] intr_state_exp;
 
@@ -625,16 +626,18 @@ task hmac_scoreboard::hmac_process_fifo_status();
     fork begin
       // Store hmac_process and hmac_start to be able to detect when it goes up, as it could remain
       // up for a while
+      bit hmac_fifo_full_posedge;
       bit hmac_process_posedge  = hmac_process & ~hmac_process_last;
       bit hmac_start_posedge    = hmac_start & ~hmac_start_last;
       bit hmac_stopped_posedge  = hmac_stopped & ~hmac_stopped_last;
       bit hmac_continue_posedge = hmac_continue & ~hmac_continue_last;
 
       // Store last value to be able to detect signal change
-      hmac_process_last  = hmac_process;
-      hmac_stopped_last  = hmac_stopped;
-      hmac_start_last    = hmac_start;
-      hmac_continue_last = hmac_continue;
+      hmac_process_last   = hmac_process;
+      hmac_stopped_last   = hmac_stopped;
+      hmac_start_last     = hmac_start;
+      hmac_continue_last  = hmac_continue;
+      hmac_fifo_full_last = hmac_fifo_full;
 
       // When hmac_wr_cnt and hmac_rd_cnt update at the same time, wait for the clock rising edge
       // to guarantee both get updated and at the same time as the DUT
@@ -645,8 +648,10 @@ task hmac_scoreboard::hmac_process_fifo_status();
       hmac_fifo_full  = hmac_fifo_depth == HMAC_MSG_FIFO_DEPTH_WR;
       hmac_fifo_empty = hmac_fifo_depth == 0;
 
+      hmac_fifo_full_posedge = hmac_fifo_full & ~hmac_fifo_full_last;
+
       // Check whether FIFO full should be cleared (for another reason than the emptiness)
-      if (hmac_start_posedge || hmac_process_posedge || hmac_stopped_posedge ||
+      if (hmac_process_posedge || hmac_start_posedge || hmac_stopped_posedge ||
           hmac_continue_posedge) begin
         fifo_full_detected = 0;
       end
@@ -683,8 +688,9 @@ task hmac_scoreboard::hmac_process_fifo_status();
       if (hmac_fifo_empty) begin
         fifo_full_detected = 0;
       // Check whether FIFO full has been detected for the ongoing message but the retrictions cases
-      // have the priority in case full is set at the same moment
-      end else if (hmac_fifo_full) begin
+      // have the priority in case full is set at the same moment. Use the posedge to be sure that
+      // it is high because of the current message and check also that it's still high at that time.
+      end else if (hmac_fifo_full_posedge && hmac_fifo_full) begin
         fifo_full_detected = 1;
       end
     end join_none
