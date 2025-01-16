@@ -553,6 +553,7 @@ function void hmac_scoreboard::reset(string kind = "HARD");
   hmac_fifo_depth = ral.status.fifo_depth.get_reset();
   hmac_start      = ral.cmd.hash_start.get_reset();
   sha_en          = ral.cfg.sha_en.get_reset();
+  intr_test       = ral.intr_test.get_reset();
   hmac_stopped    = 0;
   msg_q.delete();
   msg_part_q.delete();
