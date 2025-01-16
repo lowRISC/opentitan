@@ -22,8 +22,7 @@ bitvec = "1.0.1"
 byteorder = "1.4.3"
 chrono = "0.4"
 const-oid = { version = "0.9.6", features=["std"] }
-# TODO: unpin version once we bump our Rust compiler to 1.74+
-clap = { version = "~4.4", features = ["derive", "env", "deprecated"] }
+clap = { version = "4.4", features = ["derive", "env", "deprecated"] }
 crc = "3.0"
 der = { version = "0.7.8", features = ["alloc"] }
 deser-hjson = "2.0.0"
