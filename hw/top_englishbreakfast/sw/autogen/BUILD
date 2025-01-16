@@ -8,6 +8,7 @@
 # -o hw/top_englishbreakfast
 
 load("//rules:linker.bzl", "ld_library")
+load("//hw/top:defs.bzl", "opentitan_require_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -20,9 +21,11 @@ cc_library(
         "top_englishbreakfast.h",
         "top_englishbreakfast_memory.h",
     ],
+    target_compatible_with = opentitan_require_top("englishbreakfast"),
 )
 
 ld_library(
     name = "top_englishbreakfast_memory",
     includes = ["top_englishbreakfast_memory.ld"],
+    target_compatible_with = opentitan_require_top("englishbreakfast"),
 )
