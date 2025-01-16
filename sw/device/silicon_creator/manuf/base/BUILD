@@ -378,6 +378,7 @@ _DISQUALIFIED_FOR_SIGNING = ["em00"]
         srcs = [":ft_personalize_{}".format(sku)],
         ecdsa_key = data["ecdsa_key"],
         manifest = ":manifest_perso",
+        spx_key = data["spx_key"],
         tags = ["manual"],
     )
     for sku, data in EARLGREY_SKUS.items()
@@ -406,6 +407,17 @@ offline_signature_attach(
     ],
     ecdsa_signatures = [
         "//sw/device/silicon_creator/manuf/base/signatures:ecdsa_signatures",
+    ] + [
+        "{}:ecdsa_signatures".format(data["signature_prefix"])
+        for sku, data in EARLGREY_SKUS.items()
+        if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
+    ],
+    spx_signatures = [
+        "//sw/device/silicon_creator/manuf/base/signatures:spx_signatures",
+    ] + [
+        "{}:spx_signatures".format(data["signature_prefix"])
+        for sku, data in EARLGREY_SKUS.items()
+        if data["signature_prefix"] and data["otp"] not in _DISQUALIFIED_FOR_SIGNING
     ],
     tags = ["manual"],
 )
