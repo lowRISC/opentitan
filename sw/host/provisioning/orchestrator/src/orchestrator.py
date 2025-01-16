@@ -106,6 +106,12 @@ def main(args_in):
         help="If set, the FPGA bitsream will not be cleared before CP.",
     )
     parser.add_argument(
+        "--enable-alerts",
+        action="store_true",
+        default=False,
+        help="Enable all alerts during FT individualize step.",
+    )
+    parser.add_argument(
         "--use-ext-clk",
         action="store_true",
         default=False,
@@ -167,6 +173,7 @@ def main(args_in):
                 test_exit_token=args.test_exit_token,
                 fpga=args.fpga,
                 fpga_dont_clear_bitstream=args.fpga_dont_clear_bitstream,
+                enable_alerts=args.enable_alerts,
                 use_ext_clk=args.use_ext_clk,
                 require_confirmation=not args.non_interactive)
     dut.run_cp()

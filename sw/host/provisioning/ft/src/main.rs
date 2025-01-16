@@ -41,6 +41,9 @@ pub struct ManufFtProvisioningDataInput {
     pub ft_device_id: String,
 
     #[arg(long)]
+    pub enable_alerts_during_individualize: bool,
+
+    #[arg(long)]
     pub use_ext_clk_during_individualize: bool,
 
     /// TestUnlock token; a 128-bit hex string.
@@ -156,6 +159,7 @@ fn main() -> Result<()> {
     // The FT device ID is sent to the DUT in little endian order.
     ft_device_id.reverse();
     let ft_individualize_data_in = ManufFtIndividualizeData {
+        enable_alerts: opts.provisioning_data.enable_alerts_during_individualize,
         use_ext_clk: opts.provisioning_data.use_ext_clk_during_individualize,
         ft_device_id,
     };

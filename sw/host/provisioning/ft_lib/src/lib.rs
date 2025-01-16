@@ -6,9 +6,10 @@ use sha2::{Digest, Sha256};
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
+use std::thread;
 use std::time::{Duration, Instant};
 
-use anyhow::{bail, Result};
+use anyhow::{anyhow, bail, Result};
 use arrayvec::ArrayVec;
 use zerocopy::AsBytes;
 
@@ -18,6 +19,9 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::console::spi::SpiConsoleDevice;
 use opentitanlib::dif::lc_ctrl::{DifLcCtrlState, LcCtrlReg};
 use opentitanlib::io::jtag::{JtagParams, JtagTap};
+use opentitanlib::test_utils::crashdump::{
+    read_alert_crashdump_data, read_cpu_crashdump_data, read_reset_reason,
+};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::lc_transition::trigger_lc_transition;
 use opentitanlib::test_utils::load_sram_program::{
@@ -112,13 +116,30 @@ pub fn run_sram_ft_individualize(
     // Inject provisioning data into the device.
     ft_individualize_data_in.send(spi_console)?;
 
-    // Wait for provisioning operations to complete.
-    let _ = UartConsole::wait_for(spi_console, r"FT SRAM provisioning done.", timeout)?;
-
-    jtag.disconnect()?;
-    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
-
-    Ok(())
+    // Wait for provisioning operations to complete. If we see at least 10 NMIs, we know it is time
+    // to capture crashdump information.
+    let console_text = UartConsole::wait_for(
+        spi_console,
+        r"FT SRAM provisioning done.|Processing Alert NMI 10 ...",
+        timeout,
+    )?;
+    match console_text[0].as_str() {
+        "FT SRAM provisioning done." => {
+            jtag.disconnect()?;
+            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+            Ok(())
+        }
+        "Processing Alert NMI 10 ..." => {
+            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+            jtag.disconnect()?;
+            thread::sleep(Duration::from_millis(10000));
+            read_reset_reason(transport, jtag_params)?;
+            read_cpu_crashdump_data(transport, jtag_params)?;
+            read_alert_crashdump_data(transport, jtag_params)?;
+            Ok(())
+        }
+        _ => Err(anyhow!("Unexpected console_text: {:?}", console_text)),
+    }
 }
 
 pub fn test_exit(
