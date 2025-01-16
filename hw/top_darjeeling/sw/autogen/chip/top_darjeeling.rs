@@ -1419,6 +1419,333 @@ pub enum PlicTarget {
     Ibex0 = 0,
 }
 
+/// PLIC Interrupt Source to Peripheral Map
+///
+/// This array is a mapping from `PlicIrqId` to
+/// `PlicPeripheral`.
+pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 160] = [
+    // None -> PlicPeripheral::Unknown
+    PlicPeripheral::Unknown,
+    // Uart0TxWatermark -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxWatermark -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0TxDone -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxOverflow -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxFrameErr -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxBreakErr -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxTimeout -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0RxParityErr -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // Uart0TxEmpty -> PlicPeripheral::Uart0
+    PlicPeripheral::Uart0,
+    // GpioGpio0 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio1 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio2 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio3 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio4 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio5 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio6 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio7 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio8 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio9 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio10 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio11 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio12 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio13 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio14 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio15 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio16 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio17 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio18 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio19 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio20 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio21 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio22 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio23 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio24 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio25 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio26 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio27 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio28 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio29 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio30 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // GpioGpio31 -> PlicPeripheral::Gpio
+    PlicPeripheral::Gpio,
+    // SpiDeviceUploadCmdfifoNotEmpty -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceUploadPayloadNotEmpty -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceUploadPayloadOverflow -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceReadbufWatermark -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceReadbufFlip -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceTpmHeaderNotEmpty -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceTpmRdfifoCmdEnd -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // SpiDeviceTpmRdfifoDrop -> PlicPeripheral::SpiDevice
+    PlicPeripheral::SpiDevice,
+    // I2c0FmtThreshold -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0RxThreshold -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0AcqThreshold -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0RxOverflow -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0ControllerHalt -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0SclInterference -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0SdaInterference -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0StretchTimeout -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0SdaUnstable -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0CmdComplete -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0TxStretch -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0TxThreshold -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0AcqStretch -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0UnexpStop -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // I2c0HostTimeout -> PlicPeripheral::I2c0
+    PlicPeripheral::I2c0,
+    // RvTimerTimerExpiredHart0Timer0 -> PlicPeripheral::RvTimer
+    PlicPeripheral::RvTimer,
+    // OtpCtrlOtpOperationDone -> PlicPeripheral::OtpCtrl
+    PlicPeripheral::OtpCtrl,
+    // OtpCtrlOtpError -> PlicPeripheral::OtpCtrl
+    PlicPeripheral::OtpCtrl,
+    // AlertHandlerClassa -> PlicPeripheral::AlertHandler
+    PlicPeripheral::AlertHandler,
+    // AlertHandlerClassb -> PlicPeripheral::AlertHandler
+    PlicPeripheral::AlertHandler,
+    // AlertHandlerClassc -> PlicPeripheral::AlertHandler
+    PlicPeripheral::AlertHandler,
+    // AlertHandlerClassd -> PlicPeripheral::AlertHandler
+    PlicPeripheral::AlertHandler,
+    // SpiHost0Error -> PlicPeripheral::SpiHost0
+    PlicPeripheral::SpiHost0,
+    // SpiHost0SpiEvent -> PlicPeripheral::SpiHost0
+    PlicPeripheral::SpiHost0,
+    // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
+    PlicPeripheral::PwrmgrAon,
+    // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
+    PlicPeripheral::AonTimerAon,
+    // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
+    PlicPeripheral::AonTimerAon,
+    // SensorCtrlIoStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
+    // SensorCtrlInitStatusChange -> PlicPeripheral::SensorCtrl
+    PlicPeripheral::SensorCtrl,
+    // SocProxyExternal0 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal1 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal2 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal3 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal4 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal5 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal6 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal7 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal8 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal9 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal10 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal11 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal12 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal13 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal14 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal15 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal16 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal17 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal18 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal19 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal20 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal21 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal22 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal23 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal24 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal25 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal26 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal27 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal28 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal29 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal30 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // SocProxyExternal31 -> PlicPeripheral::SocProxy
+    PlicPeripheral::SocProxy,
+    // HmacHmacDone -> PlicPeripheral::Hmac
+    PlicPeripheral::Hmac,
+    // HmacFifoEmpty -> PlicPeripheral::Hmac
+    PlicPeripheral::Hmac,
+    // HmacHmacErr -> PlicPeripheral::Hmac
+    PlicPeripheral::Hmac,
+    // KmacKmacDone -> PlicPeripheral::Kmac
+    PlicPeripheral::Kmac,
+    // KmacFifoEmpty -> PlicPeripheral::Kmac
+    PlicPeripheral::Kmac,
+    // KmacKmacErr -> PlicPeripheral::Kmac
+    PlicPeripheral::Kmac,
+    // OtbnDone -> PlicPeripheral::Otbn
+    PlicPeripheral::Otbn,
+    // KeymgrDpeOpDone -> PlicPeripheral::KeymgrDpe
+    PlicPeripheral::KeymgrDpe,
+    // CsrngCsCmdReqDone -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // CsrngCsEntropyReq -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // CsrngCsHwInstExc -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // CsrngCsFatalErr -> PlicPeripheral::Csrng
+    PlicPeripheral::Csrng,
+    // Edn0EdnCmdReqDone -> PlicPeripheral::Edn0
+    PlicPeripheral::Edn0,
+    // Edn0EdnFatalErr -> PlicPeripheral::Edn0
+    PlicPeripheral::Edn0,
+    // Edn1EdnCmdReqDone -> PlicPeripheral::Edn1
+    PlicPeripheral::Edn1,
+    // Edn1EdnFatalErr -> PlicPeripheral::Edn1
+    PlicPeripheral::Edn1,
+    // DmaDmaDone -> PlicPeripheral::Dma
+    PlicPeripheral::Dma,
+    // DmaDmaChunkDone -> PlicPeripheral::Dma
+    PlicPeripheral::Dma,
+    // DmaDmaError -> PlicPeripheral::Dma
+    PlicPeripheral::Dma,
+    // Mbx0MbxReady -> PlicPeripheral::Mbx0
+    PlicPeripheral::Mbx0,
+    // Mbx0MbxAbort -> PlicPeripheral::Mbx0
+    PlicPeripheral::Mbx0,
+    // Mbx0MbxError -> PlicPeripheral::Mbx0
+    PlicPeripheral::Mbx0,
+    // Mbx1MbxReady -> PlicPeripheral::Mbx1
+    PlicPeripheral::Mbx1,
+    // Mbx1MbxAbort -> PlicPeripheral::Mbx1
+    PlicPeripheral::Mbx1,
+    // Mbx1MbxError -> PlicPeripheral::Mbx1
+    PlicPeripheral::Mbx1,
+    // Mbx2MbxReady -> PlicPeripheral::Mbx2
+    PlicPeripheral::Mbx2,
+    // Mbx2MbxAbort -> PlicPeripheral::Mbx2
+    PlicPeripheral::Mbx2,
+    // Mbx2MbxError -> PlicPeripheral::Mbx2
+    PlicPeripheral::Mbx2,
+    // Mbx3MbxReady -> PlicPeripheral::Mbx3
+    PlicPeripheral::Mbx3,
+    // Mbx3MbxAbort -> PlicPeripheral::Mbx3
+    PlicPeripheral::Mbx3,
+    // Mbx3MbxError -> PlicPeripheral::Mbx3
+    PlicPeripheral::Mbx3,
+    // Mbx4MbxReady -> PlicPeripheral::Mbx4
+    PlicPeripheral::Mbx4,
+    // Mbx4MbxAbort -> PlicPeripheral::Mbx4
+    PlicPeripheral::Mbx4,
+    // Mbx4MbxError -> PlicPeripheral::Mbx4
+    PlicPeripheral::Mbx4,
+    // Mbx5MbxReady -> PlicPeripheral::Mbx5
+    PlicPeripheral::Mbx5,
+    // Mbx5MbxAbort -> PlicPeripheral::Mbx5
+    PlicPeripheral::Mbx5,
+    // Mbx5MbxError -> PlicPeripheral::Mbx5
+    PlicPeripheral::Mbx5,
+    // Mbx6MbxReady -> PlicPeripheral::Mbx6
+    PlicPeripheral::Mbx6,
+    // Mbx6MbxAbort -> PlicPeripheral::Mbx6
+    PlicPeripheral::Mbx6,
+    // Mbx6MbxError -> PlicPeripheral::Mbx6
+    PlicPeripheral::Mbx6,
+    // MbxJtagMbxReady -> PlicPeripheral::MbxJtag
+    PlicPeripheral::MbxJtag,
+    // MbxJtagMbxAbort -> PlicPeripheral::MbxJtag
+    PlicPeripheral::MbxJtag,
+    // MbxJtagMbxError -> PlicPeripheral::MbxJtag
+    PlicPeripheral::MbxJtag,
+    // MbxPcie0MbxReady -> PlicPeripheral::MbxPcie0
+    PlicPeripheral::MbxPcie0,
+    // MbxPcie0MbxAbort -> PlicPeripheral::MbxPcie0
+    PlicPeripheral::MbxPcie0,
+    // MbxPcie0MbxError -> PlicPeripheral::MbxPcie0
+    PlicPeripheral::MbxPcie0,
+    // MbxPcie1MbxReady -> PlicPeripheral::MbxPcie1
+    PlicPeripheral::MbxPcie1,
+    // MbxPcie1MbxAbort -> PlicPeripheral::MbxPcie1
+    PlicPeripheral::MbxPcie1,
+    // MbxPcie1MbxError -> PlicPeripheral::MbxPcie1
+    PlicPeripheral::MbxPcie1,
+];
+
 /// Alert Handler Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
@@ -1834,333 +2161,6 @@ impl TryFrom<u32> for AlertId {
         }
     }
 }
-
-/// PLIC Interrupt Source to Peripheral Map
-///
-/// This array is a mapping from `PlicIrqId` to
-/// `PlicPeripheral`.
-pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 160] = [
-    // None -> PlicPeripheral::Unknown
-    PlicPeripheral::Unknown,
-    // Uart0TxWatermark -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxWatermark -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0TxDone -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxOverflow -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxFrameErr -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxBreakErr -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxTimeout -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0RxParityErr -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // Uart0TxEmpty -> PlicPeripheral::Uart0
-    PlicPeripheral::Uart0,
-    // GpioGpio0 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio1 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio2 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio3 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio4 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio5 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio6 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio7 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio8 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio9 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio10 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio11 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio12 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio13 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio14 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio15 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio16 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio17 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio18 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio19 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio20 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio21 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio22 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio23 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio24 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio25 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio26 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio27 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio28 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio29 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio30 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio31 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // SpiDeviceUploadCmdfifoNotEmpty -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceUploadPayloadNotEmpty -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceUploadPayloadOverflow -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceReadbufWatermark -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceReadbufFlip -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceTpmHeaderNotEmpty -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceTpmRdfifoCmdEnd -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // SpiDeviceTpmRdfifoDrop -> PlicPeripheral::SpiDevice
-    PlicPeripheral::SpiDevice,
-    // I2c0FmtThreshold -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0RxThreshold -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0AcqThreshold -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0RxOverflow -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0ControllerHalt -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0SclInterference -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0SdaInterference -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0StretchTimeout -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0SdaUnstable -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0CmdComplete -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0TxStretch -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0TxThreshold -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0AcqStretch -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0UnexpStop -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // I2c0HostTimeout -> PlicPeripheral::I2c0
-    PlicPeripheral::I2c0,
-    // RvTimerTimerExpiredHart0Timer0 -> PlicPeripheral::RvTimer
-    PlicPeripheral::RvTimer,
-    // OtpCtrlOtpOperationDone -> PlicPeripheral::OtpCtrl
-    PlicPeripheral::OtpCtrl,
-    // OtpCtrlOtpError -> PlicPeripheral::OtpCtrl
-    PlicPeripheral::OtpCtrl,
-    // AlertHandlerClassa -> PlicPeripheral::AlertHandler
-    PlicPeripheral::AlertHandler,
-    // AlertHandlerClassb -> PlicPeripheral::AlertHandler
-    PlicPeripheral::AlertHandler,
-    // AlertHandlerClassc -> PlicPeripheral::AlertHandler
-    PlicPeripheral::AlertHandler,
-    // AlertHandlerClassd -> PlicPeripheral::AlertHandler
-    PlicPeripheral::AlertHandler,
-    // SpiHost0Error -> PlicPeripheral::SpiHost0
-    PlicPeripheral::SpiHost0,
-    // SpiHost0SpiEvent -> PlicPeripheral::SpiHost0
-    PlicPeripheral::SpiHost0,
-    // PwrmgrAonWakeup -> PlicPeripheral::PwrmgrAon
-    PlicPeripheral::PwrmgrAon,
-    // AonTimerAonWkupTimerExpired -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // AonTimerAonWdogTimerBark -> PlicPeripheral::AonTimerAon
-    PlicPeripheral::AonTimerAon,
-    // SensorCtrlIoStatusChange -> PlicPeripheral::SensorCtrl
-    PlicPeripheral::SensorCtrl,
-    // SensorCtrlInitStatusChange -> PlicPeripheral::SensorCtrl
-    PlicPeripheral::SensorCtrl,
-    // SocProxyExternal0 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal1 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal2 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal3 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal4 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal5 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal6 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal7 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal8 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal9 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal10 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal11 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal12 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal13 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal14 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal15 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal16 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal17 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal18 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal19 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal20 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal21 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal22 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal23 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal24 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal25 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal26 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal27 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal28 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal29 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal30 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // SocProxyExternal31 -> PlicPeripheral::SocProxy
-    PlicPeripheral::SocProxy,
-    // HmacHmacDone -> PlicPeripheral::Hmac
-    PlicPeripheral::Hmac,
-    // HmacFifoEmpty -> PlicPeripheral::Hmac
-    PlicPeripheral::Hmac,
-    // HmacHmacErr -> PlicPeripheral::Hmac
-    PlicPeripheral::Hmac,
-    // KmacKmacDone -> PlicPeripheral::Kmac
-    PlicPeripheral::Kmac,
-    // KmacFifoEmpty -> PlicPeripheral::Kmac
-    PlicPeripheral::Kmac,
-    // KmacKmacErr -> PlicPeripheral::Kmac
-    PlicPeripheral::Kmac,
-    // OtbnDone -> PlicPeripheral::Otbn
-    PlicPeripheral::Otbn,
-    // KeymgrDpeOpDone -> PlicPeripheral::KeymgrDpe
-    PlicPeripheral::KeymgrDpe,
-    // CsrngCsCmdReqDone -> PlicPeripheral::Csrng
-    PlicPeripheral::Csrng,
-    // CsrngCsEntropyReq -> PlicPeripheral::Csrng
-    PlicPeripheral::Csrng,
-    // CsrngCsHwInstExc -> PlicPeripheral::Csrng
-    PlicPeripheral::Csrng,
-    // CsrngCsFatalErr -> PlicPeripheral::Csrng
-    PlicPeripheral::Csrng,
-    // Edn0EdnCmdReqDone -> PlicPeripheral::Edn0
-    PlicPeripheral::Edn0,
-    // Edn0EdnFatalErr -> PlicPeripheral::Edn0
-    PlicPeripheral::Edn0,
-    // Edn1EdnCmdReqDone -> PlicPeripheral::Edn1
-    PlicPeripheral::Edn1,
-    // Edn1EdnFatalErr -> PlicPeripheral::Edn1
-    PlicPeripheral::Edn1,
-    // DmaDmaDone -> PlicPeripheral::Dma
-    PlicPeripheral::Dma,
-    // DmaDmaChunkDone -> PlicPeripheral::Dma
-    PlicPeripheral::Dma,
-    // DmaDmaError -> PlicPeripheral::Dma
-    PlicPeripheral::Dma,
-    // Mbx0MbxReady -> PlicPeripheral::Mbx0
-    PlicPeripheral::Mbx0,
-    // Mbx0MbxAbort -> PlicPeripheral::Mbx0
-    PlicPeripheral::Mbx0,
-    // Mbx0MbxError -> PlicPeripheral::Mbx0
-    PlicPeripheral::Mbx0,
-    // Mbx1MbxReady -> PlicPeripheral::Mbx1
-    PlicPeripheral::Mbx1,
-    // Mbx1MbxAbort -> PlicPeripheral::Mbx1
-    PlicPeripheral::Mbx1,
-    // Mbx1MbxError -> PlicPeripheral::Mbx1
-    PlicPeripheral::Mbx1,
-    // Mbx2MbxReady -> PlicPeripheral::Mbx2
-    PlicPeripheral::Mbx2,
-    // Mbx2MbxAbort -> PlicPeripheral::Mbx2
-    PlicPeripheral::Mbx2,
-    // Mbx2MbxError -> PlicPeripheral::Mbx2
-    PlicPeripheral::Mbx2,
-    // Mbx3MbxReady -> PlicPeripheral::Mbx3
-    PlicPeripheral::Mbx3,
-    // Mbx3MbxAbort -> PlicPeripheral::Mbx3
-    PlicPeripheral::Mbx3,
-    // Mbx3MbxError -> PlicPeripheral::Mbx3
-    PlicPeripheral::Mbx3,
-    // Mbx4MbxReady -> PlicPeripheral::Mbx4
-    PlicPeripheral::Mbx4,
-    // Mbx4MbxAbort -> PlicPeripheral::Mbx4
-    PlicPeripheral::Mbx4,
-    // Mbx4MbxError -> PlicPeripheral::Mbx4
-    PlicPeripheral::Mbx4,
-    // Mbx5MbxReady -> PlicPeripheral::Mbx5
-    PlicPeripheral::Mbx5,
-    // Mbx5MbxAbort -> PlicPeripheral::Mbx5
-    PlicPeripheral::Mbx5,
-    // Mbx5MbxError -> PlicPeripheral::Mbx5
-    PlicPeripheral::Mbx5,
-    // Mbx6MbxReady -> PlicPeripheral::Mbx6
-    PlicPeripheral::Mbx6,
-    // Mbx6MbxAbort -> PlicPeripheral::Mbx6
-    PlicPeripheral::Mbx6,
-    // Mbx6MbxError -> PlicPeripheral::Mbx6
-    PlicPeripheral::Mbx6,
-    // MbxJtagMbxReady -> PlicPeripheral::MbxJtag
-    PlicPeripheral::MbxJtag,
-    // MbxJtagMbxAbort -> PlicPeripheral::MbxJtag
-    PlicPeripheral::MbxJtag,
-    // MbxJtagMbxError -> PlicPeripheral::MbxJtag
-    PlicPeripheral::MbxJtag,
-    // MbxPcie0MbxReady -> PlicPeripheral::MbxPcie0
-    PlicPeripheral::MbxPcie0,
-    // MbxPcie0MbxAbort -> PlicPeripheral::MbxPcie0
-    PlicPeripheral::MbxPcie0,
-    // MbxPcie0MbxError -> PlicPeripheral::MbxPcie0
-    PlicPeripheral::MbxPcie0,
-    // MbxPcie1MbxReady -> PlicPeripheral::MbxPcie1
-    PlicPeripheral::MbxPcie1,
-    // MbxPcie1MbxAbort -> PlicPeripheral::MbxPcie1
-    PlicPeripheral::MbxPcie1,
-    // MbxPcie1MbxError -> PlicPeripheral::MbxPcie1
-    PlicPeripheral::MbxPcie1,
-];
 
 /// Alert Handler Alert Source to Peripheral Map
 ///

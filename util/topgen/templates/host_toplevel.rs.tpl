@@ -4,7 +4,11 @@
 <%
 import topgen.lib as lib
 
-has_pinmux = lib.find_module(top['module'], 'pinmux')
+pinmux = lib.find_module(top['module'], 'pinmux')
+if pinmux is not None:
+    has_pinmux = addr_space in pinmux['base_addrs'][None]
+else:
+    has_pinmux = False
 %>\
 
 // This file was generated automatically.

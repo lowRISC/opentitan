@@ -4,10 +4,15 @@
 ${gencmd}
 <%
 import textwrap
+import topgen.lib as lib
+
+addr_space_obj = lib.get_addr_space(top, addr_space)
+addr_space_suffix = lib.get_addr_space_suffix(addr_space_obj)
+header_suffix = (top["name"] + addr_space_suffix).upper()
 %>\
 
-#ifndef ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
-#define ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#ifndef ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
+#define ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_
 
 /**
  * @file
@@ -23,15 +28,16 @@ import textwrap
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 % for m in top["module"]:
   % if "memory" in m:
     % for key, val in m["memory"].items():
+      % if addr_space not in m["base_addrs"][key]:
+<% continue %>
+      % endif
 /**
  * Memory base for ${m["name"]}_${val["label"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][helper.addr_space]}
+#define TOP_${top["name"].upper()}_${val["label"].upper()}_BASE_ADDR ${m["base_addrs"][key][addr_space]}
 
 /**
  * Memory size for ${m["name"]}_${val["label"]} in top ${top["name"]}.
@@ -46,7 +52,7 @@ import textwrap
 /**
  * Memory base address for ${m["name"]} in top ${top["name"]}.
  */
-#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][helper.addr_space]}
+#define TOP_${top["name"].upper()}_${m["name"].upper()}_BASE_ADDR ${m["base_addr"][addr_space]}
 
 /**
  * Memory size for ${m["name"]} in top ${top["name"]}.
@@ -55,7 +61,7 @@ import textwrap
 
 % endfor
 
-% for (inst_name, if_name), region in helper.devices():
+% for (inst_name, if_name), region in helper.devices(addr_space):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "0x{:X}".format(region.base_addr)
@@ -83,7 +89,7 @@ import textwrap
 #define ${size_bytes_name} ${hex_size_bytes}
 % endfor
 
-% for (subspace_name, description, subspace_range) in helper.subranges:
+% for (subspace_name, description, subspace_range) in helper.subranges[addr_space]:
 /**
  * ${subspace_name.upper()} Region
  *
@@ -97,4 +103,4 @@ import textwrap
 
 #endif  // __ASSEMBLER__
 
-#endif  // ${helper.header_macro_prefix}_TOP_${top["name"].upper()}_MEMORY_H_
+#endif  // ${helper.header_macro_prefix}_TOP_${header_suffix}_MEMORY_H_

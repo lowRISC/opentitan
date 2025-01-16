@@ -4,12 +4,24 @@
 ${gencmd}
 <%
 import topgen.lib as lib
-import topgen.lib as lib
 
-has_pinmux = lib.find_module(top['module'], 'pinmux')
+addr_space_suffix = lib.get_addr_space_suffix(addr_space)
+addr_space_name = addr_space['name']
+
+alert_handler = lib.find_module(top['module'], 'alert_handler')
+if alert_handler is not None:
+    has_alert_handler = addr_space_name in alert_handler['base_addrs'][None]
+else:
+    has_alert_handler = False
+
+pinmux = lib.find_module(top['module'], 'pinmux')
+if pinmux is not None:
+    has_pinmux = addr_space_name in pinmux['base_addrs'][None]
+else:
+    has_pinmux = False
 %>\
-package top_${top["name"]}_pkg;
-% for (inst_name, if_name), region in helper.devices():
+package top_${top["name"]}${addr_space_suffix}_pkg;
+% for (inst_name, if_name), region in helper.devices(addr_space_name):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "32'h{:X}".format(region.base_addr)
@@ -26,7 +38,7 @@ package top_${top["name"]}_pkg;
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
 
 % endfor
-% for name, region in helper.memories():
+% for name, region in helper.memories(addr_space_name):
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr)
     hex_size_bytes = "32'h{:x}".format(region.size_bytes)
@@ -62,7 +74,8 @@ package top_${top["name"]}_pkg;
 % endif
 
 % endfor
-% for alert_group, alert_modules in top["outgoing_alert_module"].items():
+% if has_alert_handler:
+%   for alert_group, alert_modules in top["outgoing_alert_module"].items():
   
   // Number of ${alert_group} outgoing alerts
   parameter int unsigned NOutgoingAlerts${alert_group.capitalize()} = ${len(top['outgoing_alert'][alert_group])};
@@ -72,51 +85,52 @@ package top_${top["name"]}_pkg;
   
   // Enumeration of ${alert_group} outgoing alert modules
   typedef enum int unsigned {
-% for mod in alert_modules:
+%       for mod in alert_modules:
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
-% endfor
+%       endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_peripheral_count").as_camel_case()}
   } ${"outgoing_alert_" + alert_group + "_peripheral_e"};
 
   // Enumeration of ${alert_group} outgoing alerts
   typedef enum int unsigned {
-% for alert in top["outgoing_alert"][alert_group]:
+%       for alert in top["outgoing_alert"][alert_group]:
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_" + alert["name"]).as_camel_case()} = ${loop.index},
-% endfor
+%       endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_outgoing_alert_" + alert_group + "_id_count").as_camel_case()}
   } ${"outgoing_alert_" + alert_group + "_id_e"};
 
   // Enumeration of ${alert_group} outgoing alerts AsyncOn configuration
   parameter logic [NOutgoingAlerts${alert_group.capitalize()}-1:0] AsyncOnOutgoingAlert${alert_group.capitalize()} = {
-  % for alert in list(reversed(top["outgoing_alert"][alert_group])):
+%       for alert in list(reversed(top["outgoing_alert"][alert_group])):
     1'b${alert['async']}${"" if loop.last else ","}
-  % endfor
+%       endfor
   };
-% endfor
-% for alert_group, alerts in top["incoming_alert"].items():
+%   endfor
+%   for alert_group, alerts in top["incoming_alert"].items():
 
   // Number of ${alert_group} incoming alerts
   parameter int unsigned NIncomingAlerts${alert_group.capitalize()} = ${len(alerts)};
 
   // Number of LPGs for incoming alert group ${alert_group}
   parameter int unsigned NIncomingLpgs${alert_group.capitalize()} = ${max(alert['lpg_idx'] for alert in alerts) + 1};
-% endfor
+%   endfor
 
   // Enumeration of alert modules
   typedef enum int unsigned {
-% for mod in top["alert_module"]:
+%   for mod in top["alert_module"]:
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_" + mod).as_camel_case()} = ${loop.index},
-% endfor
+%   endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_peripheral_count").as_camel_case()}
   } alert_peripheral_e;
 
   // Enumeration of alerts
   typedef enum int unsigned {
-% for alert in top["alert"]:
+%   for alert in top["alert"]:
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_" + alert["name"]).as_camel_case()} = ${loop.index},
-% endfor
+%   endfor
     ${lib.Name.from_snake_case("top_" + top["name"] + "_alert_id_count").as_camel_case()}
   } alert_id_e;
+% endif # has_alert_handler
 % if has_pinmux:
 
   // Enumeration of IO power domains.
@@ -190,10 +204,9 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
-% endif
 
 <%
-    instances = sorted(set(inst for (inst, _), __ in helper.devices()))
+    instances = sorted(set(inst for (inst, _), __ in helper.devices(addr_space_name)))
 %>\
   // List of peripheral instantiated in this chip.
   typedef enum {
@@ -214,5 +227,6 @@ package top_${top["name"]}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
+% endif
 
 endpackage

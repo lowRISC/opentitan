@@ -86,7 +86,7 @@ class CArrayMapping(object):
             "% for in_name, out_name in mapping.mapping.items():\n"
             "  [${in_name.as_c_enum()}] = ${out_name.as_c_enum()},\n"
             "% endfor\n"
-            "};\n")
+            "};")
         return Template(template).render(mapping=self)
 
 
@@ -312,9 +312,18 @@ class Name:
 
 
 class MemoryRegion(object):
-    def __init__(self, top_name: Name, name: Name, base_addr: int, size_bytes: int):
+    def __init__(self, top_name: Name, name: Name, addr_space: str,
+                 base_addr: int, size_bytes: int):
         assert isinstance(base_addr, int)
-        self.name = top_name + name
+        self.addr_space = addr_space
+        addr_space_suffix = get_addr_space_suffix({'name': addr_space})
+        if len(addr_space_suffix) > 0:
+            # Trim the beginning underscore.
+            addr_space_suffix = addr_space_suffix[1:]
+            addr_space_name = Name.from_snake_case(addr_space_suffix)
+            self.name = top_name + addr_space_name + name
+        else:
+            self.name = top_name + name
         self.short_name = name
         self.base_addr = base_addr
         self.size_bytes = size_bytes
@@ -871,6 +880,13 @@ def get_device_ranges(devices, device_name):
     return ranges
 
 
+def get_addr_space_suffix(addr_space):
+    # TODO: Don't special-case the "hart" address space.
+    if addr_space['name'] == "hart":
+        return ""
+    return "_" + addr_space['name']
+
+
 class TopGen:
     def __init__(self, top_info, name_to_block: Dict[str, IpBlock], enum_type, array_mapping_type):
         self.top = top_info
@@ -883,9 +899,6 @@ class TopGen:
                "Unsupported array mapping type"
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
-
-        # TODO: Don't hardcode the address space used for software.
-        self.addr_space = "hart"
 
         self._init_plic_targets()
         self._init_plic_mapping()
@@ -907,22 +920,20 @@ class TopGen:
         # Only generate clkmgr mappings if there is a clkmgr
         if find_module(self.top['module'], 'clkmgr'):
             self._init_clkmgr_clocks()
-        self._init_subranges()
 
-    def devices(self) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
-        '''Return a list of MemoryRegion objects for devices on the bus
-
-        The list returned is pairs (full_if, region) where full_if is itself a
-        pair (inst_name, if_name). inst_name is the name of some IP block
-        instantiation. if_name is the name of the interface (may be None).
-        region is a MemoryRegion object representing the device.
-
-        '''
-        ret = []  # type: List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]
-        # TODO: This method is invoked in templates, as well as in the extended
-        # class TopGenCTest. We could refactor and optimize the implementation
-        # a bit.
         self.device_regions = defaultdict(dict)
+        self.subranges = defaultdict(dict)
+        for addr_space in top_info['addr_spaces']:
+            self._init_device_regions(addr_space['name'])
+            self._init_subranges(addr_space['name'])
+
+    def _init_device_regions(self, addr_space):
+        '''Initialize the device_regions dictionary.
+
+        The dictionary entry maps blocks to MemoryRegions for the given
+        addr_space.
+        '''
+        device_region = defaultdict(dict)
         for inst in self.top['module']:
             block = self._name_to_block[inst['type']]
             for if_name, rb in block.reg_blocks.items():
@@ -934,22 +945,66 @@ class TopGen:
                 name = full_if_name
                 base, size = get_base_and_size(self._name_to_block,
                                                inst, if_name)
-                if self.addr_space not in base:
+                if addr_space not in base:
                     continue
 
-                region = MemoryRegion(self._top_name, name, base[self.addr_space], size)
-                self.device_regions[inst['name']].update({if_name: region})
+                region = MemoryRegion(self._top_name, name, addr_space, base[addr_space], size)
+                device_region[inst['name']].update({if_name: region})
+
+        self.device_regions[addr_space] = device_region
+
+    def all_device_regions(self) -> Dict[str, Dict[str, MemoryRegion]]:
+        '''Return a list of MemoryRegion objects for all devices on the bus.
+        '''
+        return self.device_regions
+
+    def devices(self, addr_space) -> List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]:
+        '''Return a list of MemoryRegion objects for devices on the bus
+
+        The list returned is pairs (full_if, region) where full_if is itself a
+        pair (inst_name, if_name). inst_name is the name of some IP block
+        instantiation. if_name is the name of the interface (may be None).
+        region is a MemoryRegion object representing the device.
+
+        Parameters:
+            addr_space: The address space representing the bus for generation.
+        '''
+        ret = []  # type: List[Tuple[Tuple[str, Optional[str]], MemoryRegion]]
+        # TODO: This method is invoked in templates, as well as in the extended
+        # class TopGenCTest. We could refactor and optimize the implementation
+        # a bit.
+        for inst in self.top['module']:
+            block = self._name_to_block[inst['type']]
+            for if_name, rb in block.reg_blocks.items():
+                full_if = (inst['name'], if_name)
+                full_if_name = Name.from_snake_case(full_if[0])
+                if if_name is not None:
+                    full_if_name += Name.from_snake_case(if_name)
+
+                name = full_if_name
+                base, size = get_base_and_size(self._name_to_block,
+                                               inst, if_name)
+                if addr_space not in base:
+                    continue
+
+                region = MemoryRegion(self._top_name, name, addr_space, base[addr_space], size)
                 ret.append((full_if, region))
 
         return ret
 
-    def memories(self):
+    def memories(self, addr_space) -> List[Tuple[str, MemoryRegion]]:
+        '''Return a list of MemoryRegions objects for memories on the bus
+
+        Parameters:
+            addr_space: The address space representing the bus for generation.
+        '''
         ret = []
         for m in self.top["memory"]:
             ret.append((m["name"],
                         MemoryRegion(self._top_name,
                                      Name.from_snake_case(m["name"]),
-                                     int(m["base_addr"][self.addr_space], 0),
+                                     addr_space,
+                                     int(m["base_addr"][addr_space], 0),
                                      int(m["size"], 0))))
 
         for inst in self.top['module']:
@@ -957,11 +1012,11 @@ class TopGen:
                 for if_name, val in inst["memory"].items():
                     base, size = get_base_and_size(self._name_to_block,
                                                    inst, if_name)
-                    if self.addr_space not in base:
+                    if addr_space not in base:
                         continue
 
                     name = Name.from_snake_case(val["label"])
-                    region = MemoryRegion(self._top_name, name, base[self.addr_space], size)
+                    region = MemoryRegion(self._top_name, name, addr_space, base[addr_space], size)
                     ret.append((val["label"], region))
 
         return ret
@@ -969,6 +1024,7 @@ class TopGen:
     def _init_plic_targets(self):
         enum = self._enum_type(self._top_name, Name(["plic", "target"]))
 
+        # TODO: Model interrupt domains to show explicit connectivity.
         for core_id in range(int(self.top["num_cores"])):
             enum.add_constant(Name(["ibex", str(core_id)]),
                               docstring="Ibex Core {}".format(core_id))
@@ -995,6 +1051,7 @@ class TopGen:
         that they get the correct mapping to their PLIC id, which is used for
         addressing the right registers and bits.
         """
+        # TODO: Model interrupt domains to show explicit connectivity.
         sources = self._enum_type(self._top_name, Name(["plic", "peripheral"]), self.regwidth)
         interrupts = self._enum_type(self._top_name, Name(["plic", "irq", "id"]), self.regwidth)
         plic_mapping = self._array_mapping_type(
@@ -1071,6 +1128,7 @@ class TopGen:
         correct mapping to their alert id, which is used for addressing the
         right registers and bits.
         """
+        # TODO: Model alert domains with explicit connectivity.
         sources = self._enum_type(self._top_name, Name(["alert", "peripheral"]), self.regwidth)
         alerts = self._enum_type(self._top_name, Name(["alert", "id"]), self.regwidth)
         alert_mapping = self._array_mapping_type(
@@ -1354,12 +1412,12 @@ class TopGen:
         self.clkmgr_gateable_clocks = gateable_clocks
         self.clkmgr_hintable_clocks = hintable_clocks
 
-    def _init_subranges(self):
+    def _init_subranges(self, addr_space_name):
         """
         Computes the bounds of all subspace regions of a given address space.
         """
         subspace_regions = []
-        addr_space = get_addr_space(self.top, self.addr_space)
+        addr_space = get_addr_space(self.top, addr_space_name)
         for subspace in addr_space.get('subspaces', []):
             regions = []
             for node in subspace['nodes']:
@@ -1371,7 +1429,7 @@ class TopGen:
                 if len(split_dev) > 1:
                     if_name = split_dev[1]
 
-                ranges = get_device_ranges(self.devices(), dev_name)
+                ranges = get_device_ranges(self.devices(addr_space_name), dev_name)
                 if if_name:
                     # Only a single interface, if name contained an interface name
                     regions.append(ranges[if_name])
@@ -1382,8 +1440,9 @@ class TopGen:
             subspace_range = range(min([r.base_addr for r in regions]),
                                    max([r.base_addr + r.size_bytes for r in regions]))
             subspace_region = MemoryRegion(self._top_name, Name([subspace['name']]),
+                                           addr_space_name,
                                            subspace_range.start,
                                            subspace_range.stop - subspace_range.start)
             subspace_regions.append((subspace['name'], subspace['desc'], subspace_region))
 
-        self.subranges = subspace_regions
+        self.subranges[addr_space_name] = subspace_regions
