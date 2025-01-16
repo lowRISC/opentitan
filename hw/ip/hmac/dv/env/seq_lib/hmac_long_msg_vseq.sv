@@ -10,6 +10,7 @@ class hmac_long_msg_vseq extends hmac_smoke_vseq;
 
   // Constraints
   extern constraint msg_c;
+  extern constraint num_trans_c;
 
   // Standard SV/UVM methods
   extern function new(string name="");
@@ -23,6 +24,11 @@ constraint hmac_long_msg_vseq::msg_c {
     [1000 : 3_000] :/ 5,  // 1KB - 2KB according to SW immediate usage
     [3001 :10_000] :/ 1   // temp set to 10KB as max length, spec max size is 2^64 bits
   };
+}
+
+// Reduce the number of transactions as simulation time is too long and it doesn't add much value
+constraint hmac_long_msg_vseq::num_trans_c {
+  num_trans inside {[1:25]};
 }
 
 function hmac_long_msg_vseq::new(string name="");
