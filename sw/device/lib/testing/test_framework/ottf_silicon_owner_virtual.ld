@@ -10,7 +10,9 @@
  * This linker script generates a binary to run BL0 tests.
  */
 
-INCLUDE hw/top_earlgrey/sw/autogen/top_earlgrey_memory.ld
+/* This linker script is preprocessed, OPENTITAN_TOP_MEMORY_LD is a define
+ * set by Bazel to point to the top's linker file. */
+INCLUDE OPENTITAN_TOP_MEMORY_LD
 
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.

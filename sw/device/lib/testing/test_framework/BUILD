@@ -95,7 +95,7 @@ ld_library(
     script = "ottf_silicon_creator_a.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
@@ -104,7 +104,7 @@ ld_library(
     script = "ottf_silicon_creator_b.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
@@ -113,7 +113,7 @@ ld_library(
     script = "ottf_silicon_creator_virtual.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
@@ -122,7 +122,7 @@ ld_library(
     script = "ottf_silicon_owner_a.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
@@ -131,7 +131,7 @@ ld_library(
     script = "ottf_silicon_owner_b.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
@@ -140,7 +140,7 @@ ld_library(
     script = "ottf_silicon_owner_virtual.ld",
     deps = [
         ":ottf_ld_common",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
+        "//hw/top:top_ld",
     ],
 )
 
