@@ -21,5 +21,17 @@
       type:    "int",
       default: "32",
     }
+    {
+      name:    "nr_role_bits",
+      desc:    "Number of RACL bits",
+      type:    "int",
+      default: "4",
+    }
+    {
+      name:    "nr_ctn_uid_bits",
+      desc:    "Number of CTN UID bits",
+      type:    "int",
+      default: "5",
+    }
   ]
 }

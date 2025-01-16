@@ -84,8 +84,20 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
 
   logic [NumRanges-1:0] addr_hit, deny_mask, read_mask, write_mask, execute_mask, log_enable_mask;
+  logic [NumRanges-1:0] racl_read_hit, racl_write_hit;
 
-  // TODO(#25454): RACL checks get implemented once RACL is in
+  // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(ctn_tl_h2d_i.a_user.rsvd);
+
+  prim_onehot_enc #(
+    .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+  ) u_racl_role_encode (
+    .in_i ( racl_role     ),
+    .en_i ( 1'b1          ),
+    .out_o( racl_role_vec )
+  );
+
   for (int i = 0; i < NumRanges; i++) begin : gen_range_checks
     // Extend base, limit, and mask to 32-bit
     logic [31:0] base_ext, limit_ext;
@@ -101,14 +113,21 @@ module ${module_instance_name}
     assign addr_hit[i] = prim_mubi_pkg::mubi4_test_true_loose(reg2hw.range_perm[i].enable.q) &
                          tor_hit;
 
+    // Perform RACL checks - check if the incoming role matches with the configured policy
+    assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q)
+    assign racl_write_hit[i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].write_perm.q)
+
     // Decode the multi-bit access fields for convinient access
     logic perm_read_access, perm_write_access, perm_execute_access;
     assign perm_read_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].read_access.q);
+      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].read_access.q) &
+      racl_read_hit[i];
     assign perm_write_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].write_access.q);
+      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].write_access.q) &
+      racl_write_hit[i];
     assign perm_execute_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].execute_access.q);
+      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].execute_access.q) &
+      racl_read_hit[i];
 
     // Access is denied if no read_, write_, or execute access is set in the permission mask
     // The permission masks need to be reversed to allow for the right priority order.
@@ -117,8 +136,8 @@ module ${module_instance_name}
       addr_hit[i] & ~(perm_read_access | perm_write_access | perm_execute_access);
 
     // Determine the read, write, and execute mask. Store a hit in their index
-    assign read_mask[NumRanges - 1 - i]    = addr_hit[i] & perm_read_access;
-    assign write_mask[NumRanges - 1 - i]   = addr_hit[i] & perm_write_access;
+    assign read_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
+    assign write_mask  [NumRanges - 1 - i] = addr_hit[i] & perm_write_access;
     assign execute_mask[NumRanges - 1 - i] = addr_hit[i] & perm_execute_access;
   end
 
@@ -224,9 +243,12 @@ module ${module_instance_name}
   assign hw2reg.log_status.denied_racl_write.de = log_first_deny | clear_log;
   assign hw2reg.log_status.denied_racl_write.d  = '0;
 
-  // TODO(#25454): RACL status gets implemented once RACL is in
   assign hw2reg.log_status.denied_source_role.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.denied_source_role.d  = '0;
+  assign hw2reg.log_status.denied_source_role.d  = racl_role;
+
+  assign hw2reg.log_status.denied_ctn_uid.de = log_first_deny | clear_log;
+  assign hw2reg.log_status.denied_ctn_uid.d  =
+    top_racl_pkg::tlul_extract_ctn_uid_bits(ctn_tl_h2d_i.a_user.rsvd);
 
   // TODO(#25456): Need to determine the index that caused the denial
   assign hw2reg.log_status.deny_range_index.de = log_first_deny | clear_log;

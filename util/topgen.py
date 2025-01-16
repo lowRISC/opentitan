@@ -572,6 +572,8 @@ def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
     # Get the AC Range Check instance
     ac_ranges = lib.find_module(topcfg['module'], 'ac_range_check')
     params = {
+        "nr_role_bits": 4,
+        "nr_ctn_uid_bits": 5,
         "num_ranges": topcfg['ac_range_check']['num_ranges'],
         "module_instance_name": ac_ranges['type']
     }
