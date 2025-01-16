@@ -64,13 +64,15 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
     // Flip a coin and either select Dev or Prod to start and override the state in OTP.
     if ($urandom_range(0, 1)) src_lc_state = DecLcStDev;
     else                      src_lc_state = DecLcStProd;
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(encode_lc_state(src_lc_state));
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], encode_lc_state(src_lc_state));
 
     // Override Device ID and Manufacturing state with random values.
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
+    otp_write_hw_cfg0_partition(
+      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       .device_id(device_id),
       .manuf_state(manuf_state));
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
+    otp_write_hw_cfg1_partition(
+      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       // Use same default config as in otp_ctrl_img_hw_cfg.hjson
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
       .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
@@ -143,7 +145,8 @@ class chip_sw_flash_rma_unlocked_vseq extends chip_sw_base_vseq;
 
   virtual task provision_secret2_partition();
     // Override the rma unlock token to match SW test's input token.
-    cfg.mem_bkdr_util_h[Otp].otp_write_secret2_partition(
+    otp_write_secret2_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .rma_unlock_token(dec_otp_token_from_lc_csrs(rma_unlock_token)),
         .creator_root_key0(get_otp_key(creator_root_key0)),
         .creator_root_key1(get_otp_key(creator_root_key1)));

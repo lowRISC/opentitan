@@ -21,11 +21,13 @@ class chip_sw_sram_ctrl_execution_main_vseq extends chip_sw_base_vseq;
     apply_reset();
 
     if (set_prod_lc) begin
-      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+      otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
     end
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg0_partition(
+    otp_write_hw_cfg0_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
+    otp_write_hw_cfg1_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .en_sram_ifetch(en_sram_ifetch),
         .en_csrng_sw_app_read(EN_CSRNG_SW_APP_READ),
         .dis_rv_dm_late_debug(DIS_RV_DM_LATE_DEBUG));

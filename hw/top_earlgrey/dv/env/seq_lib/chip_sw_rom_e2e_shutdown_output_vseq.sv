@@ -13,7 +13,7 @@ class chip_sw_rom_e2e_shutdown_output_vseq extends
     foreach (lc_state_2_rom_lcv[lc_state]) begin
       `uvm_info(`gfn, $sformatf("Backdoor overwriting the lifecycle state and applying POR ..."),
         UVM_LOW)
-      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
+      otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_state);
       apply_reset();
 
       // Wait for retention SRAM initialization to be done before hooking up the UART agent to
