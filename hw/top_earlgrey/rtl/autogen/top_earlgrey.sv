@@ -1507,6 +1507,8 @@ module top_earlgrey #(
       .otp_broadcast_o(otp_ctrl_otp_broadcast),
       .obs_ctrl_i(ast_obs_ctrl),
       .otp_obs_o(otp_obs_o),
+      .cfg_i('0),
+      .cfg_rsp_o(),
       .core_tl_i(otp_ctrl_core_tl_req),
       .core_tl_o(otp_ctrl_core_tl_rsp),
       .prim_tl_i(otp_ctrl_prim_tl_req),

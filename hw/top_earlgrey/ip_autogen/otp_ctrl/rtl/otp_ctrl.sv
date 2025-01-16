@@ -86,7 +86,10 @@ module otp_ctrl
   input prim_mubi_pkg::mubi4_t                       scanmode_i,
   // Test-related GPIO output
   output logic [OtpTestVectWidth-1:0]                cio_test_o,
-  output logic [OtpTestVectWidth-1:0]                cio_test_en_o
+  output logic [OtpTestVectWidth-1:0]                cio_test_en_o,
+  // DFT config and response port
+  input  prim_otp_cfg_pkg::otp_cfg_t                 cfg_i,
+  output  prim_otp_cfg_pkg::otp_cfg_rsp_t            cfg_rsp_o
 );
 
   import prim_mubi_pkg::*;
@@ -846,7 +849,9 @@ end
     // Read data out
     .valid_o          ( otp_rvalid           ),
     .rdata_o          ( part_otp_rdata       ),
-    .err_o            ( part_otp_err         )
+    .err_o            ( part_otp_err         ),
+    .cfg_i,
+    .cfg_rsp_o
   );
 
   logic otp_fifo_valid;

@@ -26,42 +26,45 @@ module prim_generic_otp
   parameter  int VendorTestOffset = 0,
   parameter  int VendorTestSize   = 0
 ) (
-  input                          clk_i,
-  input                          rst_ni,
+  input                                  clk_i,
+  input                                  rst_ni,
   // Observability
-  input ast_pkg::ast_obs_ctrl_t obs_ctrl_i,
-  output logic [7:0] otp_obs_o,
+  input ast_pkg::ast_obs_ctrl_t          obs_ctrl_i,
+  output logic [7:0]                     otp_obs_o,
   // Macro-specific power sequencing signals to/from AST
-  output logic [PwrSeqWidth-1:0] pwr_seq_o,
-  input        [PwrSeqWidth-1:0] pwr_seq_h_i,
+  output logic [PwrSeqWidth-1:0]          pwr_seq_o,
+  input        [PwrSeqWidth-1:0]          pwr_seq_h_i,
   // External programming voltage
-  inout wire                     ext_voltage_io,
+  inout wire                              ext_voltage_io,
   // Test interfaces
-  input        [TestCtrlWidth-1:0]   test_ctrl_i,
-  output logic [TestStatusWidth-1:0] test_status_o,
-  output logic [TestVectWidth-1:0]   test_vect_o,
-  input  tlul_pkg::tl_h2d_t          test_tl_i,
-  output tlul_pkg::tl_d2h_t          test_tl_o,
+  input        [TestCtrlWidth-1:0]        test_ctrl_i,
+  output logic [TestStatusWidth-1:0]      test_status_o,
+  output logic [TestVectWidth-1:0]        test_vect_o,
+  input  tlul_pkg::tl_h2d_t               test_tl_i,
+  output tlul_pkg::tl_d2h_t               test_tl_o,
   // Other DFT signals
-  input prim_mubi_pkg::mubi4_t   scanmode_i,  // Scan Mode input
-  input                          scan_en_i,   // Scan Shift
-  input                          scan_rst_ni, // Scan Reset
+  input prim_mubi_pkg::mubi4_t            scanmode_i,  // Scan Mode input
+  input                                   scan_en_i,   // Scan Shift
+  input                                   scan_rst_ni, // Scan Reset
   // Alert indication (to be connected to alert sender in the instantiating IP)
-  output logic                   fatal_alert_o,
-  output logic                   recov_alert_o,
+  output logic                            fatal_alert_o,
+  output logic                            recov_alert_o,
   // Ready valid handshake for read/write command
-  output logic                   ready_o,
-  input                          valid_i,
+  output logic                            ready_o,
+  input                                   valid_i,
   // #(Native words)-1, e.g. size == 0 for 1 native word.
-  input [SizeWidth-1:0]          size_i,
+  input [SizeWidth-1:0]                   size_i,
   // See prim_otp_pkg for the command encoding.
-  input  cmd_e                   cmd_i,
-  input [AddrWidth-1:0]          addr_i,
-  input [IfWidth-1:0]            wdata_i,
+  input  cmd_e                            cmd_i,
+  input [AddrWidth-1:0]                   addr_i,
+  input [IfWidth-1:0]                     wdata_i,
   // Response channel
-  output logic                   valid_o,
-  output logic [IfWidth-1:0]     rdata_o,
-  output err_e                   err_o
+  output logic                            valid_o,
+  output logic [IfWidth-1:0]              rdata_o,
+  output err_e                            err_o,
+  // DFT config and response port
+  input  prim_otp_cfg_pkg::otp_cfg_t      cfg_i,
+  output  prim_otp_cfg_pkg::otp_cfg_rsp_t cfg_rsp_o
 );
 
   import prim_mubi_pkg::MuBi4False;
@@ -94,6 +97,10 @@ module prim_generic_otp
 
   assign test_vect_o = '0;
   assign test_status_o = '0;
+
+  logic unused_cfg;
+  assign unused_cfg = ^cfg_i;
+  assign cfg_rsp_o = '0;
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
