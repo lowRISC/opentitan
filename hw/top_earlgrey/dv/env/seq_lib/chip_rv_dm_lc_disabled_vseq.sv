@@ -85,12 +85,13 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
 
   virtual function void backdoor_override_otp();
     prim_mubi_pkg::mubi8_t dis_late_dbg = prim_mubi_pkg::MuBi8False;
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_state);
 
     if (dis_late_debug_en_otp) begin
       dis_late_dbg = prim_mubi_pkg::MuBi8True;
     end
-    cfg.mem_bkdr_util_h[Otp].otp_write_hw_cfg1_partition(
+    otp_write_hw_cfg1_partition(
+      .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
       .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
       .dis_rv_dm_late_debug(dis_late_dbg));

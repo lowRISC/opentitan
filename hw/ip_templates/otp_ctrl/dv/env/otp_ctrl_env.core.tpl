@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:mem_bkdr_util
       - lowrisc:dv:crypto_dpi_present
       - lowrisc:dv:lc_ctrl_dv_utils
+      - ${instance_vlnv("lowrisc:dv:otp_ctrl_mem_bkdr_util:0.1")}
     files:
       - otp_ctrl_env_pkg.sv
       - otp_ctrl_if.sv

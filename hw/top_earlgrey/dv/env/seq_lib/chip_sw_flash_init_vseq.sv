@@ -125,7 +125,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   virtual task randomize_keys();
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_addr_key)
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_data_key)
-    cfg.mem_bkdr_util_h[Otp].otp_write_secret1_partition(
+    otp_write_secret1_partition(
+        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
         .flash_addr_key_seed(get_flash_otp_key(secret_flash_addr_key)),
         .flash_data_key_seed(get_flash_otp_key(secret_flash_data_key)),
         .sram_data_key_seed(get_sram_otp_key(secret_sram_key)));
@@ -296,7 +297,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     join_none
 
     // Allow most test phases to write seed partition, but do not allow hardware to read
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
     cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
 
     // Looping through all test phases.
@@ -331,7 +332,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
                       UVM_LOW)
 
             // The actual data is irrelevant as long as the partition becomes locked.
-            cfg.mem_bkdr_util_h[Otp].otp_write_secret2_partition(
+            otp_write_secret2_partition(
+              .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
               .rma_unlock_token('0), .creator_root_key0('0), .creator_root_key1('0));
           end
 

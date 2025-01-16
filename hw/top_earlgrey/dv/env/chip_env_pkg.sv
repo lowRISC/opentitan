@@ -35,6 +35,7 @@ package chip_env_pkg;
   import lc_ctrl_state_pkg::*;
   import lc_ctrl_dv_utils_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import otp_ctrl_mem_bkdr_util_pkg::*;
   import otp_ctrl_pkg::*;
   import spi_agent_pkg::*;
   import sram_ctrl_pkg::*;
