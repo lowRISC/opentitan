@@ -1423,6 +1423,34 @@
           index: -1
         }
         {
+          name: cfg
+          struct: otp_cfg
+          package: prim_otp_cfg_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          external: true
+          top_signame: otp_cfg
+          conn_type: false
+          index: -1
+        }
+        {
+          name: cfg_rsp
+          struct: otp_cfg_rsp
+          package: prim_otp_cfg_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          external: true
+          top_signame: otp_cfg_rsp
+          conn_type: false
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -10395,6 +10423,8 @@
       otp_ctrl.otp_ast_pwr_seq_h: ""
       otp_ctrl.otp_ext_voltage_h: otp_ext_voltage_h
       otp_ctrl.otp_obs: otp_obs
+      otp_ctrl.cfg: otp_cfg
+      otp_ctrl.cfg_rsp: otp_cfg_rsp
       rstmgr_aon.por_n: por_n
       rv_core_ibex.fpga_info: fpga_info
       sensor_ctrl.ast_alert: sensor_ctrl_ast_alert
@@ -19060,6 +19090,34 @@
         index: -1
       }
       {
+        name: cfg
+        struct: otp_cfg
+        package: prim_otp_cfg_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        external: true
+        top_signame: otp_cfg
+        conn_type: false
+        index: -1
+      }
+      {
+        name: cfg_rsp
+        struct: otp_cfg_rsp
+        package: prim_otp_cfg_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        external: true
+        top_signame: otp_cfg_rsp
+        conn_type: false
+        index: -1
+      }
+      {
         name: core_tl
         struct: tl
         package: tlul_pkg
@@ -26009,6 +26067,30 @@
         conn_type: false
         index: -1
         netname: otp_obs
+      }
+      {
+        package: prim_otp_cfg_pkg
+        struct: otp_cfg
+        signame: otp_cfg_i
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: otp_cfg
+      }
+      {
+        package: prim_otp_cfg_pkg
+        struct: otp_cfg_rsp
+        signame: otp_cfg_rsp_o
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: otp_cfg_rsp
       }
       {
         package: ""

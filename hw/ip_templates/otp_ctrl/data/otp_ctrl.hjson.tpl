@@ -444,6 +444,21 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: ""
       desc:    "AST observability bus."
     }
+    // DFT CFG and RSP signals
+    { struct:  "otp_cfg"
+      type:    "uni"
+      name:    "cfg"
+      act:     "rcv"
+      default: "'0"
+      package: "prim_otp_cfg_pkg"
+    },
+    { struct:  "otp_cfg_rsp"
+      type:    "uni"
+      name:    "cfg_rsp"
+      act:     "req"
+      default: "'0"
+      package: "prim_otp_cfg_pkg"
+    },
   ] // inter_signal_list
 
   /////////////////////

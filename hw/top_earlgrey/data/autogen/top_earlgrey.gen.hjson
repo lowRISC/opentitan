@@ -1906,6 +1906,28 @@
           index: -1
         }
         {
+          name: cfg
+          struct: otp_cfg
+          package: prim_otp_cfg_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          name: cfg_rsp
+          struct: otp_cfg_rsp
+          package: prim_otp_cfg_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -18131,6 +18153,28 @@
         external: true
         top_signame: otp_obs
         conn_type: false
+        index: -1
+      }
+      {
+        name: cfg
+        struct: otp_cfg
+        package: prim_otp_cfg_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        name: cfg_rsp
+        struct: otp_cfg_rsp
+        package: prim_otp_cfg_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
         index: -1
       }
       {

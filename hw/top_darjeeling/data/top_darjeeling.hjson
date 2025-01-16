@@ -1371,6 +1371,8 @@
         'otp_ctrl.otp_ast_pwr_seq_h'           : '',
         'otp_ctrl.otp_ext_voltage_h'           : 'otp_ext_voltage_h',
         'otp_ctrl.otp_obs'                     : 'otp_obs',
+        'otp_ctrl.cfg'                         : 'otp_cfg',
+        'otp_ctrl.cfg_rsp'                     : 'otp_cfg_rsp',
         'rstmgr_aon.por_n'                     : 'por_n'
         'rv_core_ibex.fpga_info'               : 'fpga_info'
         'sensor_ctrl.ast_alert'                : 'sensor_ctrl_ast_alert',
