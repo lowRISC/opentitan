@@ -9,6 +9,7 @@ class hmac_stress_reset_vseq extends hmac_base_vseq;
 
   // Standard SV/UVM methods
   extern function new(string name="");
+  extern task pre_body();
   extern task body();
 endclass : hmac_stress_reset_vseq
 
@@ -17,6 +18,12 @@ function hmac_stress_reset_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
+task hmac_stress_reset_vseq::pre_body();
+  // TODO (#25809) - The S&R is causing troubles with this test, this flag will be removed later
+  // when reset is handled properly.
+  cfg.save_and_restore_pct = 0;
+  super.pre_body();
+endtask : pre_body
 
 task hmac_stress_reset_vseq::body();
   for (int i = 1; i <= num_trans; i++) begin
