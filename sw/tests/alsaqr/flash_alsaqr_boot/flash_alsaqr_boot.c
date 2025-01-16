@@ -26,7 +26,7 @@ bool test_main(void) {
   sec_mmio_init();
   pinmux_init();
 
-  #ifdef TARGET_SYNTHESIS
+  /*#ifdef TARGET_SYNTHESIS
   int baud_rate = 115200;
   int test_freq = 50000000;
   #else
@@ -35,7 +35,7 @@ bool test_main(void) {
   int test_freq = 100000000;
   #endif
   uart_set_cfg(0,(test_freq/baud_rate)>>4);
-
+  */
   #define PLIC_BASE     0x0C000000
   #define PLIC_CHECK    PLIC_BASE + 0x201004
 
@@ -46,7 +46,7 @@ bool test_main(void) {
   int mbox_id = 10;
 
   // Initialazing the uart
-  uart_set_cfg(0,(test_freq/baud_rate)>>4);
+  //uart_set_cfg(0,(test_freq/baud_rate)>>4);
 
     // Init CVA6 Plic
   pointer = (int *) 0x0C000028;
@@ -55,12 +55,12 @@ bool test_main(void) {
   pointer = (int *) 0x0C002080;
   *pointer =  0x400;
 
-  printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
+  //printf("[SECD] Writing CVA6 boot PC into mbox\r\n");
   // Write CVA6 boot PC to mbox
   pointer = (int *) 0x10404000;
   *pointer = 0x80000000;
 
-  printf("[SECD] Booting CVA6\r\n");
+  //printf("[SECD] Booting CVA6\r\n");
 
   // Send IRQ and boot
   pointer = (int *) 0x10404024;
