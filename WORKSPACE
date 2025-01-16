@@ -153,6 +153,9 @@ bitstreams_repo(name = "bitstreams")
 load("//third_party/open-dice:repos.bzl", "open_dice_repos")
 open_dice_repos()
 
+load("//third_party/qemu:repos.bzl", "qemu_opentitan_repos")
+qemu_opentitan_repos()
+
 # Setup for linking in externally managed test and provisioning customizations
 # for both secure/non-secure manufacturer domains.
 load("//rules:hooks_setup.bzl", "hooks_setup", "provisioning_exts_setup", "secure_hooks_setup")
