@@ -135,16 +135,16 @@ class chip_base_vseq #(
     void'($value$plusargs("otp_clear_secret1=%0d", otp_clear_secret1));
     void'($value$plusargs("otp_clear_secret2=%0d", otp_clear_secret2));
     if (otp_clear_hw_cfg0) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_hw_cfg0_partition();
+        otp_clear_hw_cfg0_partition(cfg.mem_bkdr_util_h[Otp]);
     end
     if (otp_clear_secret0) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret0_partition();
+        otp_clear_secret0_partition(cfg.mem_bkdr_util_h[Otp]);
     end
     if (otp_clear_secret1) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret1_partition();
+        otp_clear_secret1_partition(cfg.mem_bkdr_util_h[Otp]);
     end
     if (otp_clear_secret2) begin
-        cfg.mem_bkdr_util_h[Otp].otp_clear_secret2_partition();
+        otp_clear_secret2_partition(cfg.mem_bkdr_util_h[Otp]);
     end
 
     initialize_otp_lc_state();
@@ -316,7 +316,7 @@ class chip_base_vseq #(
     logic [31:0] chk_vector;
 
     // Set rom_exec_en only when we are not in RAW state.
-    lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+    lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
 
     // If we are already 1, we cannot set to 0.
     // This should probably be relocated to mem_bkdr_util eventually as an option for writes

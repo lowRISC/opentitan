@@ -66,12 +66,12 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
     super.dut_init(reset_kind);
 
-    cur_lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+    cur_lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
 
     // in LcStProd, we can only select LC tap at boot.
     // If it's not LC tap, effectively, no tap is selected.
     if (cur_lc_state == LcStProd) begin
-      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+      otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
       // In Dev state, only pin0 of select_jtag is sampled. When it's set, select LC tap
       if (select_jtag[0] == 0) select_jtag = JtagTapNone;
       else                     select_jtag = JtagTapLc;
