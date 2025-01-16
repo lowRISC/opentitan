@@ -6,7 +6,7 @@
 | Name                                            | Offset   |   Length | Description                                    |
 |:------------------------------------------------|:---------|---------:|:-----------------------------------------------|
 | aon_timer.[`ALERT_TEST`](#alert_test)           | 0x0      |        4 | Alert Test Register                            |
-| aon_timer.[`WKUP_CTRL`](#wkup_ctrl)             | 0x4      |        4 | Wakeup Timer Control register                  |
+| aon_timer.[`WKUP_CTRL`](#wkup_ctrl)             | 0x4      |        4 | Wakeup Timer Control register.                 |
 | aon_timer.[`WKUP_THOLD_HI`](#wkup_thold_hi)     | 0x8      |        4 | Wakeup Timer Threshold Register (bits 63 - 32) |
 | aon_timer.[`WKUP_THOLD_LO`](#wkup_thold_lo)     | 0xc      |        4 | Wakeup Timer Threshold Register (bits 31 - 0)  |
 | aon_timer.[`WKUP_COUNT_HI`](#wkup_count_hi)     | 0x10     |        4 | Wakeup Timer Count Register (bits 63 - 32)     |
@@ -38,7 +38,8 @@ Alert Test Register
 |   0    |   wo   |   0x0   | fatal_fault | Write 1 to trigger one alert event of this kind. |
 
 ## WKUP_CTRL
-Wakeup Timer Control register
+Wakeup Timer Control register.
+Each write to the register resets the internal prescaler count
 - Offset: `0x4`
 - Reset default: `0x0`
 - Reset mask: `0x1fff`
