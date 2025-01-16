@@ -25,6 +25,7 @@ cc_library(
 
 ld_library(
     name = "${top_name}_memory",
+    defines = ["OPENTITAN_TOP_MEMORY_LD=${top_name}_memory.ld"],
     includes = ["${top_name}_memory.ld"],
     target_compatible_with = opentitan_require_top("${top["name"]}"),
 )

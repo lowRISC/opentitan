@@ -26,6 +26,7 @@ cc_library(
 
 ld_library(
     name = "top_englishbreakfast_memory",
+    defines = ["OPENTITAN_TOP_MEMORY_LD=top_englishbreakfast_memory.ld"],
     includes = ["top_englishbreakfast_memory.ld"],
     target_compatible_with = opentitan_require_top("englishbreakfast"),
 )

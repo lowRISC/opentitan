@@ -26,6 +26,7 @@ cc_library(
 
 ld_library(
     name = "top_earlgrey_memory",
+    defines = ["OPENTITAN_TOP_MEMORY_LD=top_earlgrey_memory.ld"],
     includes = ["top_earlgrey_memory.ld"],
     target_compatible_with = opentitan_require_top("earlgrey"),
 )
