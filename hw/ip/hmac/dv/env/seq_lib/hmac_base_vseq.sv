@@ -144,6 +144,7 @@ endtask : dut_init
 task hmac_base_vseq::apply_reset(string kind = "HARD");
   super.apply_reset(kind);
   cfg.hash_process_triggered = 0;
+  cfg.sar_skip_ctxt          = 0;
 endtask : apply_reset
 
 task hmac_base_vseq::hmac_init( bit sha_en             = 1'b1,
