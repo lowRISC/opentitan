@@ -34,6 +34,8 @@ EARLGREY_SKUS = {
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "owner_fw_boot_str": "Bare metal PASS!",
         "ecdsa_key": {},
+        "spx_key": {},
+        "signature_prefix": None,
         "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
@@ -85,6 +87,8 @@ EARLGREY_SKUS = {
     #     # so we expect the ROM_EXT to BFV with `kErrorOwnershipKeyNotFound`,
     #     "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
     #     "ecdsa_key": {"//hw/top_earlgrey/data/otp/skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
+    #     "spx_key": {},
+    #     "signature_prefix": None,
     #     "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
     #     "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:sival.hjson",
     #     "offline": True,
