@@ -21,7 +21,7 @@ string_flag(
 
 rust_bindgen_toolchain(
     name = "bindgen_toolchain_impl",
-    bindgen = "@rules_rust//bindgen/3rdparty:bindgen",
+    bindgen = "@rules_rust_bindgen//3rdparty:bindgen",
     clang = "@bindgen_clang_linux//:clang",
     libclang = "@bindgen_clang_linux//:libclang",
     libstdcxx = select({
