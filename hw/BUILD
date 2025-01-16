@@ -129,7 +129,7 @@ filegroup(
     ) + [
         "//:tool_requirements.py",
         "//hw/ip:rtl_files",
-        "//hw/top_earlgrey:all_files",
+        "//hw/top_earlgrey:rtl_files",
         "//util:check_tool_requirements.py",
     ],
     visibility = ["//visibility:public"],
