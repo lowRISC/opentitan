@@ -148,6 +148,7 @@ rust_library(
         "src/test_utils/bitbanging/spi.rs",
         "src/test_utils/bitbanging/uart.rs",
         "src/test_utils/bootstrap.rs",
+        "src/test_utils/crashdump.rs",
         "src/test_utils/e2e_command.rs",
         "src/test_utils/epmp.rs",
         "src/test_utils/gpio.rs",
