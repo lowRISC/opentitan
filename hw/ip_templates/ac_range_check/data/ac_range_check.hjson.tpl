@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+<%
+import math
+%>\
 # AC Range Check register template
 {
   name:               "ac_range_check"
@@ -122,12 +125,22 @@
       swaccess: "ro"
       hwaccess: "hwo"
       fields: [
-        { bits: "22:18"
+<%
+  denied_ctn_uid_lsb = 14 + nr_role_bits
+  deny_range_index_lsb = denied_ctn_uid_lsb + nr_ctn_uid_bits
+  deny_range_index_size = math.ceil(math.log(num_ranges, 2))
+%>\
+        { bits: "${deny_range_index_lsb+deny_range_index_size-1}:${deny_range_index_lsb}"
           name: "deny_range_index"
           resval: 0x0
           desc: "Index of the range that caused the denied access."
         }
-        { bits: "17:14"
+        { bits: "${deny_range_index_lsb-1}:${denied_ctn_uid_lsb}"
+          name: "denied_ctn_uid"
+          resval: 0x0
+          desc: "Source CTN UID that was denied access."
+        }
+        { bits: "${denied_ctn_uid_lsb-1}:14"
           name: "denied_source_role"
           resval: 0x0
           desc: "Source RACL role that was denied access."
