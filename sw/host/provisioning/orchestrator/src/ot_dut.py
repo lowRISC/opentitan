@@ -57,6 +57,7 @@ class OtDut():
     test_exit_token: str
     fpga: str
     fpga_dont_clear_bitstream: bool
+    enable_alerts: bool
     use_ext_clk: bool
     require_confirmation: bool = True
 
@@ -281,7 +282,11 @@ class OtDut():
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
 
-            # Enable external clock if requested.
+            # Enable alerts during individualization if requested.
+            if self.enable_alerts:
+                cmd += " --enable-alerts-during-individualize"
+
+            # Enable external clock during individualization if requested.
             if self.use_ext_clk:
                 cmd += " --use-ext-clk-during-individualize"
 

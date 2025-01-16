@@ -28,6 +28,7 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=cw310 \
+  --enable-alerts \
   --use-ext-clk \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite
