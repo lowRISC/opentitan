@@ -20,6 +20,6 @@ endfunction : new
 
 task hmac_stress_reset_vseq::body();
   for (int i = 1; i <= num_trans; i++) begin
-    run_seq_with_rand_reset_vseq(create_seq_by_name("hmac_long_msg_vseq"), 1, 100);
+    run_seq_with_rand_reset_vseq(create_seq_by_name("hmac_long_msg_vseq"), 1, 1_000);
   end
 endtask : body
