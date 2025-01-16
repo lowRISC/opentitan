@@ -18,11 +18,11 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "all_files",
+    name = "rtl_files",
     srcs = glob(["**"]) + [
         "//hw/top_earlgrey/data:all_files",
         "//hw/top_earlgrey/dv/verilator:all_files",
-        "//hw/top_earlgrey/ip:all_files",
+        "//hw/top_earlgrey/ip:rtl_files",
         "//hw/top_earlgrey/sw:all_files",
     ],
 )

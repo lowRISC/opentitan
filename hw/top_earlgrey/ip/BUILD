@@ -5,13 +5,13 @@
 package(default_visibility = ["//visibility:public"])
 
 filegroup(
-    name = "all_files",
+    name = "rtl_files",
     srcs = glob(["**"]) + [
-        "//hw/top_earlgrey/ip/ast:all_files",
-        "//hw/top_earlgrey/ip/sensor_ctrl:all_files",
-        "//hw/top_earlgrey/ip/xbar:all_files",
-        "//hw/top_earlgrey/ip/xbar_main:all_files",
-        "//hw/top_earlgrey/ip/xbar_peri:all_files",
+        "//hw/top_earlgrey/ip/ast:rtl_files",
+        "//hw/top_earlgrey/ip/sensor_ctrl:rtl_files",
+        "//hw/top_earlgrey/ip/xbar:rtl_files",
+        "//hw/top_earlgrey/ip/xbar_main:rtl_files",
+        "//hw/top_earlgrey/ip/xbar_peri:rtl_files",
         "//hw/top_earlgrey/ip_autogen/alert_handler:rtl_files",
         "//hw/top_earlgrey/ip_autogen/clkmgr:rtl_files",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:rtl_files",
