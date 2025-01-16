@@ -176,7 +176,7 @@ module prim_fifo_sync #(
       .depth_o,
       .err_o
     );
-    assign fifo_incr_wptr = wvalid_i & wready_o & ~under_rst;
+    assign fifo_incr_wptr = wvalid_i & wready_o;
     assign fifo_incr_rptr = rvalid_o & rready_i & ~under_rst;
 
     logic [Depth-1:0][Width-1:0] storage;
