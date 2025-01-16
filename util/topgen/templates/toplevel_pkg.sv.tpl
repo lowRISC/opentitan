@@ -4,12 +4,14 @@
 ${gencmd}
 <%
 import topgen.lib as lib
-import topgen.lib as lib
 
+addr_space_suffix = lib.get_addr_space_suffix(addr_space)
+addr_space_name = addr_space['name']
+# TODO: Check that the pinmux is accessible from this addr_space
 has_pinmux = lib.find_module(top['module'], 'pinmux')
 %>\
-package top_${top["name"]}_pkg;
-% for (inst_name, if_name), region in helper.devices():
+package top_${top["name"]}${addr_space_suffix}_pkg;
+% for (inst_name, if_name), region in helper.devices(addr_space_name):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "32'h{:X}".format(region.base_addr)
@@ -26,7 +28,7 @@ package top_${top["name"]}_pkg;
   parameter int unsigned ${region.size_bytes_name().as_c_define()} = ${hex_size_bytes};
 
 % endfor
-% for name, region in helper.memories():
+% for name, region in helper.memories(addr_space_name):
 <%
     hex_base_addr = "32'h{:x}".format(region.base_addr)
     hex_size_bytes = "32'h{:x}".format(region.size_bytes)
@@ -190,10 +192,9 @@ package top_${top["name"]}_pkg;
 % endfor
     ${lib.Name.from_snake_case("dio_pad_count").as_camel_case()}
   } dio_pad_e;
-% endif
 
 <%
-    instances = sorted(set(inst for (inst, _), __ in helper.devices()))
+    instances = sorted(set(inst for (inst, _), __ in helper.devices(addr_space_name)))
 %>\
   // List of peripheral instantiated in this chip.
   typedef enum {
@@ -214,5 +215,6 @@ package top_${top["name"]}_pkg;
   `define INOUT_AI inout
   `define INOUT_AO inout
 `endif
+% endif
 
 endpackage

@@ -5,7 +5,7 @@
 
 ${gencmd}
 <%
-alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
+alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals[addr_space]})
 %>\
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
@@ -23,7 +23,7 @@ alert_peripheral_names = sorted({p.name for p in helper.alert_peripherals})
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
-% for p in helper.alert_peripherals:
+% for p in helper.alert_peripherals[addr_space]:
 static dif_${p.name}_t ${p.inst_name};
 % endfor
 
@@ -35,7 +35,7 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
 
-  % for p in helper.alert_peripherals:
+  % for p in helper.alert_peripherals[addr_space]:
   base_addr = mmio_region_from_addr(${p.base_addr_name});
   CHECK_DIF_OK(dif_${p.name}_init(base_addr, &${p.inst_name}));
 
@@ -97,7 +97,7 @@ static void alert_handler_config(void) {
 static void trigger_alert_test(void) {
   bool is_cause;
   dif_alert_handler_alert_t exp_alert;
-  % for p in helper.alert_peripherals:
+  % for p in helper.alert_peripherals[addr_space]:
 
     % if p.name == "otp_ctrl":
 <% indent = "  " %>\

@@ -10,6 +10,8 @@ has_pinmux = lib.find_module(top['module'], 'pinmux')
 has_alert_handler = lib.find_module(top['module'], 'alert_handler')
 has_clkmgr = lib.find_module(top['module'], 'clkmgr')
 has_rstmgr = lib.find_module(top['module'], 'rstmgr')
+# TODO: Check if PLIC is in the address space
+gen_plic = True
 %>\
 ${helper.file_header.render()}
 // This file was generated automatically.
@@ -35,7 +37,7 @@ ${helper.file_header.render()}
 
 use core::convert::TryFrom;
 
-% for (inst_name, if_name), region in helper.devices():
+% for (inst_name, if_name), region in helper.devices(addr_space):
 <%
     if_desc = inst_name if if_name is None else '{} device on {}'.format(if_name, inst_name)
     hex_base_addr = "0x{:X}".format(region.base_addr)
@@ -45,6 +47,7 @@ use core::convert::TryFrom;
     size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
+
 /// Peripheral base address for ${if_desc} in top ${top["name"]}.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
@@ -58,9 +61,8 @@ pub const ${base_addr_name}: usize = ${hex_base_addr};
 /// address between #${base_addr_name} and
 /// `${base_addr_name} + ${size_bytes_name}`.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-
 % endfor
-% for name, region in helper.memories():
+% for name, region in helper.memories(addr_space):
 <%
     hex_base_addr = "0x{:X}".format(region.base_addr)
     hex_size_bytes = "0x{:X}".format(region.size_bytes)
@@ -69,13 +71,15 @@ pub const ${size_bytes_name}: usize = ${hex_size_bytes};
     size_bytes_name = region.size_bytes_name(short=True).as_rust_const()
 
 %>\
+
 /// Memory base address for ${name} in top ${top["name"]}.
 pub const ${base_addr_name}: usize = ${hex_base_addr};
 
 /// Memory size for ${name} in top ${top["name"]}.
 pub const ${size_bytes_name}: usize = ${hex_size_bytes};
-
 % endfor
+% if gen_plic:
+
 /// PLIC Interrupt Source Peripheral.
 ///
 /// Enumeration used to determine which peripheral asserted the corresponding
@@ -93,6 +97,13 @@ ${helper.plic_interrupts.render(gen_cast=True)}
 /// Enumeration used to determine which set of IE, CC, threshold registers to
 /// access for a given interrupt target.
 ${helper.plic_targets.render()}
+
+/// PLIC Interrupt Source to Peripheral Map
+///
+/// This array is a mapping from `${helper.plic_interrupts.short_name.as_rust_type()}` to
+/// `${helper.plic_sources.short_name.as_rust_type()}`.
+${helper.plic_mapping.render_definition()}
+%endif
 % if has_alert_handler:
 
 /// Alert Handler Source Peripheral.
@@ -106,14 +117,6 @@ ${helper.alert_sources.render()}
 /// Enumeration of all Alert Handler Alert Sources. The alert sources belonging to
 /// the same peripheral are guaranteed to be consecutive.
 ${helper.alert_alerts.render(gen_cast=True)}
-% endif
-
-/// PLIC Interrupt Source to Peripheral Map
-///
-/// This array is a mapping from `${helper.plic_interrupts.short_name.as_rust_type()}` to
-/// `${helper.plic_sources.short_name.as_rust_type()}`.
-${helper.plic_mapping.render_definition()}
-% if has_alert_handler:
 
 /// Alert Handler Alert Source to Peripheral Map
 ///
@@ -179,7 +182,7 @@ ${helper.clkmgr_gateable_clocks.render()}
 /// but the clock manager is in control of whether the clock actually is stopped.
 ${helper.clkmgr_hintable_clocks.render()}
 % endif
-% for (subspace_name, description, subspace_range) in helper.subranges:
+% for (subspace_name, description, subspace_range) in helper.subranges[addr_space]:
 
 /// ${subspace_name.upper()} Region
 ///

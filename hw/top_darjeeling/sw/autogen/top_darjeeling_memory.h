@@ -7,8 +7,8 @@
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 // -o hw/top_darjeeling
 
-#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
-#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
+#ifndef OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_MEMORY_H_
+#define OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_MEMORY_H_
 
 /**
  * @file
@@ -24,8 +24,6 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 /**
  * Memory base for soc_proxy_ctn in top darjeeling.
  */
@@ -1002,4 +1000,4 @@
 
 #endif  // __ASSEMBLER__
 
-#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_MEMORY_H_
+#endif  // OPENTITAN_HW_TOP_DARJEELING_SW_AUTOGEN_TOP_DARJEELING_HART_MEMORY_H_

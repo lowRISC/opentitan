@@ -59,7 +59,7 @@ filegroup(
     name = "earlgrey_top_defs",
     srcs = [
         "//hw/top_earlgrey/sw/autogen/chip:mod.rs",
-        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey.rs",
+        "//hw/top_earlgrey/sw/autogen/chip:top_earlgrey_hart.rs",
     ],
 )
 

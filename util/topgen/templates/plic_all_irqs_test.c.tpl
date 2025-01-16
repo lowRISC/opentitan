@@ -11,7 +11,7 @@ known_names = {}
 irq_peripheral_names = []
 status_default_masks = []
 status_type_masks = []
-for p in helper.irq_peripherals:
+for p in helper.irq_peripherals[addr_space]:
   if p.name not in known_names:
     known_names.update({p.name: 1})
     irq_peripheral_names.append(p.name)
@@ -57,7 +57,7 @@ def args(p):
 
 #include "hw/top_${top["name"]}/sw/autogen/top_${top["name"]}.h"
 
-% for p in helper.irq_peripherals:
+% for p in helper.irq_peripherals[addr_space]:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
@@ -116,7 +116,7 @@ void ottf_external_isr(uint32_t *exc_info) {
         peripheral_expected, peripheral);
 
   switch (peripheral) {
-% for p in helper.irq_peripherals:
+% for p in helper.irq_peripherals[addr_space]:
 <%
   i = irq_peripheral_names.index(p.name)
   indent = " " * len(p.name)
@@ -185,7 +185,7 @@ ${indent}                           ${p.plic_start_irq});
 static void peripherals_init(void) {
   mmio_region_t base_addr;
 
-  % for p in helper.irq_peripherals:
+  % for p in helper.irq_peripherals[addr_space]:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\
@@ -203,7 +203,7 @@ static void peripherals_init(void) {
  * Clears pending IRQs in all peripherals.
  */
 static void peripheral_irqs_clear(void) {
-  % for p in helper.irq_peripherals:
+  % for p in helper.irq_peripherals[addr_space]:
 <%
   indent = ""
   i = irq_peripheral_names.index(p.name)
@@ -244,7 +244,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
   % endfor
-  % for p in helper.irq_peripherals:
+  % for p in helper.irq_peripherals[addr_space]:
 <%
   if p.name == "aon_timer": continue
   i = irq_peripheral_names.index(p.name)
@@ -291,7 +291,7 @@ static void peripheral_irqs_trigger(void) {
   // in the clang linter. This statement waives that error.
   (void)status_default_mask;
 
-  % for p in helper.irq_peripherals:
+  % for p in helper.irq_peripherals[addr_space]:
 <%
   i = irq_peripheral_names.index(p.name)
 %>\

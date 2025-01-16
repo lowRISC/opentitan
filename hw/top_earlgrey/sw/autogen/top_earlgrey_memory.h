@@ -7,8 +7,8 @@
 // util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
 // -o hw/top_earlgrey
 
-#ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_
-#define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_
+#ifndef OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_HART_MEMORY_H_
+#define OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_HART_MEMORY_H_
 
 /**
  * @file
@@ -24,8 +24,6 @@
 
 // Include guard for assembler
 #ifdef __ASSEMBLER__
-
-
 /**
  * Memory base for sram_ctrl_ret_aon_ram_ret_aon in top earlgrey.
  */
@@ -965,4 +963,4 @@
 
 #endif  // __ASSEMBLER__
 
-#endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_MEMORY_H_
+#endif  // OPENTITAN_HW_TOP_EARLGREY_SW_AUTOGEN_TOP_EARLGREY_HART_MEMORY_H_

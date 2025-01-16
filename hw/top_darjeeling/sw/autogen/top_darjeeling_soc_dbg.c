@@ -7,7 +7,7 @@
 // util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
 // -o hw/top_darjeeling
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_soc_dbg.h"
 
 /**
  * Alert Handler Alert Source to Peripheral Map
