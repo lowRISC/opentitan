@@ -9,6 +9,9 @@ crate.from_cargo(
     name = "tock_index",
     cargo_lockfile = "//third_party/tock:Cargo.lock",
     manifests = ["//third_party/tock:Cargo.toml"],
+    supported_platform_triples = [
+        "riscv32imc-unknown-none-elf",
+    ],
 )
 use_repo(crate, "tock_index")
 
@@ -17,6 +20,9 @@ crate.from_cargo(
     name = "elf2tab_index",
     cargo_lockfile = "@elf2tab//:Cargo.lock",
     manifests = ["@elf2tab//:Cargo.toml"],
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+    ],
 )
 use_repo(crate, "elf2tab_index")
 
