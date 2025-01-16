@@ -28,12 +28,17 @@ SimVerilatorBinaryInfo = provider(
     doc = "Verilator Binary Info",
 )
 
+SimQemuBinaryInfo = provider(
+    doc = "QEMU Binary Info",
+)
+
 ALL_BINARY_PROVIDERS = [
     Cw310BinaryInfo,
     Cw340BinaryInfo,
     SiliconBinaryInfo,
     SimDvBinaryInfo,
     SimVerilatorBinaryInfo,
+    SimQemuBinaryInfo,
 ]
 
 PROVIDER_FIELDS = [
