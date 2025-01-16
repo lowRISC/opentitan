@@ -55,6 +55,11 @@ load(
     "EXT_EXEC_ENV_SILICON_ROM_EXT",
 )
 load("@bazel_skylib//lib:sets.bzl", "sets")
+load(
+    "@lowrisc_opentitan//rules/opentitan:qemu.bzl",
+    _qemu_params = "qemu_params",
+    _sim_qemu = "sim_qemu",
+)
 
 # The following definition is used to clear the key set in the signing
 # configuration for execution environments (exec_env) and opentitan_test
@@ -84,6 +89,9 @@ verilator_params = _verilator_params
 
 sim_dv = _sim_dv
 dv_params = _dv_params
+
+sim_qemu = _sim_qemu
+qemu_params = _qemu_params
 
 ecdsa_key_for_lc_state = _ecdsa_key_for_lc_state
 ecdsa_key_by_name = _ecdsa_key_by_name
@@ -143,6 +151,8 @@ def _parameter_name(env, pname):
             pname = "dv"
         elif "silicon" in suffix:
             pname = "silicon"
+        elif "qemu" in suffix:
+            pname = "qemu"
         else:
             fail("Unable to identify parameter block name:", env)
     return pname
@@ -159,17 +169,17 @@ def _hacky_tags(env):
         # label name.
         subtag = suffix[5:]
         tags.append(subtag)
-        if subtag.startswith("cw305"):
-            tags.append("cw305")
-        elif subtag.startswith("cw310"):
-            tags.append("cw310")
-        elif subtag.startswith("hyper310"):
-            tags.append("hyper310")
-        elif subtag.startswith("cw340"):
-            tags.append("cw340")
-    if suffix.startswith("silicon"):
-        # We add the entire suffix for silicon exec environments to be able
-        # to filter tests by them. "silicon_creator" and
+
+        # Also add the kind of FPGA by itself (e.g. "hyper310" or "cw340").
+        fpga_kind = subtag.split("_")[0]
+        tags.append(fpga_kind)
+    if suffix.startswith("sim"):
+        # Add the kind of simulator by itself (e.g. "verilator" or "qemu").
+        sim_kind = suffix.split("_")[1]
+        tags.append(sim_kind)
+    if suffix.startswith("silicon") or suffix.startswith("sim"):
+        # We add the entire suffix for silicon and sim exec environments
+        # to be able to filter tests by them. "silicon_creator" and
         # "silicon_owner_sival_rom_ext" have different target configurations.
         tags.append(suffix)
     return tags
@@ -195,6 +205,7 @@ def opentitan_test(
         dv = _dv_params(),
         silicon = _silicon_params(),
         verilator = _verilator_params(),
+        qemu = _qemu_params(),
         run_in_ci = None,
         **kwargs):
     """Instantiate a test per execution environment.
@@ -223,6 +234,7 @@ def opentitan_test(
       dv: Execution overrides for a DV-based test.
       silicon: Execution overrides for a silicon-based test.
       verilator: Execution overrides for a verilator-based test.
+      qemu: Execution overrides for a QEUM-based test.
       run_in_ci: Override the automatic selection of execution environments to run in CI and run exactly those environments.
       kwargs: Additional execution overrides identified by the `exec_env` dict.
     """
@@ -232,6 +244,7 @@ def opentitan_test(
         "dv": dv,
         "silicon": silicon,
         "verilator": verilator,
+        "qemu": qemu,
     }
     test_parameters.update(kwargs)
     kwargs_unused = kwargs.keys()
