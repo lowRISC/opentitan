@@ -408,6 +408,7 @@ opentitan_test = rv_rule(
         "test_harness": attr.label(
             executable = True,
             cfg = "exec",
+            allow_single_file = True,
         ),
         "binaries": attr.label_keyed_string_dict(
             allow_files = True,
