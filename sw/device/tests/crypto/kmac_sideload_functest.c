@@ -57,7 +57,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000001,
+                        0x00000000,
                         0x47464544,
                         0x4b4a4948,
                         0x4f4e4d4c,
@@ -112,7 +112,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000002,
+                        0x00000000,
                         0x11111111,
                         0x4b4a4948,
                         0x4f4e4d4c,
@@ -191,7 +191,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                 .keyblob_length = 32,
                 .keyblob =
                     (uint32_t[]){
-                        0x00000001,
+                        0x00000000,
                         0x00000000,
                         0x00000000,
                         0x00000000,
@@ -371,12 +371,12 @@ bool test_main(void) {
   // Initialize keymgr and advance to CreatorRootKey state.
   dif_keymgr_t keymgr;
   dif_kmac_t kmac;
-  CHECK_STATUS_OK(keymgr_testutils_startup(&keymgr, &kmac));
+  CHECK_STATUS_OK(keymgr_testutils_initialize(&keymgr, &kmac));
 
-  CHECK_STATUS_OK(keymgr_testutils_advance_state(&keymgr, &kOwnerIntParams));
-  CHECK_STATUS_OK(keymgr_testutils_check_state(
-      &keymgr, kDifKeymgrStateOwnerIntermediateKey));
-  LOG_INFO("Keymgr entered OwnerIntKey State");
+  const char *state_name;
+  CHECK_STATUS_OK(keymgr_testutils_state_string_get(&keymgr, &state_name));
+
+  LOG_INFO("Keymgr entered %s State", state_name);
   LOG_INFO("Testing cryptolib KMAC driver with sideloaded key.");
 
   // Initialize the core with default parameters
