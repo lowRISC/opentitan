@@ -12,7 +12,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files(glob(["**"]))
 
 filegroup(
-    name = "sku_all",
+    name = "all",
     srcs = depset([
         config["orchestrator_cfg"]
         for _, config in EARLGREY_SKUS.items()

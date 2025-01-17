@@ -25,7 +25,6 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: None
     "emulation": {
         "otp": "emulation",
-        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -40,7 +39,6 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
         "otp": "emulation",
-        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -57,7 +55,6 @@ EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
         "otp": "emulation",
-        "ca_config": "//sw/device/silicon_creator/manuf/keys/fake:ca_config.json",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -78,7 +75,6 @@ EARLGREY_SKUS = {
     # a more appropriate solution is found.
     # "sival": {
     #     "otp": "sival",
-    #     "ca_config": "//sw/device/silicon_creator/manuf/keys/sival:ca_config.json",
     #     "ca_data": "@//sw/device/silicon_creator/manuf/keys/sival:ca_data",
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
     #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -94,24 +90,3 @@ EARLGREY_SKUS = {
     #     "offline": True,
     # },
 } | EXT_EARLGREY_SKUS
-
-_TEST_TOKENS = """
-  --test-unlock-token="0x11111111_11111111_11111111_11111111"
-  --test-exit-token="0x11111111_11111111_11111111_11111111"
-"""
-
-CP_PROVISIONING_INPUTS = _TEST_TOKENS + """
-  --wafer-auth-secret="0x00000000_00000000_00000000_00000000_00000000_00000000_00000000_00000000"
-"""
-
-FT_PROVISIONING_INPUTS = _TEST_TOKENS + """
-  --ft-device-id="0x11111111_22222222_33333333_44444444"
-  --target-mission-mode-lc-state="prod"
-  --rma-unlock-token="0x01234567_89abcdef_01234567_89abcdef"
-  --token-encrypt-key-der-file="sw/device/silicon_creator/manuf/keys/fake/rma_unlock_enc_rsa3072.pub.der"
-  --rom-ext-measurement="0x11111111_11111111_11111111_11111111_11111111_11111111_11111111_11111111"
-  --owner-manifest-measurement="0x22222222_22222222_22222222_22222222_22222222_22222222_22222222_22222222"
-  --owner-measurement="0x33333333_33333333_33333333_33333333_33333333_33333333_33333333_33333333"
-  --rom-ext-security-version="0"
-  --owner-security-version="0"
-"""
