@@ -740,7 +740,7 @@ module ibex_tracer (
       // as a blocking assignment to xx. They then complain about the mixture with that an the
       // non-blocking assignment we use when opening the file. The bug is fixed with recent versions
       // of Verilator, but this hack is probably worth it for now.
-      int fh = file_handle;
+      static int fh = file_handle;
       $fclose(fh);
     end
   end
@@ -748,11 +748,10 @@ module ibex_tracer (
   // log execution
   always @(posedge clk_i) begin
     if (rvfi_valid && trace_log_enable) begin
-
-      int fh = file_handle;
+      static int fh = file_handle;
 
       if (fh == 32'h0) begin
-        string file_name_base = "trace_core";
+        static string file_name_base = "trace_core";
         void'($value$plusargs("ibex_tracer_file_base=%s", file_name_base));
         $sformat(file_name, "%s_%h.log", file_name_base, hart_id_i);
 
