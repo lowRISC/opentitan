@@ -12,7 +12,6 @@ pkg_tar(
     testonly = True,
     srcs = [
         "//hw:package",
-        "//hw/bitstream:package",
         "//hw/bitstream/vivado:package",
         "//hw/ip/otp_ctrl/data:package",
         "//sw/device/examples/hello_world:package",

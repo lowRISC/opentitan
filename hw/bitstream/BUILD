@@ -182,19 +182,3 @@ pkg_tar(
     strip_prefix = "/hw/bitstream/chip_earlgrey_cw340_cached_fragment",
     tags = ["manual"],
 )
-
-# Packaging rule for spliced bitstreams
-pkg_files(
-    name = "package",
-    testonly = True,
-    srcs = [
-        ":rom_with_{}_keys".format(authenticity)
-        for authenticity in KEY_AUTHENTICITY
-    ] + [
-        ":rom_with_{}_keys_otp_{}".format(authenticity, otp_name)
-        for (otp_name, _) in get_otp_images()
-        for authenticity in KEY_AUTHENTICITY
-    ],
-    prefix = "earlgrey/fpga_cw310/standard",
-    tags = ["manual"],
-)
