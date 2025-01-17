@@ -166,6 +166,37 @@ dif_aes_transaction_t transaction = {
 };
 
 /**
+ * Poll the IDLE AES register.
+ *
+ */
+static void aes_sca_wait_for_idle(void) {
+  bool idle = false;
+  do {
+    SS_CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
+  } while (!idle);
+}
+
+/**
+ * Load fixed seed into AES.
+ *
+ * Before calling this function, use
+ * aes_testutils_masking_prng_zero_output_seed() to initialize the entropy
+ * complex for performing AES SCA measurements with masking switched off. This
+ * function then loads the fixed seed into the AES, allowing the disable the
+ * masking.
+ *
+ * @param key Key.
+ * @param key_len Key length.
+ */
+static void aes_sca_load_fixed_seed(void) {
+  aes_sca_wait_for_idle();
+  // Load magic seed such that masking is turned off. We need to do this after
+  // dif_aes_start() as then the force_masks is correctly set.
+  SS_CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
+  aes_sca_wait_for_idle();
+}
+
+/**
  * Mask and configure key.
  *
  * This function masks the provided key using a software LFSR and then
@@ -192,7 +223,17 @@ static void aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
+#if !OT_IS_ENGLISH_BREAKFAST
+  CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
+#endif
   SS_CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, NULL));
+
+#if !OT_IS_ENGLISH_BREAKFAST
+  if (transaction.force_masks) {
+    // Disable masking. Force the masking PRNG output value to 0.
+    aes_sca_load_fixed_seed();
+  }
+#endif
 }
 
 /**
@@ -768,11 +809,7 @@ bool test_main(void) {
   if (transaction.force_masks) {
     LOG_INFO("Initializing entropy complex.");
     CHECK_STATUS_OK(aes_testutils_masking_prng_zero_output_seed());
-    CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerPrngReseed));
-    bool idle = false;
-    do {
-      CHECK_DIF_OK(dif_aes_get_status(&aes, kDifAesStatusIdle, &idle));
-    } while (!idle);
+    aes_sca_load_fixed_seed();
   }
 #endif
   CHECK_DIF_OK(dif_aes_trigger(&aes, kDifAesTriggerDataOutClear));
