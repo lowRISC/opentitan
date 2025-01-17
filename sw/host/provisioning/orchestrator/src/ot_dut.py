@@ -79,7 +79,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
-        with open(log_file, "r") as f:
+        with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
         pattern = key + r':\s*({.*})'
@@ -281,6 +281,10 @@ class OtDut():
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
+
+            # Add owner FW boot success message check.
+            if self.sku_config.owner_fw_boot_str:
+                cmd += f"--owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
 
             # Enable alerts during individualization if requested.
             if self.enable_alerts:

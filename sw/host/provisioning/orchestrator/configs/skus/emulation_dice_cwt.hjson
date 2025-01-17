@@ -3,14 +3,14 @@
 # SPDX-License-Identifier: Apache-2.0
 
 {
-  name: "emulation",
+  name: "emulation_dice_cwt",
   product: "earlgrey_a1",
   si_creator: "nuvoton",
   package: "npcr10",
   target_lc_state: "prod",
   otp: "emulation",
   perso_bin: "sw/device/silicon_creator/manuf/base/ft_personalize_{sku}_{target}.prod_key_0.prod_key_0.signed.bin",
-  owner_fw_boot_str: "Bare metal PASS!"
+  owner_fw_boot_str: "Bare metal PASS!",
   dice_ca: {
     certificate: "sw/device/silicon_creator/manuf/keys/fake/dice_ca.pem",
     key: "sw/device/silicon_creator/manuf/keys/fake/sk.pkcs8.der",
