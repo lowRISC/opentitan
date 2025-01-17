@@ -314,11 +314,13 @@ class OtDut():
             device_id_in_otp = DeviceId.from_hexstr(self.ft_data["device_id"])
             if device_id_in_otp != self.device_id:
                 logging.error(
-                    "Device ID from OTP does not match expected on host.")
+                    "Device ID from OTP does not match expected on host. Use OTP variant?"
+                )
                 logging.error(
                     f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
                 logging.error(
                     f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
                 confirm()
+                self.device_id = device_id_in_otp
 
             logging.info("FT completed successfully.")
