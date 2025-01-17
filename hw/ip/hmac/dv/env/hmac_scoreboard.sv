@@ -30,7 +30,7 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit             hmac_start_last;
   bit             hmac_continue_last;
   bit             hmac_fifo_full_last;
-  bit [TL_DW-1:0] intr_test;
+  bit [TL_DW-1:0] last_intr_test_wr;
   bit [TL_DW-1:0] intr_state_exp;
 
   // Standard SV/UVM methods
@@ -266,17 +266,17 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
           end
         end
         "intr_test": begin // testmode, intr_state is W1C, cannot use UVM_PREDICT_WRITE
-          intr_test = item.a_data;
+          last_intr_test_wr = item.a_data;
           // As INTR_STATE.hmac_err and INTR_STATE.hmac_done are RW1C, we should get back the
           // current state
-          intr_state_exp = intr_test | `gmv(ral.intr_state);
+          intr_state_exp = last_intr_test_wr | `gmv(ral.intr_state);
           void'(ral.intr_state.predict(.value(intr_state_exp), .kind(UVM_PREDICT_DIRECT)));
           if (cfg.en_cov) begin
             bit [TL_DW-1:0] intr_en = `gmv(ral.intr_enable);
             hmac_intr_e     intr;
             intr = intr.first;
             do begin
-              cov.intr_test_cg.sample(intr, intr_test[intr], intr_en[intr],
+              cov.intr_test_cg.sample(intr, last_intr_test_wr[intr], intr_en[intr],
                                       intr_state_exp[intr]);
               intr = intr.next;
             end while (intr != intr.first);
@@ -380,7 +380,7 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
     // Update expected FIFO Empty interrupt register
     end else if (csr_name == "intr_state") begin
       // Bitwise OR is needed to retrieve previous values as some fields are W1C
-      bit intr_state_empty = fifo_empty_intr | intr_test[HmacMsgFifoEmpty];
+      bit intr_state_empty = fifo_empty_intr | last_intr_test_wr[HmacMsgFifoEmpty];
       void'(ral.intr_state.fifo_empty.predict(.value(intr_state_empty), .kind(UVM_PREDICT_READ)));
     end
     return;
@@ -546,16 +546,16 @@ function void hmac_scoreboard::reset(string kind = "HARD");
   // Should be reinitialized before flushing as it will be used as a condition
   hmac_stopped = 0;
   flush();
-  key             = '{default:0};
-  exp_digest      = '{default:0};
-  hmac_idle       = ral.status.hmac_idle.get_reset();
-  hmac_fifo_empty = ral.status.fifo_empty.get_reset();
-  hmac_fifo_full  = ral.status.fifo_full.get_reset();
-  hmac_fifo_depth = ral.status.fifo_depth.get_reset();
-  hmac_start      = ral.cmd.hash_start.get_reset();
-  sha_en          = ral.cfg.sha_en.get_reset();
-  intr_test       = ral.intr_test.get_reset();
-  hmac_stopped    = 0;
+  key               = '{default:0};
+  exp_digest        = '{default:0};
+  hmac_idle         = ral.status.hmac_idle.get_reset();
+  hmac_fifo_empty   = ral.status.fifo_empty.get_reset();
+  hmac_fifo_full    = ral.status.fifo_full.get_reset();
+  hmac_fifo_depth   = ral.status.fifo_depth.get_reset();
+  hmac_start        = ral.cmd.hash_start.get_reset();
+  sha_en            = ral.cfg.sha_en.get_reset();
+  last_intr_test_wr = ral.intr_test.get_reset();
+  hmac_stopped      = 0;
   msg_q.delete();
   msg_part_q.delete();
   cfg.wipe_secret_triggered = 0;
@@ -578,8 +578,8 @@ function void hmac_scoreboard::flush();
   hmac_continue_last  = 0;
   fifo_full_detected  = 0;
   fifo_empty_intr     = 0;
-  void'(ral.intr_state.fifo_empty.predict(.value(fifo_empty_intr | intr_test[HmacMsgFifoEmpty]),
-                                          .kind(UVM_PREDICT_READ)));
+  void'(ral.intr_state.fifo_empty.predict(
+    .value(fifo_empty_intr | last_intr_test_wr[HmacMsgFifoEmpty]), .kind(UVM_PREDICT_READ)));
 endfunction : flush
 
 // hmac_wr_cnt was incremented every time when msg_q has 4 bytes streamed in
@@ -700,7 +700,7 @@ endtask : hmac_process_fifo_status
 
 // Spawn process to check interrupt pins in test mode
 task hmac_scoreboard::hmac_intr_test();
-  foreach (intr_test[intr_i]) begin
+  foreach (last_intr_test_wr[intr_i]) begin
     fork begin
       hmac_intr_test_pin(intr_i);
     end join_none
@@ -711,9 +711,9 @@ endtask : hmac_intr_test
 task hmac_scoreboard::hmac_intr_test_pin(int intr_i);
   bit [TL_DW-1:0] intr_en;
   hmac_intr_e     intr = hmac_intr_e'(intr_i);
-  forever @(intr_test[intr_i]) begin
+  forever @(last_intr_test_wr[intr_i]) begin
     intr_en = `gmv(ral.intr_enable);
-    if (intr_test[intr_i]) begin
+    if (last_intr_test_wr[intr_i]) begin
       // Check interrupt state pins only if enabled
       if (intr_en[intr_i]) begin
         fork: intr_pins
