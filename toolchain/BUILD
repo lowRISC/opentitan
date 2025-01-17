@@ -86,24 +86,90 @@ cc_action_type(
     action_name = OT_ACTION_OBJDUMP,
 )
 
+# minsize feature to switch between Os and Oz.
+cc_feature(
+    name = "feat_minsize",
+    feature_name = "minsize",
+)
+
+cc_feature_constraint(
+    name = "constraint_minsize",
+    all_of = [":feat_minsize"],
+)
+
+cc_feature_constraint(
+    name = "constraint_no_minsize",
+    none_of = [":feat_minsize"],
+)
+
+cc_feature_constraint(
+    name = "constraint_minsize_lld",
+    all_of = [
+        ":feat_minsize",
+        ":feat_use_lld",
+    ],
+)
+
 # Built-in Bazel feature enabled for optimized builds.
 cc_feature(
     name = "feat_opt",
     args = [
-        ":opt",
+        ":optsize",
+        ":minsize",
+        ":minsize_inline_cc",
+        ":minsize_inline_ld",
+        ":default_debug_info",
         ":lto",
     ],
     overrides = "@rules_cc//cc/toolchains/features:opt",
 )
 
 cc_args(
-    name = "opt",
+    name = "default_debug_info",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = [
-        "-Os",
         "-g",
         "-gdwarf-4",
     ],
+)
+
+cc_args(
+    name = "optsize",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Os",
+    ],
+    requires_any_of = [":constraint_no_minsize"],
+)
+
+cc_args(
+    name = "minsize",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Oz",
+    ],
+    requires_any_of = [":constraint_minsize"],
+)
+
+# Inline slightly more which is actually smaller.
+cc_args(
+    name = "minsize_inline_cc",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-mllvm",
+        "--inline-threshold=10",
+    ],
+    requires_any_of = [":constraint_minsize_lld"],
+)
+
+cc_args(
+    name = "minsize_inline_ld",
+    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
+    args = [
+        "-Wl,-mllvm",
+        "-Wl,--inline-threshold=10",
+    ],
+    requires_any_of = [":constraint_minsize_lld"],
 )
 
 # Built-in Bazel feature enabled for debug builds.
@@ -125,18 +191,14 @@ cc_args(
 # Built-in Bazel feature for fast builds.
 cc_feature(
     name = "feat_fastbuild",
-    args = [":fastbuild"],
-    overrides = "@rules_cc//cc/toolchains/features:fastbuild",
-)
-
-cc_args(
-    name = "fastbuild",
-    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = [
-        "-Os",
-        "-g",
-        "-gdwarf-4",
+        ":optsize",
+        ":minsize",
+        ":minsize_inline_cc",
+        ":minsize_inline_ld",
+        ":default_debug_info",
     ],
+    overrides = "@rules_cc//cc/toolchains/features:fastbuild",
 )
 
 cc_args(
@@ -306,35 +368,6 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
     args = ["-flto"],
-)
-
-cc_feature(
-    name = "feat_minsize",
-    args = [
-        ":minsize_cc",
-        ":minsize_ld",
-    ],
-    feature_name = "minsize",
-)
-
-cc_args(
-    name = "minsize_cc",
-    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
-    args = [
-        "-Oz",
-        # Inline slightly more which is actually smaller.
-        "-mllvm",
-        "--inline-threshold=10",
-    ],
-)
-
-cc_args(
-    name = "minsize_ld",
-    actions = ["@rules_cc//cc/toolchains/actions:link_actions"],
-    args = [
-        "-Wl,-mllvm",
-        "-Wl,--inline-threshold=10",
-    ],
 )
 
 cc_args(
