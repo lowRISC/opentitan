@@ -5,7 +5,6 @@
 NONHERMETIC_ENV_VARS = [
     "PATH",
     "XILINX_VIVADO",
-    "XILINX_HLS",
     "XILINXD_LICENSE_FILE",
 ]
 
