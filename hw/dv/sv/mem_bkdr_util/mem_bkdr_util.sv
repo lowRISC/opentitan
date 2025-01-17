@@ -65,7 +65,7 @@ class mem_bkdr_util extends uvm_object;
   event writememh_event;
 
   // Number of PRINCE half rounds for scrambling, can be [1..5].
-  protected int num_prince_rounds_half;
+  protected uint32_t num_prince_rounds_half;
 
   // Construct an instance called name.
   //
@@ -101,9 +101,9 @@ class mem_bkdr_util extends uvm_object;
   //                           memory.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
-               int num_prince_rounds_half = 3,
-               int extra_bits_per_subword = 0, int unsigned system_base_addr = 0,
-               string tiling_path = "", int unsigned tile_depth = depth);
+               uint32_t num_prince_rounds_half = 3,
+               uint32_t extra_bits_per_subword = 0, uint32_t system_base_addr = 0,
+               string tiling_path = "", uint32_t tile_depth = depth);
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
 
@@ -192,7 +192,7 @@ class mem_bkdr_util extends uvm_object;
     string base = get_path();
     string tile_suffix = "";
 
-    `DV_CHECK_FATAL(tile > 0 -> tiling_path.size() > 0,
+    `DV_CHECK_FATAL(tile > 0 -> tiling_path.len() > 0,
                     $sformatf("Positive tile index (%0d) with empty tiling path.", tile))
 
     if (tiling_path != "") begin
