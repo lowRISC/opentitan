@@ -14,7 +14,6 @@ load(
     "otp_partition",
 )
 load("//rules:rom_e2e.bzl", "maybe_skip_in_ci")
-load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
     "MSG_PASS",
@@ -66,17 +65,6 @@ otp_image(
     visibility = ["//visibility:private"],
 )
 
-bitstream_splice(
-    name = "bitstream_default_otp",
-    src = "//hw/bitstream:mask_rom",
-    data = ":otp_img_default",
-    instance = "otp",
-    meminfo = "//hw/bitstream:cw310_mmi",
-    tags = maybe_skip_in_ci(CONST.LCV.RMA),
-    update_usr_access = True,
-    visibility = ["//visibility:private"],
-)
-
 opentitan_test(
     name = "rom_e2e_default_otp_bootup",
     srcs = [":empty_test"],
@@ -84,7 +72,7 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     },
     fpga = fpga_params(
-        bitstream = ":bitstream_default_otp",
+        otp = ":otp_img_default",
         tags = maybe_skip_in_ci(CONST.LCV.RMA),
     ),
     deps = [

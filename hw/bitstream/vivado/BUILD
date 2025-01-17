@@ -7,7 +7,6 @@ load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
 load("//rules:fusesoc.bzl", "fusesoc_build")
 load("//rules:otp.bzl", "get_otp_images")
-load("//rules:splice.bzl", "bitstream_splice")
 load("//rules:bitstreams.bzl", "bitstream_manifest_fragment")
 
 package(default_visibility = ["//visibility:public"])
