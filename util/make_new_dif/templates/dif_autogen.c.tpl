@@ -201,17 +201,18 @@ dif_result_t dif_${ip.name_snake}_init(
     dif_${ip.name_snake}_irq_t irq,
     dif_irq_type_t *type) {
 
-    % if ip.irqs[-1].width == 1:
-      if (${ip.name_snake} == NULL ||
-          type == NULL ||
-          irq < 0 ||
-          irq > kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}) {
-    % else:
-      if (${ip.name_snake} == NULL ||
-          type == NULL ||
-          irq < 0 ||
-          irq > kDif${ip.name_camel}Irq${ip.irqs[-1].name_camel}${ip.irqs[-1].width - 1}) {
-    % endif
+    <%
+      first_irq_name = "kDif{}Irq{}".format(ip.name_camel, ip.irqs[0].name_camel)
+      last_irq_name = "kDif{}Irq{}".format(ip.name_camel, ip.irqs[-1].name_camel)
+      if ip.irqs[0].width > 1:
+        first_irq_name += "0"
+      if ip.irqs[-1].width > 1:
+        last_irq_name += str(ip.irqs[-1].width - 1)
+    %>
+    if (${ip.name_snake} == NULL ||
+        type == NULL ||
+        irq < ${first_irq_name} ||
+        irq > ${last_irq_name}) {
       return kDifBadArg;
     }
 
