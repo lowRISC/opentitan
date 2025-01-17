@@ -30,9 +30,6 @@ def gen_vivado_mem_file(ctx, name, src, tool, swap_nibbles = True):
         arguments = [args],
         executable = tool,
         use_default_shell_env = True,
-        execution_requirements = {
-            "no-sandbox": "",
-        },
     )
     return update
 
@@ -63,9 +60,6 @@ def vivado_updatemem(ctx, name, src, instance, mmi, update, debug = False):
         arguments = [args],
         executable = "updatemem",
         use_default_shell_env = False,
-        execution_requirements = {
-            "no-sandbox": "",
-        },
         env = dicts.add(
             ENV,
             {
