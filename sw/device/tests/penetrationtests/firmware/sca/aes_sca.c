@@ -221,9 +221,12 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
 
   // Start AES operation (this triggers the capture) and go to sleep.
   if (fpga_mode) {
-    // On the FPGA, the AES block automatically sets and unsets the trigger.
+    // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per.
+    // Activate the GPIO by setting the GPIO.
+    pentest_set_trigger_high();
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false,
                            false);
+    pentest_set_trigger_low();
   } else {
     // On the chip, we need to manually set and unset the trigger. This is done
     // in this function to have the trigger as close as possible to the AES
@@ -368,12 +371,6 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
 
   // First plaintext has been set through command into batch_plaintext
 
-  // Set trigger high outside of loop
-  // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
-  // AES operation
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
@@ -393,9 +390,6 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
 
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   // send last ciphertext
@@ -423,17 +417,11 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
     block_ctr = num_encryptions;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
       return ABORTED();
     }
     aes_serial_advance_random();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -458,9 +446,6 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
     block_ctr = num_encryptions;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
       return ABORTED();
@@ -469,9 +454,6 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
       return ABORTED();
     }
     aes_serial_advance_random();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(true, uj));
@@ -512,15 +494,9 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
     sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -538,9 +514,6 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
       return ABORTED();
@@ -548,9 +521,6 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
     if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
       return ABORTED();
     }
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -737,14 +707,8 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
     block_ctr = 1;
   }
 
-  if (fpga_mode) {
-    pentest_set_trigger_high();
-  }
   if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
     return ABORTED();
-  }
-  if (fpga_mode) {
-    pentest_set_trigger_low();
   }
 
   TRY(aes_send_ciphertext(false, uj));
