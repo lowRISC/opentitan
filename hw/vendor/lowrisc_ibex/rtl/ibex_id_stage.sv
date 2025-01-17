@@ -662,7 +662,7 @@ module ibex_id_stage #(
   assign lsu_sign_ext_o          = lsu_sign_ext;
   assign lsu_wdata_o             = rf_rdata_b_fwd;
   // csr_op_en_o is set when CSR access should actually happen.
-  // csv_access_o is set when CSR access instruction is present and is used to compute whether a CSR
+  // csr_access_o is set when CSR access instruction is present and is used to compute whether a CSR
   // access is illegal. A combinational loop would be created if csr_op_en_o was used along (as
   // asserting it for an illegal csr access would result in a flush that would need to deassert it).
   assign csr_op_en_o             = csr_access_o & instr_executing & instr_id_done_o;

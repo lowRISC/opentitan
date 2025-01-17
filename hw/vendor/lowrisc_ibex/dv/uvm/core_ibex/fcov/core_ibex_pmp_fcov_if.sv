@@ -178,7 +178,7 @@ interface core_ibex_pmp_fcov_if import ibex_pkg::*; #(
         // This coverpoint converts pmp_add_napot_valid into 32 bins. The onehot call makes sure
         // that when the entry is not in NAPOT mode, then no bin is selected. The clog2 call
         // converts the value 0...010...0 to the index of the one bit that is set.
-        cp_napot_addr_modes: coverpoint $clog2(pmp_addr_napot_valid[i_region])
+        cp_napot_addr_modes : coverpoint $clog2(pmp_addr_napot_valid[i_region])
           iff ($onehot(pmp_addr_napot_valid[i_region])) {
           bins napot_addr[] = { [0:31] };
         }

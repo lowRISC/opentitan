@@ -155,6 +155,9 @@ module ibex_register_file_fpga #(
 
     // async_read b
     assign rdata_b_o = (raddr_b_i == '0) ? WordZeroVal : mem[raddr_b_i];
+
+    assign oh_raddr_a_err = 1'b0;
+    assign oh_raddr_b_err = 1'b0;
   end
 
   // we select
