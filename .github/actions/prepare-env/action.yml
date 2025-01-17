@@ -109,17 +109,6 @@ runs:
     - uses: google-github-actions/setup-gcloud@v2
       if: github.event_name != 'pull_request'
 
-    # HACK: for pull request we don't really need gcloud (and it's ~0.5G to download), but not including
-    # it in the PATH cause environment variables to change and Verilator build to be uncached.
-    - name: Fake gcloud PATH
-      if: github.event_name == 'pull_request'
-      shell: bash
-      run: |
-        LATEST=$(curl -sSfL https://raw.githubusercontent.com/google-github-actions/setup-cloud-sdk/main/data/versions.json | jq -r .[-1])
-        GCLOUD_PATH="${{ runner.tool_cache }}/gcloud/$LATEST/x64/bin"
-        mkdir -p "$GCLOUD_PATH"
-        echo "$GCLOUD_PATH" >> "$GITHUB_PATH"
-
     - name: Configure ~/.bazelrc
       if: inputs.configure-bazel == 'true'
       run: |
