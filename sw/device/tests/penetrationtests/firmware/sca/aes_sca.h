@@ -9,25 +9,6 @@
 #include "sw/device/lib/ujson/ujson.h"
 
 /**
- * The result of an AES SCA operation.
- */
-typedef enum aes_sca_error {
-  /**
-   * Indicates that the operation succeeded.
-   */
-  aesScaOk = 0,
-  /**
-   * Indicates some unspecified failure.
-   */
-  aesScaAborted = 1,
-  /**
-   * Indicates that the attempted operation would attempt a read/write to an
-   * address that would go out of range.
-   */
-  aesScaOutOfRange = 2
-} aes_sca_error_t;
-
-/**
  * Simple serial 'a' (alternative batch encrypt) command handler.
  *
  * This command is designed to maximize the capture rate for side-channel
