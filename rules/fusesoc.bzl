@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
-load("@nonhermetic//:env.bzl", "ENV")
+load("@nonhermetic//:env.bzl", "BIN_PATHS", "ENV")
 
 """Rules for running FuseSoC.
 
@@ -91,9 +91,12 @@ def _fusesoc_build_impl(ctx):
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
         env = dicts.add(
-            ENV,
+            # Verilator build doesn't need nonhermetic environment variables
+            ENV if ctx.attr.target == "synth" else {},
             {
                 "HOME": home_dir,
+                # Obtain the non-hermetic binary path and append Bazel's default PATH.
+                "PATH": BIN_PATHS["vivado" if ctx.attr.target == "synth" else "verilator"] + ":/bin:/usr/bin:/usr/local/bin",
             },
         ),
     )
