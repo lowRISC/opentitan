@@ -368,7 +368,7 @@
     },
     "//third_party/hyperdebug:extensions.bzl%hyperdebug": {
       "general": {
-        "bzlTransitiveDigest": "3loY09fIwvLLGCrs/lE9Nt6Xix9Rw7i7fe+dxmoegxw=",
+        "bzlTransitiveDigest": "vOmsyCkbVFm3k5qp3LoDFkrmuO5HnpUMu366SFU26Yo=",
         "usagesDigest": "K8zzt/ed9B09EhnXxX3ZDGxVJrCxWeFKaYd/lNFhIlU=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -379,9 +379,9 @@
             "ruleClassName": "http_archive",
             "attributes": {
               "urls": [
-                "https://github.com/lowRISC/hyperdebug-firmware/releases/download/20241211_02/hyperdebug-firmware.tar.gz"
+                "https://github.com/lowRISC/hyperdebug-firmware/releases/download/20250131_01/hyperdebug-firmware.tar.gz"
               ],
-              "sha256": "8b72dfe4ecb6a2258228e62c2246c5beffe8339d440a592c483534fa3f54d679",
+              "sha256": "8595340b347531438ce07f7d678ec24038b4fa2edd7f4a620bd8c5130d72c2ce",
               "build_file": "@@//third_party/hyperdebug:BUILD"
             }
           }
