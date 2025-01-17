@@ -98,15 +98,6 @@ Condition 21 "3623514242" "(d_valid & rspfifo_rvalid & (reqfifo_rdata.op == OpRe
 // popped again before anything appears in the response fifo.
 Condition 24 "1059982851" "(vld_rd_rsp & ((~d_error))) 1 -1" (2 "10")
 
-// The reason for condition 24 explains why we can't get (vld_rd_rsp && reqfifo_rdata.error) = 1 as
-// if vld_rd_rsp = 1, this means that rspfifo_rvalid = 1. But when we have reqfifo_rdata.error, the
-// request from the req_fifo gets popped again before becoming visible to response fifo. This also
-// explains why we can't expect 1 and 11 for condition 25 and 26 respectively.
-Condition 25 "2807788926" "((vld_rd_rsp && reqfifo_rdata.error) ? error_blanking_integ :
-                            (vld_rd_rsp ? rspfifo_rdata.data_intg :
-                            prim_secded_pkg::SecdedInv3932ZeroEcc)) 1 -1" (2 "1")
-Condition 26 "561780173" "(vld_rd_rsp && reqfifo_rdata.error) 1 -1" (3 "11")
-
 // We cannot see d_valid = 0 and d_error = 1. For d_error to be true, we need reqfifo_rvalid to be
 // true. But then the only way for d_valid to be false is if rspfifo_rvalid is false (and
 // reqfifo_rdata.op is OpRead).
