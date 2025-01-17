@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 NONHERMETIC_ENV_VARS = [
-    "HOME",
     "PATH",
     "XILINX_VIVADO",
     "XILINX_HLS",
@@ -12,7 +11,8 @@ NONHERMETIC_ENV_VARS = [
 
 def _nonhermetic_repo_impl(rctx):
     env = "\n".join(["    \"{}\": \"{}\",".format(v, rctx.os.environ.get(v, "")) for v in NONHERMETIC_ENV_VARS])
-    rctx.file("env.bzl", "ENV = {{\n{}\n}}\n".format(env))
+    home = rctx.os.environ.get("HOME", "")
+    rctx.file("env.bzl", "ENV = {{\n{}\n}}\nHOME = \"{}\"".format(env, home))
     rctx.file("BUILD.bazel", "exports_files(glob([\"**\"]))\n")
 
 nonhermetic_repo = repository_rule(
