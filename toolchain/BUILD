@@ -307,6 +307,7 @@ cc_args(
         "-Wno-unused-parameter",
         "-Wstrict-prototypes",
         "-Wswitch-default",
+        "-Wtype-limits",
     ],
 )
 
