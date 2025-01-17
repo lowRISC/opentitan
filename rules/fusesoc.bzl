@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:dicts.bzl", "dicts")
 load("@nonhermetic//:env.bzl", "ENV")
 
 """Rules for running FuseSoC.
@@ -30,6 +31,9 @@ def _fusesoc_build_impl(ctx):
     flags = [ctx.expand_location(f, ctx.attr.srcs) for f in ctx.attr.flags]
     outputs = []
     groups = {}
+
+    # Vivado expects `HOME` environment variable to exist. Redirect it to a fake directory.
+    home_dir = "{}/homeless-shelter".format(out_dir)
 
     cache_dir = "{}/fusesoc-cache".format(out_dir)
     cfg_file_path = "build.{}.fusesoc_config.toml".format(ctx.label.name)
@@ -86,7 +90,12 @@ def _fusesoc_build_impl(ctx):
         arguments = [args],
         executable = ctx.executable._fusesoc,
         use_default_shell_env = False,
-        env = ENV,
+        env = dicts.add(
+            ENV,
+            {
+                "HOME": home_dir,
+            },
+        ),
     )
     return [
         DefaultInfo(
