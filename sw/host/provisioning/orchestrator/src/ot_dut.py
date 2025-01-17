@@ -73,7 +73,7 @@ class OtDut():
         Retuns:
             The extracted JSON data.
         """
-        with open(log_file, "r") as f:
+        with open(log_file, "r", encoding='utf-8', errors='ignore') as f:
             log_data = f.read()
 
         pattern = key + r':\s*({.*})'
@@ -106,7 +106,8 @@ class OtDut():
         openocd_cfg = resolve_runfile(_OPENOCD_ADAPTER_CONFIG)
         if self.fpga:
             # Set host flags and device binary for FPGA DUT.
-            host_flags = host_flags.format(target=self.fpga,
+            interface = self.fpga if self.fpga == "hyper310" else "hyper340"
+            host_flags = host_flags.format(target=interface,
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             if not self.fpga_dont_clear_bitstream:
@@ -203,7 +204,8 @@ class OtDut():
             # Set host flags and device binaries for FPGA DUT.
             # No need to load another bitstream, we will take over where CP
             # stage above left off.
-            host_flags = host_flags.format(target=self.fpga,
+            interface = self.fpga if self.fpga == "hyper310" else "hyper340"
+            host_flags = host_flags.format(target=interface,
                                            openocd_bin=openocd_bin,
                                            openocd_cfg=openocd_cfg)
             individ_elf = individ_elf.format(
@@ -271,6 +273,10 @@ class OtDut():
             --ca-config={ca_config_file.name} \
             --token-encrypt-key-der-file={self.sku_config.token_encrypt_key} \
             """
+
+            # Add owner FW boot success message check.
+            if self.sku_config.owner_fw_boot_str:
+                cmd += f"--owner-success-text=\"{self.sku_config.owner_fw_boot_str}\""
 
             # Enable alerts during individualization if requested.
             if self.enable_alerts:

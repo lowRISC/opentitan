@@ -54,7 +54,7 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
@@ -74,7 +74,7 @@ EARLGREY_SKUS = {
         "ecdsa_key": {},
         "spx_key": {},
         "signature_prefix": None,
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
     },
     "sival": {
         "otp": "sival",
