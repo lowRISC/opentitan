@@ -280,10 +280,9 @@ bool test_main(void) {
   init_peripherals();
 
   // Enable both NMIs.
+  // kDifRvCoreIbexNmiSourceAll = kDifRvCoreIbexNmiSourceWdog | kDifRvCoreIbexNmiSourceAlert
   CHECK_DIF_OK(
-      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceWdog));
-  CHECK_DIF_OK(
-      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAlert));
+      dif_rv_core_ibex_enable_nmi(&rv_core_ibex, kDifRvCoreIbexNmiSourceAll));
 
   // Execute both NMI tests several times back-to-back to verify that
   // the causes are successfully cleared in the NMI handlers.
