@@ -12,7 +12,6 @@ load(
     "silicon_params",
     "verilator_params",
 )
-load("//rules:splice.bzl", "bitstream_splice")
 load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
