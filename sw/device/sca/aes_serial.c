@@ -245,7 +245,9 @@ static void aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   // Using the SecAesStartTriggerDelay hardware parameter, the AES unit is
   // configured to start operation 40 cycles after receiving the start trigger.
   // This allows Ibex to go to sleep in order to not disturb the capture.
+  pentest_set_trigger_high();
   pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, false, false);
+  pentest_set_trigger_low();
 }
 
 /**
@@ -293,9 +295,7 @@ static void aes_serial_single_encrypt(const uint8_t *plaintext,
     block_ctr = 1;
   }
 
-  pentest_set_trigger_high();
   aes_encrypt(plaintext, plaintext_len);
-  pentest_set_trigger_low();
 
   aes_send_ciphertext(false);
 }
@@ -374,12 +374,10 @@ static void aes_serial_batch_encrypt(const uint8_t *data, size_t data_len) {
     block_ctr = num_encryptions;
   }
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_encrypt(plaintext_random, kAesTextLength);
     aes_serial_advance_random();
   }
-  pentest_set_trigger_low();
 
   aes_send_ciphertext(true);
 }
@@ -427,7 +425,6 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
   // Set trigger high outside of loop
   // On FPGA, the trigger is AND-ed with AES !IDLE and creates a LO-HI-LO per
   // AES operation
-  pentest_set_trigger_high();
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
@@ -444,7 +441,6 @@ static void aes_serial_batch_alternative_encrypt(const uint8_t *data,
     // Use ciphertext as next plaintext (incl. next call to this function)
     memcpy(batch_plaintext, ciphertext.data, kAesTextLength);
   }
-  pentest_set_trigger_low();
   // Acknowledge command
   simple_serial_send_status(0);
   // send last ciphertext
@@ -563,12 +559,10 @@ static void aes_serial_fvsr_key_batch_encrypt(const uint8_t *data,
   num_encryptions = read_32(data);
   SS_CHECK(num_encryptions <= kNumBatchOpsMax);
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
@@ -625,12 +619,10 @@ static void aes_serial_fvsr_data_batch_encrypt(const uint8_t *data,
     sample_fixed = pentest_next_lfsr(1, kPentestLfsrOrder) & 0x1;
   }
 
-  pentest_set_trigger_high();
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
     aes_encrypt(batch_plaintexts[i], kAesTextLength);
   }
-  pentest_set_trigger_low();
 
   // Acknowledge command
   simple_serial_send_status(0);
