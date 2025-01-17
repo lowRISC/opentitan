@@ -11,7 +11,7 @@ hyperdebug = module_extension(
 def _hyperdebug_repos():
     http_archive(
         name = "hyperdebug_firmware",
-        urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20241211_02/hyperdebug-firmware.tar.gz"],
-        sha256 = "8b72dfe4ecb6a2258228e62c2246c5beffe8339d440a592c483534fa3f54d679",
+        urls = ["https://github.com/lowRISC/hyperdebug-firmware/releases/download/20250129_01/hyperdebug-firmware.tar.gz"],
+        sha256 = "ac529cb2f54149b0a0681b37ebd64e4ced095cd59b3d335e812a71d3d28a047f",
         build_file = "@lowrisc_opentitan//third_party/hyperdebug:BUILD",
     )
