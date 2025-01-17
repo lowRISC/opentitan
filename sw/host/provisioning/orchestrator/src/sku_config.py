@@ -29,6 +29,7 @@ class SkuConfig:
     token_encrypt_key: str
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
+    owner_fw_boot_str: str = None  # valid: any string
 
     def __post_init__(self):
         # Load CA configs.

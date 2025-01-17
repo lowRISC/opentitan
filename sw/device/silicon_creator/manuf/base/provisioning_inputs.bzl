@@ -50,7 +50,9 @@ EARLGREY_SKUS = {
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "owner_fw_boot_str": "Bare metal PASS!",
         "ecdsa_key": {},
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "spx_key": {},
+        "signature_prefix": None,
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_dice_cwt.hjson",
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
@@ -68,7 +70,9 @@ EARLGREY_SKUS = {
         "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
         "owner_fw_boot_str": "Bare metal PASS!",
         "ecdsa_key": {},
-        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "spx_key": {},
+        "signature_prefix": None,
+        "orchestrator_cfg": "@//sw/host/provisioning/orchestrator/configs/skus:emulation_tpm.hjson",
     },
     # This configuration is not really usable in master but left here as an example until
     # a more appropriate solution is found.
