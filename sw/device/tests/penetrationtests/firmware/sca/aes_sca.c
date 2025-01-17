@@ -158,10 +158,9 @@ dif_aes_transaction_t transaction = {
  * @param key Key.
  * @param key_len Key length.
  */
-static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
-                                               size_t key_len) {
+static status_t aes_key_mask_and_config(const uint8_t *key, size_t key_len) {
   if (key_len != kAesKeyLength) {
-    return aesScaOutOfRange;
+    return ABORTED();
   }
   dif_aes_key_share_t key_shares;
   // Mask the provided key.
@@ -177,11 +176,9 @@ static aes_sca_error_t aes_key_mask_and_config(const uint8_t *key,
     key_shares.share0[i] =
         pentest_non_linear_layer(pentest_next_lfsr(1, kPentestLfsrMasking));
   }
-  if (dif_aes_start(&aes, &transaction, &key_shares, NULL) != kDifOk) {
-    return aesScaAborted;
-  }
+  TRY(dif_aes_start(&aes, &transaction, &key_shares, NULL));
 
-  return aesScaOk;
+  return OK_STATUS();
 }
 
 /**
@@ -201,23 +198,18 @@ static void aes_manual_trigger(void) {
  * @param plaintext Plaintext.
  * @param plaintext_len Length of the plaintext.
  */
-static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
-                                   size_t plaintext_len) {
+static status_t aes_encrypt(const uint8_t *plaintext, size_t plaintext_len) {
   bool ready = false;
   do {
-    if (dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready) != kDifOk) {
-      return aesScaAborted;
-    }
+    TRY(dif_aes_get_status(&aes, kDifAesStatusInputReady, &ready));
   } while (!ready);
 
   dif_aes_data_t data;
   if (plaintext_len != sizeof(data.data)) {
-    return aesScaOutOfRange;
+    return ABORTED();
   }
   memcpy(data.data, plaintext, plaintext_len);
-  if (dif_aes_load_data(&aes, data)) {
-    return aesScaAborted;
-  }
+  TRY(dif_aes_load_data(&aes, data));
 
   // Start AES operation (this triggers the capture) and go to sleep.
   if (fpga_mode) {
@@ -234,7 +226,7 @@ static aes_sca_error_t aes_encrypt(const uint8_t *plaintext,
     pentest_call_and_sleep(aes_manual_trigger, kIbexAesSleepCycles, true,
                            false);
   }
-  return aesScaOk;
+  return OK_STATUS();
 }
 
 /**
@@ -365,7 +357,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    aes_key_mask_and_config(key_fixed, kAesKeyLength);
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
@@ -374,9 +366,7 @@ status_t handle_aes_sca_batch_alternative_encrypt(ujson_t *uj) {
   dif_aes_data_t ciphertext;
   for (uint32_t i = 0; i < num_encryptions; ++i) {
     // Encrypt
-    if (aes_encrypt(batch_plaintext, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_encrypt(batch_plaintext, kAesTextLength));
 
     // Get ciphertext
     bool ready = false;
@@ -411,16 +401,12 @@ status_t handle_aes_sca_batch_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_encrypt(plaintext_random, kAesTextLength));
     aes_serial_advance_random();
   }
 
@@ -440,19 +426,13 @@ status_t handle_aes_sca_batch_encrypt_random(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
     block_ctr = num_encryptions;
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(key_random, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(plaintext_random, kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_random, kAesKeyLength));
+    TRY(aes_encrypt(plaintext_random, kAesTextLength));
     aes_serial_advance_random();
   }
 
@@ -495,8 +475,8 @@ status_t handle_aes_sca_fvsr_data_batch_encrypt(ujson_t *uj) {
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    aes_key_mask_and_config(batch_keys[i], kAesKeyLength);
-    aes_encrypt(batch_plaintexts[i], kAesTextLength);
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
+    TRY(aes_encrypt(batch_plaintexts[i], kAesTextLength));
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -515,12 +495,8 @@ status_t handle_aes_sca_fvsr_key_batch_encrypt(ujson_t *uj) {
   }
 
   for (uint32_t i = 0; i < num_encryptions; ++i) {
-    if (aes_key_mask_and_config(batch_keys[i], kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
-    if (aes_encrypt(batch_plaintexts[i], kAesTextLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(batch_keys[i], kAesKeyLength));
+    TRY(aes_encrypt(batch_plaintexts[i], kAesTextLength));
   }
 
   TRY(aes_send_ciphertext(false, uj));
@@ -637,9 +613,7 @@ status_t handle_aes_sca_key_set(ujson_t *uj) {
 
   memcpy(key_fixed, uj_key_data.key, uj_key_data.key_length);
   block_ctr = 0;
-  if (aes_key_mask_and_config(key_fixed, uj_key_data.key_length) != aesScaOk) {
-    return ABORTED();
-  }
+  TRY(aes_key_mask_and_config(key_fixed, uj_key_data.key_length));
   return OK_STATUS();
 }
 
@@ -701,15 +675,11 @@ status_t handle_aes_sca_single_encrypt(ujson_t *uj) {
   // peripheral might trigger the reseeding of the internal masking PRNG which
   // disturbs SCA measurements.
   if (block_ctr > kBlockCtrMax) {
-    if (aes_key_mask_and_config(key_fixed, kAesKeyLength) != aesScaOk) {
-      return ABORTED();
-    }
+    TRY(aes_key_mask_and_config(key_fixed, kAesKeyLength));
     block_ctr = 1;
   }
 
-  if (aes_encrypt(uj_data.text, uj_data.text_length) != aesScaOk) {
-    return ABORTED();
-  }
+  TRY(aes_encrypt(uj_data.text, uj_data.text_length));
 
   TRY(aes_send_ciphertext(false, uj));
   return OK_STATUS();
