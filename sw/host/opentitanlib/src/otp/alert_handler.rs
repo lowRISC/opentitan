@@ -7,7 +7,6 @@ use crate::otp::lc_state::LcStateVal;
 use crate::otp::otp_img::OtpRead;
 
 use anyhow::{bail, Result};
-use bitvec::prelude::*;
 use crc::{Crc, Digest};
 use num_enum::TryFromPrimitive;
 
@@ -270,37 +269,35 @@ impl AlertRegs {
         reg |= (3 & ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E3_MASK)
             << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_MAP_E3_OFFSET;
 
-        let reg_bits = reg.view_bits_mut::<Lsb0>();
-
         match config.enabled {
             AlertEnable::None => {}
             AlertEnable::Enabled => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT as usize, true);
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT;
             }
             AlertEnable::Locked => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT as usize, true)
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_LOCK_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_BIT;
             }
         }
 
         match config.escalate {
             AlertEscalate::Phase0 => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT as usize, true)
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
             }
             AlertEscalate::Phase1 => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT as usize, true);
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT;
             }
             AlertEscalate::Phase2 => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT as usize, true);
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT;
             }
             AlertEscalate::Phase3 => {
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT as usize, true);
-                reg_bits.set(ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT as usize, true);
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E0_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E1_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E2_BIT;
+                reg |= 1 << ALERT_HANDLER_CLASSA_CTRL_SHADOWED_EN_E3_BIT;
             }
             AlertEscalate::None => {}
         }
