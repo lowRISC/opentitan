@@ -297,7 +297,6 @@ rust_library(
         "@crate_index//:anyhow",
         "@crate_index//:arrayvec",
         "@crate_index//:bitflags",
-        "@crate_index//:bitvec",
         "@crate_index//:byteorder",
         "@crate_index//:chrono",
         "@crate_index//:clap",
