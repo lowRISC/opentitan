@@ -15,36 +15,36 @@ module ${module_instance_name}
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
 ) (
-  input                                    clk_i,
-  input                                    rst_ni,
-  input                                    rst_shadowed_ni,
-  input                                    clk_edn_i,
-  input                                    rst_edn_ni,
+  input                                           clk_i,
+  input                                           rst_ni,
+  input                                           rst_shadowed_ni,
+  input                                           clk_edn_i,
+  input                                           rst_edn_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                tl_i,
-  output tlul_pkg::tl_d2h_t                tl_o,
+  input  tlul_pkg::tl_h2d_t                       tl_i,
+  output tlul_pkg::tl_d2h_t                       tl_o,
   // Interrupt Requests
-  output logic                             intr_classa_o,
-  output logic                             intr_classb_o,
-  output logic                             intr_classc_o,
-  output logic                             intr_classd_o,
+  output logic                                    intr_classa_o,
+  output logic                                    intr_classb_o,
+  output logic                                    intr_classc_o,
+  output logic                                    intr_classd_o,
   // Clock gating and reset info from rstmgr and clkmgr
   // SEC_CM: LPG.INTERSIG.MUBI
-  input  prim_mubi_pkg::mubi4_t [NLpg-1:0] lpg_cg_en_i,
-  input  prim_mubi_pkg::mubi4_t [NLpg-1:0] lpg_rst_en_i,
+  input  prim_mubi_pkg::mubi4_t [NLpg-1:0]        lpg_cg_en_i,
+  input  prim_mubi_pkg::mubi4_t [NLpg-1:0]        lpg_rst_en_i,
   // State information for HW crashdump
-  output alert_crashdump_t                 crashdump_o,
+  output alert_crashdump_t                        crashdump_o,
   // Entropy Input
-  output edn_pkg::edn_req_t                edn_o,
-  input  edn_pkg::edn_rsp_t                edn_i,
+  output edn_pkg::edn_req_t                       edn_o,
+  input  edn_pkg::edn_rsp_t                       edn_i,
   // Alert Sources
   // SEC_CM: ALERT.INTERSIG.DIFF
-  input  alert_tx_t [NAlerts-1:0]          alert_tx_i,
-  output alert_rx_t [NAlerts-1:0]          alert_rx_o,
+  input  prim_alert_pkg::alert_tx_t [NAlerts-1:0] alert_tx_i,
+  output prim_alert_pkg::alert_rx_t [NAlerts-1:0] alert_rx_o,
   // Escalation outputs
   // SEC_CM: ESC.INTERSIG.DIFF
-  input  esc_rx_t [N_ESC_SEV-1:0]          esc_rx_i,
-  output esc_tx_t [N_ESC_SEV-1:0]          esc_tx_o
+  input  prim_esc_pkg::esc_rx_t [N_ESC_SEV-1:0]   esc_rx_i,
+  output prim_esc_pkg::esc_tx_t [N_ESC_SEV-1:0]   esc_tx_o
 );
 
   //////////////////////////////////
