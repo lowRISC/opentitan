@@ -7,7 +7,7 @@ use std::cell::Cell;
 use std::cmp;
 use std::rc::Rc;
 use std::time::Duration;
-use zerocopy::{Immutable, IntoBytes, FromBytes};
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 use crate::io::gpio::GpioPin;
 use crate::io::i2c::{self, Bus, DeviceStatus, DeviceTransfer, I2cError, ReadStatus, Transfer};

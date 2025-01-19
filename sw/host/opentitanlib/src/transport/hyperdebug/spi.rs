@@ -8,7 +8,7 @@ use std::cell::Cell;
 use std::mem::size_of;
 use std::rc::Rc;
 use std::time::Duration;
-use zerocopy::{Immutable, IntoBytes, FromBytes};
+use zerocopy::{FromBytes, Immutable, IntoBytes};
 
 use crate::io::eeprom;
 use crate::io::gpio::GpioPin;
