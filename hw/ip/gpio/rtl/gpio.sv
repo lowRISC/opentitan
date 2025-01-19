@@ -153,9 +153,14 @@ module gpio
     end
   end
 
+  // Previous values of input pins; used to detect rising/falling edges for interrupt generation.
   logic [31:0] data_in_q;
-  always_ff @(posedge clk_i) begin
-    data_in_q <= data_in_d;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      data_in_q <= 32'b0;
+    end else begin
+      data_in_q <= data_in_d;
+    end
   end
 
   logic [31:0] event_intr_rise, event_intr_fall, event_intr_actlow, event_intr_acthigh;
