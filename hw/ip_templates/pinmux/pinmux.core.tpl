@@ -19,7 +19,9 @@ filesets:
       - lowrisc:prim:pad_wrapper_pkg
       - lowrisc:prim:pad_attr
       - lowrisc:ip:jtag_pkg
+    % if enable_usb_wakeup:
       - lowrisc:ip:usbdev
+    % endif
       - ${instance_vlnv("lowrisc:ip:pinmux_reg:0.1")}
       - ${instance_vlnv("lowrisc:ip:pinmux_pkg:0.1")}
     files:
