@@ -806,16 +806,18 @@ end
 
   // SEC_CM: MACRO.MEM.CM, MACRO.MEM.INTEGRITY
   prim_otp #(
-    .Width            ( OtpWidth            ),
-    .Depth            ( OtpDepth            ),
-    .SizeWidth        ( OtpSizeWidth        ),
-    .PwrSeqWidth      ( OtpPwrSeqWidth      ),
-    .TestCtrlWidth    ( OtpTestCtrlWidth    ),
-    .TestStatusWidth  ( OtpTestStatusWidth  ),
-    .TestVectWidth    ( OtpTestVectWidth    ),
-    .MemInitFile      ( MemInitFile         ),
-    .VendorTestOffset ( VendorTestOffset    ),
-    .VendorTestSize   ( VendorTestSize      )
+    .Width            ( OtpWidth                        ),
+    .Depth            ( OtpDepth                        ),
+    .SizeWidth        ( OtpSizeWidth                    ),
+    .PwrSeqWidth      ( OtpPwrSeqWidth                  ),
+    .TestCtrlWidth    ( OtpTestCtrlWidth                ),
+    .TestStatusWidth  ( OtpTestStatusWidth              ),
+    .TestVectWidth    ( OtpTestVectWidth                ),
+    .MemInitFile      ( MemInitFile                     ),
+    .VendorTestOffset ( VendorTestOffset                ),
+    .VendorTestSize   ( VendorTestSize                  ),
+    .CfgType_t        ( prim_otp_cfg_pkg::otp_cfg_t     ),
+    .CfgRspType_t     ( prim_otp_cfg_pkg::otp_cfg_rsp_t )
   ) u_otp (
     .clk_i,
     .rst_ni,
