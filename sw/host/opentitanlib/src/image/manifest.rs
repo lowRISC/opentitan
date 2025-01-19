@@ -12,7 +12,7 @@
 #![deny(unsafe_code)]
 
 use crate::with_unknown;
-use zerocopy::{KnownLayout, Immutable, IntoBytes, FromBytes};
+use zerocopy::{FromBytes, Immutable, IntoBytes, KnownLayout};
 
 // Currently, these definitions must be updated manually but they can be
 // generated using the following commands (requires bindgen):
