@@ -217,4 +217,9 @@ sh_test(
     env = {
         "SHELLCHECK": "$(location @shellcheck//:shellcheck)",
     },
+    tags = [
+        "external",
+        "no-cache",
+        "no-sandbox",
+    ],
 )

@@ -528,9 +528,16 @@ rustfmt_fix = rule(
     executable = True,
 )
 
-rustfmt_test = rule(
+_rustfmt_test = rule(
     implementation = lambda ctx: _rustfmt_impl(ctx, check = True),
     attrs = rustfmt_attrs,
     executable = True,
     test = True,
 )
+
+def rustfmt_test(**kwargs):
+    tags = kwargs.get("tags", [])
+
+    # Note: the "external" tag is a workaround for bazelbuild#15516.
+    kwargs["tags"] = _ensure_tag(tags, "no-sandbox", "no-cache", "external")
+    _rustfmt_test(**kwargs)
