@@ -17,6 +17,17 @@ EC_NAME_MAPPING = {
     "secp384r1": "p384",
 }
 
+CURVE_NAME = {
+    "p224": "p224",
+    "p256": "p256",
+    "p384": "p384",
+    "p521": "p521",
+    "NIST P-224": "p224",
+    "NIST P-256": "p256",
+    "NIST P-384": "p384",
+    "NIST P-521": "p521",
+}
+
 
 def parse_test_vectors(raw_data):
     test_groups = raw_data["testGroups"]
@@ -52,7 +63,7 @@ def parse_test_vectors(raw_data):
                         f"Skipped tcId {test['tcId']}: ValueError when parsing DER sequence: {e}."
                     )
                     continue
-                if public_key.curve != EC_NAME_MAPPING[group["curve"]]:
+                if CURVE_NAME[public_key.curve] != EC_NAME_MAPPING[group["curve"]]:
                     logging.info(
                         f"Skipped tcId {test['tcId']}: Curve in DER did not match test vector."
                     )
