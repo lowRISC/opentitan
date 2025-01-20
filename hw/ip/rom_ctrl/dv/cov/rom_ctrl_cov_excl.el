@@ -137,6 +137,11 @@ Condition 37 "2164803938" "(tl_i_int.a_valid & reqfifo_wready & ((~error_interna
 // u_sram_byte. But this makes req_o false and hence sram_ack false.
 Condition 43 "2041272341" "(sram_ack & ((~we_o))) 1 -1" (2 "10")
 
+// The case !empty when under_rst=1 is impossible as fifo clears on reset.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 7 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1"
+                           (2 "10")
+
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
 Toggle 0to1 rom_cfg_i.cfg [3:0] "logic rom_cfg_i.cfg[3:0]"
