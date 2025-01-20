@@ -8,7 +8,7 @@
 // util/topgen.py -t hw/top_englishbreakfast/data/top_englishbreakfast.hjson \
 //                -o hw/top_englishbreakfast/ \
 //                --rnd_cnst_seed \
-//                4881560218908238235
+//                47496257290787239787852990649372780135330843464066774986444696694703339830170
 
 
 module chip_englishbreakfast_cw305 #(
