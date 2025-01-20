@@ -16,7 +16,7 @@
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[101] = {
+    top_darjeeling_alert_for_peripheral[99] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -38,8 +38,6 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdClkmgrAonFatalFault] = kTopDarjeelingAlertPeripheralClkmgrAon,
   [kTopDarjeelingAlertIdPinmuxAonFatalFault] = kTopDarjeelingAlertPeripheralPinmuxAon,
   [kTopDarjeelingAlertIdAonTimerAonFatalFault] = kTopDarjeelingAlertPeripheralAonTimerAon,
-  [kTopDarjeelingAlertIdSensorCtrlRecovAlert] = kTopDarjeelingAlertPeripheralSensorCtrl,
-  [kTopDarjeelingAlertIdSensorCtrlFatalAlert] = kTopDarjeelingAlertPeripheralSensorCtrl,
   [kTopDarjeelingAlertIdSocProxyFatalAlertIntg] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyFatalAlertExternal0] = kTopDarjeelingAlertPeripheralSocProxy,
   [kTopDarjeelingAlertIdSocProxyFatalAlertExternal1] = kTopDarjeelingAlertPeripheralSocProxy,
@@ -127,7 +125,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[160] = {
+    top_darjeeling_plic_interrupt_for_peripheral[158] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -205,8 +203,6 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdPwrmgrAonWakeup] = kTopDarjeelingPlicPeripheralPwrmgrAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWkupTimerExpired] = kTopDarjeelingPlicPeripheralAonTimerAon,
   [kTopDarjeelingPlicIrqIdAonTimerAonWdogTimerBark] = kTopDarjeelingPlicPeripheralAonTimerAon,
-  [kTopDarjeelingPlicIrqIdSensorCtrlIoStatusChange] = kTopDarjeelingPlicPeripheralSensorCtrl,
-  [kTopDarjeelingPlicIrqIdSensorCtrlInitStatusChange] = kTopDarjeelingPlicPeripheralSensorCtrl,
   [kTopDarjeelingPlicIrqIdSocProxyExternal0] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdSocProxyExternal1] = kTopDarjeelingPlicPeripheralSocProxy,
   [kTopDarjeelingPlicIrqIdSocProxyExternal2] = kTopDarjeelingPlicPeripheralSocProxy,

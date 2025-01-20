@@ -144,7 +144,6 @@
         {
           clk_io_div4_secure: io_div4
           clk_main_secure: main
-          clk_aon_secure: aon
         }
       }
       {
@@ -480,7 +479,6 @@
             pinmux_aon
             aon_timer_aon
             ast
-            sensor_ctrl
             soc_proxy.core
             soc_dbg_ctrl.core
             sram_ctrl_ret_aon
@@ -2570,7 +2568,7 @@
           struct: logic
           type: uni
           act: rcv
-          width: 5
+          width: 4
           inst_name: pwrmgr_aon
           default: ""
           package: ""
@@ -3591,119 +3589,6 @@
       generate_dif: true
     }
     {
-      name: sensor_ctrl
-      type: sensor_ctrl
-      clock_srcs:
-      {
-        clk_i: io_div4
-        clk_aon_i: aon
-      }
-      clock_group: secure
-      reset_connections:
-      {
-        rst_ni:
-        {
-          name: lc_io_div4
-          domain: Aon
-        }
-        rst_aon_ni:
-        {
-          name: lc_aon
-          domain: Aon
-        }
-      }
-      domain:
-      [
-        Aon
-      ]
-      attr: reggen_top
-      clock_connections:
-      {
-        clk_i: clkmgr_aon_clocks.clk_io_div4_secure
-        clk_aon_i: clkmgr_aon_clocks.clk_aon_secure
-      }
-      param_decl: {}
-      param_list: []
-      inter_signal_list:
-      [
-        {
-          name: ast_alert
-          struct: ast_alert
-          package: ast_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: sensor_ctrl
-          default: ""
-          external: true
-          top_signame: sensor_ctrl_ast_alert
-          conn_type: false
-          index: -1
-        }
-        {
-          name: ast_status
-          struct: ast_status
-          package: ast_pkg
-          type: uni
-          act: rcv
-          width: 1
-          inst_name: sensor_ctrl
-          default: ""
-          external: true
-          top_signame: sensor_ctrl_ast_status
-          conn_type: false
-          index: -1
-        }
-        {
-          name: ast_init_done
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi4True
-          inst_name: sensor_ctrl
-          external: true
-          top_signame: ast_init_done
-          conn_type: false
-          index: -1
-        }
-        {
-          name: wkup_req
-          struct: logic
-          type: uni
-          act: req
-          width: 1
-          inst_name: sensor_ctrl
-          default: ""
-          package: ""
-          top_signame: pwrmgr_aon_wakeups
-          index: 2
-        }
-        {
-          name: tl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: rsp
-          width: 1
-          inst_name: sensor_ctrl
-          default: ""
-          end_idx: -1
-          top_signame: sensor_ctrl_tl
-          index: -1
-        }
-      ]
-      base_addrs:
-      {
-        null:
-        {
-          hart: 0x30020000
-        }
-      }
-      generate_dif: true
-    }
-    {
       name: soc_proxy
       type: soc_proxy
       clock_srcs:
@@ -3773,7 +3658,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 3
+          index: 2
         }
         {
           name: wkup_external_req
@@ -3785,7 +3670,7 @@
           default: ""
           package: ""
           top_signame: pwrmgr_aon_wakeups
-          index: 4
+          index: 3
         }
         {
           name: rst_req_external
@@ -9989,7 +9874,6 @@
       [
         pinmux_aon.pin_wkup_req
         aon_timer_aon.wkup_req
-        sensor_ctrl.wkup_req
         soc_proxy.wkup_internal_req
         soc_proxy.wkup_external_req
       ]
@@ -10242,10 +10126,6 @@
       [
         peri.tl_lc_ctrl__regs
       ]
-      sensor_ctrl.tl:
-      [
-        peri.tl_sensor_ctrl
-      ]
       alert_handler.tl:
       [
         peri.tl_alert_handler
@@ -10427,9 +10307,6 @@
       otp_ctrl.cfg_rsp: otp_cfg_rsp
       rstmgr_aon.por_n: por_n
       rv_core_ibex.fpga_info: fpga_info
-      sensor_ctrl.ast_alert: sensor_ctrl_ast_alert
-      sensor_ctrl.ast_status: sensor_ctrl_ast_status
-      sensor_ctrl.ast_init_done: ast_init_done
       soc_proxy.ctn_tl_h2d: ctn_tl_h2d
       soc_proxy.ctn_tl_d2h: ctn_tl_d2h
       soc_proxy.soc_fatal_alert: soc_fatal_alert
@@ -12194,7 +12071,6 @@
           otp_ctrl.core
           otp_ctrl.prim
           lc_ctrl.regs
-          sensor_ctrl
           alert_handler
           ast
           sram_ctrl_ret_aon.ram
@@ -12485,27 +12361,6 @@
                 hart: 0x30140000
               }
               size_byte: 0x100
-            }
-          ]
-          xbar: false
-          stub: false
-          req_fifo_pass: true
-        }
-        {
-          name: sensor_ctrl
-          type: device
-          clock: clk_peri_i
-          reset: rst_peri_ni
-          pipeline: false
-          inst_type: sensor_ctrl
-          addr_range:
-          [
-            {
-              base_addrs:
-              {
-                hart: 0x30020000
-              }
-              size_byte: 0x40
             }
           ]
           xbar: false
@@ -12813,18 +12668,6 @@
           inst_name: peri
           default: ""
           top_signame: lc_ctrl_regs_tl
-          index: -1
-        }
-        {
-          name: tl_sensor_ctrl
-          struct: tl
-          package: tlul_pkg
-          type: req_rsp
-          act: req
-          width: 1
-          inst_name: peri
-          default: ""
-          top_signame: sensor_ctrl_tl
           index: -1
         }
         {
@@ -16122,11 +15965,6 @@
       module: aon_timer_aon
     }
     {
-      name: wkup_req
-      width: "1"
-      module: sensor_ctrl
-    }
-    {
       name: wkup_internal_req
       width: "1"
       module: soc_proxy
@@ -16188,7 +16026,6 @@
     spi_host0
     pwrmgr_aon
     aon_timer_aon
-    sensor_ctrl
     soc_proxy
     hmac
     kmac
@@ -16612,24 +16449,6 @@
       width: 1
       type: interrupt
       module_name: aon_timer_aon
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-    }
-    {
-      name: sensor_ctrl_io_status_change
-      width: 1
-      type: interrupt
-      module_name: sensor_ctrl
-      intr_type: IntrType.Event
-      default_val: false
-      incoming: false
-    }
-    {
-      name: sensor_ctrl_init_status_change
-      width: 1
-      type: interrupt
-      module_name: sensor_ctrl
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17100,7 +16919,6 @@
     clkmgr_aon
     pinmux_aon
     aon_timer_aon
-    sensor_ctrl
     soc_proxy
     sram_ctrl_ret_aon
     rv_dm
@@ -17324,31 +17142,13 @@
       lpg_idx: 8
     }
     {
-      name: sensor_ctrl_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sensor_ctrl
-      lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 10
-    }
-    {
-      name: sensor_ctrl_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sensor_ctrl
-      lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 10
-    }
-    {
       name: soc_proxy_fatal_alert_intg
       width: 1
       type: alert
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_0
@@ -17357,7 +17157,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_1
@@ -17366,7 +17166,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_2
@@ -17375,7 +17175,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_3
@@ -17384,7 +17184,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_4
@@ -17393,7 +17193,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_5
@@ -17402,7 +17202,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_6
@@ -17411,7 +17211,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_7
@@ -17420,7 +17220,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_8
@@ -17429,7 +17229,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_9
@@ -17438,7 +17238,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_10
@@ -17447,7 +17247,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_11
@@ -17456,7 +17256,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_12
@@ -17465,7 +17265,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_13
@@ -17474,7 +17274,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_14
@@ -17483,7 +17283,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_15
@@ -17492,7 +17292,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_16
@@ -17501,7 +17301,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_17
@@ -17510,7 +17310,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_18
@@ -17519,7 +17319,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_19
@@ -17528,7 +17328,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_20
@@ -17537,7 +17337,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_21
@@ -17546,7 +17346,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_22
@@ -17555,7 +17355,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_fatal_alert_external_23
@@ -17564,7 +17364,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_recov_alert_external_0
@@ -17573,7 +17373,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_recov_alert_external_1
@@ -17582,7 +17382,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_recov_alert_external_2
@@ -17591,7 +17391,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_proxy_recov_alert_external_3
@@ -17600,7 +17400,7 @@
       async: "1"
       module_name: soc_proxy
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: sram_ctrl_ret_aon_fatal_error
@@ -17609,7 +17409,7 @@
       async: "1"
       module_name: sram_ctrl_ret_aon
       lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 11
     }
     {
       name: rv_dm_fatal_fault
@@ -17618,7 +17418,7 @@
       async: "1"
       module_name: rv_dm
       lpg_name: infra_sys_0
-      lpg_idx: 13
+      lpg_idx: 12
     }
     {
       name: rv_plic_fatal_fault
@@ -17627,7 +17427,7 @@
       async: "1"
       module_name: rv_plic
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: aes_recov_ctrl_update_err
@@ -17636,7 +17436,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 15
+      lpg_idx: 14
     }
     {
       name: aes_fatal_fault
@@ -17645,7 +17445,7 @@
       async: "1"
       module_name: aes
       lpg_name: aes_trans_lc_0
-      lpg_idx: 15
+      lpg_idx: 14
     }
     {
       name: hmac_fatal_fault
@@ -17654,7 +17454,7 @@
       async: "1"
       module_name: hmac
       lpg_name: hmac_trans_lc_0
-      lpg_idx: 16
+      lpg_idx: 15
     }
     {
       name: kmac_recov_operation_err
@@ -17663,7 +17463,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 17
+      lpg_idx: 16
     }
     {
       name: kmac_fatal_fault_err
@@ -17672,7 +17472,7 @@
       async: "1"
       module_name: kmac
       lpg_name: kmac_trans_lc_0
-      lpg_idx: 17
+      lpg_idx: 16
     }
     {
       name: otbn_fatal
@@ -17681,7 +17481,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 18
+      lpg_idx: 17
     }
     {
       name: otbn_recov
@@ -17690,7 +17490,7 @@
       async: "1"
       module_name: otbn
       lpg_name: otbn_trans_lc_0
-      lpg_idx: 18
+      lpg_idx: 17
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -17699,7 +17499,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -17708,7 +17508,7 @@
       async: "1"
       module_name: keymgr_dpe
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: csrng_recov_alert
@@ -17717,7 +17517,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: csrng_fatal_alert
@@ -17726,7 +17526,7 @@
       async: "1"
       module_name: csrng
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: edn0_recov_alert
@@ -17735,7 +17535,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: edn0_fatal_alert
@@ -17744,7 +17544,7 @@
       async: "1"
       module_name: edn0
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: edn1_recov_alert
@@ -17753,7 +17553,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: edn1_fatal_alert
@@ -17762,7 +17562,7 @@
       async: "1"
       module_name: edn1
       lpg_name: secure_lc_0
-      lpg_idx: 14
+      lpg_idx: 13
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -17771,7 +17571,7 @@
       async: "1"
       module_name: sram_ctrl_main
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: sram_ctrl_mbox_fatal_error
@@ -17780,7 +17580,7 @@
       async: "1"
       module_name: sram_ctrl_mbox
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rom_ctrl0_fatal
@@ -17789,7 +17589,7 @@
       async: "1"
       module_name: rom_ctrl0
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rom_ctrl1_fatal
@@ -17798,7 +17598,7 @@
       async: "1"
       module_name: rom_ctrl1
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: dma_fatal_fault
@@ -17807,7 +17607,7 @@
       async: "1"
       module_name: dma
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx0_fatal_fault
@@ -17816,7 +17616,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx0_recov_fault
@@ -17825,7 +17625,7 @@
       async: "1"
       module_name: mbx0
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx1_fatal_fault
@@ -17834,7 +17634,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx1_recov_fault
@@ -17843,7 +17643,7 @@
       async: "1"
       module_name: mbx1
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx2_fatal_fault
@@ -17852,7 +17652,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx2_recov_fault
@@ -17861,7 +17661,7 @@
       async: "1"
       module_name: mbx2
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx3_fatal_fault
@@ -17870,7 +17670,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx3_recov_fault
@@ -17879,7 +17679,7 @@
       async: "1"
       module_name: mbx3
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx4_fatal_fault
@@ -17888,7 +17688,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx4_recov_fault
@@ -17897,7 +17697,7 @@
       async: "1"
       module_name: mbx4
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx5_fatal_fault
@@ -17906,7 +17706,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx5_recov_fault
@@ -17915,7 +17715,7 @@
       async: "1"
       module_name: mbx5
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx6_fatal_fault
@@ -17924,7 +17724,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx6_recov_fault
@@ -17933,7 +17733,7 @@
       async: "1"
       module_name: mbx6
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_jtag_fatal_fault
@@ -17942,7 +17742,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_jtag_recov_fault
@@ -17951,7 +17751,7 @@
       async: "1"
       module_name: mbx_jtag
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_pcie0_fatal_fault
@@ -17960,7 +17760,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_pcie0_recov_fault
@@ -17969,7 +17769,7 @@
       async: "1"
       module_name: mbx_pcie0
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_pcie1_fatal_fault
@@ -17978,7 +17778,7 @@
       async: "1"
       module_name: mbx_pcie1
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: mbx_pcie1_recov_fault
@@ -17987,7 +17787,7 @@
       async: "1"
       module_name: mbx_pcie1
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: soc_dbg_ctrl_fatal_fault
@@ -18014,7 +17814,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -18023,7 +17823,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -18032,7 +17832,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -18041,7 +17841,7 @@
       async: "1"
       module_name: rv_core_ibex
       lpg_name: infra_lc_0
-      lpg_idx: 11
+      lpg_idx: 10
     }
   ]
   outgoing_alert: {}
@@ -18159,7 +17959,6 @@
         {
           clk_io_div4_secure: io_div4
           clk_main_secure: main
-          clk_aon_secure: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
@@ -18299,30 +18098,6 @@
       }
     }
     {
-      name: secure_lc_io_div4_Aon
-      clock_group:
-      {
-        name: secure
-        src: top
-        sw_cg: no
-        unique: no
-        clocks:
-        {
-          clk_io_div4_secure: io_div4
-          clk_main_secure: main
-          clk_aon_secure: aon
-        }
-      }
-      clock_connection: clkmgr_aon_clocks.clk_io_div4_secure
-      unmanaged_clock: false
-      unmanaged_reset: false
-      reset_connection:
-      {
-        name: lc_io_div4
-        domain: Aon
-      }
-    }
-    {
       name: infra_lc_0
       clock_group:
       {
@@ -18409,7 +18184,6 @@
         {
           clk_io_div4_secure: io_div4
           clk_main_secure: main
-          clk_aon_secure: aon
         }
       }
       clock_connection: clkmgr_aon_clocks.clk_main_secure
@@ -19841,7 +19615,7 @@
         struct: logic
         type: uni
         act: rcv
-        width: 5
+        width: 4
         inst_name: pwrmgr_aon
         default: ""
         package: ""
@@ -20434,73 +20208,6 @@
         index: -1
       }
       {
-        name: ast_alert
-        struct: ast_alert
-        package: ast_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: sensor_ctrl
-        default: ""
-        external: true
-        top_signame: sensor_ctrl_ast_alert
-        conn_type: false
-        index: -1
-      }
-      {
-        name: ast_status
-        struct: ast_status
-        package: ast_pkg
-        type: uni
-        act: rcv
-        width: 1
-        inst_name: sensor_ctrl
-        default: ""
-        external: true
-        top_signame: sensor_ctrl_ast_status
-        conn_type: false
-        index: -1
-      }
-      {
-        name: ast_init_done
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi4True
-        inst_name: sensor_ctrl
-        external: true
-        top_signame: ast_init_done
-        conn_type: false
-        index: -1
-      }
-      {
-        name: wkup_req
-        struct: logic
-        type: uni
-        act: req
-        width: 1
-        inst_name: sensor_ctrl
-        default: ""
-        package: ""
-        top_signame: pwrmgr_aon_wakeups
-        index: 2
-      }
-      {
-        name: tl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: rsp
-        width: 1
-        inst_name: sensor_ctrl
-        default: ""
-        end_idx: -1
-        top_signame: sensor_ctrl_tl
-        index: -1
-      }
-      {
         name: wkup_internal_req
         struct: logic
         type: uni
@@ -20510,7 +20217,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 3
+        index: 2
       }
       {
         name: wkup_external_req
@@ -20522,7 +20229,7 @@
         default: ""
         package: ""
         top_signame: pwrmgr_aon_wakeups
-        index: 4
+        index: 3
       }
       {
         name: rst_req_external
@@ -24514,18 +24221,6 @@
         index: -1
       }
       {
-        name: tl_sensor_ctrl
-        struct: tl
-        package: tlul_pkg
-        type: req_rsp
-        act: req
-        width: 1
-        inst_name: peri
-        default: ""
-        top_signame: sensor_ctrl_tl
-        index: -1
-      }
-      {
         name: tl_alert_handler
         struct: tl
         package: tlul_pkg
@@ -26117,54 +25812,6 @@
         netname: fpga_info
       }
       {
-        package: ast_pkg
-        struct: ast_alert_req
-        signame: sensor_ctrl_ast_alert_req_i
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: sensor_ctrl_ast_alert_req
-      }
-      {
-        package: ast_pkg
-        struct: ast_alert_rsp
-        signame: sensor_ctrl_ast_alert_rsp_o
-        width: 1
-        type: req_rsp
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: sensor_ctrl_ast_alert_rsp
-      }
-      {
-        package: ast_pkg
-        struct: ast_status
-        signame: sensor_ctrl_ast_status_i
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: sensor_ctrl_ast_status
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi4
-        signame: ast_init_done_i
-        width: 1
-        type: uni
-        default: prim_mubi_pkg::MuBi4True
-        direction: in
-        conn_type: false
-        index: -1
-        netname: ast_init_done
-      }
-      {
         package: tlul_pkg
         struct: tl_h2d
         signame: ctn_tl_h2d_o
@@ -27163,7 +26810,7 @@
         package: ""
         struct: logic
         signame: pwrmgr_aon_wakeups
-        width: 5
+        width: 4
         type: uni
         end_idx: -1
         act: rcv
@@ -28516,28 +28163,6 @@
         package: tlul_pkg
         struct: tl_d2h
         signame: lc_ctrl_regs_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        signame: sensor_ctrl_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        signame: sensor_ctrl_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

@@ -377,13 +377,6 @@
 
   // clock gated indication for alert handler: these clocks are never gated.
   assign cg_en_o.aon_infra = MuBi4False;
-  prim_clock_buf u_clk_aon_secure_buf (
-    .clk_i(clk_aon),
-    .clk_o(clocks_o.clk_aon_secure)
-  );
-
-  // clock gated indication for alert handler: these clocks are never gated.
-  assign cg_en_o.aon_secure = MuBi4False;
   prim_clock_buf u_clk_aon_peri_buf (
     .clk_i(clk_aon),
     .clk_o(clocks_o.clk_aon_peri)
