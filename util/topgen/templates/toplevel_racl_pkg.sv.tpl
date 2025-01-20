@@ -89,15 +89,50 @@ package top_racl_pkg;
   % endfor
 % endfor
 
+<%doc>\
+  Note: This template needs to be manually synced between the following files:
+        util/raclgen.py
+        util/topgen/templates/toplevel_racl_pkg.sv.tpl
+</%doc>\
+<% import math %>\
+% if 'racl' in topcfg:
+<% policy_names = [policy['name'] for policy in topcfg['racl']['policies'][racl_group]] %>\
+<% policy_name_len = max( (len(name) for name in policy_names) ) %>\
+<% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
+  /**
+   * RACL groups:
+% for racl_group in topcfg['racl']['policies']:
+   *   ${racl_group}
+  % for policy_idx, policy_name in enumerate(policy_names):
+   *     ${f"{policy_name}".ljust(policy_name_len)} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
+  % endfor
+% endfor
+   */
+
+% endif
 % for m in topcfg['module']:
   % if 'racl_mappings' in m:
-    % for if_name, mapping in m['racl_mappings'].items():
+    % for if_name in m['racl_mappings'].keys():
+<% register_mapping = m['racl_mappings'][if_name]['register_mapping'] %>\
+<% racl_group = m['racl_mappings'][if_name]['racl_group'] %>\
+<% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
+<% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
+<% reg_name_len = max( (len(name) for name in register_mapping.keys()) ) %>\
   /**
    * Policy selection vector for ${m["name"]}
+   *   TLUL interface name: ${if_name}
+   *   RACL group: ${racl_group}
+      % if len(register_mapping) > 0:
+   *   Register to policy mapping:
+        % for reg_name, policy_idx in register_mapping.items():
+   *     ${f"{reg_name}:".ljust(reg_name_len+1)} ${policy_names[policy_idx]} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
+        % endfor
+      % endif
    */
-<% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
-  parameter int unsigned RACL_POLICY_SEL_${m["name"].upper()}${if_suffix} [${len(mapping)}] = '{${", ".join(map(str, reversed(mapping.values())))}};
-  
+<% policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}" %>\
+<% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
+  parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
+
     % endfor
   % endif
 % endfor
