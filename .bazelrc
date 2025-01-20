@@ -154,3 +154,7 @@ test --build_tests_only
 # these when running sandboxed tests.
 test --sandbox_explicit_pseudoterminal
 run --sandbox_explicit_pseudoterminal
+
+# Enable strict action env. This will prevent `PATH` and `LD_LIBRARY_PATH` from being passed into the sandbox
+# which would help the cacheability.
+build --incompatible_strict_action_env
