@@ -145,9 +145,6 @@ tl_device_t xbar_devices[$] = '{
     '{"lc_ctrl__regs", '{
         '{32'h30140000, 32'h301400ff}
     }},
-    '{"sensor_ctrl", '{
-        '{32'h30020000, 32'h3002003f}
-    }},
     '{"alert_handler", '{
         '{32'h30150000, 32'h301507ff}
     }},
@@ -236,7 +233,6 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl__regs",
-        "sensor_ctrl",
         "alert_handler",
         "ast",
         "sram_ctrl_ret_aon__ram",
@@ -291,7 +287,6 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl__regs",
-        "sensor_ctrl",
         "alert_handler",
         "ast",
         "sram_ctrl_ret_aon__ram",
@@ -347,7 +342,6 @@ tl_host_t xbar_hosts[$] = '{
         "otp_ctrl__core",
         "otp_ctrl__prim",
         "lc_ctrl__regs",
-        "sensor_ctrl",
         "alert_handler",
         "ast",
         "sram_ctrl_ret_aon__ram",

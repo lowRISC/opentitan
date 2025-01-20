@@ -5,7 +5,7 @@
   instance_name: top_darjeeling_pwrmgr
   param_values:
   {
-    NumWkups: 5
+    NumWkups: 4
     Wkups:
     [
       {
@@ -17,11 +17,6 @@
         name: wkup_req
         width: "1"
         module: aon_timer_aon
-      }
-      {
-        name: wkup_req
-        width: "1"
-        module: sensor_ctrl
       }
       {
         name: wkup_internal_req

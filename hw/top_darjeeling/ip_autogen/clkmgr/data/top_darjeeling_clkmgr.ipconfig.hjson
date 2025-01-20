@@ -131,11 +131,6 @@
           src_name: aon
           endpoint_ip: soc_proxy
         }
-        clk_aon_secure:
-        {
-          src_name: aon
-          endpoint_ip: sensor_ctrl
-        }
         clk_aon_peri:
         {
           src_name: aon

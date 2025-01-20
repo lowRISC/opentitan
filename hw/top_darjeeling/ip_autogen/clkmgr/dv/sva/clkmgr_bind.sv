@@ -148,10 +148,6 @@ module clkmgr_bind;
     .cg_en(cg_en_o.aon_powerup == prim_mubi_pkg::MuBi4True)
   );
 
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_secure (
-    .cg_en(cg_en_o.aon_secure == prim_mubi_pkg::MuBi4True)
-  );
-
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_timers (
     .cg_en(cg_en_o.aon_timers == prim_mubi_pkg::MuBi4True)
   );

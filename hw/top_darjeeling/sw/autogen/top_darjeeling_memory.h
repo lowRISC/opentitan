@@ -359,23 +359,6 @@
  */
 #define TOP_DARJEELING_AST_SIZE_BYTES 0x400
 /**
- * Peripheral base address for sensor_ctrl in top darjeeling.
- *
- * This should be used with #mmio_region_from_addr to access the memory-mapped
- * registers associated with the peripheral (usually via a DIF).
- */
-#define TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR 0x30020000
-
-/**
- * Peripheral size for sensor_ctrl in top darjeeling.
- *
- * This is the size (in bytes) of the peripheral's reserved memory area. All
- * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR and
- * `TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR + TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES`.
- */
-#define TOP_DARJEELING_SENSOR_CTRL_SIZE_BYTES 0x40
-/**
  * Peripheral base address for core device on soc_proxy in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped

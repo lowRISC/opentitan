@@ -33,7 +33,6 @@ load("//hw/ip/rv_core_ibex:defs.bzl", "RV_CORE_IBEX")
 load("//hw/ip/rv_dm:defs.bzl", "RV_DM")
 load("//hw/top_darjeeling/ip_autogen/rv_plic:defs.bzl", "RV_PLIC")
 load("//hw/ip/rv_timer:defs.bzl", "RV_TIMER")
-load("//hw/top_darjeeling/ip/sensor_ctrl:defs.bzl", "SENSOR_CTRL")
 load("//hw/ip/soc_dbg_ctrl:defs.bzl", "SOC_DBG_CTRL")
 load("//hw/top_darjeeling/ip/soc_proxy:defs.bzl", "SOC_PROXY")
 load("//hw/ip/spi_device:defs.bzl", "SPI_DEVICE")
@@ -72,7 +71,6 @@ DARJEELING = opentitan_top(
         RV_DM,
         RV_PLIC,
         RV_TIMER,
-        SENSOR_CTRL,
         SOC_DBG_CTRL,
         SOC_PROXY,
         SPI_DEVICE,

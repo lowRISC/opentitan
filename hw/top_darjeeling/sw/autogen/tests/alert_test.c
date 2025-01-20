@@ -33,7 +33,6 @@
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/dif/dif_rv_plic.h"
 #include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/dif/dif_sensor_ctrl.h"
 #include "sw/device/lib/dif/dif_soc_dbg_ctrl.h"
 #include "sw/device/lib/dif/dif_soc_proxy.h"
 #include "sw/device/lib/dif/dif_spi_device.h"
@@ -84,7 +83,6 @@ static dif_rstmgr_t rstmgr_aon;
 static dif_rv_core_ibex_t rv_core_ibex;
 static dif_rv_plic_t rv_plic;
 static dif_rv_timer_t rv_timer;
-static dif_sensor_ctrl_t sensor_ctrl;
 static dif_soc_dbg_ctrl_t soc_dbg_ctrl;
 static dif_soc_proxy_t soc_proxy;
 static dif_spi_device_t spi_device;
@@ -200,9 +198,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_RV_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_rv_timer_init(base_addr, &rv_timer));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SENSOR_CTRL_BASE_ADDR);
-  CHECK_DIF_OK(dif_sensor_ctrl_init(base_addr, &sensor_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_DBG_CTRL_CORE_BASE_ADDR);
   CHECK_DIF_OK(dif_soc_dbg_ctrl_init(base_addr, &soc_dbg_ctrl));
@@ -775,21 +770,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdRvTimerFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write sensor_ctrl's alert_test reg and check alert_cause.
-  for (dif_sensor_ctrl_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_sensor_ctrl_alert_force(&sensor_ctrl, kDifSensorCtrlAlertRecovAlert + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdSensorCtrlRecovAlert + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
