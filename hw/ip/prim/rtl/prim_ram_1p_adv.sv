@@ -49,8 +49,9 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   input        [Width-1:0]            wdata_i,
   input        [Width-1:0]            wmask_i,
   output logic [Width-1:0]            rdata_o,
-  output logic                        rvalid_o, // read response (rdata_o) is valid
-  output logic [1:0]                  rerror_o, // Bit1: Uncorrectable, Bit0: Correctable
+  output logic                        rvalid_o,         // read response (rdata_o) is valid
+  output prim_mubi_pkg::mubi4_t       rvalid_mubi_o,    // Mubi version of rvalid_o
+  output logic [1:0]                  rerror_o,         // Bit1: Uncorrectable, Bit0: Correctable
 
   // config
   input  ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
@@ -199,6 +200,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
   assign write_d            = mubi4_bool_to_mubi(write_i);
   assign addr_d             = addr_i;
   assign rvalid_o           = mubi4_test_true_loose(rvalid_q);
+  assign rvalid_mubi_o      = rvalid_q;
   assign rdata_o            = rdata_q;
   assign rerror_o           = rerror_q;
 
