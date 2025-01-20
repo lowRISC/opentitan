@@ -746,6 +746,8 @@ def generate_rust(topname, completecfg, name_to_block, out_path, version_stamp,
         # object to store it.
         rs_helper = TopGenRust(completecfg, name_to_block, version_stamp)
 
+        # Generate Rust device-side files
+        rsformat_dir = out_path / "sw/autogen/chip/"
         render_template(topgen_template_path / 'toplevel.rs.tpl',
                         rsformat_dir / f"top_{topname}{addr_space_suffix}.rs",
                         addr_space=addr_space['name'],
