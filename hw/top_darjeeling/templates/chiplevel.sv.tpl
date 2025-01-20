@@ -942,20 +942,21 @@ module chip_${top["name"]}_${target["name"]} #(
     .EnableInputPipeline(1),
     .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
-    .clk_i    (clkmgr_aon_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
-    .req_i    (sram_req),
-    .write_i  (sram_we),
-    .addr_i   (sram_addr),
-    .wdata_i  (sram_wdata),
-    .wmask_i  (sram_wmask),
-    .rdata_o  (sram_rdata),
-    .rvalid_o (sram_rvalid),
+    .clk_i         (clkmgr_aon_clocks.clk_main_infra),
+    .rst_ni        (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel]),
+    .req_i         (sram_req),
+    .write_i       (sram_we),
+    .addr_i        (sram_addr),
+    .wdata_i       (sram_wdata),
+    .wmask_i       (sram_wmask),
+    .rdata_o       (sram_rdata),
+    .rvalid_o      (sram_rvalid),
+    .rvalid_mubi_o (),
     // No error detection is enabled inside SRAM.
     // Bus ECC is checked at the consumer side.
-    .rerror_o (),
-    .cfg_i    (ram_1p_cfg),
-    .alert_o()
+    .rerror_o      (),
+    .cfg_i         (ram_1p_cfg),
+    .alert_o       ()
   );
 
 ###################################################################

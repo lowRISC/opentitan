@@ -49,6 +49,8 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   // If set to 0, the cipher primitive is replicated, and together with a wider nonce input,
   // a unique keystream is generated for the full data width.
   parameter  bit ReplicateKeyStream  = 1'b0,
+  // Add a flop stage on the RAM macro output
+  parameter bit FlopRamOutput        = 0,
   // Derived parameters
   localparam int AddrWidth           = prim_util_pkg::vbits(Depth),
   // Depending on the data width, we need to instantiate multiple parallel cipher primitives to
@@ -183,9 +185,20 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .in_i(intg_error_i),
     .out_o(intg_error_buf)
   );
+
+  // Only perform a access request to the SRAM macro when all of the following hold:
+  // 1. There is no integrity error
+  // 2. There is no address collision (read after write to the same address). Here we are directly
+  //    returning the in-flight data that is waiting to be written. Note, inverting the
+  //    addr_collision_d works since True and False in the Mubi domain are complementary.
+  // 3. There is a non-conflicting read or staged write (we scrambled in between) or there is a
+  //    pending write.
   logic macro_req;
-  assign macro_req   = ~intg_error_w_q & ~intg_error_buf &
-      mubi4_test_true_loose(mubi4_or_hi(mubi4_or_hi(read_en_buf, write_en_q), write_pending_q));
+  assign macro_req = ~intg_error_w_q & ~intg_error_buf &
+                      mubi4_test_true_loose(
+                        mubi4_and_hi(mubi4_t'(~addr_collision_d),
+                                     mubi4_or_hi(mubi4_or_hi(read_en_buf, write_en_q),
+                                                 write_pending_q)));
   // We are allowed to write a pending write transaction to the memory if there is no incoming read.
   logic macro_write;
   assign macro_write = mubi4_test_true_loose(mubi4_or_hi(write_en_q, write_pending_q)) &
@@ -374,18 +387,25 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   logic [Width-1:0] wdata_scr;
   assign wdata_scr = (mubi4_test_true_loose(write_pending_q)) ? wdata_scr_q : wdata_scr_d;
 
-  mubi4_t rvalid_q;
+  mubi4_t rvalid;
   logic intg_error_r_q;
   logic [Width-1:0] wmask_q;
   always_comb begin : p_forward_mux
     rdata_o = '0;
     rvalid_o = 1'b0;
-    // Kill the read response in case an integrity error was seen.
-    if (!intg_error_r_q && mubi4_test_true_loose(rvalid_q)) begin
-      rvalid_o = 1'b1;
+    // Kill the read response in case an integrity error was seen. For integrity errors we just
+    // return zero
+    if (!intg_error_r_q) begin
+      // Regular read from the RAM macro
+      if (mubi4_test_true_loose(rvalid)) begin
+        rvalid_o = 1'b1;
+        rdata_o  = rdata;
+      end
+
       // In case of a collision, we forward the valid bytes of the write data from the unscrambled
       // holding register.
       if (mubi4_test_true_loose(addr_collision_q)) begin
+        rvalid_o = 1'b1;
         for (int k = 0; k < Width; k++) begin
           if (wmask_q[k]) begin
             rdata_o[k] = wdata_q[k];
@@ -393,10 +413,6 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
             rdata_o[k] = rdata[k];
           end
         end
-      // regular reads. note that we just return zero in case
-      // an integrity error was signalled.
-      end else begin
-        rdata_o = rdata;
       end
     end
   end
@@ -406,8 +422,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   ///////////////
   logic ram_alert;
 
-  assign alert_o = mubi4_test_invalid(write_en_q) | mubi4_test_invalid(addr_collision_q) |
-                   mubi4_test_invalid(write_pending_q) | mubi4_test_invalid(rvalid_q) |
+  assign alert_o = mubi4_test_invalid(write_en_q)       |
+                   mubi4_test_invalid(addr_collision_q) |
+                   mubi4_test_invalid(write_pending_q)  |
+                   mubi4_test_invalid(rvalid)           |
                    ram_alert;
 
   prim_flop #(
@@ -438,16 +456,6 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .rst_ni,
     .d_i(MuBi4Width'(write_scr_pending_d)),
     .q_o({write_pending_q})
-  );
-
-  prim_flop #(
-    .Width(MuBi4Width),
-    .ResetValue(MuBi4Width'(MuBi4False))
-  ) u_rvalid_flop (
-    .clk_i,
-    .rst_ni,
-    .d_i(MuBi4Width'(read_en_buf)),
-    .q_o({rvalid_q})
   );
 
   assign read_en_b = mubi4_test_true_loose(read_en_buf);
@@ -492,21 +500,22 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
     .EnableECC(1'b0),
     .EnableParity(EnableParity),
     .EnableInputPipeline(1'b0),
-    .EnableOutputPipeline(1'b0)
+    .EnableOutputPipeline(FlopRamOutput)
   ) u_prim_ram_1p_adv (
     .clk_i,
     .rst_ni,
-    .req_i    ( macro_req   ),
-    .write_i  ( macro_write ),
-    .addr_i   ( addr_mux    ),
-    .wdata_i  ( wdata_scr   ),
-    .wmask_i  ( wmask_q     ),
-    .rdata_o  ( rdata_scr   ),
-    .rvalid_o ( ),
+    .req_i         ( macro_req   ),
+    .write_i       ( macro_write ),
+    .addr_i        ( addr_mux    ),
+    .wdata_i       ( wdata_scr   ),
+    .wmask_i       ( wmask_q     ),
+    .rdata_o       ( rdata_scr   ),
+    .rvalid_o      (             ),
+    .rvalid_mubi_o ( rvalid      ),
     .rerror_o,
     .cfg_i,
     .cfg_rsp_o,
-    .alert_o  ( ram_alert   )
+    .alert_o       ( ram_alert   )
   );
 
   `include "prim_util_get_scramble_params.svh"

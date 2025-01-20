@@ -24,6 +24,8 @@ module sram_ctrl
   // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
   // Setting this to 3 lowers this to approximately 7 effective rounds.
   parameter int NumPrinceRoundsHalf                        = 3,
+  // Add a flop stage on the RAM macro output
+  parameter bit FlopRamOutput                              = 0,
   // Random netlist constants
   parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -565,7 +567,8 @@ module sram_ctrl
     .InstDepth(InstDepth),
     .EnableParity(0),
     .DataBitsPerMask(DataWidth),
-    .NumPrinceRoundsHalf(NumPrinceRoundsHalf)
+    .NumPrinceRoundsHalf(NumPrinceRoundsHalf),
+    .FlopRamOutput(FlopRamOutput)
   ) u_prim_ram_1p_scr (
     .clk_i,
     .rst_ni,
