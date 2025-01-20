@@ -246,9 +246,14 @@ module tlul_adapter_sram
     logic                      error ;
   } rsp_t ;
 
-  localparam int SramReqFifoWidth = $bits(sram_req_t) ;
+  localparam int SramReqWidth = $bits(sram_req_t);
+  localparam int SramReqFifoWidth = SramReqWidth + (DataXorAddr ? SramBusBankAW : 0);
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
+
+  // An item in the SRAM request fifo is an SRAM request (of width SramReqWidth) plus, if
+  // DataXorAddr is true, some bits of the address that the request touches.
+  typedef logic [SramReqWidth-1:0] sram_req_fifo_item_t;
 
   // FIFO signal in case OutStand is greater than 1
   // If request is latched, {write, source} is pushed to req fifo.
@@ -260,9 +265,22 @@ module tlul_adapter_sram
 
   logic sramreqfifo_wvalid, sramreqfifo_wready;
   logic sramreqfifo_rready;
-  sram_req_t sramreqfifo_wdata, sramreqfifo_rdata;
 
-  logic [SramBusBankAW-1:0] sramreqaddrfifo_wdata, sramreqaddrfifo_rdata;
+  // An item in u_sramreqfifo is the request itself, together (if DataXorAddr is nonzero) with some
+  // bits of the request address. These values are in sram_req_*data and sram_addr_*data, which get
+  // combined to fifo items in sramreqfifo_*data.
+  sram_req_t                   sram_req_wdata, sram_req_rdata;
+  logic [SramBusBankAW-1:0]    sram_addr_wdata, sram_addr_rdata;
+  logic [SramReqFifoWidth-1:0] sramreqfifo_wdata, sramreqfifo_rdata;
+
+  if (DataXorAddr) begin : gen_combine_with_addr
+    assign sramreqfifo_wdata = {sram_addr_wdata, sram_req_wdata};
+    assign {sram_addr_rdata, sram_req_rdata} = sramreqfifo_rdata;
+  end else begin : gen_combine_without_addr
+    assign sramreqfifo_wdata = sram_req_wdata;
+    assign sram_addr_rdata = '0;
+    assign sram_req_rdata = sramreqfifo_rdata;
+  end
 
   logic rspfifo_wvalid, rspfifo_wready;
   logic rspfifo_rvalid, rspfifo_rready;
@@ -467,7 +485,7 @@ module tlul_adapter_sram
   assign reqfifo_rready = d_ack ;
 
   // push together with ReqFIFO, pop upon returning read
-  assign sramreqfifo_wdata = '{
+  assign sram_req_wdata = '{
     mask    : tl_i_int.a_mask,
     woffset : woffset
   };
@@ -476,7 +494,7 @@ module tlul_adapter_sram
 
   assign rspfifo_wvalid = rvalid_i & reqfifo_rvalid;
 
-  assign sramreqaddrfifo_wdata = tl_i_int.a_address[DataBitWidth+:SramBusBankAW];
+  assign sram_addr_wdata = tl_i_int.a_address[DataBitWidth+:SramBusBankAW];
 
   // Make sure only requested bytes are forwarded
   logic [WidthMult-1:0][DataWidth-1:0] rdata_reshaped;
@@ -493,7 +511,7 @@ module tlul_adapter_sram
       // Otherwise, if at least one mask bit is nonzero, we are passing through the integrity.
       // In that case we need to feed back the entire word since otherwise the integrity
       // will not calculate correctly.
-      if (|sramreqfifo_rdata.mask) begin
+      if (|sram_req_rdata.mask) begin
         // Select correct word.
         if (DataXorAddr) begin : gen_data_xor_addr
           // When DataXorAddr is enabled, on a read, the address is XORed with the data fetched from
@@ -502,12 +520,12 @@ module tlul_adapter_sram
           // e.g., due to a fault, rdata now contains faulty data, which is detected by the
           // integrity mechanism.
           rdata_tlword = {
-              rdata_reshaped[sramreqfifo_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
-              rdata_reshaped[sramreqfifo_rdata.woffset][top_pkg::TL_DW-1:0] ^
-                  {{(top_pkg::TL_DW-SramBusBankAW){1'b0}}, sramreqaddrfifo_rdata}
+              rdata_reshaped[sram_req_rdata.woffset][DataWidth-1:top_pkg::TL_DW],
+              rdata_reshaped[sram_req_rdata.woffset][top_pkg::TL_DW-1:0] ^
+                  {{(top_pkg::TL_DW-SramBusBankAW){1'b0}}, sram_addr_rdata}
           };
         end else begin: gen_no_data_xor_addr
-          rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset];
+          rdata_tlword = rdata_reshaped[sram_req_rdata.woffset];
         end
       end
     end
@@ -516,11 +534,11 @@ module tlul_adapter_sram
     always_comb begin
       rmask = '0;
       for (int i = 0 ; i < top_pkg::TL_DW/8 ; i++) begin
-        rmask[8*i +: 8] = {8{sramreqfifo_rdata.mask[i]}};
+        rmask[8*i +: 8] = {8{sram_req_rdata.mask[i]}};
       end
     end
     // Select correct word and mask it.
-    assign rdata_tlword = rdata_reshaped[sramreqfifo_rdata.woffset] & rmask;
+    assign rdata_tlword = rdata_reshaped[sram_req_rdata.woffset] & rmask;
   end
 
   assign rspfifo_wdata  = '{
@@ -570,10 +588,11 @@ module tlul_adapter_sram
   //    sramreqfifo only needs to hold the mask and word offset until the read
   //    data returns from memory.
   prim_fifo_sync #(
-    .Width   (SramReqFifoWidth),
-    .Pass    (1'b0),
-    .Depth   (Outstanding),
-    .Secure  (SecFifoPtr)
+    .Width             (SramReqFifoWidth),
+    .Pass              (1'b0),
+    .Depth             (Outstanding),
+    .Secure            (SecFifoPtr),
+    .OutputZeroIfEmpty (1)
   ) u_sramreqfifo (
     .clk_i,
     .rst_ni,
@@ -589,43 +608,11 @@ module tlul_adapter_sram
     .err_o   (sramreqfifo_error)
   );
 
-  // sramreqaddrfifo:
-  //    This fifo holds the address used for undoing the address XOR data infection.
-  if (DataXorAddr) begin : gen_data_xor_addr_fifo
-    logic sramreqaddrfifo_wready;
-
-    prim_fifo_sync #(
-      .Width              (SramBusBankAW),
-      .Pass               (1'b0),
-      .Depth              (Outstanding),
-      .OutputZeroIfEmpty  (1)
-    ) u_sramreqaddrfifo (
-      .clk_i,
-      .rst_ni,
-      .clr_i   (1'b0),
-      .wvalid_i(sramreqfifo_wvalid),
-      .wready_o(sramreqaddrfifo_wready),
-      .wdata_i (sramreqaddrfifo_wdata),
-      .rvalid_o(),
-      .rready_i(sramreqfifo_rready),
-      .rdata_o (sramreqaddrfifo_rdata),
-      .full_o  (),
-      .depth_o (),
-      .err_o   ()
-    );
-
-    `ASSERT(SramReqAddrFifoFullSync_A, sramreqaddrfifo_wready == sramreqfifo_wready)
-
-    // Tie-off unused signals
-    logic unused_sramreqaddrfifo;
-    assign unused_sramreqaddrfifo = ^{sramreqaddrfifo_wready};
-
-  end else begin : gen_no_data_xor_addr_fifo
-    assign sramreqaddrfifo_rdata = '0;
-
-    // Tie-off unused signals
-    logic unused_sramreqaddrfifo;
-    assign unused_sramreqaddrfifo = ^{sramreqaddrfifo_wdata, sramreqaddrfifo_rdata};
+  if (!DataXorAddr) begin : gen_no_data_xor_addr_fifo
+    // If u_sramreqfifo doesn't contain any address data, nothing will be reading sram_addr_wdata or
+    // sram_addr_rdata. Tie them off with an unused signal.
+    logic unused_sram_addresses;
+    assign unused_sram_addresses = ^{sram_addr_wdata, sram_addr_rdata};
   end
 
   // Rationale having #Outstanding depth in response FIFO.
