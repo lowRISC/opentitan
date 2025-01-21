@@ -15,13 +15,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
-|:---------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
-| strap_en       | logic                         | uni     | rcv   |       1 | This signal is pulsed high by the power manager after reset in order to sample the HW straps.                                        |
-| sampled_straps | gpio_pkg::gpio_straps         | uni     | req   |       1 | This vector contains the sampled strap values.                                                                                       |
-| racl_policies  | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error     | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
-| tl             | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
+| Port Name      | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                                 |
+|:---------------|:------------------------------|:--------|:------|--------:|:--------------------------------------------------------------------------------------------------------------------------------------------|
+| strap_en       | logic                         | uni     | rcv   |       1 | The strap enable signal tells gpio to take a snapshot of the input pins. The behaviour of this signal after that event will have no effect. |
+| sampled_straps | gpio_pkg::gpio_straps         | uni     | req   |       1 | This vector contains the sampled strap values.                                                                                              |
+| racl_policies  | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register.        |
+| racl_error     | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                                  |
+| tl             | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                             |
 
 ## Interrupts
 

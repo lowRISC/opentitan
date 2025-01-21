@@ -110,7 +110,8 @@
       act:     "rcv",
       package: "",
       desc:    '''
-               This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+               The strap enable signal tells gpio to take a snapshot of the input pins.
+               The behaviour of this signal after that event will have no effect.
                ''',
       default: "1'b0"
     },
@@ -410,7 +411,16 @@
       ],
     },
     { name: "HW_STRAPS_DATA_IN",
-      desc: "GPIO Input data sampled as straps during cold boot read value",
+      desc: '''
+        GPIO input data that was sampled as straps at most once after the block
+        came out of reset.
+
+        The behavior of this register depends on the GpioAsHwStrapsEn parameter.
+        - If the parameter is false then the register reads as zero.
+        - If the parameter is true then GPIO input data is sampled after reset
+          on the first cycle where the strap_en_i input is high. The
+          sampled data is then stored in this register.
+      ''',
       swaccess: "ro",
       hwaccess: "hrw",
       tags: [// Value in the register is determined by GPIO pin values that are sampled

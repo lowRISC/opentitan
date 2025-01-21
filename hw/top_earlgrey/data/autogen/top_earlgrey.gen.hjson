@@ -1041,7 +1041,11 @@
       [
         {
           name: strap_en
-          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          desc:
+            '''
+            The strap enable signal tells gpio to take a snapshot of the input pins.
+            The behaviour of this signal after that event will have no effect.
+            '''
           struct: logic
           type: uni
           act: rcv
@@ -18254,7 +18258,11 @@
       }
       {
         name: strap_en
-        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        desc:
+          '''
+          The strap enable signal tells gpio to take a snapshot of the input pins.
+          The behaviour of this signal after that event will have no effect.
+          '''
         struct: logic
         type: uni
         act: rcv
