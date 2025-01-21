@@ -137,10 +137,16 @@ Condition 37 "2164803938" "(tl_i_int.a_valid & reqfifo_wready & ((~error_interna
 // u_sram_byte. But this makes req_o false and hence sram_ack false.
 Condition 43 "2041272341" "(sram_ack & ((~we_o))) 1 -1" (2 "10")
 
+// It is impossible to get !sramreqfifo_wready. The depth of sramreqfifo is 2. sramreqfifo_wready
+// can be false if the fifo is full. But this can't happen as we don't fill the fifo without
+// removing the last item that was pushed in the fifo.
+Condition 34 "1999653721" "((gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready)
+                            1 -1" (3 "110")
+
 // The case !empty when under_rst=1 is impossible as fifo clears on reset.
 INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
-Condition 7 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst))) 1 -1"
-                           (2 "10")
+Condition 7 "1709501387" "(((~gen_normal_fifo.empty)) & ((~gen_normal_fifo.under_rst)))
+                           1 -1" (2 "10")
 
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.
