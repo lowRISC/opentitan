@@ -39,7 +39,8 @@ module prim_gf_mult #(
                                      Width'(1'b1) << 7  |
                                      Width'(1'b1) << 4  |
                                      Width'(1'b1) << 3  |
-                                     Width'(1'b1) << 0
+                                     Width'(1'b1) << 0,
+  parameter bit OutputZeroUntilAck = 1'b0 // By default, Operand A is forwarded to the output.
 ) (
   input clk_i,
   input rst_ni,
@@ -78,6 +79,9 @@ module prim_gf_mult #(
 
   // intermediate prod held between loops
   logic [Width-1:0] prod_q, prod_d;
+
+  // intermediate output until the result becomes ready
+  logic [Width-1:0] out_int;
 
   // select current slice
   assign reformat_data = operand_b_i;
@@ -130,7 +134,12 @@ module prim_gf_mult #(
   assign prod_d = prod_q ^ gf_mult(matrix, op_i_slice);
 
   // The output is not toggled until it is ready
-  assign prod_o = ack_o ? prod_d : operand_a_i;
+  if (OutputZeroUntilAck) begin : gen_out_int_zero
+    assign out_int = '0;
+  end else begin : gen_out_int_op_a
+    assign out_int = operand_a_i;
+  end
+  assign prod_o = ack_o ? prod_d : out_int;
 
 
   // GF(2^Width) * x
