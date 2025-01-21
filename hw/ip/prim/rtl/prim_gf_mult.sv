@@ -46,6 +46,7 @@ module prim_gf_mult #(
   input req_i,
   input [Width-1:0] operand_a_i,
   input [Width-1:0] operand_b_i,
+  output logic ack_pre_o,
   output logic ack_o,
   output logic [Width-1:0] prod_o
 );
@@ -92,6 +93,9 @@ module prim_gf_mult #(
     assign vector = '0;
 
   end else begin : gen_decomposed
+
+    // the next cycle is going to be the last one
+    assign ack_pre_o = int'(cnt) == (Loops - 2);
 
     // multiply is done
     assign ack_o = int'(cnt) == (Loops - 1);
