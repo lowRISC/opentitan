@@ -646,7 +646,12 @@
       [
         {
           name: strap_en
-          desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+          desc:
+            '''
+            The strap enable signal is used to make the snapshot of the gpio_in.
+            It can trigger only one-time after the power-on reset.
+            The following strap_en driven after that, it will not be taken into consideration.
+            '''
           struct: logic
           type: uni
           act: rcv
@@ -18342,7 +18347,12 @@
       }
       {
         name: strap_en
-        desc: This signal is pulsed high by the power manager after reset in order to sample the HW straps.
+        desc:
+          '''
+          The strap enable signal is used to make the snapshot of the gpio_in.
+          It can trigger only one-time after the power-on reset.
+          The following strap_en driven after that, it will not be taken into consideration.
+          '''
         struct: logic
         type: uni
         act: rcv

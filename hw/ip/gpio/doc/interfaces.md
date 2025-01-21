@@ -15,11 +15,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct       | Type    | Act   |   Width | Description                                                                                   |
-|:---------------|:----------------------|:--------|:------|--------:|:----------------------------------------------------------------------------------------------|
-| strap_en       | logic                 | uni     | rcv   |       1 | This signal is pulsed high by the power manager after reset in order to sample the HW straps. |
-| sampled_straps | gpio_pkg::gpio_straps | uni     | req   |       1 | This vector contains the sampled strap values.                                                |
-| tl             | tlul_pkg::tl          | req_rsp | rsp   |       1 |                                                                                               |
+| Port Name      | Package::Struct       | Type    | Act   |   Width | Description                                                                                                                                                                                                    |
+|:---------------|:----------------------|:--------|:------|--------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| strap_en       | logic                 | uni     | rcv   |       1 | The strap enable signal is used to make the snapshot of the gpio_in. It can trigger only one-time after the power-on reset. The following strap_en driven after that, it will not be taken into consideration. |
+| sampled_straps | gpio_pkg::gpio_straps | uni     | req   |       1 | This vector contains the sampled strap values.                                                                                                                                                                 |
+| tl             | tlul_pkg::tl          | req_rsp | rsp   |       1 |                                                                                                                                                                                                                |
 
 ## Interrupts
 
