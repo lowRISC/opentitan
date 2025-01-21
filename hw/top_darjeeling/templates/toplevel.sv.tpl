@@ -329,7 +329,7 @@ module top_${top["name"]} #(
 ## Inter-module signal collection
 
 % for m in top["module"]:
-  % if m["type"] == "otp_ctrl":
+  % if m.get("template_type") == "otp_ctrl":
   // OTP HW_CFG Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
@@ -562,10 +562,10 @@ slice = f"{lo+w-1}:{lo}"
         % endif
       % endfor
     % endif
-    % if m["type"] == "rv_plic":
+    % if m.get("template_type") == "rv_plic":
       .intr_src_i (intr_vector),
     % endif
-    % if m["type"] == "pinmux":
+    % if m.get("template_type") == "pinmux":
 
       .periph_to_mio_i      (mio_d2p    ),
       .periph_to_mio_oe_i   (mio_en_d2p ),
@@ -586,7 +586,7 @@ slice = f"{lo+w-1}:{lo}"
       .dio_in_i,
 
     % endif
-    % if m["type"] == "alert_handler":
+    % if m.get("template_type") == "alert_handler":
       // alert signals
       .alert_rx_o  ( alert_rx ),
       .alert_tx_i  ( alert_tx ),

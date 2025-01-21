@@ -99,5 +99,11 @@
       type: "string"
       default: "lowrisc:constants:top_pkg"
     }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple flash_ctrl instances. Not yet implemented."
+      type: "string"
+      default: "flash_ctrl"
+    }
   ]
 }

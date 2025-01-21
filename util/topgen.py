@@ -258,6 +258,9 @@ def generate_plic(top: Dict[str, object], out_path: Path) -> None:
     topname = top["name"]
     params = {}
 
+    # Get the PLIC instance
+    plic = lib.find_module(top['module'], 'rv_plic')
+
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
     # So, total number of interrupts are the number of entries in the list + 1
@@ -267,6 +270,7 @@ def generate_plic(top: Dict[str, object], out_path: Path) -> None:
     # Target and priority: Currently fixed
     params["target"] = int(top["num_cores"], 0) if "num_cores" in top else 1
     params["prio"] = 3
+    params["module_instance_name"] = plic['type']
 
     ipgen_render("rv_plic", topname, params, out_path)
 
@@ -565,8 +569,11 @@ def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
     log.info('Generating ac_range_check with ipgen')
     topname = topcfg['name']
 
+    # Get the AC Range Check instance
+    ac_ranges = lib.find_module(topcfg['module'], 'ac_range_check')
     params = {
-        "num_ranges": topcfg['ac_range_check']['num_ranges']
+        "num_ranges": topcfg['ac_range_check']['num_ranges'],
+        "module_instance_name": ac_ranges['type']
     }
 
     ipgen_render("ac_range_check", topname, params, out_path)
@@ -583,29 +590,26 @@ def generate_racl(topcfg: Dict[str, object], out_path: Path) -> None:
     log.info('Generating RACL Control IP with ipgen')
     topname = topcfg['name']
 
-    for racl_group, policies in topcfg['racl']['policies'].items():
-        params = {
-            "nr_role_bits": 4,
-            "nr_ctn_uid_bits": 8,
-            "nr_policies": len(policies),
-            "policies": policies
-        }
+    # Get the AC Range Check instance
+    racl_ctrl = lib.find_module(topcfg['module'], 'racl_ctrl')
 
-        # If we have more RACL policy groups, uniquify the control IP
-        # if len(topcfg['racl']['policies']) > 1:
-        #     params['module_instance_name'] = f'racl_ctrl_{racl_group}'
+    if len(topcfg['racl']['policies']) == 1:
+        # If there is only one set of policies, take the first one
+        policies = list(topcfg['racl']['policies'].values())[0]
+    else:
+        # More than one policy, we need to find the matching set of policies
+        racl_group = racl_ctrl['racl_group']
+        policies = topcfg['racl']['policies'][racl_group]
 
-        # # Only render the RACL groups that are really instantiated in that top
-        # for m in topcfg['module']:
-        #     if m['name'] == params['module_instance_name']:
-        #         ipgen_render("racl_ctrl", topname, params, out_path)
-        #         break
-        # TODO(#25673): The obove code, would be the correct if ipgen correctly supports rendering
-        # multiple instances and allow topgen to instantiate right now. This support is not yet
-        # implemented properly. Therefore, simply render the first RACL group to the RACL control
-        # IP.
-        ipgen_render("racl_ctrl", topname, params, out_path)
-        break
+    params = {
+        "module_instance_name": racl_ctrl["type"],
+        "nr_role_bits": 4,
+        "nr_ctn_uid_bits": 5,
+        "nr_policies": len(policies),
+        "policies": policies
+    }
+
+    ipgen_render("racl_ctrl", topname, params, out_path)
 
 
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
@@ -846,17 +850,20 @@ def _process_top(
             # of as soon as we don't arbitrarily template IP description Hjson
             # files any more.
             if ip_name in ipgen_list and not ip_desc_file.is_file():
+                ipgen_module = lib.find_module_by_type(topcfg['module'], ip_name)
+                template_type = ipgen_module['template_type']
                 log.info(
                     f"To-be-generated Hjson {ip_desc_file} does not yet exist. "
                     "Falling back to the default configuration of template "
-                    f"{ip_name} for initial validation.")
+                    f"{template_type} for initial validation.")
 
                 log.info(f"Dealing with {ip_name} ipgen")
-                if ip_name == "otp_ctrl":
+                if template_type == "otp_ctrl":
                     params = {"otp_mmap": get_params_for_otp_ctrl(cfg_path)}
                 else:
                     params = {}
-                tpl_path = IP_TEMPLATES_PATH / ip_name
+                params['module_instance_name'] = ip_name
+                tpl_path = IP_TEMPLATES_PATH / template_type
                 ip_template = IpTemplate.from_template_path(tpl_path)
                 ip_config = IpConfig(ip_template.params,
                                      f"{top_name}_{ip_name}", params)
@@ -874,7 +881,7 @@ def _process_top(
                 name_to_hjson[ip_name] = ip_desc_file
                 ip_objs.append(IpBlock.from_path(str(ip_desc_file), []))
             else:
-                log.error(f"Descrition file not found: {ip_desc_file}")
+                log.error(f"Description file not found: {ip_desc_file}")
                 raise SystemExit(sys.exc_info()[1])
 
     except ValueError:

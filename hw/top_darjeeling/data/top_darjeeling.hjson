@@ -313,6 +313,7 @@
     },
     { name: "otp_ctrl",
       type: "otp_ctrl",
+      template_type: "otp_ctrl",
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
@@ -349,6 +350,7 @@
     },
     { name: "alert_handler",
       type: "alert_handler",
+      template_type: "alert_handler",
       clock_srcs: {clk_i: "io_div4", clk_edn_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc_io_div4", rst_edn_ni: "lc"},
@@ -368,6 +370,7 @@
     },
     { name: "pwrmgr_aon",
       type: "pwrmgr",
+      template_type: "pwrmgr",
       // TODO: RS, fix after pwrmgr fix is merged
       // param_decl: {
       //   PwrFsmWaitForExtRst: "1"
@@ -413,6 +416,7 @@
     },
     { name: "rstmgr_aon",
       type: "rstmgr",
+      template_type: "rstmgr",
       clock_srcs: {
         clk_i: {
           clock: "io_div4",
@@ -440,6 +444,7 @@
     },
     { name: "clkmgr_aon",
       type: "clkmgr",
+      template_type: "clkmgr",
       clock_srcs: {
         clk_i: "io_div4",
         clk_main_i: {
@@ -482,6 +487,7 @@
     },
     { name: "pinmux_aon",
       type: "pinmux",
+      template_type: "pinmux",
       clock_srcs: {clk_i: "io_div4", clk_aon_i: "aon"},
       clock_group: "powerup",
       reset_connections: {rst_ni: "lc_io_div4",
@@ -646,6 +652,7 @@
     },
     { name: "rv_plic",
       type: "rv_plic",
+      template_type: "rv_plic",
       clock_srcs: {clk_i: "main"},
       clock_group: "secure",
       reset_connections: {rst_ni: "lc"},

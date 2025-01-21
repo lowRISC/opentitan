@@ -81,5 +81,11 @@
       type: "string"
       default: "lowrisc:systems:scan_role_pkg"
     }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple pinmux instances. Not yet implemented."
+      type: "string"
+      default: "pinmux"
+    }
   ]
 }

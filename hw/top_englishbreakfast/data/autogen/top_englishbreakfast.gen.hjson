@@ -1282,6 +1282,7 @@
     {
       name: pwrmgr_aon
       type: pwrmgr
+      template_type: pwrmgr
       clock_srcs:
       {
         clk_i: io_div4
@@ -1609,6 +1610,7 @@
     {
       name: rstmgr_aon
       type: rstmgr
+      template_type: rstmgr
       clock_srcs:
       {
         clk_i: io_div4
@@ -1809,6 +1811,7 @@
     {
       name: clkmgr_aon
       type: clkmgr
+      template_type: clkmgr
       clock_srcs:
       {
         clk_i: io_div4
@@ -2135,6 +2138,7 @@
     {
       name: pinmux_aon
       type: pinmux
+      template_type: pinmux
       clock_srcs:
       {
         clk_i: io_div4
@@ -2771,6 +2775,7 @@
     {
       name: flash_ctrl
       type: flash_ctrl
+      template_type: flash_ctrl
       clock_srcs:
       {
         clk_i: main
@@ -3187,6 +3192,7 @@
     {
       name: rv_plic
       type: rv_plic
+      template_type: rv_plic
       clock_srcs:
       {
         clk_i: main
