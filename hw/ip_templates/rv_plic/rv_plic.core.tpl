@@ -11,6 +11,9 @@ filesets:
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_component:0.1")}
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
+    % if racl_support:
+      - lowrisc:systems:top_racl_pkg
+    % endif
     files:
       - rtl/${module_instance_name}_reg_pkg.sv
       - rtl/${module_instance_name}_reg_top.sv

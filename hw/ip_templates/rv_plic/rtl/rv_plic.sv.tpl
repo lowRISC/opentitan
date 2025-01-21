@@ -24,6 +24,15 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // fully implemented yet (this would require instantiating pulse syncs
   // and routing the source clocks / resets to the PLIC).
   parameter logic [NumSrc-1:0]    LevelEdgeTrig = '0, // 0: level, 1: edge
+% if racl_support:
+  parameter bit                   EnableRacl           = 1'b0,
+  parameter bit                   RaclErrorRsp         = 1'b1,
+<% 
+from math import ceil
+num_regs = src + ceil(src / 32) + target * ceil(src / 32) + 3 * target + 1
+%>\
+  parameter int unsigned          RaclPolicySelVec[${num_regs}] = '{${num_regs}{0}},
+% endif
   // derived parameter
   localparam int SRCW    = $clog2(NumSrc)
 ) (
@@ -33,6 +42,13 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // Bus Interface (device)
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
+% if racl_support:
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t  racl_policies_i,
+  output logic                            racl_error_o,
+  output top_racl_pkg::racl_error_log_t   racl_error_log_o,
+% endif
 
   // Interrupt Sources
   input  [NumSrc-1:0] intr_src_i,
@@ -229,7 +245,15 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   ////////////////////////
   //  Limitation of register tool prevents the module from having flexibility to parameters
   //  So, signals are manually tied at the top.
+% if racl_support:
+  ${module_instance_name}_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg (
+% else:
   ${module_instance_name}_reg_top u_reg (
+% endif
     .clk_i,
     .rst_ni,
 
@@ -238,6 +262,13 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 
     .reg2hw,
     .hw2reg,
+  % if racl_support:
+
+    // RACL interface
+    .racl_policies_i,
+    .racl_error_o,
+    .racl_error_log_o,
+  % endif
 
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(alerts[0])
