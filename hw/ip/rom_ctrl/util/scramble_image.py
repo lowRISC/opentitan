@@ -62,7 +62,7 @@ MEM_CTRL_PARAMS = {
         'sram': MemCtrlParams('sram_ctrl_main',
                               'ram', 'sram_ctrl',
                               'RndCnstSramKey', 128,
-                              'RndCnstramNonce', 128),
+                              'RndCnstSramNonce', 128),
     }
 }
 
