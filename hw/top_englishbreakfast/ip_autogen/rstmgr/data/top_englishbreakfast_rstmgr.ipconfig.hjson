@@ -72,6 +72,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_aon_n
+        shadow_path: rstmgr_aon_resets.rst_por_aon_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_aon_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_aon
         clock: aon
       }
       {
@@ -85,6 +88,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_n
+        shadow_path: rstmgr_aon_resets.rst_por_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_shadowed
+        lpg_path: rstmgr_aon_rst_en.por
         parent: por_aon
         clock: main
       }
@@ -99,6 +105,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_io_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io
         parent: por_aon
         clock: io
       }
@@ -113,6 +122,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_io_div2_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_div2_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_div2_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io_div2
         parent: por_aon
         clock: io_div2
       }
@@ -127,6 +139,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_por_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io_div4
         parent: por_aon
         clock: io_div4
       }
@@ -141,6 +156,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_usb_n
+        shadow_path: rstmgr_aon_resets.rst_por_usb_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_usb_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_usb
         parent: por_aon
         clock: usb
       }
@@ -155,6 +173,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_lc_n
+        shadow_path: rstmgr_aon_resets.rst_lc_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.lc_shadowed
+        lpg_path: rstmgr_aon_rst_en.lc
         parent: lc_src
         clock: main
       }
@@ -170,6 +191,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_lc_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_lc_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.lc_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.lc_io_div4
         parent: lc_src
         clock: io_div4
       }
@@ -184,6 +208,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_sys_n
+        shadow_path: rstmgr_aon_resets.rst_sys_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys
         parent: sys_src
         clock: main
       }
@@ -199,6 +226,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_sys_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_sys_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys_io_div4
         parent: sys_src
         clock: io_div4
       }
@@ -214,6 +244,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_sys_aon_n
+        shadow_path: rstmgr_aon_resets.rst_sys_aon_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_aon_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys_aon
         parent: sys_src
         clock: aon
       }
@@ -228,6 +261,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_spi_device_n
+        shadow_path: rstmgr_aon_resets.rst_spi_device_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.spi_device_shadowed
+        lpg_path: rstmgr_aon_rst_en.spi_device
         parent: sys_src
         clock: io_div2
       }
@@ -242,6 +278,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
+        shadow_path: rstmgr_aon_resets.rst_spi_host0_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.spi_host0_shadowed
+        lpg_path: rstmgr_aon_rst_en.spi_host0
         parent: sys_src
         clock: io
       }
@@ -256,6 +295,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_usb_n
+        shadow_path: rstmgr_aon_resets.rst_usb_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.usb_shadowed
+        lpg_path: rstmgr_aon_rst_en.usb
         parent: sys_src
         clock: usb
       }
@@ -273,6 +315,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_n
+        shadow_path: rstmgr_aon_resets.rst_por_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_shadowed
+        lpg_path: rstmgr_aon_rst_en.por
         parent: por_aon
         clock: main
       }
@@ -287,6 +332,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_io_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io
         parent: por_aon
         clock: io
       }
@@ -301,6 +349,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_io_div2_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_div2_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_div2_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io_div2
         parent: por_aon
         clock: io_div2
       }
@@ -315,6 +366,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_por_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_por_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_io_div4
         parent: por_aon
         clock: io_div4
       }
@@ -329,6 +383,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_por_usb_n
+        shadow_path: rstmgr_aon_resets.rst_por_usb_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.por_usb_shadowed
+        lpg_path: rstmgr_aon_rst_en.por_usb
         parent: por_aon
         clock: usb
       }
@@ -343,6 +400,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_lc_n
+        shadow_path: rstmgr_aon_resets.rst_lc_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.lc_shadowed
+        lpg_path: rstmgr_aon_rst_en.lc
         parent: lc_src
         clock: main
       }
@@ -358,6 +418,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_lc_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_lc_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.lc_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.lc_io_div4
         parent: lc_src
         clock: io_div4
       }
@@ -372,6 +435,9 @@
         shadowed: true
         sw: false
         path: rstmgr_aon_resets.rst_sys_n
+        shadow_path: rstmgr_aon_resets.rst_sys_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys
         parent: sys_src
         clock: main
       }
@@ -387,6 +453,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_sys_io_div4_n
+        shadow_path: rstmgr_aon_resets.rst_sys_io_div4_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_io_div4_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys_io_div4
         parent: sys_src
         clock: io_div4
       }
@@ -402,6 +471,9 @@
         shadowed: false
         sw: false
         path: rstmgr_aon_resets.rst_sys_aon_n
+        shadow_path: rstmgr_aon_resets.rst_sys_aon_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.sys_aon_shadowed
+        lpg_path: rstmgr_aon_rst_en.sys_aon
         parent: sys_src
         clock: aon
       }
@@ -416,6 +488,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_spi_device_n
+        shadow_path: rstmgr_aon_resets.rst_spi_device_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.spi_device_shadowed
+        lpg_path: rstmgr_aon_rst_en.spi_device
         parent: sys_src
         clock: io_div2
       }
@@ -430,6 +505,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_spi_host0_n
+        shadow_path: rstmgr_aon_resets.rst_spi_host0_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.spi_host0_shadowed
+        lpg_path: rstmgr_aon_rst_en.spi_host0
         parent: sys_src
         clock: io
       }
@@ -444,6 +522,9 @@
         shadowed: false
         sw: true
         path: rstmgr_aon_resets.rst_usb_n
+        shadow_path: rstmgr_aon_resets.rst_usb_shadowed_n
+        shadow_lpg_path: rstmgr_aon_rst_en.usb_shadowed
+        lpg_path: rstmgr_aon_rst_en.usb
         parent: sys_src
         clock: usb
       }
