@@ -163,7 +163,7 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
     neg = true;
     ch = (char)TRY(ujson_getc(uj));
   }
-  int64_t value = 0;
+  uint64_t value = 0;
 
   if (!(ch >= '0' && ch <= '9')) {
     return NOT_FOUND();
@@ -179,8 +179,17 @@ status_t ujson_parse_integer(ujson_t *uj, void *result, size_t rsz) {
   }
   if (status_ok(s))
     TRY(ujson_ungetc(uj, ch));
-  if (neg)
-    value = -value;
+
+  if (neg) {
+    if (value > (uint64_t)INT64_MAX + 1) {
+      return OUT_OF_RANGE();
+    }
+
+    int64_t neg_value = -1 * (int64_t)value;
+    memcpy(result, &neg_value, rsz);
+    return OK_STATUS();
+  }
+
   memcpy(result, &value, rsz);
   return OK_STATUS();
 }
