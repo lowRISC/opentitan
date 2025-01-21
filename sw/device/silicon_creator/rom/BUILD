@@ -174,6 +174,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:chip",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/drivers:alert",
         "//sw/device/silicon_creator/lib/drivers:ast",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
