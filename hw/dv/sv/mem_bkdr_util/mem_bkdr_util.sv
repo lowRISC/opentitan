@@ -29,6 +29,9 @@ class mem_bkdr_util extends uvm_object;
   // The width of the memory.
   protected uint32_t width;
 
+  // The number of subword entries in the whole memory
+  protected uint32_t num_entries;
+
   // Indicates the error detection scheme implemented for this memory.
   protected err_detection_e err_detection_scheme = ErrDetectionNone;
 
@@ -148,8 +151,10 @@ class mem_bkdr_util extends uvm_object;
 
       subwords_per_word = (width + bits_per_subword - 1) / bits_per_subword;
       this.data_width = subwords_per_word * non_ecc_bits_per_subword;
+      this.num_entries = depth * subwords_per_word;
     end else begin
       this.data_width = width;
+      this.num_entries = depth;
     end
 
     byte_width = `HAS_PARITY ? 9 : 8;
@@ -568,6 +573,20 @@ class mem_bkdr_util extends uvm_object;
     // The delay below avoids a race condition between this mem backdoor load and a subsequent
     // backdoor write to a particular location.
     #0;
+  endtask
+
+  // Backdoor load memory from file to a given address offset
+  // Allows to place multiple images at different offsets. Possible SRAM tiling is
+  // considered automatically when using this function
+  virtual task bkdr_load_from_file(string                             file,
+                                   logic [bus_params_pkg::BUS_AW-1:0] addr_offset,
+                                   logic [SRAM_KEY_WIDTH-1:0]         key,
+                                   logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
+    bit [38:0] preload_data[] = new [num_entries];
+    $readmemh(file, preload_data);
+    foreach(preload_data[i]) begin
+      sram_encrypt_write32_integ(addr_offset + i * 4, preload_data[i], key, nonce, 0);
+    end
   endtask
 
   // save mem contents to file
