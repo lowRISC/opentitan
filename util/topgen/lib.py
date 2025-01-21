@@ -1157,8 +1157,9 @@ class TopGen:
 
         # Uniquify the incoming alert module list
         incoming_module_names = []
-        for incoming_alerts in self.top['incoming_alert'].values():
-            incoming_module_names.extend({alert['module_name'] for alert in incoming_alerts})
+        for alert_group, incoming_alerts in self.top['incoming_alert'].items():
+            incoming_module_names.extend({f"incoming_{alert_group}_{alert['module_name']}"
+                                          for alert in incoming_alerts})
 
         for name in self.top["alert_module"] + incoming_module_names:
             source_name = sources.add_constant(Name.from_snake_case(name),
@@ -1171,24 +1172,29 @@ class TopGen:
             sources.add_last_constant("Final Alert peripheral")
 
         def add_alert(alert, name_prefix=None):
-            if "width" in alert and int(alert["width"]) != 1:
-                for i in range(int(alert["width"])):
-                    name = Name.from_snake_case(alert["name"]) + Name([str(i)])
+            alert_module = alert['module_name']
+
+            if 'width' in alert and int(alert['width']) != 1:
+                for i in range(int(alert['width'])):
+                    name = Name.from_snake_case(alert['name']) + Name([str(i)])
                     if name_prefix:
-                        name = name_prefix + name
-                    irq_id = alerts.add_constant(name,
-                                                 docstring="{} {}".format(
-                                                     alert["name"], i))
-                    source_name = source_name_map[alert["module_name"]]
-                    alert_mapping.add_entry(irq_id, source_name)
-                    self.device_alerts[alert["module_name"]].append(alert["name"] +
-                                                                    str(i))
+                        name = Name.from_snake_case(name_prefix) + name
+                        alert_module = f'{name_prefix}_{alert_module}'
+
+                    alert_id = alerts.add_constant(name, docstring=name.as_snake_case())
+                    source_name = source_name_map[alert_module]
+                    alert_mapping.add_entry(alert_id, source_name)
+                    self.device_alerts[alert_module].append(name.as_snake_case() + str(i))
             else:
-                name = Name.from_snake_case(alert["name"])
-                alert_id = alerts.add_constant(name, docstring=alert["name"])
-                source_name = source_name_map[alert["module_name"]]
+                name = Name.from_snake_case(alert['name'])
+                if name_prefix:
+                    name = Name.from_snake_case(name_prefix) + name
+                    alert_module = f'{name_prefix}_{alert_module}'
+
+                alert_id = alerts.add_constant(name, docstring=name.as_snake_case())
+                source_name = source_name_map[alert_module]
                 alert_mapping.add_entry(alert_id, source_name)
-                self.device_alerts[alert["module_name"]].append(alert["name"])
+                self.device_alerts[alert_module].append(name.as_snake_case())
 
         self.device_alerts = defaultdict(list)
         for alert in self.top["alert"]:
@@ -1196,7 +1202,7 @@ class TopGen:
 
         for alert_group, incoming_alerts in self.top['incoming_alert'].items():
             for alert in incoming_alerts:
-                add_alert(alert, Name(f'incoming_{alert_group}'))
+                add_alert(alert, f'incoming_{alert_group}')
 
         if isinstance(alerts, RustEnum):
             alerts.add_number_of_variants("The number of Alert ID.")
