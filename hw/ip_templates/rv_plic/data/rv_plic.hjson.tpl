@@ -38,7 +38,11 @@
   ],
   clocking: [{clock: "clk_i", reset: "rst_ni"}],
   bus_interfaces: [
+  % if racl_support:
+    { protocol: "tlul", direction: "device", racl_support: true }
+  % else:
     { protocol: "tlul", direction: "device" }
+  % endif
   ],
 
   param_list: [
@@ -96,6 +100,38 @@
       package: "",
       width:   "${target}"
     },
+  % if racl_support:
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "rcv",
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming RACL policy vector from a racl_ctrl instance.
+        The policy selection vector (parameter) selects the policy for each register.
+      '''
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "req",
+      width  : "1",
+      desc:    '''
+        RACL error indication signal.
+        If 1, the error log contains valid information.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error_log",
+      act:     "req",
+      width:   "1"
+      package: "top_racl_pkg",
+      desc:    '''
+        RACL error log information of this module.
+      '''
+    }
+  % endif
   ]
 
   countermeasures: [
