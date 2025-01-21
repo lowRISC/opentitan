@@ -159,6 +159,11 @@ TEST(UJson, ParseIntegerError) {
   ss.Reset("q");
   s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
   EXPECT_EQ(status_err(s), kNotFound);
+
+  // Negative number that can NOT be represented in a 64-bit signed integer.
+  ss.Reset("-9223372036854775809");
+  s = ujson_parse_integer(&uj, (void *)&t, sizeof(t));
+  EXPECT_EQ(status_err(s), kOutOfRange);
 }
 
 TEST(UJson, SerializeString) {
