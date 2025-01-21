@@ -199,8 +199,7 @@ rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
   // For X.509, we only check the serial_number but not public key contents.
   OT_DISCARD(pubkey);
 
-  size_t cert_size = cert_obj->cert_body_size;
-  return cert_x509_asn1_check_serial_number(cert_obj->cert_body_p, 0,
-                                            (uint8_t *)pubkey_id->digest,
-                                            cert_valid_output, &cert_size);
+  return cert_x509_asn1_check_serial_number(
+      cert_obj->cert_body_p, 0, (uint8_t *)pubkey_id->digest, cert_valid_output,
+      /*out_cert_size=*/NULL);
 }
