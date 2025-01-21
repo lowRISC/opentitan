@@ -468,6 +468,7 @@ opentitan_test(
         "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/impl:hash",
         "//sw/device/lib/crypto/impl:kdf",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:mac",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",

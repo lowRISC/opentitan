@@ -240,8 +240,12 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
  * pointers must be correctly configured and `len` must match the key length.
  *
  * The caller must ensure that `digest_len` words are allocated at the location
- * pointed to by `digest`. `cust_str_len` must not exceed `kKmacCustStrMaxSize`.
+ * pointed to by `digest`. `cust_str_len` must not exceed
+ * `kKmacCustStrMaxSize`. If `masked_digest` is true, the `digest` buffer must
+ * have enough space for 2x `digest_len` words.
  *
+ * @param key The KMAC key.
+ * @param masked_digest Whether to return the digest in concatenated shares.
  * @param message The input message.
  * @param message_len The input message length in bytes.
  * @param cust_str The customization string.
@@ -251,10 +255,10 @@ status_t kmac_cshake_256(const uint8_t *message, size_t message_len,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
-                       size_t message_len, const unsigned char *cust_str,
-                       size_t cust_str_len, uint32_t *digest,
-                       size_t digest_len);
+status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
+                       const uint8_t *message, size_t message_len,
+                       const unsigned char *cust_str, size_t cust_str_len,
+                       uint32_t *digest, size_t digest_len);
 
 /**
  * Compute KMAC-256 in one-shot.
@@ -269,8 +273,12 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
  * pointers must be correctly configured and `len` must match the key length.
  *
  * The caller must ensure that `digest_len` words are allocated at the location
- * pointed to by `digest`. `cust_str_len` must not exceed `kKmacCustStrMaxSize`.
+ * pointed to by `digest`. `cust_str_len` must not exceed
+ * `kKmacCustStrMaxSize`. If `masked_digest` is true, the `digest` buffer must
+ * have enough space for 2x `digest_len` words.
  *
+ * @param key The KMAC key.
+ * @param masked_digest Whether to return the digest in concatenated shares.
  * @param message The input message.
  * @param message_len The input message length in bytes.
  * @param cust_str The customization string.
@@ -280,10 +288,10 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, const uint8_t *message,
  * @return Error status.
  */
 OT_WARN_UNUSED_RESULT
-status_t kmac_kmac_256(kmac_blinded_key_t *key, const uint8_t *message,
-                       size_t message_len, const unsigned char *cust_str,
-                       size_t cust_str_len, uint32_t *digest,
-                       size_t digest_len);
+status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
+                       const uint8_t *message, size_t message_len,
+                       const unsigned char *cust_str, size_t cust_str_len,
+                       uint32_t *digest, size_t digest_len);
 
 #ifdef __cplusplus
 }
