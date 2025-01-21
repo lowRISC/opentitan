@@ -15,5 +15,11 @@
       type: "object"
       default: {}
     }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple otp_ctrl instances. Not yet implemented."
+      type: "string"
+      default: "otp_ctrl"
+    }
   ]
 }

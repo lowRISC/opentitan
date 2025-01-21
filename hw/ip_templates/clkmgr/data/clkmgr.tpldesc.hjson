@@ -104,5 +104,11 @@
       type: "string"
       default: "lowrisc:constants:top_pkg"
     }
+    {
+      name: "module_instance_name"
+      desc: "instance name in case there are multiple clkmgr instances. Not yet implemented."
+      type: "string"
+      default: "clkmgr"
+    }
   ]
 }
