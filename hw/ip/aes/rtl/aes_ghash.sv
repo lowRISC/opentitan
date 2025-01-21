@@ -344,21 +344,21 @@ module aes_ghash
   //////////////////////////
   // GF(2^128) Multiplier //
   //////////////////////////
-  logic [GCMDegree-1:0] gf_mult_op_a[NumShares];
+  logic [GCMDegree-1:0] gf_mult_op_b[NumShares];
   logic [GCMDegree-1:0] gf_mult_prod[NumShares];
 
   // The first multiplier has no muxes on the operand inputs.
-  assign gf_mult_op_a[0] = ghash_state_q[0];
+  assign gf_mult_op_b[0] = ghash_state_q[0];
 
   if (SecMasking) begin : gen_gf_mult_s1_mux
     // The second multiplier is used to multiply Share 0, Share 1 (first block only) of
     // the state, and also Share 1 of S with Share 1 of the hash subkey.
     always_comb begin : gf_mult1_in_mux
       unique case (gf_mult1_in_sel)
-        MULT_IN_STATE0:  gf_mult_op_a[1] = ghash_state_q[0];
-        MULT_IN_STATE1:  gf_mult_op_a[1] = ghash_state_q[1];
-        MULT_IN_S1:      gf_mult_op_a[1] = s_q;
-        default:         gf_mult_op_a[1] = ghash_state_q[0];
+        MULT_IN_STATE0:  gf_mult_op_b[1] = ghash_state_q[0];
+        MULT_IN_STATE1:  gf_mult_op_b[1] = ghash_state_q[1];
+        MULT_IN_S1:      gf_mult_op_b[1] = s_q;
+        default:         gf_mult_op_b[1] = ghash_state_q[0];
       endcase
     end
   end
@@ -375,8 +375,8 @@ module aes_ghash
       .req_i(gf_mult_req[s]),
       .ack_o(gf_mult_ack[s]),
 
-      .operand_a_i(aes_ghash_reverse_bit_order(gf_mult_op_a[s])),  // The A input is scanned.
-      .operand_b_i(aes_ghash_reverse_bit_order(hash_subkey_q[s])), // The B input is not scanned.
+      .operand_a_i(aes_ghash_reverse_bit_order(hash_subkey_q[s])), // The A input is not scanned.
+      .operand_b_i(aes_ghash_reverse_bit_order(gf_mult_op_b[s])),  // The B input is scanned.
 
       .prod_o(gf_mult_prod[s])
     );
