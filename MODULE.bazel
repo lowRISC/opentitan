@@ -29,14 +29,236 @@ git_override(
     remote = "https://github.com/lowRISC/misc-linters",
 )
 
-# Includes:
-include("//third_party/rust:rust.MODULE.bazel")
+################### originally from //third_party/rust:rust.MODULE.bazel
 
-include("//third_party/python:python.MODULE.bazel")
+# Dependencies:
+bazel_dep(name = "rules_rust", version = "0.56.0")
+bazel_dep(name = "rules_rust_bindgen", version = "0.56.0")
+bazel_dep(name = "toolchains_llvm", version = "1.1.2")
 
-include("//third_party/foreign_cc:foreign_cc.MODULE.bazel")
+# Overrides and patches:
+single_version_override(
+    module_name = "rules_rust",
+    patches = [
+        "//third_party/rust/patches:rules_rust.extra_rustc_toolchain_dirs.patch",
+    ],
+    patch_strip = 1,
+    version = "0.56.0",
+)
 
-include("//third_party/tock:tock.MODULE.bazel")
+single_version_override(
+    module_name = "rules_rust_bindgen",
+    patches = [
+        "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+    ],
+    patch_strip = 3,
+    version = "0.56.0",
+)
+
+# Rust toolchain:
+rust = use_extension("@rules_rust//rust:extensions.bzl", "rust")
+rust.repository_set(
+    name = "rust_host",
+    edition = "2021",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "@platforms//cpu:x86_64",
+        "@platforms//os:linux",
+    ],
+    target_triple = "x86_64-unknown-linux-gnu",
+    sha256s = {
+        "2024-11-22/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "02ef1e3ca25a03ccb9828a4e932b27f59a0625ed9772463d556539da38b7fd7b",
+        "2024-11-22/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "9f888010e1f01373d401c65ab0adf6f9fc76cbd0034f4346352c1bd211471339",
+        "2024-11-22/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "19cb321daca3e733a6b0baf06f70112ea037842e2c716d8eebb1791047fa1d88",
+        "2024-11-22/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "8f245a660be95f0b45fb174f0af5f0401a436bf67c332543dfd829db8b9d6f1f",
+        "2024-11-22/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "7e74dd19bb929dc7d53dacd595c3dff8d498a3f5485ea7ab057188c9d2f50224",
+    },
+    # Use nightly that Rust 1.84 branches from.
+    versions = ["nightly/2024-11-22"],
+)
+rust.repository_set(
+    name = "rust_tock",
+    edition = "2021",
+    exec_triple = "x86_64-unknown-linux-gnu",
+    target_compatible_with = [
+        "@platforms//cpu:riscv32",
+    ],
+    sha256s = {
+        "2023-07-30/rustc-nightly-x86_64-unknown-linux-gnu.tar.xz": "ecdee8821a57efbb699b7e3aa4cbfbd60b7970bce89a8cfb9bc7d65b9058ee42",
+        "2023-07-30/clippy-nightly-x86_64-unknown-linux-gnu.tar.xz": "76ee5aac81d1348bfebd3d94d5fb65c3f4ea0cf5fc2de834926f93772547380c",
+        "2023-07-30/cargo-nightly-x86_64-unknown-linux-gnu.tar.xz": "4ddb3ed2dd2acedf9097f4a1fe17b8cd571fdd7c9a49b1e31c228a284ec95049",
+        "2023-07-30/llvm-tools-nightly-x86_64-unknown-linux-gnu.tar.xz": "dc71b9ae6a4a4b9fa259724b29f4ad19467197ced89a8aad675f5af112c4fb77",
+        "2023-07-30/rust-std-nightly-riscv32imc-unknown-none-elf.tar.xz": "9790d50d4510443bbf4c13b68227a273345d28b84d29372bc5f5ea2d14d05f2d",
+        "2023-07-30/rust-std-nightly-x86_64-unknown-linux-gnu.tar.xz": "b5a589a243923c5fa2a1f08e7b902bb0a64ae08010067b9074501a6e1fb8b042",
+    },
+    target_triple = "riscv32imc-unknown-none-elf",
+    # For RISC-V toolchain, we currently don't support LLVM 16+ due to old binutils version.
+    # Rust updated its LLVM 17 on 2023-08-08.
+    versions = ["nightly/2023-07-30"],
+)
+use_repo(rust, "rust_toolchains")
+register_toolchains("@rust_toolchains//:all")
+
+# Rust crates:
+crate = use_extension("@rules_rust//crate_universe:extension.bzl", "crate")
+crate.from_cargo(
+    name = "crate_index",
+    cargo_lockfile = "//third_party/rust:Cargo.lock",
+    manifests = ["//third_party/rust:Cargo.toml"],
+    # By default rules_rust will analyze dependencies for all supported target triples, which is very slow.
+    # Restrict to ones that we're interested in. See https://github.com/bazelbuild/rules_rust/issues/2876
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+crate.annotation(
+    crate = "libudev-sys",
+    patch_args = ["-p1"],
+    patches = ["@lowrisc_opentitan//third_party/rust/patches:libudev-sys-0.1.4.patch"],
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    crate = "cryptoki",
+    patch_args = ["-p2"],
+    patches = [
+        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
+        "@lowrisc_opentitan//third_party/rust/patches:cryptoki-profile.patch",
+    ],
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    additive_build_file_content = """
+        filegroup(
+            name = "binding_srcs",
+            srcs = [
+                "src/lib.rs",
+                "src/bindings/x86_64-unknown-linux-gnu.rs",
+            ],
+        )
+    """,
+    crate = "cryptoki-sys",
+    extra_aliased_targets = {
+        "cryptoki-sys-binding-srcs": "binding_srcs",
+    },
+    repositories = ["crate_index"],
+)
+crate.annotation(
+    build_script_env = {
+        "PKG_CONFIG_PATH": "$(OPENSSL_PKG_CONFIG_PATH)",
+        "OPENSSL_STATIC": "1",
+    },
+    build_script_toolchains = ["@lowrisc_opentitan//third_party/rust:openssl_pkg_config_path"],
+    crate = "openssl-sys",
+    repositories = ["crate_index"],
+)
+use_repo(crate, "crate_index")
+
+# mdbook (separate because it has a lot of dependencies):
+crate.from_cargo(
+    name = "mdbook_index",
+    cargo_lockfile = "//third_party/mdbook:Cargo.lock",
+    manifests = ["//third_party/mdbook:Cargo.toml"],
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+crate.annotation(
+    crate = "mdbook",
+    gen_binaries = ["mdbook"],
+    patch_args = ["-p1"],
+    patches = ["@lowrisc_opentitan//third_party/mdbook/patches:mdbook-landing-page-links.patch"],
+    repositories = ["mdbook_index"],
+)
+use_repo(crate, "mdbook_index")
+
+# Rust bindgen toolchain:
+register_toolchains("//third_party/rust:bindgen_toolchain")
+
+# LLVM toolchain used by bindgen for `libclang` (not for device software):
+llvm = use_extension("@toolchains_llvm//toolchain/extensions:llvm.bzl", "llvm")
+llvm.toolchain(
+    name = "llvm_toolchain",
+    llvm_versions = {"": "10.0.0"},
+    sha256 = {"": "b25f592a0c00686f03e3b7db68ca6dc87418f681f4ead4df4745a01d9be63843"},
+    strip_prefix = {"": "clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04"},
+    urls = {"": ["https://github.com/llvm/llvm-project/releases/download/llvmorg-10.0.0/clang+llvm-10.0.0-x86_64-linux-gnu-ubuntu-18.04.tar.xz"]},
+)
+use_repo(llvm, "llvm_toolchain_llvm")
+
+################### originally from "//third_party/python:python.MODULE.bazel
+
+bazel_dep(name = "rules_python", version = "0.39.0")
+
+# Python toolchain:
+python = use_extension("@rules_python//python/extensions:python.bzl", "python")
+python.toolchain(
+    # Required because CI containers currently run as the `root` user.
+    # We lose caching of `.pyc` files as a result.
+    # See <https://github.com/bazelbuild/rules_python/pull/713>.
+    ignore_root_user_error = True,
+    is_default = True,
+    python_version = "3.9",
+)
+use_repo(python, "pythons_hub")
+register_toolchains("@pythons_hub//:all")
+
+# We occasionally access the toolchain repositories directly to use interpreters.
+use_repo(python, python3 = "python_3_9", python3_host = "python_3_9_host")
+
+# Pip dependencies:
+pip = use_extension("@rules_python//python/extensions:pip.bzl", "pip")
+pip.parse(
+    hub_name = "ot_python_deps",
+    python_version = "3.9",
+    requirements_lock = "//:python-requirements.txt",
+)
+use_repo(pip, "ot_python_deps")
+
+################### originally from //third_party/foreign_cc:foreign_cc.MODULE.bazel
+
+# Dependencies:
+bazel_dep(name = "rules_foreign_cc", version = "0.9.0")
+
+# Overrides and patches:
+single_version_override(
+    module_name = "rules_foreign_cc",
+    patches = [
+        # Patch to remove all build log file output when using rules_foreign_cc
+        # toolchains to ensure deterministic Bazel builds. See upstream issue:
+        # https://github.com/bazel-contrib/rules_foreign_cc/issues/1313
+        "//third_party/foreign_cc/patches:rules_foreign_cc.remove_log_output.patch",
+    ],
+    version = "0.9.0",
+)
+
+################### originally from //third_party/tock:tock.MODULE.bazel
+
+# Tock crates (must be separated to avoid them depending on `std`):
+crate.from_cargo(
+    name = "tock_index",
+    cargo_lockfile = "//third_party/tock:Cargo.lock",
+    manifests = ["//third_party/tock:Cargo.toml"],
+    supported_platform_triples = [
+        "riscv32imc-unknown-none-elf",
+    ],
+)
+use_repo(crate, "tock_index")
+
+# elf2tab crates (pulled directly using elf2tab's Cargo.toml/Cargo.lock files)
+crate.from_cargo(
+    name = "elf2tab_index",
+    cargo_lockfile = "@elf2tab//:Cargo.lock",
+    manifests = ["@elf2tab//:Cargo.toml"],
+    supported_platform_triples = [
+        "x86_64-unknown-linux-gnu",
+    ],
+)
+use_repo(crate, "elf2tab_index")
+
+tock = use_extension("//third_party/tock:extensions.bzl", "tock")
+use_repo(tock, "elf2tab", "libtock", "tock")
+
+###################
 
 # Repository rules:
 bitstreams_repo = use_repo_rule("//rules:bitstreams.bzl", "bitstreams_repo")
