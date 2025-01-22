@@ -80,6 +80,16 @@ filegroup(
     srcs = ["app_dev_ecdsa_p256.pub.der"],
 )
 
+filegroup(
+    name = "app_spx_prod",
+    srcs = ["app_prod_spx.pem"],
+)
+
+filegroup(
+    name = "app_spx_prod_pub",
+    srcs = ["app_prod_spx.pub.pem"],
+)
+
 key_ecdsa(
     name = "app_prod_ecdsa",
     method = "local",
