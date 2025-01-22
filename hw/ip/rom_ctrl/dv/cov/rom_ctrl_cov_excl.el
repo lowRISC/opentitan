@@ -106,7 +106,7 @@ Condition 24 "1059982851" "(vld_rd_rsp & ((~d_error))) 1 -1" (2 "10")
 // result, after a request is be pushed into u_reqfifo, it is always popped again on the next cycle.
 // As a result, if reqfifo_rvalid is true then rspfifo_wvalid will also be true and (because
 // u_rspfifo is in pass-through mode) rspfifo_rvalid will be true.
-Condition 34 "201396280" "(d_valid && d_error) 1 -1" (1 "01")
+Condition 33 "2509708677" "(d_valid && d_error) 1 -1" (1 "01")
 
 // It is impossible to see rvalid_i && !reqfifo_rvalid. If rvalid_i is true, the ROM is responding
 // to a request that was sent on the previous cycle. Since it always responds in exactly one cycle,
@@ -128,7 +128,7 @@ Condition 43 "721931741" "(rvalid_i & reqfifo_rvalid) 1 -1" (2 "10")
 // when a_valid appears as false to u_err will automatically raise err_o. Then err_o leads to
 // error_internal. Thus, we can't expect !tl_i_int.a_valid & !error_internal and for the reasons
 // above, the conditional statement is unable to cover case 011.
-Condition 37 "2164803938" "(tl_i_int.a_valid & reqfifo_wready & ((~error_internal))) 1 -1" (1 "011")
+Condition 36 "413025503" "(tl_i_int.a_valid & reqfifo_wready & ((~error_internal))) 1 -1" (1 "011")
 
 // It is impossible to get sram_ack & we_o. we_o becomes true when there is an a_valid and a_opcode
 // as Put. But when a_opcode is a Put, wr_vld_error in the adapter becomes true as ErrOnWrite is
@@ -140,6 +140,8 @@ Condition 43 "2041272341" "(sram_ack & ((~we_o))) 1 -1" (2 "10")
 // It is impossible to get !sramreqfifo_wready. The depth of sramreqfifo is 2. sramreqfifo_wready
 // can be false if the fifo is full. But this can't happen as we don't fill the fifo without
 // removing the last item that was pushed in the fifo.
+CHECKSUM: "2313518930 2439451700"
+INSTANCE: tb.dut.u_tl_adapter_rom
 Condition 34 "1999653721" "((gnt_i | missed_err_gnt_q) & reqfifo_wready & sramreqfifo_wready)
                             1 -1" (3 "110")
 
