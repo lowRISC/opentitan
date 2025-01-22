@@ -89,7 +89,7 @@ fpga_cw310(
         "--logging=info",
         "--interface={interface}",
     ] + select({
-        "@//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
+        "//ci:lowrisc_fpga_cw310": ["--uarts=/dev/ttyACM_CW310_1,/dev/ttyACM_CW310_0"],
         "//conditions:default": [],
     }),
     base = ":fpga_cw310",
@@ -298,7 +298,7 @@ fpga_cw340(
         "--logging=info",
         "--interface={interface}",
     ] + select({
-        "@//ci:lowrisc_fpga_cw340": ["--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0"],
+        "//ci:lowrisc_fpga_cw340": ["--uarts=/dev/ttyACM_CW340_1,/dev/ttyACM_CW340_0"],
         "//conditions:default": [],
     }),
     design = "earlgrey",
