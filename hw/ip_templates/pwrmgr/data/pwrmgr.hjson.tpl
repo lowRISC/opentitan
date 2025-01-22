@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 <%
  # Additional reset
- int_reset_reqs = rst_reqs["int"]
- debug_reset_reqs = rst_reqs["debug"]
+ int_reset_reqs = rst_reqs.get("int", [])
+ debug_reset_reqs = rst_reqs.get("debug", [])
 %>\
 {
   name:               "pwrmgr",
