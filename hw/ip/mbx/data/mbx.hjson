@@ -21,7 +21,7 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "core" }
     { protocol: "tlul", direction: "host",   name: "sram" }
-    { protocol: "tlul", direction: "device", name: "soc" }
+    { protocol: "tlul", direction: "device", name: "soc", racl_support: true }
   ]
   inter_signal_list: [
     { struct:  "logic",
@@ -51,6 +51,36 @@
       act:     "req",
       package: "",
       default: "1'b0"
+    }
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "rcv",
+      package: "top_racl_pkg",
+      desc:    '''
+        Incoming RACL policy vector from a racl_ctrl instance.
+        The policy selection vector (parameter) selects the policy for each register.
+      '''
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "req",
+      width  : "1",
+      desc:    '''
+        RACL error indication signal.
+        If 1, the error log contains valid information.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error_log",
+      act:     "req",
+      width:   "1"
+      package: "top_racl_pkg",
+      desc:    '''
+        RACL error log information of this module.
+      '''
     }
   ]
   interrupt_list: [

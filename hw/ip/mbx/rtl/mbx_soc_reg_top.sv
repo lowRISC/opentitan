@@ -6,7 +6,12 @@
 
 `include "prim_assert.sv"
 
-module mbx_soc_reg_top (
+module mbx_soc_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter int unsigned RaclPolicySelVec[4] = '{4{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -19,6 +24,11 @@ module mbx_soc_reg_top (
   // To HW
   output mbx_reg_pkg::mbx_soc_reg2hw_t reg2hw, // Write
   input  mbx_reg_pkg::mbx_soc_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -162,7 +172,8 @@ module mbx_soc_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o))
   );
 
   // cdc oversampling signals
@@ -460,28 +471,78 @@ module mbx_soc_reg_top (
 
 
   logic [3:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [3:0] racl_addr_hit_read;
+  logic [3:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == MBX_SOC_CONTROL_OFFSET);
     addr_hit[1] = (reg_addr == MBX_SOC_STATUS_OFFSET);
     addr_hit[2] = (reg_addr == MBX_SOC_DOE_INTR_MSG_ADDR_OFFSET);
     addr_hit[3] = (reg_addr == MBX_SOC_DOE_INTR_MSG_DATA_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 4; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit but failed the RACL check
+  assign racl_error_o = tl_i.a_valid &
+                        (|addr_hit) & ~(|(addr_hit & (racl_addr_hit_read | racl_addr_hit_write)));
+  assign racl_error_log_o.racl_role  = racl_role;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_log_o.ctn_uid     = '0;
+    assign racl_error_log_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(MBX_SOC_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(MBX_SOC_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(MBX_SOC_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(MBX_SOC_PERMIT[3] & ~reg_be)))));
+              ((racl_addr_hit_write[0] & (|(MBX_SOC_PERMIT[0] & ~reg_be))) |
+               (racl_addr_hit_write[1] & (|(MBX_SOC_PERMIT[1] & ~reg_be))) |
+               (racl_addr_hit_write[2] & (|(MBX_SOC_PERMIT[2] & ~reg_be))) |
+               (racl_addr_hit_write[3] & (|(MBX_SOC_PERMIT[3] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign soc_control_re = addr_hit[0] & reg_re & !reg_error;
-  assign soc_control_we = addr_hit[0] & reg_we & !reg_error;
+  assign soc_control_re = racl_addr_hit_write[0] & reg_re & !reg_error;
+  assign soc_control_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign soc_control_abort_wd = reg_wdata[0];
 
@@ -490,13 +551,13 @@ module mbx_soc_reg_top (
   assign soc_control_doe_async_msg_en_wd = reg_wdata[3];
 
   assign soc_control_go_wd = reg_wdata[31];
-  assign soc_status_we = addr_hit[1] & reg_we & !reg_error;
+  assign soc_status_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign soc_status_doe_intr_status_wd = reg_wdata[1];
-  assign soc_doe_intr_msg_addr_we = addr_hit[2] & reg_we & !reg_error;
+  assign soc_doe_intr_msg_addr_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign soc_doe_intr_msg_addr_wd = reg_wdata[31:0];
-  assign soc_doe_intr_msg_data_we = addr_hit[3] & reg_we & !reg_error;
+  assign soc_doe_intr_msg_data_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign soc_doe_intr_msg_data_wd = reg_wdata[31:0];
 
@@ -513,14 +574,14 @@ module mbx_soc_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = soc_control_doe_intr_en_qs;
         reg_rdata_next[3] = soc_control_doe_async_msg_en_qs;
         reg_rdata_next[31] = '0;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = soc_status_busy_qs;
         reg_rdata_next[1] = soc_status_doe_intr_status_qs;
         reg_rdata_next[2] = soc_status_error_qs;
@@ -528,11 +589,11 @@ module mbx_soc_reg_top (
         reg_rdata_next[31] = soc_status_ready_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[31:0] = soc_doe_intr_msg_addr_qs;
       end
 
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next[31:0] = soc_doe_intr_msg_data_qs;
       end
 
@@ -557,6 +618,8 @@ module mbx_soc_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
