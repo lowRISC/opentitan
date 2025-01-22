@@ -96,7 +96,7 @@ def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
         # check if rsp has data
         if rsp_key in connect[req_key]:
             return
-        req_key.append(rsp_key)
+        connect[req_key].append(rsp_key)
         return
 
     # req_key is not in connect:
@@ -105,7 +105,7 @@ def add_intermodule_connection(obj: OrderedDict, req_m: str, req_s: str,
         # check if rsp has data
         if req_key in connect[rsp_key]:
             return
-        rsp_key.append(req_key)
+        connect[rsp_key].append(req_key)
         return
 
     # Add new key and connect
