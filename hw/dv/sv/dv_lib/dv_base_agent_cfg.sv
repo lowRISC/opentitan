@@ -9,7 +9,7 @@ class dv_base_agent_cfg extends uvm_object;
   bit         en_cov    = 1'b1;   // enable coverage
   if_mode_e   if_mode;            // interface mode - Host or Device
 
-  // indicate to create and connet driver to sequencer or not
+  // indicate to create and connect driver to sequencer or not
   // if this is a high-level agent, we may just call lower-level agent to send item in seq, then
   // driver isn't needed
   bit         has_driver = 1'b1;

@@ -396,7 +396,7 @@ module prim_generic_flash_bank #(
   logic [DataWidth-1:0] rd_data_main, rd_data_info;
   logic [InfoTypes-1:0][DataWidth-1:0] rd_nom_data_info;
 
-  // data memory is requested whenver it's a transaction targetted at the data partition
+  // data memory is requested whenever it's a transaction targetted at the data partition
   // OR if it's a bank erase
   logic data_mem_req;
   assign data_mem_req = mem_req &
