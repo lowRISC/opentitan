@@ -2,6 +2,11 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+<%
+  peri_reqs = reqs.get("peripheral", [])
+  int_reqs = reqs.get("int", [])
+  debug_reqs = reqs.get("debug", [])
+%>\
 
 package rstmgr_pkg;
 
@@ -67,8 +72,8 @@ package rstmgr_pkg;
   // Enumeration for pwrmgr hw reset inputs
   localparam int ResetWidths = $clog2(rstmgr_reg_pkg::NumTotalResets);
   typedef enum logic [ResetWidths-1:0] {
-    ReqPeriResetIdx[0:${len(reqs["peripheral"])-1}],
-    % for req in (reqs["int"] + reqs["debug"]):
+    ReqPeriResetIdx[0:${len(peri_reqs)-1}],
+    % for req in (int_reqs + debug_reqs):
     ${f"Req{req['name']}ResetIdx"}${"" if loop.last else ","}
     % endfor
   } reset_req_idx_e;
@@ -78,8 +83,8 @@ package rstmgr_pkg;
     InfoPorIdx,
     InfoLowPowerExitIdx,
     InfoSwResetIdx,
-    InfoPeriResetIdx[0:${len(reqs["peripheral"])-1}],
-    % for req in (reqs["int"] + reqs["debug"]):
+    InfoPeriResetIdx[0:${len(peri_reqs)-1}],
+    % for req in (int_reqs + debug_reqs):
     ${f"Info{req['name']}ResetIdx"}${"" if loop.last else ","}
     % endfor
   } reset_info_idx_e;
