@@ -275,13 +275,13 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
     if spx_key:
         if spx_domain.lower() == "prehashedsha256":
             spxmsg = digest
+            rev = spx_key.config.get("byte-reversal-bug", "false")
+            fmt = "Sha256HashReversed" if rev == "true" else "Sha256Hash"
             signing_directives.append(struct(
                 command = "spx-sign",
                 id = None,
                 label = spx_key.name,
-                # TODO(#25870): Set `little_endian` appropriately.
-                little_endian = True,
-                format = "Sha256Hash",
+                format = fmt,
                 domain = spx_domain,
                 output = "{}.spx_sig".format(basename),
                 input = "{}.digest".format(basename),
@@ -306,7 +306,6 @@ def _presigning_artifacts(ctx, opentitantool, src, manifest, ecdsa_key, rsa_key,
                 command = "spx-sign",
                 id = None,
                 label = spx_key.name,
-                little_endian = False,
                 format = "PlainText",
                 domain = spx_domain,
                 output = "{}.spx_sig".format(basename),
@@ -375,15 +374,7 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
             fail("Expected either KeyInfo or KeySetInfo; got neither")
         spx_sig = ctx.actions.declare_file(paths.replace_extension(spxmsg.basename, ".spx_sig"))
         domain = spx_key.config.get("domain", "Pure")
-
-        # TODO(#25870): Currently, opentitantool emits SHA256 digests in byte-reversed order,
-        # so for proper creation of PrehashedSha256 signatures, we need to reverse the input.
-        # The ROM erroneously uses the reversed representation, so when "byte-reversal-bug" is
-        # true, we should not reverse the bytes (since they're already reversed).
-        # This logic will change when we fix opentitantool to emit in the correct order.
-        rev = "true" if domain.lower() == "prehashedsha256" else "false"
-        if spx_key.config.get("byte-reversal-bug") == "true":
-            rev = "false"
+        rev = spx_key.config.get("byte-reversal-bug", "false")
         ctx.actions.run(
             outputs = [spx_sig],
             inputs = [spxmsg, private_key],
@@ -392,7 +383,7 @@ def _local_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key = 
                 "--quiet",
                 "spx",
                 "sign",
-                "--input-bytes-reversed={}".format(rev),
+                "--spx-hash-reversal-bug={}".format(rev),
                 "--domain={}".format(domain),
                 "--output={}".format(spx_sig.path),
                 spxmsg.path,
@@ -469,10 +460,11 @@ def _hsmtool_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key 
     if spxmsg and spx_key:
         domain = spx_key.config.get("domain", "Pure")
         if domain.lower() == "prehashedsha256":
+            rev = spx_key.config.get("byte-reversal-bug", "false")
+            fmt = "sha256-hash-reversed" if rev == "true" else "sha256-hash"
             args = [
-                # TODO(#25870): Set `little-endian` appropriately.
                 "--little-endian",
-                "--format=sha256-hash",
+                "--format={}".format(fmt),
                 "--domain={}".format(domain),
             ]
         else:
