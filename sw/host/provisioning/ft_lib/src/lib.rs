@@ -110,6 +110,12 @@ pub fn run_sram_ft_individualize(
         _ => panic!("SRAM program load/execution failed: {:?}.", result),
     }
 
+    // Switch TAP straps to LC TAP (without resetting) to aid debugging if there are OTP issues.
+    // TAP straps are continuously sampled in TEST_UNLOCKED* LC states.
+    jtag.disconnect()?;
+    transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
+    transport.pin_strapping("PINMUX_TAP_LC")?.apply()?;
+
     // Wait for SRAM program to complete execution.
     let _ = UartConsole::wait_for(
         spi_console,
@@ -128,14 +134,8 @@ pub fn run_sram_ft_individualize(
         timeout,
     )?;
     match console_text[0].as_str() {
-        "FT SRAM provisioning done." => {
-            jtag.disconnect()?;
-            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
-            Ok(())
-        }
+        "FT SRAM provisioning done." => Ok(()),
         "Processing Alert NMI 10 ..." => {
-            transport.pin_strapping("PINMUX_TAP_RISCV")?.remove()?;
-            jtag.disconnect()?;
             log::info!(
                 "10 NMIs detected, waiting {:?} before capturing crashdump information",
                 Duration::from_millis(FT_NMI_CRASHDUMP_DELAY_MILLIS)
