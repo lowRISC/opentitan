@@ -12,6 +12,9 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:subreg
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_pkg")}
+    % if racl_support:
+      - lowrisc:systems:top_racl_pkg
+    % endif
     files:
       - rtl/${module_instance_name}_reg_top.sv
     file_type: systemVerilogSource

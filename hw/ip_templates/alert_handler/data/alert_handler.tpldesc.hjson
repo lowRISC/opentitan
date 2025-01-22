@@ -63,5 +63,11 @@
       type: "string"
       default: "alert_handler"
     }
+    {
+      name: "racl_support"
+      desc: "Enable RACL support"
+      type: "bool"
+      default: false
+    }
   ]
 }

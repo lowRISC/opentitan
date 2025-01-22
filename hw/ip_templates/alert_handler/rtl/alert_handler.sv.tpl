@@ -11,6 +11,14 @@ module ${module_instance_name}
   import prim_alert_pkg::*;
   import prim_esc_pkg::*;
 #(
+% if racl_support:
+  parameter bit                   EnableRacl           = 1'b0,
+  parameter bit                   RaclErrorRsp         = 1'b1,
+<% 
+num_regs = 6 + 4 * n_alerts + 4 * 7 + n_classes * 14
+%>\
+  parameter int unsigned          RaclPolicySelVec[${num_regs}] = '{${num_regs}{0}},
+% endif
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault
@@ -41,6 +49,12 @@ module ${module_instance_name}
   // SEC_CM: ALERT.INTERSIG.DIFF
   input  prim_alert_pkg::alert_tx_t [NAlerts-1:0] alert_tx_i,
   output prim_alert_pkg::alert_rx_t [NAlerts-1:0] alert_rx_o,
+% if racl_support:
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t          racl_policies_i,
+  output logic                                    racl_error_o,
+  output top_racl_pkg::racl_error_log_t           racl_error_log_o,
+% endif
   // Escalation outputs
   // SEC_CM: ESC.INTERSIG.DIFF
   input  prim_esc_pkg::esc_rx_t [N_ESC_SEV-1:0]   esc_rx_i,
@@ -67,7 +81,15 @@ module ${module_instance_name}
   // SEC_CM: ALERT.CONFIG.REGWEN
   // SEC_CM: ALERT_LOC.CONFIG.REGWEN
   // SEC_CM: CLASS.CONFIG.REGWEN
+% if racl_support:
+  ${module_instance_name}_reg_wrap #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg_wrap (
+% else:
   ${module_instance_name}_reg_wrap u_reg_wrap (
+% endif
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
@@ -78,6 +100,11 @@ module ${module_instance_name}
     .crashdump_o,
     .hw2reg_wrap,
     .reg2hw_wrap,
+  % if racl_support:
+    .racl_policies_i,
+    .racl_error_o,
+    .racl_error_log_o,
+  % endif
     // SEC_CM: BUS.INTEGRITY
     .fatal_integ_alert_o(loc_alert_trig[4])
   );

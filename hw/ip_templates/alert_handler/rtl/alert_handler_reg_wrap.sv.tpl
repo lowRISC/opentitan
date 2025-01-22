@@ -4,7 +4,20 @@
 //
 // Breakout / remapping wrapper for register file.
 
+% if racl_support:
+module ${module_instance_name}_reg_wrap 
+  import ${module_instance_name}_pkg::*; 
+#(
+  parameter bit          EnableRacl = 1'b0,
+  parameter bit          RaclErrorRsp = 'b1,
+<% 
+num_regs = 6 + 4 * n_alerts + 4 * 7 + n_classes * 14
+%>\
+  parameter int unsigned RaclPolicySelVec[${num_regs}] = '{${num_regs}{0}}
+) (
+% else:
 module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
+% endif
   input                                   clk_i,
   input                                   rst_ni,
   input                                   rst_shadowed_ni,
@@ -20,6 +33,12 @@ module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
   input  hw2reg_wrap_t         hw2reg_wrap,
   // reg2hw
   output reg2hw_wrap_t         reg2hw_wrap,
+% if racl_support:
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
+% endif
   // bus integrity alert
   output logic                 fatal_integ_alert_o
 );
@@ -33,7 +52,15 @@ module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
   ${module_instance_name}_reg_pkg::${module_instance_name}_reg2hw_t reg2hw;
   ${module_instance_name}_reg_pkg::${module_instance_name}_hw2reg_t hw2reg;
 
+% if racl_support:
+  ${module_instance_name}_reg_top #(
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelVec)
+  ) u_reg (
+% else:
   ${module_instance_name}_reg_top u_reg (
+% endif
     .clk_i,
     .rst_ni,
     .rst_shadowed_ni,
@@ -41,6 +68,11 @@ module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (
     .tl_o,
     .reg2hw,
     .hw2reg,
+  % if racl_support:
+    .racl_policies_i,
+    .racl_error_o,
+    .racl_error_log_o,
+  % endif
     .shadowed_storage_err_o(reg2hw_wrap.shadowed_err_storage),
     .shadowed_update_err_o(reg2hw_wrap.shadowed_err_update),
     .intg_err_o(fatal_integ_alert_o)
