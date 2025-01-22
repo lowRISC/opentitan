@@ -167,8 +167,8 @@
   "moduleExtensions": {
     "//rules:extensions.bzl%hooks": {
       "general": {
-        "bzlTransitiveDigest": "JtlGEaCpHKgl5jYHSsQSQqj/D9+BZp4eX10bMAWEdes=",
-        "usagesDigest": "dWypNPjkieDpBn42ZggScwVN/Vkqax/a1rWLWxbLCXM=",
+        "bzlTransitiveDigest": "5us5FmZHo6R3Nmy5Q2f+GQ8CiV6RxwyY1eiVFHxk+r4=",
+        "usagesDigest": "fVMLjSGwgHUujBxC+fs03K5K7OfTaTFZjTNRC7D5DMc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
@@ -178,21 +178,21 @@
         },
         "generatedRepoSpecs": {
           "manufacturer_test_hooks": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:local.bzl%local_repository",
+            "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
             "attributes": {
-              "path": "sw/device/tests/closed_source"
+              "src": "@@//:sw/device/tests/closed_source"
             }
           },
           "secure_manufacturer_test_hooks": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:local.bzl%local_repository",
+            "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
             "attributes": {
-              "path": "sw/device/tests/closed_source"
+              "src": "@@//:sw/device/tests/closed_source"
             }
           },
           "provisioning_exts": {
-            "repoRuleId": "@@bazel_tools//tools/build_defs/repo:local.bzl%local_repository",
+            "repoRuleId": "@@//rules:extensions.bzl%copy_from_label",
             "attributes": {
-              "path": "sw/device/silicon_creator/manuf/extensions"
+              "src": "@@//:sw/device/silicon_creator/manuf/extensions"
             }
           }
         },
