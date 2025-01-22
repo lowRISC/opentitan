@@ -1,6 +1,6 @@
 # Docker Container
 
-Docker container based on Ubuntu 20.04 LTS containing various hardware and
+Docker container based on Ubuntu 22.04 LTS containing various hardware and
 software development tools for OpenTitan, as listed in the
 [OpenTitan documentation](../../doc/getting_started/README.md).
 
