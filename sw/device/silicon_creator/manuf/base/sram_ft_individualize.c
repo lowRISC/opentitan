@@ -207,6 +207,15 @@ static status_t provision(ujson_t *uj) {
     LOG_INFO("External clock enabled.");
   }
 
+  // Turn off OTP runtime checks.
+  TRY(dif_otp_ctrl_configure(
+      &otp_ctrl,
+      (dif_otp_ctrl_config_t){
+          .check_timeout = 0,            // Disable the check timeout mechanism.
+          .integrity_period_mask = 0,    // Disable integrity checks.
+          .consistency_period_mask = 0,  // Disable consistency checks.
+      }));
+
   // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
