@@ -614,11 +614,11 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
         policies = topcfg['racl']['policies'][racl_group]
 
     params = {
-        "module_instance_name": racl_ctrl["type"],
-        "nr_role_bits": 4,
-        "nr_ctn_uid_bits": 5,
-        "nr_policies": len(policies),
-        "policies": policies
+        'module_instance_name': racl_ctrl['type'],
+        'nr_role_bits': topcfg['racl']['nr_role_bits'],
+        'nr_ctn_uid_bits': topcfg['racl']['nr_ctn_uid_bits'],
+        'nr_policies': len(policies),
+        'policies': policies
     }
 
     ipgen_render("racl_ctrl", topname, params, out_path)

@@ -16,6 +16,10 @@ racl_required = {
         'pb',
         'When true, return TLUL error on denied RACL access, otherwise not'
     ],
+    'role_bit_lsb': ['d', 'RACL role bit LSB within the TLUL user bit vector'],
+    'role_bit_msb': ['d', 'RACL role bit MSB within the TLUL user bit vector'],
+    'ctn_uid_bit_lsb': ['d', 'CTN UID bit LSB within the TLUL user bit vector'],
+    'ctn_uid_bit_msb': ['d', 'CTN UID bit MSB within the TLUL user bit vector'],
     'roles': ['l', 'List, specifying all RACL roles'],
     'policies': ['g', 'Dict, specifying the policies of all RACL groups']
 }
@@ -23,6 +27,12 @@ racl_required = {
 # Default configuration to render the RACL package for systems that don't use RACL but need the
 # type definitions
 DEFAULT_RACL_CONFIG = {
+    'role_bit_lsb': 0,
+    'role_bit_msb': 0,
+    'ctn_uid_bit_lsb': 0,
+    'ctn_uid_bit_msb': 0,
+    'nr_role_bits': 1,
+    'nr_ctn_uid_bits': 1,
     'nr_policies': 1,
     'policies': {},
     'rot_private_policy_rd': 0,
@@ -48,6 +58,15 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     error = check_keys(racl_config, racl_required, [], [], 'RACL Config')
     if error:
         raise SystemExit(f"Error occurred while validating {config_path}")
+
+    if racl_config['role_bit_lsb'] > racl_config['role_bit_msb']:
+        raise ValueError('Invalid RACL role bit configuration LSB > MSB')
+    if racl_config['ctn_uid_bit_lsb'] > racl_config['ctn_uid_bit_msb']:
+        raise ValueError('Invalid RACL CTN UID bit configuration LSB > MSB')
+
+    racl_config['nr_role_bits'] = racl_config['role_bit_msb'] - racl_config['role_bit_lsb'] + 1
+    racl_config['nr_ctn_uid_bits'] = racl_config['ctn_uid_bit_msb'] - \
+        racl_config['ctn_uid_bit_lsb'] + 1
 
     # Determine the maximum number of policies over all RACL groups for RTL
     # RTL needs to create the vectors based on the largest group
