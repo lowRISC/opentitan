@@ -24,9 +24,6 @@ pub struct Verify {
     label: Option<String>,
     #[arg(short, long, default_value = "plain-text", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the input data (for little-endian targets).
-    #[arg(short = 'r', long)]
-    little_endian: bool,
     /// The SPHINCS+ signing domain.
     #[arg(short = 'd', long, default_value = "pure")]
     domain: SpxDomain,
@@ -46,9 +43,7 @@ impl Dispatch for Verify {
         let _token = hsm.token.as_deref().ok_or(HsmError::SessionRequired)?;
 
         let data = helper::read_file(&self.input)?;
-        let data = self
-            .format
-            .spx_prepare(self.domain, &data, self.little_endian)?;
+        let data = self.format.spx_prepare(self.domain, &data)?;
         let signature = helper::read_file(&self.signature)?;
         let result = spx.verify(self.label.as_deref(), self.id.as_deref(), &data, &signature)?;
         Ok(Box::new(BasicResult {
