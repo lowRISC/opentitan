@@ -6,12 +6,10 @@
   crash_dump_srcs = ['alert', 'cpu']
   # long term change this to a method where the generating function
   # can query the pwrmgr for how many internal resets it has
-  peri_hw_resets = len(reqs["peripheral"])
-  pwrmgr_hw_resets = len(reqs["int"])
-  debug_hw_resets = len(reqs["debug"])
-  total_hw_resets = peri_hw_resets + \
-                    pwrmgr_hw_resets + \
-                    debug_hw_resets
+  peri_reqs = reqs.get("peripheral", [])
+  int_reqs = reqs.get("int", [])
+  debug_reqs = reqs.get("debug", [])
+  total_hw_resets = len(peri_reqs) + len(int_reqs) + len(debug_reqs)
   # por / low power exit / sw reset / hw resets
   total_resets = total_hw_resets + 3
 %>
@@ -334,7 +332,7 @@
           desc: '''
             Indicates when a device has reset due to a hardware requested reset.
             The bit mapping is as follows:
-            % for req in (reqs["peripheral"] + reqs["int"] + reqs["debug"]):
+            % for req in (peri_reqs + int_reqs + debug_reqs):
             b${3 + loop.index}: ${f"{req['module']}: {req['desc']}"}
             % endfor
             '''
