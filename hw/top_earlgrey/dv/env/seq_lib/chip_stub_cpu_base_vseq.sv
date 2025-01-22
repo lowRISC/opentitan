@@ -32,7 +32,7 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     super.post_start();
 
     if (cfg.use_jtag_dmi == 0) begin
-      // Random CSR rw might trigger alert. Some alerts will conintuously be triggered until reset
+      // Random CSR rw might trigger alert. Some alerts will continuously be triggered until reset
       // applied, which will cause alert_monitor phase_ready_to_end timeout.
       apply_reset();
     end

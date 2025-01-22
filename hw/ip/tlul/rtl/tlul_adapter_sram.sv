@@ -556,7 +556,7 @@ module tlul_adapter_sram
   //    interleaved. So, to make it in-order (even TL-UL allows out-of-order
   //    responses), storing the request is necessary. And if the read entry
   //    is write op, it is safe to return the response right away. If it is
-  //    read reqeust, then D response is waiting until read data arrives.
+  //    read request, then D response is waiting until read data arrives.
   prim_fifo_sync #(
     .Width   (ReqFifoWidth),
     .Pass    (1'b0),

@@ -1374,7 +1374,7 @@
         fields: [
           { bits: "10:0",
             name: "lcmgr_state",
-            desc: "Current lcmgr interface staet ",
+            desc: "Current lcmgr interface state ",
             tags: [ // Bit changes immediately after start from reset value to 1b1 due to initialization
             "excl:CsrAllTests:CsrExclAll"]
           }
@@ -1569,7 +1569,7 @@
             swaccess: "ro",
             desc: '''
               The flash life cycle management interface encountered a program error.
-              This could be a program integirty eror, see !!STD_FAULT_STATUS for more details.
+              This could be a program integrity eror, see !!STD_FAULT_STATUS for more details.
             '''
           },
           { bits: "4",

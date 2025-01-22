@@ -35,7 +35,7 @@ module pwrmgr_wake_info import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
 
   assign start_capture = start_capture_i & ~start_capture_q1;
 
-  // generate the record enbale signal
+  // generate the record enable signal
   // HW enables the recording
   // Software can suppress the recording or disable it
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -43,7 +43,7 @@ module pwrmgr_wake_info import pwrmgr_pkg::*; import pwrmgr_reg_pkg::*;
       record_en <= 1'b0;
     end else if (start_capture && !record_dis_i) begin
       // if not disabled by software
-      // a recording enable puls by HW starts recording
+      // a recording enable pulse by HW starts recording
       record_en <= 1'b1;
     end else if (record_dis_i && record_en) begin
       // if recording is already ongoing

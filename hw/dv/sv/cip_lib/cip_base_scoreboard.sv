@@ -438,8 +438,8 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   //  - register write size is less than actual register width
   //  - TL protocol violation
   //
-  // Returns true if invalid access, else false. Caller proceses the packet further if the access is
-  // valid.
+  // Returns true if invalid access, else false. Caller processes the packet further if the access
+  // is valid.
   virtual function bit predict_tl_err(tl_seq_item item, tl_channels_e channel, string ral_name);
     bit invalid_access;
     bit exp_d_error;
