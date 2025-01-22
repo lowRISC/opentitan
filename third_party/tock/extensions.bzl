@@ -3,8 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
-load("@//rules:repo.bzl", "bare_repository")
-load("@//rules:rust.bzl", "crate_build")
+load("//rules:repo.bzl", "bare_repository")
+load("//rules:rust.bzl", "crate_build")
 
 # Exports the kernel_layout.ld file so it can be used in opentitan rules.
 _KERNEL_LAYOUT = """
