@@ -25,7 +25,7 @@ pub struct Sign {
     label: Option<String>,
     #[arg(short, long, default_value = "sha256-hash", help=SignData::HELP)]
     format: SignData,
-    /// Reverse the input data and result (for little-endian targets).
+    /// Reverse the result (for little-endian targets).
     #[arg(short = 'r', long)]
     little_endian: bool,
     #[arg(short, long)]
@@ -51,9 +51,8 @@ impl Dispatch for Sign {
         let object = helper::find_one_object(session, &attrs)?;
 
         let data = std::fs::read(&self.input)?;
-        let data = self
-            .format
-            .prepare(KeyType::Ec, &data, self.little_endian)?;
+        let data = self.format.prepare(KeyType::Ec, &data)?;
+
         let mechanism = self.format.mechanism(KeyType::Ec)?;
         let mut result = session.sign(&mechanism, object, &data)?;
         if self.little_endian {

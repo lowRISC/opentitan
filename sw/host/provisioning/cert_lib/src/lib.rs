@@ -17,7 +17,7 @@ use p256::NistP256;
 use p256::ecdsa::SigningKey;
 use serde::{Deserialize, Serialize, Serializer};
 
-use opentitanlib::crypto::sha256::sha256;
+use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::util::tmpfilename;
 use ot_certs::CertFormat;
 use ot_certs::template::{EcdsaSignature, Signature, Value};
@@ -103,9 +103,9 @@ pub fn parse_and_endorse_x509_cert(tbs: Vec<u8>, key: &CaKey) -> Result<Vec<u8>>
 
 fn parse_and_endorse_x509_cert_raw(tbs: Vec<u8>, ca_sk: &SecretKey<NistP256>) -> Result<Vec<u8>> {
     // Hash and sign the TBS.
-    let tbs_digest = sha256(&tbs);
+    let tbs_digest = Sha256Digest::hash(&tbs);
     let signing_key = SigningKey::from(ca_sk);
-    let (tbs_signature, _) = signing_key.sign_prehash_recoverable(&tbs_digest.to_be_bytes())?;
+    let (tbs_signature, _) = signing_key.sign_prehash_recoverable(tbs_digest.as_ref())?;
     let (r, s) = tbs_signature.split_bytes();
 
     // Reformat the signature.

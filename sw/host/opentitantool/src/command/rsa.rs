@@ -9,6 +9,7 @@ use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
+use std::str::FromStr;
 
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
@@ -242,7 +243,7 @@ pub enum RsaKeySubcommands {
 
 #[derive(serde::Serialize)]
 pub struct RsaSignResult {
-    pub digest: String,
+    pub digest: Sha256Digest,
     pub signature: String,
 }
 
@@ -275,16 +276,16 @@ impl CommandDispatch for RsaSignCommand {
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
-            Sha256Digest::from_le_bytes(bytes)?
+            Sha256Digest::try_from(bytes.as_slice())?
         } else {
-            self.digest.clone().unwrap()
+            self.digest.unwrap()
         };
         let signature = self.private_key.sign(&digest)?;
         if let Some(output) = &self.output {
             signature.write_to_file(output)?;
         }
         Ok(Some(Box::new(RsaSignResult {
-            digest: digest.to_string(),
+            digest,
             signature: signature.to_string(),
         })))
     }
