@@ -128,7 +128,6 @@ opentitan_ip_rust_header = rule(
 
 def _opentitan_autogen_dif_gen(ctx):
     outputs = []
-    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
     top = ctx.attr.top[OpenTitanTopInfo]
     ip_hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
@@ -146,7 +145,7 @@ def _opentitan_autogen_dif_gen(ctx):
         "--ipcfg",
         ip_hjson.path,
         "--outdir",
-        outdir,
+        outputs[0].dirname,
     ]
 
     ctx.actions.run(
