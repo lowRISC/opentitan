@@ -111,8 +111,9 @@ pub struct SpxSignResult {
 
 #[derive(Debug, Args)]
 pub struct SpxSignCommand {
+    /// Set to true if signing for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
-    input_bytes_reversed: bool,
+    spx_hash_reversal_bug: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -133,7 +134,7 @@ impl CommandDispatch for SpxSignCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut message = std::fs::read(&self.message)?;
-        if self.input_bytes_reversed {
+        if self.spx_hash_reversal_bug {
             message.reverse();
         }
         let private_key = SpxSecretKey::read_pem_file(&self.private_key)?;
@@ -148,8 +149,9 @@ impl CommandDispatch for SpxSignCommand {
 
 #[derive(Debug, Args)]
 pub struct SpxVerifyCommand {
+    /// Set to true if verifying for a target that uses a byte-reversed representation of the hash.
     #[arg(short='r', long, action = clap::ArgAction::Set, default_value = "false")]
-    input_bytes_reversed: bool,
+    spx_hash_reversal_bug: bool,
     /// The signature domain (Raw, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -169,7 +171,7 @@ impl CommandDispatch for SpxVerifyCommand {
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut message = std::fs::read(&self.message)?;
-        if self.input_bytes_reversed {
+        if self.spx_hash_reversal_bug {
             message.reverse();
         }
         let public_key = SpxPublicKey::read_pem_file(&self.public_key)?;

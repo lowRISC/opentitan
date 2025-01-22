@@ -140,7 +140,7 @@ impl RsaPublicKey {
         self.key
             .verify(
                 Pkcs1v15Sign::new::<Sha256>(),
-                digest.to_be_bytes().as_slice(),
+                digest.as_ref(),
                 signature.to_be_bytes().as_slice(),
             )
             .map_err(|e| anyhow!(Error::VerifyFailed(anyhow!(e))))
@@ -196,7 +196,7 @@ impl RsaPrivateKey {
     pub fn sign(&self, digest: &Sha256Digest) -> Result<Signature> {
         let signature = self
             .key
-            .sign(Pkcs1v15Sign::new::<Sha256>(), &digest.to_be_bytes())
+            .sign(Pkcs1v15Sign::new::<Sha256>(), digest.as_ref())
             .map_err(|e| Error::SignFailed(anyhow!(e)))?;
         Ok(Signature::from_be_bytes(signature)?)
     }

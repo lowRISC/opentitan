@@ -12,6 +12,8 @@ pub mod spx;
 
 #[derive(Debug, Error)]
 pub enum Error {
+    #[error("Invalid hash: {0}")]
+    InvalidHash(String),
     #[error("Invalid public key: {0:?}")]
     InvalidPublicKey(#[source] anyhow::Error),
     #[error("Invalid DER file: {der}")]
