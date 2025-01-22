@@ -126,7 +126,6 @@ opentitan_ip_rust_header = rule(
 
 def _opentitan_autogen_dif_gen(ctx):
     outputs = []
-    outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
     top = ctx.attr.top[OpenTitanTopInfo]
 
     # Fail if the requested IP is not in the top
@@ -148,7 +147,7 @@ def _opentitan_autogen_dif_gen(ctx):
         "--ipcfg",
         ip_hjson.path,
         "--outdir",
-        outdir,
+        outputs[0].dirname,
     ]
 
     ctx.actions.run(
