@@ -10,6 +10,7 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:tlul:headers
       - lowrisc:ip:tlul
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/mbx_reg_pkg.sv
       - rtl/mbx.sv

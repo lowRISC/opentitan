@@ -489,8 +489,21 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
     .EnableRacl(1'b1),
     .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
     % for if_name in m['racl_mappings'].keys():
-<% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
-    .RaclPolicySelVec(top_racl_pkg::RACL_POLICY_SEL_${m["name"].upper()}${if_suffix}),
+<%
+        register_mapping = m['racl_mappings'][if_name]['register_mapping']
+        window_mapping = m['racl_mappings'][if_name]['window_mapping']
+        racl_group = m['racl_mappings'][if_name]['racl_group']
+        group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else ""
+        if_suffix = f"_{if_name.upper()}" if if_name else ""
+        if_suffix2 = f"{if_name.title()}" if if_name else ""
+        policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}"
+%>\
+      % if len(register_mapping) > 0:
+    .RaclPolicySelVec${if_suffix2}(top_racl_pkg::${policy_sel_name}),
+      % endif
+      % for window_name, policy_idx in window_mapping.items():
+    .RaclPolicySelWin${window_name}(top_racl_pkg::${policy_sel_name}_WIN_${window_name}),
+      % endfor
     % endfor
   % endif
   % if m['type'].startswith('racl_ctrl'):
