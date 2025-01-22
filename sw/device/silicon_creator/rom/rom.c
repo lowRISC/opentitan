@@ -523,12 +523,12 @@ static rom_error_t rom_measure_otp_partitions(
   hmac_sha256_update(
       (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                        OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET),
+                        OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(
       (unsigned char *)(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR +
                         OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
-                        OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET),
+                        OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_OFFSET),
       sizeof(uint64_t));
   hmac_sha256_update(sigverify_ctx.keys.integrity_measurement.digest,
                      kHmacDigestNumBytes);
