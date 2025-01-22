@@ -48,9 +48,10 @@ typedef struct otp_partition_info {
    */
   size_t size;
   /**
-   * The absolute OTP address at which this partition's digest starts.
+   * The OTP digest CSR (where the digest is buffered) address for this
+   * partition.
    */
-  uint32_t digest_addr;
+  uint32_t digest_reg_addr;
   /**
    * The alignment mask for this partition.
    *
