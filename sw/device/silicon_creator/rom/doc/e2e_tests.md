@@ -1,5 +1,5 @@
 # ROM E2E Regressions setup
-This guide will help you to setup an environment to run the ROM E2E tests in an Ubuntu 20.04 machine.
+This guide will help you to setup an environment to run the ROM E2E tests in an Ubuntu 22.04 machine.
 
 ## Introduction
 The [ROM](../README.md) is the first boot stage of secure boot flow and by nature, it cannot be updated after manufacturing.
