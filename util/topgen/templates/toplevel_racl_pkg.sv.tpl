@@ -77,13 +77,13 @@ package top_racl_pkg;
    * Policy ${policy['name']} allowed READ roles:
    *   ${', '.join(policy['allowed_wr'])}
    */
-  parameter racl_policy_t RACL_POLICY_${prefix}${policy['name'].upper()}_RD_DEFAULT = 16'h${f"{policy['rd_default']:x}"};
+  parameter racl_role_vec_t RACL_POLICY_${prefix}${policy['name'].upper()}_RD_DEFAULT = 16'h${f"{policy['rd_default']:x}"};
 
   /**
    * Policy ${policy['name']} allowed WRITE roles:
    *   ${', '.join(policy['allowed_wr'])}
    */
-  parameter racl_policy_t RACL_POLICY_${prefix}${policy['name'].upper()}_WR_DEFAULT = 16'h${f"{policy['wr_default']:x}"};
+  parameter racl_role_vec_t RACL_POLICY_${prefix}${policy['name'].upper()}_WR_DEFAULT = 16'h${f"{policy['wr_default']:x}"};
 
   % endfor
 % endfor
