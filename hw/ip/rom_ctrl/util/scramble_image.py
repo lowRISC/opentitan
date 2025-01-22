@@ -157,14 +157,20 @@ class Scrambler:
     subst_perm_rounds = 2
     num_rounds_half = 3
 
-    def __init__(self, nonce: int, key: int, rom_base: int, rom_size_words: int,
+    def __init__(self, nonce: int, nonce_width: int,
+                 key: int, key_width: int,
+                 rom_base: int, rom_size_words: int,
                  hash_file: IO[str]):
-        assert 0 <= nonce < (1 << 64)
-        assert 0 <= key < (1 << 128)
+        assert nonce_width > 0
+        assert key_width > 0
+        assert 0 <= nonce < (1 << nonce_width)
+        assert 0 <= key < (1 << key_width)
         assert 0 < rom_size_words < (1 << 64)
 
         self.nonce = nonce
+        self.nonce_width = nonce_width
         self.key = key
+        self.key_width = key_width
         self.rom_size_words = rom_size_words
         self.rom_base = rom_base
 
@@ -265,7 +271,10 @@ class Scrambler:
         key = Scrambler._get_param_value(params,
                                          mc_params.scr_key,
                                          mc_params.scr_key_width)
-        return Scrambler(nonce, key, base, size_words, hash_file)
+
+        return Scrambler(nonce, mc_params.nonce_width,
+                         key, mc_params.scr_key_width,
+                         base, size_words, hash_file)
 
     def flatten(self, mem: MemFile) -> MemFile:
         '''Flatten and pad mem up to the correct size
@@ -302,16 +311,16 @@ class Scrambler:
         return full_keystream & ((1 << width) - 1)
 
     def addr_sp_enc(self, log_addr: int) -> int:
-        assert self._addr_width < 64
-        data_nonce_width = 64 - self._addr_width
+        assert self._addr_width < self.nonce_width
+        data_nonce_width = self.nonce_width - self._addr_width
         addr_scr_nonce = self.nonce >> data_nonce_width
         return subst_perm_enc(log_addr, addr_scr_nonce, self._addr_width,
                               self.subst_perm_rounds)
 
     def addr_sp_dec(self, phy_addr: int) -> int:
-        assert self._addr_width < 64
+        assert self._addr_width < self.nonce_width
 
-        data_nonce_width = 64 - self._addr_width
+        data_nonce_width = self.nonce_width - self._addr_width
         addr_scr_nonce = self.nonce >> data_nonce_width
         return subst_perm_dec(phy_addr, addr_scr_nonce, self._addr_width,
                               self.subst_perm_rounds)
