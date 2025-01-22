@@ -85,7 +85,7 @@ crate.from_cargo(
 crate.annotation(
     crate = "libudev-sys",
     patch_args = ["-p1"],
-    patches = ["@//third_party/rust/patches:libudev-sys-0.1.4.patch"],
+    patches = ["@lowrisc_opentitan//third_party/rust/patches:libudev-sys-0.1.4.patch"],
     repositories = ["crate_index"],
 )
 crate.annotation(
@@ -137,7 +137,7 @@ crate.annotation(
     crate = "mdbook",
     gen_binaries = ["mdbook"],
     patch_args = ["-p1"],
-    patches = ["@//third_party/mdbook/patches:mdbook-landing-page-links.patch"],
+    patches = ["@lowrisc_opentitan//third_party/mdbook/patches:mdbook-landing-page-links.patch"],
     repositories = ["mdbook_index"],
 )
 use_repo(crate, "mdbook_index")
