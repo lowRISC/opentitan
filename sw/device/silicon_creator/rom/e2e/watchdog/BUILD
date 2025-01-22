@@ -11,7 +11,7 @@ load(
     "opentitan_test",
     "verilator_params",
 )
-load("@//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
 load("//rules:const.bzl", "get_lc_items")
 load(
     "//rules:otp.bzl",
