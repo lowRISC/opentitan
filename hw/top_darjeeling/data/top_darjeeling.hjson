@@ -15,6 +15,9 @@
   // 32-bit datawidth
   datawidth: "32",
 
+  // Enable RACL on Darjeeling based on the following configuration
+  racl_config: 'top_darjeeling/data/racl/racl.hjson'
+
   // Power information for the design
   power: {
     // Power domains supported by the design
@@ -976,7 +979,17 @@
         jtag:  {soc_dbg: "0x2300"},
       },
     },
-
+    { name: "racl_ctrl",
+      type: "racl_ctrl",
+      template_type: "racl_ctrl",
+      clock_srcs: {clk_i: "main"}
+      clock_group: "infra",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        soc_mbx: "0x01463000",
+      },
+      attr: "ipgen"
+    },
     { name: "rv_core_ibex",
       type: "rv_core_ibex",
       param_decl: {PMPEnable: "1",
@@ -1374,6 +1387,7 @@
         'spi_device.sck_monitor'               : 'sck_monitor',
         'soc_dbg_ctrl.soc_dbg_policy_bus'      : 'soc_dbg_policy_bus',
         'soc_dbg_ctrl.halt_cpu_boot'           : 'debug_halt_cpu_boot',
+        'racl_ctrl.racl_policies'              : 'racl_policies',
     },
   },
 
