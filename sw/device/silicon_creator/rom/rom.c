@@ -550,7 +550,9 @@ static rom_error_t rom_measure_otp_partitions(
  * @return rom_error_t Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
+static rom_error_t rom_boot(const manifest_t *manifest,
+                            uintptr_t imm_section_entry_point,
+                            uint32_t flash_exec) {
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomBoot, 1);
   HARDENED_RETURN_IF_ERROR(sc_keymgr_state_check(kScKeymgrStateReset));
 
@@ -675,7 +677,19 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
   // In a normal build, this function inlines to nothing.
   stack_utilization_print();
 
-  // (Potentially) Execute the immutable ROM_EXT section.
+  if (imm_section_entry_point != kHardenedBoolFalse) {
+    ((rom_ext_entry_point *)imm_section_entry_point)();
+  }
+  // Jump to ROM_EXT.
+  ((rom_ext_entry_point *)entry_point)();
+  return kErrorRomBootFailed;
+}
+
+static rom_error_t rom_verify_immutable_section(
+    rom_error_t verify_result, const manifest_t *manifest,
+    uintptr_t *imm_section_entry_point) {
+  *imm_section_entry_point = kHardenedBoolFalse;
+  // Verify the immutable ROM_EXT section.
   uint32_t rom_ext_immutable_section_enabled =
       otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
   if (launder32(rom_ext_immutable_section_enabled) == kHardenedBoolTrue) {
@@ -687,14 +701,6 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
         OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_LENGTH_OFFSET);
     uintptr_t immutable_rom_ext_entry_point =
         (uintptr_t)manifest + immutable_rom_ext_start_offset;
-    // If address translation is enabled, adjust the entry_point.
-    if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
-      immutable_rom_ext_entry_point =
-          rom_ext_vma_get(manifest, immutable_rom_ext_entry_point);
-    } else {
-      HARDENED_CHECK_NE(manifest->address_translation, kHardenedBoolTrue);
-    }
 
     // Compute a hash of the code section.
     // Include the start offset and the length of the section in the hash.
@@ -714,17 +720,26 @@ static rom_error_t rom_boot(const manifest_t *manifest, uint32_t flash_exec) {
     otp_read(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_OFFSET,
              immutable_rom_ext_hash.digest, kHmacDigestNumWords);
     for (size_t i = 0; i < kHmacDigestNumWords; ++i) {
-      HARDENED_CHECK_EQ(immutable_rom_ext_hash.digest[i],
-                        actual_immutable_section_digest.digest[i]);
+      if (immutable_rom_ext_hash.digest[i] !=
+          actual_immutable_section_digest.digest[i]) {
+        verify_result = kErrorRomImmSection;
+      }
     }
-    ((rom_ext_entry_point *)immutable_rom_ext_entry_point)();
+    // If address translation is enabled, adjust the entry_point.
+    if (launder32(manifest->address_translation) == kHardenedBoolTrue) {
+      HARDENED_CHECK_EQ(manifest->address_translation, kHardenedBoolTrue);
+      immutable_rom_ext_entry_point =
+          rom_ext_vma_get(manifest, immutable_rom_ext_entry_point);
+    } else {
+      HARDENED_CHECK_NE(manifest->address_translation, kHardenedBoolTrue);
+    }
+    if (verify_result == kErrorOk) {
+      *imm_section_entry_point = immutable_rom_ext_entry_point;
+    }
   } else {
     HARDENED_CHECK_NE(rom_ext_immutable_section_enabled, kHardenedBoolTrue);
   }
-
-  // Jump to ROM_EXT.
-  ((rom_ext_entry_point *)entry_point)();
-  return kErrorRomBootFailed;
+  return verify_result;
 }
 
 /**
@@ -741,9 +756,12 @@ static rom_error_t rom_try_boot(void) {
 
   boot_policy_manifests_t manifests = boot_policy_manifests_get();
   uint32_t flash_exec = 0;
+  uintptr_t imm_section_entry_point = kHardenedBoolFalse;
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
   rom_error_t error = rom_verify(manifests.ordered[0], &flash_exec);
+  error = rom_verify_immutable_section(error, manifests.ordered[0],
+                                       &imm_section_entry_point);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 4);
 
   if (launder32(error) == kErrorOk) {
@@ -751,17 +769,21 @@ static rom_error_t rom_try_boot(void) {
     CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
-    HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[0], flash_exec));
+    HARDENED_RETURN_IF_ERROR(
+        rom_boot(manifests.ordered[0], imm_section_entry_point, flash_exec));
     return kErrorRomBootFailed;
   }
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 5, kCfiRomVerify);
-  HARDENED_RETURN_IF_ERROR(rom_verify(manifests.ordered[1], &flash_exec));
+  error = rom_verify(manifests.ordered[1], &flash_exec);
+  HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
+      error, manifests.ordered[1], &imm_section_entry_point));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 7);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
 
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 8, kCfiRomBoot);
-  HARDENED_RETURN_IF_ERROR(rom_boot(manifests.ordered[1], flash_exec));
+  HARDENED_RETURN_IF_ERROR(
+      rom_boot(manifests.ordered[1], imm_section_entry_point, flash_exec));
   return kErrorRomBootFailed;
 }
 
