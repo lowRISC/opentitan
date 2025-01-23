@@ -173,7 +173,29 @@
       { name: "i2c0",           gen: true,  type: "top", parent: "lc_src", clk: "io_div4", sw: true },
     ]
   }
-
+  // The reset requests: peripherals are deduced, but internal and debug need
+  // to be configure in hjson file.
+  reset_requests: {
+    int: [
+      {
+        "name": "MainPwr",
+        "desc": "main power glitch reset request",
+        "module": "pwrmgr_aon"
+      },
+      {
+        "name": "Esc",
+        "desc": "escalation reset request",
+        "module": "alert_handler"
+      }
+    ],
+    debug: [
+      {
+        "name": "Ndm",
+        "desc": "non-debug-module reset request",
+        "module": "rv_dm"
+      }
+    ],
+  },
   // Number of cores: used in rv_plic and timer
   num_cores: "1",
 

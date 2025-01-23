@@ -1133,30 +1133,7 @@ def amend_reset_request(topcfg: OrderedDict,
                         name_to_block: Dict[str, IpBlock]):
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = {}
-        topcfg["reset_requests"]["peripheral"] = []
-
-        # TODO: The reset_request_list of each module needs to be enhanced
-        # to support multiple types in the long run, then we can avoid
-        # hardwiring like this.
-        topcfg["reset_requests"]["int"] = [
-            {
-                "name": "MainPwr",
-                "desc": "main power glitch reset request",
-                "module": "pwrmgr_aon"
-            },
-            {
-                "name": "Esc",
-                "desc": "escalation reset request",
-                "module": "alert_handler"
-            }
-        ]
-        topcfg["reset_requests"]["debug"] = [
-            {
-                "name": "Ndm",
-                "desc": "non-debug-module reset request",
-                "module": "rv_dm"
-            }
-        ]
+    topcfg["reset_requests"].setdefault("peripheral", [])
 
     # create list of reset signals
     for m in topcfg["module"]:
