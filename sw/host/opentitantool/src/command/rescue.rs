@@ -63,7 +63,7 @@ impl CommandDispatch for Firmware {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = Image::read_from_file(&self.filename)?;
         let payload = if self.raw {
             image.bytes()
@@ -125,7 +125,7 @@ impl CommandDispatch for GetBootLog {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -159,7 +159,7 @@ impl CommandDispatch for GetBootSvc {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -193,7 +193,7 @@ impl CommandDispatch for GetDeviceId {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -246,7 +246,7 @@ impl CommandDispatch for SetNextBl0Slot {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
@@ -291,7 +291,7 @@ impl CommandDispatch for OwnershipUnlock {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let unlock = self
             .unlock
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
@@ -340,7 +340,7 @@ impl CommandDispatch for OwnershipActivate {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let activate = self
             .activate
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
@@ -380,7 +380,7 @@ impl CommandDispatch for SetOwnerConfig {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let data = std::fs::read(&self.input)?;
         let uart = self.params.create(transport)?;
         let rescue = RescueSerial::new(uart);
@@ -419,7 +419,7 @@ impl CommandDispatch for GetOwnerConfig {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let page = match self.page {
             0 => RescueSerial::GET_OWNER_PAGE0,
             1 => RescueSerial::GET_OWNER_PAGE1,
@@ -462,7 +462,7 @@ impl CommandDispatch for EraseOwner {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if self.really {
             let uart = self.params.create(transport)?;
             let rescue = RescueSerial::new(uart);

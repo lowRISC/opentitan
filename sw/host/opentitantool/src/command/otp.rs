@@ -2,16 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use anyhow::Result;
+use clap::{Args, Subcommand};
+use serde_annotate::{serialize, Base};
 use std::any::Any;
 use std::fs::File;
 use std::io::Write;
 use std::path::PathBuf;
-
-use anyhow::Result;
-
-use serde_annotate::{serialize, Annotate, Base};
-
-use clap::{Args, Subcommand};
 
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::app::TransportWrapper;
@@ -37,7 +34,7 @@ impl CommandDispatch for AlertDigest {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         // From kErrorOk in ROM.
         const ERROR_OK: u32 = 0x739;
 

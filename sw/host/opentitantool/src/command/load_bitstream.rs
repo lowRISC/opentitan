@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::Args;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs;
 use std::path::PathBuf;
@@ -33,7 +32,7 @@ impl CommandDispatch for LoadBitstream {
         &self,
         _context: &dyn Any,
         transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         log::info!("Loading bitstream: {:?}", self.filename);
         let bitstream = fs::read(&self.filename)?;
         let progress = StagedProgressBar::new();

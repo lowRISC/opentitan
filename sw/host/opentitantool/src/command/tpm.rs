@@ -38,7 +38,7 @@ impl CommandDispatch for TpmReadRegister {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         let length = self
             .length
@@ -102,7 +102,7 @@ impl CommandDispatch for TpmWriteRegister {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         if let Some(hexdata) = &self.hexdata {
             tpm.write_register(self.register, &hex::decode(hexdata)?)?;
@@ -133,7 +133,7 @@ impl CommandDispatch for TpmExecuteCommand {
         &self,
         context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let tpm = context.downcast_ref::<Box<dyn tpm::Driver>>().unwrap();
         let resp = tpm.execute_command(&hex::decode(&self.hexdata)?)?;
         Ok(Some(Box::new(TpmExecuteCommandResponse {

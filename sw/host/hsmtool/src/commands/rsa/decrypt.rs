@@ -7,7 +7,6 @@ use cryptoki::mechanism::Mechanism;
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::path::PathBuf;
 
@@ -35,7 +34,7 @@ impl Dispatch for Decrypt {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         let mut attrs = helper::search_spec(self.id.as_deref(), self.label.as_deref())?;
         attrs.push(Attribute::KeyType(KeyType::Rsa.try_into()?));

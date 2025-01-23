@@ -8,7 +8,6 @@ use cryptoki::session::Session;
 use p256::elliptic_curve::pkcs8;
 use p256::elliptic_curve::pkcs8::der::Encode;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::str::FromStr;
 
@@ -64,7 +63,7 @@ impl Dispatch for Generate {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
         let id = AttrData::Str(self.id.as_ref().cloned().unwrap_or_else(helper::random_id));

@@ -5,7 +5,6 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -45,7 +44,7 @@ impl Dispatch for List {
         _context: &dyn Any,
         hsm: &Module,
         _session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let mut response = Box::<ListResponse>::default();
         for slot in hsm.pkcs11.get_slots_with_token()? {
             let info = hsm.pkcs11.get_token_info(slot)?;
@@ -67,7 +66,7 @@ impl Dispatch for Token {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
             Token::List(x) => x.run(context, hsm, session),
         }
