@@ -112,7 +112,7 @@ class TopHelper:
     DT_CLOCK_ENUM_NAME = Name(["dt", "clock"])
     DT_PAD_INDEX_NAME = Name(["dt", "pad", "index"])
     DT_PAD_NAME = Name(["dt", "pad"])
-    DT_SIGNAL_NAME = Name(["dt", "signal"])
+    DT_PERIPH_IO_NAME = Name(["dt", "periph", "io"])
 
     def __init__(self, topcfg, name_to_block: Dict[str, IpBlock], enum_type, array_mapping_type):
         self.top = topcfg
@@ -202,7 +202,7 @@ class IpHelper:
         self._init_reg_blocks()
         self._init_irqs()
         self._init_clocks()
-        self._init_signals()
+        self._init_periph_io()
         self._init_instances()
 
     def _init_reg_blocks(self):
@@ -265,10 +265,10 @@ class IpHelper:
         if isinstance(self.reg_block_enum, CEnum):
             self.clock_enum.add_constant(Name(["count"]), "Number of clock ports")
 
-    def has_signals(self):
+    def has_periph_io(self):
         return len(self._device_signals) > 0
 
-    def _init_signals(self):
+    def _init_periph_io(self):
         inouts, inputs, outputs = self.ip.xputs
         self._device_signals = []
         for sig in inputs + outputs + inouts:
@@ -278,11 +278,14 @@ class IpHelper:
             else:
                 self._device_signals.append(sig.name)
 
-        self.signal_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["signal"]))
+        self.periph_io_enum = self._enum_type(
+            Name([]),
+            Name(["dt"]) + self.ip_name + Name(["periph", "io"])
+        )
         for sig in self._device_signals:
-            self.signal_enum.add_constant(Name.from_snake_case(sig))
+            self.periph_io_enum.add_constant(Name.from_snake_case(sig))
         if isinstance(self.reg_block_enum, CEnum):
-            self.signal_enum.add_constant(Name(["count"]), "Number of signals")
+            self.periph_io_enum.add_constant(Name(["count"]), "Number of peripheral I/O")
 
     def _init_instances(self):
         self.inst_struct = Struct(Name(["dt"]) + self.ip_name)
@@ -317,13 +320,13 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
                 ),
                 docstring = "Clock signal connected to each clock port"
             )
-        if self.has_signals():
+        if self.has_periph_io():
             self.inst_struct.add_field(
-                name = Name(["signal"]),
+                name = Name(["periph", "io"]),
                 typename = ArrayType(
-                    typename = TopHelper.DT_SIGNAL_NAME,
-                    length = self.signal_enum.name + Name(["count"]),
+                    typename = TopHelper.DT_PERIPH_IO_NAME,
+                    length = self.periph_io_enum.name + Name(["count"]),
                 ),
-                docstring = "Description of each signal"
+                docstring = "Description of each peripheral I/O"
             )
         self.inst_struct.mark_internal()
