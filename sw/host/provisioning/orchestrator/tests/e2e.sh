@@ -21,14 +21,11 @@ ORCHESTRATOR_PATH=$TEST_TMPDIR/orchestrator.zip
 unset RUNFILES_DIR
 
 # Run tool. The path to the --sku-config parameter is relative to the
-# runfiles-dir. Note: "use-ext-clk" flag on FPGA does nothing, but this tests
-# the flag can be piped through to the test harness.
+# runfiles-dir.
 $PYTHON ${ORCHESTRATOR_PATH} \
   --sku-config=${SKU_CONFIG_PATH} \
   --test-unlock-token="0x11111111_11111111_11111111_11111111" \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --fpga=${FPGA} \
-  --enable-alerts \
-  --use-ext-clk \
   --non-interactive \
   --db-path=$TEST_TMPDIR/registry.sqlite
