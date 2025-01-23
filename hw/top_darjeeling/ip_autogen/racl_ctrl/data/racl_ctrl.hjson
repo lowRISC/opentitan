@@ -1,0 +1,227 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+# RACL Control register template
+#
+{
+  name:               "racl_ctrl",
+  human_name:         "RACL Control",
+  one_line_desc:      "Implements the RACL policy registers to distribute to subscribing IPs.",
+  one_paragraph_desc: '''
+  Implements the RACL policy registers to distribute to subscribing IPs.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "43",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  sw_checklist:       "/sw/device/lib/dif/dif_racl_ctrl",
+  revisions: [
+    {
+      version:            "1.0.0",
+      life_stage:         "L1",
+      design_stage:       "D0",
+      verification_stage: "V0",
+      dif_stage:          "S0",
+    }
+  ]
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni"},
+  ]
+  bus_interfaces: [
+    { protocol: "tlul", direction: "device", static_racl_support: true }
+  ],
+  alert_list: [
+    { name: "recov_ctrl_update_err",
+      desc: "This recoverable alert is triggered upon detecting an update error in the shadowed Control Register."
+    }
+    { name: "fatal_fault"
+      desc: "This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected."
+    }
+  ],
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: "End-to-end bus integrity scheme."
+    }
+    { name: "RACL_POLICY.CONFIG.SHADOW",
+      desc: "RACL policy registers are shadowed."
+    }
+  ]
+  regwidth: "32",
+  param_list: [
+    { name: "NumPolicies",
+      desc: "Number of policies",
+      type: "int",
+      default: "3",
+      local: "true"
+    },
+    { name: "NumSubscribingIps",
+      desc: "Number of subscribing RACL IPs",
+      type: "int",
+      default: "1",
+      expose: "true"
+      local: "true"
+    },
+  ],
+  inter_signal_list: [
+    { struct:  "racl_policy_vec",
+      type:    "uni",
+      name:    "racl_policies",
+      act:     "req",
+      package: "top_racl_pkg",
+      desc:    '''
+        Policy vector distributed to the subscribing RACL IPs.
+      '''
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "racl_error",
+      act:     "rcv",
+      width  : "NumSubscribingIps",
+      desc:    '''
+        Error notification vector collecting errors from all subscribing IPs.
+        A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
+        Only one IP can raise an error at a time.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error_log",
+      act:     "rcv",
+      width:   "NumSubscribingIps"
+      package: "top_racl_pkg",
+      desc:    '''
+        Error log information from all IPs.
+      '''
+    }
+  ],
+
+  registers: [
+    { name: "ERROR_LOG"
+      desc: "Error logging registers"
+      swaccess: "ro"
+      hwaccess: "hwo"
+      hwqe: "true"
+      fields: [
+        { bits: "0"
+          name: "valid"
+          resval: 0x0
+          swaccess: "rw1c"
+          hwaccess: "hrw"
+          desc: '''
+                Indicates a RACL error and the log register contains valid data.
+                Writing a one clears the error log register.
+                '''
+        }
+        { bits: "1"
+          name: "overflow"
+          resval: 0x0
+          desc: '''
+                Indicates a RACL error overflow when a RACL error occurred while the log register was set.
+                '''
+        }
+        { bits: "2"
+          name: "read_access"
+          resval: 0x0
+          desc: '''
+                0: Write transfer was denied.
+                1: Read transfer was denied.
+                '''
+        }
+        { bits: "6:3"
+          name: "role"
+          resval: 0x0
+          desc: '''
+                RACL role causing the error.
+                '''
+        }
+        { bits: "11:7"
+          name: "ctn_uid"
+          resval: 0x0
+          desc: '''
+                CTN UID causing the error.
+                '''
+        }
+      ]
+    }
+    { name: "POLICY_ALL_RD_WR_SHADOWED"
+      desc: '''
+            Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 7
+          desc: '''
+                Write permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 7
+          desc: '''
+                Read permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+                '''
+        }
+      ]
+    }
+    { name: "POLICY_ROT_PRIVATE_SHADOWED"
+      desc: '''
+            Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 1
+          desc: '''
+                Write permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 1
+          desc: '''
+                Read permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+                '''
+        }
+      ]
+    }
+    { name: "POLICY_SOC_ROT_SHADOWED"
+      desc: '''
+            Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+            '''
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert: "recov_ctrl_update_err"
+      storage_err_alert: "fatal_fault"
+      fields: [
+        { bits: "31:16"
+          name: "write_perm"
+          resval: 5
+          desc: '''
+                Write permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+                '''
+        }
+        { bits: "15:0"
+          name: "read_perm"
+          resval: 5
+          desc: '''
+                Read permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+                '''
+        }
+      ]
+    }
+  ]
+}

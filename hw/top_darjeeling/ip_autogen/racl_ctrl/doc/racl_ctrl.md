@@ -1,0 +1,105 @@
+# Registers
+
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_darjeeling/ip_autogen/racl_ctrl/data/racl_ctrl.hjson -->
+## Summary
+
+| Name                                                                    | Offset   |   Length | Description                                                                                                                                                     |
+|:------------------------------------------------------------------------|:---------|---------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0x0      |        4 | Alert Test Register                                                                                                                                             |
+| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0x4      |        4 | Error logging registers                                                                                                                                         |
+| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x8      |        4 | Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7} |
+| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0xc      |        4 | Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}          |
+| racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}                     |
+
+## ALERT_TEST
+Alert Test Register
+- Offset: `0x0`
+- Reset default: `0x0`
+- Reset mask: `0x3`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "recov_ctrl_update_err", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "fatal_fault", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                      |
+|:------:|:------:|:-------:|:----------------------|:-------------------------------------------------|
+|  31:2  |        |         |                       | Reserved                                         |
+|   1    |   wo   |   0x0   | fatal_fault           | Write 1 to trigger one alert event of this kind. |
+|   0    |   wo   |   0x0   | recov_ctrl_update_err | Write 1 to trigger one alert event of this kind. |
+
+## ERROR_LOG
+Error logging registers
+- Offset: `0x4`
+- Reset default: `0x0`
+- Reset mask: `0xfff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "valid", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "overflow", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "read_access", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "role", "bits": 4, "attr": ["ro"], "rotate": 0}, {"name": "ctn_uid", "bits": 5, "attr": ["ro"], "rotate": 0}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+```
+
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                   |
+|:------:|:------:|:-------:|:------------|:--------------------------------------------------------------------------------------------------------------|
+| 31:12  |        |         |             | Reserved                                                                                                      |
+|  11:7  |   ro   |   0x0   | ctn_uid     | CTN UID causing the error.                                                                                    |
+|  6:3   |   ro   |   0x0   | role        | RACL role causing the error.                                                                                  |
+|   2    |   ro   |   0x0   | read_access | 0: Write transfer was denied. 1: Read transfer was denied.                                                    |
+|   1    |   ro   |   0x0   | overflow    | Indicates a RACL error overflow when a RACL error occurred while the log register was set.                    |
+|   0    |  rw1c  |   0x0   | valid       | Indicates a RACL error and the log register contains valid data. Writing a one clears the error log register. |
+
+## POLICY_ALL_RD_WR_SHADOWED
+Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+- Offset: `0x8`
+- Reset default: `0x70007`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                       |
+|:------:|:------:|:-------:|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |   rw   |   0x7   | write_perm | Write permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7} |
+|  15:0  |   rw   |   0x7   | read_perm  | Read permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}  |
+
+## POLICY_ROT_PRIVATE_SHADOWED
+Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+- Offset: `0xc`
+- Reset default: `0x10001`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                              |
+|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |   rw   |   0x1   | write_perm | Write permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1} |
+|  15:0  |   rw   |   0x1   | read_perm  | Read permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}  |
+
+## POLICY_SOC_ROT_SHADOWED
+Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+- Offset: `0x10`
+- Reset default: `0x50005`
+- Reset mask: `0xffffffff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                   |
+|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |   rw   |   0x5   | write_perm | Write permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5} |
+|  15:0  |   rw   |   0x5   | read_perm  | Read permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}  |
+
+
+<!-- END CMDGEN -->

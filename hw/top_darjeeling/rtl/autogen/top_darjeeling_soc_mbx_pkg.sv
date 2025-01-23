@@ -101,5 +101,15 @@ package top_darjeeling_soc_mbx_pkg;
    */
   parameter int unsigned TOP_DARJEELING_SOC_MBX_MBX_PCIE1_SOC_SIZE_BYTES = 32'h20;
 
+  /**
+   * Peripheral base address for racl_ctrl in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR = 32'h1463000;
+
+  /**
+   * Peripheral size in bytes for racl_ctrl in top darjeeling.
+   */
+  parameter int unsigned TOP_DARJEELING_SOC_MBX_RACL_CTRL_SIZE_BYTES = 32'h20;
+
 
 endpackage

@@ -1,0 +1,63 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  instance_name: top_darjeeling_racl_ctrl
+  param_values:
+  {
+    module_instance_name: racl_ctrl
+    nr_role_bits: 4
+    nr_ctn_uid_bits: 5
+    nr_policies: 3
+    policies:
+    [
+      {
+        name: ALL_RD_WR
+        allowed_rd:
+        [
+          ROT
+          ROLE1
+          SOC
+        ]
+        allowed_wr:
+        [
+          ROT
+          ROLE1
+          SOC
+        ]
+        rd_default: 7
+        wr_default: 7
+      }
+      {
+        name: ROT_PRIVATE
+        rot_private: true
+        allowed_rd:
+        [
+          ROT
+        ]
+        allowed_wr:
+        [
+          ROT
+        ]
+        rd_default: 1
+        wr_default: 1
+      }
+      {
+        name: SOC_ROT
+        allowed_rd:
+        [
+          ROT
+          SOC
+        ]
+        allowed_wr:
+        [
+          ROT
+          SOC
+        ]
+        rd_default: 5
+        wr_default: 5
+      }
+    ]
+    topname: darjeeling
+  }
+}

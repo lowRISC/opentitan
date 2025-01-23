@@ -43,6 +43,7 @@
       mbx6.soc
       mbx_pcie0.soc
       mbx_pcie1.soc
+      racl_ctrl
     ]
   }
   nodes:
@@ -250,6 +251,28 @@
           base_addrs:
           {
             soc_mbx: 0x1460200
+          }
+          size_byte: 0x20
+        }
+      ]
+      xbar: false
+      stub: false
+      req_fifo_pass: true
+    }
+    {
+      name: racl_ctrl
+      type: device
+      addr_space: soc_mbx
+      clock: clk_mbx_i
+      reset: rst_mbx_ni
+      pipeline: false
+      inst_type: racl_ctrl
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            soc_mbx: 0x1463000
           }
           size_byte: 0x20
         }
