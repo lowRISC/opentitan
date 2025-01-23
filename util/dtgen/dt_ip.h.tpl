@@ -49,13 +49,13 @@ ${helper.irq_enum.render()}
 ${helper.clock_enum.render()}
 
 % endif
-% if helper.has_signals():
+% if helper.has_periph_io():
 /**
- * List of signals.
+ * List of peripheral I/O.
  *
- * Signals are guaranteed to be numbered consecutively from 0.
+ * peripheral I/O are guaranteed to be numbered consecutively from 0.
  */
-${helper.signal_enum.render()}
+${helper.periph_io_enum.render()}
 
 % endif
 /**
@@ -146,18 +146,18 @@ static inline dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
 }
 
 %endif
-% if helper.has_signals():
+% if helper.has_periph_io():
 /**
- * Get the signal description of an instance.
+ * Get the peripheral I/O description of an instance.
  *
  * @param dt Pointer to an instance of ${device_name}.
- * @param sig Requested signal.
- * @return Description of the requested signal for this instance.
+ * @param sig Requested peripheral I/O.
+ * @return Description of the requested peripheral I/O for this instance.
  */
-static inline dt_signal_t dt_${device_name}_signal(
+static inline dt_periph_io_t dt_${device_name}_periph_io(
     const dt_${device_name}_t *dt,
-    dt_${device_name}_signal_t sig) {
-  return dt->__internal.signal[sig];
+    dt_${device_name}_periph_io_t sig) {
+  return dt->__internal.periph_io[sig];
 }
 % endif
 #endif  // ${include_guard}

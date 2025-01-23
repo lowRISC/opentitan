@@ -129,7 +129,7 @@ const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake
 %     endif
 %   endif
 %   if len(device_ports) > 0:
-      .signal = {
+      .periph_io = {
 %     for port in device_ports:
 %       for conn in [c for c in pinmux_info["ios"] if c["name"] == m["name"] + "_" + port]:
 <%
@@ -138,8 +138,8 @@ const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake
                 pin_name += str(conn["idx"])
             if conn["connection"] == "muxed":
                 pin_type = "Mio"
-                pin_periph_input_or_direct_pad = "kDtSignalPeriphInputNone"
-                pin_outsel = "kDtSignalOutselNone"
+                pin_periph_input_or_direct_pad = "kDtPeriphIoMioPeriphInputNone"
+                pin_outsel = "kDtPeriphIoMioOutselNone"
                 if conn["type"] in ["input", "inout"]:
                     pin_periph_input_or_direct_pad = snake_to_constant_name("top_{}_pinmux_peripheral_in_{}_{}".format(top["name"], m["name"], pin_name))
                 if conn["type"] in ["output", "inout"]:
@@ -154,9 +154,9 @@ const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake
                 pin_outsel = "0"
                 pin_type = "Unspecified"
 %>\
-        [${snake_to_constant_name(f"dt_{module_name}_signal_{pin_name}")}] = {
+        [${snake_to_constant_name(f"dt_{module_name}_periph_io_{pin_name}")}] = {
           .__internal = {
-            .type = kDtSignalType${pin_type},
+            .type = kDtPeriphIoType${pin_type},
             .periph_input_or_direct_pad = ${pin_periph_input_or_direct_pad},
             .outsel = ${pin_outsel},
           }
@@ -288,7 +288,7 @@ const dt_pad_t kDtPad[kDtPadIndexCount] = {
 %>\
   [${snake_to_constant_name("dt_pad_index_" + padname)}] = {
     .__internal = {
-      .type = kDtSignalType${pad_type},
+      .type = kDtPeriphIoType${pad_type},
       .mio_out_or_direct_pad = ${pad_mio_out_or_direct_pad},
       .insel = ${pad_insel},
     }
@@ -297,28 +297,28 @@ const dt_pad_t kDtPad[kDtPadIndexCount] = {
 };
 
 /* Pin that is constantly tied to high-Z (input only) */
-const dt_signal_t kDtSignalConstantHighZ = {
+const dt_periph_io_t kDtPeriphIoConstantHighZ = {
   .__internal = {
-    .type = kDtSignalTypeMio,
-    .periph_input_or_direct_pad = kDtSignalPeriphInputNone,
-    .outsel = kDtSignalOutselConstantHighZ,
+    .type = kDtPeriphIoTypeMio,
+    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .outsel = kDtPinmuxOutselConstantHighZ,
   }
 };
 
 /* Pin that is constantly tied to zero (input/output) */
-const dt_signal_t kDtSignalConstantZero = {
+const dt_periph_io_t kDtPeriphIoConstantZero = {
   .__internal = {
-    .type = kDtSignalTypeMio,
-    .periph_input_or_direct_pad = kDtSignalPeriphInputNone,
-    .outsel = kDtSignalOutselConstantZero,
+    .type = kDtPeriphIoTypeMio,
+    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .outsel = kDtPinmuxOutselConstantZero,
   }
 };
 
 /* Pin that is constantly tied to one (input/output) */
-const dt_signal_t kDtSignalConstantOne = {
+const dt_periph_io_t kDtPeriphIoConstantOne = {
   .__internal = {
-    .type = kDtSignalTypeMio,
-    .periph_input_or_direct_pad = kDtSignalPeriphInputNone,
-    .outsel = kDtSignalOutselConstantOne,
+    .type = kDtPeriphIoTypeMio,
+    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .outsel = kDtPinmuxOutselConstantOne,
   }
 };
