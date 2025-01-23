@@ -5,11 +5,13 @@
   instance_name: top_darjeeling_alert_handler
   param_values:
   {
-    n_alerts: 99
+    n_alerts: 101
     esc_cnt_dw: 32
     accu_cnt_dw: 16
     async_on:
     [
+      1'b1
+      1'b1
       1'b1
       1'b1
       1'b1
@@ -209,6 +211,8 @@
       5'd10
       5'd4
       5'd4
+      5'd10
+      5'd10
       5'd10
       5'd10
       5'd10

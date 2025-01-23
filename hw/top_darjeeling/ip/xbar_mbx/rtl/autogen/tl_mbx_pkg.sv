@@ -15,6 +15,7 @@ package tl_mbx_pkg;
   localparam logic [31:0] ADDR_SPACE_MBX6__SOC      = 32'h 01465600;
   localparam logic [31:0] ADDR_SPACE_MBX_PCIE0__SOC = 32'h 01460100;
   localparam logic [31:0] ADDR_SPACE_MBX_PCIE1__SOC = 32'h 01460200;
+  localparam logic [31:0] ADDR_SPACE_RACL_CTRL      = 32'h 01463000;
 
   localparam logic [31:0] ADDR_MASK_MBX0__SOC      = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_MBX1__SOC      = 32'h 0000001f;
@@ -25,9 +26,10 @@ package tl_mbx_pkg;
   localparam logic [31:0] ADDR_MASK_MBX6__SOC      = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_MBX_PCIE0__SOC = 32'h 0000001f;
   localparam logic [31:0] ADDR_MASK_MBX_PCIE1__SOC = 32'h 0000001f;
+  localparam logic [31:0] ADDR_MASK_RACL_CTRL      = 32'h 0000001f;
 
   localparam int N_HOST   = 1;
-  localparam int N_DEVICE = 9;
+  localparam int N_DEVICE = 10;
 
   typedef enum int {
     TlMbx0Soc = 0,
@@ -38,7 +40,8 @@ package tl_mbx_pkg;
     TlMbx5Soc = 5,
     TlMbx6Soc = 6,
     TlMbxPcie0Soc = 7,
-    TlMbxPcie1Soc = 8
+    TlMbxPcie1Soc = 8,
+    TlRaclCtrl = 9
   } tl_device_e;
 
   typedef enum int {

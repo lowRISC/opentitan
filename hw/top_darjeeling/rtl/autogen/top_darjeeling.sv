@@ -118,6 +118,7 @@ module top_darjeeling #(
   // parameters for mbx_pcie0
   // parameters for mbx_pcie1
   // parameters for soc_dbg_ctrl
+  // parameters for racl_ctrl
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -279,6 +280,9 @@ module top_darjeeling #(
   output logic       sck_monitor_o,
   output soc_dbg_ctrl_pkg::soc_dbg_policy_t       soc_dbg_policy_bus_o,
   input  logic       debug_halt_cpu_boot_i,
+  input  top_racl_pkg::racl_policy_vec_t       racl_policies_i,
+  output logic       racl_error_o,
+  output top_racl_pkg::racl_error_log_t       racl_error_log_o,
 
 
   // All externally supplied clocks
@@ -308,6 +312,8 @@ module top_darjeeling #(
   localparam int LcCtrlNumRmaAckSigs = 1;
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
+  // local parameters for racl_ctrl
+  localparam int RaclCtrlNumSubscribingIps = 1;
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
@@ -391,6 +397,7 @@ module top_darjeeling #(
   // mbx_pcie0
   // mbx_pcie1
   // soc_dbg_ctrl
+  // racl_ctrl
   // rv_core_ibex
 
 
@@ -569,6 +576,9 @@ module top_darjeeling #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
+  top_racl_pkg::racl_policy_vec_t       ast_racl_policies;
+  logic       ast_racl_error;
+  top_racl_pkg::racl_error_log_t       ast_racl_error_log;
   logic [3:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
@@ -721,6 +731,8 @@ module top_darjeeling #(
   tlul_pkg::tl_d2h_t       mbx_pcie0_soc_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_pcie1_soc_tl_d_req;
   tlul_pkg::tl_d2h_t       mbx_pcie1_soc_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       racl_ctrl_tl_req;
+  tlul_pkg::tl_d2h_t       racl_ctrl_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_dbg_tl_d_req;
   tlul_pkg::tl_d2h_t       rv_dm_dbg_tl_d_rsp;
   tlul_pkg::tl_h2d_t       mbx_jtag_soc_tl_d_req;
@@ -750,6 +762,9 @@ module top_darjeeling #(
   assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
   assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
+  assign ast_racl_policies = racl_policies_i;
+  assign racl_error_o = ast_racl_error;
+  assign racl_error_log_o = ast_racl_error_log;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -2525,8 +2540,30 @@ module top_darjeeling #(
       .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_io_div4_shadowed_n[rstmgr_pkg::Domain0Sel]),
       .rst_ni (rstmgr_aon_resets.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel])
   );
+  racl_ctrl #(
+    .RaclErrorRsp(1'b1),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[96:95]),
+    .NumSubscribingIps(RaclCtrlNumSubscribingIps)
+  ) u_racl_ctrl (
+      // [95]: recov_ctrl_update_err
+      // [96]: fatal_fault
+      .alert_tx_o  ( alert_tx[96:95] ),
+      .alert_rx_i  ( alert_rx[96:95] ),
+
+      // Inter-module signals
+      .racl_policies_o(ast_racl_policies),
+      .racl_error_i(ast_racl_error),
+      .racl_error_log_i(ast_racl_error_log),
+      .tl_i(racl_ctrl_tl_req),
+      .tl_o(racl_ctrl_tl_rsp),
+
+      // Clock and reset connections
+      .clk_i (clkmgr_aon_clocks.clk_main_infra),
+      .rst_shadowed_ni (rstmgr_aon_resets.rst_lc_shadowed_n[rstmgr_pkg::Domain0Sel]),
+      .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
+  );
   rv_core_ibex #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:95]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[100:97]),
     .RndCnstLfsrSeed(RndCnstRvCoreIbexLfsrSeed),
     .RndCnstLfsrPerm(RndCnstRvCoreIbexLfsrPerm),
     .RndCnstIbexKeyDefault(RndCnstRvCoreIbexIbexKeyDefault),
@@ -2562,12 +2599,12 @@ module top_darjeeling #(
     .PipeLine(RvCoreIbexPipeLine),
     .TlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits)
   ) u_rv_core_ibex (
-      // [95]: fatal_sw_err
-      // [96]: recov_sw_err
-      // [97]: fatal_hw_err
-      // [98]: recov_hw_err
-      .alert_tx_o  ( alert_tx[98:95] ),
-      .alert_rx_i  ( alert_rx[98:95] ),
+      // [97]: fatal_sw_err
+      // [98]: recov_sw_err
+      // [99]: fatal_hw_err
+      // [100]: recov_hw_err
+      .alert_tx_o  ( alert_tx[100:97] ),
+      .alert_rx_i  ( alert_rx[100:97] ),
 
       // Inter-module signals
       .rst_cpu_n_o(),
@@ -3048,6 +3085,10 @@ module top_darjeeling #(
     // port: tl_mbx_pcie1__soc
     .tl_mbx_pcie1__soc_o(mbx_pcie1_soc_tl_d_req),
     .tl_mbx_pcie1__soc_i(mbx_pcie1_soc_tl_d_rsp),
+
+    // port: tl_racl_ctrl
+    .tl_racl_ctrl_o(racl_ctrl_tl_req),
+    .tl_racl_ctrl_i(racl_ctrl_tl_rsp),
 
 
     .scanmode_i

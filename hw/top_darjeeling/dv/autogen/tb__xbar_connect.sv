@@ -109,6 +109,7 @@ tl_if mbx5__soc_tl_if(clk_main, rst_n);
 tl_if mbx6__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie0__soc_tl_if(clk_main, rst_n);
 tl_if mbx_pcie1__soc_tl_if(clk_main, rst_n);
+tl_if racl_ctrl_tl_if(clk_main, rst_n);
 tl_if rv_dm__dbg_tl_if(clk_main, rst_n);
 tl_if mbx_jtag__soc_tl_if(clk_main, rst_n);
 tl_if lc_ctrl__dmi_tl_if(clk_io_div4, rst_n);
@@ -221,6 +222,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(mbx6__soc, mbx6, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie0__soc, mbx_pcie0, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_pcie1__soc, mbx_pcie1, soc_tl_d)
+    `DRIVE_CHIP_TL_DEVICE_IF(racl_ctrl, racl_ctrl, tl)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__dbg, rv_dm, dbg_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(mbx_jtag__soc, mbx_jtag, soc_tl_d)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__dmi, lc_ctrl, dmi_tl)

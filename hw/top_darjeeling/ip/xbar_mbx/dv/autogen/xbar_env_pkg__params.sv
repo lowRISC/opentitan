@@ -33,6 +33,9 @@ tl_device_t xbar_devices[$] = '{
     }},
     '{"mbx_pcie1__soc", '{
         '{32'h01460200, 32'h0146021f}
+    }},
+    '{"racl_ctrl", '{
+        '{32'h01463000, 32'h0146301f}
 }}};
 
   // List of Xbar hosts
@@ -46,5 +49,6 @@ tl_host_t xbar_hosts[$] = '{
         "mbx5__soc",
         "mbx6__soc",
         "mbx_pcie0__soc",
-        "mbx_pcie1__soc"}}
+        "mbx_pcie1__soc",
+        "racl_ctrl"}}
 };

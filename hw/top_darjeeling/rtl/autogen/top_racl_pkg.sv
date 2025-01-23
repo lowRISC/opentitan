@@ -13,13 +13,13 @@
 
 package top_racl_pkg;
   // Number of RACL policies used
-  parameter int unsigned NrRaclPolicies = 1;
+  parameter int unsigned NrRaclPolicies = 3;
 
   // Number of RACL bits transferred
-  parameter int unsigned NrRaclBits = 1;
+  parameter int unsigned NrRaclBits = 4;
 
   // Number of CTN UID bits transferred
-  parameter int unsigned NrCtnUidBits = 1;
+  parameter int unsigned NrCtnUidBits = 5;
 
   // RACL role type binary encoded
   typedef logic [NrRaclBits-1:0] racl_role_t;
@@ -43,10 +43,10 @@ package top_racl_pkg;
   parameter racl_policy_vec_t RACL_POLICY_VEC_DEFAULT = '0;
 
   // Default ROT Private read policy value
-  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_RD = 2'h0;
+  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_RD = 16'h1;
 
   // Default ROT Private write policy value
-  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_WR = 2'h0;
+  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_WR = 16'h1;
 
   // RACL information logged in case of a denial
   typedef struct packed {
@@ -62,7 +62,7 @@ package top_racl_pkg;
     logic unused_rsvd_bits;
     unused_rsvd_bits = ^{rsvd};
 
-    return racl_role_t'(rsvd[0:0]);
+    return racl_role_t'(rsvd[8:5]);
   endfunction
 
   // Extract CTN UID bits from the TLUL reserved user bits
@@ -71,8 +71,73 @@ package top_racl_pkg;
     logic unused_rsvd_bits;
     unused_rsvd_bits = ^{rsvd};
 
-    return ctn_uid_t'(rsvd[0:0]);
+    return ctn_uid_t'(rsvd[4:0]);
   endfunction
 
+  // Build a TLUL reserved user bit vector based on RACL role and CTN UID
+  function automatic logic [tlul_pkg::RsvdWidth-1:0] tlul_build_user_rsvd_vec(racl_role_t racl_role,
+                                                                              ctn_uid_t ctn_uid);
+    logic [tlul_pkg::RsvdWidth-1:0] rsvd;
+    rsvd = '0;
+    rsvd[8:5] = racl_role;
+    rsvd[4:0] = ctn_uid;
+    return rsvd;
+  endfunction
+
+  /**
+   * RACL Roles
+   */
+  parameter racl_role_t RACL_ROLE_ROT   = 4'h0;
+  parameter racl_role_t RACL_ROLE_ROLE1 = 4'h1;
+  parameter racl_role_t RACL_ROLE_SOC   = 4'h2;
+
+  /**
+   * Policies for group Null
+   */
+
+  /*
+   * Policy ALL_RD_WR allowed READ roles:
+   *   ROT, ROLE1, SOC
+   */
+  parameter racl_role_vec_t RACL_POLICY_ALL_RD_WR_RD_DEFAULT = 16'h7;
+
+  /**
+   * Policy ALL_RD_WR allowed WRITE roles:
+   *   ROT, ROLE1, SOC
+   */
+  parameter racl_role_vec_t RACL_POLICY_ALL_RD_WR_WR_DEFAULT = 16'h7;
+
+  /*
+   * Policy ROT_PRIVATE allowed READ roles:
+   *   ROT
+   */
+  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_RD_DEFAULT = 16'h1;
+
+  /**
+   * Policy ROT_PRIVATE allowed WRITE roles:
+   *   ROT
+   */
+  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_WR_DEFAULT = 16'h1;
+
+  /*
+   * Policy SOC_ROT allowed READ roles:
+   *   ROT, SOC
+   */
+  parameter racl_role_vec_t RACL_POLICY_SOC_ROT_RD_DEFAULT = 16'h5;
+
+  /**
+   * Policy SOC_ROT allowed WRITE roles:
+   *   ROT, SOC
+   */
+  parameter racl_role_vec_t RACL_POLICY_SOC_ROT_WR_DEFAULT = 16'h5;
+
+
+  /**
+   * RACL groups:
+   *   Null
+   *     ALL_RD_WR   (Idx 0)
+   *     ROT_PRIVATE (Idx 1)
+   *     SOC_ROT     (Idx 2)
+   */
 
 endpackage

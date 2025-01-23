@@ -1808,8 +1808,10 @@ pub enum AlertPeripheral {
     MbxPcie1 = 39,
     /// soc_dbg_ctrl
     SocDbgCtrl = 40,
+    /// racl_ctrl
+    RaclCtrl = 41,
     /// rv_core_ibex
-    RvCoreIbex = 41,
+    RvCoreIbex = 42,
 }
 
 /// Alert Handler Alert Source.
@@ -2009,14 +2011,18 @@ pub enum AlertId {
     SocDbgCtrlFatalFault = 93,
     /// soc_dbg_ctrl_recov_ctrl_update_err
     SocDbgCtrlRecovCtrlUpdateErr = 94,
+    /// racl_ctrl_recov_ctrl_update_err
+    RaclCtrlRecovCtrlUpdateErr = 95,
+    /// racl_ctrl_fatal_fault
+    RaclCtrlFatalFault = 96,
     /// rv_core_ibex_fatal_sw_err
-    RvCoreIbexFatalSwErr = 95,
+    RvCoreIbexFatalSwErr = 97,
     /// rv_core_ibex_recov_sw_err
-    RvCoreIbexRecovSwErr = 96,
+    RvCoreIbexRecovSwErr = 98,
     /// rv_core_ibex_fatal_hw_err
-    RvCoreIbexFatalHwErr = 97,
+    RvCoreIbexFatalHwErr = 99,
     /// rv_core_ibex_recov_hw_err
-    RvCoreIbexRecovHwErr = 98,
+    RvCoreIbexRecovHwErr = 100,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2118,10 +2124,12 @@ impl TryFrom<u32> for AlertId {
             92 => Ok(Self::MbxPcie1RecovFault),
             93 => Ok(Self::SocDbgCtrlFatalFault),
             94 => Ok(Self::SocDbgCtrlRecovCtrlUpdateErr),
-            95 => Ok(Self::RvCoreIbexFatalSwErr),
-            96 => Ok(Self::RvCoreIbexRecovSwErr),
-            97 => Ok(Self::RvCoreIbexFatalHwErr),
-            98 => Ok(Self::RvCoreIbexRecovHwErr),
+            95 => Ok(Self::RaclCtrlRecovCtrlUpdateErr),
+            96 => Ok(Self::RaclCtrlFatalFault),
+            97 => Ok(Self::RvCoreIbexFatalSwErr),
+            98 => Ok(Self::RvCoreIbexRecovSwErr),
+            99 => Ok(Self::RvCoreIbexFatalHwErr),
+            100 => Ok(Self::RvCoreIbexRecovHwErr),
             _ => Err(val),
         }
     }
@@ -2131,7 +2139,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 101] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // GpioFatalFault -> AlertPeripheral::Gpio
@@ -2322,6 +2330,10 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 99] = [
     AlertPeripheral::SocDbgCtrl,
     // SocDbgCtrlRecovCtrlUpdateErr -> AlertPeripheral::SocDbgCtrl
     AlertPeripheral::SocDbgCtrl,
+    // RaclCtrlRecovCtrlUpdateErr -> AlertPeripheral::RaclCtrl
+    AlertPeripheral::RaclCtrl,
+    // RaclCtrlFatalFault -> AlertPeripheral::RaclCtrl
+    AlertPeripheral::RaclCtrl,
     // RvCoreIbexFatalSwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovSwErr -> AlertPeripheral::RvCoreIbex

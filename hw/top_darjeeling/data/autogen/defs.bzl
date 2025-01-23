@@ -27,6 +27,7 @@ load("//hw/ip/otbn:defs.bzl", "OTBN")
 load("//hw/top_darjeeling/ip_autogen/otp_ctrl:defs.bzl", "OTP_CTRL")
 load("//hw/top_darjeeling/ip_autogen/pinmux:defs.bzl", "PINMUX")
 load("//hw/top_darjeeling/ip_autogen/pwrmgr:defs.bzl", "PWRMGR")
+load("//hw/top_darjeeling/ip_autogen/racl_ctrl:defs.bzl", "RACL_CTRL")
 load("//hw/ip/rom_ctrl:defs.bzl", "ROM_CTRL")
 load("//hw/top_darjeeling/ip_autogen/rstmgr:defs.bzl", "RSTMGR")
 load("//hw/ip/rv_core_ibex:defs.bzl", "RV_CORE_IBEX")
@@ -65,6 +66,7 @@ DARJEELING = opentitan_top(
         OTP_CTRL,
         PINMUX,
         PWRMGR,
+        RACL_CTRL,
         ROM_CTRL,
         RSTMGR,
         RV_CORE_IBEX,
