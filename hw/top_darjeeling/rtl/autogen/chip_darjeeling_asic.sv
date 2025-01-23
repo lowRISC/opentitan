@@ -1163,7 +1163,6 @@ module chip_darjeeling_asic #(
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
-  assign ast_alert_rsp = '0;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -1266,6 +1265,8 @@ module chip_darjeeling_asic #(
   assign unused_pwr_clamp = base_ast_pwr.pwr_clamp;
 
 
+  prim_mubi_pkg::mubi4_t ast_init_done;
+
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
@@ -1295,7 +1296,7 @@ module chip_darjeeling_asic #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       (  ),
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     .clk_ast_tlul_i (clkmgr_aon_clocks.clk_io_div4_infra),
     .clk_ast_adc_i (clkmgr_aon_clocks.clk_aon_peri),
@@ -1552,7 +1553,7 @@ module chip_darjeeling_asic #(
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0),
     .compound_txn_in_progress_o(),
-    .readback_en_i(prim_mubi_pkg::MuBi4False),
+    .readback_en_i(1'b0),
     .readback_error_o(),
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0)
@@ -1661,6 +1662,9 @@ module chip_darjeeling_asic #(
     .sck_monitor_o                     ( sck_monitor                ),
     .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
+    .sensor_ctrl_ast_alert_req_i       ( ast_alert_req              ),
+    .sensor_ctrl_ast_alert_rsp_o       ( ast_alert_rsp              ),
+    .sensor_ctrl_ast_status_i          ( ast_pwst.io_pok            ),
     .ast_edn_req_i                     ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                     ( ast_edn_edn_rsp            ),
     .ast_tl_req_o                      ( base_ast_bus               ),
@@ -1737,6 +1741,8 @@ module chip_darjeeling_asic #(
     .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
     .hi_speed_sel_o                    ( hi_speed_sel               ),
     .div_step_down_req_i               ( div_step_down_req          ),
+    .calib_rdy_i                       ( ast_init_done              ),
+    .ast_init_done_i                   ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1761,28 +1767,10 @@ module chip_darjeeling_asic #(
     .dio_attr_o                        ( dio_attr                   ),
 
     // Memory attributes
-    .rom_ctrl0_cfg_i                           ( '0 ),
-    .rom_ctrl1_cfg_i                           ( '0 ),
-    .i2c_ram_1p_cfg_i                          ( ram_1p_cfg ),
-    .i2c_ram_1p_cfg_rsp_o                      (   ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( ram_1p_cfg ),
-    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (   ),
-    .sram_ctrl_main_ram_1p_cfg_i               ( ram_1p_cfg ),
-    .sram_ctrl_main_ram_1p_cfg_rsp_o           (   ),
-    .sram_ctrl_mbox_ram_1p_cfg_i               ( ram_1p_cfg ),
-    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (   ),
-    .otbn_imem_ram_1p_cfg_i                    ( ram_1p_cfg ),
-    .otbn_imem_ram_1p_cfg_rsp_o                (   ),
-    .otbn_dmem_ram_1p_cfg_i                    ( ram_1p_cfg ),
-    .otbn_dmem_ram_1p_cfg_rsp_o                (   ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( ram_1p_cfg ),
-    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (   ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( ram_1p_cfg ),
-    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (   ),
-    .spi_device_ram_2p_cfg_sys2spi_i           ( spi_ram_2p_cfg ),
-    .spi_device_ram_2p_cfg_spi2sys_i           ( spi_ram_2p_cfg ),
-    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (   ),
-    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (   ),
+    .ram_1p_cfg_i                      ( ram_1p_cfg                 ),
+    .spi_ram_2p_cfg_i                  ( spi_ram_2p_cfg             ),
+
+    .rom_cfg_i                         ( rom_cfg                    ),
 
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),

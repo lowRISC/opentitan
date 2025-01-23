@@ -343,20 +343,6 @@ module clkmgr_bind;
     .meas_ctrl_en(u_reg.io_meas_ctrl_en_qs)
   );
 
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div2_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_div2_meas_ctrl_en_qs)
-  );
-
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div4_ctrl_en_sva_if (
-    .clk(clk_i),
-    .rst_n(rst_ni),
-    .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.io_div4_meas_ctrl_en_qs)
-  );
-
   bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_main_ctrl_en_sva_if (
     .clk(clk_i),
     .rst_n(rst_ni),
@@ -369,6 +355,20 @@ module clkmgr_bind;
     .rst_n(rst_ni),
     .calib_rdy(calib_rdy_i),
     .meas_ctrl_en(u_reg.usb_meas_ctrl_en_qs)
+  );
+
+  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div2_ctrl_en_sva_if (
+    .clk(clk_i),
+    .rst_n(rst_ni),
+    .calib_rdy(calib_rdy_i),
+    .meas_ctrl_en(u_reg.io_div2_meas_ctrl_en_qs)
+  );
+
+  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_io_div4_ctrl_en_sva_if (
+    .clk(clk_i),
+    .rst_n(rst_ni),
+    .calib_rdy(calib_rdy_i),
+    .meas_ctrl_en(u_reg.io_div4_meas_ctrl_en_qs)
   );
 
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (

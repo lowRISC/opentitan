@@ -339,6 +339,7 @@ package lc_ctrl_state_pkg;
   } lc_cnt_e;
 
   typedef logic [SocDbgStateWidth-1:0] soc_dbg_state_t;
+  parameter soc_dbg_state_t SOC_DBG_STATE_DEFAULT = '0;
   typedef enum soc_dbg_state_t {
     SocDbgStBlank   = {ZRO, ZRO},
     SocDbgStPreProd = { E1,  E0},
