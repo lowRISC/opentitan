@@ -134,12 +134,20 @@ const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake
 %       for conn in [c for c in pinmux_info["ios"] if c["name"] == m["name"] + "_" + port]:
 <%
             pin_name = port
+            if conn["type"] == "input":
+              pin_dir = "kDtPeriphIoDirIn"
+            elif conn["type"] == "output":
+              pin_dir = "kDtPeriphIoDirOut"
+            else:
+              assert conn["type"] == "inout", "unexpected connection dir '{}'".format(conn["type"])
+              pin_dir = "kDtPeriphIoDirInout"
+
             if conn["idx"] != -1:
                 pin_name += str(conn["idx"])
             if conn["connection"] == "muxed":
                 pin_type = "Mio"
-                pin_periph_input_or_direct_pad = "kDtPeriphIoMioPeriphInputNone"
-                pin_outsel = "kDtPeriphIoMioOutselNone"
+                pin_periph_input_or_direct_pad = "0"
+                pin_outsel = "0"
                 if conn["type"] in ["input", "inout"]:
                     pin_periph_input_or_direct_pad = snake_to_constant_name("top_{}_pinmux_peripheral_in_{}_{}".format(top["name"], m["name"], pin_name))
                 if conn["type"] in ["output", "inout"]:
@@ -157,6 +165,7 @@ const dt_${module_name}_t ${snake_to_constant_name("dt_" + module_name)}[${snake
         [${snake_to_constant_name(f"dt_{module_name}_periph_io_{pin_name}")}] = {
           .__internal = {
             .type = kDtPeriphIoType${pin_type},
+            .dir = ${pin_dir},
             .periph_input_or_direct_pad = ${pin_periph_input_or_direct_pad},
             .outsel = ${pin_outsel},
           }
@@ -270,8 +279,8 @@ const dt_pad_t kDtPad[kDtPadIndexCount] = {
 <%
     if pad["connection"] == "muxed":
         pad_type = "Mio"
-        pad_mio_out_or_direct_pad = "kDtPadMioOutNone"
-        pad_insel = "kDtPadInselNone"
+        pad_mio_out_or_direct_pad = "0"
+        pad_insel = "0"
         if pad["port_type"] in ["input", "inout"]:
             pad_mio_out_or_direct_pad = snake_to_constant_name("top_{}_pinmux_mio_out_{}".format(top["name"], padname))
         if pad["port_type"] in ["output", "inout"]:
@@ -300,7 +309,7 @@ const dt_pad_t kDtPad[kDtPadIndexCount] = {
 const dt_periph_io_t kDtPeriphIoConstantHighZ = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
-    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .periph_input_or_direct_pad = 0,
     .outsel = kDtPinmuxOutselConstantHighZ,
   }
 };
@@ -309,7 +318,7 @@ const dt_periph_io_t kDtPeriphIoConstantHighZ = {
 const dt_periph_io_t kDtPeriphIoConstantZero = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
-    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .periph_input_or_direct_pad = 0,
     .outsel = kDtPinmuxOutselConstantZero,
   }
 };
@@ -318,7 +327,7 @@ const dt_periph_io_t kDtPeriphIoConstantZero = {
 const dt_periph_io_t kDtPeriphIoConstantOne = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
-    .periph_input_or_direct_pad = kDtPeriphIoMioPeriphInputNone,
+    .periph_input_or_direct_pad = 0,
     .outsel = kDtPinmuxOutselConstantOne,
   }
 };
