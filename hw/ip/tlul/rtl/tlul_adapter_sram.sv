@@ -689,5 +689,5 @@ module tlul_adapter_sram
   `ASSERT(TlOutKnownIfFifoKnown_A, !$isunknown(rspfifo_rdata) -> !$isunknown(tl_o))
 
   // The definition of d_valid leads to the assertion below.
-  `ASSERT(DValidNeedsReqFifoRValid, d_valid -> reqfifo_rvalid)
+  `ASSERT(DValidNeedsReqFifoRValid_A, d_valid -> reqfifo_rvalid)
 endmodule
