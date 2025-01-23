@@ -1,0 +1,36 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+{
+  error_response: true
+  ctn_uid_bit_lsb: 0
+  ctn_uid_bit_msb: 4
+  role_bit_lsb: 5
+  role_bit_msb: 8
+  roles: {
+    "ROT" :  { role_id: 0 }
+    "ROLE1": { role_id: 1 }
+    "SOC":   { role_id: 2 }
+  }
+  policies: {
+    Null: [
+      // Standard policies allowing all roles to access a register
+      { name: "ALL_RD_WR"
+        allowed_rd: [ "ROT", "ROLE1", "SOC" ]
+        allowed_wr: [ "ROT", "ROLE1", "SOC" ]
+      }
+      // Standard policies allowing only the ROT role to access a register
+      { name: "ROT_PRIVATE"
+        rot_private: true
+        allowed_rd: [ "ROT" ]
+        allowed_wr: [ "ROT" ]
+      }
+      // Custom policy
+      { name: "SOC_ROT"
+        allowed_rd: [ "ROT", "SOC" ]
+        allowed_wr: [ "ROT", "SOC" ]
+      }
+    ]
+  }
+}

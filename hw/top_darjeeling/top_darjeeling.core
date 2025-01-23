@@ -48,6 +48,7 @@ filesets:
       - lowrisc:opentitan:top_darjeeling_pwrmgr
       - lowrisc:opentitan:top_darjeeling_rstmgr
       - lowrisc:opentitan:top_darjeeling_rv_plic
+      - lowrisc:opentitan:top_darjeeling_racl_ctrl
       - lowrisc:ip:aon_timer
       - lowrisc:ip:adc_ctrl
       - lowrisc:ip:sysrst_ctrl
