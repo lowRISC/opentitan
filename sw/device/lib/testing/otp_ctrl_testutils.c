@@ -15,9 +15,9 @@
  * OTP the Direct Access Interface (DAI) operation time-out in micro seconds.
  *
  * It is not possible to predict the specific cycle count that a DAI operation
- * takes, thus arbitrary value of 100us is used.
+ * takes, thus arbitrary value of 10ms is used.
  */
-const uint16_t kOtpDaiTimeoutUs = 5000;
+const uint16_t kOtpDaiTimeoutUs = 10000;
 
 /**
  * Checks whether the DAI operation has finished.
