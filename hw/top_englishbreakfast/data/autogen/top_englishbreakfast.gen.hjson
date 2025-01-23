@@ -408,6 +408,39 @@
       }
     ]
   }
+  reset_requests:
+  {
+    int:
+    [
+      {
+        name: MainPwr
+        desc: main power glitch reset request
+        module: pwrmgr_aon
+      }
+      {
+        name: Esc
+        desc: escalation reset request
+        module: alert_handler
+      }
+    ]
+    debug:
+    [
+      {
+        name: Ndm
+        desc: non-debug-module reset request
+        module: rv_dm
+      }
+    ]
+    peripheral:
+    [
+      {
+        name: aon_timer_rst_req
+        width: "1"
+        module: aon_timer_aon
+        desc: watchdog reset requestt
+      }
+    ]
+  }
   num_cores: "1"
   addr_spaces:
   [
@@ -7793,39 +7826,6 @@
       module: aon_timer_aon
     }
   ]
-  reset_requests:
-  {
-    peripheral:
-    [
-      {
-        name: aon_timer_rst_req
-        width: "1"
-        module: aon_timer_aon
-        desc: watchdog reset requestt
-      }
-    ]
-    int:
-    [
-      {
-        name: MainPwr
-        desc: main power glitch reset request
-        module: pwrmgr_aon
-      }
-      {
-        name: Esc
-        desc: escalation reset request
-        module: alert_handler
-      }
-    ]
-    debug:
-    [
-      {
-        name: Ndm
-        desc: non-debug-module reset request
-        module: rv_dm
-      }
-    ]
-  }
   interrupt:
   [
     {

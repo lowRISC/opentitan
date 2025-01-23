@@ -16,15 +16,6 @@
     ]
     reqs:
     {
-      peripheral:
-      [
-        {
-          name: aon_timer_rst_req
-          width: "1"
-          module: aon_timer_aon
-          desc: watchdog reset requestt
-        }
-      ]
       int:
       [
         {
@@ -44,6 +35,15 @@
           name: Ndm
           desc: non-debug-module reset request
           module: rv_dm
+        }
+      ]
+      peripheral:
+      [
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
         }
       ]
     }
