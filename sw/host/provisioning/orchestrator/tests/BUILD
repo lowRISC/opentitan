@@ -91,6 +91,25 @@ sh_test(
     toolchains = ["@rules_python//python:current_py_toolchain"],
 )
 
+sh_test(
+    name = "e2e_multistage_test",
+    srcs = ["e2e_multistage.sh"],
+    data = [
+        ":orchestrator_hyper310_zip",
+        "@rules_python//python:current_py_toolchain",
+    ],
+    env = {
+        "PYTHON": "$(PYTHON3)",
+    },
+    tags = [
+        "changes_otp",
+        "exclusive",
+        "hyper310",
+        "manuf",
+    ],
+    toolchains = ["@rules_python//python:current_py_toolchain"],
+)
+
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
@@ -152,21 +171,3 @@ sh_test(
         "cw340",
     ]
 ]
-
-# TODO: this test seems to work locally but fails in CI.
-# sh_test(
-#     name = "e2e_multistage_test",
-#     srcs = ["e2e_multistage.sh"],
-#     data = [
-#         ":orchestrator_zip",
-#         "@rules_python//python:current_py_toolchain",
-#     ],
-#     env = {
-#         "PYTHON": "$(PYTHON3)",
-#     },
-#     tags = [
-#         "hyper310",
-#         "manuf",
-#     ],
-#     toolchains = ["@rules_python//python:current_py_toolchain"],
-# )
