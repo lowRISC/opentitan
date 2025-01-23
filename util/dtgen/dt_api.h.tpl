@@ -121,6 +121,17 @@ typedef enum dt_periph_io_type {
   kDtPeriphIoTypeUnspecified,
 } dt_periph_io_type_t;
 
+
+/** Direction of a peripheral I/O. */
+typedef enum dt_periph_io_dir {
+  /* This peripheral I/O is an input. */
+  kDtPeriphIoDirIn,
+  /* This peripheral I/O is an output */
+  kDtPeriphIoDirOut,
+  /* This peripheral I/O is an input-output */
+  kDtPeriphIoDirInout,
+} dt_periph_io_dir_t;
+
 /** Peripheral I/O description.
  *
  * A `dt_periph_io_t` represents a HW IP block peripheral I/O, which can be an input, output or both.
@@ -134,28 +145,21 @@ typedef struct dt_periph_io {
   struct {
     /** Peripheral I/O type */
     dt_periph_io_type_t type;
+    /** Peripheral I/O direction. */
+    dt_periph_io_dir_t dir;
     /** For `kDtPeriphIoTypeMio`: peripheral input number. This is the index of the MIO_PERIPH_INSEL register
-     * that controls this peripheral I/O. Set to `kDtPeriphIoMioPeriphInputNone` if this peripheral I/O is not an input.
+     * that controls this peripheral I/O.
      *
      * For `kDtPeriphIoTypeDio`: DIO pad number. This is the index of the various DIO_PAD_* registers
      * that control this peripheral I/O.
      */
     uint16_t periph_input_or_direct_pad;
     /** For `kDtPeriphIoTypeMio`: peripheral output number. This is the value to put in the MIO_OUTSEL registers
-     * to connect an output to this peripheral I/O. Set to `kDtPeriphIoMioOutselNone` if this peripheral I/O is not an output.
+     * to connect an output to this peripheral I/O.
      */
     uint16_t outsel;
   } __internal;
 } dt_periph_io_t;
-
-/** The peripheral I/O is not an MIO input. */
-static const dt_pinmux_peripheral_in_t kDtPeriphIoMioPeriphInputNone = k${top_name.as_camel_case()}PinmuxPeripheralInLast + 1;
-
-/** The peripheral I/O is not an MIO output. */
-static const dt_pinmux_outsel_t kDtPeriphIoMioOutselNone = k${top_name.as_camel_case()}PinmuxOutselLast + 1;
-
-/** The peripheral I/O is not a direct IO. */
-static const dt_pinmux_direct_pad_t kDtPeriphIoDirectPadNone = k${top_name.as_camel_case()}DirectPadsLast + 1;
 
 /** Tie constantly to zero. */
 static const dt_pinmux_outsel_t kDtPinmuxOutselConstantZero = k${top_name.as_camel_case()}PinmuxOutselConstantZero;
@@ -182,7 +186,17 @@ extern const dt_periph_io_t kDtPeriphIoConstantOne;
  * @return The peripheral I/O type (MIO, DIO, etc).
  */
 static inline dt_periph_io_type_t dt_periph_io_type(dt_periph_io_t periph_io) {
-  return (dt_periph_io_type_t)periph_io.__internal.type;
+  return periph_io.__internal.type;
+}
+
+/**
+ * Return the direction of a `dt_periph_io_t`.
+ *
+ * @param dev A peripheral I/O description.
+ * @return The peripheral I/O direction.
+ */
+static inline dt_periph_io_dir_t dt_periph_io_dir(dt_periph_io_t periph_io) {
+  return periph_io.__internal.dir;
 }
 
 /**
@@ -191,16 +205,12 @@ static inline dt_periph_io_type_t dt_periph_io_type(dt_periph_io_t periph_io) {
  * This is the index of the MIO_PERIPH_INSEL register that controls this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
- * @return The peripheral input number of the MIO that this peripheral I/O is connected to,
- * or `kDtPeriphIoMioPeriphInputNone`.
+ * @return The peripheral input number of the MIO that this peripheral I/O is connected to.
  *
  * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
- * inputs. For any other peripheral I/O, this function will return `kDtPeriphIoMioPeriphInputNone`.
+ * inputs (`kDtPeriphIoDirIn`). For any other peripheral I/O, the return value is unspecified.
  */
 static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_io_t periph_io) {
-  if (dt_periph_io_type(periph_io) != kDtPeriphIoTypeMio) {
-    return kDtPeriphIoMioPeriphInputNone;
-  }
   return (dt_pinmux_peripheral_in_t)periph_io.__internal.periph_input_or_direct_pad;
 }
 
@@ -210,16 +220,12 @@ static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_
  * This is the value to put in the `MIO_OUTSEL` registers to connect a pad to this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
- * @return The outsel of the MIO that this peripheral I/O is connected to,
- * or `kDtPeriphIoMioOutselNone`.
+ * @return The outsel of the MIO that this peripheral I/O is connected to.
  *
  * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeMio` which are
- * either outputs. For any other peripheral I/O, this function will return `kDtPeriphIoMioOutselNone`.
+ * outputs (`kDtPeriphIoDirOut`). For any other peripheral I/O, the return value is unspecified.
  */
 static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_io) {
-  if (dt_periph_io_type(periph_io) != kDtPeriphIoTypeMio) {
-    return kDtPeriphIoMioOutselNone;
-  }
   return (dt_pinmux_outsel_t)periph_io.__internal.outsel;
 }
 
@@ -229,17 +235,12 @@ static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_i
  * This is the index of the various `DIO_PAD_*` registers that control this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeDio`.
- * @return The direct pad number of the DIO that this peripheral I/O is connected to,
- * or `kDtPeriphIoDirectPadNone`.
+ * @return The direct pad number of the DIO that this peripheral I/O is connected to.
  *
  * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
- * either outputs or inouts. For any other peripheral I/O type, this function will return
- * `kDtPeriphIoDirectPadNone`.
+ * either outputs or inouts. For any other peripheral I/O type, the return value is unspecified.
  */
 static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_io) {
-  if (dt_periph_io_type(periph_io) != kDtPeriphIoTypeDio) {
-    return kDtPeriphIoDirectPadNone;
-  }
   return (dt_pinmux_direct_pad_t)periph_io.__internal.periph_input_or_direct_pad;
 }
 
@@ -265,29 +266,18 @@ typedef struct dt_pad {
     /** Pad type */
     uint16_t type : 2;
     /** For `kDtPadTypeMio` pads: MIO out number. This is the index of the MIO_OUTSEL register
-     * that controls this pad (or the output part of this pad). Set to `kDtPadMioOutNone`
-     * if this pad is not an output.
+     * that controls this pad (or the output part of this pad).
      *
      * For `kDtPadTypeDio`:  DIO pad number. This is the index of the various DIO_PAD_* registers
      * that control this pad.
      */
     uint16_t mio_out_or_direct_pad: 7;
     /** For `kDtPadTypeMio` pads: MIO pad number. This is the value to put in the MIO_PERIPH_INSEL
-     * registers to connect a peripheral to this pad. Set to `kDtPadInselNone` if this pad is not an input.
+     * registers to connect a peripheral to this pad.
      */
     uint16_t insel: 7;
   } __internal;
 } __attribute__((packed)) dt_pad_t;
-
-
-/** The pad is not an MIO output. */
-static const dt_pinmux_mio_out_t kDtPadMioOutNone = k${top_name.as_camel_case()}PinmuxMioOutLast + 1;
-
-/** The pad is not an MIO input. */
-static const dt_pinmux_insel_t kDtPadInselNone = k${top_name.as_camel_case()}PinmuxInselLast + 1;
-
-/** The pad is not a direct IO. */
-static const dt_pinmux_direct_pad_t kDtPadDirectPadNone = k${top_name.as_camel_case()}DirectPadsLast + 1;
 
 /**
  * Return the type of a `dt_pad_t`.
@@ -306,15 +296,12 @@ static inline dt_pad_type_t dt_pad_type(dt_pad_t pad) {
  * (or the output part of this pad).
  *
  * @param dev A pad of type `kDtPadTypeMio`.
- * @return The pad out number of the MIO or `kDtPadMioOutNone`.
+ * @return The pad out number of the MIO.
  *
  * NOTE This function only makes sense for pads of type `kDtPadTypeMio` which are
- * either inputs or inouts. For any other pad, this function will return `kDtPadMioOutNone`.
+ * either inputs or inouts. For any other pad, the return value is unspecified.
  */
 static inline dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
-  if (dt_pad_type(pad) != kDtPadTypeMio) {
-    return kDtPadMioOutNone;
-  }
   return (dt_pinmux_mio_out_t)pad.__internal.mio_out_or_direct_pad;
 }
 
@@ -325,10 +312,10 @@ static inline dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
  * (or the output part of this pad).
  *
  * @param dev A pad of type `kDtPadTypeMio`.
- * @return The pad out number of the MIO or `kDtPadMioOutNone`.
+ * @return The pad out number of the MIO.
  *
- * NOTE This function only makes sense for pads of type `kDtPadTypeMio` which are
- * either inputs or inouts. For any other pad, this function will return `kDtPadMioOutNone`.
+ * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
+ * For any other pad, the return value is unspecified.
  */
 static inline dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
   // Same index as MIO_OUT.
@@ -341,16 +328,12 @@ static inline dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
  * This is the value to put in the `MIO_PERIPH_INSEL` registers to connect a peripheral I/O to this pad.
  *
  * @param dev A pad of type `kDtPadTypeMio`.
- * @return The insel of the MIO that this pad is connected to,
- * or `kDtPadInselNone`.
+ * @return The insel of the MIO that this pad is connected to.
  *
- * NOTE This function only makes sense for pads of type `kDtPadTypeMio` which are
- * either inputs or inouts. For any other pad, this function will return `kDtPadInselNone`.
+ * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
+ * For any other pad, the return value is unspecified.
  */
 static inline dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
-  if (dt_pad_type(pad) != kDtPadTypeMio) {
-    return kDtPadInselNone;
-  }
   return (dt_pinmux_insel_t)pad.__internal.insel;
 }
 
@@ -360,16 +343,12 @@ static inline dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
  * This is the index of the various `DIO_PAD_*` registers that control this pad.
  *
  * @param dev A pad of type `kDtPadTypeDio`.
- * @return The direct pad number of the DID that this pad is connected to,
- * or `kDtPeriphIoDirectPadNone`.
+ * @return The direct pad number of the DID that this pad is connected to.
  *
  * NOTE This function only makes sense for pads of type `kDtPeriphIoTypeDio` which are
- * either outputs or inouts. For any other pad type, this function will return `kDtPadDirectPadNone`.
+ * either outputs or inouts. For any other pad type, the return value is unspecified.
  */
 static inline dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad) {
-  if (dt_pad_type(pad) != kDtPadTypeDio) {
-    return kDtPadDirectPadNone;
-  }
   return (dt_pinmux_direct_pad_t)pad.__internal.mio_out_or_direct_pad;
 }
 
