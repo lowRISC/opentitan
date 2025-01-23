@@ -108,6 +108,9 @@ CONST = struct(
             WRITE_CHECK = 0x0242440d,
             DATA_INVALID = 0x0342440d,
         ),
+        ROM = struct(
+            IMM_SECTION = 0x034d5203,
+        ),
         UNKNOWN = 0xffffffff,
         OK = 0x739,
     ),

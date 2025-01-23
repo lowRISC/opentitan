@@ -73,7 +73,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
             "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH": otp_hex(0x1234),
         },
-        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.ROM.IMM_SECTION)),
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
     },
     {
@@ -116,7 +116,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         # The hash check should fail, since the offset is included in the hash,
         # triggering a hardened check fail (which executes an unimp; triggering
         # an exception and shutdown).
-        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.ROM.IMM_SECTION)),
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
     },
     {
@@ -137,7 +137,7 @@ IMMUTABLE_PARTITION_TEST_CASES = [
         # The hash check should fail, since the length is included in the hash,
         # triggering a hardened check fail (which executes an unimp; triggering
         # an exception and shutdown).
-        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.INTERRUPT.ILLEGAL_INSTRUCTION)),
+        "exit_success": MSG_TEMPLATE_BFV.format(hex_digits(CONST.BFV.ROM.IMM_SECTION)),
         "exit_failure": DEFAULT_TEST_SUCCESS_MSG,
     },
     {
