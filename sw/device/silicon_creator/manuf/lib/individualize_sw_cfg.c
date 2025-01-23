@@ -207,9 +207,9 @@ static status_t manuf_individualize_device_ast_cfg(
     }
     TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg, addr,
                                       &relative_addr));
-    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl,
-                                       kDifOtpCtrlPartitionCreatorSwCfg,
-                                       relative_addr, &data, /*len=*/1));
+    TRY(otp_ctrl_testutils_dai_write32(
+        otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data,
+        /*len=*/1));
   }
   return OK_STATUS();
 }
