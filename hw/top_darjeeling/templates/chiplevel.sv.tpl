@@ -1139,7 +1139,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .dio_attr_o                        ( dio_attr                   ),
 
     // Memory attributes
-    .rom_cfg_i                                 ( '0 ),
+    .rom_ctrl0_cfg_i                           ( '0 ),
+    .rom_ctrl1_cfg_i                           ( '0 ),
     .i2c_ram_1p_cfg_i                          ( ram_1p_cfg ),
     .i2c_ram_1p_cfg_rsp_o                      (   ),
     .sram_ctrl_ret_aon_ram_1p_cfg_i            ( ram_1p_cfg ),
@@ -1351,7 +1352,8 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .dio_attr_o                   ( dio_attr                   ),
 
     // Memory attributes
-    .rom_cfg_i                                 ( '0 ),
+    .rom_ctrl0_cfg_i                           ( '0 ),
+    .rom_ctrl1_cfg_i                           ( '0 ),
     .i2c_ram_1p_cfg_i                          ( '0 ),
     .i2c_ram_1p_cfg_rsp_o                      (    ),
     .sram_ctrl_ret_aon_ram_1p_cfg_i            ( '0 ),

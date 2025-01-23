@@ -1,0 +1,60 @@
+CAPI=2:
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:top_darjeeling_chip_sim:0.1"
+description: "Darjeeling chip DV sim target"
+filesets:
+  files_rtl:
+    depend:
+      - "!gatelevel ? (lowrisc:systems:top_darjeeling)"
+      - lowrisc:systems:top_darjeeling_pkg
+      - "!gatelevel ? (lowrisc:systems:chip_darjeeling_asic)"
+      - lowrisc:ibex:ibex_tracer
+    files:
+    file_type: systemVerilogSource
+
+  files_dv:
+    depend:
+      - lowrisc:ip:tlul
+      - lowrisc:dv:top_darjeeling_chip_test
+      - lowrisc:opentitan:top_darjeeling_clkmgr_sva
+      - lowrisc:opentitan:top_darjeeling_pwrmgr_sva
+      - lowrisc:opentitan:top_darjeeling_rstmgr_sva
+      - lowrisc:dv:top_darjeeling_sva
+      - lowrisc:dv:top_darjeeling_xbar_dbg_bind
+      - lowrisc:dv:top_darjeeling_xbar_main_bind
+      - lowrisc:dv:top_darjeeling_xbar_peri_bind
+      - lowrisc:dv:xbar_test
+      - lowrisc:dv:xbar_macros
+      - lowrisc:dv:sim_sram
+      - lowrisc:dv:sw_test_status
+      - lowrisc:dv:sw_logger_if
+      - lowrisc:dv:mem_bkdr_util
+    files:
+      - tb/chip_hier_macros.svh: {is_include_file: true}
+      - autogen/tb__xbar_connect.sv: {is_include_file: true}
+      - autogen/xbar_env_pkg__params.sv: {is_include_file: true}
+      - autogen/tb__alert_handler_connect.sv: {is_include_file: true}
+      - tb/tb.sv
+    file_type: systemVerilogSource
+
+  files_veriblelint_waiver:
+    files:
+      - lint/chip_sim.vbw
+    file_type: veribleLintWaiver
+
+targets:
+  default: &default_target
+    toplevel: tb
+    filesets:
+      - tool_veriblelint ? (files_veriblelint_waiver)
+      - files_rtl
+      - files_dv
+
+  sim:
+    <<: *default_target
+    default_tool: vcs
+
+  lint:
+    <<: *default_target

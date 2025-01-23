@@ -1,35 +1,6 @@
 # Hardware Interfaces
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/top_darjeeling/ip_autogen/pinmux/data/pinmux.hjson -->
-Referring to the [Comportable guideline for peripheral device functionality](https://opentitan.org/book/doc/contributing/hw/comportability), the module **`pinmux`** has the following hardware interfaces defined
-- Primary Clock: **`clk_i`**
-- Other Clocks: **`clk_aon_i`**
-- Bus Device Interfaces (TL-UL): **`tl`**
-- Bus Host Interfaces (TL-UL): *none*
-- Peripheral Pins for Chip IO: *none*
-- Interrupts: *none*
-
-## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
-
-| Port Name    | Package::Struct   | Type    | Act   |   Width | Description                                                                           |
-|:-------------|:------------------|:--------|:------|--------:|:--------------------------------------------------------------------------------------|
-| sleep_en     | logic             | uni     | rcv   |       1 | Level signal that is asserted when the power manager enters sleep.                    |
-| pin_wkup_req | logic             | uni     | req   |       1 | Wakeup request from wakeup detectors, to the power manager, running on the AON clock. |
-| tl           | tlul_pkg::tl      | req_rsp | rsp   |       1 |                                                                                       |
-
-## Security Alerts
-
-| Alert Name   | Description                                                                       |
-|:-------------|:----------------------------------------------------------------------------------|
-| fatal_fault  | This fatal alert is triggered when a fatal TL-UL bus integrity fault is detected. |
-
-## Security Countermeasures
-
-| Countermeasure ID    | Description                      |
-|:---------------------|:---------------------------------|
-| PINMUX.BUS.INTEGRITY | End-to-end bus integrity scheme. |
-
-
 <!-- END CMDGEN -->
 
 ## Parameters
