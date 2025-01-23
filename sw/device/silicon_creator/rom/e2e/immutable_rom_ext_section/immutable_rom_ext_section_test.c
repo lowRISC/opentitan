@@ -17,6 +17,11 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+#ifndef IMMUTABLE_MESSAGE
+//                           l b a t u m m I
+#define IMMUTABLE_MESSAGE 0x6c626174756d6d49;
+#endif
+
 enum {
   kImmutableRomExtSectionHashSizeIn32BitWords =
       OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_SHA256_HASH_SIZE /
@@ -26,8 +31,7 @@ enum {
 
 OT_USED OT_SECTION(".rom_ext_immutable") void rom_ext_non_mutable(void) {
   // Print "Immutable" to the UART console.
-  //                        l b a t u m m I
-  const uint64_t kStr1 = 0x6c626174756d6d49;
+  const uint64_t kStr1 = IMMUTABLE_MESSAGE;
   //                        e
   const uint32_t kStr2 = 0x65;
   const uint32_t kNewline = 0x0a0d;
