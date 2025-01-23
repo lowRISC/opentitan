@@ -178,7 +178,7 @@ module clkmgr_reg_top (
   logic io_div4_meas_ctrl_en_busy;
   logic io_div4_meas_ctrl_shadowed_re;
   logic io_div4_meas_ctrl_shadowed_we;
-  logic [15:0] io_div4_meas_ctrl_shadowed_qs;
+  logic [7:0] io_div4_meas_ctrl_shadowed_qs;
   logic io_div4_meas_ctrl_shadowed_busy;
   logic io_div4_meas_ctrl_shadowed_hi_storage_err;
   logic io_div4_meas_ctrl_shadowed_hi_update_err;
@@ -189,7 +189,7 @@ module clkmgr_reg_top (
   logic main_meas_ctrl_en_busy;
   logic main_meas_ctrl_shadowed_re;
   logic main_meas_ctrl_shadowed_we;
-  logic [19:0] main_meas_ctrl_shadowed_qs;
+  logic [11:0] main_meas_ctrl_shadowed_qs;
   logic main_meas_ctrl_shadowed_busy;
   logic main_meas_ctrl_shadowed_hi_storage_err;
   logic main_meas_ctrl_shadowed_hi_update_err;
@@ -200,7 +200,7 @@ module clkmgr_reg_top (
   logic usb_meas_ctrl_en_busy;
   logic usb_meas_ctrl_shadowed_re;
   logic usb_meas_ctrl_shadowed_we;
-  logic [17:0] usb_meas_ctrl_shadowed_qs;
+  logic [11:0] usb_meas_ctrl_shadowed_qs;
   logic usb_meas_ctrl_shadowed_busy;
   logic usb_meas_ctrl_shadowed_hi_storage_err;
   logic usb_meas_ctrl_shadowed_hi_update_err;
@@ -271,25 +271,25 @@ module clkmgr_reg_top (
   assign unused_io_div4_io_div4_meas_ctrl_en_wdata =
       ^io_div4_io_div4_meas_ctrl_en_wdata;
 
-  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-  logic [7:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
-  logic [15:0] io_div4_io_div4_meas_ctrl_shadowed_qs;
-  logic [15:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
+  logic [3:0]  io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+  logic [3:0]  io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+  logic [7:0] io_div4_io_div4_meas_ctrl_shadowed_qs;
+  logic [7:0] io_div4_io_div4_meas_ctrl_shadowed_wdata;
   logic io_div4_io_div4_meas_ctrl_shadowed_we;
   logic unused_io_div4_io_div4_meas_ctrl_shadowed_wdata;
   logic io_div4_io_div4_meas_ctrl_shadowed_re;
   logic io_div4_io_div4_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    io_div4_io_div4_meas_ctrl_shadowed_qs = 16'h6e82;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[7:0] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
-    io_div4_io_div4_meas_ctrl_shadowed_qs[15:8] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_qs = 8'he;
+    io_div4_io_div4_meas_ctrl_shadowed_qs[3:0] = io_div4_io_div4_meas_ctrl_shadowed_hi_qs_int;
+    io_div4_io_div4_meas_ctrl_shadowed_qs[7:4] = io_div4_io_div4_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(16),
-    .ResetVal(16'h6e82),
-    .BitMask(16'hffff),
+    .DataWidth(8),
+    .ResetVal(8'he),
+    .BitMask(8'hff),
     .DstWrReq(0)
   ) u_io_div4_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -299,7 +299,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (io_div4_meas_ctrl_shadowed_we),
     .src_re_i     (io_div4_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[15:0]),
+    .src_wd_i     (reg_wdata[7:0]),
     .src_busy_o   (io_div4_meas_ctrl_shadowed_busy),
     .src_qs_o     (io_div4_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -357,25 +357,25 @@ module clkmgr_reg_top (
   assign unused_main_main_meas_ctrl_en_wdata =
       ^main_main_meas_ctrl_en_wdata;
 
-  logic [9:0]  main_main_meas_ctrl_shadowed_hi_qs_int;
-  logic [9:0]  main_main_meas_ctrl_shadowed_lo_qs_int;
-  logic [19:0] main_main_meas_ctrl_shadowed_qs;
-  logic [19:0] main_main_meas_ctrl_shadowed_wdata;
+  logic [5:0]  main_main_meas_ctrl_shadowed_hi_qs_int;
+  logic [5:0]  main_main_meas_ctrl_shadowed_lo_qs_int;
+  logic [11:0] main_main_meas_ctrl_shadowed_qs;
+  logic [11:0] main_main_meas_ctrl_shadowed_wdata;
   logic main_main_meas_ctrl_shadowed_we;
   logic unused_main_main_meas_ctrl_shadowed_wdata;
   logic main_main_meas_ctrl_shadowed_re;
   logic main_main_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    main_main_meas_ctrl_shadowed_qs = 20'h7a9fe;
-    main_main_meas_ctrl_shadowed_qs[9:0] = main_main_meas_ctrl_shadowed_hi_qs_int;
-    main_main_meas_ctrl_shadowed_qs[19:10] = main_main_meas_ctrl_shadowed_lo_qs_int;
+    main_main_meas_ctrl_shadowed_qs = 12'h19a;
+    main_main_meas_ctrl_shadowed_qs[5:0] = main_main_meas_ctrl_shadowed_hi_qs_int;
+    main_main_meas_ctrl_shadowed_qs[11:6] = main_main_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(20),
-    .ResetVal(20'h7a9fe),
-    .BitMask(20'hfffff),
+    .DataWidth(12),
+    .ResetVal(12'h19a),
+    .BitMask(12'hfff),
     .DstWrReq(0)
   ) u_main_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -385,7 +385,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (main_meas_ctrl_shadowed_we),
     .src_re_i     (main_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[19:0]),
+    .src_wd_i     (reg_wdata[11:0]),
     .src_busy_o   (main_meas_ctrl_shadowed_busy),
     .src_qs_o     (main_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -443,25 +443,25 @@ module clkmgr_reg_top (
   assign unused_usb_usb_meas_ctrl_en_wdata =
       ^usb_usb_meas_ctrl_en_wdata;
 
-  logic [8:0]  usb_usb_meas_ctrl_shadowed_hi_qs_int;
-  logic [8:0]  usb_usb_meas_ctrl_shadowed_lo_qs_int;
-  logic [17:0] usb_usb_meas_ctrl_shadowed_qs;
-  logic [17:0] usb_usb_meas_ctrl_shadowed_wdata;
+  logic [5:0]  usb_usb_meas_ctrl_shadowed_hi_qs_int;
+  logic [5:0]  usb_usb_meas_ctrl_shadowed_lo_qs_int;
+  logic [11:0] usb_usb_meas_ctrl_shadowed_qs;
+  logic [11:0] usb_usb_meas_ctrl_shadowed_wdata;
   logic usb_usb_meas_ctrl_shadowed_we;
   logic unused_usb_usb_meas_ctrl_shadowed_wdata;
   logic usb_usb_meas_ctrl_shadowed_re;
   logic usb_usb_meas_ctrl_shadowed_regwen;
 
   always_comb begin
-    usb_usb_meas_ctrl_shadowed_qs = 18'h1ccfa;
-    usb_usb_meas_ctrl_shadowed_qs[8:0] = usb_usb_meas_ctrl_shadowed_hi_qs_int;
-    usb_usb_meas_ctrl_shadowed_qs[17:9] = usb_usb_meas_ctrl_shadowed_lo_qs_int;
+    usb_usb_meas_ctrl_shadowed_qs = 12'h19a;
+    usb_usb_meas_ctrl_shadowed_qs[5:0] = usb_usb_meas_ctrl_shadowed_hi_qs_int;
+    usb_usb_meas_ctrl_shadowed_qs[11:6] = usb_usb_meas_ctrl_shadowed_lo_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(18),
-    .ResetVal(18'h1ccfa),
-    .BitMask(18'h3ffff),
+    .DataWidth(12),
+    .ResetVal(12'h19a),
+    .BitMask(12'hfff),
     .DstWrReq(0)
   ) u_usb_meas_ctrl_shadowed_cdc (
     .clk_src_i    (clk_i),
@@ -471,7 +471,7 @@ module clkmgr_reg_top (
     .src_regwen_i (measure_ctrl_regwen_qs),
     .src_we_i     (usb_meas_ctrl_shadowed_we),
     .src_re_i     (usb_meas_ctrl_shadowed_re),
-    .src_wd_i     (reg_wdata[17:0]),
+    .src_wd_i     (reg_wdata[11:0]),
     .src_busy_o   (usb_meas_ctrl_shadowed_busy),
     .src_qs_o     (usb_meas_ctrl_shadowed_qs), // for software read back
     .dst_update_i ('0),
@@ -1052,7 +1052,7 @@ module clkmgr_reg_top (
   logic io_div4_io_div4_meas_ctrl_shadowed_gated_we;
   assign io_div4_io_div4_meas_ctrl_shadowed_gated_we =
     io_div4_io_div4_meas_ctrl_shadowed_we & io_div4_io_div4_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 7:0
+  //   F[hi]: 3:0
   logic async_io_div4_meas_ctrl_shadowed_hi_err_update;
   logic async_io_div4_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1077,9 +1077,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div4_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (8),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h82),
+    .RESVAL  (4'he),
     .Mubi    (1'b0)
   ) u_io_div4_meas_ctrl_shadowed_hi (
     .clk_i   (clk_io_div4_i),
@@ -1089,7 +1089,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
     .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[7:0]),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[3:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1111,7 +1111,7 @@ module clkmgr_reg_top (
     .err_storage (async_io_div4_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 15:8
+  //   F[lo]: 7:4
   logic async_io_div4_meas_ctrl_shadowed_lo_err_update;
   logic async_io_div4_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1136,9 +1136,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(io_div4_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (8),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (8'h6e),
+    .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_io_div4_meas_ctrl_shadowed_lo (
     .clk_i   (clk_io_div4_i),
@@ -1148,7 +1148,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (io_div4_io_div4_meas_ctrl_shadowed_re),
     .we     (io_div4_io_div4_meas_ctrl_shadowed_gated_we),
-    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[15:8]),
+    .wd     (io_div4_io_div4_meas_ctrl_shadowed_wdata[7:4]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1210,7 +1210,7 @@ module clkmgr_reg_top (
   logic main_main_meas_ctrl_shadowed_gated_we;
   assign main_main_meas_ctrl_shadowed_gated_we =
     main_main_meas_ctrl_shadowed_we & main_main_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 9:0
+  //   F[hi]: 5:0
   logic async_main_meas_ctrl_shadowed_hi_err_update;
   logic async_main_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1235,9 +1235,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(main_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1fe),
+    .RESVAL  (6'h1a),
     .Mubi    (1'b0)
   ) u_main_meas_ctrl_shadowed_hi (
     .clk_i   (clk_main_i),
@@ -1247,7 +1247,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
     .we     (main_main_meas_ctrl_shadowed_gated_we),
-    .wd     (main_main_meas_ctrl_shadowed_wdata[9:0]),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[5:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1269,7 +1269,7 @@ module clkmgr_reg_top (
     .err_storage (async_main_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 19:10
+  //   F[lo]: 11:6
   logic async_main_meas_ctrl_shadowed_lo_err_update;
   logic async_main_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1294,9 +1294,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(main_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (10),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (10'h1ea),
+    .RESVAL  (6'h6),
     .Mubi    (1'b0)
   ) u_main_meas_ctrl_shadowed_lo (
     .clk_i   (clk_main_i),
@@ -1306,7 +1306,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (main_main_meas_ctrl_shadowed_re),
     .we     (main_main_meas_ctrl_shadowed_gated_we),
-    .wd     (main_main_meas_ctrl_shadowed_wdata[19:10]),
+    .wd     (main_main_meas_ctrl_shadowed_wdata[11:6]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1367,7 +1367,7 @@ module clkmgr_reg_top (
   logic usb_usb_meas_ctrl_shadowed_gated_we;
   assign usb_usb_meas_ctrl_shadowed_gated_we =
     usb_usb_meas_ctrl_shadowed_we & usb_usb_meas_ctrl_shadowed_regwen;
-  //   F[hi]: 8:0
+  //   F[hi]: 5:0
   logic async_usb_meas_ctrl_shadowed_hi_err_update;
   logic async_usb_meas_ctrl_shadowed_hi_err_storage;
 
@@ -1392,9 +1392,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(usb_meas_ctrl_shadowed_hi_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (9),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'hfa),
+    .RESVAL  (6'h1a),
     .Mubi    (1'b0)
   ) u_usb_meas_ctrl_shadowed_hi (
     .clk_i   (clk_usb_i),
@@ -1404,7 +1404,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (usb_usb_meas_ctrl_shadowed_re),
     .we     (usb_usb_meas_ctrl_shadowed_gated_we),
-    .wd     (usb_usb_meas_ctrl_shadowed_wdata[8:0]),
+    .wd     (usb_usb_meas_ctrl_shadowed_wdata[5:0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -1426,7 +1426,7 @@ module clkmgr_reg_top (
     .err_storage (async_usb_meas_ctrl_shadowed_hi_err_storage)
   );
 
-  //   F[lo]: 17:9
+  //   F[lo]: 11:6
   logic async_usb_meas_ctrl_shadowed_lo_err_update;
   logic async_usb_meas_ctrl_shadowed_lo_err_storage;
 
@@ -1451,9 +1451,9 @@ module clkmgr_reg_top (
     .dst_pulse_o(usb_meas_ctrl_shadowed_lo_update_err)
   );
   prim_subreg_shadow #(
-    .DW      (9),
+    .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (9'he6),
+    .RESVAL  (6'h6),
     .Mubi    (1'b0)
   ) u_usb_meas_ctrl_shadowed_lo (
     .clk_i   (clk_usb_i),
@@ -1463,7 +1463,7 @@ module clkmgr_reg_top (
     // from register interface
     .re     (usb_usb_meas_ctrl_shadowed_re),
     .we     (usb_usb_meas_ctrl_shadowed_gated_we),
-    .wd     (usb_usb_meas_ctrl_shadowed_wdata[17:9]),
+    .wd     (usb_usb_meas_ctrl_shadowed_wdata[11:6]),
 
     // from internal hardware
     .de     (1'b0),
