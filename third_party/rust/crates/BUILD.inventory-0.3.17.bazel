@@ -30,6 +30,15 @@ rust_library(
     ),
     crate_root = "src/lib.rs",
     edition = "2021",
+    proc_macro_deps = select({
+        "@rules_rust//rust/platform:wasm32-unknown-unknown": [
+            "@crate_index__rustversion-1.0.14//:rustversion",  # cfg(target_family = "wasm")
+        ],
+        "@rules_rust//rust/platform:wasm32-wasi": [
+            "@crate_index__rustversion-1.0.14//:rustversion",  # cfg(target_family = "wasm")
+        ],
+        "//conditions:default": [],
+    }),
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
@@ -72,5 +81,5 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.3.12",
+    version = "0.3.17",
 )

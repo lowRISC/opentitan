@@ -330,6 +330,7 @@ _NORMAL_DEPENDENCIES = {
             "humantime-serde": "@crate_index__humantime-serde-1.1.1//:humantime_serde",
             "indexmap": "@crate_index__indexmap-2.0.0//:indexmap",
             "indicatif": "@crate_index__indicatif-0.17.6//:indicatif",
+            "inventory": "@crate_index__inventory-0.3.17//:inventory",
             "itertools": "@crate_index__itertools-0.13.0//:itertools",
             "libloading": "@crate_index__libloading-0.8.3//:libloading",
             "log": "@crate_index__log-0.4.20//:log",
@@ -501,6 +502,7 @@ _CONDITIONS = {
     "cfg(target_arch = \"wasm32\")": ["@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:wasm32-wasi"],
     "cfg(target_env = \"msvc\")": ["@rules_rust//rust/platform:aarch64-pc-windows-msvc", "@rules_rust//rust/platform:i686-pc-windows-msvc", "@rules_rust//rust/platform:x86_64-pc-windows-msvc"],
     "cfg(target_env = \"sgx\")": [],
+    "cfg(target_family = \"wasm\")": ["@rules_rust//rust/platform:wasm32-unknown-unknown", "@rules_rust//rust/platform:wasm32-wasi"],
     "cfg(target_feature = \"atomics\")": [],
     "cfg(target_os = \"android\")": ["@rules_rust//rust/platform:aarch64-linux-android", "@rules_rust//rust/platform:armv7-linux-androideabi", "@rules_rust//rust/platform:i686-linux-android", "@rules_rust//rust/platform:x86_64-linux-android"],
     "cfg(target_os = \"fuchsia\")": ["@rules_rust//rust/platform:aarch64-fuchsia", "@rules_rust//rust/platform:x86_64-fuchsia"],
@@ -1909,12 +1911,12 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__inventory-0.3.12",
-        sha256 = "e1be380c410bf0595e94992a648ea89db4dd3f3354ba54af206fd2a68cf5ac8e",
+        name = "crate_index__inventory-0.3.17",
+        sha256 = "3b31349d02fe60f80bbbab1a9402364cad7460626d6030494b08ac4a2075bf81",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/inventory/0.3.12/download"],
-        strip_prefix = "inventory-0.3.12",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.inventory-0.3.12.bazel"),
+        urls = ["https://static.crates.io/crates/inventory/0.3.17/download"],
+        strip_prefix = "inventory-0.3.17",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.inventory-0.3.17.bazel"),
     )
 
     maybe(
