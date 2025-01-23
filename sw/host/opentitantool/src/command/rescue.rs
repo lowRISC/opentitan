@@ -98,15 +98,15 @@ impl CommandDispatch for Firmware {
             rescue.set_baud(rate)?;
         }
         rescue.wait()?;
-        rescue.update_firmware(self.slot, payload)?;
         if self.erase_other_slot {
-            // Erase the other slot by programming an empty blob.
+            // Invalidate the other slot by overwriting its header.
             if self.slot == BootSlot::SlotB {
-                rescue.update_firmware(BootSlot::SlotA, &[])?;
+                rescue.update_firmware(BootSlot::SlotA, &vec![0xFF; 2048])?;
             } else {
-                rescue.update_firmware(BootSlot::SlotB, &[])?;
+                rescue.update_firmware(BootSlot::SlotB, &vec![0xFF; 2048])?;
             }
         }
+        rescue.update_firmware(self.slot, payload)?;
         if self.rate.is_some() {
             rescue.set_baud(prev_baudrate)?;
         }
