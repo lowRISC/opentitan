@@ -410,7 +410,8 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
       end else begin
         if (i == SwTypeRom) begin
           // If Rom type AND test_in_rom, append suffix to the image name.
-          if ("test_in_rom" inside {sw_image_flags[i]}) begin
+          if ("test_in_rom" inside {sw_image_flags[i]} &&
+              !("new_rules" inside {sw_image_flags[i]})) begin
             sw_images[i] = $sformatf("%0s_rom_prog_%0s", sw_images[i], sw_build_device);
           // If Rom type but not test_in_rom, no need to tweak name further.
           end else begin
