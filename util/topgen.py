@@ -850,7 +850,8 @@ def _process_top(
             # of as soon as we don't arbitrarily template IP description Hjson
             # files any more.
             if ip_name in ipgen_list and not ip_desc_file.is_file():
-                ipgen_module = lib.find_module_by_type(topcfg['module'], ip_name)
+                ipgen_module = lib.find_module(topcfg['module'], ip_name,
+                                               use_base_template_type=False)
                 template_type = ipgen_module['template_type']
                 log.info(
                     f"To-be-generated Hjson {ip_desc_file} does not yet exist. "

@@ -854,27 +854,19 @@ def num_rom_ctrl(modules):
     return num
 
 
-def find_module(modules, type):
+def find_module(modules, type, use_base_template_type=True):
     '''Returns the first module of a given type
-    For ipgen modules the base template type is used for matching
+    If use_base_template_type is set to True, ipgen-based modules are
+    matched based on the base template type. If set to False, the
+    uniquified type is matched,
     '''
     for m in modules:
-        if m.get('attr') == 'ipgen':
+        if m.get('attr') == 'ipgen' and use_base_template_type:
             if m['template_type'] == type:
                 return m
         else:
             if m['type'] == type:
                 return m
-
-    return None
-
-
-def find_module_by_type(modules, type):
-    '''Returns the first module of a given type
-    '''
-    for m in modules:
-        if m['type'] == type:
-            return m
 
     return None
 
