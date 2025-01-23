@@ -1143,6 +1143,9 @@ module chip_darjeeling_asic #(
   // monitored clock
   logic sck_monitor;
 
+  // debug policy bus
+  soc_dbg_ctrl_pkg::soc_dbg_policy_t soc_dbg_policy_bus;
+
   // observe interface
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
@@ -1150,6 +1153,10 @@ module chip_darjeeling_asic #(
   // otp power sequence
   otp_ctrl_pkg::otp_ast_req_t otp_ctrl_otp_ast_pwr_seq;
   otp_ctrl_pkg::otp_ast_rsp_t otp_ctrl_otp_ast_pwr_seq_h;
+
+  // otp DFT
+  prim_otp_cfg_pkg::otp_cfg_t     otp_cfg = '0;
+  prim_otp_cfg_pkg::otp_cfg_rsp_t otp_cfg_rsp;
 
   // entropy source interface
   // The entropy source pacakge definition should eventually be moved to es
@@ -1163,6 +1170,7 @@ module chip_darjeeling_asic #(
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
+  assign ast_alert_rsp = '0;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -1231,13 +1239,19 @@ module chip_darjeeling_asic #(
     default: '0
   };
 
-  prim_rom_pkg::rom_cfg_t rom_cfg;
-  assign rom_cfg = '{
+  prim_rom_pkg::rom_cfg_t rom_ctrl0_cfg;
+  prim_rom_pkg::rom_cfg_t rom_ctrl1_cfg;
+
+  assign rom_ctrl0_cfg = '{
     test: ast_rom_cfg.test,
     cfg_en: ast_rom_cfg.marg_en,
     cfg: ast_rom_cfg.marg
   };
-
+  assign rom_ctrl1_cfg = '{
+    test: ast_rom_cfg.test,
+    cfg_en: ast_rom_cfg.marg_en,
+    cfg: ast_rom_cfg.marg
+  };
 
   //////////////////////////////////
   // AST - Custom for targets     //
@@ -1553,7 +1567,7 @@ module chip_darjeeling_asic #(
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0),
     .compound_txn_in_progress_o(),
-    .readback_en_i(1'b0),
+    .readback_en_i(prim_mubi_pkg::MuBi4False),
     .readback_error_o(),
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0)
@@ -1581,6 +1595,7 @@ module chip_darjeeling_asic #(
     // Bus ECC is checked at the consumer side.
     .rerror_o (),
     .cfg_i    (ram_1p_cfg),
+    .cfg_rsp_o(),
     .alert_o()
   );
 
@@ -1659,12 +1674,10 @@ module chip_darjeeling_asic #(
     .clks_ast_o                        ( clkmgr_aon_clocks          ),
     .clk_main_jitter_en_o              ( jen                        ),
     .rsts_ast_o                        ( rstmgr_aon_resets          ),
+    .integrator_id_i                   ( '0                         ),
     .sck_monitor_o                     ( sck_monitor                ),
     .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
-    .sensor_ctrl_ast_alert_req_i       ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o       ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i          ( ast_pwst.io_pok            ),
     .ast_edn_req_i                     ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                     ( ast_edn_edn_rsp            ),
     .ast_tl_req_o                      ( base_ast_bus               ),
@@ -1673,10 +1686,14 @@ module chip_darjeeling_asic #(
     .otp_ctrl_otp_ast_pwr_seq_o        ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i      ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                         ( otp_obs                    ),
+    .otp_cfg_i                         ( otp_cfg                    ),
+    .otp_cfg_rsp_o                     ( otp_cfg_rsp                ),
     .ctn_tl_h2d_o                      ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                      ( ctn_tl_d2h[0]              ),
     .soc_gpi_async_o                   (                            ),
     .soc_gpo_async_i                   ( '0                         ),
+    .soc_dbg_policy_bus_o              ( soc_dbg_policy_bus         ),
+    .debug_halt_cpu_boot_i             ( '0                         ),
     .dma_sys_req_o                     (                            ),
     .dma_sys_rsp_i                     ( '0                         ),
     .dma_ctn_tl_h2d_o                  ( ctn_tl_h2d[1]              ),
@@ -1742,7 +1759,6 @@ module chip_darjeeling_asic #(
     .hi_speed_sel_o                    ( hi_speed_sel               ),
     .div_step_down_req_i               ( div_step_down_req          ),
     .calib_rdy_i                       ( ast_init_done              ),
-    .ast_init_done_i                   ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1767,10 +1783,28 @@ module chip_darjeeling_asic #(
     .dio_attr_o                        ( dio_attr                   ),
 
     // Memory attributes
-    .ram_1p_cfg_i                      ( ram_1p_cfg                 ),
-    .spi_ram_2p_cfg_i                  ( spi_ram_2p_cfg             ),
-
-    .rom_cfg_i                         ( rom_cfg                    ),
+    .rom_ctrl0_cfg_i                           ( rom_ctrl0_cfg ),
+    .rom_ctrl1_cfg_i                           ( rom_ctrl1_cfg ),
+    .i2c_ram_1p_cfg_i                          ( ram_1p_cfg ),
+    .i2c_ram_1p_cfg_rsp_o                      (   ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( ram_1p_cfg ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (   ),
+    .sram_ctrl_main_ram_1p_cfg_i               ( ram_1p_cfg ),
+    .sram_ctrl_main_ram_1p_cfg_rsp_o           (   ),
+    .sram_ctrl_mbox_ram_1p_cfg_i               ( ram_1p_cfg ),
+    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (   ),
+    .otbn_imem_ram_1p_cfg_i                    ( ram_1p_cfg ),
+    .otbn_imem_ram_1p_cfg_rsp_o                (   ),
+    .otbn_dmem_ram_1p_cfg_i                    ( ram_1p_cfg ),
+    .otbn_dmem_ram_1p_cfg_rsp_o                (   ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( ram_1p_cfg ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (   ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( ram_1p_cfg ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (   ),
+    .spi_device_ram_2p_cfg_sys2spi_i           ( spi_ram_2p_cfg ),
+    .spi_device_ram_2p_cfg_spi2sys_i           ( spi_ram_2p_cfg ),
+    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (   ),
+    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (   ),
 
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),
