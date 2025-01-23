@@ -69,6 +69,28 @@ orchestrator_cw340_test_settings_transition(
     target = "//sw/host/provisioning/orchestrator/src:orchestrator.zip",
 )
 
+sh_test(
+    name = "e2e_option_flags_test",
+    timeout = "moderate",
+    srcs = ["e2e_option_flags.sh"],
+    data = [
+        ":orchestrator_hyper310_zip",
+        "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+        "@rules_python//python:current_py_toolchain",
+    ],
+    env = {
+        "PYTHON": "$(PYTHON3)",
+        "PACKAGE": "npcr11",
+    },
+    tags = [
+        "changes_otp",
+        "exclusive",
+        "hyper310",
+        "manuf",
+    ],
+    toolchains = ["@rules_python//python:current_py_toolchain"],
+)
+
 [
     sh_test(
         name = "e2e_{}_{}_test".format(sku, fpga),
