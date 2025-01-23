@@ -223,9 +223,9 @@ static status_t manuf_individualize_device_ast_cfg(
     }
     TRY(dif_otp_ctrl_relative_address(kDifOtpCtrlPartitionCreatorSwCfg, addr,
                                       &relative_addr));
-    TRY(otp_ctrl_testutils_dai_write32(otp_ctrl,
-                                       kDifOtpCtrlPartitionCreatorSwCfg,
-                                       relative_addr, &data, /*len=*/1));
+    TRY(otp_ctrl_testutils_dai_write32(
+        otp_ctrl, kDifOtpCtrlPartitionCreatorSwCfg, relative_addr, &data,
+        /*len=*/1));
     flash_info_page_buf[ast_cfg_offset + i] =
         UINT32_MAX;  // Erase AST config data after use.
   }
