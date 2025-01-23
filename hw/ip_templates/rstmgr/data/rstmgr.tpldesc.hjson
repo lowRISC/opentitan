@@ -137,9 +137,9 @@
     }
     {
       name: "module_instance_name"
-      desc: "instance name in case there are multiple pwrmgr instances. Not yet implemented."
+      desc: "instance name in case there are multiple rstmgr instances. Not yet implemented."
       type: "string"
-      default: "pwrmgr"
+      default: "rstmgr"
     }
   ]
 }
