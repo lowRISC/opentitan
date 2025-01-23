@@ -109,7 +109,7 @@ status_t manuf_individualize_device_hw_cfg(
     // empty. In this case we set the HW origin portion of the CP device ID.
     // Otherwise, we expect the CP device ID to be present and non-zero.
     if (flash_cp_device_id_empty) {
-      if (kDeviceType != kDeviceSilicon) {
+      if (kDeviceType != kDeviceSilicon && kDeviceType != kDeviceSimDV) {
         memset(&cp_device_id, 0, sizeof(cp_device_id));
         cp_device_id[0] = 0x00024001u;
       } else {

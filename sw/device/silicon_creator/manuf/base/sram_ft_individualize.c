@@ -229,7 +229,8 @@ static status_t provision(ujson_t *uj) {
   }
 
   // Enable external clock on silicon platforms if requested.
-  if (kDeviceType == kDeviceSilicon && in_data.use_ext_clk) {
+  if ((kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) &&
+      in_data.use_ext_clk) {
     TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr,
                                               /*is_low_speed=*/true));
     IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
