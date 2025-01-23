@@ -251,6 +251,7 @@ class cip_base_vseq #(
 
     cip_tl_host_single_seq tl_seq;
     `uvm_create_on(tl_seq, tl_sequencer_h)
+    csr_utils_pkg::increment_outstanding_access();
     tl_seq.instr_type = instr_type;
     tl_seq.tl_intg_err_type = tl_intg_err_type;
     if (cfg.zero_delays) begin
@@ -264,7 +265,6 @@ class cip_base_vseq #(
         mask  == local::mask;
         data  == local::data;)
 
-    csr_utils_pkg::increment_outstanding_access();
     fork begin : isolation_fork
       fork
         `uvm_send_pri(tl_seq, 100)

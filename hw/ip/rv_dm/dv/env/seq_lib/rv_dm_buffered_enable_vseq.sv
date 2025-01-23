@@ -85,6 +85,8 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
       force_enable_at(Rom);
     end
 
+    csr_utils_pkg::increment_outstanding_access();
+
     // We want to send a TL request to fetch WHERETO. If fetching is enabled, this should respond
     // with a JAL to some address (tested by rv_dm_halt_resume_whereto_vseq). If not, we have just
     // forced the TL connection to work so we should manage to perform the TL transaction, but it
@@ -99,7 +101,6 @@ class rv_dm_buffered_enable_vseq extends rv_dm_base_vseq;
     `DV_CHECK_RANDOMIZE_WITH_FATAL(seq,
                                    write == 1'b0; addr == 'h300 + mem_base_addr; mask == 4'hf;)
 
-    csr_utils_pkg::increment_outstanding_access();
     `DV_SPINWAIT(`uvm_send_pri(seq, 100), "Timed out when sending fetch request")
     csr_utils_pkg::decrement_outstanding_access();
 

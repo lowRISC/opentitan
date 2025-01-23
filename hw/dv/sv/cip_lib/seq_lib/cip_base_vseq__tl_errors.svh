@@ -12,13 +12,13 @@
     seq_t_ tl_seq;                                                                         \
     `uvm_info(`gfn, {"Running ", `"task_name_`"}, UVM_MEDIUM)                              \
     `uvm_create_on(tl_seq, seqr_t)                                                         \
+    csr_utils_pkg::increment_outstanding_access();                                         \
     if (cfg.zero_delays) begin                                                             \
       tl_seq.min_req_delay = 0;                                                            \
       tl_seq.max_req_delay = 0;                                                            \
     end                                                                                    \
     tl_seq.req_abort_pct = $urandom_range(0, 100);                                         \
     `DV_CHECK_RANDOMIZE_WITH_FATAL(tl_seq, with_c_)                                        \
-    csr_utils_pkg::increment_outstanding_access();                                         \
     `DV_SPINWAIT(`uvm_send_pri(tl_seq, 1),                                                 \
         $sformatf("Timeout: %0s with addr %0h", `"task_name_`", tl_seq.addr), 100_000_000) \
     csr_utils_pkg::decrement_outstanding_access();                                         \
