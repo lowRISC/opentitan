@@ -50,7 +50,7 @@ impl CommandDispatch for AssembleCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut image = ImageAssembler::with_params(self.size, self.mirror);
         // Filter out empty arguments that could appear e.g. because of bazel
         // and also trim extra spaces if necessary.
@@ -91,7 +91,7 @@ impl CommandDispatch for ManifestShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let result = image
             .subimages()?
@@ -180,7 +180,7 @@ impl CommandDispatch for ManifestUpdateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut image = image::Image::read_from_file(&self.image)?;
         let mut update_length = self.update_length;
 
@@ -353,7 +353,7 @@ impl CommandDispatch for ManifestVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
 
         let digest = Sha256Digest::from_le_bytes(image.compute_digest()?.to_le_bytes())?;
@@ -401,7 +401,7 @@ impl CommandDispatch for DigestCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let digest = image.compute_digest()?;
         if let Some(bin) = &self.bin {
@@ -429,7 +429,7 @@ impl CommandDispatch for SpxMessageCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let image = image::Image::read_from_file(&self.image)?;
         let mut output = File::create(&self.output)?;
         // Note: the closure returns a Result R, and map_signed region

@@ -4,7 +4,7 @@
 
 use anyhow::{Context, Result};
 use clap::Args;
-use serde_annotate::Annotate;
+
 use std::any::Any;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -26,7 +26,7 @@ impl CommandDispatch for BfvCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         for value in &self.bfv {
             // Decode status.
             let string_bfv = if value.starts_with("0x") {

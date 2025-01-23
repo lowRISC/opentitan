@@ -52,7 +52,7 @@ impl CommandDispatch for EcdsaKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
 
         // The OTP creation tool is written in python and parses arbitrary
@@ -94,7 +94,7 @@ impl CommandDispatch for EcdsaKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let private_key = EcdsaPrivateKey::new();
         let mut der_file = self.output_dir.to_owned();
         der_file.push(&self.basename);
@@ -123,7 +123,7 @@ impl CommandDispatch for EcdsaKeyExportCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
         let key = EcdsaRawPublicKey::try_from(&key)?;
 
@@ -231,7 +231,7 @@ impl CommandDispatch for EcdsaSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let private_key = EcdsaPrivateKey::load(&self.private_key)?;
         let digest = if let Some(input) = &self.input {
             let bytes = std::fs::read(input)?;
@@ -267,7 +267,7 @@ impl CommandDispatch for EcdsaVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = load_pub_or_priv_key(&self.der_file)?;
         let digest = Sha256Digest::from_str(&self.digest)?;
         let signature = EcdsaRawSignature::try_from(hex::decode(&self.signature)?.as_slice())?;

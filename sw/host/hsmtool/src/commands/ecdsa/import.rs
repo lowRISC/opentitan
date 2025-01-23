@@ -6,7 +6,7 @@ use anyhow::{bail, Context, Result};
 use cryptoki::object::Attribute;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
+
 use std::any::Any;
 use std::path::PathBuf;
 use std::str::FromStr;
@@ -76,7 +76,7 @@ impl Dispatch for Import {
         _context: &dyn Any,
         _hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         let session = session.ok_or(HsmError::SessionRequired)?;
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
         let mut public_attrs =

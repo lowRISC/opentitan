@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::{ensure, Result};
-use serde_annotate::Annotate;
+
 use serialport::SerialPortType;
 use std::any::Any;
 use std::cell::RefCell;
@@ -139,7 +139,7 @@ impl<B: Board + 'static> Transport for ChipWhisperer<B> {
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(fpga_program) = action.downcast_ref::<FpgaProgram>() {
             // Program the FPGA bitstream.
             log::info!("Programming the FPGA bitstream.");
