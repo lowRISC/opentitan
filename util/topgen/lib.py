@@ -364,6 +364,23 @@ class MemoryRegion(object):
             return self.name + Name(["size", "words"])
 
 
+def load_cfg(cfg_path: str) -> Dict[str, object]:
+    """Loads an hjson file and returns the dictionary.
+
+    This is suitable for the config files used by topgen.
+    """
+    try:
+        with open(cfg_path, "r") as fcfg:
+            cfg = hjson.load(fcfg,
+                             use_decimal=True,
+                             object_pairs_hook=OrderedDict)
+    except ValueError:
+        raise SystemExit(f"Loading hjson at '{cfg_path}': {sys.exc_info()[1]}")
+    except OSError:
+        raise SystemExit(sys.exc_info()[1])
+    return cfg
+
+
 def is_ipcfg(ip: Path) -> bool:  # return bool
     log.info("IP Path: %s" % repr(ip))
     ip_name = ip.parents[1].name
@@ -417,16 +434,8 @@ def get_hjsonobj_xbars(xbar_path):
     It could be type: "top" or type: "xbar"
     returns [(name, obj), ... ]
     """
-    p = xbar_path.glob('*.hjson')
-    try:
-        xbar_objs = [
-            hjson.load(x.open('r'),
-                       use_decimal=True,
-                       object_pairs_hook=OrderedDict) for x in p
-        ]
-    except ValueError:
-        raise SystemExit(sys.exc_info()[1])
-
+    paths = xbar_path.glob('*.hjson')
+    xbar_objs = [load_cfg(p) for p in paths]
     xbar_objs = [x for x in xbar_objs if is_xbarcfg(x)]
 
     return xbar_objs
@@ -864,21 +873,39 @@ def num_rom_ctrl(modules):
     return num
 
 
-def find_module(modules, type, use_base_template_type=True):
-    '''Returns the first module of a given type
+def find_modules(modules: List[Dict[str, object]],
+                 type: str,
+                 use_base_template_type=True) -> List[Dict[str, object]]:
+    '''Returns the modules of a given type
+
     If use_base_template_type is set to True, ipgen-based modules are
-    matched based on the base template type. If set to False, the
-    uniquified type is matched,
+    searched using the "template_type" attribute. If set to False,
+    the search uses the "type" attribute instead.
     '''
+    modules_found = []
     for m in modules:
         if m.get('attr') == 'ipgen' and use_base_template_type:
             if m['template_type'] == type:
-                return m
+                modules_found.append(m)
         else:
             if m['type'] == type:
-                return m
+                modules_found.append(m)
 
-    return None
+    return modules_found
+
+
+def find_module(
+        modules: List[Dict[str, object]],
+        type: str,
+        use_base_template_type=True) -> Optional[List[Dict[str, object]]]:
+    '''Returns the first module of a given type
+
+    If use_base_template_type is set to True, ipgen-based modules are
+    searched using the "template_type" attribute. If set to False,
+    the search uses the "type" attribute instead.
+    '''
+    mods = find_modules(modules, type, use_base_template_type)
+    return mods[0] if mods else None
 
 
 def get_addr_space(top, addr_space_name):

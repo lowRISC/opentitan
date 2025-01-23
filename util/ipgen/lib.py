@@ -146,6 +146,8 @@ class IpTemplate:
         - It contains some files ending in '.tpl', which are Mako templates
           and are rendered into a file in the same relative location without
           the '.tpl' file extension.
+
+        Raise an exception if checks fail for the raw template parameters.
         """
 
         # Check if the directory structure matches expectations.

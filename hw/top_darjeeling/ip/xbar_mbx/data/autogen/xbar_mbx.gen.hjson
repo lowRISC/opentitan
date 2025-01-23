@@ -311,4 +311,153 @@
   ]
   clock: clk_mbx_i
   type: xbar
+  inter_signal_list:
+  [
+    {
+      name: tl_mbx
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: mbx
+      width: 1
+      default: ""
+      external: true
+      top_signame: mbx_tl
+      conn_type: false
+      index: -1
+    }
+    {
+      name: tl_mbx0__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx0_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx1__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx1_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx2__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx2_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx3__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx3_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx4__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx4_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx5__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx5_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx6__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx6_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx_pcie0__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx_pcie0_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx_pcie1__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: mbx_pcie1_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_racl_ctrl
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: racl_ctrl_tl
+      index: -1
+    }
+    {
+      name: tl_ac_range_check
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: mbx
+      width: 1
+      default: ""
+      top_signame: ac_range_check_tl
+      index: -1
+    }
+  ]
 }

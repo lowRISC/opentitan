@@ -271,8 +271,9 @@ def validate(obj: Dict[Any, Any]) -> Optional[Xbar]:
     # validate Hjson format first
     hjson_good = validate_hjson(obj)
     if not hjson_good:
-        log.error("Hjson structure error")
-        return None
+        message = f"Hjson structure error for xbar {xbar.name}"
+        log.error(message)
+        raise SystemExit(message)
 
     # collection of all clocks and resets of this xbar
     xbar.clocks = [clock for clock in obj["clock_connections"].keys()]

@@ -11,8 +11,9 @@ from math import ceil, log2
 from typing import Dict, List, Union, Tuple
 
 from topgen import lib, secure_prng
-from .clocks import Clocks
+from .clocks import Clocks, UnmanagedClocks
 from .resets import Resets, UnmanagedResets
+from raclgen.lib import parse_racl_config, parse_racl_mapping
 from reggen.ip_block import IpBlock
 from reggen.params import LocalParam, Parameter, RandParameter, MemSizeParameter
 from reggen.validate import check_bool
@@ -47,9 +48,7 @@ def elaborate_instances(top, name_to_block: Dict[str, IpBlock]):
     extra fields to them to carry across information from the IpBlock objects
     that represent the blocks being instantiated. See elaborate_instance for
     more details of what gets added.
-
     '''
-
     for instance in top['module']:
         block = name_to_block[instance['type']]
         elaborate_instance(instance, block)
@@ -177,7 +176,7 @@ def elaborate_instance(instance, block: IpBlock):
                     # signals have a reference to a parameter. If we have multiple instances of the
                     # same IP, then their signals would reference the same single parameter. If we
                     # would mangle that directly, we all signals of all IPs would reference to that
-                    # single mangled paramter. Since parameters are instance dependent, that would
+                    # single mangled parameter. Since parameters are instance dependent, that would
                     # fail. Therefore, copy the parameter first to have a unique paramter for that
                     # particular signal and instance, which is safe to mangle.
                     s['width'] = deepcopy(s['width'])
@@ -188,18 +187,18 @@ def elaborate_instance(instance, block: IpBlock):
     base_addrs = instance.get('base_addrs')
     if base_addrs is None:
         if 'base_addr' not in instance:
-            log.error('Instance {!r} has neither a base_addr '
-                      'nor a base_addrs field.'
-                      .format(instance['name']))
+            raise ValueError('Instance {!r} has neither a base_addr '
+                             'nor a base_addrs field.'.format(
+                                 instance['name']))
         else:
             # If the instance has a base_addr field, make sure that the block
             # has just one device interface.
             if len(block.reg_blocks) != 1:
-                log.error('Instance {!r} has a base_addr field but it '
-                          'instantiates the block {!r}, which has {} '
-                          'device interfaces.'
-                          .format(instance['name'],
-                                  block.name, len(block.reg_blocks)))
+                raise ValueError('Instance {!r} has a base_addr field but it '
+                                 'instantiates the block {!r}, which has {} '
+                                 'device interfaces.'.format(
+                                     instance['name'], block.name,
+                                     len(block.reg_blocks)))
             else:
                 if_name = next(iter(block.reg_blocks))
                 base_addrs = {if_name: instance['base_addr']}
@@ -626,8 +625,11 @@ def extract_clocks(top: OrderedDict):
     group. However, it is possible to define the group attribute per clock
     if required.
     '''
+    if not isinstance(top['clocks'], Clocks):
+        top['clocks'] = Clocks(top['clocks'])
     clocks = top['clocks']
-    assert isinstance(clocks, Clocks)
+    if not isinstance(top['unmanaged_clocks'], UnmanagedClocks):
+        top['unmanaged_clocks'] = UnmanagedClocks(top['unmanaged_clocks'])
 
     exported_clks = OrderedDict()
 
@@ -793,23 +795,28 @@ def connect_clocks(top, name_to_block: Dict[str, IpBlock]):
     top['inter_module']['connect']['{}.idle'.format(clkmgr_name)] = clkmgr_idle
 
 
-def amend_resets(top, name_to_block):
+def amend_resets(top, name_to_block, allow_missing_blocks=False):
     """Generate exported reset structure and automatically connect to
-       intermodule.
+    intermodule.
 
-       Also iterate through and determine need for shadowed reset and
-       domains.
+    Also iterate through and determine need for shadowed reset and
+    domains.
     """
-
-    top['unmanaged_resets'] = UnmanagedResets(top.get('unmanaged_resets', []))
-    top_resets = Resets(top['resets'], top['clocks'])
+    unmanaged_resets = top.get('unmanaged_resets')
+    if not unmanaged_resets:
+        top['unmanaged_resets'] = UnmanagedResets([])
+    elif not isinstance(unmanaged_resets, UnmanagedResets):
+        top['unmanaged_resets'] = UnmanagedResets(unmanaged_resets)
+    top_resets = (top['resets'] if isinstance(top['resets'], Resets) else
+                  Resets(top['resets'], top['clocks']))
     rstmgr_name = _find_module_name(top['module'], 'rstmgr')
 
     # Generate exported reset list
     exported_rsts = OrderedDict()
     for module in top["module"]:
-
-        block = name_to_block[module['type']]
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
         block_clock = block.get_primary_clock()
         primary_reset = module['reset_connections'][block_clock.reset]
 
@@ -823,7 +830,7 @@ def amend_resets(top, name_to_block):
             if not is_unmanaged_reset(top, primary_reset['name']):
                 top_resets.mark_reset_shadowed(primary_reset['name'])
 
-        # domain determination
+        log.info("in module {}".format(module["name"]))
         for r in block.clocking.items:
             if r.reset:
                 reset = module['reset_connections'][r.reset]
@@ -857,9 +864,12 @@ def amend_resets(top, name_to_block):
     top['exported_rsts'] = exported_rsts
 
     # add entry to inter_module automatically
-    for intf in top['exported_rsts']:
-        top['inter_module']['external']['{}.resets_{}'.format(
-            rstmgr_name, intf)] = "rsts_{}".format(intf)
+    if rstmgr_name is None and allow_missing_blocks:
+        pass
+    else:
+        for intf in top['exported_rsts']:
+            top['inter_module']['external'][f'{rstmgr_name}.resets_{intf}'] = (
+                "rsts_{}".format(intf))
 
     # reset class objects
     top["resets"] = top_resets
@@ -965,37 +975,53 @@ def create_alert_lpgs(top, name_to_block: Dict[str, IpBlock]):
             for alert in alerts:
                 if alert['module_name'] == module['name']:
                     alert['lpg_name'] = lpg_name
-                    alert['lpg_idx'] = outgoing_lpg_dict[module['outgoing_alert']][lpg_name]
+                    alert['lpg_idx'] = outgoing_lpg_dict[
+                        module['outgoing_alert']][lpg_name]
 
 
-def ensure_interrupt_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    '''Populate top['interrupt_module'] if necessary
+def get_interrupt_modules(top: OrderedDict,
+                          name_to_block: Dict[str, IpBlock],
+                          allow_missing_blocks=False):
+    '''Return an existing top['interrupt_module'] or generate one.
 
-    Do this by adding each module in top['modules'] that defines at least one
-    interrupt.
+    If the config has an 'interrupt_module' it is taken as the true list
+    of modules that will connect their interrupts to rv_plic. This allows
+    some configs where some modules have their interrupts handled in
+    more custom ways.
 
+    When 'interrupt_module' is not in the config the list is generated with
+    all modules that have some interrupts.
     '''
     if 'interrupt_module' in top:
-        return
+        return top['interrupt_module']
 
     modules = []
     for module in top['module']:
-        block = name_to_block[module['type']]
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
         if block.interrupts:
             modules.append(module['name'])
 
-    top['interrupt_module'] = modules
+    return modules
 
 
-def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    """Check interrupt_module if exists, or just use all modules
-    """
-    ensure_interrupt_modules(top, name_to_block)
+def commit_interrupt_modules(top: OrderedDict, name_to_block: Dict[str,
+                                                                   IpBlock]):
+    """Ensure top['interrupt_module'] is populated in the final config."""
+    top['interrupt_module'] = get_interrupt_modules(top, name_to_block)
+
+
+def amend_interrupt(top: OrderedDict,
+                    name_to_block: Dict[str, IpBlock],
+                    allow_missing_blocks=False):
+    modules = get_interrupt_modules(top, name_to_block, allow_missing_blocks)
 
     if "interrupt" not in top or top["interrupt"] == "":
         top["interrupt"] = []
 
-    for m in top["interrupt_module"]:
+    interrupts = []
+    for m in modules:
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
             log.warning(
@@ -1010,10 +1036,14 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             sig_dict = signal.as_nwt_dict('interrupt')
             qual = lib.add_module_prefix_to_signal(sig_dict,
                                                    module=m.lower())
+            sig_name = sig_dict["name"]
+            qual["desc"] = f"{m} {sig_name} interrupt"
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
             qual['incoming'] = False
-            top["interrupt"].append(qual)
+            interrupts.append(qual)
+
+    top["interrupt"] = interrupts
 
     for irqs in top['incoming_interrupt'].values():
         for irq in irqs:
@@ -1024,67 +1054,101 @@ def amend_interrupt(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             top["interrupt"].append(irq)
 
 
-def ensure_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    '''Populate top['alert_module'] if necessary
+def get_alert_modules(top: OrderedDict,
+                      name_to_block: Dict[str, IpBlock],
+                      allow_missing_blocks=False) -> List[str]:
+    '''Return an existing top['alert_module'] or generate one.
 
-    Do this by adding each module in top['modules'] that defines at least one
-    alert.
+    If the config has an 'alert_module' entry it is taken as the true list
+    of modules that will send their alerts to alert_handler. This allows
+    some configs where modules not in the list have their alerts handled
+    in more custom ways.
 
+    When 'alert_module' is not in the config the list is generated with
+    all modules that have some alert and no 'outgoing_alert' but is not
+    committed in the config. It will be done as a final step once the
+    top config is fully generated.
     '''
     if 'alert_module' in top:
-        return
+        return top['alert_module']
 
     modules = []
     for module in top['module']:
-        block = name_to_block[module['type']]
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
         if block.alerts:
             if 'outgoing_alert' not in module:
                 modules.append(module['name'])
 
-    top['alert_module'] = modules
+    return modules
 
 
-def ensure_outgoing_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    '''Populate top['outgoing_alert_module'] if necessary
+def commit_alert_modules(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
+    """Make sure top['alert_module'] is populated in the final config."""
+    top['alert_module'] = get_alert_modules(top, name_to_block)
 
-    Do this by adding each module in top['modules'] that defines at least one
-    outgoing alert.
 
+def get_outgoing_alert_modules(top: OrderedDict,
+                               name_to_block: Dict[str, IpBlock],
+                               allow_missing_blocks=False) -> List[str]:
+    '''Return an existing top['outgoing_alert_module'] or generate one.
+
+    If the config has an 'outgoing_alert_module' entry it is taken as the
+    true list of modules that will send their alerts out of this top. This
+    allows some alerts to be handled by an alert_handler in some other top.
+
+    When 'outgoing_alert_module' is not in the config the list is generated
+    with all modules that have some outgoing alert.
     '''
     if 'outgoing_alert_module' in top:
-        return
+        return top['outgoing_alert_module']
 
     modules = defaultdict(list)
     for module in top['module']:
-        block = name_to_block[module['type']]
+        block = name_to_block.get(module['type'])
+        if block is None and allow_missing_blocks:
+            continue
         if block.alerts:
             if 'outgoing_alert' in module:
                 modules[module['outgoing_alert']].append(module['name'])
 
-    top['outgoing_alert_module'] = modules
+    return modules
 
 
-def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
-    """Check interrupt_module if exists, or just use all modules
+def commit_outgoing_alert_modules(top: OrderedDict,
+                                  name_to_block: Dict[str, IpBlock]):
+    """Ensure top['outgoing_alert_module'] is populated in the final config."""
+    top['outgoing_alert_module'] = get_outgoing_alert_modules(
+        top, name_to_block)
+
+
+def amend_alert(top: OrderedDict,
+                name_to_block: Dict[str, IpBlock],
+                allow_missing_blocks=False):
+    """Check alert_module if exists, or just use all modules
     """
-    ensure_alert_modules(top, name_to_block)
-    ensure_outgoing_alert_modules(top, name_to_block)
+    alert_modules = get_alert_modules(top, name_to_block, allow_missing_blocks)
+    outgoing_modules = get_outgoing_alert_modules(top, name_to_block,
+                                                  allow_missing_blocks)
 
     if "alert" not in top or top["alert"] == "":
         top["alert"] = []
 
-    top['outgoing_alert'] = defaultdict(list)
+    alerts = []
+    outgoing_alerts = defaultdict(list)
+    missing_ips = []
 
-    for m in top["alert_module"] + list(chain(*top['outgoing_alert_module'].values())):
+    for m in alert_modules + list(chain(*outgoing_modules.values())):
         ips = list(filter(lambda module: module["name"] == m, top["module"]))
         if len(ips) == 0:
-            log.warning("Cannot find IP %s which is used in the alert_module" %
-                        m)
+            missing_ips.append(m)
             continue
 
         ip = ips[0]
-        block = name_to_block[ip['type']]
-
+        block = name_to_block.get(ip['type'])
+        if block is None and allow_missing_blocks:
+            continue
         log.info("Adding alert from module %s" % ip["name"])
         # Note: we assume that all alerts are asynchronous in order to make the
         # design homogeneous and more amenable to DV automation and synthesis
@@ -1094,27 +1158,43 @@ def amend_alert(top: OrderedDict, name_to_block: Dict[str, IpBlock]):
             alert_dict['async'] = '1'
             qual_sig = lib.add_module_prefix_to_signal(alert_dict,
                                                        module=m.lower())
+            alert_name = alert_dict['name']
+            qual_sig['desc'] = f'{m} {alert_name} alert'
             if 'outgoing_alert' in ip:
-                top['outgoing_alert'][ip['outgoing_alert']].append(qual_sig)
+                outgoing_alerts[ip['outgoing_alert']].append(qual_sig)
             else:
-                top["alert"].append(qual_sig)
+                alerts.append(qual_sig)
+    if missing_ips:
+        raise SystemExit(
+            "The following IPs contributing alerts cannot be found: "
+            ", ".join(missing_ips))
+
+    top["alert"] = alerts
+    top["outgoing_alert"] = outgoing_alerts
 
 
-def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
+def amend_wkup(topcfg: OrderedDict,
+               name_to_block: Dict[str, IpBlock],
+               allow_missing_blocks=False):
+
     if "wakeups" not in topcfg or topcfg["wakeups"] == "":
         topcfg["wakeups"] = []
 
     # create list of wakeup signals
+    wakeups = []
     for m in topcfg["module"]:
-        block = name_to_block[m['type']]
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
         for signal in block.wakeups:
             log.info("Adding wakeup signal %s from module %s", signal.name,
                      m["name"])
-            topcfg["wakeups"].append({
+            wakeups.append({
                 'name': signal.name,
                 'width': str(signal.bits.width()),
                 'module': m["name"]
             })
+    topcfg["wakeups"] = wakeups
 
     pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
     if pwrmgr_name:
@@ -1122,31 +1202,36 @@ def amend_wkup(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
         signal_names = [
             f"{s['module'].lower()}.{s['name'].lower()}" for s in topcfg["wakeups"]
         ]
-
-        topcfg["inter_module"]["connect"]["{}.wakeups".format(pwrmgr_name)] = signal_names
+        topcfg["inter_module"]["connect"][f"{pwrmgr_name}.wakeups"] = (
+            signal_names)
         log.info("Intermodule signals: {}".format(
             topcfg["inter_module"]["connect"]))
 
 
 # Handle reset requests from modules
 def amend_reset_request(topcfg: OrderedDict,
-                        name_to_block: Dict[str, IpBlock]):
+                        name_to_block: Dict[str, IpBlock],
+                        allow_missing_blocks=False):
     if "reset_requests" not in topcfg or topcfg["reset_requests"] == "":
         topcfg["reset_requests"] = {}
     topcfg["reset_requests"].setdefault("peripheral", [])
 
     # create list of reset signals
+    reset_signals = []
     for m in topcfg["module"]:
         log.info("Adding reset requests from module %s" % m["name"])
-        block = name_to_block[m['type']]
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
         for signal in block.reset_requests:
             log.info("Adding signal %s" % signal.name)
-            topcfg["reset_requests"]["peripheral"].append({
+            reset_signals.append({
                 'name': signal.name,
                 'width': str(signal.bits.width()),
                 'module': m["name"],
                 'desc': signal.desc
             })
+    topcfg["reset_requests"]["peripheral"] = reset_signals
 
     pwrmgr_name = _find_module_name(topcfg['module'], 'pwrmgr')
     if pwrmgr_name:
@@ -1155,10 +1240,11 @@ def amend_reset_request(topcfg: OrderedDict,
             "{}.{}".format(s["module"].lower(), s["name"].lower())
             for s in topcfg["reset_requests"]["peripheral"]
         ]
-
-        topcfg["inter_module"]["connect"]["{}.rstreqs".format(pwrmgr_name)] = signal_names
-        log.info("Intermodule signals: {}".format(
-            topcfg["inter_module"]["connect"]))
+        topcfg["inter_module"]["connect"][f"{pwrmgr_name}.rstreqs"] = (
+            signal_names
+        )
+    log.info("Intermodule signals: {}".format(
+        topcfg["inter_module"]["connect"]))
 
 
 def append_io_signal(temp: Dict, sig_inst: Dict) -> None:
@@ -1209,8 +1295,9 @@ def get_index_and_incr(ctrs: Dict, connection: str, io_dir: str) -> Dict:
     return result
 
 
-def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
-    """ Process pinmux/pinout configuration and assign available IOs
+def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock],
+                    allow_missing_blocks=False):
+    """Process pinmux/pinout configuration and assign available IOs
     """
     pinmux = top['pinmux']
     pinout = top['pinout']
@@ -1229,8 +1316,10 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
         if m is None:
             raise SystemExit("Module {} is not searchable.".format(mod_name))
 
-        block = name_to_block[m['type']]
-
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
+        sig_attr = sig.get('attr', 'BidirStd')
         # If the signal is explicitly named.
         if sig['port'] != '':
 
@@ -1255,7 +1344,7 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
             # Augment this signal instance with additional information.
             sig_inst.update({'idx': idx,
                              'pad': sig['pad'],
-                             'attr': sig['attr'],
+                             'attr': sig_attr,
                              'connection': sig['connection'],
                              'desc': sig['desc']})
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
@@ -1274,7 +1363,7 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
                         sig_inst_copy = deepcopy(sig_inst)
                         sig_inst_copy.update({'idx': idx,
                                               'pad': sig['pad'],
-                                              'attr': sig['attr'],
+                                              'attr': sig_attr,
                                               'connection': sig['connection'],
                                               'desc': sig['desc']})
                         sig_inst_copy['name'] = sig['instance'] + '_' + sig_inst_copy['name']
@@ -1282,7 +1371,7 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
                 else:
                     sig_inst.update({'idx': -1,
                                      'pad': sig['pad'],
-                                     'attr': sig['attr'],
+                                     'attr': sig_attr,
                                      'connection': sig['connection'],
                                      'desc': sig['desc']})
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
@@ -1349,6 +1438,43 @@ def amend_pinmux_io(top: Dict, name_to_block: Dict[str, IpBlock]):
                 assert (0)  # Entry should be guaranteed to exist at this point
 
 
+def amend_racl(top_cfg: OrderedDict,
+               name_to_block: Dict[str, IpBlock],
+               allow_missing_blocks=False):
+    """Amend top_cfg based on racl configuration.
+
+    Parse racl configuration and annotate individual modules affected.
+    """
+    if 'racl_config' not in top_cfg:
+        return
+
+    # Read the top-level RACL information
+    top_cfg['racl'] = parse_racl_config(top_cfg['racl_config'])
+
+    # Generate the RACL mappings for all subscribing IPs
+    for m in top_cfg['module']:
+        block = name_to_block.get(m['type'])
+        if block is None and allow_missing_blocks:
+            continue
+        racl_mappings = m.get('racl_mappings', {})
+        # Nothing to be done if there are no mappings or the mappings
+        # were expanded already.
+        # If racl_mappings is expanded the path is one of the fields
+        for if_name, mapping_path in racl_mappings.items():
+            if isinstance(mapping_path, dict):
+                # The racl_mappings values are expanded in place into a dict
+                # once and need no further updates.
+                continue
+            parsed_register_mapping, parsed_window_mapping, racl_group, _ = (
+                parse_racl_mapping(top_cfg['racl'], mapping_path, if_name,
+                                   block))
+            m['racl_mappings'][if_name] = {
+                'racl_group': racl_group,
+                'register_mapping': parsed_register_mapping,
+                'window_mapping': parsed_window_mapping,
+            }
+
+
 def merge_top(topcfg: OrderedDict,
               name_to_block: Dict[str, IpBlock],
               xbarobjs: OrderedDict) -> OrderedDict:
@@ -1388,6 +1514,9 @@ def merge_top(topcfg: OrderedDict,
     # Add path names to declared resets.
     # Declare structure for exported resets.
     amend_resets(topcfg, name_to_block)
+
+    # Parse racl configuration and annotate individual modules affected.
+    amend_racl(topcfg, name_to_block)
 
     # remove unwanted fields 'debug_mem_base_addr'
     topcfg.pop('debug_mem_base_addr', None)

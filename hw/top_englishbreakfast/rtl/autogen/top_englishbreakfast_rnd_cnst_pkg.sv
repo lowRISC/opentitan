@@ -18,28 +18,28 @@ package top_englishbreakfast_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for default address key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlAddrKey = {
-    128'h47699D7B_EFA2EACA_5E9E86B2_68B82B10
+    128'h75867E60_B021E247_699D7BEF_A2EACA5E
   };
 
   // Compile-time random bits for default data key
   parameter flash_ctrl_pkg::flash_key_t RndCnstFlashCtrlDataKey = {
-    128'hEA8E913C_65A10E10_DAA910CD_93E9E8DD
+    128'h9E86B268_B82B10EA_8E913C65_A10E10DA
   };
 
   // Compile-time random bits for default seeds
   parameter flash_ctrl_pkg::all_seeds_t RndCnstFlashCtrlAllSeeds = {
-    256'hE03E8AB0_F1F4225B_70DE66AE_2A2D2CAF_521284D0_78B2442C_4DCDFFFC_136EAED4,
-    256'hBF1A6002_33980BC4_CF2116DB_51EC10B7_47B9011D_99F556B8_93842A91_CAFC63CB
+    256'hA910CD93_E9E8DDE0_3E8AB0F1_F4225B70_DE66AE2A_2D2CAF52_1284D078_B2442C4D,
+    256'hCDFFFC13_6EAED4BF_1A600233_980BC4CF_2116DB51_EC10B747_B9011D99_F556B893
   };
 
   // Compile-time random bits for initial LFSR seed
   parameter flash_ctrl_pkg::lfsr_seed_t RndCnstFlashCtrlLfsrSeed = {
-    32'h10B94460
+    32'h842A91CA
   };
 
   // Compile-time random permutation for LFSR output
   parameter flash_ctrl_pkg::lfsr_perm_t RndCnstFlashCtrlLfsrPerm = {
-    160'hF7176865_1AC5CB1D_9DF2183E_E9A59D6A_835250C2
+    160'h1977A5BE_3574F120_58F04F5A_A09286E7_9171659F
   };
 
   ////////////////////////////////////////////
@@ -47,19 +47,19 @@ package top_englishbreakfast_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Default seed of the PRNG used for register clearing.
   parameter aes_pkg::clearing_lfsr_seed_t RndCnstAesClearingLfsrSeed = {
-    64'h213905E9_CB853BC8
+    64'hBB789515_11213905
   };
 
   // Permutation applied to the LFSR of the PRNG used for clearing.
   parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingLfsrPerm = {
-    128'h87E1885E_2AD14FB1_37023A95_68A1503E,
-    256'h71F9372F_30EB59A0_FE560EA0_331DCDE4_B45A4BAC_25CC42B5_BF4B059A_767EF538
+    128'h1231AAA3_D2B9ED1C_05893210_3E71D536,
+    256'h0DECD359_406B35F1_63C98331_DB9E4AB5_A425C0AD_6FF2C166_9D9FBD4E_3E3A1CBA
   };
 
   // Permutation applied to the clearing PRNG output for clearing the second share of registers.
   parameter aes_pkg::clearing_lfsr_perm_t RndCnstAesClearingSharePerm = {
-    128'h10546C53_C047BB1A_A7B4D4A9_EE362242,
-    256'hB54A0AF7_FF4DD5F2_EB321A70_60245A0E_668496CB_C0CF65A0_F675E37F_9ED0E0F6
+    128'h131363A5_4D4762EB_12AD17C5_FA29FAC3,
+    256'hF2BDB5DC_D35EF079_21A70602_45A0CA68_496CB337_97B3FCE1_ED0E0F64_28642A95
   };
 
   // Default seed of the PRNG used for masking.
