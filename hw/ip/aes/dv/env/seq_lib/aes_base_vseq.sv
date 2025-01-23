@@ -202,6 +202,12 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes);
+    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    ral.ctrl_gcm_shadowed.phase.set(phase);
+    ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
+    csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
+  endtask
 
   virtual task add_data(ref bit [3:0] [31:0] data, bit do_b2b);
     int write_order[4] = {0,1,2,3};
