@@ -4,7 +4,6 @@
 
 use anyhow::Result;
 use clap::{Args, Subcommand, ValueEnum};
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::{File, OpenOptions};
 use std::path::PathBuf;
@@ -51,7 +50,7 @@ impl CommandDispatch for OwnershipConfigCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         GlobalFlags::set_debug(self.debug);
         let mut config = if self.basic {
             OwnerBlock::basic()
@@ -115,7 +114,7 @@ impl CommandDispatch for OwnershipUnlockCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let unlock = self
             .params
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
@@ -149,7 +148,7 @@ impl CommandDispatch for OwnershipActivateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let activate = self
             .params
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;

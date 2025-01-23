@@ -5,7 +5,6 @@
 use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use serde_annotate::Annotate;
 use std::any::Any;
 
 use crate::commands::Dispatch;
@@ -35,7 +34,7 @@ impl Dispatch for Spx {
         context: &dyn Any,
         hsm: &Module,
         session: Option<&Session>,
-    ) -> Result<Box<dyn Annotate>> {
+    ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
             Spx::Generate(x) => x.run(context, hsm, session),
             Spx::Export(x) => x.run(context, hsm, session),

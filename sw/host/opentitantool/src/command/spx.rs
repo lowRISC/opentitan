@@ -34,7 +34,7 @@ impl CommandDispatch for SpxKeyShowCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let key = SpxPublicKey::read_pem_file(&self.key_file)?;
         let bytes = key.as_bytes();
 
@@ -82,7 +82,7 @@ impl CommandDispatch for SpxKeyGenerateCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let (private_key, public_key) = SpxSecretKey::new_keypair(self.algorithm)?;
         let mut file = self.output_dir.to_owned();
         file.push(&self.basename);
@@ -132,7 +132,7 @@ impl CommandDispatch for SpxSignCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut message = std::fs::read(&self.message)?;
         if self.spx_hash_reversal_bug {
             message.reverse();
@@ -169,7 +169,7 @@ impl CommandDispatch for SpxVerifyCommand {
         &self,
         _context: &dyn Any,
         _transport: &TransportWrapper,
-    ) -> Result<Option<Box<dyn Annotate>>> {
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let mut message = std::fs::read(&self.message)?;
         if self.spx_hash_reversal_bug {
             message.reverse();

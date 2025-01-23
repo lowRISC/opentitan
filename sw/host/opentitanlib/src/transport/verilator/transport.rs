@@ -5,7 +5,6 @@
 use anyhow::{ensure, Context, Result};
 use once_cell::sync::Lazy;
 use regex::Regex;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
 use std::rc::Rc;
@@ -122,7 +121,7 @@ impl Transport for Verilator {
         })))
     }
 
-    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         if let Some(watch) = action.downcast_ref::<Watch>() {
             let subprocess = self.subprocess.as_ref().unwrap();
             let deadline = Instant::now() + watch.timeout.unwrap_or(Watch::FOREVER);

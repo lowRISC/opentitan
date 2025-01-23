@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use anyhow::Result;
-use serde_annotate::Annotate;
 use std::any::Any;
 use std::cell::RefCell;
 use std::collections::hash_map::Entry;
@@ -126,7 +125,7 @@ impl<C: Chip> Transport for Ftdi<C> {
         Ok(Rc::clone(inner.spi.as_ref().unwrap()))
     }
 
-    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn Annotate>>> {
+    fn dispatch(&self, _action: &dyn Any) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         Err(TransportError::UnsupportedOperation.into())
     }
 }

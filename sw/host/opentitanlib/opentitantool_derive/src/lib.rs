@@ -31,7 +31,7 @@ use syn::{parse_macro_input, Data, DataEnum, DeriveInput, Error, Fields, Ident, 
 ///         &self,
 ///         context: &dyn std::any::Any,
 ///         backend: &mut dyn opentitanlib::transport::Transport
-///     ) -> anyhow::Result<Option<Box<dyn serde_annotate::Annotate>>> {
+///     ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
 ///         match self {
 ///             Hello::World(ref __field) => __field.run(context, backend),
 ///             Hello::People(ref __field) => __field.run(context, backend),
@@ -78,7 +78,7 @@ fn dispatch_enum(name: &Ident, e: &DataEnum) -> Result<TokenStream> {
                     &self,
                     context: &dyn std::any::Any,
                     backend: &opentitanlib::app::TransportWrapper,
-                ) -> anyhow::Result<Option<Box<dyn serde_annotate::Annotate>>> {
+                ) -> anyhow::Result<Option<Box<dyn erased_serde::Serialize>>> {
                     match self {
                         #(#arms),*
                     }
