@@ -601,7 +601,7 @@
           bits: "${min_msb}:${max_msb+1}",
           name: "LO",
           desc: "Min threshold for ${src} measurement",
-          resval: "${ratio - 10}"
+          resval: "${max(ratio - 10, 0)}"
         },
       ]
     },
