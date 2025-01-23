@@ -242,6 +242,12 @@ alias(
 )
 
 alias(
+    name = "inventory",
+    actual = "@crate_index__inventory-0.3.17//:inventory",
+    tags = ["manual"],
+)
+
+alias(
     name = "itertools",
     actual = "@crate_index__itertools-0.13.0//:itertools",
     tags = ["manual"],

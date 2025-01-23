@@ -310,6 +310,7 @@ dependencies = [
  "indexmap 2.0.0",
  "indicatif",
  "indoc",
+ "inventory",
  "itertools",
  "libloading 0.8.3",
  "log",
@@ -1168,9 +1169,12 @@ dependencies = [
 
 [[package]]
 name = "inventory"
-version = "0.3.12"
+version = "0.3.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e1be380c410bf0595e94992a648ea89db4dd3f3354ba54af206fd2a68cf5ac8e"
+checksum = "3b31349d02fe60f80bbbab1a9402364cad7460626d6030494b08ac4a2075bf81"
+dependencies = [
+ "rustversion",
+]
 
 [[package]]
 name = "is-terminal"
