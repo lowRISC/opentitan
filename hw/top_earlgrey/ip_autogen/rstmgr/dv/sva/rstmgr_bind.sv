@@ -54,6 +54,7 @@ module rstmgr_bind;
     .rst_sys_src_n(pwr_o.rst_sys_src_n)
   );
 
+/*
   bind rstmgr rstmgr_sw_rst_sva_if rstmgr_sw_rst_sva_if (
     .clk_i({
       clk_io_div4_i,
@@ -89,6 +90,7 @@ module rstmgr_bind;
       resets_o.rst_spi_device_n[1]
     })
   );
+*/
 
   bind rstmgr rstmgr_rst_en_track_sva_if rstmgr_rst_en_track_sva_if (
     .resets_i(resets_o),
