@@ -39,6 +39,7 @@
         module: sensor_ctrl_aon
       }
     ]
+    NumRstReqs: 2
     rst_reqs:
     {
       int:
@@ -78,7 +79,6 @@
         }
       ]
     }
-    NumRstReqs: 2
     wait_for_external_reset: false
     NumRomInputs: 1
     top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg

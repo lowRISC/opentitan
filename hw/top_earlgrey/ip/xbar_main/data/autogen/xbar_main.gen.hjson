@@ -704,4 +704,335 @@
   ]
   clock: clk_main_i
   type: xbar
+  inter_signal_list:
+  [
+    {
+      name: tl_rv_core_ibex__corei
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: main
+      width: 1
+      default: ""
+      end_idx: -1
+      top_signame: main_tl_rv_core_ibex__corei
+      index: -1
+    }
+    {
+      name: tl_rv_core_ibex__cored
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: main
+      width: 1
+      default: ""
+      end_idx: -1
+      top_signame: main_tl_rv_core_ibex__cored
+      index: -1
+    }
+    {
+      name: tl_rv_dm__sba
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: main
+      width: 1
+      default: ""
+      end_idx: -1
+      top_signame: main_tl_rv_dm__sba
+      index: -1
+    }
+    {
+      name: tl_rv_dm__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rv_dm_regs_tl_d
+      index: -1
+    }
+    {
+      name: tl_rv_dm__mem
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rv_dm_mem_tl_d
+      index: -1
+    }
+    {
+      name: tl_rom_ctrl__rom
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rom_ctrl_rom_tl
+      index: -1
+    }
+    {
+      name: tl_rom_ctrl__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rom_ctrl_regs_tl
+      index: -1
+    }
+    {
+      name: tl_peri
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      end_idx: -1
+      top_signame: main_tl_peri
+      index: -1
+    }
+    {
+      name: tl_spi_host0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: spi_host0_tl
+      index: -1
+    }
+    {
+      name: tl_spi_host1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: spi_host1_tl
+      index: -1
+    }
+    {
+      name: tl_usbdev
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: usbdev_tl
+      index: -1
+    }
+    {
+      name: tl_flash_ctrl__core
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: flash_ctrl_core_tl
+      index: -1
+    }
+    {
+      name: tl_flash_ctrl__prim
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: flash_ctrl_prim_tl
+      index: -1
+    }
+    {
+      name: tl_flash_ctrl__mem
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: flash_ctrl_mem_tl
+      index: -1
+    }
+    {
+      name: tl_hmac
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: hmac_tl
+      index: -1
+    }
+    {
+      name: tl_kmac
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: kmac_tl
+      index: -1
+    }
+    {
+      name: tl_aes
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: aes_tl
+      index: -1
+    }
+    {
+      name: tl_entropy_src
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: entropy_src_tl
+      index: -1
+    }
+    {
+      name: tl_csrng
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: csrng_tl
+      index: -1
+    }
+    {
+      name: tl_edn0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: edn0_tl
+      index: -1
+    }
+    {
+      name: tl_edn1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: edn1_tl
+      index: -1
+    }
+    {
+      name: tl_rv_plic
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rv_plic_tl
+      index: -1
+    }
+    {
+      name: tl_otbn
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: otbn_tl
+      index: -1
+    }
+    {
+      name: tl_keymgr
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: keymgr_tl
+      index: -1
+    }
+    {
+      name: tl_rv_core_ibex__cfg
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: rv_core_ibex_cfg_tl_d
+      index: -1
+    }
+    {
+      name: tl_sram_ctrl_main__regs
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: sram_ctrl_main_regs_tl
+      index: -1
+    }
+    {
+      name: tl_sram_ctrl_main__ram
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      top_signame: sram_ctrl_main_ram_tl
+      index: -1
+    }
+  ]
 }
