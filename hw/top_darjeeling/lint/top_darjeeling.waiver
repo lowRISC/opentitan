@@ -61,3 +61,7 @@ waive -rules SAME_NAME_TYPE -location {tlul_socket_m1.sv otbn_pkg.sv} -regexp {'
       -comment {This is acceptable, since these are used in different hierarchies.}
 waive -rules SAME_NAME_TYPE -location {prim_trivium.sv prim_xoshiro256pp.sv} -regexp {'state_update' is used as a (reg|function) here, and as a (function|reg) at} \
       -comment {This is acceptable, since these are used in different hierarchies.}
+
+# intentionally unused
+waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
+      -comment "otp test bus made deliberately larger on purpose"
