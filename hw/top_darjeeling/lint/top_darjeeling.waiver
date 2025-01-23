@@ -36,6 +36,14 @@ waive -rules {HIER_BRANCH_NOT_READ} -location {pinmux.sv} \
 waive -rules INPUT_NOT_READ -location {pinmux.sv} -regexp {Input port '(rst_sys_ni|scanmode_i)' is not read from} \
       -comment "This signal is unused but cannot yet be gated in ipgen."
 
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
+      -regexp {(Net|Signal) 'clk_io_root' is not read from in module 'clkmgr'} \
+      -comment "This clock is unused in Darjeeling - should not be generated"
+
+waive -rules {HIER_NET_NOT_READ NOT_READ} -location {clkmgr.sv} \
+      -regexp {(Net|Signal) 'clk_io_div2_root' is not read from in module 'clkmgr'} \
+      -comment "This clock is unused in Darjeeling  - should not be generated"
+
 waive -rules CLOCK_MUX -location {clkmgr.sv top_darjeeling.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
       -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
 
