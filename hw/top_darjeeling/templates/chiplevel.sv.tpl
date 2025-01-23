@@ -480,6 +480,7 @@ module chip_${top["name"]}_${target["name"]} #(
   // alerts interface
   ast_pkg::ast_alert_rsp_t ast_alert_rsp;
   ast_pkg::ast_alert_req_t ast_alert_req;
+  assign ast_alert_rsp = '0;
 
   // clock bypass req/ack
   prim_mubi_pkg::mubi4_t io_clk_byp_req;
@@ -620,8 +621,6 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % endif
 
-  prim_mubi_pkg::mubi4_t ast_init_done;
-
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
@@ -676,7 +675,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       ( ast_init_done ),
+    .ast_init_done_o       (  ),
     // buffered clocks & resets
     % for port, clk in ast["clock_connections"].items():
     .${port} (${clk}),
@@ -927,7 +926,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .rvalid_i    (sram_rvalid),
     .rerror_i    ('0),
     .compound_txn_in_progress_o(),
-    .readback_en_i(1'b0),
+    .readback_en_i(prim_mubi_pkg::MuBi4False),
     .readback_error_o(),
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0)
@@ -1023,14 +1022,10 @@ module chip_${top["name"]}_${target["name"]} #(
   // Top-level design //
   //////////////////////
   top_${top["name"]} #(
-% if target["name"] != "asic":
-    .PinmuxAonTargetCfg(PinmuxTargetCfg)
-% else:
     .PinmuxAonTargetCfg(PinmuxTargetCfg),
     .SecAesAllowForcingMasks(1'b1),
     .SecRomCtrl0DisableScrambling(SecRomCtrl0DisableScrambling),
     .SecRomCtrl1DisableScrambling(SecRomCtrl1DisableScrambling)
-% endif
   ) top_${top["name"]} (
     // ast connections
     .por_n_i                           ( por_n                      ),
@@ -1044,9 +1039,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .sck_monitor_o                     ( sck_monitor                ),
     .pwrmgr_ast_req_o                  ( base_ast_pwr               ),
     .pwrmgr_ast_rsp_i                  ( ast_base_pwr               ),
-    .sensor_ctrl_ast_alert_req_i       ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o       ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i          ( ast_pwst.io_pok            ),
     .ast_edn_req_i                     ( ast_edn_edn_req            ),
     .ast_edn_rsp_o                     ( ast_edn_edn_rsp            ),
     .ast_tl_req_o                      ( base_ast_bus               ),
@@ -1123,8 +1115,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
     .hi_speed_sel_o                    ( hi_speed_sel               ),
     .div_step_down_req_i               ( div_step_down_req          ),
-    .calib_rdy_i                       ( ast_init_done              ),
-    .ast_init_done_i                   ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1149,10 +1139,27 @@ module chip_${top["name"]}_${target["name"]} #(
     .dio_attr_o                        ( dio_attr                   ),
 
     // Memory attributes
-    .ram_1p_cfg_i                      ( ram_1p_cfg                 ),
-    .spi_ram_2p_cfg_i                  ( spi_ram_2p_cfg             ),
-
-    .rom_cfg_i                         ( rom_cfg                    ),
+    .rom_cfg_i                                 ( '0 ),
+    .i2c_ram_1p_cfg_i                          ( ram_1p_cfg ),
+    .i2c_ram_1p_cfg_rsp_o                      (   ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( ram_1p_cfg ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (   ),
+    .sram_ctrl_main_ram_1p_cfg_i               ( ram_1p_cfg ),
+    .sram_ctrl_main_ram_1p_cfg_rsp_o           (   ),
+    .sram_ctrl_mbox_ram_1p_cfg_i               ( ram_1p_cfg ),
+    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (   ),
+    .otbn_imem_ram_1p_cfg_i                    ( ram_1p_cfg ),
+    .otbn_imem_ram_1p_cfg_rsp_o                (   ),
+    .otbn_dmem_ram_1p_cfg_i                    ( ram_1p_cfg ),
+    .otbn_dmem_ram_1p_cfg_rsp_o                (   ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( ram_1p_cfg ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (   ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( ram_1p_cfg ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (   ),
+    .spi_device_ram_2p_cfg_sys2spi_i           ( spi_ram_2p_cfg ),
+    .spi_device_ram_2p_cfg_spi2sys_i           ( spi_ram_2p_cfg ),
+    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (   ),
+    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (   ),
 
     // DFT signals
     .ast_lc_dft_en_o                   ( lc_dft_en                  ),
@@ -1312,9 +1319,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .otp_ctrl_otp_ast_pwr_seq_o   ( otp_ctrl_otp_ast_pwr_seq   ),
     .otp_ctrl_otp_ast_pwr_seq_h_i ( otp_ctrl_otp_ast_pwr_seq_h ),
     .otp_obs_o                    ( otp_obs                    ),
-    .sensor_ctrl_ast_alert_req_i  ( ast_alert_req              ),
-    .sensor_ctrl_ast_alert_rsp_o  ( ast_alert_rsp              ),
-    .sensor_ctrl_ast_status_i     ( ast_pwst.io_pok            ),
     .ctn_tl_h2d_o                 ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
     .soc_gpi_async_o              (                            ),
@@ -1325,8 +1329,6 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .dma_ctn_tl_d2h_i             ( ctn_tl_d2h[1]              ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
-    .calib_rdy_i                  ( ast_init_done              ),
-    .ast_init_done_i              ( ast_init_done              ),
 % endif
 
     // DMI TL-UL
@@ -1349,9 +1351,27 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .dio_attr_o                   ( dio_attr                   ),
 
     // Memory attributes
-    .ram_1p_cfg_i    ( '0 ),
-    .spi_ram_2p_cfg_i( '0 ),
-    .rom_cfg_i       ( '0 ),
+    .rom_cfg_i                                 ( '0 ),
+    .i2c_ram_1p_cfg_i                          ( '0 ),
+    .i2c_ram_1p_cfg_rsp_o                      (    ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_i            ( '0 ),
+    .sram_ctrl_ret_aon_ram_1p_cfg_rsp_o        (    ),
+    .sram_ctrl_main_ram_1p_cfg_i               ( '0 ),
+    .sram_ctrl_main_ram_1p_cfg_rsp_o           (    ),
+    .sram_ctrl_mbox_ram_1p_cfg_i               ( '0 ),
+    .sram_ctrl_mbox_ram_1p_cfg_rsp_o           (    ),
+    .otbn_imem_ram_1p_cfg_i                    ( '0 ),
+    .otbn_imem_ram_1p_cfg_rsp_o                (    ),
+    .otbn_dmem_ram_1p_cfg_i                    ( '0 ),
+    .otbn_dmem_ram_1p_cfg_rsp_o                (    ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_i      ( '0 ),
+    .rv_core_ibex_icache_tag_ram_1p_cfg_rsp_o  (    ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_i     ( '0 ),
+    .rv_core_ibex_icache_data_ram_1p_cfg_rsp_o (    ),
+    .spi_device_ram_2p_cfg_sys2spi_i           ( '0 ),
+    .spi_device_ram_2p_cfg_spi2sys_i           ( '0 ),
+    .spi_device_ram_2p_cfg_rsp_sys2spi_o       (    ),
+    .spi_device_ram_2p_cfg_rsp_spi2sys_o       (    ),
 
      // DFT signals
     .ast_lc_dft_en_o      ( lc_dft_en                  ),
