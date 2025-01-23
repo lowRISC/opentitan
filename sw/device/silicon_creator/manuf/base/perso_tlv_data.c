@@ -14,6 +14,9 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   uint16_t obj_size;
 
   // Extract LTV object header, including: size and type.
+  if (ltv_buf_size < sizeof(perso_tlv_object_header_t)) {
+    return kErrorPersoTlvInternal;
+  }
   obj->obj_p = buf;
   memcpy(&objh, buf, sizeof(perso_tlv_object_header_t));
   // Extract LTV object size.
@@ -42,6 +45,9 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
 
   // Extract the certificate object header, including: certificate object and
   // nameksizes, certificate name string, and pointer to the certificate body.
+  if (ltv_buf_size < sizeof(perso_tlv_cert_header_t)) {
+    return kErrorPersoTlvInternal;
+  }
   memcpy(&crth, buf, sizeof(perso_tlv_cert_header_t));
   // Extract certificate name size.
   PERSO_TLV_GET_FIELD(Crth, NameSize, crth, &name_len);
@@ -55,6 +61,9 @@ rom_error_t perso_tlv_get_cert_obj(uint8_t *buf, size_t ltv_buf_size,
   buf += sizeof(perso_tlv_cert_header_t);
   ltv_buf_size -= sizeof(perso_tlv_cert_header_t);
   // Extract certificate name string.
+  if (ltv_buf_size < name_len) {
+    return kErrorPersoTlvInternal;
+  }
   memcpy(obj->name, buf, name_len);
   obj->name[name_len] = '\0';
   buf += name_len;
@@ -129,6 +138,9 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
     const char *name, bool needs_endorsement,
     const dice_cert_format_t dice_format, const uint8_t *cert, size_t cert_size,
     perso_blob_t *pb) {
+  if (pb->next_free > sizeof(pb->body)) {
+    return kErrorPersoTlvInternal;
+  }
   // Build the perso TLV cert object and push it to the perso blob.
   size_t obj_size = sizeof(pb->body) - pb->next_free;
   perso_tlv_object_type_t obj_type = kPersoObjectTypeCwtCert;
@@ -151,6 +163,9 @@ rom_error_t perso_tlv_push_cert_to_perso_blob(
 
 rom_error_t perso_tlv_push_to_perso_blob(const void *data, size_t size,
                                          perso_blob_t *perso_blob) {
+  if (perso_blob->next_free > sizeof(perso_blob->body)) {
+    return kErrorPersoTlvInternal;
+  }
   size_t room = sizeof(perso_blob->body) - perso_blob->next_free;
   if (room < size)
     return kErrorPersoTlvOutputBufTooSmall;
