@@ -581,10 +581,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -670,6 +666,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: gpio
@@ -696,10 +696,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -811,6 +807,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: spi_device
@@ -838,10 +838,6 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
         scan_clk_i: clkmgr_aon_clocks.clk_io_div2_peri
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -1011,6 +1007,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: i2c0
@@ -1032,10 +1032,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -1165,6 +1161,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: rv_timer
@@ -1186,10 +1186,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_timers
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -1216,6 +1212,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: otp_ctrl
@@ -1257,10 +1257,6 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -1281,7 +1277,7 @@
           randcount: 40
           randtype: data
           name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0x543a0130b3
+          default: 0xc2c82deb51
           randwidth: 40
         }
         {
@@ -1291,7 +1287,7 @@
           randcount: 40
           randtype: perm
           name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x5764388600460c7159a11cf29648d91b4de41120e0a31677e52e050969d
+          default: 0x8573e042648a54e4c07e42d470944376231b1c278894d1196231561816a7
           randwidth: 240
         }
         {
@@ -1301,7 +1297,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtpCtrlScrmblKeyInit
-          default: 0xbe84f30380655ee26d62dee6ae95aafb7a44e26df9cbedbc3d512527fe67e8b2
+          default: 0xdbb4685f7eb27eb3b35f352752e34f64ce978305bfc3481a2162ea2792b7508f
           randwidth: 256
         }
       ]
@@ -1677,6 +1673,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: lc_ctrl
@@ -1725,10 +1725,6 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_kmac_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -1767,7 +1763,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivInvalid
-          default: 0xe07d55510f7df200e9385195de4f2fb2
+          default: 0x1eab067af954dda5491439a9dde63208
           randwidth: 128
         }
         {
@@ -1777,7 +1773,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivTestUnlocked
-          default: 0x8a71e82207a34abd439b462f7fdb8fc
+          default: 0x1fdcf25a4fba528399117069e77c887
           randwidth: 128
         }
         {
@@ -1787,7 +1783,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivDev
-          default: 0x20e2960fa1c637588c08c38374903b58
+          default: 0xf53dda6fb4ef8758b99027b6aa7468bc
           randwidth: 128
         }
         {
@@ -1797,7 +1793,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivProduction
-          default: 0xbc3484df9b0e9c2f06f0694cedab6be2
+          default: 0xbd8d70368e7cfb11a99675b14624061
           randwidth: 128
         }
         {
@@ -1807,7 +1803,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivRma
-          default: 0x563d7c0c31cb754a523eafe90d67c2c5
+          default: 0x9335a9e2d123834d18744778be5e63c0
           randwidth: 128
         }
         {
@@ -1817,7 +1813,7 @@
           randcount: 1024
           randtype: data
           name_top: RndCnstLcCtrlInvalidTokens
-          default: 0x5f3d8ce40af0adbbe93a5f9bab97f2a9139a0ffa956aeadb13baaa10d2336e399e5f1aeb58c2a1ba65d13a0fe39b01c95a626001cc969493d06cdb450c26a87f7bf58dda1149efdc5f023299dfb44d70a9f906859e02c05185213fcf029cb3e62ce6fddcba7f6c9d2519ea1aacc8e1922af7b82d7479cd41d20282eb0d61aa54
+          default: 0x87e36838b56b1a45f6fd312f5353fa7b2ce9fc83ddaf1dd8c5a42e2ad24fa02221b6ff5aad7a9c09d5d9fdd1cfcf512835c0cfae2ed0c69fa488685cea9bc1c89bfb7399aef5c6eb5d6e4e23416a0aa6d7ac7ec9c3304470fbe505f9649400ca9864fd4ce49d2cfc6ecc102540ead8734700a5207132689471aa822bc51cdd4d
           randwidth: 1024
         }
         {
@@ -2324,6 +2320,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: alert_handler
@@ -2354,10 +2354,6 @@
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -2369,7 +2365,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstAlertHandlerLfsrSeed
-          default: 0xcc696d54
+          default: 0x37ac2d24
           randwidth: 32
         }
         {
@@ -2379,7 +2375,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstAlertHandlerLfsrPerm
-          default: 0x2e8c1e3532551d3f32ff7f6275c336de060412a2
+          default: 0x83a2b09fb9d7006b1534f2bf7d8eb2112787b10d
           randwidth: 160
         }
       ]
@@ -2461,6 +2457,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: spi_host0
@@ -2482,10 +2482,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_peri
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -2595,6 +2591,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: pwrmgr_aon
@@ -4304,7 +4304,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramKey
-          default: 0x224f25dab6226bf545b7fc56675745fe
+          default: 0x46e4fecfda2375a6147421d8cb69d4f3
           randwidth: 128
         }
         {
@@ -4314,7 +4314,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramNonce
-          default: 0xec587dcb2a9253769d73f614f297c5f7
+          default: 0xa15faf834cad515d76bd37c7bec5f33f
           randwidth: 128
         }
         {
@@ -4324,7 +4324,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlRetAonLfsrSeed
-          default: 0x24f5ad9
+          default: 0xdca11a72
           randwidth: 32
         }
         {
@@ -4334,7 +4334,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlRetAonLfsrPerm
-          default: 0xd1ef554482059a9c7f7c28fc87519d5cb2684c2f
+          default: 0x848bcb54640ebabb89f357fcc4a3386c5c73501b
           randwidth: 160
         }
         {
@@ -4594,10 +4594,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_lc_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -4919,6 +4915,10 @@
           index: -1
         }
       ]
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: rv_plic
@@ -4942,10 +4942,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -5009,6 +5005,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: aes
@@ -5042,10 +5042,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_aes
         clk_edn_i: clkmgr_aon_clocks.clk_main_aes
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -5128,7 +5124,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstAesClearingLfsrSeed
-          default: 0xbee8c0a3f22571ac
+          default: 0xcd066336e9b0bdf
           randwidth: 64
         }
         {
@@ -5138,7 +5134,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingLfsrPerm
-          default: 0x967dd7a7a90eda298c67e0d0e05d09079b9f013d42c2a6b180446f21877b6e170f49efedf07546372acab23a33f4b594
+          default: 0x1ea9dc4e68352cd15d7bfe4f0aba58064ed76f2bc6650121523a3ae125ae31f2a5db0888cc047eb3d2710f7b4ed3c55a
           randwidth: 384
         }
         {
@@ -5148,7 +5144,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingSharePerm
-          default: 0x62a78d67ccc2d1bbcc2b604953a9a011f916757d77469c5ca3f0d0c23b1ae7e2e5f67e3baed1d3c8e3c5ba11a2488540
+          default: 0x8fdcc0a95c665a50dfdb56b830a90974761b2e216f50d5f9fbc0abb1ededb91c3b11283f1a7721a533b4e81210c8f668
           randwidth: 384
         }
         {
@@ -5158,7 +5154,7 @@
           randcount: 288
           randtype: data
           name_top: RndCnstAesMaskingLfsrSeed
-          default: 0x812b74cc981f89b9b95175a8f02ea42f7883754a0eaa875bd05ee93e58e0e42986cc76ac
+          default: 0xdec517110ed2ceb31d789f996bcd43ba4fb06b9ea47dbf441aa625f5ddf2dcb03c2b8670
           randwidth: 288
         }
         {
@@ -5168,7 +5164,7 @@
           randcount: 160
           randtype: perm
           name_top: RndCnstAesMaskingLfsrPerm
-          default: 0x3e319d0b5818107800733c3b1274948679110a7a892c5e9a6039852787045c5f018c0d164942214f72335b385d829509255a75227c8e593707083a1d973d81268a1b622076998424301e0c23962f9b037f19454c9e5132914e356d4d71772d4b474a8d694363366a667e6f9c46569050531f2a8354801a1c9f931561136898923f677006287b29402b57440241052e6552640e0f5588176b7d6e8b6c8f483414
+          default: 0x432d8b8d88290c83734a798c4c07166d6157320f4b202b0d593a25502e9e33172f8a05780974821b7d6c41724585024f685b3f90844d98391f12487c0e91553419939b535f2c6560929a6e691d6b476a86233e22673b8938421c517001960a8e817b5c9f94522a58115e21370026767f4004449587148f1a773d9c801856081e356f757e0b623031063c499d636610150327365a99647197285d137a4e544624
           randwidth: 1280
         }
       ]
@@ -5244,6 +5240,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: hmac
@@ -5265,10 +5265,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_hmac
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -5307,6 +5303,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: kmac
@@ -5347,10 +5347,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_kmac
         clk_edn_i: clkmgr_aon_clocks.clk_main_kmac
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -5443,7 +5439,7 @@
           randcount: 288
           randtype: data
           name_top: RndCnstKmacLfsrSeed
-          default: 0x534d7ac4bd0ca8b03546a98188556c8cbf9b24d1d32c9bd86dfed26f1fe72ffbb4b9762d
+          default: 0x51a50ac312c182822cf6ad12452480a61092e8a80cdf267889e06a8a1ab5f6db8158aa7c
           randwidth: 288
         }
         {
@@ -5453,7 +5449,7 @@
           randcount: 800
           randtype: perm
           name_top: RndCnstKmacLfsrPerm
-          default: 0x3f69d7b0444f62fb85e1bbcce9a23d2529fc2ca657aa713b124da4521a14c7d29761753441488b0585d2c74c7f2c23c8cc1179ec9b7145489bb894f5c7a124a973566537dc7c3cddbb06b6b1c384714216df2afdf0211c39b9824695c3e8d7921a37a8b787506c10f8399465bd559956913590c4c3100c189c5a7a38e4aa87e2d56da015aa9037ad08b54d847ec2041c3e73a36802cb6b6cd7b4450c14c312c834af80a966150cfab0b2034197a16e926e8835a58b53f751203cafaadc852c6930088d780fb86cd3096eb4bd0c8a232a408304ce187c0753ada40a9c6012d4ce3b174a816acf118217da20809a60f579559442ed962fd8cb971659ca7c25cba9abc548c64de7610639ae68c0e46e0156aa35a923c084a23e909627143a076097f5f1a2032231abb6c800984b92c1a0cca0bc6a53f8eb45e431601536d710d47578d87816a1b5ae7b0c599846251d34c22df3b1d25971b9719b1a21591ade77dc7bba844e0a576a7744914c04e24169e8ba9257d8b2b0dd86a555e2a8142c2306f2a6e86a5149c680a0d13bc72403a57e910978d0ba98ac0301408059305b19a0976400f0710703327e222f02b8dfc740e42a634c509a5c7819702b38632b4f19e53c844016fdaa4389c13e0a238a9aac9308e593e5d017ec4279ff31e789b5e21b6b05de8ac0c0b09e52812be46631370e0146d74981baa64c6e4b682eccbda746d13905e87bfca45c83bbcd884c1d1980871b02e2aa7f2261087b10af5a11bdb59066636918205b22757a9bc9555237724cb3567c026729470e9c1f4c603c28557898cd5c26c0bc297f1952cd6bc344063df9bb5cc6e0283d2d5b1ad044c0ca589f9cd8d7642b86135822eaa890f7a698abc47858d007cefab93ea83000419db8e4f5a06983d4367a5bad5fe19a29b770c80cdec1a5e91dc85d2f51846475c128e1153fd037996ca694b03dcd63a24a2d9984d81ab4571a8b9646f43096466aba94056929a22468f9a6588c01c5fc9b26223359f846c7b60e6b5eee06606b4125f5770f12472288c88302daccbe61a3f6487d8aa4d9d4bdb292789c821705e3f1f3871c0362d19f4674752344076b511e67db3b64e830e2c39d48240af53eb84e81e7adee325b09a9be52a89bf1500d873495c1c1cc510d611289aac4ed7752142ce31c5ca3b855b4c5349299c5e19a0c742d23aa54aba8d97616d2969110102401aec6de644cb0aa15582f0d962621352567d4e5beddcb8a4e0fc7a6f5ba7967a791ef838a36b9de9500095d4173e35229603297d6a0b812267ac9d6459fabf84c3dd2b628f675508b9ae9b912e435a4683151dd51bf563bdd1f406bbb157c1e71181ceab625d6b19c8adb16f1b6109c69ef145342225899249c2be5afa042c14a066515ba4460
+          default: 0x2a449719331d97f0d64da225a8f199532199a11d02e046fd267f3073e1b81470ebda43291c764023579310be651355b6d9de9ae0fa7b00c354780cfebbd83a81b270ccec5875c79a519017a1e676923416c40537185ee0b1c4e3252895cefc3f10c19cbf4285710646069ae7e5d927ee7574f4590ca970592b6e1bb6d00e2cd12ed661576720b9748b2ba1b5154a517ab0bdd2018090341cf1ca49c3cda9bd456e863224ee96e2a2766989b1ba8c6d605a860ace1728d3e5a261e0547e47489787aab4739e281ad21c17d4e2135de270652715022bb23ec51fb9485011c7a45a10189348c62db624e770db095db23b12ab49b4b68a3a295b69ed1e55675014acd0b70afd0a82b47286784937315068e6407a238a5941eeae210b766a21b9aaba6036332424e68bb9293b30301bafbafe91ae58e092be0869c43edd1fc3f0ce7c4f2758f5cb8fd9239958af09e009e61b2b6ae9592192a940d8199c0868ab9786f845e901c37c44fa7f555c67133b43c1de622085a04820adcfd17e226a906422dc713045959c03e3a57162891368da6a5984c9b952552909b6d3a1209c5ef8921ca3c9f60e9576b5afb452499af3626259300539046a3232425740f46a6a70978ec61492ca86b2835a040ed91f16975a0e22826a0a9f3cd5a86ca1580a25bd3f8505350a7e628b4796972a14eabeb14612379cd44540a4f48c518af5f869af61e112f252d861144313eee82272018c27e9ef9e4d73187e07d37a6567b825f3aad7a04aa975684956b1770b2669b6eef40ec329dcefa9ee9c5512929cd761d57fc65bd52e53d5122011aec746864bc719e64c8b138e2504278a01898429800cd5c997260155c5b12559d187083c58d2ba732c2788312b7acb5400ecb8ec54d6c1be4cb7d47d77d884a16ab7904485f39c61fbacfb38241298d5465d30700c316a87a27f64694a48e18e10dbf9bdb6e83004f6a685670487c75d7010a04a41bc301d20d5fc1aca9c080beab50224080a7d4bea69b1530d302025be46930520be450d2aaa18b3de0366858c16e950e73ddee85a7b478dc394ff5b65662c8db0d44c14a7128cf21458791f1848c385df0aa43e4425391091525bc002155e5ab876e57431a93cf06d039344eb91660b02553d563311073022b7b0ba8709ab1ed48b0782c5ac04105038d6b2d98c7d0e72659a942cc28e9b0adf4ed3a829f405a516dcc7b56332d8c17f9a7775f8b8980324bd880df45e742b2ea5d6f14048fa3a395e9115b22e8ee7667df24c9b3120132ec42270812f02eab0737691b4f9f7375a66c20765892322373786828eb8502c4714b863cb350c2dbfd02c0ec966e96c05615c258a3e9d8bc28b20317457c80497a02f0a880d44d95a9184632359eb101adb995d4a00c9634e63
           randwidth: 8000
         }
         {
@@ -5463,7 +5459,7 @@
           randcount: 800
           randtype: data
           name_top: RndCnstKmacBufferLfsrSeed
-          default: 0xb7480d9d5001b7755de3ef2618e28371dd02b1db04469e5770d10b0069e332be0f35a726b339d953a1dd95a3f78e14389414adc19300e0934269b3a30b61ea4d9790de0fb09d2792d26bf9565775a2843ffb7d42993c0a1c3d4d2937f997a3b51aafebc6
+          default: 0x2246562dcceda3a423366a8096b121fa42246b6c385a5aa3b4fe9c0a8d1f2128e03e0b01632e027e34c81340bcfd0fd53473b5440b76763b45bca8166865fdaf59f386d5174cc7f5fd1f544b3a82c54e1481730f66854723d00560945b6c126ffec03bf1
           randwidth: 800
         }
         {
@@ -5473,7 +5469,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKmacMsgPerm
-          default: 0x2a89790db63eff5a927c7d96c2f0b23ba17cad7ede662023b24ccce2e804a4b689b48510f749a719c4c1ddd3d5851c4d
+          default: 0xb9c2273f03a025ff456fab7c566bf4e474544fb598d7390234bddac6888c0de1b649940113e969fece0a7725eb8c086a
           randwidth: 384
         }
       ]
@@ -5587,6 +5583,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: otbn
@@ -5634,10 +5634,6 @@
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -5667,7 +5663,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtbnUrndPrngSeed
-          default: 0x4569b54e4cc3468ba78749a7093fe9eb381742e695130a4fb5238ebb74b4f311
+          default: 0xf8a394a094c63c8af070919cd8b168cab6a734a2a92b34ba17c531911e20c1a4
           randwidth: 256
         }
         {
@@ -5705,7 +5701,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstOtbnOtbnKey
-          default: 0x8274ea0b356b051535eac4e098ea131f
+          default: 0x96592784ac089e72877bdaf9f7954486
           randwidth: 128
         }
         {
@@ -5715,7 +5711,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstOtbnOtbnNonce
-          default: 0x95c233e670a4321b
+          default: 0x164b58ea68f9b7f6
           randwidth: 64
         }
       ]
@@ -5897,6 +5893,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: keymgr_dpe
@@ -5925,10 +5925,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_secure
         clk_edn_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -5949,7 +5945,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstKeymgrDpeLfsrSeed
-          default: 0xad599d4df689612a
+          default: 0x47cdafc1c9a905a7
           randwidth: 64
         }
         {
@@ -5959,7 +5955,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstKeymgrDpeLfsrPerm
-          default: 0x961d0532d78d8ace1ff82767391f0f515416ebf4a96b95fb20bc2e1c472064af75c406efad88d3df3903076ca8266a86
+          default: 0xdfc0e31dc106c7301a9ece4cbd726063858dba46554f47f27928a122d3bad9b06b99da7f091d7028bf9094fa05f7b52a
           randwidth: 384
         }
         {
@@ -5969,7 +5965,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstKeymgrDpeRandPerm
-          default: 0x95ca1a671b6b87f5f2cfd226a0445e21bb53c12c
+          default: 0x3f4d14a962f0303766ec09345b538ddca7f43e15
           randwidth: 160
         }
         {
@@ -5979,7 +5975,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeRevisionSeed
-          default: 0x46794cfca2b0c6cbfb61f1bd7ed0a8f926da506ed059049dc9a6e2c1826aa5bf
+          default: 0x6e77b99bf0a1bcd67fb8941c331a44277bc08f711d2d33e72bc40a36399d8364
           randwidth: 256
         }
         {
@@ -5989,7 +5985,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeSoftOutputSeed
-          default: 0xdf596fb9a391c6722b8b5cad051f3edb286e554001528f8e9a5e55ebb82a171c
+          default: 0xdcd59508d525078e802f91d8583804fde71271f1738c1cac987a6b8a7758b762
           randwidth: 256
         }
         {
@@ -5999,7 +5995,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeHardOutputSeed
-          default: 0xf1e411adfe91411b1d8ee0161ecd699002ef8026e474e85739ef0277414266b4
+          default: 0x216edd63070949c7834ab6ee6e7ad485ff3ca72c2242223ce6d70f17b4f4b328
           randwidth: 256
         }
         {
@@ -6009,7 +6005,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeAesSeed
-          default: 0xf811ebd01e7ea4acf08b65a5cf51ae528473dd4661d013fb441057830dd1b830
+          default: 0x18aa49d125b4defb1f3c0be8a29be065c26d23550bbc139ff6461763d7e966a8
           randwidth: 256
         }
         {
@@ -6019,7 +6015,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeKmacSeed
-          default: 0xbf365bbfc1deb8921d7a6896fd1e6013622d66142ee83239ba8e92c61de956a5
+          default: 0xa7219eb2e8ef9f11a152e6c71aa23b8864416e750c01a3339c6c7aa11244ecd2
           randwidth: 256
         }
         {
@@ -6029,7 +6025,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeOtbnSeed
-          default: 0x2768b6d5f1650f1b01969710a957dbfb2e2443f4fe2d0a760f83c1313d3ef78f
+          default: 0x8a62cb1b851078c2a5f18eee28d0b562043b7312efad871f92e7527da865d661
           randwidth: 256
         }
         {
@@ -6039,7 +6035,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstKeymgrDpeNoneSeed
-          default: 0xea4d3d48549217248330d048f78e497e63710e9720ac0f46c68e74cab245be89
+          default: 0x281fe98dfcd72e3c6d150a85d63009596f7966c5c68caedde4ab7c65fb8d5961
           randwidth: 256
         }
       ]
@@ -6207,6 +6203,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: csrng
@@ -6228,10 +6228,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -6243,7 +6239,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivNonProduction
-          default: 0x11081c180f03480661762d84bfb803130ea592f63f968d16d49748cbc79f398e2139541731f82f0e5e0f2ea961c615fc
+          default: 0x8284064d7194e4707ada81f8a6db14ca845beee60798289ad4fb0df1768296390152700e078ec5a951b627cf2ccd155d
           randwidth: 384
         }
         {
@@ -6253,7 +6249,7 @@
           randcount: 384
           randtype: data
           name_top: RndCnstCsrngCsKeymgrDivProduction
-          default: 0x96398950eded5e999cbb16670229d5a24df595be24c50547533e86ef45dc765bc3fc1c4492b8cd264903ba93e2074570
+          default: 0x84fdaced736e93362c8da83c5f4dd2093e4d2a70dd99dcf4ccac341a2f1a2704f5e21287fa168af251b370d034cda605
           randwidth: 384
         }
         {
@@ -6356,6 +6352,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: edn0
@@ -6377,10 +6377,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -6442,6 +6438,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: edn1
@@ -6463,10 +6463,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -6528,6 +6524,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: sram_ctrl_main
@@ -6584,10 +6584,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_list:
       [
         {
@@ -6597,7 +6593,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramKey
-          default: 0x4fc7f5a263f7641c180b43ff715aa5a2
+          default: 0x152662f4d11b3245d5943ea5fd2e4bea
           randwidth: 128
         }
         {
@@ -6607,7 +6603,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMainSramNonce
-          default: 0xbd79305346ebe883e11eea60c36419a2
+          default: 0x16b7911deaf01df742547371445d6e3
           randwidth: 128
         }
         {
@@ -6617,7 +6613,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMainLfsrSeed
-          default: 0x27f0cbb5
+          default: 0x955145e3
           randwidth: 32
         }
         {
@@ -6627,7 +6623,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMainLfsrPerm
-          default: 0x8e38b367e30f41ab4c553c0ae96e8a621b74bc9e
+          default: 0xb8dc8828b693f44370580f72c69e2bf6ff4acd20
           randwidth: 160
         }
         {
@@ -6840,6 +6836,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: sram_ctrl_mbox
@@ -6896,10 +6896,6 @@
         clk_i: clkmgr_aon_clocks.clk_main_infra
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_list:
       [
         {
@@ -6909,7 +6905,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMboxSramKey
-          default: 0x7c5f7fb39afb3660baba1f1bac202d76
+          default: 0xd3d7b758b37d1d1ca19a079c48d7d4e6
           randwidth: 128
         }
         {
@@ -6919,7 +6915,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlMboxSramNonce
-          default: 0xe627cbb30ad1bc1e181db312b8d5a947
+          default: 0x7100a6aaebe45b6f09aefb72895ec90d
           randwidth: 128
         }
         {
@@ -6929,7 +6925,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlMboxLfsrSeed
-          default: 0x9c07c534
+          default: 0x876315db
           randwidth: 32
         }
         {
@@ -6939,7 +6935,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlMboxLfsrPerm
-          default: 0xeebf897277731400c88d2ed0175ec6de69578d2
+          default: 0xb231fab14970dab074417c8be8522436b27e5f73
           randwidth: 160
         }
         {
@@ -7150,6 +7146,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: rom_ctrl0
@@ -7198,10 +7198,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_list:
       [
         {
@@ -7220,7 +7216,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrl0ScrNonce
-          default: 0xfa5ba5cf4337a897
+          default: 0xc1200dd1fb1d0ecf
           randwidth: 64
         }
         {
@@ -7230,7 +7226,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrl0ScrKey
-          default: 0x7e31c7b94c2bcf03781ee0d8b1ba84cb
+          default: 0x948594bc831c3e0e1f33c998cabd61da
           randwidth: 128
         }
         {
@@ -7336,6 +7332,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: rom_ctrl1
@@ -7384,10 +7384,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_list:
       [
         {
@@ -7406,7 +7402,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRomCtrl1ScrNonce
-          default: 0xb565e8f2f8be62fe
+          default: 0xc609b5dd0e0c602a
           randwidth: 64
         }
         {
@@ -7416,7 +7412,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRomCtrl1ScrKey
-          default: 0x9d2d4204b2f54be875ae480277680cba
+          default: 0xef2e932b1fb8fb631dd82de6c9adde7b
           randwidth: 128
         }
         {
@@ -7522,6 +7518,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: dma
@@ -7543,10 +7543,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -7687,6 +7683,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx0
@@ -7738,10 +7738,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -7889,6 +7885,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx1
@@ -7940,10 +7940,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -8091,6 +8087,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx2
@@ -8142,10 +8142,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -8293,6 +8289,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx3
@@ -8325,10 +8325,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -8469,6 +8465,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx4
@@ -8520,10 +8520,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -8671,6 +8667,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx5
@@ -8722,10 +8722,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -8873,6 +8869,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx6
@@ -8905,10 +8905,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -9049,6 +9045,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx_jtag
@@ -9100,10 +9100,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -9251,6 +9247,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx_pcie0
@@ -9302,10 +9302,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -9453,6 +9449,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: mbx_pcie1
@@ -9504,10 +9504,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -9655,6 +9651,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: soc_dbg_ctrl
@@ -9687,10 +9687,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -9835,6 +9831,10 @@
         }
       ]
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: racl_ctrl
@@ -9858,10 +9858,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_infra
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       memory: {}
       param_list:
@@ -10036,6 +10032,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: ac_range_check
@@ -10063,10 +10063,6 @@
       {
         clk_i: clkmgr_aon_clocks.clk_main_secure
       }
-      domain:
-      [
-        "0"
-      ]
       param_decl: {}
       param_list: []
       inter_signal_list:
@@ -10389,6 +10385,10 @@
           window_mapping: {}
         }
       }
+      domain:
+      [
+        "0"
+      ]
     }
     {
       name: rv_core_ibex
@@ -10470,10 +10470,6 @@
         clk_esc_i: clkmgr_aon_clocks.clk_io_div4_secure
         clk_otp_i: clkmgr_aon_clocks.clk_io_div4_secure
       }
-      domain:
-      [
-        "0"
-      ]
       memory: {}
       param_list:
       [
@@ -10484,7 +10480,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstRvCoreIbexLfsrSeed
-          default: 0x442baa3a
+          default: 0xfb79fb9c
           randwidth: 32
         }
         {
@@ -10494,7 +10490,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstRvCoreIbexLfsrPerm
-          default: 0x959de8f20436d6d531ffc06fd48ea0d0a8839679
+          default: 0xd8fadcc23252ee625133f158203ce80bb95d5bf8
           randwidth: 160
         }
         {
@@ -10504,7 +10500,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstRvCoreIbexIbexKeyDefault
-          default: 0xa690c16dd41b3d1fa05f7ecc83245ccc
+          default: 0x17a7a7d4b5e53c38b3cedc40946cf363
           randwidth: 128
         }
         {
@@ -10514,7 +10510,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstRvCoreIbexIbexNonceDefault
-          default: 0x8577daafb97c26a7
+          default: 0x5f0c112f435205ef
           randwidth: 64
         }
         {
@@ -11121,6 +11117,10 @@
         }
       }
       generate_dif: true
+      domain:
+      [
+        "0"
+      ]
     }
   ]
   memory: []
@@ -13112,8 +13112,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_rv_core_ibex__corei
@@ -13125,8 +13125,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_rv_core_ibex__cored
@@ -13138,8 +13138,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_rv_dm__sba
@@ -13151,8 +13151,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_dma__host
@@ -13164,8 +13164,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx0__sram
@@ -13177,8 +13177,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx1__sram
@@ -13190,8 +13190,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx2__sram
@@ -13203,8 +13203,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx3__sram
@@ -13216,8 +13216,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx4__sram
@@ -13229,8 +13229,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx5__sram
@@ -13242,8 +13242,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx6__sram
@@ -13255,8 +13255,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx_jtag__sram
@@ -13268,8 +13268,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx_pcie0__sram
@@ -13281,8 +13281,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_mbx_pcie1__sram
@@ -13294,8 +13294,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rv_dm_regs_tl_d
           index: -1
@@ -13306,8 +13306,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rv_dm_mem_tl_d
           index: -1
@@ -13318,8 +13318,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rom_ctrl0_rom_tl
           index: -1
@@ -13330,8 +13330,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rom_ctrl0_regs_tl
           index: -1
@@ -13342,8 +13342,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rom_ctrl1_rom_tl
           index: -1
@@ -13354,8 +13354,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rom_ctrl1_regs_tl
           index: -1
@@ -13366,8 +13366,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           end_idx: -1
           top_signame: main_tl_peri
@@ -13379,8 +13379,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: soc_proxy_core_tl
           index: -1
@@ -13391,8 +13391,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: soc_proxy_ctn_tl
           index: -1
@@ -13403,8 +13403,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: hmac_tl
           index: -1
@@ -13415,8 +13415,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: kmac_tl
           index: -1
@@ -13427,8 +13427,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: aes_tl
           index: -1
@@ -13439,8 +13439,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: csrng_tl
           index: -1
@@ -13451,8 +13451,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: edn0_tl
           index: -1
@@ -13463,8 +13463,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: edn1_tl
           index: -1
@@ -13475,8 +13475,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rv_plic_tl
           index: -1
@@ -13487,8 +13487,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: otbn_tl
           index: -1
@@ -13499,8 +13499,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: keymgr_dpe_tl
           index: -1
@@ -13511,8 +13511,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: rv_core_ibex_cfg_tl_d
           index: -1
@@ -13523,8 +13523,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: sram_ctrl_main_regs_tl
           index: -1
@@ -13535,8 +13535,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: sram_ctrl_main_ram_tl
           index: -1
@@ -13547,8 +13547,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: sram_ctrl_mbox_regs_tl
           index: -1
@@ -13559,8 +13559,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: sram_ctrl_mbox_ram_tl
           index: -1
@@ -13571,8 +13571,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: dma_tl_d
           index: -1
@@ -13583,8 +13583,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx0_core_tl_d
           index: -1
@@ -13595,8 +13595,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx1_core_tl_d
           index: -1
@@ -13607,8 +13607,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx2_core_tl_d
           index: -1
@@ -13619,8 +13619,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx3_core_tl_d
           index: -1
@@ -13631,8 +13631,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx4_core_tl_d
           index: -1
@@ -13643,8 +13643,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx5_core_tl_d
           index: -1
@@ -13655,8 +13655,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx6_core_tl_d
           index: -1
@@ -13667,8 +13667,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx_jtag_core_tl_d
           index: -1
@@ -13679,8 +13679,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx_pcie0_core_tl_d
           index: -1
@@ -13691,8 +13691,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: main
+          width: 1
           default: ""
           top_signame: mbx_pcie1_core_tl_d
           index: -1
@@ -14177,8 +14177,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: main_tl_peri
           index: -1
@@ -14189,8 +14189,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: uart0_tl
           index: -1
@@ -14201,8 +14201,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: i2c0_tl
           index: -1
@@ -14213,8 +14213,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: gpio_tl
           index: -1
@@ -14225,8 +14225,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: spi_host0_tl
           index: -1
@@ -14237,8 +14237,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: spi_device_tl
           index: -1
@@ -14249,8 +14249,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: rv_timer_tl
           index: -1
@@ -14261,8 +14261,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: pwrmgr_aon_tl
           index: -1
@@ -14273,8 +14273,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: rstmgr_aon_tl
           index: -1
@@ -14285,8 +14285,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: clkmgr_aon_tl
           index: -1
@@ -14297,8 +14297,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: pinmux_aon_tl
           index: -1
@@ -14309,8 +14309,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: otp_ctrl_core_tl
           index: -1
@@ -14321,8 +14321,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: otp_ctrl_prim_tl
           index: -1
@@ -14333,8 +14333,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: lc_ctrl_regs_tl
           index: -1
@@ -14345,8 +14345,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: alert_handler_tl
           index: -1
@@ -14357,8 +14357,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: sram_ctrl_ret_aon_regs_tl
           index: -1
@@ -14369,8 +14369,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: sram_ctrl_ret_aon_ram_tl
           index: -1
@@ -14381,8 +14381,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: aon_timer_aon_tl
           index: -1
@@ -14393,8 +14393,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           external: true
           top_signame: ast_tl
@@ -14407,8 +14407,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: peri
+          width: 1
           default: ""
           top_signame: soc_dbg_ctrl_core_tl
           index: -1
@@ -14728,8 +14728,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           external: true
           top_signame: mbx_tl
@@ -14742,8 +14742,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx0_soc_tl_d
           index: -1
@@ -14754,8 +14754,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx1_soc_tl_d
           index: -1
@@ -14766,8 +14766,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx2_soc_tl_d
           index: -1
@@ -14778,8 +14778,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx3_soc_tl_d
           index: -1
@@ -14790,8 +14790,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx4_soc_tl_d
           index: -1
@@ -14802,8 +14802,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx5_soc_tl_d
           index: -1
@@ -14814,8 +14814,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx6_soc_tl_d
           index: -1
@@ -14826,8 +14826,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx_pcie0_soc_tl_d
           index: -1
@@ -14838,8 +14838,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: mbx_pcie1_soc_tl_d
           index: -1
@@ -14850,8 +14850,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: racl_ctrl_tl
           index: -1
@@ -14862,8 +14862,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: mbx
+          width: 1
           default: ""
           top_signame: ac_range_check_tl
           index: -1
@@ -15025,8 +15025,8 @@
           package: tlul_pkg
           type: req_rsp
           act: rsp
-          width: 1
           inst_name: dbg
+          width: 1
           default: ""
           external: true
           top_signame: dbg_tl
@@ -15039,8 +15039,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: dbg
+          width: 1
           default: ""
           top_signame: rv_dm_dbg_tl_d
           index: -1
@@ -15051,8 +15051,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: dbg
+          width: 1
           default: ""
           top_signame: mbx_jtag_soc_tl_d
           index: -1
@@ -15063,8 +15063,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: dbg
+          width: 1
           default: ""
           top_signame: lc_ctrl_dmi_tl
           index: -1
@@ -15075,8 +15075,8 @@
           package: tlul_pkg
           type: req_rsp
           act: req
-          width: 1
           inst_name: dbg
+          width: 1
           default: ""
           top_signame: soc_dbg_ctrl_jtag_tl
           index: -1
@@ -15098,8 +15098,8 @@
         bank: VIO
         connection: manual
         desc: System reset
-        port_type: inout
         idx: 0
+        port_type: inout
       }
       {
         name: JTAG_TCK
@@ -15107,8 +15107,8 @@
         bank: VIO
         connection: manual
         desc: JTAG TCK signal
-        port_type: inout
         idx: 1
+        port_type: inout
       }
       {
         name: JTAG_TMS
@@ -15116,8 +15116,8 @@
         bank: VIO
         connection: manual
         desc: JTAG TMS signal
-        port_type: inout
         idx: 2
+        port_type: inout
       }
       {
         name: JTAG_TDI
@@ -15125,8 +15125,8 @@
         bank: VIO
         connection: manual
         desc: JTAG TDI signal
-        port_type: inout
         idx: 3
+        port_type: inout
       }
       {
         name: JTAG_TDO
@@ -15134,8 +15134,8 @@
         bank: VIO
         connection: manual
         desc: JTAG TDO signal
-        port_type: inout
         idx: 4
+        port_type: inout
       }
       {
         name: JTAG_TRST_N
@@ -15143,8 +15143,8 @@
         bank: VIO
         connection: manual
         desc: JTAG TRST_N signal
-        port_type: inout
         idx: 5
+        port_type: inout
       }
       {
         name: OTP_EXT_VOLT
@@ -15152,8 +15152,8 @@
         bank: VIO
         connection: manual
         desc: OTP external voltage input
-        port_type: inout
         idx: 6
+        port_type: inout
       }
       {
         name: SPI_HOST_D0
@@ -15161,8 +15161,8 @@
         bank: VIO
         connection: direct
         desc: SPI host data
-        port_type: inout
         idx: 7
+        port_type: inout
       }
       {
         name: SPI_HOST_D1
@@ -15170,8 +15170,8 @@
         bank: VIO
         connection: direct
         desc: SPI host data
-        port_type: inout
         idx: 8
+        port_type: inout
       }
       {
         name: SPI_HOST_D2
@@ -15179,8 +15179,8 @@
         bank: VIO
         connection: direct
         desc: SPI host data
-        port_type: inout
         idx: 9
+        port_type: inout
       }
       {
         name: SPI_HOST_D3
@@ -15188,8 +15188,8 @@
         bank: VIO
         connection: direct
         desc: SPI host data
-        port_type: inout
         idx: 10
+        port_type: inout
       }
       {
         name: SPI_HOST_CLK
@@ -15197,8 +15197,8 @@
         bank: VIO
         connection: direct
         desc: SPI host clock
-        port_type: inout
         idx: 11
+        port_type: inout
       }
       {
         name: SPI_HOST_CS_L
@@ -15206,8 +15206,8 @@
         bank: VIO
         connection: direct
         desc: SPI host chip select
-        port_type: inout
         idx: 12
+        port_type: inout
       }
       {
         name: SPI_DEV_D0
@@ -15215,8 +15215,8 @@
         bank: VIO
         connection: direct
         desc: SPI device data
-        port_type: inout
         idx: 13
+        port_type: inout
       }
       {
         name: SPI_DEV_D1
@@ -15224,8 +15224,8 @@
         bank: VIO
         connection: direct
         desc: SPI device data
-        port_type: inout
         idx: 14
+        port_type: inout
       }
       {
         name: SPI_DEV_D2
@@ -15233,8 +15233,8 @@
         bank: VIO
         connection: direct
         desc: SPI device data
-        port_type: inout
         idx: 15
+        port_type: inout
       }
       {
         name: SPI_DEV_D3
@@ -15242,8 +15242,8 @@
         bank: VIO
         connection: direct
         desc: SPI device data
-        port_type: inout
         idx: 16
+        port_type: inout
       }
       {
         name: SPI_DEV_CLK
@@ -15251,8 +15251,8 @@
         bank: VIO
         connection: direct
         desc: SPI device clock
-        port_type: inout
         idx: 17
+        port_type: inout
       }
       {
         name: SPI_DEV_CS_L
@@ -15260,8 +15260,8 @@
         bank: VIO
         connection: direct
         desc: SPI device chip select
-        port_type: inout
         idx: 18
+        port_type: inout
       }
       {
         name: SPI_DEV_TPM_CS_L
@@ -15269,8 +15269,8 @@
         bank: VIO
         connection: direct
         desc: SPI device TPM chip select
-        port_type: inout
         idx: 19
+        port_type: inout
       }
       {
         name: UART_RX
@@ -15278,8 +15278,8 @@
         bank: VIO
         connection: direct
         desc: UART receive
-        port_type: inout
         idx: 20
+        port_type: inout
       }
       {
         name: UART_TX
@@ -15287,8 +15287,8 @@
         bank: VIO
         connection: direct
         desc: UART transmit
-        port_type: inout
         idx: 21
+        port_type: inout
       }
       {
         name: I2C_SCL
@@ -15296,8 +15296,8 @@
         bank: VIO
         connection: direct
         desc: I2C clock
-        port_type: inout
         idx: 22
+        port_type: inout
       }
       {
         name: I2C_SDA
@@ -15305,8 +15305,8 @@
         bank: VIO
         connection: direct
         desc: I2C data
-        port_type: inout
         idx: 23
+        port_type: inout
       }
       {
         name: GPIO0
@@ -15314,8 +15314,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 24
+        port_type: inout
       }
       {
         name: GPIO1
@@ -15323,8 +15323,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 25
+        port_type: inout
       }
       {
         name: GPIO2
@@ -15332,8 +15332,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 26
+        port_type: inout
       }
       {
         name: GPIO3
@@ -15341,8 +15341,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 27
+        port_type: inout
       }
       {
         name: GPIO4
@@ -15350,8 +15350,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 28
+        port_type: inout
       }
       {
         name: GPIO5
@@ -15359,8 +15359,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 29
+        port_type: inout
       }
       {
         name: GPIO6
@@ -15368,8 +15368,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 30
+        port_type: inout
       }
       {
         name: GPIO7
@@ -15377,8 +15377,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 31
+        port_type: inout
       }
       {
         name: GPIO8
@@ -15386,8 +15386,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 32
+        port_type: inout
       }
       {
         name: GPIO9
@@ -15395,8 +15395,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 33
+        port_type: inout
       }
       {
         name: GPIO10
@@ -15404,8 +15404,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 34
+        port_type: inout
       }
       {
         name: GPIO11
@@ -15413,8 +15413,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 35
+        port_type: inout
       }
       {
         name: GPIO12
@@ -15422,8 +15422,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 36
+        port_type: inout
       }
       {
         name: GPIO13
@@ -15431,8 +15431,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 37
+        port_type: inout
       }
       {
         name: GPIO14
@@ -15440,8 +15440,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 38
+        port_type: inout
       }
       {
         name: GPIO15
@@ -15449,8 +15449,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 39
+        port_type: inout
       }
       {
         name: GPIO16
@@ -15458,8 +15458,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 40
+        port_type: inout
       }
       {
         name: GPIO17
@@ -15467,8 +15467,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 41
+        port_type: inout
       }
       {
         name: GPIO18
@@ -15476,8 +15476,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 42
+        port_type: inout
       }
       {
         name: GPIO19
@@ -15485,8 +15485,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 43
+        port_type: inout
       }
       {
         name: GPIO20
@@ -15494,8 +15494,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 44
+        port_type: inout
       }
       {
         name: GPIO21
@@ -15503,8 +15503,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 45
+        port_type: inout
       }
       {
         name: GPIO22
@@ -15512,8 +15512,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 46
+        port_type: inout
       }
       {
         name: GPIO23
@@ -15521,8 +15521,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 47
+        port_type: inout
       }
       {
         name: GPIO24
@@ -15530,8 +15530,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 48
+        port_type: inout
       }
       {
         name: GPIO25
@@ -15539,8 +15539,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 49
+        port_type: inout
       }
       {
         name: GPIO26
@@ -15548,8 +15548,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 50
+        port_type: inout
       }
       {
         name: GPIO27
@@ -15557,8 +15557,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 51
+        port_type: inout
       }
       {
         name: GPIO28
@@ -15566,8 +15566,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 52
+        port_type: inout
       }
       {
         name: GPIO29
@@ -15575,8 +15575,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 53
+        port_type: inout
       }
       {
         name: GPIO30
@@ -15584,8 +15584,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 54
+        port_type: inout
       }
       {
         name: GPIO31
@@ -15593,8 +15593,8 @@
         bank: VIO
         connection: direct
         desc: GPIO pad
-        port_type: inout
         idx: 55
+        port_type: inout
       }
       {
         name: SOC_GPI0
@@ -15602,8 +15602,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 56
+        port_type: inout
       }
       {
         name: SOC_GPI1
@@ -15611,8 +15611,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 57
+        port_type: inout
       }
       {
         name: SOC_GPI2
@@ -15620,8 +15620,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 58
+        port_type: inout
       }
       {
         name: SOC_GPI3
@@ -15629,8 +15629,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 59
+        port_type: inout
       }
       {
         name: SOC_GPI4
@@ -15638,8 +15638,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 60
+        port_type: inout
       }
       {
         name: SOC_GPI5
@@ -15647,8 +15647,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 61
+        port_type: inout
       }
       {
         name: SOC_GPI6
@@ -15656,8 +15656,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 62
+        port_type: inout
       }
       {
         name: SOC_GPI7
@@ -15665,8 +15665,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 63
+        port_type: inout
       }
       {
         name: SOC_GPI8
@@ -15674,8 +15674,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 64
+        port_type: inout
       }
       {
         name: SOC_GPI9
@@ -15683,8 +15683,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 65
+        port_type: inout
       }
       {
         name: SOC_GPI10
@@ -15692,8 +15692,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 66
+        port_type: inout
       }
       {
         name: SOC_GPI11
@@ -15701,8 +15701,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose input
-        port_type: inout
         idx: 67
+        port_type: inout
       }
       {
         name: SOC_GPO0
@@ -15710,8 +15710,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 68
+        port_type: inout
       }
       {
         name: SOC_GPO1
@@ -15719,8 +15719,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 69
+        port_type: inout
       }
       {
         name: SOC_GPO2
@@ -15728,8 +15728,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 70
+        port_type: inout
       }
       {
         name: SOC_GPO3
@@ -15737,8 +15737,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 71
+        port_type: inout
       }
       {
         name: SOC_GPO4
@@ -15746,8 +15746,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 72
+        port_type: inout
       }
       {
         name: SOC_GPO5
@@ -15755,8 +15755,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 73
+        port_type: inout
       }
       {
         name: SOC_GPO6
@@ -15764,8 +15764,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 74
+        port_type: inout
       }
       {
         name: SOC_GPO7
@@ -15773,8 +15773,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 75
+        port_type: inout
       }
       {
         name: SOC_GPO8
@@ -15782,8 +15782,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 76
+        port_type: inout
       }
       {
         name: SOC_GPO9
@@ -15791,8 +15791,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 77
+        port_type: inout
       }
       {
         name: SOC_GPO10
@@ -15800,8 +15800,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 78
+        port_type: inout
       }
       {
         name: SOC_GPO11
@@ -15809,8 +15809,8 @@
         bank: VIO
         connection: direct
         desc: SoC general purpose output
-        port_type: inout
         idx: 79
+        port_type: inout
       }
       {
         name: MIO0
@@ -15818,8 +15818,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 0
+        port_type: inout
       }
       {
         name: MIO1
@@ -15827,8 +15827,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 1
+        port_type: inout
       }
       {
         name: MIO2
@@ -15836,8 +15836,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 2
+        port_type: inout
       }
       {
         name: MIO3
@@ -15845,8 +15845,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 3
+        port_type: inout
       }
       {
         name: MIO4
@@ -15854,8 +15854,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 4
+        port_type: inout
       }
       {
         name: MIO5
@@ -15863,8 +15863,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 5
+        port_type: inout
       }
       {
         name: MIO6
@@ -15872,8 +15872,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 6
+        port_type: inout
       }
       {
         name: MIO7
@@ -15881,8 +15881,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 7
+        port_type: inout
       }
       {
         name: MIO8
@@ -15890,8 +15890,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 8
+        port_type: inout
       }
       {
         name: MIO9
@@ -15899,8 +15899,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 9
+        port_type: inout
       }
       {
         name: MIO10
@@ -15908,8 +15908,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 10
+        port_type: inout
       }
       {
         name: MIO11
@@ -15917,8 +15917,8 @@
         bank: VIO
         connection: muxed
         desc: Muxed IO pad
-        port_type: inout
         idx: 11
+        port_type: inout
       }
     ]
   }
@@ -17691,6 +17691,86 @@
   incoming_alert: {}
   incoming_interrupt: {}
   exported_clks: {}
+  racl:
+  {
+    error_response: true
+    ctn_uid_bit_lsb: 0
+    ctn_uid_bit_msb: 4
+    role_bit_lsb: 5
+    role_bit_msb: 8
+    roles:
+    {
+      ROT:
+      {
+        role_id: 0
+      }
+      ROLE1:
+      {
+        role_id: 1
+      }
+      SOC:
+      {
+        role_id: 2
+      }
+    }
+    policies:
+    {
+      Null:
+      [
+        {
+          name: ALL_RD_WR
+          allowed_rd:
+          [
+            ROT
+            ROLE1
+            SOC
+          ]
+          allowed_wr:
+          [
+            ROT
+            ROLE1
+            SOC
+          ]
+          rd_default: 7
+          wr_default: 7
+        }
+        {
+          name: ROT_PRIVATE
+          rot_private: true
+          allowed_rd:
+          [
+            ROT
+          ]
+          allowed_wr:
+          [
+            ROT
+          ]
+          rd_default: 1
+          wr_default: 1
+        }
+        {
+          name: SOC_ROT
+          allowed_rd:
+          [
+            ROT
+            SOC
+          ]
+          allowed_wr:
+          [
+            ROT
+            SOC
+          ]
+          rd_default: 5
+          wr_default: 5
+        }
+      ]
+    }
+    nr_role_bits: 4
+    nr_ctn_uid_bits: 5
+    nr_policies: 3
+    rot_private_policy_rd: 1
+    rot_private_policy_wr: 1
+  }
   wakeups:
   [
     {
@@ -17714,39 +17794,1042 @@
       module: soc_proxy
     }
   ]
-  interrupt_module:
+  unmanaged_resets: {}
+  exported_rsts: {}
+  alert:
   [
-    uart0
-    gpio
-    spi_device
-    i2c0
-    rv_timer
-    otp_ctrl
-    alert_handler
-    spi_host0
-    pwrmgr_aon
-    aon_timer_aon
-    soc_proxy
-    hmac
-    kmac
-    otbn
-    keymgr_dpe
-    csrng
-    edn0
-    edn1
-    dma
-    mbx0
-    mbx1
-    mbx2
-    mbx3
-    mbx4
-    mbx5
-    mbx6
-    mbx_jtag
-    mbx_pcie0
-    mbx_pcie1
-    ac_range_check
+    {
+      name: uart0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: uart0
+      desc: uart0 fatal_fault alert
+      lpg_name: peri_lc_io_div4_0
+      lpg_idx: 0
+    }
+    {
+      name: gpio_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: gpio
+      desc: gpio fatal_fault alert
+      lpg_name: peri_lc_io_div4_0
+      lpg_idx: 0
+    }
+    {
+      name: spi_device_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: spi_device
+      desc: spi_device fatal_fault alert
+      lpg_name: peri_spi_device_0
+      lpg_idx: 1
+    }
+    {
+      name: i2c0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: i2c0
+      desc: i2c0 fatal_fault alert
+      lpg_name: peri_i2c0_0
+      lpg_idx: 2
+    }
+    {
+      name: rv_timer_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_timer
+      desc: rv_timer fatal_fault alert
+      lpg_name: timers_lc_io_div4_0
+      lpg_idx: 3
+    }
+    {
+      name: otp_ctrl_fatal_macro_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      desc: otp_ctrl fatal_macro_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: otp_ctrl_fatal_check_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      desc: otp_ctrl fatal_check_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: otp_ctrl_fatal_bus_integ_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      desc: otp_ctrl fatal_bus_integ_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: otp_ctrl_fatal_prim_otp_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      desc: otp_ctrl fatal_prim_otp_alert alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: otp_ctrl_recov_prim_otp_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otp_ctrl
+      desc: otp_ctrl recov_prim_otp_alert alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: lc_ctrl_fatal_prog_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: lc_ctrl
+      desc: lc_ctrl fatal_prog_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: lc_ctrl_fatal_state_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: lc_ctrl
+      desc: lc_ctrl fatal_state_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: lc_ctrl_fatal_bus_integ_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: lc_ctrl
+      desc: lc_ctrl fatal_bus_integ_error alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: spi_host0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: spi_host0
+      desc: spi_host0 fatal_fault alert
+      lpg_name: peri_spi_host0_0
+      lpg_idx: 5
+    }
+    {
+      name: pwrmgr_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: pwrmgr_aon
+      desc: pwrmgr_aon fatal_fault alert
+      lpg_name: powerup_por_io_div4_Aon
+      lpg_idx: 6
+    }
+    {
+      name: rstmgr_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rstmgr_aon
+      desc: rstmgr_aon fatal_fault alert
+      lpg_name: powerup_lc_io_div4_Aon
+      lpg_idx: 7
+    }
+    {
+      name: rstmgr_aon_fatal_cnsty_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rstmgr_aon
+      desc: rstmgr_aon fatal_cnsty_fault alert
+      lpg_name: powerup_lc_io_div4_Aon
+      lpg_idx: 7
+    }
+    {
+      name: clkmgr_aon_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: clkmgr_aon
+      desc: clkmgr_aon recov_fault alert
+      lpg_name: powerup_lc_io_div4_Aon
+      lpg_idx: 7
+    }
+    {
+      name: clkmgr_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: clkmgr_aon
+      desc: clkmgr_aon fatal_fault alert
+      lpg_name: powerup_lc_io_div4_Aon
+      lpg_idx: 7
+    }
+    {
+      name: pinmux_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: pinmux_aon
+      desc: pinmux_aon fatal_fault alert
+      lpg_name: powerup_lc_io_div4_Aon
+      lpg_idx: 7
+    }
+    {
+      name: aon_timer_aon_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aon_timer_aon
+      desc: aon_timer_aon fatal_fault alert
+      lpg_name: timers_lc_io_div4_Aon
+      lpg_idx: 8
+    }
+    {
+      name: soc_proxy_fatal_alert_intg
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_intg alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_0
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_0 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_1
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_1 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_2
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_2 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_3
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_3 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_4
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_4 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_5
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_5 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_6
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_6 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_7
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_7 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_8
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_8 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_9
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_9 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_10
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_10 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_11
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_11 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_12
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_12 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_13
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_13 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_14
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_14 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_15
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_15 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_16
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_16 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_17
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_17 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_18
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_18 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_19
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_19 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_20
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_20 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_21
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_21 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_22
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_22 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_fatal_alert_external_23
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy fatal_alert_external_23 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_recov_alert_external_0
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy recov_alert_external_0 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_recov_alert_external_1
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy recov_alert_external_1 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_recov_alert_external_2
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy recov_alert_external_2 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_proxy_recov_alert_external_3
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_proxy
+      desc: soc_proxy recov_alert_external_3 alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: sram_ctrl_ret_aon_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_ret_aon
+      desc: sram_ctrl_ret_aon fatal_error alert
+      lpg_name: infra_lc_io_div4_Aon
+      lpg_idx: 11
+    }
+    {
+      name: rv_dm_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_dm
+      desc: rv_dm fatal_fault alert
+      lpg_name: infra_sys_0
+      lpg_idx: 12
+    }
+    {
+      name: rv_plic_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_plic
+      desc: rv_plic fatal_fault alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: aes_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aes
+      desc: aes recov_ctrl_update_err alert
+      lpg_name: aes_trans_lc_0
+      lpg_idx: 14
+    }
+    {
+      name: aes_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: aes
+      desc: aes fatal_fault alert
+      lpg_name: aes_trans_lc_0
+      lpg_idx: 14
+    }
+    {
+      name: hmac_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: hmac
+      desc: hmac fatal_fault alert
+      lpg_name: hmac_trans_lc_0
+      lpg_idx: 15
+    }
+    {
+      name: kmac_recov_operation_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: kmac
+      desc: kmac recov_operation_err alert
+      lpg_name: kmac_trans_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: kmac_fatal_fault_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: kmac
+      desc: kmac fatal_fault_err alert
+      lpg_name: kmac_trans_lc_0
+      lpg_idx: 16
+    }
+    {
+      name: otbn_fatal
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
+      desc: otbn fatal alert
+      lpg_name: otbn_trans_lc_0
+      lpg_idx: 17
+    }
+    {
+      name: otbn_recov
+      width: 1
+      type: alert
+      async: "1"
+      module_name: otbn
+      desc: otbn recov alert
+      lpg_name: otbn_trans_lc_0
+      lpg_idx: 17
+    }
+    {
+      name: keymgr_dpe_recov_operation_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: keymgr_dpe
+      desc: keymgr_dpe recov_operation_err alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: keymgr_dpe_fatal_fault_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: keymgr_dpe
+      desc: keymgr_dpe fatal_fault_err alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: csrng_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: csrng
+      desc: csrng recov_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: csrng_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: csrng
+      desc: csrng fatal_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: edn0_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn0
+      desc: edn0 recov_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: edn0_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn0
+      desc: edn0 fatal_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: edn1_recov_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn1
+      desc: edn1 recov_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: edn1_fatal_alert
+      width: 1
+      type: alert
+      async: "1"
+      module_name: edn1
+      desc: edn1 fatal_alert alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: sram_ctrl_main_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_main
+      desc: sram_ctrl_main fatal_error alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: sram_ctrl_mbox_fatal_error
+      width: 1
+      type: alert
+      async: "1"
+      module_name: sram_ctrl_mbox
+      desc: sram_ctrl_mbox fatal_error alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: rom_ctrl0_fatal
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rom_ctrl0
+      desc: rom_ctrl0 fatal alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: rom_ctrl1_fatal
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rom_ctrl1
+      desc: rom_ctrl1 fatal alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: dma_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: dma
+      desc: dma fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx0
+      desc: mbx0 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx0_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx0
+      desc: mbx0 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx1
+      desc: mbx1 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx1_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx1
+      desc: mbx1 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx2_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx2
+      desc: mbx2 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx2_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx2
+      desc: mbx2 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx3_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx3
+      desc: mbx3 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx3_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx3
+      desc: mbx3 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx4_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx4
+      desc: mbx4 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx4_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx4
+      desc: mbx4 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx5_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx5
+      desc: mbx5 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx5_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx5
+      desc: mbx5 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx6_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx6
+      desc: mbx6 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx6_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx6
+      desc: mbx6 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_jtag_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_jtag
+      desc: mbx_jtag fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_jtag_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_jtag
+      desc: mbx_jtag recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_pcie0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie0
+      desc: mbx_pcie0 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_pcie0_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie0
+      desc: mbx_pcie0 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_pcie1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie1
+      desc: mbx_pcie1 fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: mbx_pcie1_recov_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: mbx_pcie1
+      desc: mbx_pcie1 recov_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: soc_dbg_ctrl_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_dbg_ctrl
+      desc: soc_dbg_ctrl fatal_fault alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: soc_dbg_ctrl_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: soc_dbg_ctrl
+      desc: soc_dbg_ctrl recov_ctrl_update_err alert
+      lpg_name: secure_lc_io_div4_0
+      lpg_idx: 4
+    }
+    {
+      name: racl_ctrl_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: racl_ctrl
+      desc: racl_ctrl recov_ctrl_update_err alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: racl_ctrl_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: racl_ctrl
+      desc: racl_ctrl fatal_fault alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: ac_range_check_recov_ctrl_update_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: ac_range_check
+      desc: ac_range_check recov_ctrl_update_err alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: ac_range_check_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      module_name: ac_range_check
+      desc: ac_range_check fatal_fault alert
+      lpg_name: secure_lc_0
+      lpg_idx: 13
+    }
+    {
+      name: rv_core_ibex_fatal_sw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex
+      desc: rv_core_ibex fatal_sw_err alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: rv_core_ibex_recov_sw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex
+      desc: rv_core_ibex recov_sw_err alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: rv_core_ibex_fatal_hw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex
+      desc: rv_core_ibex fatal_hw_err alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
+    {
+      name: rv_core_ibex_recov_hw_err
+      width: 1
+      type: alert
+      async: "1"
+      module_name: rv_core_ibex
+      desc: rv_core_ibex recov_hw_err alert
+      lpg_name: infra_lc_0
+      lpg_idx: 10
+    }
   ]
+  outgoing_alert: {}
   interrupt:
   [
     {
@@ -17754,6 +18837,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 tx_watermark interrupt
       intr_type: IntrType.Status
       default_val: true
       incoming: false
@@ -17763,6 +18847,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_watermark interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17772,6 +18857,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 tx_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17781,6 +18867,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_overflow interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17790,6 +18877,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_frame_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17799,6 +18887,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_break_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17808,6 +18897,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_timeout interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17817,6 +18907,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 rx_parity_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17826,6 +18917,7 @@
       width: 1
       type: interrupt
       module_name: uart0
+      desc: uart0 tx_empty interrupt
       intr_type: IntrType.Status
       default_val: true
       incoming: false
@@ -17835,6 +18927,7 @@
       width: 32
       type: interrupt
       module_name: gpio
+      desc: gpio gpio interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17844,6 +18937,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device upload_cmdfifo_not_empty interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17853,6 +18947,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device upload_payload_not_empty interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17862,6 +18957,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device upload_payload_overflow interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17871,6 +18967,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device readbuf_watermark interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17880,6 +18977,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device readbuf_flip interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17889,6 +18987,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device tpm_header_not_empty interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17898,6 +18997,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device tpm_rdfifo_cmd_end interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17907,6 +19007,7 @@
       width: 1
       type: interrupt
       module_name: spi_device
+      desc: spi_device tpm_rdfifo_drop interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17916,6 +19017,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 fmt_threshold interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17925,6 +19027,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 rx_threshold interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17934,6 +19037,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 acq_threshold interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17943,6 +19047,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 rx_overflow interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17952,6 +19057,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 controller_halt interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -17961,6 +19067,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 scl_interference interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17970,6 +19077,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 sda_interference interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17979,6 +19087,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 stretch_timeout interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17988,6 +19097,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 sda_unstable interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -17997,6 +19107,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 cmd_complete interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18006,6 +19117,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 tx_stretch interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18015,6 +19127,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 tx_threshold interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18024,6 +19137,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 acq_stretch interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18033,6 +19147,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 unexp_stop interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18042,6 +19157,7 @@
       width: 1
       type: interrupt
       module_name: i2c0
+      desc: i2c0 host_timeout interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18051,6 +19167,7 @@
       width: 1
       type: interrupt
       module_name: rv_timer
+      desc: rv_timer timer_expired_hart0_timer0 interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18060,6 +19177,7 @@
       width: 1
       type: interrupt
       module_name: otp_ctrl
+      desc: otp_ctrl otp_operation_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18069,6 +19187,7 @@
       width: 1
       type: interrupt
       module_name: otp_ctrl
+      desc: otp_ctrl otp_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18078,6 +19197,7 @@
       width: 1
       type: interrupt
       module_name: alert_handler
+      desc: alert_handler classa interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18087,6 +19207,7 @@
       width: 1
       type: interrupt
       module_name: alert_handler
+      desc: alert_handler classb interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18096,6 +19217,7 @@
       width: 1
       type: interrupt
       module_name: alert_handler
+      desc: alert_handler classc interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18105,6 +19227,7 @@
       width: 1
       type: interrupt
       module_name: alert_handler
+      desc: alert_handler classd interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18114,6 +19237,7 @@
       width: 1
       type: interrupt
       module_name: spi_host0
+      desc: spi_host0 error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18123,6 +19247,7 @@
       width: 1
       type: interrupt
       module_name: spi_host0
+      desc: spi_host0 spi_event interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18132,6 +19257,7 @@
       width: 1
       type: interrupt
       module_name: pwrmgr_aon
+      desc: pwrmgr_aon wakeup interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18141,6 +19267,7 @@
       width: 1
       type: interrupt
       module_name: aon_timer_aon
+      desc: aon_timer_aon wkup_timer_expired interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18150,6 +19277,7 @@
       width: 1
       type: interrupt
       module_name: aon_timer_aon
+      desc: aon_timer_aon wdog_timer_bark interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18159,6 +19287,7 @@
       width: 32
       type: interrupt
       module_name: soc_proxy
+      desc: soc_proxy external interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18168,6 +19297,7 @@
       width: 1
       type: interrupt
       module_name: hmac
+      desc: hmac hmac_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18177,6 +19307,7 @@
       width: 1
       type: interrupt
       module_name: hmac
+      desc: hmac fifo_empty interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18186,6 +19317,7 @@
       width: 1
       type: interrupt
       module_name: hmac
+      desc: hmac hmac_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18195,6 +19327,7 @@
       width: 1
       type: interrupt
       module_name: kmac
+      desc: kmac kmac_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18204,6 +19337,7 @@
       width: 1
       type: interrupt
       module_name: kmac
+      desc: kmac fifo_empty interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18213,6 +19347,7 @@
       width: 1
       type: interrupt
       module_name: kmac
+      desc: kmac kmac_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18222,6 +19357,7 @@
       width: 1
       type: interrupt
       module_name: otbn
+      desc: otbn done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18231,6 +19367,7 @@
       width: 1
       type: interrupt
       module_name: keymgr_dpe
+      desc: keymgr_dpe op_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18240,6 +19377,7 @@
       width: 1
       type: interrupt
       module_name: csrng
+      desc: csrng cs_cmd_req_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18249,6 +19387,7 @@
       width: 1
       type: interrupt
       module_name: csrng
+      desc: csrng cs_entropy_req interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18258,6 +19397,7 @@
       width: 1
       type: interrupt
       module_name: csrng
+      desc: csrng cs_hw_inst_exc interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18267,6 +19407,7 @@
       width: 1
       type: interrupt
       module_name: csrng
+      desc: csrng cs_fatal_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18276,6 +19417,7 @@
       width: 1
       type: interrupt
       module_name: edn0
+      desc: edn0 edn_cmd_req_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18285,6 +19427,7 @@
       width: 1
       type: interrupt
       module_name: edn0
+      desc: edn0 edn_fatal_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18294,6 +19437,7 @@
       width: 1
       type: interrupt
       module_name: edn1
+      desc: edn1 edn_cmd_req_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18303,6 +19447,7 @@
       width: 1
       type: interrupt
       module_name: edn1
+      desc: edn1 edn_fatal_err interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18312,6 +19457,7 @@
       width: 1
       type: interrupt
       module_name: dma
+      desc: dma dma_done interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18321,6 +19467,7 @@
       width: 1
       type: interrupt
       module_name: dma
+      desc: dma dma_chunk_done interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18330,6 +19477,7 @@
       width: 1
       type: interrupt
       module_name: dma
+      desc: dma dma_error interrupt
       intr_type: IntrType.Status
       default_val: false
       incoming: false
@@ -18339,6 +19487,7 @@
       width: 1
       type: interrupt
       module_name: mbx0
+      desc: mbx0 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18348,6 +19497,7 @@
       width: 1
       type: interrupt
       module_name: mbx0
+      desc: mbx0 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18357,6 +19507,7 @@
       width: 1
       type: interrupt
       module_name: mbx0
+      desc: mbx0 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18366,6 +19517,7 @@
       width: 1
       type: interrupt
       module_name: mbx1
+      desc: mbx1 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18375,6 +19527,7 @@
       width: 1
       type: interrupt
       module_name: mbx1
+      desc: mbx1 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18384,6 +19537,7 @@
       width: 1
       type: interrupt
       module_name: mbx1
+      desc: mbx1 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18393,6 +19547,7 @@
       width: 1
       type: interrupt
       module_name: mbx2
+      desc: mbx2 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18402,6 +19557,7 @@
       width: 1
       type: interrupt
       module_name: mbx2
+      desc: mbx2 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18411,6 +19567,7 @@
       width: 1
       type: interrupt
       module_name: mbx2
+      desc: mbx2 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18420,6 +19577,7 @@
       width: 1
       type: interrupt
       module_name: mbx3
+      desc: mbx3 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18429,6 +19587,7 @@
       width: 1
       type: interrupt
       module_name: mbx3
+      desc: mbx3 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18438,6 +19597,7 @@
       width: 1
       type: interrupt
       module_name: mbx3
+      desc: mbx3 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18447,6 +19607,7 @@
       width: 1
       type: interrupt
       module_name: mbx4
+      desc: mbx4 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18456,6 +19617,7 @@
       width: 1
       type: interrupt
       module_name: mbx4
+      desc: mbx4 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18465,6 +19627,7 @@
       width: 1
       type: interrupt
       module_name: mbx4
+      desc: mbx4 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18474,6 +19637,7 @@
       width: 1
       type: interrupt
       module_name: mbx5
+      desc: mbx5 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18483,6 +19647,7 @@
       width: 1
       type: interrupt
       module_name: mbx5
+      desc: mbx5 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18492,6 +19657,7 @@
       width: 1
       type: interrupt
       module_name: mbx5
+      desc: mbx5 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18501,6 +19667,7 @@
       width: 1
       type: interrupt
       module_name: mbx6
+      desc: mbx6 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18510,6 +19677,7 @@
       width: 1
       type: interrupt
       module_name: mbx6
+      desc: mbx6 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18519,6 +19687,7 @@
       width: 1
       type: interrupt
       module_name: mbx6
+      desc: mbx6 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18528,6 +19697,7 @@
       width: 1
       type: interrupt
       module_name: mbx_jtag
+      desc: mbx_jtag mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18537,6 +19707,7 @@
       width: 1
       type: interrupt
       module_name: mbx_jtag
+      desc: mbx_jtag mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18546,6 +19717,7 @@
       width: 1
       type: interrupt
       module_name: mbx_jtag
+      desc: mbx_jtag mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18555,6 +19727,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie0
+      desc: mbx_pcie0 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18564,6 +19737,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie0
+      desc: mbx_pcie0 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18573,6 +19747,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie0
+      desc: mbx_pcie0 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18582,6 +19757,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie1
+      desc: mbx_pcie1 mbx_ready interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18591,6 +19767,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie1
+      desc: mbx_pcie1 mbx_abort interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18600,6 +19777,7 @@
       width: 1
       type: interrupt
       module_name: mbx_pcie1
+      desc: mbx_pcie1 mbx_error interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18609,6 +19787,7 @@
       width: 1
       type: interrupt
       module_name: ac_range_check
+      desc: ac_range_check deny_cnt_reached interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -18661,940 +19840,40 @@
     ac_range_check
     rv_core_ibex
   ]
-  outgoing_alert_module: {}
-  alert:
+  interrupt_module:
   [
-    {
-      name: uart0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: uart0
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: gpio_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: gpio
-      lpg_name: peri_lc_io_div4_0
-      lpg_idx: 0
-    }
-    {
-      name: spi_device_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: spi_device
-      lpg_name: peri_spi_device_0
-      lpg_idx: 1
-    }
-    {
-      name: i2c0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: i2c0
-      lpg_name: peri_i2c0_0
-      lpg_idx: 2
-    }
-    {
-      name: rv_timer_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_timer
-      lpg_name: timers_lc_io_div4_0
-      lpg_idx: 3
-    }
-    {
-      name: otp_ctrl_fatal_macro_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otp_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: otp_ctrl_fatal_check_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otp_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: otp_ctrl_fatal_bus_integ_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otp_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: otp_ctrl_fatal_prim_otp_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otp_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: otp_ctrl_recov_prim_otp_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otp_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: lc_ctrl_fatal_prog_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: lc_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: lc_ctrl_fatal_state_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: lc_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: lc_ctrl_fatal_bus_integ_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: lc_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: spi_host0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: spi_host0
-      lpg_name: peri_spi_host0_0
-      lpg_idx: 5
-    }
-    {
-      name: pwrmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: pwrmgr_aon
-      lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 6
-    }
-    {
-      name: rstmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rstmgr_aon
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: rstmgr_aon_fatal_cnsty_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rstmgr_aon
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: clkmgr_aon_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: clkmgr_aon
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: clkmgr_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: clkmgr_aon
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: pinmux_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: pinmux_aon
-      lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 7
-    }
-    {
-      name: aon_timer_aon_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: aon_timer_aon
-      lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 8
-    }
-    {
-      name: soc_proxy_fatal_alert_intg
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_4
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_5
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_6
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_7
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_8
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_9
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_10
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_11
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_12
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_13
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_14
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_15
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_16
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_17
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_18
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_19
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_20
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_21
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_22
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_fatal_alert_external_23
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_0
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_1
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_2
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_proxy_recov_alert_external_3
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_proxy
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: sram_ctrl_ret_aon_fatal_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_ret_aon
-      lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 11
-    }
-    {
-      name: rv_dm_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_dm
-      lpg_name: infra_sys_0
-      lpg_idx: 12
-    }
-    {
-      name: rv_plic_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_plic
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: aes_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: aes
-      lpg_name: aes_trans_lc_0
-      lpg_idx: 14
-    }
-    {
-      name: aes_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: aes
-      lpg_name: aes_trans_lc_0
-      lpg_idx: 14
-    }
-    {
-      name: hmac_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: hmac
-      lpg_name: hmac_trans_lc_0
-      lpg_idx: 15
-    }
-    {
-      name: kmac_recov_operation_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: kmac
-      lpg_name: kmac_trans_lc_0
-      lpg_idx: 16
-    }
-    {
-      name: kmac_fatal_fault_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: kmac
-      lpg_name: kmac_trans_lc_0
-      lpg_idx: 16
-    }
-    {
-      name: otbn_fatal
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
-      lpg_name: otbn_trans_lc_0
-      lpg_idx: 17
-    }
-    {
-      name: otbn_recov
-      width: 1
-      type: alert
-      async: "1"
-      module_name: otbn
-      lpg_name: otbn_trans_lc_0
-      lpg_idx: 17
-    }
-    {
-      name: keymgr_dpe_recov_operation_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: keymgr_dpe
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: keymgr_dpe_fatal_fault_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: keymgr_dpe
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: csrng_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: csrng
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: csrng_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: csrng
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: edn0_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn0
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: edn0_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn0
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: edn1_recov_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn1
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: edn1_fatal_alert
-      width: 1
-      type: alert
-      async: "1"
-      module_name: edn1
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: sram_ctrl_main_fatal_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_main
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: sram_ctrl_mbox_fatal_error
-      width: 1
-      type: alert
-      async: "1"
-      module_name: sram_ctrl_mbox
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rom_ctrl0_fatal
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rom_ctrl0
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rom_ctrl1_fatal
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rom_ctrl1
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: dma_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: dma
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx0
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx0_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx0
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx1
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx1_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx1
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx2_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx2
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx2_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx2
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx3_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx3
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx3_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx3
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx4_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx4
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx4_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx4
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx5_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx5
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx5_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx5
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx6_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx6
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx6_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx6
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_jtag_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_jtag
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_jtag_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_jtag
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_pcie0_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_pcie0
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_pcie0_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_pcie0
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_pcie1_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_pcie1
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: mbx_pcie1_recov_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: mbx_pcie1
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: soc_dbg_ctrl_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_dbg_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: soc_dbg_ctrl_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: soc_dbg_ctrl
-      lpg_name: secure_lc_io_div4_0
-      lpg_idx: 4
-    }
-    {
-      name: racl_ctrl_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: racl_ctrl
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: racl_ctrl_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: racl_ctrl
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: ac_range_check_recov_ctrl_update_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: ac_range_check
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: ac_range_check_fatal_fault
-      width: 1
-      type: alert
-      async: "1"
-      module_name: ac_range_check
-      lpg_name: secure_lc_0
-      lpg_idx: 13
-    }
-    {
-      name: rv_core_ibex_fatal_sw_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_core_ibex
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rv_core_ibex_recov_sw_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_core_ibex
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rv_core_ibex_fatal_hw_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_core_ibex
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
-    {
-      name: rv_core_ibex_recov_hw_err
-      width: 1
-      type: alert
-      async: "1"
-      module_name: rv_core_ibex
-      lpg_name: infra_lc_0
-      lpg_idx: 10
-    }
+    uart0
+    gpio
+    spi_device
+    i2c0
+    rv_timer
+    otp_ctrl
+    alert_handler
+    spi_host0
+    pwrmgr_aon
+    aon_timer_aon
+    soc_proxy
+    hmac
+    kmac
+    otbn
+    keymgr_dpe
+    csrng
+    edn0
+    edn1
+    dma
+    mbx0
+    mbx1
+    mbx2
+    mbx3
+    mbx4
+    mbx5
+    mbx6
+    mbx_jtag
+    mbx_pcie0
+    mbx_pcie1
+    ac_range_check
   ]
-  outgoing_alert: {}
-  unmanaged_resets: {}
-  exported_rsts: {}
+  outgoing_alert_module: {}
   alert_lpgs:
   [
     {
@@ -20045,86 +20324,6 @@
     }
   ]
   outgoing_alert_lpgs: {}
-  racl:
-  {
-    error_response: true
-    ctn_uid_bit_lsb: 0
-    ctn_uid_bit_msb: 4
-    role_bit_lsb: 5
-    role_bit_msb: 8
-    roles:
-    {
-      ROT:
-      {
-        role_id: 0
-      }
-      ROLE1:
-      {
-        role_id: 1
-      }
-      SOC:
-      {
-        role_id: 2
-      }
-    }
-    policies:
-    {
-      Null:
-      [
-        {
-          name: ALL_RD_WR
-          allowed_rd:
-          [
-            ROT
-            ROLE1
-            SOC
-          ]
-          allowed_wr:
-          [
-            ROT
-            ROLE1
-            SOC
-          ]
-          rd_default: 7
-          wr_default: 7
-        }
-        {
-          name: ROT_PRIVATE
-          rot_private: true
-          allowed_rd:
-          [
-            ROT
-          ]
-          allowed_wr:
-          [
-            ROT
-          ]
-          rd_default: 1
-          wr_default: 1
-        }
-        {
-          name: SOC_ROT
-          allowed_rd:
-          [
-            ROT
-            SOC
-          ]
-          allowed_wr:
-          [
-            ROT
-            SOC
-          ]
-          rd_default: 5
-          wr_default: 5
-        }
-      ]
-    }
-    nr_role_bits: 4
-    nr_ctn_uid_bits: 5
-    nr_policies: 3
-    rot_private_policy_rd: 1
-    rot_private_policy_wr: 1
-  }
   inter_signal:
   {
     signals:
@@ -26419,8 +26618,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_rv_core_ibex__corei
@@ -26432,8 +26631,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_rv_core_ibex__cored
@@ -26445,8 +26644,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_rv_dm__sba
@@ -26458,8 +26657,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_dma__host
@@ -26471,8 +26670,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx0__sram
@@ -26484,8 +26683,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx1__sram
@@ -26497,8 +26696,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx2__sram
@@ -26510,8 +26709,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx3__sram
@@ -26523,8 +26722,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx4__sram
@@ -26536,8 +26735,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx5__sram
@@ -26549,8 +26748,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx6__sram
@@ -26562,8 +26761,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx_jtag__sram
@@ -26575,8 +26774,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx_pcie0__sram
@@ -26588,8 +26787,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_mbx_pcie1__sram
@@ -26601,8 +26800,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rv_dm_regs_tl_d
         index: -1
@@ -26613,8 +26812,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rv_dm_mem_tl_d
         index: -1
@@ -26625,8 +26824,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rom_ctrl0_rom_tl
         index: -1
@@ -26637,8 +26836,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rom_ctrl0_regs_tl
         index: -1
@@ -26649,8 +26848,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rom_ctrl1_rom_tl
         index: -1
@@ -26661,8 +26860,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rom_ctrl1_regs_tl
         index: -1
@@ -26673,8 +26872,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         end_idx: -1
         top_signame: main_tl_peri
@@ -26686,8 +26885,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: soc_proxy_core_tl
         index: -1
@@ -26698,8 +26897,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: soc_proxy_ctn_tl
         index: -1
@@ -26710,8 +26909,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: hmac_tl
         index: -1
@@ -26722,8 +26921,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: kmac_tl
         index: -1
@@ -26734,8 +26933,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: aes_tl
         index: -1
@@ -26746,8 +26945,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: csrng_tl
         index: -1
@@ -26758,8 +26957,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: edn0_tl
         index: -1
@@ -26770,8 +26969,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: edn1_tl
         index: -1
@@ -26782,8 +26981,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rv_plic_tl
         index: -1
@@ -26794,8 +26993,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: otbn_tl
         index: -1
@@ -26806,8 +27005,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: keymgr_dpe_tl
         index: -1
@@ -26818,8 +27017,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: rv_core_ibex_cfg_tl_d
         index: -1
@@ -26830,8 +27029,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: sram_ctrl_main_regs_tl
         index: -1
@@ -26842,8 +27041,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: sram_ctrl_main_ram_tl
         index: -1
@@ -26854,8 +27053,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: sram_ctrl_mbox_regs_tl
         index: -1
@@ -26866,8 +27065,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: sram_ctrl_mbox_ram_tl
         index: -1
@@ -26878,8 +27077,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: dma_tl_d
         index: -1
@@ -26890,8 +27089,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx0_core_tl_d
         index: -1
@@ -26902,8 +27101,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx1_core_tl_d
         index: -1
@@ -26914,8 +27113,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx2_core_tl_d
         index: -1
@@ -26926,8 +27125,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx3_core_tl_d
         index: -1
@@ -26938,8 +27137,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx4_core_tl_d
         index: -1
@@ -26950,8 +27149,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx5_core_tl_d
         index: -1
@@ -26962,8 +27161,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx6_core_tl_d
         index: -1
@@ -26974,8 +27173,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx_jtag_core_tl_d
         index: -1
@@ -26986,8 +27185,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx_pcie0_core_tl_d
         index: -1
@@ -26998,8 +27197,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: main
+        width: 1
         default: ""
         top_signame: mbx_pcie1_core_tl_d
         index: -1
@@ -27010,8 +27209,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: main_tl_peri
         index: -1
@@ -27022,8 +27221,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: uart0_tl
         index: -1
@@ -27034,8 +27233,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: i2c0_tl
         index: -1
@@ -27046,8 +27245,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: gpio_tl
         index: -1
@@ -27058,8 +27257,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: spi_host0_tl
         index: -1
@@ -27070,8 +27269,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: spi_device_tl
         index: -1
@@ -27082,8 +27281,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: rv_timer_tl
         index: -1
@@ -27094,8 +27293,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: pwrmgr_aon_tl
         index: -1
@@ -27106,8 +27305,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: rstmgr_aon_tl
         index: -1
@@ -27118,8 +27317,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: clkmgr_aon_tl
         index: -1
@@ -27130,8 +27329,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: pinmux_aon_tl
         index: -1
@@ -27142,8 +27341,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: otp_ctrl_core_tl
         index: -1
@@ -27154,8 +27353,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: otp_ctrl_prim_tl
         index: -1
@@ -27166,8 +27365,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: lc_ctrl_regs_tl
         index: -1
@@ -27178,8 +27377,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: alert_handler_tl
         index: -1
@@ -27190,8 +27389,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: sram_ctrl_ret_aon_regs_tl
         index: -1
@@ -27202,8 +27401,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: sram_ctrl_ret_aon_ram_tl
         index: -1
@@ -27214,8 +27413,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: aon_timer_aon_tl
         index: -1
@@ -27226,8 +27425,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         external: true
         top_signame: ast_tl
@@ -27240,8 +27439,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: peri
+        width: 1
         default: ""
         top_signame: soc_dbg_ctrl_core_tl
         index: -1
@@ -27252,8 +27451,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         external: true
         top_signame: mbx_tl
@@ -27266,8 +27465,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx0_soc_tl_d
         index: -1
@@ -27278,8 +27477,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx1_soc_tl_d
         index: -1
@@ -27290,8 +27489,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx2_soc_tl_d
         index: -1
@@ -27302,8 +27501,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx3_soc_tl_d
         index: -1
@@ -27314,8 +27513,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx4_soc_tl_d
         index: -1
@@ -27326,8 +27525,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx5_soc_tl_d
         index: -1
@@ -27338,8 +27537,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx6_soc_tl_d
         index: -1
@@ -27350,8 +27549,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx_pcie0_soc_tl_d
         index: -1
@@ -27362,8 +27561,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: mbx_pcie1_soc_tl_d
         index: -1
@@ -27374,8 +27573,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: racl_ctrl_tl
         index: -1
@@ -27386,8 +27585,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: mbx
+        width: 1
         default: ""
         top_signame: ac_range_check_tl
         index: -1
@@ -27398,8 +27597,8 @@
         package: tlul_pkg
         type: req_rsp
         act: rsp
-        width: 1
         inst_name: dbg
+        width: 1
         default: ""
         external: true
         top_signame: dbg_tl
@@ -27412,8 +27611,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: dbg
+        width: 1
         default: ""
         top_signame: rv_dm_dbg_tl_d
         index: -1
@@ -27424,8 +27623,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: dbg
+        width: 1
         default: ""
         top_signame: mbx_jtag_soc_tl_d
         index: -1
@@ -27436,8 +27635,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: dbg
+        width: 1
         default: ""
         top_signame: lc_ctrl_dmi_tl
         index: -1
@@ -27448,8 +27647,8 @@
         package: tlul_pkg
         type: req_rsp
         act: req
-        width: 1
         inst_name: dbg
+        width: 1
         default: ""
         top_signame: soc_dbg_ctrl_jtag_tl
         index: -1

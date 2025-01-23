@@ -24,6 +24,7 @@
         module: aon_timer_aon
       }
     ]
+    NumRstReqs: 1
     rst_reqs:
     {
       int:
@@ -57,7 +58,6 @@
         }
       ]
     }
-    NumRstReqs: 1
     wait_for_external_reset: false
     NumRomInputs: 1
     top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg

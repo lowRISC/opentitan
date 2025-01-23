@@ -7,6 +7,7 @@ from collections import OrderedDict
 from enum import Enum
 from typing import Dict, List
 
+from .resets import Resets, UnmanagedResets
 from reggen.validate import check_keys
 from reggen.ip_block import IpBlock
 
@@ -499,11 +500,11 @@ def check_pinmux(top: Dict, prefix: str) -> int:
 
         # Check that only direct connections have pad keys
         if sig['connection'] == 'direct':
-            if sig.setdefault('attr', '') != '':
-                log.warning('Direct connection of instance {} port {} '
-                            'must not have an associated pad attribute field'
-                            .format(sig['instance'],
-                                    sig['port']))
+            if 'attr' in sig and sig['attr'] != padattr:
+                log.warning(
+                    'Direct connection of instance {} port {} pad attribute '
+                    '{} does not match expected {}'.format(
+                        sig['instance'], sig['port'], sig['attr'], padattr))
                 error += 1
             # Since the signal is directly connected, we can automatically infer
             # the pad type needed to instantiate the correct attribute CSR WARL
@@ -646,11 +647,19 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     error = 0
 
     # all defined clock/reset nets
-    reset_nets = [reset['name'] for reset in top['resets']['nodes']]
+    if isinstance(top['resets'], Resets):
+        reset_nets = [reset.name for reset in top['resets'].nodes.values()]
+    else:
+        reset_nets = [reset['name'] for reset in top['resets']['nodes']]
     clock_srcs = list(top['clocks'].all_srcs.keys())
     unmanaged_clock_srcs = list(top['unmanaged_clocks'].clks.keys())
-    unmanaged_reset_nets = [net for reset in top.get('unmanaged_resets', [])
-                            for net in reset.values()]
+    unmanaged_resets = top.get('unmanaged_resets')
+    if unmanaged_resets:
+        if isinstance(unmanaged_resets, UnmanagedResets):
+            unmanaged_reset_nets = [reset.signal_name for reset in unmanaged_resets.resets]
+        else:
+            unmanaged_reset_nets = [net for reset in unmanaged_resets
+                                    for net in reset.values()]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
@@ -705,7 +714,7 @@ def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
     # Check if reset connections are properly formatted
     # There are two options
     # The reset connection for a particular port must be a str
-    # The reset connection for a paritcular port must be a dict
+    # The reset connection for a particular port must be a dict
     # If value is a string, the module can only have ONE domain
     # If value is a dict, it must have the keys name / domain, and the
     # value of domain must match that defined for the module.
