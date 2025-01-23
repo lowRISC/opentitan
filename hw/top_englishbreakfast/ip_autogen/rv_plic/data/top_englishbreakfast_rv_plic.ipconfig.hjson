@@ -5,10 +5,10 @@
   instance_name: top_englishbreakfast_rv_plic
   param_values:
   {
+    module_instance_name: rv_plic
     src: 88
     target: 1
     prio: 3
-    module_instance_name: rv_plic
     topname: englishbreakfast
   }
 }

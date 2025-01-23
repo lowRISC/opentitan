@@ -153,4 +153,69 @@
   ]
   clock: clk_dbg_i
   type: xbar
+  inter_signal_list:
+  [
+    {
+      name: tl_dbg
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: dbg
+      width: 1
+      default: ""
+      external: true
+      top_signame: dbg_tl
+      conn_type: false
+      index: -1
+    }
+    {
+      name: tl_rv_dm__dbg
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: dbg
+      width: 1
+      default: ""
+      top_signame: rv_dm_dbg_tl_d
+      index: -1
+    }
+    {
+      name: tl_mbx_jtag__soc
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: dbg
+      width: 1
+      default: ""
+      top_signame: mbx_jtag_soc_tl_d
+      index: -1
+    }
+    {
+      name: tl_lc_ctrl__dmi
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: dbg
+      width: 1
+      default: ""
+      top_signame: lc_ctrl_dmi_tl
+      index: -1
+    }
+    {
+      name: tl_soc_dbg_ctrl__jtag
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: dbg
+      width: 1
+      default: ""
+      top_signame: soc_dbg_ctrl_jtag_tl
+      index: -1
+    }
+  ]
 }
