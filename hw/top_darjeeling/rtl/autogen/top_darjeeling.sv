@@ -735,6 +735,7 @@ module top_darjeeling #(
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
+  lc_ctrl_state_pkg::soc_dbg_state_t       soc_dbg_ctrl_soc_dbg_state;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   otp_ctrl_pkg::otp_device_id_t       keymgr_dpe_otp_device_id;
@@ -782,6 +783,8 @@ module top_darjeeling #(
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign lc_ctrl_otp_device_id =
       otp_ctrl_otp_broadcast.hw_cfg0_data.device_id;
+  assign soc_dbg_ctrl_soc_dbg_state =
+      otp_ctrl_otp_broadcast.hw_cfg1_data.soc_dbg_state;
   assign lc_ctrl_otp_manuf_state =
       otp_ctrl_otp_broadcast.hw_cfg0_data.manuf_state;
   assign keymgr_dpe_otp_device_id =
@@ -2455,7 +2458,7 @@ module top_darjeeling #(
 
       // Inter-module signals
       .boot_status_i(pwrmgr_aon_boot_status),
-      .soc_dbg_state_i(lc_ctrl_state_pkg::SOC_DBG_STATE_DEFAULT),
+      .soc_dbg_state_i(soc_dbg_ctrl_soc_dbg_state),
       .soc_dbg_policy_bus_o(soc_dbg_policy_bus_o),
       .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
       .lc_dft_en_i(lc_ctrl_lc_dft_en),

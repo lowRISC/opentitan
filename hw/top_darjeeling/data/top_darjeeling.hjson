@@ -1271,6 +1271,7 @@
         // TODO(#6713): The actual struct breakout and mapping currently needs to
         // be performed by hand in the toplevel template.
         'otp_ctrl.otp_broadcast',
+        'soc_dbg_ctrl.soc_dbg_state',
         'lc_ctrl.otp_device_id',
         'lc_ctrl.otp_manuf_state',
         'keymgr_dpe.otp_device_id',
