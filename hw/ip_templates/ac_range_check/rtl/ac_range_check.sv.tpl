@@ -318,6 +318,12 @@ module ${module_instance_name}
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+
+  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
+  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
                                                  alert_tx_o[0])
