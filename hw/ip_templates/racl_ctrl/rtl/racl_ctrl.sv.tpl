@@ -188,6 +188,11 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+
+  `ASSERT_KNOWN(RaclErrorKnown_A, racl_policies_o)
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_racl_ctrl_reg,
                                                  alert_tx_o[0])
