@@ -5,7 +5,13 @@
 // Module to manage TX & RX FIFO windows for Serial Peripheral Interface (SPI) host IP.
 //
 
-module spi_host_window (
+module spi_host_window
+#(
+  parameter bit          EnableRacl             = 1'b0,
+  parameter bit          RaclErrorRsp           = 1'b1,
+  parameter int unsigned RaclPolicySelWinRXDATA = 0,
+  parameter int unsigned RaclPolicySelWinTXDATA = 0
+) (
   input  clk_i,
   input  rst_ni,
   input  tlul_pkg::tl_h2d_t rx_win_i,
@@ -16,7 +22,11 @@ module spi_host_window (
   output logic [3:0]        tx_be_o,
   output logic              tx_valid_o,
   input        [31:0]       rx_data_i,
-  output logic              rx_ready_o
+  output logic              rx_ready_o,
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o
 );
 
   localparam int AW = spi_host_reg_pkg::BlockAw;
@@ -29,24 +39,42 @@ module spi_host_window (
   logic  rx_access_error;
   assign rx_access_error = rx_we;
 
-  tlul_adapter_reg #(
-    .RegAw (AW),
-    .RegDw (DW)
+  logic racl_error_win_rxdata;
+  logic racl_error_win_txdata;
+  top_racl_pkg::racl_error_log_t racl_error_win_rxdata_log;
+  top_racl_pkg::racl_error_log_t racl_error_win_txdata_log;
+
+  // We are combining all racl errors here because only one of them can be set at any time.
+  assign racl_error_o = racl_error_win_rxdata |
+                        racl_error_win_txdata;
+  assign racl_error_log_o = racl_error_win_rxdata_log |
+                            racl_error_win_txdata_log;
+
+  tlul_adapter_reg_racl #(
+    .RegAw             ( AW                       ),
+    .RegDw             ( DW                       ),
+    .EnableDataIntgGen ( 0                        ),
+    .EnableRacl        ( EnableRacl               ),
+    .RaclErrorRsp      ( RaclErrorRsp             ),
+    .RaclPolicySelVec  ( RaclPolicySelWinRXDATA   )
   ) u_adapter_rx (
     .clk_i,
     .rst_ni,
-    .tl_i        (rx_win_i),
-    .tl_o        (rx_win_o),
-    .en_ifetch_i (prim_mubi_pkg::MuBi4False),
-    .intg_error_o(),
-    .we_o        (rx_we),
-    .re_o        (rx_ready_o),
-    .addr_o      (),
-    .wdata_o     (),
-    .be_o        (),
-    .rdata_i     (rx_data_i),
-    .error_i     (rx_access_error),
-    .busy_i      ('0)
+    .tl_i             ( rx_win_i                  ),
+    .tl_o             ( rx_win_o                  ),
+    .en_ifetch_i      ( prim_mubi_pkg::MuBi4False ),
+    .intg_error_o     (                           ),
+    .racl_policies_i  ( racl_policies_i           ),
+    .racl_error_o     ( racl_error_win_rxdata     ),
+    .racl_error_log_o ( racl_error_win_rxdata_log ),
+    .we_o             ( rx_we                     ),
+    .re_o             ( rx_ready_o                ),
+    .addr_o           (                           ),
+    .wdata_o          (                           ),
+    .be_o             (                           ),
+    .rdata_i          ( rx_data_i                 ),
+    .error_i          ( rx_access_error           ),
+    .busy_i           ( '0                        )
   );
 
   // translate bitmask to byte mask
@@ -60,13 +88,16 @@ module spi_host_window (
   end
 
   // Only support writes to the data TX fifo window
-  tlul_adapter_sram #(
+  tlul_adapter_sram_racl #(
     .SramAw(AW),
     .SramDw(DW),
     .Outstanding(1),
     .ByteAccess(1),
     .ErrOnWrite(0),
-    .ErrOnRead(1)
+    .ErrOnRead(1),
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelVec(RaclPolicySelWinTXDATA)
   ) u_adapter_tx (
     .clk_i,
     .rst_ni,
@@ -89,7 +120,10 @@ module spi_host_window (
     .readback_en_i(prim_mubi_pkg::MuBi4False),
     .readback_error_o (),
     .wr_collision_i(1'b0),
-    .write_pending_i(1'b0)
+    .write_pending_i(1'b0),
+    .racl_policies_i  (racl_policies_i),
+    .racl_error_o     (racl_error_win_txdata),
+    .racl_error_log_o (racl_error_win_txdata_log)
   );
 
 endmodule : spi_host_window

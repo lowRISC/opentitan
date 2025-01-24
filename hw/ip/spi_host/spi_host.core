@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:flop_en
       - lowrisc:ip:tlul
       - lowrisc:ip:spi_device_pkg
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/spi_host_reg_pkg.sv
       - rtl/spi_host_cmd_pkg.sv
