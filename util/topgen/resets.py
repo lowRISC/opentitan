@@ -36,7 +36,7 @@ class ResetItem:
 
         # This can be a source clock or a derived source
         if self.rst_type != 'ext':
-            self.clock = clocks.get_clock_by_name(raw['clk'])
+            self.clock = clocks.get_clock_by_name(raw['clock'])
         else:
             self.clock = None
 
