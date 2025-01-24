@@ -42,6 +42,7 @@ def main():
         "--topgencfg",
         "-t",
         type=Path,
+        required=True,
         help="`top_{name}.gen.hjson` file."
     )
     parser.add_argument(
@@ -85,14 +86,10 @@ def main():
         ip = IpBlock.from_path(ip_path, [])
         name_to_block[ip.name.lower()] = ip
 
+    with open(args.topgencfg) as handle:
+        topcfg = hjson.load(handle, use_decimal=True)
+
     if args.gen_top:
-        if args.topgencfg is None:
-            logging.error("--gen-top requires --topgencfg to be specified")
-            sys.exit(1)
-
-        with open(args.topgencfg) as handle:
-            topcfg = hjson.load(handle, use_decimal=True)
-
         helper = TopHelper(topcfg, name_to_block, CEnum, CArrayMapping)
 
         module_types = {m["type"] for m in topcfg["module"]}
@@ -113,16 +110,8 @@ def main():
         )
 
         render_template(
-            TOPGEN_TEMPLATE_PATH / "devicetables.c.tpl",
-            outdir / "dt.c",
-            top=topcfg,
-            name_to_block = name_to_block,
-            helper = helper,
-        )
-
-        render_template(
-            TOPGEN_TEMPLATE_PATH / "devicetables.h.tpl",
-            outdir / "dt.h",
+            TOPGEN_TEMPLATE_PATH / "dt_api.c.tpl",
+            outdir / "dt_api.c",
             top=topcfg,
             name_to_block = name_to_block,
             dt_headers = dt_headers,
@@ -139,12 +128,17 @@ def main():
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
 
-            helper = IpHelper(ip, default_node, CEnum, CArrayMapping)
+            helper = IpHelper(topcfg, ip, default_node, CEnum, CArrayMapping)
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
                 outdir / "dt_{}.h".format(ipname),
-                block = ip,
+                default_node = default_node,
+                helper = helper,
+            )
+            render_template(
+                TOPGEN_TEMPLATE_PATH / "dt_ip.c.tpl",
+                outdir / "dt_{}.c".format(ipname),
                 default_node = default_node,
                 helper = helper,
             )

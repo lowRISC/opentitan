@@ -18,6 +18,11 @@
 #include <stdint.h>
 
 /**
+ * List of instances.
+ */
+${helper.inst_enum.render()}
+
+/**
  * List of register blocks.
  *
  * Register blocks are guaranteed to start at 0 and to be consecutively numbered.
@@ -58,36 +63,25 @@ ${helper.clock_enum.render()}
 ${helper.periph_io_enum.render()}
 
 % endif
-/**
- * Description of an instance.
- *
- * This structure is opaque and should not be accessed directly.
- */
-${helper.inst_struct.render()}
 
 /**
  * Get the instance ID of an instance.
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @return The instance ID of that instance.
  */
-static inline dt_instance_id_t dt_${device_name}_instance_id(
-    const dt_${device_name}_t *dt) {
-  return dt->__internal.inst_id;
-}
+dt_instance_id_t dt_${device_name}_instance_id(dt_${device_name}_t dt);
 
 /**
  * Get the register base address of an instance.
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @param reg_block The register block requested.
  * @return The register base address of the requested block.
  */
-static inline uint32_t dt_${device_name}_reg_block(
-    const dt_${device_name}_t *dt,
-    dt_${device_name}_reg_block_t reg_block) {
-  return dt->__internal.base_addr[reg_block];
-}
+uint32_t dt_${device_name}_reg_block(
+    dt_${device_name}_t dt,
+    dt_${device_name}_reg_block_t reg_block);
 
 /**
  * Get the primary register base address of an instance.
@@ -95,12 +89,12 @@ static inline uint32_t dt_${device_name}_reg_block(
  * This is just a convenience function, equivalent to
  * `dt_${device_name}_reg_block(dt, ${default_reg_block_value})`
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @return The register base address of the primary register block.
  */
 static inline uint32_t dt_${device_name}_primary_reg_block(
-    const dt_${device_name}_t *dt) {
-  return dt->__internal.base_addr[${default_reg_block_value}];
+    dt_${device_name}_t dt) {
+  return dt_${device_name}_reg_block(dt, ${default_reg_block_value});
 }
 
 % if helper.has_irqs():
@@ -110,23 +104,18 @@ static inline uint32_t dt_${device_name}_primary_reg_block(
  * If the instance is not connected to the PLIC, this function
  * will return `kDtPlicIrqIdNone`.
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @param irq_type A ${device_name} IRQ.
  * @return The PLIC ID of the IRQ of this instance.
  */
-static inline dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
-    const dt_${device_name}_t *dt,
-    dt_${device_name}_irq_t irq) {
-  if (dt->__internal.first_irq == kDtPlicIrqIdNone) {
-    return kDtPlicIrqIdNone;
-  }
-  return (dt_plic_irq_id_t)((uint32_t)dt->__internal.first_irq + (uint32_t)irq);
-}
+dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
+    dt_${device_name}_t dt,
+    dt_${device_name}_irq_t irq);
 
 /**
  * Convert a global IRQ ID to a local ${device_name} IRQ type.
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @param irq A PLIC ID that belongs to this instance.
  * @return The ${device_name} IRQ, or `${helper.irq_enum.name.as_c_enum()}Count`.
  *
@@ -135,29 +124,21 @@ static inline dt_plic_irq_id_t dt_${device_name}_irq_to_plic_id(
  * `dt_${device_name}_instance_id(dt) == dt_plic_id_to_instance_id(irq)`. Otherwise, this function
  * will return `${helper.irq_enum.name.as_c_enum()}Count`.
  */
-static inline dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
-    const dt_${device_name}_t *dt,
-    dt_plic_irq_id_t irq) {
-  dt_${device_name}_irq_t count = ${helper.irq_enum.name.as_c_enum()}Count;
-  if (irq < dt->__internal.first_irq || irq >= dt->__internal.first_irq + (dt_plic_irq_id_t)count) {
-    return count;
-  }
-  return (dt_${device_name}_irq_t)(irq - dt->__internal.first_irq);
-}
+dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
+    dt_${device_name}_t dt,
+    dt_plic_irq_id_t irq);
 
 %endif
 % if helper.has_periph_io():
 /**
  * Get the peripheral I/O description of an instance.
  *
- * @param dt Pointer to an instance of ${device_name}.
+ * @param dt Instance of ${device_name}.
  * @param sig Requested peripheral I/O.
  * @return Description of the requested peripheral I/O for this instance.
  */
-static inline dt_periph_io_t dt_${device_name}_periph_io(
-    const dt_${device_name}_t *dt,
-    dt_${device_name}_periph_io_t sig) {
-  return dt->__internal.periph_io[sig];
-}
+dt_periph_io_t dt_${device_name}_periph_io(
+    dt_${device_name}_t dt,
+    dt_${device_name}_periph_io_t sig);
 % endif
 #endif  // ${include_guard}

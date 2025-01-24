@@ -291,19 +291,21 @@ def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = 
         gen_ips = [ip],
         output_groups = {
             "hdr": ["dt/dt_{}.h".format(ip)],
+            "src": ["dt/dt_{}.c".format(ip)],
         },
         target_compatible_with = target_compatible_with,
     )
 
-    native.filegroup(
-        name = "{}_hdr".format(name),
-        srcs = [":{}_gen".format(name)],
-        output_group = "hdr",
-    )
+    for grp in ["hdr", "src"]:
+        native.filegroup(
+            name = "{}_{}".format(name, grp),
+            srcs = [":{}_gen".format(name)],
+            output_group = grp,
+        )
 
     native.cc_library(
         name = name,
-        srcs = [],
+        srcs = [":{}_src".format(name)],
         hdrs = [":{}_hdr".format(name)],
         deps = deps,
         # Make the header accessible as "dt_<ip>.h".
@@ -325,60 +327,23 @@ def opentitan_top_dt_api(name, top, deps = None):
         gen_top = True,
         output_groups = {
             "hdr": ["dt/dt_api.h"],
+            "src": ["dt/dt_api.c"],
         },
     )
 
-    native.filegroup(
-        name = "{}_hdr".format(name),
-        srcs = [":{}_gen".format(name)],
-        output_group = "hdr",
-    )
-
-    native.cc_library(
-        name = name,
-        srcs = [],
-        hdrs = [":{}_hdr".format(name)],
-        deps = deps,
-        # Make the dt_api.h header accessible as "dt_api.h".
-        includes = ["."],
-    )
-
-def opentitan_top_devicetables(name, top, deps = None):
-    """
-    Create a library that exports the "devicetables.h" header and contains the device tables.
-    This library is created to the provided top and can have additional dependencies.
-    The top target must export an OpenTitanTopInfo provider, e.g. by created by opentitan_top.
-    """
-    if deps == None:
-        deps = []
-
-    opentitan_top_dt_gen(
-        name = "{}_gen".format(name),
-        top = top,
-        gen_top = True,
-        output_groups = {
-            "hdr": ["dt/dt.h"],
-            "src": ["dt/dt.c"],
-        },
-    )
-
-    native.filegroup(
-        name = "{}_hdr".format(name),
-        srcs = [":{}_gen".format(name)],
-        output_group = "hdr",
-    )
-    native.filegroup(
-        name = "{}_src".format(name),
-        srcs = [":{}_gen".format(name)],
-        output_group = "src",
-    )
+    for grp in ["src", "hdr"]:
+        native.filegroup(
+            name = "{}_{}".format(name, grp),
+            srcs = [":{}_gen".format(name)],
+            output_group = grp,
+        )
 
     native.cc_library(
         name = name,
         srcs = [":{}_src".format(name)],
         hdrs = [":{}_hdr".format(name)],
         deps = deps,
-        # Make the dt_api.h header accessible as "dt_api.h".
+        # Make the dt_api.h header accessible as "dt/dt_api.h".
         includes = ["."],
     )
 
