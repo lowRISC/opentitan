@@ -5,7 +5,7 @@
 files.
 """
 from typing import Dict
-import copy
+from collections import OrderedDict
 
 from topgen.lib import CEnum, CArrayMapping, Name
 from reggen.ip_block import IpBlock
@@ -68,26 +68,11 @@ class Struct:
     def __init__(self, name: Name):
         self.name = name
         self.fields = []
-        self.internal = False
-
-    def mark_internal(self):
-        self.internal = True
 
     def add_field(self, name: Name, typename: object, docstring: str = ""):
         self.fields.append((typename, name, docstring))
 
     def render(self, nested = False) -> str:
-        if self.internal:
-            copy_self = copy.copy(self)
-            copy_self.internal = False
-            tmp_struct = Struct(self.name)
-            tmp_struct.add_field(
-                name = Name(["__internal"]),
-                typename = StructType(copy_self),
-            )
-            text = tmp_struct.render(nested = nested)
-            return text
-
         text = ""
         for (typename, name, docstring) in self.fields:
             if len(docstring.splitlines()) > 1:
@@ -182,7 +167,8 @@ class TopHelper:
 
 
 class IpHelper:
-    def __init__(self, ip: IpBlock, default_node: str, enum_type, array_mapping_type):
+    def __init__(self, topcfg, ip: IpBlock, default_node: str, enum_type, array_mapping_type):
+        self.top = topcfg
         self.ip = ip
         self.default_node = default_node
         self.ip_name = Name.from_snake_case(self.ip.name)
@@ -288,7 +274,26 @@ class IpHelper:
             self.periph_io_enum.add_constant(Name(["count"]), "Number of peripheral I/O")
 
     def _init_instances(self):
-        self.inst_struct = Struct(Name(["dt"]) + self.ip_name)
+        self.inst_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name)
+        self.inst_map = OrderedDict()
+        for m in self.top["module"]:
+            if m["type"] != self.ip.name:
+                continue
+            # Heuristic to make the name nicer, e.g. if the name is adc_ctrl_aon,
+            # remove "adc_ctrl_" because every enum is already prefixed by adc_ctrl
+            if m["name"].startswith(self.ip.name + "_"):
+                inst_name = m["name"].removeprefix(self.ip.name + "_")
+            elif m["name"].startswith(self.ip.name):
+                inst_name = m["name"].removeprefix(self.ip.name)
+            else:
+                inst_name = m["name"]
+            inst_name = Name.from_snake_case(inst_name) if inst_name != "" else Name([])
+            self.inst_enum.add_constant(inst_name)
+            self.inst_map[inst_name] = m
+        if isinstance(self.inst_enum, CEnum):
+            self.inst_enum.add_constant(Name(["count"]), "Number of instances")
+
+        self.inst_struct = Struct(Name(["dt"]) + self.ip_name + Name(["desc"]))
         self.inst_struct.add_field(
             name = Name(["inst", "id"]),
             typename = ScalarType(TopHelper.DT_INSTANCE_ID_NAME),
@@ -329,4 +334,3 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
                 ),
                 docstring = "Description of each peripheral I/O"
             )
-        self.inst_struct.mark_internal()
