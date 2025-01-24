@@ -6,7 +6,9 @@ use anyhow::{anyhow, ensure, Context, Result};
 use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
-use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
+use ecdsa::Signature;
+use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::NistP256;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -120,7 +122,23 @@ impl EcdsaRawSignature {
     pub fn read_from_file(path: &Path) -> Result<EcdsaRawSignature> {
         let mut file =
             File::open(path).with_context(|| format!("Failed to read file: {path:?}"))?;
-        EcdsaRawSignature::read(&mut file)
+        let file_size = std::fs::metadata(path)
+            .with_context(|| format!("Failed to get metadata for {path:?}"))?
+            .len();
+
+        let raw_size = EcdsaRawSignature::size() as u64;
+        if file_size == raw_size {
+            // This must be a raw signature, just read it as is.
+            EcdsaRawSignature::read(&mut file)
+        } else {
+            // Let's try interpreting the file as ASN.1 DER.
+            let mut data = Vec::<u8>::new();
+
+            file.read_to_end(&mut data)
+                .with_context(|| "Failed to read {path:?}")?;
+
+            EcdsaRawSignature::from_der(&data).with_context(|| format!("Failed parsing {path:?}"))
+        }
     }
 
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
@@ -145,6 +163,45 @@ impl EcdsaRawSignature {
 
     pub fn is_empty(&self) -> bool {
         self.r.iter().all(|&v| v == 0) && self.s.iter().all(|&v| v == 0)
+    }
+
+    fn size() -> usize {
+        let sig: EcdsaRawSignature = EcdsaRawSignature::default();
+
+        sig.r.len() + sig.s.len()
+    }
+
+    fn from_der(data: &[u8]) -> Result<EcdsaRawSignature> {
+        let sig = Signature::<NistP256>::from_der(data).with_context(|| "Failed to parse DER")?;
+
+        // R and S are integers in big endian format. The size of the numbers is
+        // not fixed, it could be 33 bytes in case the value has the top byte
+        // top bit set, and a leading zero is added to keep the value positive
+        // (50% chance), or it could be shorter than 32 bytes (1/256 chance).
+        // Need to get around these issues and convert into little endian
+        // expected format by the firmware.
+        let mut raw_r: Vec<u8> = sig.r().to_bytes().to_vec();
+        let mut raw_s: Vec<u8> = sig.s().to_bytes().to_vec();
+
+        // Convert to little endian format.
+        raw_r.reverse();
+        raw_s.reverse();
+
+        let mut r = [0u8; 32];
+        let mut s = [0u8; 32];
+
+        // Copy only what's necessary and ignore the leading zeros in case of
+        // 33 byte values.
+        let copy_size = r.len().min(raw_r.len());
+        r[0..copy_size].copy_from_slice(&raw_r[0..copy_size]);
+
+        let copy_size = s.len().min(raw_s.len());
+        s[0..copy_size].copy_from_slice(&raw_s[0..copy_size]);
+
+        Ok(EcdsaRawSignature {
+            r: r.to_vec(),
+            s: s.to_vec(),
+        })
     }
 }
 
