@@ -251,10 +251,6 @@ module tlul_adapter_sram
   localparam int ReqFifoWidth = $bits(req_t) ;
   localparam int RspFifoWidth = $bits(rsp_t) ;
 
-  // An item in the SRAM request fifo is an SRAM request (of width SramReqWidth) plus, if
-  // DataXorAddr is true, some bits of the address that the request touches.
-  typedef logic [SramReqWidth-1:0] sram_req_fifo_item_t;
-
   // FIFO signal in case OutStand is greater than 1
   // If request is latched, {write, source} is pushed to req fifo.
   // Req fifo is popped when D channel is acknowledged (v & r)
