@@ -6,7 +6,12 @@
 
 `include "prim_assert.sv"
 
-module spi_host_reg_top (
+module spi_host_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter int unsigned RaclPolicySelVec[12] = '{12{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -19,6 +24,11 @@ module spi_host_reg_top (
   // To HW
   output spi_host_reg_pkg::spi_host_reg2hw_t reg2hw, // Write
   input  spi_host_reg_pkg::spi_host_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -162,7 +172,8 @@ module spi_host_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o))
   );
 
   // cdc oversampling signals
@@ -1715,8 +1726,32 @@ module spi_host_reg_top (
 
 
   logic [11:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [11:0] racl_addr_hit_read;
+  logic [11:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[ 0] = (reg_addr == SPI_HOST_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == SPI_HOST_INTR_ENABLE_OFFSET);
     addr_hit[ 2] = (reg_addr == SPI_HOST_INTR_TEST_OFFSET);
@@ -1729,45 +1764,71 @@ module spi_host_reg_top (
     addr_hit[ 9] = (reg_addr == SPI_HOST_ERROR_ENABLE_OFFSET);
     addr_hit[10] = (reg_addr == SPI_HOST_ERROR_STATUS_OFFSET);
     addr_hit[11] = (reg_addr == SPI_HOST_EVENT_ENABLE_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 12; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit but failed the RACL check
+  assign racl_error_o = tl_i.a_valid &
+                        (|addr_hit) & ~(|(addr_hit & (racl_addr_hit_read | racl_addr_hit_write)));
+  assign racl_error_log_o.racl_role  = racl_role;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_log_o.ctn_uid     = '0;
+    assign racl_error_log_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[ 0] & (|(SPI_HOST_PERMIT[ 0] & ~reg_be))) |
-               (addr_hit[ 1] & (|(SPI_HOST_PERMIT[ 1] & ~reg_be))) |
-               (addr_hit[ 2] & (|(SPI_HOST_PERMIT[ 2] & ~reg_be))) |
-               (addr_hit[ 3] & (|(SPI_HOST_PERMIT[ 3] & ~reg_be))) |
-               (addr_hit[ 4] & (|(SPI_HOST_PERMIT[ 4] & ~reg_be))) |
-               (addr_hit[ 5] & (|(SPI_HOST_PERMIT[ 5] & ~reg_be))) |
-               (addr_hit[ 6] & (|(SPI_HOST_PERMIT[ 6] & ~reg_be))) |
-               (addr_hit[ 7] & (|(SPI_HOST_PERMIT[ 7] & ~reg_be))) |
-               (addr_hit[ 8] & (|(SPI_HOST_PERMIT[ 8] & ~reg_be))) |
-               (addr_hit[ 9] & (|(SPI_HOST_PERMIT[ 9] & ~reg_be))) |
-               (addr_hit[10] & (|(SPI_HOST_PERMIT[10] & ~reg_be))) |
-               (addr_hit[11] & (|(SPI_HOST_PERMIT[11] & ~reg_be)))));
+              ((racl_addr_hit_write[ 0] & (|(SPI_HOST_PERMIT[ 0] & ~reg_be))) |
+               (racl_addr_hit_write[ 1] & (|(SPI_HOST_PERMIT[ 1] & ~reg_be))) |
+               (racl_addr_hit_write[ 2] & (|(SPI_HOST_PERMIT[ 2] & ~reg_be))) |
+               (racl_addr_hit_write[ 3] & (|(SPI_HOST_PERMIT[ 3] & ~reg_be))) |
+               (racl_addr_hit_write[ 4] & (|(SPI_HOST_PERMIT[ 4] & ~reg_be))) |
+               (racl_addr_hit_write[ 5] & (|(SPI_HOST_PERMIT[ 5] & ~reg_be))) |
+               (racl_addr_hit_write[ 6] & (|(SPI_HOST_PERMIT[ 6] & ~reg_be))) |
+               (racl_addr_hit_write[ 7] & (|(SPI_HOST_PERMIT[ 7] & ~reg_be))) |
+               (racl_addr_hit_write[ 8] & (|(SPI_HOST_PERMIT[ 8] & ~reg_be))) |
+               (racl_addr_hit_write[ 9] & (|(SPI_HOST_PERMIT[ 9] & ~reg_be))) |
+               (racl_addr_hit_write[10] & (|(SPI_HOST_PERMIT[10] & ~reg_be))) |
+               (racl_addr_hit_write[11] & (|(SPI_HOST_PERMIT[11] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign intr_state_we = addr_hit[0] & reg_we & !reg_error;
+  assign intr_state_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign intr_state_error_wd = reg_wdata[0];
-  assign intr_enable_we = addr_hit[1] & reg_we & !reg_error;
+  assign intr_enable_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign intr_enable_error_wd = reg_wdata[0];
 
   assign intr_enable_spi_event_wd = reg_wdata[1];
-  assign intr_test_we = addr_hit[2] & reg_we & !reg_error;
+  assign intr_test_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign intr_test_error_wd = reg_wdata[0];
 
   assign intr_test_spi_event_wd = reg_wdata[1];
-  assign alert_test_we = addr_hit[3] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign control_we = addr_hit[4] & reg_we & !reg_error;
+  assign control_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
   assign control_rx_watermark_wd = reg_wdata[7:0];
 
@@ -1778,7 +1839,7 @@ module spi_host_reg_top (
   assign control_sw_rst_wd = reg_wdata[30];
 
   assign control_spien_wd = reg_wdata[31];
-  assign configopts_we = addr_hit[6] & reg_we & !reg_error;
+  assign configopts_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign configopts_clkdiv_wd = reg_wdata[15:0];
 
@@ -1793,10 +1854,10 @@ module spi_host_reg_top (
   assign configopts_cpha_wd = reg_wdata[30];
 
   assign configopts_cpol_wd = reg_wdata[31];
-  assign csid_we = addr_hit[7] & reg_we & !reg_error;
+  assign csid_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign csid_wd = reg_wdata[31:0];
-  assign command_we = addr_hit[8] & reg_we & !reg_error;
+  assign command_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign command_csaat_wd = reg_wdata[0];
 
@@ -1805,7 +1866,7 @@ module spi_host_reg_top (
   assign command_direction_wd = reg_wdata[4:3];
 
   assign command_len_wd = reg_wdata[24:5];
-  assign error_enable_we = addr_hit[9] & reg_we & !reg_error;
+  assign error_enable_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
   assign error_enable_cmdbusy_wd = reg_wdata[0];
 
@@ -1816,7 +1877,7 @@ module spi_host_reg_top (
   assign error_enable_cmdinval_wd = reg_wdata[3];
 
   assign error_enable_csidinval_wd = reg_wdata[4];
-  assign error_status_we = addr_hit[10] & reg_we & !reg_error;
+  assign error_status_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign error_status_cmdbusy_wd = reg_wdata[0];
 
@@ -1829,7 +1890,7 @@ module spi_host_reg_top (
   assign error_status_csidinval_wd = reg_wdata[4];
 
   assign error_status_accessinval_wd = reg_wdata[5];
-  assign event_enable_we = addr_hit[11] & reg_we & !reg_error;
+  assign event_enable_we = racl_addr_hit_write[11] & reg_we & !reg_error;
 
   assign event_enable_rxfull_wd = reg_wdata[0];
 
@@ -1864,26 +1925,26 @@ module spi_host_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = intr_state_error_qs;
         reg_rdata_next[1] = intr_state_spi_event_qs;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = intr_enable_error_qs;
         reg_rdata_next[1] = intr_enable_spi_event_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[4]: begin
+      racl_addr_hit_read[4]: begin
         reg_rdata_next[7:0] = control_rx_watermark_qs;
         reg_rdata_next[15:8] = control_tx_watermark_qs;
         reg_rdata_next[29] = control_output_en_qs;
@@ -1891,7 +1952,7 @@ module spi_host_reg_top (
         reg_rdata_next[31] = control_spien_qs;
       end
 
-      addr_hit[5]: begin
+      racl_addr_hit_read[5]: begin
         reg_rdata_next[7:0] = status_txqd_qs;
         reg_rdata_next[15:8] = status_rxqd_qs;
         reg_rdata_next[19:16] = status_cmdqd_qs;
@@ -1908,7 +1969,7 @@ module spi_host_reg_top (
         reg_rdata_next[31] = status_ready_qs;
       end
 
-      addr_hit[6]: begin
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[15:0] = configopts_clkdiv_qs;
         reg_rdata_next[19:16] = configopts_csnidle_qs;
         reg_rdata_next[23:20] = configopts_csntrail_qs;
@@ -1918,18 +1979,18 @@ module spi_host_reg_top (
         reg_rdata_next[31] = configopts_cpol_qs;
       end
 
-      addr_hit[7]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next[31:0] = csid_qs;
       end
 
-      addr_hit[8]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[2:1] = '0;
         reg_rdata_next[4:3] = '0;
         reg_rdata_next[24:5] = '0;
       end
 
-      addr_hit[9]: begin
+      racl_addr_hit_read[9]: begin
         reg_rdata_next[0] = error_enable_cmdbusy_qs;
         reg_rdata_next[1] = error_enable_overflow_qs;
         reg_rdata_next[2] = error_enable_underflow_qs;
@@ -1937,7 +1998,7 @@ module spi_host_reg_top (
         reg_rdata_next[4] = error_enable_csidinval_qs;
       end
 
-      addr_hit[10]: begin
+      racl_addr_hit_read[10]: begin
         reg_rdata_next[0] = error_status_cmdbusy_qs;
         reg_rdata_next[1] = error_status_overflow_qs;
         reg_rdata_next[2] = error_status_underflow_qs;
@@ -1946,7 +2007,7 @@ module spi_host_reg_top (
         reg_rdata_next[5] = error_status_accessinval_qs;
       end
 
-      addr_hit[11]: begin
+      racl_addr_hit_read[11]: begin
         reg_rdata_next[0] = event_enable_rxfull_qs;
         reg_rdata_next[1] = event_enable_txempty_qs;
         reg_rdata_next[2] = event_enable_rxwm_qs;
@@ -1976,6 +2037,8 @@ module spi_host_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
