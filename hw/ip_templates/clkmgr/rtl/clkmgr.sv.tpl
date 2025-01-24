@@ -392,7 +392,9 @@ rg_srcs = list(sorted({sig['src_name'] for sig
 % for i, src in enumerate(rg_srcs):
 <%
  freq = all_srcs[src]['freq']
- cnt = int(freq*2 / aon_freq)
+ # One bit margin, same bit width as in the reg top
+ bit_width = int(freq / aon_freq).bit_length() + 1
+ cnt = 2**bit_width
  sel_idx = f"Clk{Name.from_snake_case(src).as_camel_case()}Idx"
 %>
   clkmgr_meas_chk #(
