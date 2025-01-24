@@ -60,17 +60,15 @@ The CSRNG IP consists of four main components:
 2. The CTR_DRBG state-machine (`ctr_drbg_fsm`) which drives the AES primitive, performing the various encryption sequences prescribed for approved DRBGs in SP 800-90A.
 These include:
 
-    1. **The Derivation Function:**
-       Part of the instantiation and reseed routines, this routine assembles the previous seed material (on reseed only), application inputs, and entropy.
-    2. **The Instantiation Routine:**
-       Combines application inputs, external entropy and nonce (more entropy) via the derivation function.
-    3. **The Reseed Routine:**
-       Combines the previous seed material with external entropy to generate a new seed.
-    4. **The Generate Routine:**
-       Generates up to CSRNG_MAX_GENERATE random bits.
-       If called with prediction_resistance_flag, forces a reseed.
-    5. **The Update Routine:**
-       Updates the internal state of the DRNG instance after each generate call.
+    1. **The Instantiation Routine:**
+       Takes external entropy and/or additional data (personalization string) to instantiate the DRNG instance.
+    1. **The Reseed Routine:**
+       Combines the previous seed material with external entropy and/or additional data (personalization string) to generate a new seed.
+    1. **The Generate Routine:**
+       Generates up to 4095 * 128 random bits, which is less than the maximum 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bits_per_request</tt>).
+    1. **The Update Routine:**
+       Updates the internal state of the DRNG instance.
+       It is automatically executed during instantiate, reseed and generate calls, but can also be explicitly called to combine additional data with the internal state of the DRNG instance.
 3. State vectors for each DRNG instance.
 4. Interface logic and access control for each instance.
 
