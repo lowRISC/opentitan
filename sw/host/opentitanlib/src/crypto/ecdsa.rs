@@ -6,7 +6,9 @@ use anyhow::{anyhow, ensure, Context, Result};
 use ecdsa::elliptic_curve::pkcs8::{DecodePrivateKey, EncodePrivateKey};
 use ecdsa::elliptic_curve::pkcs8::{DecodePublicKey, EncodePublicKey};
 use ecdsa::signature::hazmat::PrehashVerifier;
-use p256::ecdsa::{Signature, SigningKey, VerifyingKey};
+use ecdsa::Signature;
+use p256::ecdsa::{SigningKey, VerifyingKey};
+use p256::NistP256;
 use rand::rngs::OsRng;
 use serde::{Deserialize, Serialize};
 use serde_annotate::Annotate;
@@ -97,7 +99,7 @@ impl Default for EcdsaRawSignature {
 impl TryFrom<&[u8]> for EcdsaRawSignature {
     type Error = Error;
     fn try_from(value: &[u8]) -> std::result::Result<Self, Self::Error> {
-        if value.len() != 64 {
+        if value.len() != Self::SIZE {
             return Err(Error::InvalidSignature(anyhow!(
                 "bad length: {}",
                 value.len()
@@ -109,6 +111,8 @@ impl TryFrom<&[u8]> for EcdsaRawSignature {
 }
 
 impl EcdsaRawSignature {
+    const SIZE: usize = 64;
+
     pub fn read(src: &mut impl Read) -> Result<Self> {
         let mut sig = Self::default();
         src.read_exact(&mut sig.r)?;
@@ -119,7 +123,23 @@ impl EcdsaRawSignature {
     pub fn read_from_file(path: &Path) -> Result<EcdsaRawSignature> {
         let mut file =
             File::open(path).with_context(|| format!("Failed to read file: {path:?}"))?;
-        EcdsaRawSignature::read(&mut file)
+        let file_size = std::fs::metadata(path)
+            .with_context(|| format!("Failed to get metadata for {path:?}"))?
+            .len();
+
+        let raw_size = Self::SIZE as u64;
+        if file_size == raw_size {
+            // This must be a raw signature, just read it as is.
+            EcdsaRawSignature::read(&mut file)
+        } else {
+            // Let's try interpreting the file as ASN.1 DER.
+            let mut data = Vec::<u8>::new();
+
+            file.read_to_end(&mut data)
+                .with_context(|| "Failed to read {path:?}")?;
+
+            EcdsaRawSignature::from_der(&data).with_context(|| format!("Failed parsing {path:?}"))
+        }
     }
 
     pub fn write(&self, dest: &mut impl Write) -> Result<()> {
@@ -144,6 +164,28 @@ impl EcdsaRawSignature {
 
     pub fn is_empty(&self) -> bool {
         self.r.iter().all(|&v| v == 0) && self.s.iter().all(|&v| v == 0)
+    }
+
+    fn from_der(data: &[u8]) -> Result<EcdsaRawSignature> {
+        let sig = Signature::<NistP256>::from_der(data).with_context(|| "Failed to parse DER")?;
+
+        // R and S are integers in big endian format. The size of the numbers is
+        // not fixed, it could be 33 bytes in case the value has the top byte
+        // top bit set, and a leading zero has to be added to keep the value
+        // positive (50% chance), or it could be shorter than 32 bytes (1/256
+        // chance). Need to get around these issues and convert into little
+        // endian of exactly 32 bytes format expected by the firmware.
+        let mut r: Vec<u8> = sig.r().to_bytes().to_vec();
+        let mut s: Vec<u8> = sig.s().to_bytes().to_vec();
+
+        // Convert to little endian format.
+        r.reverse();
+        s.reverse();
+
+        r.resize(32, 0u8);
+        s.resize(32, 0u8);
+
+        Ok(EcdsaRawSignature { r, s })
     }
 }
 
