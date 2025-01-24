@@ -9,7 +9,7 @@ module tb;
   import sram_ctrl_pkg::*;
   import sram_ctrl_env_pkg::*;
   import sram_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import mem_bkdr_util_pkg::sram_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -107,15 +107,15 @@ module tb;
     tb.dut.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.gen_generic.u_impl_generic.mem
 
   initial begin
-    mem_bkdr_util m_mem_bkdr_util;
-    m_mem_bkdr_util = new(.name  ("mem_bkdr_util"),
-                          .path  (`DV_STRINGIFY(`SRAM_CTRL_MEM_HIER)),
-                          .depth ($size(`SRAM_CTRL_MEM_HIER)),
-                          .n_bits($bits(`SRAM_CTRL_MEM_HIER)),
-                          // Due to the end-to-end bus integrity scheme, the memory primitive itself
-                          // does not encode and decode the redundancy information.
-                          .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
-                          .num_prince_rounds_half(`NUM_PRINCE_ROUNDS_HALF));
+    sram_bkdr_util m_sram_bkdr_util;
+    m_sram_bkdr_util = new(.name  ("sram_bkdr_util"),
+                           .path  (`DV_STRINGIFY(`SRAM_CTRL_MEM_HIER)),
+                           .depth ($size(`SRAM_CTRL_MEM_HIER)),
+                           .n_bits($bits(`SRAM_CTRL_MEM_HIER)),
+                           // Due to the end-to-end bus integrity scheme, the memory primitive itself
+                           // does not encode and decode the redundancy information.
+                           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
+                           .num_prince_rounds_half(`NUM_PRINCE_ROUNDS_HALF));
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -135,7 +135,7 @@ module tb;
         null, "*.env.m_tl_agent_sram_ctrl_regs_reg_block*", "vif", tl_if);
     uvm_config_db#(virtual tl_if)::set(
         null, "*.env.m_tl_agent_sram_ctrl_prim_reg_block*", "vif", sram_tl_if);
-    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", "mem_bkdr_util", m_mem_bkdr_util);
+    uvm_config_db#(sram_bkdr_util)::set(null, "*.env", "sram_bkdr_util", m_sram_bkdr_util);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();

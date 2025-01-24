@@ -575,20 +575,6 @@ class mem_bkdr_util extends uvm_object;
     #0;
   endtask
 
-  // Backdoor load memory from file to a given address offset
-  // Allows to place multiple images at different offsets. Possible SRAM tiling is
-  // considered automatically when using this function
-  virtual task bkdr_load_from_file(string                             file,
-                                   logic [bus_params_pkg::BUS_AW-1:0] addr_offset,
-                                   logic [SRAM_KEY_WIDTH-1:0]         key,
-                                   logic [SRAM_BLOCK_WIDTH-1:0]       nonce);
-    bit [38:0] preload_data[] = new [num_entries];
-    $readmemh(file, preload_data);
-    foreach(preload_data[i]) begin
-      sram_encrypt_write32_integ(addr_offset + i * 4, preload_data[i], key, nonce, 0);
-    end
-  endtask
-
   // save mem contents to file
   virtual function void write_mem_to_file(string file);
     check_file(file, "w");
@@ -658,15 +644,6 @@ class mem_bkdr_util extends uvm_object;
               "Addr: %0h, original data: %0h, error_mask: %0h, backdoor inject data: %0h",
               addr, rw_data, err_mask, rw_data ^ err_mask), UVM_HIGH)
   endfunction
-
-  // Wrapper functions for encrypted SRAM reads and writes.
-  `include "mem_bkdr_util__sram.sv"
-
-  // Wrapper function for encrypted ROM reads.
-  `include "mem_bkdr_util__rom.sv"
-
-  // Wrapper function for encrypted FLASH writes.
-  `include "mem_bkdr_util__flash.sv"
 
   `undef HAS_ECC
   `undef HAS_PARITY

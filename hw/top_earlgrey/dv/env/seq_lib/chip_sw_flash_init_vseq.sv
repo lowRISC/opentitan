@@ -133,26 +133,34 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task calculate_and_write_scrambled();
+    flash_bkdr_util data0;
+    flash_bkdr_util data1;
+    flash_bkdr_util info0;
     bit [15:0] base_addr_bytes;
+
+    `downcast(data0, cfg.mem_bkdr_util_h[FlashBank0Data])
+    `downcast(data1, cfg.mem_bkdr_util_h[FlashBank1Data])
+    `downcast(info0, cfg.mem_bkdr_util_h[FlashBank0Info])
+
     for (int i = 0; i < NUM_TEST_WORDS / 2; i++) begin
       base_addr_bytes = 16'h0;
-      cfg.mem_bkdr_util_h[FlashBank0Data].flash_write_scrambled(
+      data0.flash_write_scrambled(
           {bank0_page0_data[(i*2)+1], bank0_page0_data[i*2]}, base_addr_bytes + (i * 8),
           flash_addr_key, flash_data_key);
       base_addr_bytes = FLASH_PAGE_SIZE_BYTES * FLASH_PAGES_PER_BANK;
-      cfg.mem_bkdr_util_h[FlashBank1Data].flash_write_scrambled(
+      data1.flash_write_scrambled(
           {bank1_page0_data[(i*2)+1], bank1_page0_data[i*2]}, base_addr_bytes + (i * 8),
           flash_addr_key, flash_data_key);
       base_addr_bytes = FLASH_PAGE_SIZE_BYTES * CREATOR_SECRET_PAGE_ID;
-      cfg.mem_bkdr_util_h[FlashBank0Info].flash_write_scrambled(
+      info0.flash_write_scrambled(
           {creator_secret_data[(i*2)+1], creator_secret_data[i*2]}, base_addr_bytes + (i * 8),
           flash_addr_key, flash_data_key);
       base_addr_bytes = FLASH_PAGE_SIZE_BYTES * OWNER_SECRET_PAGE_ID;
-      cfg.mem_bkdr_util_h[FlashBank0Info].flash_write_scrambled(
+      info0.flash_write_scrambled(
           {owner_secret_data[(i*2)+1], owner_secret_data[i*2]}, base_addr_bytes + (i * 8),
           flash_addr_key, flash_data_key);
       base_addr_bytes = FLASH_PAGE_SIZE_BYTES * ISO_PART_PAGE_ID;
-      cfg.mem_bkdr_util_h[FlashBank0Info].flash_write_scrambled(
+      info0.flash_write_scrambled(
           {iso_part_data[(i*2)+1], iso_part_data[i*2]}, base_addr_bytes + (i * 8), flash_addr_key,
           flash_data_key);
     end
