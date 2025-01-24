@@ -730,8 +730,9 @@ ${finst_gen(sr, field, finst_name, fsig_name, fidx)}
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
 % if racl_support:
-  // Address hit but failed the RACL check
-  assign racl_error_o = (|addr_hit) & ~(|(addr_hit & (racl_addr_hit_read | racl_addr_hit_write)));
+  // A valid address hit but failed the RACL check
+  assign racl_error_o = tl_i.a_valid &
+                        (|addr_hit) & ~(|(addr_hit & (racl_addr_hit_read | racl_addr_hit_write)));
   assign racl_error_log_o.racl_role  = racl_role;
 
   if (EnableRacl) begin : gen_racl_log
