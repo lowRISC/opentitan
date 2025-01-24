@@ -56,6 +56,9 @@ module tlul_adapter_reg_racl
   logic rd_req, wr_req;
   logic [RegDw-1:0] rdata;
 
+  // To match with the support in tlul_adapter_reg and what is supported in here
+  `ASSERT_INIT(AllowedLatency_A, AccessLatency inside {0, 1})
+
   tlul_adapter_reg #(
     .CmdIntgCheck       (CmdIntgCheck),
     .EnableRspIntgGen   (EnableRspIntgGen),
@@ -81,9 +84,36 @@ module tlul_adapter_reg_racl
   );
 
   if (EnableRacl) begin : gen_racl_role_logic
+    logic [tlul_pkg::RsvdWidth-1:0] tl_rsvd;
+    logic tlul_read_access;
+
+    // Flop TLUL bits if needed to be in sync with the output of the tlul_adapter_reg
+    if (AccessLatency == 1) begin : gen_access_latency1
+      prim_flop #(
+        .Width(tlul_pkg::RsvdWidth)
+      ) u_rsvd (
+        .clk_i ( clk_i            ),
+        .rst_ni( rst_ni           ),
+        .d_i   ( tl_i.a_user.rsvd ),
+        .q_o   ( tl_rsvd          )
+      );
+      prim_flop #(
+        .Width(1)
+      ) u_read_access(
+        .clk_i ( clk_i                          ),
+        .rst_ni( rst_ni                         ),
+        .d_i   ( tl_i.a_opcode == tlul_pkg::Get ),
+        .q_o   ( tl_read_access                 )
+      );
+    end else begin : gen_access_latency0
+      // No latency, directly assign the TLUL bits
+      assign tl_rsvd         = tl_i.a_user.rsvd;
+      assign tlul_read_access = tl_i.a_opcode == tlul_pkg::Get;
+    end
+
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
     top_racl_pkg::racl_role_t racl_role;
-    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_rsvd);
 
     top_racl_pkg::racl_role_vec_t racl_role_vec;
     prim_onehot_enc #(
@@ -100,9 +130,9 @@ module tlul_adapter_reg_racl
     // RACL only generates error responeses if enabled
     assign racl_error         = racl_error_o & RaclErrorRsp;
     // Collect RACL error information
-    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+    assign racl_error_log_o.read_access = tlul_read_access;
     assign racl_error_log_o.racl_role   = racl_role;
-    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_rsvd);
   end else begin : gen_no_racl_role_logic
     assign racl_read_allowed  = 1'b1;
     assign racl_write_allowed = 1'b1;
