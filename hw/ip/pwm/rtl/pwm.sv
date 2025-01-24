@@ -99,6 +99,9 @@ module pwm
   `ASSERT_KNOWN(CioPWMKnownO_A, cio_pwm_o)
   `ASSERT(CioPWMEnIsOneO_A, (&cio_pwm_en_o) === 1'b1)
 
+  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
+  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
 endmodule : pwm
