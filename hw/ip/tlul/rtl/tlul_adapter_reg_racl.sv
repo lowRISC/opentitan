@@ -120,4 +120,8 @@ module tlul_adapter_reg_racl
   // Mask read data in case of a RACL violation
   assign rdata = racl_error_o ? '1 : rdata_i;
 
+  // Ensure that RACL signals are not undefined
+  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
+  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+
 endmodule
