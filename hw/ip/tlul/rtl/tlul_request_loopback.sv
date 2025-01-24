@@ -4,7 +4,9 @@
 
 module tlul_request_loopback
   import tlul_pkg::*;
-(
+#(
+  parameter bit ErrorRsp = 1  // 1: Return TLUL error on on squash
+) (
   input  logic              clk_i,
   input  logic              rst_ni,
   input  logic              squash_req_i,
@@ -18,7 +20,7 @@ module tlul_request_loopback
   // Regardless of the request being squashed or not, the request payload is NOT modified by this
   // module
   logic loopback_request;
-  assign  loopback_request = tl_h2d_i.a_valid & squash_req_i;
+  assign loopback_request = tl_h2d_i.a_valid & squash_req_i;
 
   // Assemble the non-squashed request
   always_comb begin
@@ -75,7 +77,7 @@ module tlul_request_loopback
   assign tl_razwi_rsp_pre_intg.d_sink  = '0;
   assign tl_razwi_rsp_pre_intg.d_data  = '0;
   assign tl_razwi_rsp_pre_intg.d_user  = '0;
-  assign tl_razwi_rsp_pre_intg.d_error = 1'b1;
+  assign tl_razwi_rsp_pre_intg.d_error = ErrorRsp;
 
   // Compute integrity bits from the manually assembled RAZWI reponse
   tlul_rsp_intg_gen gen_intg_razwi_rsp (
