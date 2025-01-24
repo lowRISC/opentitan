@@ -207,6 +207,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce,
       bit [38:0] flip_bits);
 
+    sram_bkdr_util sram;
     chip_mem_e mem;
     int        num_tiles;
     bit [31:0] addr_scr;
@@ -216,9 +217,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int        tile_idx;
 
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
+    `downcast(sram, cfg.mem_bkdr_util_h[mem])
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+    addr_scr = sram.get_sram_encrypt_addr(
         .addr(addr), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)));
     addr_mask = size_bytes - 1;
 
@@ -227,7 +229,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     mem = chip_mem_e'(mem + tile_idx);
 
     // calculate the scrambled data
-    data_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt32_intg_data(
+    data_scr = sram.get_sram_encrypt32_intg_data(
        .addr(addr), .data(data), .key(key), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)),
        .flip_bits(flip_bits));
     cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
@@ -241,6 +243,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce);
 
+    sram_bkdr_util sram;
     chip_mem_e mem;
     int        num_tiles;
     bit [31:0] addr_scr;
@@ -250,9 +253,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int        size_bytes;
 
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
+    `downcast(sram, cfg.mem_bkdr_util_h[mem])
 
     // calculate the scramble address
-    addr_scr = cfg.mem_bkdr_util_h[mem].get_sram_encrypt_addr(
+    addr_scr = sram.get_sram_encrypt_addr(
         .addr(addr), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)));
 
     // determine which tile the scrambled address belongs
@@ -260,8 +264,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
     mem = chip_mem_e'(mem + tile_idx);
 
     addr_mask = size_bytes - 1;
-    cfg.mem_bkdr_util_h[mem].sram_inject_integ_error(addr & addr_mask, addr_scr & addr_mask, key,
-                                                     nonce, $clog2(num_tiles));
+    sram.sram_inject_integ_error(addr & addr_mask, addr_scr & addr_mask, key,
+                                 nonce, $clog2(num_tiles));
   endfunction
 
   virtual task body();
@@ -640,10 +644,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
                               symbol, mem, addr, mem_addr, size, addr_mask), UVM_LOW)
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
-      // TODO: Move this specialization to an extended class called rom_bkdr_util.
       if (mem == Rom) begin
+        rom_bkdr_util rom;
+        `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
-        cfg.mem_bkdr_util_h[mem].update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
+        rom.update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
       end
     end else begin
       `uvm_info(`gfn, $sformatf({"Reading symbol \"%s\" via backdoor in %0s: ",
@@ -683,18 +688,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
-    byte prev_data;
-    // TODO: Move these specializations to extended classes so that no special handling is needed at
-    // the call site.
-    if (mem == Rom) begin
-      bit [127:0] key = RndCnstRomCtrlScrKey;
-      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
-      prev_data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
-      cfg.mem_bkdr_util_h[mem].rom_encrypt_write8(addr, data, key, nonce);
-    end else begin // flash
-      prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
-      cfg.mem_bkdr_util_h[mem].write8(addr, data);
-    end
+    byte prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
+    cfg.mem_bkdr_util_h[mem].write8(addr, data);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
 
@@ -704,18 +699,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_read8(input chip_mem_e mem,
                                        input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                        output byte data);
-    // TODO: Move these specializations to extended classes so that no special handling is needed at
-    // the call site.
-    if (mem == Rom) begin
-      bit [127:0] key = RndCnstRomCtrlScrKey;
-      bit [63:0] nonce = RndCnstRomCtrlScrNonce;
-      data = cfg.mem_bkdr_util_h[mem].rom_encrypt_read8(addr, key, nonce);
-    end else begin // flash
-      data = cfg.mem_bkdr_util_h[mem].read8(addr);
-    end
+    data = cfg.mem_bkdr_util_h[mem].read8(addr);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h", addr, data), UVM_HIGH)
   endfunction
-
 
   // LC state transition tasks
   // This function takes the token value from the four LC_CTRL token CSRs, then runs through

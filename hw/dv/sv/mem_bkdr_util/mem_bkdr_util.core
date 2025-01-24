@@ -21,10 +21,10 @@ filesets:
     files:
       - sram_scrambler_pkg.sv
       - mem_bkdr_util_pkg.sv
+      - flash_bkdr_util.sv: {is_include_file: true}
       - mem_bkdr_util.sv: {is_include_file: true}
-      - mem_bkdr_util__rom.sv: {is_include_file: true}
-      - mem_bkdr_util__sram.sv: {is_include_file: true}
-      - mem_bkdr_util__flash.sv: {is_include_file: true}
+      - rom_bkdr_util.sv: {is_include_file: true}
+      - sram_bkdr_util.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 targets:
