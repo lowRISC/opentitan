@@ -273,8 +273,29 @@ size_t dt_instance_index(dt_instance_id_t dev) {
             name += str(pad['idx'])
         pads[name] = pad
 %>\
+/**
+ * Pad description.
+ *
+ * A `dt_pad_t` represents a chip's physical pad.
+ */
+typedef struct dt_pad_desc {
+  /** Pad type */
+  dt_pad_type_t type;
+  /** For `kDtPadTypeMio` pads: MIO out number. This is the index of the MIO_OUTSEL register
+    * that controls this pad (or the output part of this pad).
+    *
+    * For `kDtPadTypeDio`:  DIO pad number. This is the index of the various DIO_PAD_* registers
+    * that control this pad.
+    */
+  uint16_t mio_out_or_direct_pad;
+  /** For `kDtPadTypeMio` pads: MIO pad number. This is the value to put in the MIO_PERIPH_INSEL
+    * registers to connect a peripheral to this pad.
+    */
+  uint16_t insel;
+} dt_pad_desc_t;
+
 // Pad descriptions.
-const dt_pad_t kDtPad[kDtPadIndexCount] = {
+static const dt_pad_desc_t dt_pad[kDtPadCount] = {
 % for (padname, pad) in pads.items():
 <%
     if pad["connection"] == "muxed":
@@ -295,15 +316,53 @@ const dt_pad_t kDtPad[kDtPadIndexCount] = {
         pad_insel = "0"
         pad_type = "Unspecified"
 %>\
-  [${snake_to_constant_name("dt_pad_index_" + padname)}] = {
-    .__internal = {
-      .type = kDtPeriphIoType${pad_type},
-      .mio_out_or_direct_pad = ${pad_mio_out_or_direct_pad},
-      .insel = ${pad_insel},
-    }
+  [${snake_to_constant_name("dt_pad_" + padname)}] = {
+    .type = kDtPadType${pad_type},
+    .mio_out_or_direct_pad = ${pad_mio_out_or_direct_pad},
+    .insel = ${pad_insel},
   },
 % endfor
 };
+
+<%
+  invalid_pad_check = "pad < (dt_pad_t)0 || pad >= kDtPadCount"
+%>
+
+dt_pad_type_t dt_pad_type(dt_pad_t pad) {
+  if(${invalid_pad_check}) {
+    return kDtPadTypeUnspecified;
+  }
+  return dt_pad[pad].type;
+}
+
+dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
+  if(${invalid_pad_check}) {
+    return (dt_pinmux_mio_out_t)0;
+  }
+  return (dt_pinmux_mio_out_t)dt_pad[pad].mio_out_or_direct_pad;
+}
+
+dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
+  if(${invalid_pad_check}) {
+    return (dt_pinmux_muxed_pad_t)0;
+  }
+  // Same index as MIO_OUT.
+  return (dt_pinmux_muxed_pad_t)dt_pad_mio_out(pad);
+}
+
+dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
+  if(${invalid_pad_check}) {
+    return (dt_pinmux_insel_t)0;
+  }
+  return (dt_pinmux_insel_t)dt_pad[pad].insel;
+}
+
+dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad) {
+  if(${invalid_pad_check}) {
+    return (dt_pinmux_direct_pad_t)0;
+  }
+  return (dt_pinmux_direct_pad_t)dt_pad[pad].mio_out_or_direct_pad;
+}
 
 /* Pin that is constantly tied to high-Z (input only) */
 const dt_periph_io_t kDtPeriphIoConstantHighZ = {

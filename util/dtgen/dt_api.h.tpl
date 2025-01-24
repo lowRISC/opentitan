@@ -244,6 +244,11 @@ static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_
   return (dt_pinmux_direct_pad_t)periph_io.__internal.periph_input_or_direct_pad;
 }
 
+/**
+ * List of pads names.
+ */
+${helper.pad_enum.render()}
+
 /** Type of a pad. */
 typedef enum dt_pad_type {
   /* This pad is a muxed IO (MIO). */
@@ -251,33 +256,8 @@ typedef enum dt_pad_type {
   /* This pad is a direct IO (DIO). */
   kDtPadTypeDio,
   /* This pad is not an MIO or a DIO. */
-  kDtPadTypeOther,
+  kDtPadTypeUnspecified,
 } dt_pad_type_t;
-
-/**
- * Pad description.
- *
- * A `dt_pad_t` represents a chip's physical pad.
- *
- * NOTE The fields of this structure are internal, use the dt_pad_* functions to access them.
- */
-typedef struct dt_pad {
-  struct {
-    /** Pad type */
-    uint16_t type : 2;
-    /** For `kDtPadTypeMio` pads: MIO out number. This is the index of the MIO_OUTSEL register
-     * that controls this pad (or the output part of this pad).
-     *
-     * For `kDtPadTypeDio`:  DIO pad number. This is the index of the various DIO_PAD_* registers
-     * that control this pad.
-     */
-    uint16_t mio_out_or_direct_pad: 7;
-    /** For `kDtPadTypeMio` pads: MIO pad number. This is the value to put in the MIO_PERIPH_INSEL
-     * registers to connect a peripheral to this pad.
-     */
-    uint16_t insel: 7;
-  } __internal;
-} __attribute__((packed)) dt_pad_t;
 
 /**
  * Return the type of a `dt_pad_t`.
@@ -285,9 +265,7 @@ typedef struct dt_pad {
  * @param dev A pad description.
  * @return The pad type (MIO, DIO, etc).
  */
-static inline dt_pad_type_t dt_pad_type(dt_pad_t pad) {
-  return (dt_pad_type_t)pad.__internal.type;
-}
+dt_pad_type_t dt_pad_type(dt_pad_t pad);
 
 /**
  * Return the pad out number for an MIO pad.
@@ -301,9 +279,7 @@ static inline dt_pad_type_t dt_pad_type(dt_pad_t pad) {
  * NOTE This function only makes sense for pads of type `kDtPadTypeMio` which are
  * either inputs or inouts. For any other pad, the return value is unspecified.
  */
-static inline dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
-  return (dt_pinmux_mio_out_t)pad.__internal.mio_out_or_direct_pad;
-}
+dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad);
 
 /**
  * Return the pad out number for an MIO pad.
@@ -317,10 +293,7 @@ static inline dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
  * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
  * For any other pad, the return value is unspecified.
  */
-static inline dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
-  // Same index as MIO_OUT.
-  return (dt_pinmux_muxed_pad_t)dt_pad_mio_out(pad);
-}
+dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad);
 
 /**
  * Return the insel for an MIO pad.
@@ -333,9 +306,7 @@ static inline dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
  * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
  * For any other pad, the return value is unspecified.
  */
-static inline dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
-  return (dt_pinmux_insel_t)pad.__internal.insel;
-}
+dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad);
 
 /**
  * Return the direct pad number of a DIO pad.
@@ -348,8 +319,6 @@ static inline dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
  * NOTE This function only makes sense for pads of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other pad type, the return value is unspecified.
  */
-static inline dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad) {
-  return (dt_pinmux_direct_pad_t)pad.__internal.mio_out_or_direct_pad;
-}
+dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad);
 
 #endif  // ${include_guard}

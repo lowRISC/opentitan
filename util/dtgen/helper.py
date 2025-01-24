@@ -110,8 +110,8 @@ class TopHelper:
     DT_INSTANCE_ID_NAME = Name(["dt", "instance", "id"])
     DT_DEVICE_TYPE_NAME = Name(["dt", "device", "type"])
     DT_CLOCK_ENUM_NAME = Name(["dt", "clock"])
-    DT_PAD_INDEX_NAME = Name(["dt", "pad", "index"])
     DT_PAD_NAME = Name(["dt", "pad"])
+    DT_PAD_DESC_NAME = Name(["dt", "pad", "desc"])
     DT_PERIPH_IO_NAME = Name(["dt", "periph", "io"])
 
     def __init__(self, topcfg, name_to_block: Dict[str, IpBlock], enum_type, array_mapping_type):
@@ -161,16 +161,16 @@ class TopHelper:
         # List direct pads from the pinmux to avoid pins which are not relevant.
         pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
 
-        self.pad_index_enum = self._enum_type(Name([]), self.DT_PAD_INDEX_NAME)
+        self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
         for pad in pads:
             name = pad['name']
             if 'width' in pad and pad['width'] > 1:
                 name += str(pad['idx'])
-            self.pad_index_enum.add_constant(
+            self.pad_enum.add_constant(
                 Name.from_snake_case(name),
             )
-        if isinstance(self.pad_index_enum, CEnum):
-            self.pad_index_enum.add_constant(Name(["count"]), "Number of pads")
+        if isinstance(self.pad_enum, CEnum):
+            self.pad_enum.add_constant(Name(["count"]), "Number of pads")
 
         # List of all clocks.
         self.clock_enum = self._enum_type(Name([]), self.DT_CLOCK_ENUM_NAME)
