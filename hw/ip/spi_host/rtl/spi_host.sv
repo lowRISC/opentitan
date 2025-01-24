@@ -602,6 +602,7 @@ module spi_host
   `ASSERT_KNOWN(CioSdEnKnownO_A, cio_sd_en_o)
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
+  `ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
 
   // passthrough_o.s is passed through to spi_device, it may contain unknown data,
   // but the unknown data won't be used based on the SPI protocol.
