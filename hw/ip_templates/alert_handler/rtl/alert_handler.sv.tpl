@@ -339,6 +339,10 @@ num_regs = 6 + 4 * n_alerts + 4 * 7 + n_classes * 14
   // check whether all outputs have a good known state after reset
   `ASSERT_KNOWN(TlDValidKnownO_A,  tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A,  tl_o.a_ready)
+% if racl_support:
+  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
+  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+% endif
   `ASSERT_KNOWN(IrqAKnownO_A,      intr_classa_o)
   `ASSERT_KNOWN(IrqBKnownO_A,      intr_classb_o)
   `ASSERT_KNOWN(IrqCKnownO_A,      intr_classc_o)
