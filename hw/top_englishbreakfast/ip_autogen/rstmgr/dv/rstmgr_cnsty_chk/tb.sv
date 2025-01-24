@@ -42,8 +42,6 @@ class reset_class;
 
   parameter int IterationsPerDelta = 16;
 
-  import uvm_pkg::*;
-
   typedef enum int {
     OrderChildLags,
     OrderChildLeads
@@ -101,6 +99,7 @@ class reset_class;
   endfunction
 
   task set_child_period(child_clk_e child_clk);
+    import uvm_pkg::*;
     if (child_clk == ChildClkFaster) begin
       `uvm_info(`gfn, $sformatf(
                 "Setting child clk (%0d ps) faster than reference (%0d ps)",
@@ -119,6 +118,7 @@ class reset_class;
   endtask
 
   task apply_resets();
+    import uvm_pkg::*;
     `uvm_info(`gfn, "Start apply_resets", UVM_MEDIUM)
     fork
       clk_rst_vif.apply_reset(.reset_width_clks(cycles_reset_width));
@@ -139,6 +139,7 @@ class reset_class;
   endtask
 
   task set_quiescent();
+    import uvm_pkg::*;
     `uvm_info(`gfn, "Setting quiescent inputs", UVM_MEDIUM)
     reset_vif.parent_rst_ni = 1'b1;
     reset_vif.sw_rst_req_i  = 1'b0;
@@ -146,6 +147,7 @@ class reset_class;
   endtask
 
   task set_parent_reset(logic value, int cycles);
+    import uvm_pkg::*;
     if (reset_vif.parent_rst_ni == value) return;
     `uvm_info(`gfn, $sformatf("Setting parent_rst_ni=%b after %0d cycles", value, cycles), UVM_HIGH)
     clk_rst_vif.wait_clks(cycles);
@@ -153,6 +155,7 @@ class reset_class;
   endtask
 
   task set_sw_reset(logic value, int cycles);
+    import uvm_pkg::*;
     if (reset_vif.sw_rst_req_i == value) return;
     `uvm_info(`gfn, $sformatf("Setting sw_rst_req_i=%b after %0d cycles", value, cycles), UVM_HIGH)
     clk_rst_vif.wait_clks(cycles);
@@ -160,6 +163,7 @@ class reset_class;
   endtask
 
   task set_child_reset(logic value, int cycles);
+    import uvm_pkg::*;
     if (reset_vif.child_rst_ni == value) return;
     `uvm_info(`gfn, $sformatf("Setting child_rst_ni=%b after %0d cycles", value, cycles), UVM_HIGH)
     clk_rst_vif.wait_clks(cycles);
@@ -184,6 +188,8 @@ class reset_class;
 
   // Run a number of reset scenarios with some given cycle delays to allow CDC cycle fluctuations.
   task run_iterations(input string description, input int delta_cycles, output int error_count);
+    import uvm_pkg::*;
+
     error_count = 0;
     for (int i = 0; i < IterationsPerDelta; ++i) begin
       set_quiescent();
@@ -208,6 +214,8 @@ class reset_class;
 
   // Run a parent reset to child reset.
   task scan_parent_rst();
+    import uvm_pkg::*;
+
     `uvm_info(`gfn, "scanning parent resets", UVM_LOW)
     sw_reset = 0;
     parent_rst_n = 0;
@@ -237,6 +245,8 @@ class reset_class;
   endtask
 
   task scan_parent_release();
+    import uvm_pkg::*;
+
     `uvm_info(`gfn, "scanning parent release", UVM_LOW)
     sw_reset = 0;
     parent_rst_n = 0;
@@ -265,6 +275,8 @@ class reset_class;
   endtask
 
   task scan_sw_rst();
+    import uvm_pkg::*;
+
     `uvm_info(`gfn, "scanning sw resets", UVM_LOW)
     sw_reset = 1;
     parent_rst_n = 1;
@@ -288,6 +300,8 @@ class reset_class;
   endtask
 
   task scan_sw_release();
+    import uvm_pkg::*;
+
     `uvm_info(`gfn, "scanning sw releases", UVM_LOW)
     sw_reset = 1;
     parent_rst_n = 1;
@@ -330,6 +344,8 @@ class reset_class;
   endtask
 
   task body();
+    import uvm_pkg::*;
+
     foreach (sec_cm_pkg::sec_cm_if_proxy_q[i]) begin
       `uvm_info(`gfn, $sformatf("Path of proxy: %0s", sec_cm_pkg::sec_cm_if_proxy_q[i].path),
                 UVM_MEDIUM)
@@ -395,7 +411,6 @@ class reset_class;
 endclass
 
 module tb;
-
   import uvm_pkg::*;
 
   reset_class reset_cl;
