@@ -8743,6 +8743,8 @@
           act: rcv
           width: 1
           inst_name: soc_dbg_ctrl
+          default: ""
+          top_signame: soc_dbg_ctrl_soc_dbg_state
           index: -1
         }
         {
@@ -10296,6 +10298,7 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       otp_ctrl.otp_broadcast
+      soc_dbg_ctrl.soc_dbg_state
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
       keymgr_dpe.otp_device_id
@@ -23192,6 +23195,8 @@
         act: rcv
         width: 1
         inst_name: soc_dbg_ctrl
+        default: ""
+        top_signame: soc_dbg_ctrl_soc_dbg_state
         index: -1
       }
       {
@@ -28804,6 +28809,15 @@
         type: uni
         end_idx: -1
         default: "'0"
+      }
+      {
+        package: lc_ctrl_state_pkg
+        struct: soc_dbg_state
+        signame: soc_dbg_ctrl_soc_dbg_state
+        width: 1
+        type: uni
+        end_idx: -1
+        default: ""
       }
       {
         package: otp_ctrl_pkg
