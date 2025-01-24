@@ -52,14 +52,4 @@ enum {
 extern const dt_${module_name}_t kDt${snake_to_constant_name(module_name)}[kDt${snake_to_constant_name(module_name)}Count];
 % endfor
 
-/**
- * List of pads names.
- */
-${helper.pad_index_enum.render()}
-
-/**
- * Pad descriptions (indexed by `dt_pad_index_t`).
- */
-extern const dt_pad_t kDtPad[kDtPadIndexCount];
-
 #endif  // ${include_guard}
