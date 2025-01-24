@@ -342,4 +342,18 @@ module mbx
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
                                                  u_sysif.u_soc_regs,
                                                  alert_tx_o[0])
+  // All outputs should be known all the time after reset
+  `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(IntrMbxReadyKnown_A, intr_mbx_ready_o)
+  `ASSERT_KNOWN(IntrMbxAbortKnown_A, intr_mbx_abort_o)
+  `ASSERT_KNOWN(IntrMbxErrorKnown_A, intr_mbx_error_o)
+  `ASSERT_KNOWN(DoeIntrSupportKnown_A, doe_intr_support_o)
+  `ASSERT_KNOWN(DoeIntrEnKnown_A, doe_intr_en_o)
+  `ASSERT_KNOWN(DoeIntrKnown_A, doe_intr_o)
+  `ASSERT_KNOWN(DoeAsyncMsgSupportKnown_A, doe_async_msg_support_o)
+  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_d_o.d_valid)
+  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_d_o.a_ready)
+  `ASSERT_KNOWN(SocTlDValidKnownO_A, soc_tl_d_o.d_valid)
+  `ASSERT_KNOWN(SocTlAReadyKnownO_A, soc_tl_d_o.a_ready)
+
 endmodule
