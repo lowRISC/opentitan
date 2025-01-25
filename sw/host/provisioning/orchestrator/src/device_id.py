@@ -9,7 +9,12 @@ from dataclasses import dataclass
 import util
 from sku_config import SkuConfig
 
-_RESERVED_WORD = 0
+_RESERVED_VALUE = 0
+
+# This defines the format of the "sku_specific" portion of the device ID. This
+# should be updated everytime the the "sku_specific" portion of the device ID is
+# updated.
+_SKU_SPECIFIC_FORMAT_VERSION = 1
 
 
 @dataclass
@@ -123,15 +128,26 @@ class DeviceId():
 
         # Build SKU specific field (i.e., FT device ID).
         self.package_id = sku_config.package_id
+        self.ast_cfg_version = sku_config.ast_cfg_version
+        self.otp_id = util.bytes_to_int(
+            sku_config.otp.upper()[0:2].encode("utf-8")[::-1])
+        self.otp_version = sku_config.otp_version
         self.sku_id = util.bytes_to_int(
             self.sku.upper()[:4].encode("utf-8")[::-1])
+        self.sku_specific_version = _SKU_SPECIFIC_FORMAT_VERSION
         self.sku_specific = util.bytes_to_int(
             struct.pack(
-                "<HHIQ",
+                "<BBHBBHIHBB",
                 self.package_id,
-                _RESERVED_WORD,
+                self.ast_cfg_version,
+                self.otp_id,
+                self.otp_version,
+                _RESERVED_VALUE,
+                _RESERVED_VALUE,
                 self.sku_id,
-                _RESERVED_WORD,
+                _RESERVED_VALUE,
+                _RESERVED_VALUE,
+                self.sku_specific_version,
             ))
 
         # Build full device ID.
@@ -161,11 +177,6 @@ class DeviceId():
     @staticmethod
     def from_int(device_id: int) -> "DeviceId":
         """Creates a DeviceId object from an int."""
-        # Extract SKU specific field.
-        sku_specific = device_id >> 128
-        package_id = sku_specific & 0xFFFF
-        sku_id = (sku_specific >> 32) & 0xFFFFFFFF
-
         # Extract base unique ID.
         mask = (1 << 128) - 1
         base_uid = device_id & mask
@@ -174,9 +185,27 @@ class DeviceId():
         si_creator_id = hw_origin & 0xFFFF
         product_id = (hw_origin >> 16) & 0xFFFF
 
-        # Extract SKU config.
-        sku_config = SkuConfig.from_ids(product_id, si_creator_id, package_id)
+        # Extract SKU specific field.
+        sku_specific = device_id >> 128
+        package_id = sku_specific & 0xFF
+        ast_cfg_version = (sku_specific >> 8) & 0xFF
+        otp_id = (sku_specific >> 16) & 0xFFFF
+        otp_version = (sku_specific >> 32) & 0xFF
+        sku_id = (sku_specific >> 64) & 0xFFFFFFFF
 
+        # Unpack OTP name.
+        try:
+            otp = (struct.pack('>H', otp_id).decode('ascii') +
+                   f"{otp_version:02x}")
+        except UnicodeDecodeError:
+            otp = "Invalid"
+        print("HERE", otp)
+
+        # Extract SKU config.
+        sku_config = SkuConfig.from_ids(product_id, si_creator_id, package_id,
+                                        otp, ast_cfg_version)
+
+        # Unpack SKU name.
         try:
             sku_name = struct.pack('>I', sku_id).decode('ascii')
         except UnicodeDecodeError:
@@ -198,26 +227,34 @@ class DeviceId():
         return self.device_id
 
     def pretty_print(self):
-        print("> Device ID:       {}".format(self))
-        print("SiliconCreator ID: {} ({})".format(
+        print("> Device ID:          {}".format(self))
+        print("SiliconCreator ID:    {} ({})".format(
             util.format_hex(self.si_creator_id, width=4), self._si_creator))
-        print("Product ID:        {} ({})".format(
+        print("Product ID:           {} ({})".format(
             util.format_hex(self.product_id, width=4), self._product))
         if self.din is not None:
-            print("DIN Year:          {}".format(self.din.year))
-            print("DIN Week:          {}".format(self.din.week))
-            print("DIN Lot:           {}".format(self.din.lot))
-            print("DIN Wafer:         {}".format(self.din.wafer))
-            print("DIN Wafer X Coord: {}".format(self.din.wafer_x_coord))
-            print("DIN Wafer Y Coord: {}".format(self.din.wafer_y_coord))
+            print("DIN Year:             {}".format(self.din.year))
+            print("DIN Week:             {}".format(self.din.week))
+            print("DIN Lot:              {}".format(self.din.lot))
+            print("DIN Wafer:            {}".format(self.din.wafer))
+            print("DIN Wafer X Coord:    {}".format(self.din.wafer_x_coord))
+            print("DIN Wafer Y Coord:    {}".format(self.din.wafer_y_coord))
         else:
             print("DIN:               <unset>")
-        print("Reserved:          {}".format(hex(0)))
-        print("SKU ID:            {} ({})".format(
+        print("Reserved (40 bits):   {}".format(hex(_RESERVED_VALUE)))
+        print("Package ID:           {} ({})".format(self.package_id,
+                                                     self._package))
+        print("AST Config Version:   {}".format(self.ast_cfg_version))
+        print("OTP ID:               {} ({})".format(
+            hex(self.otp_id),
+            self.otp_id.to_bytes(length=4, byteorder="big").decode("utf-8")))
+        print("OTP Version:          {}".format(self.otp_version))
+        print("Reserved (24 bits):   {}".format(hex(_RESERVED_VALUE)))
+        print("SKU ID:               {} ({})".format(
             util.format_hex(self.sku_id),
             self.sku_id.to_bytes(length=4, byteorder="big").decode("utf-8")))
-        print("Package ID:        {} ({})".format(self.package_id,
-                                                  self._package))
+        print("Reserved (24 bits):   {}".format(hex(_RESERVED_VALUE)))
+        print("SKU Specific Version: {}".format(self.sku_specific_version))
 
     def __str__(self):
         return self.to_hexstr()
