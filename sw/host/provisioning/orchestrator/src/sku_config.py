@@ -24,9 +24,10 @@ class SkuConfig:
     si_creator: Optional[str]  # valid: any SiliconCreator that exists in product database
     package: Optional[str]  # valid: any package that exists in package database
     target_lc_state: str  # valid: must be in ["dev", "prod", "prod_end"]
-    otp: str  # valid: any string
+    otp: str  # valid: any 4 char string whose first char is alphabetic and last two are numeric
+    ast_cfg_version: int  # valid: any positive integer < 256 (to fit in one byte)
     perso_bin: str  # valid: any string
-    token_encrypt_key: str
+    token_encrypt_key: str  # valid: any file path that exists
     dice_ca: Optional[OrderedDict]  # valid: see CaConfig
     ext_ca: Optional[OrderedDict] = None  # valid: see CaConfig
     owner_fw_boot_str: str = None  # valid: any string
@@ -61,9 +62,9 @@ class SkuConfig:
             self.token_encrypt_key = resolve_runfile(self.token_encrypt_key)
 
     @staticmethod
-    def from_ids(product_id: int, si_creator_id: int,
-                 package_id: int) -> "SkuConfig":
-        """Creates a SKU configuration object from product, SiliconCreator, and package IDs."""
+    def from_ids(product_id: int, si_creator_id: int, package_id: int,
+                 otp: str, ast_cfg_version: int) -> "SkuConfig":
+        """Creates a SKU configuration object from various subcomponent IDs."""
         # Load product IDs database.
         product_ids_hjson = resolve_runfile(_PRODUCT_IDS_HJSON)
         product_ids = None
@@ -97,7 +98,8 @@ class SkuConfig:
                                si_creator=si_creator,
                                package=package,
                                target_lc_state="dev",
-                               otp="",
+                               otp=otp,
+                               ast_cfg_version=ast_cfg_version,
                                perso_bin="",
                                dice_ca=OrderedDict(),
                                ext_ca=OrderedDict(),
@@ -126,6 +128,21 @@ class SkuConfig:
             raise ValueError(
                 "Target LC state ({}) must be in [\"dev\", \"prod\", \"prod_end\"]"
                 .format(self.target_lc_state))
+        # Validate AST configuration version.
+        if self.ast_cfg_version < 0 or self.ast_cfg_version > 255:
+            raise ValueError("AST config version should be in range [0, 256).")
+        # Validate OTP string.
+        if len(self.otp) != 4:
+            raise ValueError("OTP must be a non-empty 4 character string.")
+        # Validate OTP ID string.
+        if not self.otp[0].isalpha() or not self.otp[1].isalpha():
+            raise ValueError(
+                "First two chars of OTP string must be alphabetic.")
+        # Validate OTP version.
+        try:
+            _ = int(self.otp[2:], 16)
+        except ValueError:
+            raise ValueError("OTP version should two digit hexstring.")
 
     def load_hw_ids(self) -> None:
         """Sets product, SiliconCreator, and package IDs."""
@@ -134,3 +151,6 @@ class SkuConfig:
         self.product_id = int(self._product_ids["product_ids"][self.product],
                               16)
         self.package_id = int(self._package_ids[self.package], 16)
+        # We process the OTP str into a two character ID and version number.
+        self.otp_id = self.otp[:2]
+        self.otp_version = int(self.otp[2:], 16)

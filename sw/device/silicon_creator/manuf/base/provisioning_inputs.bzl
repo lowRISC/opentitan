@@ -12,8 +12,8 @@ load(
 # individualization binaries that configure OTP with the constants defined in
 # these bazel targets.
 EARLGREY_OTP_CFGS = {
-    "sival": "//hw/top_earlgrey/data/otp/sival_skus:otp_consts",
-    "emulation": "//hw/top_earlgrey/data/otp/emulation:otp_consts",
+    "sv00": "//hw/top_earlgrey/data/otp/sival_skus:otp_consts",
+    "em00": "//hw/top_earlgrey/data/otp/emulation:otp_consts",
 } | EXT_EARLGREY_OTP_CFGS
 
 EXT_SIGNED_PERSO_BINS = []
@@ -24,7 +24,7 @@ EXT_SIGNED_PERSO_BINS = []
 EARLGREY_SKUS = {
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: None
     "emulation": {
-        "otp": "emulation",
+        "otp": "em00",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -38,7 +38,7 @@ EARLGREY_SKUS = {
     },
     # OTP Config: Emulation; DICE Certs: CWT; Additional Certs: None
     "emulation_dice_cwt": {
-        "otp": "emulation",
+        "otp": "em00",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -54,7 +54,7 @@ EARLGREY_SKUS = {
     },
     # OTP Config: Emulation; DICE Certs: X.509; Additional Certs: TPM EK
     "emulation_tpm": {
-        "otp": "emulation",
+        "otp": "em00",
         "ca_data": "@//sw/device/silicon_creator/manuf/keys/fake:ca_data",
         "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
         "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
@@ -74,7 +74,7 @@ EARLGREY_SKUS = {
     # This configuration is not really usable in master but left here as an example until
     # a more appropriate solution is found.
     # "sival": {
-    #     "otp": "sival",
+    #     "otp": "sv00",
     #     "ca_data": "@//sw/device/silicon_creator/manuf/keys/sival:ca_data",
     #     "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice"],
     #     "host_ext_libs": ["@provisioning_exts//:default_ft_ext_lib"],
