@@ -29,6 +29,7 @@ $PYTHON ${ORCHESTRATOR_PATH} \
   --test-exit-token="0x22222222_22222222_22222222_22222222" \
   --package=${PACKAGE} \
   --fpga=cw310 \
+  --ast-cfg-version=0 \
   --enable-alerts \
   --use-ext-clk \
   --patch-ast \

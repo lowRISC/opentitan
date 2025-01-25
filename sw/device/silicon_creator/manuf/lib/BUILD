@@ -224,7 +224,7 @@ opentitan_test(
     deps = [
         ":flash_info_fields",
         # Testing sival SKU only should be sufficient.
-        ":individualize_sw_cfg_emulation",
+        ":individualize_sw_cfg_em00",
         "//hw/top:otp_ctrl_c_regs",
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:status",

@@ -84,6 +84,12 @@ def main(args_in):
         help="SKU HJSON configuration file.",
     )
     parser.add_argument(
+        "--ast-cfg-version",
+        required=True,
+        type=int,
+        help="AST configuration version to be written to OTP.",
+    )
+    parser.add_argument(
         "--package",
         type=str,
         help="Override of package string that is in the SKU config.",
@@ -160,7 +166,8 @@ def main(args_in):
     sku_config_args = {}
     with open(sku_config_path, "r") as fp:
         sku_config_args = hjson.load(fp)
-    sku_config = SkuConfig(**sku_config_args)
+    sku_config = SkuConfig(ast_cfg_version=args.ast_cfg_version,
+                           **sku_config_args)
 
     # Override package ID if requested.
     if args.package:

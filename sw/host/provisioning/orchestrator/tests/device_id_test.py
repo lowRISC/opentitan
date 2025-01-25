@@ -19,7 +19,7 @@ class TestDeviceId(unittest.TestCase):
         # Create SKU config object.
         with open(_SIVAL_SKU_CONFIG, "r") as fp:
             sku_config_args = hjson.load(fp)
-        self.sku_config = SkuConfig(**sku_config_args)
+        self.sku_config = SkuConfig(ast_cfg_version=7, **sku_config_args)
 
         # Create DIN object.
         self.din = DeviceIdentificationNumber(year=4,
@@ -114,15 +114,39 @@ class TestDeviceId(unittest.TestCase):
 
     def test_package_id_field(self):
         expected_field = 0x0
-        actual_field = (self.device_id.to_int() >> 128) & 0xffff
+        actual_field = (self.device_id.to_int() >> 128) & 0xff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
-                format_hex(actual_field, width=4),
-                format_hex(expected_field, width=4)))
+                format_hex(actual_field, width=2),
+                format_hex(expected_field, width=2)))
 
-    def test_sku_specific_reserved_field_0(self):
-        expected_field = 0
+    def test_ast_cfg_version_field(self):
+        expected_field = 0x7
+        actual_field = (self.device_id.to_int() >> 136) & 0xff
+        self.assertEqual(
+            actual_field, expected_field, "actual: {}, expected: {}.".format(
+                format_hex(actual_field, width=2),
+                format_hex(expected_field, width=2)))
+
+    def test_otp_id_field(self):
+        expected_field = bytes_to_int("ME".encode("utf-8"))
         actual_field = (self.device_id.to_int() >> 144) & 0xffff
+        self.assertEqual(
+            actual_field, expected_field, "actual: {}, expected: {}.".format(
+                format_hex(actual_field, width=2),
+                format_hex(expected_field, width=2)))
+
+    def test_otp_version_field(self):
+        expected_field = 0
+        actual_field = (self.device_id.to_int() >> 160) & 0xff
+        self.assertEqual(
+            actual_field, expected_field, "actual: {}, expected: {}.".format(
+                format_hex(actual_field, width=2),
+                format_hex(expected_field, width=2)))
+
+    def test_sku_specific_reserved_field0(self):
+        expected_field = 0
+        actual_field = (self.device_id.to_int() >> 168) & 0xffffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
                 format_hex(actual_field, width=4),
@@ -130,19 +154,27 @@ class TestDeviceId(unittest.TestCase):
 
     def test_sku_id_field(self):
         expected_field = bytes_to_int("LUME".encode("utf-8"))
-        actual_field = (self.device_id.to_int() >> 160) & 0xffffffff
+        actual_field = (self.device_id.to_int() >> 192) & 0xffffffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
                 format_hex(actual_field, width=8),
                 format_hex(expected_field, width=8)))
 
-    def test_sku_specific_reserved_field_1(self):
+    def test_sku_specific_reserved_field1(self):
         expected_field = 0
-        actual_field = (self.device_id.to_int() >> 224) & 0xffffffff
+        actual_field = (self.device_id.to_int() >> 224) & 0xffffff
         self.assertEqual(
             actual_field, expected_field, "actual: {}, expected: {}.".format(
-                format_hex(actual_field, width=8),
-                format_hex(expected_field, width=8)))
+                format_hex(actual_field, width=4),
+                format_hex(expected_field, width=4)))
+
+    def test_sku_specific_version_field(self):
+        expected_field = 1
+        actual_field = (self.device_id.to_int() >> 248) & 0xff
+        self.assertEqual(
+            actual_field, expected_field, "actual: {}, expected: {}.".format(
+                format_hex(actual_field, width=4),
+                format_hex(expected_field, width=4)))
 
     def test_pretty_print(self):
         self.device_id.pretty_print()

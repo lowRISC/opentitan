@@ -2525,7 +2525,7 @@ opentitan_binary(
         "//sw/device/lib/testing/test_framework:ottf_test_config",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/manuf/lib:individualize",
-        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sival",
+        "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_sv00",
         "//sw/device/silicon_creator/manuf/lib:otp_fields",
         "//sw/device/silicon_creator/manuf/lib:sram_start",
     ],
