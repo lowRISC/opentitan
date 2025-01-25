@@ -369,7 +369,7 @@ filegroup(
            EXT_SIGNED_PERSO_BINS,
 )
 
-_DISQUALIFIED_FOR_SIGNING = ["emulation"]
+_DISQUALIFIED_FOR_SIGNING = ["em00"]
 
 [
     offline_presigning_artifacts(
