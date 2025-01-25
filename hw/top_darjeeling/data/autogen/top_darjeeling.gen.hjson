@@ -9557,6 +9557,15 @@
           expose: "true"
           name_top: RaclCtrlNumSubscribingIps
         }
+        {
+          name: NumExternalSubscribingIps
+          desc: Number of external subscribing RACL IPs
+          type: int
+          default: 1
+          local: "false"
+          expose: "true"
+          name_top: RaclCtrlNumExternalSubscribingIps
+        }
       ]
       inter_signal_list:
       [
@@ -9570,7 +9579,9 @@
           width: 1
           inst_name: racl_ctrl
           default: ""
-          top_signame: ast_racl_policies
+          external: true
+          top_signame: racl_policies
+          conn_type: false
           index: -1
         }
         {
@@ -9596,9 +9607,6 @@
             name_top: RaclCtrlNumSubscribingIps
           }
           inst_name: racl_ctrl
-          default: ""
-          package: ""
-          top_signame: ast_racl_error
           index: -1
         }
         {
@@ -9620,8 +9628,61 @@
             name_top: RaclCtrlNumSubscribingIps
           }
           inst_name: racl_ctrl
+          index: -1
+        }
+        {
+          name: racl_error_external
+          desc:
+            '''
+            Error notification vector collecting errors from all external subscribing IPs.
+            A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
+            Only one IP can raise an error at a time.
+            '''
+          struct: logic
+          type: uni
+          act: rcv
+          width:
+          {
+            name: NumExternalSubscribingIps
+            desc: Number of external subscribing RACL IPs
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: RaclCtrlNumExternalSubscribingIps
+          }
+          inst_name: racl_ctrl
           default: ""
-          top_signame: ast_racl_error_log
+          package: ""
+          external: true
+          top_signame: racl_error
+          conn_type: false
+          index: -1
+        }
+        {
+          name: racl_error_log_external
+          desc: Error log information from all external IPs.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width:
+          {
+            name: NumExternalSubscribingIps
+            desc: Number of external subscribing RACL IPs
+            param_type: int
+            unpacked_dimensions: null
+            default: 1
+            local: false
+            expose: true
+            name_top: RaclCtrlNumExternalSubscribingIps
+          }
+          inst_name: racl_ctrl
+          default: ""
+          external: true
+          top_signame: racl_error_log
+          conn_type: false
           index: -1
         }
         {
@@ -10445,62 +10506,6 @@
           external: true
           conn_type: true
         }
-        {
-          struct: racl_policy_vec
-          type: uni
-          name: racl_policies
-          act: rcv
-          package: top_racl_pkg
-          desc: Policy vector distributed to the subscribing RACL IPs.
-          inst_name: ast
-          width: 1
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ast_racl_policies
-          index: -1
-          external: true
-          conn_type: true
-        }
-        {
-          struct: logic
-          type: uni
-          name: racl_error
-          act: req
-          width: 1
-          desc:
-            '''
-            Error notification vector collecting errors from all subscribing IPs.
-            A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
-            Only one IP can raise an error at a time.
-            '''
-          inst_name: ast
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ast_racl_error
-          index: -1
-          external: true
-          conn_type: true
-        }
-        {
-          struct: racl_error_log
-          type: uni
-          name: racl_error_log
-          act: req
-          width: 1
-          package: top_racl_pkg
-          desc: Error log information from all IPs.
-          inst_name: ast
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ast_racl_error_log
-          index: -1
-          external: true
-          conn_type: true
-        }
       ]
     }
   ]
@@ -10785,18 +10790,6 @@
       rstmgr_aon.sw_rst_req:
       [
         pwrmgr_aon.sw_rst_req
-      ]
-      ast.racl_policies:
-      [
-        racl_ctrl.racl_policies
-      ]
-      ast.racl_error:
-      [
-        racl_ctrl.racl_error
-      ]
-      ast.racl_error_log:
-      [
-        racl_ctrl.racl_error_log
       ]
       pwrmgr_aon.wakeups:
       [
@@ -11254,9 +11247,9 @@
       spi_device.sck_monitor: sck_monitor
       soc_dbg_ctrl.soc_dbg_policy_bus: soc_dbg_policy_bus
       soc_dbg_ctrl.halt_cpu_boot: debug_halt_cpu_boot
-      ast.racl_policies: racl_policies
-      ast.racl_error: racl_error
-      ast.racl_error_log: racl_error_log
+      racl_ctrl.racl_policies: racl_policies
+      racl_ctrl.racl_error_external: racl_error
+      racl_ctrl.racl_error_log_external: racl_error_log
     }
   }
   xbar:
@@ -24947,7 +24940,9 @@
         width: 1
         inst_name: racl_ctrl
         default: ""
-        top_signame: ast_racl_policies
+        external: true
+        top_signame: racl_policies
+        conn_type: false
         index: -1
       }
       {
@@ -24973,9 +24968,6 @@
           name_top: RaclCtrlNumSubscribingIps
         }
         inst_name: racl_ctrl
-        default: ""
-        package: ""
-        top_signame: ast_racl_error
         index: -1
       }
       {
@@ -24997,8 +24989,61 @@
           name_top: RaclCtrlNumSubscribingIps
         }
         inst_name: racl_ctrl
+        index: -1
+      }
+      {
+        name: racl_error_external
+        desc:
+          '''
+          Error notification vector collecting errors from all external subscribing IPs.
+          A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
+          Only one IP can raise an error at a time.
+          '''
+        struct: logic
+        type: uni
+        act: rcv
+        width:
+        {
+          name: NumExternalSubscribingIps
+          desc: Number of external subscribing RACL IPs
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: RaclCtrlNumExternalSubscribingIps
+        }
+        inst_name: racl_ctrl
         default: ""
-        top_signame: ast_racl_error_log
+        package: ""
+        external: true
+        top_signame: racl_error
+        conn_type: false
+        index: -1
+      }
+      {
+        name: racl_error_log_external
+        desc: Error log information from all external IPs.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width:
+        {
+          name: NumExternalSubscribingIps
+          desc: Number of external subscribing RACL IPs
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: RaclCtrlNumExternalSubscribingIps
+        }
+        inst_name: racl_ctrl
+        default: ""
+        external: true
+        top_signame: racl_error_log
+        conn_type: false
         index: -1
       }
       {
@@ -26417,62 +26462,6 @@
         end_idx: -1
         top_type: broadcast
         top_signame: ast_obs_ctrl
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
-        struct: racl_policy_vec
-        type: uni
-        name: racl_policies
-        act: rcv
-        package: top_racl_pkg
-        desc: Policy vector distributed to the subscribing RACL IPs.
-        inst_name: ast
-        width: 1
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ast_racl_policies
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
-        struct: logic
-        type: uni
-        name: racl_error
-        act: req
-        width: 1
-        desc:
-          '''
-          Error notification vector collecting errors from all subscribing IPs.
-          A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
-          Only one IP can raise an error at a time.
-          '''
-        inst_name: ast
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ast_racl_error
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
-        struct: racl_error_log
-        type: uni
-        name: racl_error_log
-        act: req
-        width: 1
-        package: top_racl_pkg
-        desc: Error log information from all IPs.
-        inst_name: ast
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ast_racl_error_log
         index: -1
         external: true
         conn_type: true
@@ -27931,38 +27920,58 @@
       {
         package: top_racl_pkg
         struct: racl_policy_vec
-        signame: racl_policies_i
+        signame: racl_policies_o
         width: 1
         type: uni
         default: ""
-        direction: in
-        conn_type: true
+        direction: out
+        conn_type: false
         index: -1
-        netname: ast_racl_policies
+        netname: racl_policies
       }
       {
         package: ""
         struct: logic
-        signame: racl_error_o
-        width: 1
+        signame: racl_error_i
+        width:
+        {
+          name: NumExternalSubscribingIps
+          desc: Number of external subscribing RACL IPs
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: RaclCtrlNumExternalSubscribingIps
+        }
         type: uni
         default: ""
-        direction: out
-        conn_type: true
+        direction: in
+        conn_type: false
         index: -1
-        netname: ast_racl_error
+        netname: racl_error
       }
       {
         package: top_racl_pkg
         struct: racl_error_log
-        signame: racl_error_log_o
-        width: 1
+        signame: racl_error_log_i
+        width:
+        {
+          name: NumExternalSubscribingIps
+          desc: Number of external subscribing RACL IPs
+          param_type: int
+          unpacked_dimensions: null
+          default: 1
+          local: false
+          expose: true
+          name_top: RaclCtrlNumExternalSubscribingIps
+        }
         type: uni
         default: ""
-        direction: out
-        conn_type: true
+        direction: in
+        conn_type: false
         index: -1
-        netname: ast_racl_error_log
+        netname: racl_error_log
       }
     ]
     definitions:
@@ -28767,39 +28776,6 @@
         act: req
         suffix: ""
         default: prim_mubi_pkg::MUBI4_DEFAULT
-      }
-      {
-        package: top_racl_pkg
-        struct: racl_policy_vec
-        signame: ast_racl_policies
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: top_racl_pkg::RACL_POLICY_VEC_DEFAULT
-      }
-      {
-        package: ""
-        struct: logic
-        signame: ast_racl_error
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: top_racl_pkg
-        struct: racl_error_log
-        signame: ast_racl_error_log
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: top_racl_pkg::RACL_ERROR_LOG_DEFAULT
       }
       {
         package: ""

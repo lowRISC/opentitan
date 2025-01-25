@@ -63,6 +63,13 @@
       expose: "true"
       local: "true"
     },
+    { name: "NumExternalSubscribingIps",
+      desc: "Number of external subscribing RACL IPs",
+      type: "int",
+      default: "1",
+      expose: "true"
+      local: "false"
+    },
   ],
   inter_signal_list: [
     { struct:  "racl_policy_vec",
@@ -93,6 +100,27 @@
       package: "top_racl_pkg",
       desc:    '''
         Error log information from all IPs.
+      '''
+    }
+    { struct:  "logic",
+      type:    "uni",
+      name:    "racl_error_external",
+      act:     "rcv",
+      width  : "NumExternalSubscribingIps",
+      desc:    '''
+        Error notification vector collecting errors from all external subscribing IPs.
+        A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
+        Only one IP can raise an error at a time.
+      '''
+    }
+    { struct:  "racl_error_log",
+      type:    "uni",
+      name:    "racl_error_log_external",
+      act:     "rcv",
+      width:   "NumExternalSubscribingIps"
+      package: "top_racl_pkg",
+      desc:    '''
+        Error log information from all external IPs.
       '''
     }
   ],

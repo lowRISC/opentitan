@@ -119,6 +119,7 @@ module top_darjeeling #(
   // parameters for mbx_pcie1
   // parameters for soc_dbg_ctrl
   // parameters for racl_ctrl
+  parameter int RaclCtrlNumExternalSubscribingIps = 1,
   // parameters for rv_core_ibex
   parameter bit RvCoreIbexPMPEnable = 1,
   parameter int unsigned RvCoreIbexPMPGranularity = 0,
@@ -280,9 +281,9 @@ module top_darjeeling #(
   output logic       sck_monitor_o,
   output soc_dbg_ctrl_pkg::soc_dbg_policy_t       soc_dbg_policy_bus_o,
   input  logic       debug_halt_cpu_boot_i,
-  input  top_racl_pkg::racl_policy_vec_t       racl_policies_i,
-  output logic       racl_error_o,
-  output top_racl_pkg::racl_error_log_t       racl_error_log_o,
+  output top_racl_pkg::racl_policy_vec_t       racl_policies_o,
+  input  logic [RaclCtrlNumExternalSubscribingIps-1:0] racl_error_i,
+  input  top_racl_pkg::racl_error_log_t [RaclCtrlNumExternalSubscribingIps-1:0] racl_error_log_i,
 
 
   // All externally supplied clocks
@@ -576,9 +577,6 @@ module top_darjeeling #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   logic       rv_dm_ndmreset_req;
   prim_mubi_pkg::mubi4_t       rstmgr_aon_sw_rst_req;
-  top_racl_pkg::racl_policy_vec_t       ast_racl_policies;
-  logic       ast_racl_error;
-  top_racl_pkg::racl_error_log_t       ast_racl_error_log;
   logic [3:0] pwrmgr_aon_wakeups;
   logic [1:0] pwrmgr_aon_rstreqs;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
@@ -762,9 +760,6 @@ module top_darjeeling #(
   assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
   assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
-  assign ast_racl_policies = racl_policies_i;
-  assign racl_error_o = ast_racl_error;
-  assign racl_error_log_o = ast_racl_error_log;
 
   // define partial inter-module tie-off
   edn_pkg::edn_rsp_t unused_edn1_edn_rsp1;
@@ -2543,7 +2538,8 @@ module top_darjeeling #(
   racl_ctrl #(
     .RaclErrorRsp(1'b1),
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[96:95]),
-    .NumSubscribingIps(RaclCtrlNumSubscribingIps)
+    .NumSubscribingIps(RaclCtrlNumSubscribingIps),
+    .NumExternalSubscribingIps(RaclCtrlNumExternalSubscribingIps)
   ) u_racl_ctrl (
       // [95]: recov_ctrl_update_err
       // [96]: fatal_fault
@@ -2551,9 +2547,11 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[96:95] ),
 
       // Inter-module signals
-      .racl_policies_o(ast_racl_policies),
-      .racl_error_i(ast_racl_error),
-      .racl_error_log_i(ast_racl_error_log),
+      .racl_policies_o(racl_policies_o),
+      .racl_error_i('0),
+      .racl_error_log_i({RaclCtrlNumSubscribingIps{top_racl_pkg::RACL_ERROR_LOG_DEFAULT}}),
+      .racl_error_external_i(racl_error_i),
+      .racl_error_log_external_i(racl_error_log_i),
       .tl_i(racl_ctrl_tl_req),
       .tl_o(racl_ctrl_tl_rsp),
 
