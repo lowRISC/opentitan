@@ -1089,36 +1089,6 @@
           act:  "rcv",
           package: "ast_pkg",
         },
-        { struct:  "racl_policy_vec",
-          type:    "uni",
-          name:    "racl_policies",
-          act:     "rcv",
-          package: "top_racl_pkg",
-          desc:    '''
-            Policy vector distributed to the subscribing RACL IPs.
-          '''
-        }
-        { struct:  "logic",
-          type:    "uni",
-          name:    "racl_error",
-          act:     "req",
-          width:   "1",
-          desc:    '''
-            Error notification vector collecting errors from all subscribing IPs.
-            A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected.
-            Only one IP can raise an error at a time.
-          '''
-        }
-        { struct:  "racl_error_log",
-          type:    "uni",
-          name:    "racl_error_log",
-          act:     "req",
-          width:    "1"
-          package:  "top_racl_pkg",
-          desc:    '''
-            Error log information from all IPs.
-          '''
-        }
       ]
     },
   ]
@@ -1273,11 +1243,6 @@
 
       // Reset manager software reset request to pwrmgr
       'rstmgr_aon.sw_rst_req' : ['pwrmgr_aon.sw_rst_req'],
-
-      // RACL connections from the outside to the internal RACL signals
-      'ast.racl_policies'     : ['racl_ctrl.racl_policies']
-      'ast.racl_error'        : ['racl_ctrl.racl_error']
-      'ast.racl_error_log'    : ['racl_ctrl.racl_error_log']
     }
 
     // top is to connect to top net/struct.
@@ -1422,9 +1387,9 @@
         'spi_device.sck_monitor'               : 'sck_monitor',
         'soc_dbg_ctrl.soc_dbg_policy_bus'      : 'soc_dbg_policy_bus',
         'soc_dbg_ctrl.halt_cpu_boot'           : 'debug_halt_cpu_boot',
-        'ast.racl_policies'                    : 'racl_policies',
-        'ast.racl_error'                       : 'racl_error',
-        'ast.racl_error_log'                   : 'racl_error_log'
+        'racl_ctrl.racl_policies'              : 'racl_policies',
+        'racl_ctrl.racl_error_external'        : 'racl_error',
+        'racl_ctrl.racl_error_log_external'    : 'racl_error_log'
     },
   },
 

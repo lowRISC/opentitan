@@ -3,25 +3,31 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module racl_ctrl import racl_ctrl_reg_pkg::*; #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn      = {NumAlerts{1'b1}},
-  parameter int unsigned          NumSubscribingIps = 1,
-  parameter bit                   RaclErrorRsp      = 1'b1
+  parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter int unsigned          NumSubscribingIps         = 1,
+  parameter int unsigned          NumExternalSubscribingIps = 1,
+  parameter bit                   RaclErrorRsp              = 1'b1
 ) (
-  input  logic                                                 clk_i,
-  input  logic                                                 rst_ni,
-  input logic                                                  rst_shadowed_ni,
+  input  logic                                                         clk_i,
+  input  logic                                                         rst_ni,
+  input logic                                                          rst_shadowed_ni,
   // Bus Interface (device)
-  input  tlul_pkg::tl_h2d_t                                    tl_i,
-  output tlul_pkg::tl_d2h_t                                    tl_o,
+  input  tlul_pkg::tl_h2d_t                                            tl_i,
+  output tlul_pkg::tl_d2h_t                                            tl_o,
   // Alerts
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]            alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]            alert_tx_o,
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]                    alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]                    alert_tx_o,
   // Output policy vector for distribution
-  output top_racl_pkg::racl_policy_vec_t                       racl_policies_o,
+  output top_racl_pkg::racl_policy_vec_t                               racl_policies_o,
   // RACL violation information.
-  input logic            [NumSubscribingIps-1:0]               racl_error_i,
-  input top_racl_pkg::racl_error_log_t [NumSubscribingIps-1:0] racl_error_log_i
+  input logic                          [NumSubscribingIps-1:0]         racl_error_i,
+  input top_racl_pkg::racl_error_log_t [NumSubscribingIps-1:0]         racl_error_log_i,
+  // External RACL violation information (from top-level)
+  input logic                          [NumExternalSubscribingIps-1:0] racl_error_external_i,
+  input top_racl_pkg::racl_error_log_t [NumExternalSubscribingIps-1:0] racl_error_log_external_i
 );
+  import top_racl_pkg::*;
+
   racl_ctrl_reg2hw_t reg2hw;
   racl_ctrl_hw2reg_t hw2reg;
 
@@ -31,7 +37,7 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   logic reg_intg_error;
   logic shadowed_storage_err, shadowed_update_err;
   logic racl_ctrl_racl_error;
-  top_racl_pkg::racl_error_log_t racl_ctrl_racl_error_log;
+  racl_error_log_t racl_ctrl_racl_error_log;
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: RACL_POLICY.CONFIG.SHADOW
@@ -90,9 +96,9 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   // Policy broadcasting
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
-  top_racl_pkg::racl_policy_t policy_all_rd_wr;
-  top_racl_pkg::racl_policy_t policy_rot_private;
-  top_racl_pkg::racl_policy_t policy_soc_rot;
+  racl_policy_t policy_all_rd_wr;
+  racl_policy_t policy_rot_private;
+  racl_policy_t policy_soc_rot;
 
   // Assign register policy values to policy structs
   assign policy_all_rd_wr.read_perm = reg2hw.policy_all_rd_wr_shadowed.read_perm.q;
@@ -115,17 +121,23 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
   // Error handling
   //////////////////////////////////////////////////////////////////////////////////////////////////
 
+  // Concatenate the two incoming RACL error vectors for common handling
+  logic [NumSubscribingIps+NumExternalSubscribingIps-1:0]            combined_racl_error;
+  racl_error_log_t [NumSubscribingIps+NumExternalSubscribingIps-1:0] combined_racl_error_log;
+  assign combined_racl_error     = {racl_error_external_i, racl_error_i};
+  assign combined_racl_error_log = {racl_error_log_external_i, racl_error_log_i};
+
   // A RACL error can only happen for one IP at a time in one RACL domain. Therefore, it is
   // safe to OR all RACL error bits together and no arbitration is needed. This is true also
   // for the corresponding RACL role or Write/Read information.
-  `ASSERT(OneHotRaclError_A, $onehot0(racl_error_i))
+  `ASSERT(OneHotRaclError_A, $onehot0(racl_error))
 
   logic racl_error;
   // A combined RACL error from external subscribing IPs in the racl_ctrl internal reg_top
-  assign racl_error = |racl_error_i | racl_ctrl_racl_error;
+  assign racl_error = |combined_racl_error | racl_ctrl_racl_error;
 
-  top_racl_pkg::racl_role_t racl_error_role;
-  top_racl_pkg::ctn_uid_t racl_error_ctn_uid;
+  racl_role_t racl_error_role;
+  ctn_uid_t racl_error_ctn_uid;
   logic racl_error_read_access;
 
   // Reduce all incoming error vectors to a single role and write/read bit.
@@ -136,10 +148,10 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
     racl_error_role        = racl_ctrl_racl_error_log.racl_role;
     racl_error_ctn_uid     = racl_ctrl_racl_error_log.ctn_uid;
     racl_error_read_access = racl_ctrl_racl_error_log.read_access;
-    for (int unsigned i = 0; i < NumSubscribingIps; i++) begin
-      racl_error_role        |= racl_error_log_i[i].racl_role;
-      racl_error_ctn_uid     |= racl_error_log_i[i].ctn_uid;
-      racl_error_read_access |= racl_error_log_i[i].read_access;
+    for (int unsigned i = 0; i < (NumSubscribingIps + NumExternalSubscribingIps); i++) begin
+      racl_error_role        |= combined_racl_error_log[i].racl_role;
+      racl_error_ctn_uid     |= combined_racl_error_log[i].ctn_uid;
+      racl_error_read_access |= combined_racl_error_log[i].read_access;
     end
   end
 
