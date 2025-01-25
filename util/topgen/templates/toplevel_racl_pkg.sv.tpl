@@ -66,6 +66,18 @@ package top_racl_pkg;
 
     return ctn_uid_t'(rsvd[${racl_config['ctn_uid_bit_msb']}:${racl_config['ctn_uid_bit_lsb']}]);
   endfunction
+% if racl_config['role_bit_lsb'] > 0 or racl_config['ctn_uid_bit_msb']:
+
+  // Build a TLUL reserved user bit vector based on RACL role and CTN UID
+  function automatic logic [tlul_pkg::RsvdWidth-1:0] tlul_build_user_rsvd_vec(racl_role_t racl_role,
+                                                                              ctn_uid_t ctn_uid);
+    logic [tlul_pkg::RsvdWidth-1:0] rsvd;
+    rsvd = '0;
+    rsvd[${racl_config['role_bit_msb']}:${racl_config['role_bit_lsb']}] = racl_role;
+    rsvd[${racl_config['ctn_uid_bit_msb']}:${racl_config['ctn_uid_bit_lsb']}] = ctn_uid;
+    return rsvd;
+  endfunction
+% endif
 
 % for racl_group, policies in racl_config['policies'].items():
 <% prefix = "" if len(racl_config['policies'].keys()) == 1 else f"{racl_group.upper()}_" %>\
