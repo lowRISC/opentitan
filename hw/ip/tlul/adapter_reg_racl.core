@@ -11,7 +11,8 @@ filesets:
       - lowrisc:prim:assert
       - lowrisc:prim:secded
       - lowrisc:tlul:common
-      - lowrisc:tlul:trans_intg
+      - lowrisc:tlul:adapter_reg
+      - lowrisc:tlul:request_loopback
       - lowrisc:systems:top_racl_pkg
     files:
       - rtl/tlul_adapter_reg_racl.sv
