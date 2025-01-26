@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use crate::{DecodeKey, EncodeKey, SphincsPlus, SpxError};
+use asn1::{BitString, ObjectIdentifier, ParseResult};
 use pem_rfc7468::LineEnding;
 use serde::{Deserialize, Serialize};
 use std::borrow::Cow;
@@ -165,6 +166,9 @@ impl EncodeKey for SpxSecretKey {
 }
 
 impl SpxPublicKey {
+    const OID_SHA2_128S_SPX_PUBLIC_KEY: ObjectIdentifier =
+        asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 35);
+
     /// Creates a SPHINCS+ public key from raw bytes.
     pub fn from_bytes(algorithm: SphincsPlus, bytes: &[u8]) -> Result<Self, SpxError> {
         if algorithm.public_key_len() != bytes.len() {
@@ -191,6 +195,35 @@ impl SpxPublicKey {
         let msg = domain.prepare(msg);
         self.algorithm.verify(&self.key, signature, &msg)
     }
+
+    fn parse_asn1_public_key(key: &[u8], label: &str) -> Result<Self, SpxError> {
+        // The PEM block is not a raw key, maybe it is an ASN.1 object.
+        let r: ParseResult<(ObjectIdentifier, &[u8])> = asn1::parse(key, |d| {
+            d.read_element::<asn1::Sequence>()?.parse(|d| {
+                let oid: ObjectIdentifier = d.read_element::<asn1::Sequence>()?.parse(|d| {
+                    let oid = d.read_element::<ObjectIdentifier>()?;
+                    Ok(oid)
+                })?;
+                let key = d.read_element::<BitString>()?.as_bytes();
+                Ok((oid, key))
+            })
+        });
+        let (oid, key) = match r {
+            Ok((oid, key)) => (oid, key),
+            Err(_) => return Err(SpxError::ParseError(format!("Not a RAW key {label:?}"))),
+        };
+
+        if oid == Self::OID_SHA2_128S_SPX_PUBLIC_KEY && key.len() == 32 {
+            Ok(SpxPublicKey {
+                algorithm: SphincsPlus::Sha2128sSimple,
+                key: key.to_vec(),
+            })
+        } else {
+            Err(SpxError::ParseError(format!(
+                "Not an expected SPX ASN.1: {label:?}"
+            )))
+        }
+    }
 }
 
 impl DecodeKey for SpxPublicKey {
@@ -208,7 +241,7 @@ impl DecodeKey for SpxPublicKey {
             return Err(SpxError::ParseError(format!("not a public key: {label:?}")));
         }
         if !algorithm.starts_with("RAW:") {
-            return Err(SpxError::ParseError(format!("not a RAW key: {label:?}")));
+            return Self::parse_asn1_public_key(&key, label);
         }
         let algorithm = algorithm[4..].replace('_', "-");
         let algorithm = SphincsPlus::from_str(&algorithm).map_err(SpxError::Strum)?;
