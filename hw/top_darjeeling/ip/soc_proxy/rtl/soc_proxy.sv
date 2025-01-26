@@ -446,8 +446,8 @@ module soc_proxy
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(DmaLsioTriggerKnown_A, dma_lsio_trigger_o)
-  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_d_o.d_valid)
-  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_d_o.a_ready)
+  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_o.d_valid)
+  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_o.a_ready)
 
   // Assertions
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A,
