@@ -492,6 +492,14 @@ module pinmux
     assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
   end
 
+% if n_dio_pads > n_mio_pads + 2:
+  // For configurations with NMioPads + 2 < NDioPads, mio_in is zero-extended to NDioPads bits for
+  // convenience. However, mio_periph_insel is sized to select the lowest NMioPads + 2 bits. Most
+  // of the zero bits cannot actually be selected. Tie them off to avoid lint warnings.
+  logic unused_mio_mux;
+  assign unused_mio_mux = ^{mio_mux[(AlignedMuxSize - 1):(NMioPads + 2)]};
+
+% endif
   //////////////////////
   // MIO Output Muxes //
   //////////////////////
