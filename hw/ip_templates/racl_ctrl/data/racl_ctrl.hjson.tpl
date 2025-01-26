@@ -63,7 +63,7 @@
     { name: "NumSubscribingIps",
       desc: "Number of subscribing RACL IPs",
       type: "int",
-      default: "1",
+      default: "${nr_subscribing_ips}",
       expose: "true"
       local: "true"
     },

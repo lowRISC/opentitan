@@ -9,7 +9,7 @@ import logging as log
 import shutil
 import sys
 import tempfile
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
@@ -592,6 +592,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
     topcfg['racl'] = parse_racl_config(topcfg['racl_config'])
 
     # Generate the RACL mappings for all subscribing IPs
+    num_subscribing_ips = defaultdict(int)
     for m in topcfg['module']:
         for if_name, mapping_path in m.get('racl_mappings', {}).items():
             parsed_register_mapping, parsed_window_mapping, racl_group, _ = parse_racl_mapping(
@@ -604,6 +605,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
                 'register_mapping': parsed_register_mapping,
                 'window_mapping': parsed_window_mapping,
             }
+            num_subscribing_ips[racl_group] += 1
 
     log.info('Generating RACL Control IP with ipgen')
     topname = topcfg['name']
@@ -624,6 +626,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
         'nr_role_bits': topcfg['racl']['nr_role_bits'],
         'nr_ctn_uid_bits': topcfg['racl']['nr_ctn_uid_bits'],
         'nr_policies': len(policies),
+        'nr_subscribing_ips': num_subscribing_ips[racl_group],
         'policies': policies
     }
 
