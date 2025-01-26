@@ -6903,7 +6903,9 @@
           width: 1
           inst_name: rom_ctrl0
           default: ""
-          top_signame: ast_rom_cfg
+          external: true
+          top_signame: rom_ctrl0_cfg
+          conn_type: false
           index: -1
         }
         {
@@ -7087,7 +7089,9 @@
           width: 1
           inst_name: rom_ctrl1
           default: ""
-          top_signame: ast_rom_cfg
+          external: true
+          top_signame: rom_ctrl1_cfg
+          conn_type: false
           index: -1
         }
         {
@@ -9638,22 +9642,6 @@
           conn_type: true
         }
         {
-          struct: rom_cfg
-          package: prim_rom_pkg
-          type: uni
-          name: rom_cfg
-          act: rcv
-          inst_name: ast
-          width: 1
-          default: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: ast_rom_cfg
-          index: -1
-          external: true
-          conn_type: true
-        }
-        {
           struct: ast_obs_ctrl
           type: uni
           name: obs_ctrl
@@ -9679,11 +9667,6 @@
       ast.obs_ctrl:
       [
         otp_ctrl.obs_ctrl
-      ]
-      ast.rom_cfg:
-      [
-        rom_ctrl0.rom_cfg
-        rom_ctrl1.rom_cfg
       ]
       alert_handler.crashdump:
       [
@@ -10310,7 +10293,8 @@
       ast.lc_dft_en: ""
       ast.lc_hw_debug_en: ""
       ast.obs_ctrl: obs_ctrl
-      ast.rom_cfg: rom_cfg
+      rom_ctrl0.rom_cfg: rom_ctrl0_cfg
+      rom_ctrl1.rom_cfg: rom_ctrl1_cfg
       i2c0.ram_cfg: i2c_ram_1p_cfg
       i2c0.ram_cfg_rsp: i2c_ram_1p_cfg_rsp
       sram_ctrl_ret_aon.cfg: sram_ctrl_ret_aon_ram_1p_cfg
@@ -22013,7 +21997,9 @@
         width: 1
         inst_name: rom_ctrl0
         default: ""
-        top_signame: ast_rom_cfg
+        external: true
+        top_signame: rom_ctrl0_cfg
+        conn_type: false
         index: -1
       }
       {
@@ -22087,7 +22073,9 @@
         width: 1
         inst_name: rom_ctrl1
         default: ""
-        top_signame: ast_rom_cfg
+        external: true
+        top_signame: rom_ctrl1_cfg
+        conn_type: false
         index: -1
       }
       {
@@ -24693,22 +24681,6 @@
         conn_type: true
       }
       {
-        struct: rom_cfg
-        package: prim_rom_pkg
-        type: uni
-        name: rom_cfg
-        act: rcv
-        inst_name: ast
-        width: 1
-        default: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: ast_rom_cfg
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
         struct: ast_obs_ctrl
         type: uni
         name: obs_ctrl
@@ -24790,14 +24762,26 @@
       {
         package: prim_rom_pkg
         struct: rom_cfg
-        signame: rom_cfg_i
+        signame: rom_ctrl0_cfg_i
         width: 1
         type: uni
         default: ""
         direction: in
-        conn_type: true
+        conn_type: false
         index: -1
-        netname: ast_rom_cfg
+        netname: rom_ctrl0_cfg
+      }
+      {
+        package: prim_rom_pkg
+        struct: rom_cfg
+        signame: rom_ctrl1_cfg_i
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: rom_ctrl1_cfg
       }
       {
         package: prim_ram_1p_pkg
@@ -26176,17 +26160,6 @@
         act: rcv
         suffix: ""
         default: ast_pkg::AST_OBS_CTRL_DEFAULT
-      }
-      {
-        package: prim_rom_pkg
-        struct: rom_cfg
-        signame: ast_rom_cfg
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: prim_rom_pkg::ROM_CFG_DEFAULT
       }
       {
         package: alert_handler_pkg

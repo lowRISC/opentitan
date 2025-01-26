@@ -1068,15 +1068,6 @@
           package: "lc_ctrl_pkg",
         },
 
-        { struct:  "rom_cfg",
-          package: "prim_rom_pkg",
-          type:    "uni",
-          name:    "rom_cfg",
-          // The activity direction for a port inter-signal is "opposite" of
-          // what the external module actually needs.
-          act:     "rcv"
-        }
-
         { struct: "ast_obs_ctrl",
           type: "uni",
           name: "obs_ctrl",
@@ -1098,8 +1089,6 @@
   inter_module: {
     'connect': {
       'ast.obs_ctrl'            : ['otp_ctrl.obs_ctrl']
-      'ast.rom_cfg'             : ['rom_ctrl0.rom_cfg',
-                                   'rom_ctrl1.rom_cfg'],
       'alert_handler.crashdump' : ['rstmgr_aon.alert_dump'],
       'alert_handler.esc_rx'    : ['rv_core_ibex.esc_rx',
                                    'lc_ctrl.esc_scrap_state0_rx',
@@ -1284,7 +1273,8 @@
         'ast.lc_dft_en'                        : '',
         'ast.lc_hw_debug_en'                   : '',
         'ast.obs_ctrl'                         : 'obs_ctrl',
-        'ast.rom_cfg'                          : 'rom_cfg',
+        'rom_ctrl0.rom_cfg'                    : 'rom_ctrl0_cfg',
+        'rom_ctrl1.rom_cfg'                    : 'rom_ctrl1_cfg',
         'i2c0.ram_cfg'                         : 'i2c_ram_1p_cfg',
         'i2c0.ram_cfg_rsp'                     : 'i2c_ram_1p_cfg_rsp',
         'sram_ctrl_ret_aon.cfg'                : 'sram_ctrl_ret_aon_ram_1p_cfg',

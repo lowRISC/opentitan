@@ -168,7 +168,8 @@ module top_darjeeling #(
   output lc_ctrl_pkg::lc_tx_t       ast_lc_dft_en_o,
   output lc_ctrl_pkg::lc_tx_t       ast_lc_hw_debug_en_o,
   input  ast_pkg::ast_obs_ctrl_t       obs_ctrl_i,
-  input  prim_rom_pkg::rom_cfg_t       rom_cfg_i,
+  input  prim_rom_pkg::rom_cfg_t       rom_ctrl0_cfg_i,
+  input  prim_rom_pkg::rom_cfg_t       rom_ctrl1_cfg_i,
   input  prim_ram_1p_pkg::ram_1p_cfg_t       i2c_ram_1p_cfg_i,
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t       i2c_ram_1p_cfg_rsp_o,
   input  prim_ram_1p_pkg::ram_1p_cfg_t [SramCtrlRetAonNumRamInst-1:0] sram_ctrl_ret_aon_ram_1p_cfg_i,
@@ -496,7 +497,6 @@ module top_darjeeling #(
 
   // define inter-module signals
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
-  prim_rom_pkg::rom_cfg_t       ast_rom_cfg;
   alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
@@ -747,7 +747,6 @@ module top_darjeeling #(
   assign ast_lc_dft_en_o = lc_ctrl_lc_dft_en;
   assign ast_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign ast_obs_ctrl = obs_ctrl_i;
-  assign ast_rom_cfg = rom_cfg_i;
   assign pwrmgr_boot_status_o = pwrmgr_aon_boot_status;
 
   // define partial inter-module tie-off
@@ -2084,7 +2083,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[70:70] ),
 
       // Inter-module signals
-      .rom_cfg_i(ast_rom_cfg),
+      .rom_cfg_i(rom_ctrl0_cfg_i),
       .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[0]),
       .keymgr_data_o(keymgr_dpe_rom_digest[0]),
       .kmac_data_o(kmac_app_req[2]),
@@ -2111,7 +2110,7 @@ module top_darjeeling #(
       .alert_rx_i  ( alert_rx[71:71] ),
 
       // Inter-module signals
-      .rom_cfg_i(ast_rom_cfg),
+      .rom_cfg_i(rom_ctrl1_cfg_i),
       .pwrmgr_data_o(pwrmgr_aon_rom_ctrl[1]),
       .keymgr_data_o(keymgr_dpe_rom_digest[1]),
       .kmac_data_o(kmac_app_req[3]),
