@@ -1230,6 +1230,9 @@ module top_earlgrey #(
       // Inter-module signals
       .strap_en_i(1'b0),
       .sampled_straps_o(),
+      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+      .racl_error_o(),
+      .racl_error_log_o(),
       .tl_i(gpio_tl_req),
       .tl_o(gpio_tl_rsp),
 
