@@ -126,25 +126,7 @@ typedef enum dt_periph_io_dir {
  *
  * NOTE The fields of this structure are internal, use the dt_periph_io_* functions to access them.
  */
-typedef struct dt_periph_io {
-  struct {
-    /** Peripheral I/O type */
-    dt_periph_io_type_t type;
-    /** Peripheral I/O direction. */
-    dt_periph_io_dir_t dir;
-    /** For `kDtPeriphIoTypeMio`: peripheral input number. This is the index of the MIO_PERIPH_INSEL register
-     * that controls this peripheral I/O.
-     *
-     * For `kDtPeriphIoTypeDio`: DIO pad number. This is the index of the various DIO_PAD_* registers
-     * that control this peripheral I/O.
-     */
-    uint16_t periph_input_or_direct_pad;
-    /** For `kDtPeriphIoTypeMio`: peripheral output number. This is the value to put in the MIO_OUTSEL registers
-     * to connect an output to this peripheral I/O.
-     */
-    uint16_t outsel;
-  } __internal;
-} dt_periph_io_t;
+${helper.periph_io_struct.render_type_def()}
 
 /** Tie constantly to zero. */
 static const dt_pinmux_outsel_t kDtPinmuxOutselConstantZero = k${top_name.as_camel_case()}PinmuxOutselConstantZero;

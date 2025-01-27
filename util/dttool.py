@@ -7,7 +7,6 @@
 import argparse
 import logging
 import hjson
-import sys
 from mako.template import Template
 from mako import exceptions
 from pathlib import Path
@@ -89,33 +88,21 @@ def main():
     with open(args.topgencfg) as handle:
         topcfg = hjson.load(handle, use_decimal=True)
 
+    top_helper = TopHelper(topcfg, CEnum, CArrayMapping)
+
     if args.gen_top:
-        helper = TopHelper(topcfg, name_to_block, CEnum, CArrayMapping)
-
-        module_types = {m["type"] for m in topcfg["module"]}
-        dt_headers = []
-        for m in module_types:
-            dt_headers.append(f"dt_{m}.h")
-            if m not in name_to_block:
-                logging.error("IP block {} required by top but not specified using -i".format(m))
-                sys.exit(1)
-
         top_lib_header = "hw/top_{0}/sw/autogen/top_{0}.h".format(topcfg["name"])
 
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.h.tpl",
             outdir / "dt_api.h",
-            helper = helper,
+            helper = top_helper,
             top_lib_header = top_lib_header,
         )
-
         render_template(
             TOPGEN_TEMPLATE_PATH / "dt_api.c.tpl",
             outdir / "dt_api.c",
-            top=topcfg,
-            name_to_block = name_to_block,
-            dt_headers = dt_headers,
-            helper = helper,
+            helper = top_helper,
         )
 
     if args.gen_ip:
@@ -128,7 +115,7 @@ def main():
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
 
-            helper = IpHelper(topcfg, ip, default_node, CEnum, CArrayMapping)
+            helper = IpHelper(top_helper, ip, default_node, CEnum, CArrayMapping)
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
