@@ -321,7 +321,8 @@ class OtDut():
                     f"Final (device) DeviceId: {device_id_in_otp.to_hexstr()}")
                 logging.error(
                     f"Final (host)   DeviceId: {self.device_id.to_hexstr()}")
-                confirm()
+                if self.require_confirmation:
+                    confirm()
                 self.device_id = device_id_in_otp
 
             logging.info("FT completed successfully.")
