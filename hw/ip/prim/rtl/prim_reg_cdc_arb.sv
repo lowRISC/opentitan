@@ -126,12 +126,19 @@ module prim_reg_cdc_arb #(
         // dst_lat_d is safe to used here because dst_req_q, if set,
         // always has priority over other hardware based events.
         dst_req_q <= '0;
-      end else if (dst_req_i && !dst_req_q && busy) begin
+      end else if (dst_req_i && busy) begin
         // if destination request arrives when a handshake event
         // is already ongoing, hold on to request and send later
         dst_req_q <= 1'b1;
       end
     end
+
+    // dst_req_q will be 0 when dst_req_i is set, this assertion checks the conditional branch
+    // (dst_req_i && !dst_req_q && busy) can be simplified to avoid conditional coverage
+    // holes
+    `ASSERT(Not_Dst_req_q_while_dst_req_i_A, dst_req_i |-> !dst_req_q,
+            clk_dst_i, !rst_dst_ni)
+
     assign dst_req = dst_req_q | dst_req_i;
 
     // Hold data at the beginning of a transaction
