@@ -50,7 +50,7 @@ def main():
         raise SystemExit(
             f'Failed to parse RACL config "{args.racl_config}". Error: {err}')
 
-    parsed_register_mapping, racl_group, policy_names = parse_racl_mapping(
+    parsed_register_mapping, parsed_window_mapping, racl_group, policy_names = parse_racl_mapping(
         parsed_racl_config, args.mapping, args.if_name, ip_block)
 
     template = """
@@ -63,7 +63,8 @@ def main():
 <% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
 <% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
 <% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
-<% reg_name_len = max( (len(name) for name in register_mapping.keys()) ) %>\
+<% reg_name_len = max( (len(name) for name in register_mapping.keys()), default=0 ) %>\
+<% window_name_len = max( (len(name) for name in window_mapping.keys()), default=0 ) %>\
   /**
    * Policy selection vector for ${module_name}
    *   TLUL interface name: ${if_name}
@@ -75,17 +76,27 @@ def main():
 (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
         % endfor
       % endif
+      % if len(window_mapping) > 0:
+   *   Window to policy mapping:
+        % for window_name, policy_idx in window_mapping.items():
+   *     ${f"{window_name}:".ljust(window_name_len+1)} ${policy_names[policy_idx]} \
+(Idx ${f"{policy_idx}".rjust(policy_idx_len)})
+        % endfor
+      % endif
    */
 <% policy_sel_name = f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}" %>\
 <% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
   parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
-
+      % for window_name, policy_idx in window_mapping.items():
+  parameter int unsigned ${policy_sel_name}_WIN_${window_name} = ${policy_idx};
+      % endfor
     """
 
     print(
         Template(template).render(m=ip_block,
                                   if_name=args.if_name,
                                   register_mapping=parsed_register_mapping,
+                                  window_mapping=parsed_window_mapping,
                                   policy_names=policy_names,
                                   module_name=ip_block.name,
                                   racl_group=racl_group).rstrip())
