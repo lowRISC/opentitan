@@ -44,21 +44,6 @@ ${helper.instance_id_enum.render()}
  */
 dt_device_type_t dt_device_type(dt_instance_id_t id);
 
-/**
- * Get the instance number of a device instance.
- *
- * If a top has several instances of the same type, this will return the
- * instance number. This function guarantees that the instance
- * number can be used to index into the corresponding devicetable.
- *
- * For example, if the instance index of `kDtUart3` is 3 then it is guaranteed
- * then that `kDtUart[3] == kDtUart3`.
- *
- * @param dev An instance ID.
- * @return The instance number, or 0 if the ID is not valid.
- */
-size_t dt_instance_index(dt_instance_id_t dev);
-
 /** PLIC IRQ ID type.
  *
  * This type represents a raw IRQ ID from the PLIC.

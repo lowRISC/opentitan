@@ -65,6 +65,19 @@ ${helper.periph_io_enum.render()}
 % endif
 
 /**
+ * Get the ${device_name} instance from an instance ID
+ *
+ * For example, `dt_uart_from_instance_id(kDtInstanceIdUart3) == kDtUart3`.
+ *
+ * @param dt Instance ID.
+ * @return A ${device_name} instance.
+ *
+ * NOTE This function only makes sense if the instance ID has device type ${device_name},
+ * otherwise the returned value is unspecified.
+ */
+dt_${device_name}_t dt_${device_name}_from_instance_id(dt_instance_id_t inst_id);
+
+/**
  * Get the instance ID of an instance.
  *
  * @param dt Instance of ${device_name}.

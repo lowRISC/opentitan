@@ -276,6 +276,8 @@ class IpHelper:
     def _init_instances(self):
         self.inst_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name)
         self.inst_map = OrderedDict()
+        self.first_inst_id = None
+        self.last_inst_id = None
         for m in self.top["module"]:
             if m["type"] != self.ip.name:
                 continue
@@ -289,6 +291,9 @@ class IpHelper:
                 inst_name = m["name"]
             inst_name = Name.from_snake_case(inst_name) if inst_name != "" else Name([])
             self.inst_enum.add_constant(inst_name)
+            if self.first_inst_id is None:
+                self.first_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
+            self.last_inst_id = TopHelper.DT_INSTANCE_ID_NAME + Name.from_snake_case(m["name"])
             self.inst_map[inst_name] = m
         if isinstance(self.inst_enum, CEnum):
             self.inst_enum.add_constant(Name(["count"]), "Number of instances")
