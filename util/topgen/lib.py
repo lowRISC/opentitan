@@ -267,6 +267,15 @@ class Name:
     def __add__(self, other):
         return Name(self._parts + other._parts)
 
+    def __repr__(self):
+        return "Name({})".format(self._parts)
+
+    def __hash__(self):
+        return hash(self._parts)
+
+    def __eq__(self, other):
+        return self._parts == other._parts
+
     @staticmethod
     def from_snake_case(input: str) -> 'Name':
         return Name(input.split("_"))
