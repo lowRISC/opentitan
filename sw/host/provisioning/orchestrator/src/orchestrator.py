@@ -177,7 +177,7 @@ def main(args_in):
 
     # The device identification number is determined during CP by extracting data
     # from the device.
-    din = DeviceIdentificationNumber(0)
+    din = DeviceIdentificationNumber.blind_asm()
     device_id = DeviceId(sku_config, din)
 
     # TODO: Setup remote and/or local DB connections.
