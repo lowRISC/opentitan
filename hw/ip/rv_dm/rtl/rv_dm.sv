@@ -15,10 +15,11 @@
 module rv_dm
   import rv_dm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn           = {NumAlerts{1'b1}},
-  parameter logic [31:0]          IdcodeValue            = 32'h 0000_0001,
-  parameter bit                   UseDmiInterface        = 1'b0,
-  parameter bit                   SecVolatileRawUnlockEn = 0
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn           = {NumAlerts{1'b1}},
+  parameter logic [31:0]                    IdcodeValue            = 32'h 0000_0001,
+  parameter bit                             UseDmiInterface        = 1'b0,
+  parameter bit                             SecVolatileRawUnlockEn = 0,
+  parameter logic [tlul_pkg::RsvdWidth-1:0] TlulHostUserRsvdBits   = 0
 ) (
   input  logic                clk_i,       // clock
   input  logic                clk_lc_i,    // only declared here so that the topgen
@@ -386,7 +387,7 @@ module rv_dm
     .wdata_i      (host_wdata),
     .wdata_intg_i ('0),
     .be_i         (host_be),
-    .user_rsvd_i  ('0),
+    .user_rsvd_i  (TlulHostUserRsvdBits),
     .valid_o      (host_r_valid),
     .rdata_o      (host_r_rdata),
     .rdata_intg_o (),
