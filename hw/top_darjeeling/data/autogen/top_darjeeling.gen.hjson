@@ -4360,6 +4360,15 @@
           expose: "true"
           name_top: SecRvDmVolatileRawUnlockEn
         }
+        {
+          name: TlulHostUserRsvdBits
+          desc: TLUL user bits sent on outgoing transfers.
+          type: logic [tlul_pkg::RsvdWidth-1:0]
+          default: "'0"
+          local: "false"
+          expose: "true"
+          name_top: RvDmTlulHostUserRsvdBits
+        }
       ]
       inter_signal_list:
       [
