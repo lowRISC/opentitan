@@ -9,6 +9,9 @@ class spi_host_flash_seq extends spi_base_seq;
   rand bit [7:0] address_q[$];
   rand bit [7:0] payload_q[$];
   rand int       read_size;
+  // The driver needs to know not to apply the read pipeline to a read command
+  // targeting the mailbox
+  rand bit       cmd_in_mbx;
 
   bit [CSB_WIDTH-1:0] csb_sel = 0;
 
@@ -46,6 +49,7 @@ class spi_host_flash_seq extends spi_base_seq;
                                    num_lanes == local::num_lanes;
                                    dummy_cycles == local::dummy_cycles;
                                    read_pipeline_mode == local::read_pipeline_mode;
+                                   cmd_in_mbx == local::cmd_in_mbx;
                                    address_q.size() == num_addr_bytes;
                                    foreach (address_q[i]) {
                                      address_q[i] == local::address_q[i];
