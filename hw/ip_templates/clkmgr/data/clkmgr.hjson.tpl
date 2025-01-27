@@ -409,8 +409,7 @@
           name: "EN",
           resval: "1"
           desc: '''
-            When 1, the value of !!JITTER_ENABLE can be changed.  When 0, writes have no
-            effect.
+            This register has no effect.
           '''
         },
       ]
@@ -429,13 +428,14 @@
           name: "VAL",
           desc: '''
             Enable jittery clock.
-            A value of kMultiBitBool4False disables the jittery clock,
-            while all other values enable jittery clock.
+            At reset, this register reads as kMultiBitBool4False and the jittery clock is disabled.
+            Any write to the register turns the value to kMultiBitBool4True and enables the jittery clock.
+            The value written doesn't matter.
+            The value then remains kMultiBitBool4True until reset.
           ''',
           resval: false
-          // avoid writing random values to this register as it could trigger transient checks
-          // in mubi sync
-          tags: ["excl:CsrAllTests:CsrExclWrite"]
+          // Exclude this register from any automated CSR tests as the behavior is non-standard.
+          tags: ["excl:CsrAllTests:CsrExclAll"]
         }
       ]
     },

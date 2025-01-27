@@ -88,8 +88,19 @@ dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
     default:
       return kDifBadArg;
   }
-  mmio_region_write32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET,
-                      new_jitter_enable_val);
+
+  multi_bit_bool_t clk_jitter_enable_val =
+      mmio_region_read32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET);
+  if (clk_jitter_enable_val == kMultiBitBool4True &&
+      new_jitter_enable_val != kMultiBitBool4True) {
+    return kDifLocked;
+  }
+
+  if (new_jitter_enable_val == kMultiBitBool4True) {
+    mmio_region_write32(clkmgr->base_addr, CLKMGR_JITTER_ENABLE_REG_OFFSET,
+                        new_jitter_enable_val);
+  }
+
   return kDifOk;
 }
 

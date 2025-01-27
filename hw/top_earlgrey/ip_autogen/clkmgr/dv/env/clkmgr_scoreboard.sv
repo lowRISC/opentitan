@@ -290,7 +290,13 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
     // If incoming access is a write to a valid csr, update prediction right away.
     if (addr_phase_write) begin
       `uvm_info(`gfn, $sformatf("Writing 0x%0x to %s", item.a_data, csr.get_name()), UVM_MEDIUM)
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      if (csr.get_name() == "jitter_enable") begin
+        // Any write to the jitter_enable CSR turns the value to MuBi4True. The value written
+        // doesn't matter.
+        void'(csr.predict(.value(prim_mubi_pkg::MuBi4True), .kind(UVM_PREDICT_WRITE)));
+      end else begin
+        void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      end
     end
 
     // Process the csr req:
@@ -318,8 +324,8 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "jitter_regwen": begin
       end
       "jitter_enable": begin
-        if (addr_phase_write && `gmv(ral.jitter_regwen)) begin
-          `DV_CHECK_EQ(prim_mubi_pkg::mubi4_t'(item.a_data), cfg.clkmgr_vif.jitter_enable_csr)
+        if (data_phase_write) begin
+          `DV_CHECK_EQ(prim_mubi_pkg::MuBi4True, cfg.clkmgr_vif.jitter_enable_csr)
         end
       end
       "clk_enables": begin

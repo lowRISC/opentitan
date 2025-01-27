@@ -824,6 +824,13 @@ ${rdata_gen(f, r.name.lower() + "_" + f.name.lower())}\
 % endif
 
   // Unused signal tieoff
+% if lblock == "clkmgr":
+
+  // Any write to the jitter_enable CSR writes MuBi4True.
+  // The actual write data is ignored.
+  logic unused_jitter_enable_wd;
+  assign unused_jitter_enable_wd = ^jitter_enable_wd;
+% endif
 % if rb.all_regs:
 
   // wdata / byte enable are not always fully used
@@ -904,13 +911,16 @@ ${bits.msb}\
       we_expr = f'{clk_base_name}{reg_name}{gated_suffix}_{we_suffix}'
 
       # when async, pick from the cdc handled data
-      wd_expr = f'{finst_name}_wd'
-      if reg.async_clk:
-        if field.bits.msb == field.bits.lsb:
-          bit_sel = f'{field.bits.msb}'
-        else:
-          bit_sel = f'{field.bits.msb}:{field.bits.lsb}'
-        wd_expr = f'{clk_base_name}{reg_name}_wdata[{bit_sel}]'
+      if lblock == "clkmgr" and reg_name == "jitter_enable":
+        wd_expr = "prim_mubi_pkg::MuBi4True"
+      else:
+        wd_expr = f'{finst_name}_wd'
+        if reg.async_clk:
+          if field.bits.msb == field.bits.lsb:
+            bit_sel = f'{field.bits.msb}'
+          else:
+            bit_sel = f'{field.bits.msb}:{field.bits.lsb}'
+          wd_expr = f'{clk_base_name}{reg_name}_wdata[{bit_sel}]'
 
     else:
       we_expr = "1'b0"
