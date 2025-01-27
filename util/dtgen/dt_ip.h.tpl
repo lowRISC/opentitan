@@ -14,7 +14,7 @@
 #ifndef ${include_guard}
 #define ${include_guard}
 
-#include "dt/dt_api.h"
+#include "dt_api.h"
 #include <stdint.h>
 
 /**
@@ -58,7 +58,7 @@ ${helper.clock_enum.render()}
 /**
  * List of peripheral I/O.
  *
- * peripheral I/O are guaranteed to be numbered consecutively from 0.
+ * Peripheral I/O are guaranteed to be numbered consecutively from 0.
  */
 ${helper.periph_io_enum.render()}
 
