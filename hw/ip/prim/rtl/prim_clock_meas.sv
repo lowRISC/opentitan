@@ -13,14 +13,12 @@
 `include "prim_assert.sv"
 
 module prim_clock_meas #(
-  // Maximum value of input clock counts over measurement period
+  // Maximum number of input clock counts over measurement period. Note that this is 1-based
+  // indexing (so a hardware counter would only count up to Cnt-1)
   parameter int Cnt = 16,
-  // Maximum value of reference clock counts over measurement period
-  parameter int RefCnt = 1,
   parameter bit ClkTimeOutChkEn = 1,
   parameter bit RefTimeOutChkEn = 1,
-  localparam int CntWidth = prim_util_pkg::vbits(Cnt),
-  localparam int RefCntWidth = prim_util_pkg::vbits(RefCnt)
+  localparam int CntWidth = prim_util_pkg::vbits(Cnt)
 ) (
   input clk_i,
   input rst_ni,
@@ -155,27 +153,10 @@ module prim_clock_meas #(
     .dst_pulse_o(valid_ref)
   );
 
-
-  if (RefCnt == 1) begin : gen_degenerate_case
-    // if reference count is one, cnt_ref is always 0.
-    // So there is no need to maintain a counter, and
-    // valid just becomes valid_ref
-    assign valid = valid_ref;
-  end else begin : gen_normal_case
-    logic [RefCntWidth-1:0] cnt_ref;
-    assign valid = valid_ref & (int'(cnt_ref) == RefCnt - 1);
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        cnt_ref <= '0;
-      end else if (!cnt_en && |cnt_ref) begin
-        cnt_ref <= '0;
-      end else if (cnt_en && valid) begin
-        cnt_ref <= '0;
-      end else if (cnt_en && valid_ref) begin
-        cnt_ref <= cnt_ref + 1'b1;
-      end
-    end
-  end
+  // There isn't really a reference counter (we just wait for the first edge on that clock). The
+  // valid signal is supposed to be saying that we have seen the synchronised version of the last
+  // edge we are waiting for, so it is always equal to valid_ref.
+  assign valid = valid_ref;
 
   logic cnt_ovfl;
   logic [CntWidth-1:0] cnt;
@@ -206,16 +187,13 @@ module prim_clock_meas #(
 
   localparam bit TimeOutChkEn = ClkTimeOutChkEn | RefTimeOutChkEn;
 
-  // determine ratio between
-  localparam int ClkRatio = Cnt / RefCnt;
-
   // maximum cdc latency from the perspective of the measured clock
   // 1 cycle to output request
   // 2 ref cycles for synchronization
   // 1 ref cycle to send ack
   // 2 cycles to sync ack
   // Double for margin
-  localparam int MaxClkCdcLatency = (1 + 2*ClkRatio + 1*ClkRatio + 2)*2;
+  localparam int MaxClkCdcLatency = (1 + 2 + 1 + 2)*2;
 
   // maximum cdc latency from the perspective of the reference clock
   // 1 ref cycle to output request
@@ -261,19 +239,11 @@ module prim_clock_meas #(
   // Assertions
   //////////////////////////
 
-  if (TimeOutChkEn) begin : gen_timeout_assert
-    // the measured clock must be faster than the reference clock
-    `ASSERT_INIT(ClkRatios_A, ClkRatio > 2)
-  end
-
-  // reference count has to be at least 1
-  `ASSERT_INIT(RefCntVal_A, RefCnt >= 1)
+  // We must be measuring at least two cycles on the input clock.
+  `ASSERT_INIT(CntMin_A, Cnt > 1)
 
   // if we've reached the max count, enable must be 0 next.
   // Otherwise the width of the counter is too small to accommodate the usecase
   `ASSERT(MaxWidth_A, (cnt == Cnt-1) |=> !cnt_en )
 
-
-
-
-endmodule // prim_clk_meas
+endmodule
