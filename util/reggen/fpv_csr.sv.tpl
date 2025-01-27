@@ -86,6 +86,14 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
   // accesses).
   bit [${hro_idx_width-1}:0] hro_idx;
   bit [${addr_msb}:0] normalized_addr;
+  % if lblock == "clkmgr":
+    % for hro_reg in hro_regs_list:
+      % if hro_reg.name.lower() == "jitter_enable":
+  // The jitter_enable CSR needs some special handling below.
+  localparam bit [${hro_idx_width-1}:0] JitterEnableHroIdx = ${hro_map.get(hro_reg.offset)[0]};
+      % endif
+    % endfor
+  % endif
 
   `ifdef FPV_ON
     // For FPV, we restrict the pend_trans array by giving its size a smaller upper bound. This
@@ -191,7 +199,14 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
       if (d2h.d_valid) begin
         if (pend_trans[d_source_idx].wr_pending == 1) begin
           if (!d2h.d_error && regwen[hro_idx]) begin
+            % if lblock == "clkmgr":
+            if (hro_idx == JitterEnableHroIdx) begin
+              // Any write to the jitter_enable CSR writes MuBi4True.
+              exp_vals[hro_idx] <= prim_mubi_pkg::MuBi4True;
+            end else if (access_policy[hro_idx] == FpvRw0c) begin
+            % else:
             if (access_policy[hro_idx] == FpvRw0c) begin
+            % endif
               // Assume FpvWr0c policy only has one field that is wr0c.
               exp_vals[hro_idx] <= exp_vals[hro_idx][0] == 0 ? 0 : pend_trans[d_source_idx].wr_data;
             end else begin

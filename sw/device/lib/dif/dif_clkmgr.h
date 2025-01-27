@@ -150,7 +150,7 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t *state);
 
 /**
- * Enable of Disable jitter.
+ * Enable or attempt to disable jitter.
  * @param clkmgr Clock Manager Handle.
  * @param new_state whether to enable or disable jitter.
  * @returns The result of the operation.

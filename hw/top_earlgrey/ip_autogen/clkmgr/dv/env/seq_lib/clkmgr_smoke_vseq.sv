@@ -24,16 +24,18 @@ class clkmgr_smoke_vseq extends clkmgr_base_vseq;
   // This needs to be done outside the various CSR tests, since they update the jitter_enable
   // CSR, but the scoreboard is disabled for those tests.
   task test_jitter();
-    prim_mubi_pkg::mubi4_t jitter_value;
-    for (int i = 0; i < (1 << $bits(prim_mubi_pkg::mubi4_t)); ++i) begin
-      jitter_value = prim_mubi_pkg::mubi4_t'(i);
-      csr_wr(.ptr(ral.jitter_enable), .value(jitter_value));
-      csr_rd_check(.ptr(ral.jitter_enable), .compare_value(jitter_value));
-      // And set it back.
-      cfg.clk_rst_vif.wait_clks(6);
-      csr_wr(.ptr(ral.jitter_enable), .value('0));
-      csr_rd_check(.ptr(ral.jitter_enable), .compare_value('0));
+    prim_mubi_pkg::mubi4_t jitter_enable_value;
+    // Read the current value.
+    csr_rd(.ptr(ral.jitter_enable), .value(jitter_enable_value));
+    if (jitter_enable_value == prim_mubi_pkg::MuBi4False) begin
+      // Write a random 4-bit value to the register. This will set it to enabled.
+      csr_wr(.ptr(ral.jitter_enable), .value($urandom_range(0, 15)));
+      csr_rd_check(.ptr(ral.jitter_enable), .compare_value(prim_mubi_pkg::MuBi4True));
     end
+    // Try to set it back - it must stay enabled until reset.
+    cfg.clk_rst_vif.wait_clks(6);
+    csr_wr(.ptr(ral.jitter_enable), .value(prim_mubi_pkg::MuBi4False));
+    csr_rd_check(.ptr(ral.jitter_enable), .compare_value(prim_mubi_pkg::MuBi4True));
   endtask
 
   // Flips all clk_enables bits from the reset value with all enabled. All is checked

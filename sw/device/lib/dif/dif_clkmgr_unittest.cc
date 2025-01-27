@@ -29,14 +29,13 @@ class ClkMgrTest : public Test, public MmioTest {
 
 class JitterEnableTest : public ClkMgrTest {};
 
-// SetEnabled uses EXPECT_WRITE32 instead of EXPECT_MASK32 because
-// dif_clkmgr_jitter_set_enabled doesn't perform a read, just a write.
 TEST_F(JitterEnableTest, SetEnabled) {
-  // Disable jitter.
-  EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
+  // Attempt to disable jitter.
+  EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
   EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleDisabled));
 
   // Enable jitter.
+  EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
   EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
   EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled));
 }

@@ -148,10 +148,10 @@ ${"###"} Fields
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                            |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                               |
-|   0    |  rw0c  |   0x1   | EN     | When 1, the value of [`JITTER_ENABLE`](#jitter_enable) can be changed.  When 0, writes have no effect. |
+|  Bits  |  Type  |  Reset  | Name   | Description                  |
+|:------:|:------:|:-------:|:-------|:-----------------------------|
+|  31:1  |        |         |        | Reserved                     |
+|   0    |  rw0c  |   0x1   | EN     | This register has no effect. |
 
 ${"##"} JITTER_ENABLE
 Enable jittery clock
@@ -165,10 +165,17 @@ ${"###"} Fields
 {"reg": [{"name": "VAL", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                   |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------|
-|  31:4  |        |         |        | Reserved                                                                                                                      |
-|  3:0   |   rw   |   0x9   | VAL    | Enable jittery clock. A value of kMultiBitBool4False disables the jittery clock, while all other values enable jittery clock. |
+|  Bits  |  Type  |  Reset  | Name                       |
+|:------:|:------:|:-------:|:---------------------------|
+|  31:4  |        |         | Reserved                   |
+|  3:0   |   rw   |   0x9   | [VAL](#jitter_enable--val) |
+
+${"###"} JITTER_ENABLE . VAL
+Enable jittery clock.
+At reset, this register reads as kMultiBitBool4False and the jittery clock is disabled.
+Any write to the register turns the value to kMultiBitBool4True and enables the jittery clock.
+The value written doesn't matter.
+The value then remains kMultiBitBool4True until reset.
 
 ${"##"} CLK_ENABLES
 Clock enable for software gateable clocks.
