@@ -84,7 +84,11 @@ class chip_base_vseq #(
   // having to rely on a ROM software build prior to running the simulation.
   virtual function void random_rom_init_with_digest();
     bit [TL_DW-1:0] rnd_data;
+    rom_bkdr_util rom0, rom1;
+
     `uvm_info(`gfn, "Random ROM init with digest", UVM_MEDIUM)
+    `downcast(rom0, cfg.mem_bkdr_util_h[Rom0])
+    `downcast(rom1, cfg.mem_bkdr_util_h[Rom1])
 
     // Randomize the memory contents.
     //
@@ -93,33 +97,29 @@ class chip_base_vseq #(
     // that we also need to pick ECC values that match.
     for (int addr = 0; addr < Rom0MaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      cfg.mem_bkdr_util_h[Rom0].rom_encrypt_write32_integ(
-          addr,
-          rnd_data,
-          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
-          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce,
-          1'b1); // Enable scrambling.
+      rom0.rom_encrypt_write32_integ(addr,
+                                     rnd_data,
+                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
+                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce,
+                                     1'b1); // Enable scrambling.
     end
 
     // Update the ROM digest.
-    cfg.mem_bkdr_util_h[Rom0].update_rom_digest(
-        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
-        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce);
+    rom0.update_rom_digest(top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey,
+                           top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce);
 
     for (int addr = 0; addr < Rom1MaxCheckAddr; addr += TL_DW/8) begin
       `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-      cfg.mem_bkdr_util_h[Rom1].rom_encrypt_write32_integ(
-          addr,
-          rnd_data,
-          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
-          top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce,
-          1'b1); // Enable scrambling.
+      rom1.rom_encrypt_write32_integ(addr,
+                                     rnd_data,
+                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
+                                     top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce,
+                                     1'b1); // Enable scrambling.
     end
 
     // Update the ROM digest.
-    cfg.mem_bkdr_util_h[Rom1].update_rom_digest(
-        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
-        top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce);
+    rom1.update_rom_digest(top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey,
+                           top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce);
   endfunction
 
   // Iniitializes the DUT.
@@ -353,7 +353,7 @@ class chip_base_vseq #(
     logic [31:0] chk_vector;
 
     // Set rom_exec_en only when we are not in RAW state.
-    lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+    lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
 
     // If we are already 1, we cannot set to 0.
     // This should probably be relocated to mem_bkdr_util eventually as an option for writes
@@ -371,9 +371,12 @@ class chip_base_vseq #(
     int unsigned expected_data[int unsigned];
     int offmax = mem.get_size() - 1;
     int sizemax = offmax / 4;
+    rom_bkdr_util rom0, rom1;
 
     `uvm_info(`gfn, $sformatf("Mem writes to %s %0d times", mem.get_full_name(), max_access),
               UVM_MEDIUM)
+    `downcast(rom0, cfg.mem_bkdr_util_h[Rom0])
+    `downcast(rom1, cfg.mem_bkdr_util_h[Rom1])
 
     for (int i = 0; i < max_access; ++i) begin
       int unsigned offset = $urandom_range(sizemax, 0);
@@ -391,14 +394,14 @@ class chip_base_vseq #(
             byte_addr <  (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR +
                           top_darjeeling_pkg::TOP_DARJEELING_ROM0_SIZE_BYTES)) begin
           // deposit random data to rom
-          cfg.mem_bkdr_util_h[Rom0].rom_encrypt_write32_integ(
-              .addr(byte_addr), .data(wdata), .key(RndCnstRomCtrl0ScrKey),
-              .nonce(RndCnstRomCtrl0ScrNonce), .scramble_data(1));
+          rom0.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
+                                         .key(RndCnstRomCtrl0ScrKey),
+                                         .nonce(RndCnstRomCtrl0ScrNonce), .scramble_data(1));
         end else begin
           // deposit random data to rom
-          cfg.mem_bkdr_util_h[Rom1].rom_encrypt_write32_integ(
-              .addr(byte_addr), .data(wdata), .key(RndCnstRomCtrl1ScrKey),
-              .nonce(RndCnstRomCtrl1ScrNonce), .scramble_data(1));
+          rom1.rom_encrypt_write32_integ(.addr(byte_addr), .data(wdata),
+                                         .key(RndCnstRomCtrl1ScrKey),
+                                         .nonce(RndCnstRomCtrl1ScrNonce), .scramble_data(1));
         end
       end
     end

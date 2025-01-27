@@ -460,6 +460,9 @@ module chip_${top["name"]}_${target["name"]} #(
   // monitored clock
   logic sck_monitor;
 
+  // debug policy bus
+  soc_dbg_ctrl_pkg::soc_dbg_policy_t soc_dbg_policy_bus;
+
   // observe interface
   logic [7:0] otp_obs;
   ast_pkg::ast_obs_ctrl_t obs_ctrl;
@@ -621,6 +624,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
 % endif
 
+  prim_mubi_pkg::mubi4_t ast_init_done;
+
   ast #(
     .EntropyStreams(ast_pkg::EntropyStreams),
     .AdcChannels(ast_pkg::AdcChannels),
@@ -675,7 +680,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .tl_i                  ( base_ast_bus ),
     .tl_o                  ( ast_base_bus ),
     // init done indication
-    .ast_init_done_o       (  ),
+    .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     % for port, clk in ast["clock_connections"].items():
     .${port} (${clk}),
@@ -1051,6 +1056,8 @@ module chip_${top["name"]}_${target["name"]} #(
     .ctn_tl_d2h_i                      ( ctn_tl_d2h[0]              ),
     .soc_gpi_async_o                   (                            ),
     .soc_gpo_async_i                   ( '0                         ),
+    .soc_dbg_policy_bus_o              ( soc_dbg_policy_bus         ),
+    .debug_halt_cpu_boot_i             ( '0                         ),
     .dma_sys_req_o                     (                            ),
     .dma_sys_rsp_i                     ( '0                         ),
     .dma_ctn_tl_h2d_o                  ( ctn_tl_h2d[1]              ),
@@ -1115,6 +1122,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .all_clk_byp_ack_i                 ( all_clk_byp_ack            ),
     .hi_speed_sel_o                    ( hi_speed_sel               ),
     .div_step_down_req_i               ( div_step_down_req          ),
+    .calib_rdy_i                       ( ast_init_done              ),
 
     // OTP external voltage
     .otp_ext_voltage_h_io              ( OTP_EXT_VOLT               ),
@@ -1324,12 +1332,15 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
     .soc_gpi_async_o              (                            ),
     .soc_gpo_async_i              ( '0                         ),
+    .soc_dbg_policy_bus_o         ( soc_dbg_policy_bus         ),
+    .debug_halt_cpu_boot_i        ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
     .dma_ctn_tl_h2d_o             ( ctn_tl_h2d[1]              ),
     .dma_ctn_tl_d2h_i             ( ctn_tl_d2h[1]              ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
+    .calib_rdy_i                  ( ast_init_done              ),
 % endif
 
     // DMI TL-UL

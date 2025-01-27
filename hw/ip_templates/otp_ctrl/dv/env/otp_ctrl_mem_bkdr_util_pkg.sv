@@ -216,6 +216,14 @@ package otp_ctrl_mem_bkdr_util_pkg;
     end
   endfunction
 
+  function automatic void otp_clear_secret3_partition(
+      mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
+  );
+    for (int i = 0; i < Secret3Size; i += 4) begin
+      mem_bkdr_util_h.write32(i + Secret3Offset, 32'h0);
+    end
+  endfunction
+
   function automatic void otp_clear_hw_cfg0_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h
   );

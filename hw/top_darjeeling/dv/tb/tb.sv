@@ -13,7 +13,7 @@ module tb;
   import top_darjeeling_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import mem_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -315,6 +315,8 @@ module tb;
   // Instantitate the memory backdoor util instances.
   if (`PRIM_DEFAULT_IMPL == prim_pkg::ImplGeneric) begin : gen_generic
     initial begin
+      sram_bkdr_util ram_main0, ram_ret0, ram_mbox0, ram_ctn0;
+      rom_bkdr_util rom0, rom1;
       chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 
@@ -366,47 +368,51 @@ module tb;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM", UVM_MEDIUM)
-      m_mem_bkdr_util[RamMain0] = new(
+      ram_main0 = new(
           .name  ("mem_bkdr_util[RamMain0]"),
           .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
           .depth ($size(`RAM_MAIN_MEM_HIER)),
           .n_bits($bits(`RAM_MAIN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MAIN_BASE_ADDR));
+      m_mem_bkdr_util[RamMain0] = ram_main0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM RET", UVM_MEDIUM)
-      m_mem_bkdr_util[RamRet0] = new(
+       ram_ret0 = new(
           .name  ("mem_bkdr_util[RamRet0]"),
           .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_RET_AON_BASE_ADDR));
+      m_mem_bkdr_util[RamRet0] = ram_ret0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM MBOX", UVM_MEDIUM)
-      m_mem_bkdr_util[RamMbox0] = new(
+      ram_mbox0 = new(
           .name  ("mem_bkdr_util[RamMbox0]"),
           .path  (`DV_STRINGIFY(`RAM_MBOX_MEM_HIER)),
           .depth ($size(`RAM_MBOX_MEM_HIER)),
           .n_bits($bits(`RAM_MBOX_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_MBOX_BASE_ADDR));
+      m_mem_bkdr_util[RamMbox0] = ram_mbox0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMbox0], `RAM_MBOX_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM CTN", UVM_MEDIUM)
-      m_mem_bkdr_util[RamCtn0] = new(
+      ram_ctn0 = new(
           .name  ("mem_bkdr_util[RamCtn0]"),
           .path  (`DV_STRINGIFY(`RAM_CTN_MEM_HIER)),
           .depth ($size(`RAM_CTN_MEM_HIER)),
           .n_bits($bits(`RAM_CTN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_RAM_CTN_BASE_ADDR));
+      m_mem_bkdr_util[RamCtn0] = ram_ctn0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamCtn0], `RAM_CTN_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM0", UVM_MEDIUM)
-      m_mem_bkdr_util[Rom0] = new(
+      rom0 = new(
           .name  ("mem_bkdr_util[Rom0]"),
           .path  (`DV_STRINGIFY(`ROM0_MEM_HIER)),
           .depth ($size(`ROM0_MEM_HIER)),
@@ -416,11 +422,14 @@ module tb;
 `else
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
 `endif
+          .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrKey),
+          .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl0ScrNonce),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+      m_mem_bkdr_util[Rom0] = rom0;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom0], `ROM0_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM1", UVM_MEDIUM)
-      m_mem_bkdr_util[Rom1] = new(
+      rom1 = new(
           .name  ("mem_bkdr_util[Rom1]"),
           .path  (`DV_STRINGIFY(`ROM1_MEM_HIER)),
           .depth ($size(`ROM1_MEM_HIER)),
@@ -430,7 +439,10 @@ module tb;
 `else
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
 `endif
+          .key   (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrKey),
+          .nonce (top_darjeeling_rnd_cnst_pkg::RndCnstRomCtrl1ScrNonce),
           .system_base_addr    (top_darjeeling_pkg::TOP_DARJEELING_ROM0_BASE_ADDR));
+      m_mem_bkdr_util[Rom1] = rom1;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom1], `ROM1_MEM_HIER)
 
       `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)

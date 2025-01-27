@@ -2,17 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`ifdef DONE_THE_WORK
 `include "chip_callback_vseq.sv"
 `include "chip_base_vseq.sv"
+`ifdef DONE_THE_WORK
 `include "chip_stub_cpu_base_vseq.sv"
 `include "chip_common_vseq.sv"
 `include "chip_jtag_csr_rw_vseq.sv"
 `include "chip_jtag_mem_vseq.sv"
+`endif
 // This needs to be listed prior to all sequences that derive from it.
 `include "chip_sw_base_vseq.sv"
 `include "chip_sw_lc_base_vseq.sv"
 `include "chip_sw_uart_smoke_vseq.sv"
+`ifdef DONE_THE_WORK
 `include "chip_jtag_base_vseq.sv"
 `include "chip_prim_tl_access_vseq.sv"
 `include "chip_sw_all_escalation_resets_vseq.sv"
