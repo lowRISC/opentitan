@@ -253,7 +253,8 @@ class Name:
 
     To simplify parsing and reassembling of name strings, this class
     stores the name parts as a canonical list of strings internally
-    (in self.parts).
+    (in self._parts). The content of a name cannot be changed once it is
+    created.
 
     The "from_*" functions parse and split a name string into the canonical
     list, whereas the "as_*" functions reassemble the canonical list in the
@@ -264,23 +265,23 @@ class Name:
     internal representation into "ExampleName".
     """
     def __add__(self, other):
-        return Name(self.parts + other.parts)
+        return Name(self._parts + other._parts)
 
     @staticmethod
     def from_snake_case(input: str) -> 'Name':
         return Name(input.split("_"))
 
     def __init__(self, parts: List[str]):
-        self.parts = parts
+        self._parts = tuple(parts)
         for p in parts:
             assert len(p) > 0, "cannot add zero-length name piece"
 
     def as_snake_case(self) -> str:
-        return "_".join([p.lower() for p in self.parts])
+        return "_".join([p.lower() for p in self._parts])
 
     def as_camel_case(self) -> str:
         out = ""
-        for p in self.parts:
+        for p in self._parts:
             # If we're about to join two parts which would introduce adjacent
             # numbers, put an underscore between them.
             if out[-1:].isnumeric() and p[:1].isnumeric():
@@ -290,7 +291,7 @@ class Name:
         return out
 
     def as_c_define(self) -> str:
-        return "_".join([p.upper() for p in self.parts])
+        return "_".join([p.upper() for p in self._parts])
 
     def as_c_enum(self) -> str:
         return "k" + self.as_camel_case()
@@ -302,13 +303,13 @@ class Name:
         return self.as_camel_case()
 
     def as_rust_const(self) -> str:
-        return "_".join([p.upper() for p in self.parts])
+        return "_".join([p.upper() for p in self._parts])
 
     def as_rust_enum(self) -> str:
         return self.as_camel_case()
 
     def remove_part(self, part_to_remove: str) -> "Name":
-        return Name([p for p in self.parts if p != part_to_remove])
+        return Name([p for p in self._parts if p != part_to_remove])
 
 
 class MemoryRegion(object):
