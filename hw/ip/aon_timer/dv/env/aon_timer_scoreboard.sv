@@ -951,7 +951,6 @@ task aon_timer_scoreboard::run_wkup_timer();
         bit local_intr_exp = 0;
         bit cdc_reg_compared = 0;
         bit [63:0] count_backdoor_value = 0;
-        bit [11:0] preloaded_prescaler_value;
 
         wkup_count_ev.wait_ptrigger();
         `uvm_info(`gfn, "Start WKUP timer UVM event 'wkup_count_ev' Received", UVM_DEBUG)
@@ -968,59 +967,10 @@ task aon_timer_scoreboard::run_wkup_timer();
         end
         wait_for_wkup_enable_matching(.enable(1));
         `uvm_info(`gfn, $sformatf("WKUP Timer expired check for interrupts"), UVM_HIGH)
-        // TODO: fix after RTL fix (RTL currently doesn't reset the prescale_count_q when
-        // wkup_ctrl is written. RTL work is in PR#25616
-        if (! uvm_hdl_read({cfg.path_to_rtl,".u_core.prescale_count_q"}, preloaded_prescaler_value))
-          `uvm_error (`gfn, "HDL Read from tb.dut.u_core.prescale_count_q")
 
         // Interrupt should happen N+1 clock ticks after count == wkup_num.
-        // Oriignal delay:
-        //          cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
-        if (prescaler==0) begin
-          cfg.aon_clk_rst_vif.wait_clks(1);
-        end
-        // TODO: applies to else_if/ese fix after RTL fix (RTL currently doesn't reset the
-        // prescale_count_q when wkup_ctrl is written
-        else if ((prescaler + 1) > preloaded_prescaler_value) begin
-          cfg.aon_clk_rst_vif.wait_clks((prescaler + 1 - preloaded_prescaler_value));
-        end
-        else begin
-          bit wkup_incr;
-          bit [63:0] wkup_count, wkup_thold;
-          // Note: This is a bug/feature in the RTL. If the RTL was counting with
-          // wkup_ctrl.enable=1, prescaler = X, and by the time SW sends a wup_ctrl.enable=0
-          // the internal prescaler counter `prescale_count_q` has a value of Y, if once we enable
-          // the wkup_ctrl.enable=1, the value written to wkup_ctrl.prescaler is lower than the
-          // value already in `prescaler_count_q`, the prescaler will have to overflow before the
-          // new prescaler value becomes effective
-
-          // RTL's `prescale_count_q` may have a "pre-counted" value in it, and unless
-          // there's a reset, the interrupt won't propagate to the output until:
-          // prescale_count_q == reg2hw_i.wkup_ctrl.prescaler.q (In other words until
-          // wkup_incr is true
-
-          // Read threshold, and count and see if we've incremented
-          do begin
-            csr_rd(.ptr(ral.wkup_count_lo), .value(wkup_count[31:0]), .backdoor(1));
-            csr_rd(.ptr(ral.wkup_count_hi), .value(wkup_count[63:32]), .backdoor(1));
-
-            csr_rd(.ptr(ral.wkup_thold_lo), .value(wkup_thold[31:0]), .backdoor(1));
-            csr_rd(.ptr(ral.wkup_thold_hi), .value(wkup_thold[63:32]), .backdoor(1));
-
-            if (wkup_count < wkup_thold)
-              cfg.aon_clk_rst_vif.wait_clks(1);
-          end while (wkup_count < wkup_thold);
-
-          do begin
-            if (! uvm_hdl_read({cfg.path_to_rtl,".u_core.wkup_incr"},wkup_incr))
-              `uvm_error (`gfn, "HDL Read from tb.dut.u_core.wkup_incr failed")
-            if (!wkup_incr)
-              cfg.aon_clk_rst_vif.wait_clks(1);
-
-          end while(!wkup_incr);
-          // Extra delay to allow the interrupt to propagate
-          cfg.aon_clk_rst_vif.wait_clks(1);
-        end // else: !if((prescaler + 1) > preloaded_prescaler_value)
+        // Orignal delay:
+        cfg.aon_clk_rst_vif.wait_clks(prescaler+1);
 
         // Using a local interrupt flag in case 'intr_status_exp[WKUP]' changes
         // due to TL-UL accesses
