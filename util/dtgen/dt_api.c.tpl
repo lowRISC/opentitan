@@ -75,29 +75,11 @@ static const dt_device_type_t device_type[kDtInstanceIdCount] = {
 % endfor
 };
 
-static const dt_device_type_t instance_index[kDtInstanceIdCount] = {
-% for module_name in module_types:
-<%
-    modules = [m for m in top["module"] if m["type"] == module_name]
-%>\
-%   for (dev_index, m) in enumerate(modules):
-  [${snake_to_constant_name("dt_instance_id_" + m["name"])}] = ${dev_index},
-%   endfor
-% endfor
-};
-
 dt_device_type_t dt_device_type(dt_instance_id_t dev) {
   if (dev < kDtInstanceIdCount) {
     return device_type[dev];
   }
   return kDtDeviceTypeUnknown;
-}
-
-size_t dt_instance_index(dt_instance_id_t dev) {
-  if (dev < kDtInstanceIdCount) {
-    return instance_index[dev];
-  }
-  return 0;
 }
 
 <%

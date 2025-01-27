@@ -174,6 +174,13 @@ static const dt_${module_name}_desc_t ${dt_array}[${(helper.inst_enum.name + Nam
 %   endfor
 };
 
+dt_${module_name}_t dt_${module_name}_from_instance_id(dt_instance_id_t inst_id) {
+  if (inst_id >= ${helper.first_inst_id.as_c_enum()} && inst_id <= ${helper.last_inst_id.as_c_enum()}) {
+    return (dt_${module_name}_t)(inst_id - ${helper.first_inst_id.as_c_enum()});
+  }
+  return (dt_${module_name}_t)0;
+}
+
 dt_instance_id_t dt_${module_name}_instance_id(
     dt_${module_name}_t dt) {
   return ${dt_array}[dt].inst_id;
