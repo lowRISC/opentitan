@@ -84,17 +84,6 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/edn/lint/{tool}"
              },
-             {    name: flash_ctrl
-                  fusesoc_core: lowrisc:opentitan:top_darjeeling_flash_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_darjeeling/ip_autogen/flash_ctrl/lint/{tool}"
-                  overrides: [
-                    {
-                      name: design_level
-                      value: "top"
-                    }
-                  ]
-             },
              {    name: gpio
                   fusesoc_core: lowrisc:ip:gpio
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
@@ -153,9 +142,9 @@
                   ]
              },
              {    name: pinmux
-                  fusesoc_core: lowrisc:ip:pinmux
+                  fusesoc_core: lowrisc:opentitan:top_darjeeling_pinmux
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/pinmux/lint/{tool}"
+                  rel_path: "hw/top_darjeeling/ip_autogen/pinmux/lint/{tool}"
                   overrides: [
                     {
                       name: design_level
@@ -216,8 +205,8 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/soc_dbg_ctrl/lint/{tool}"
              },
-             {    name: socdbg_ctrl_decode
-                  fusesoc_core: lowrisc:ip:socdbg_ctrl_decode
+             {    name: soc_dbg_ctrl_decode
+                  fusesoc_core: lowrisc:ip:soc_dbg_ctrl_decode
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/socdbg_ctrl/lint/{tool}"
              },
@@ -291,11 +280,6 @@
                   fusesoc_core: lowrisc:tlul:adapter_sram
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/tlul/adapter_sram/lint/{tool}"
-             },
-             {    name: sensor_ctrl
-                  fusesoc_core: lowrisc:systems:top_darjeeling_sensor_ctrl
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/top_darjeeling/ip/sensor_ctrl/lint/{tool}"
              },
              {    name: sram2tlul
                   fusesoc_core: lowrisc:tlul:sram2tlul
