@@ -106,10 +106,11 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
 def parse_racl_mapping(
         racl_config: Dict[str,
                           object], mapping_path: str, if_name: Optional[str],
-        ip_block: IpBlock) -> Tuple[Dict[str, int], str, List[str]]:
+        ip_block: IpBlock) -> Tuple[Dict[str, int], Dict[str, int], str, List[str]]:
 
     mapping = _read_hjson(mapping_path)
     parsed_register_mapping = OrderedDict()
+    parsed_window_mapping = OrderedDict()
 
     # Mapping must be a dict with a single entry:
     # RACL_GROUP => register mapping
@@ -148,8 +149,12 @@ def parse_racl_mapping(
 
         for reg in reg_block.flat_regs:
             parsed_register_mapping[reg.name] = policy_idx
+
+        for window in reg_block.windows:
+            parsed_window_mapping[window.name] = policy_idx
+
     else:
         # General case not yet implemented
         assert False
 
-    return parsed_register_mapping, racl_group, policy_names
+    return parsed_register_mapping, parsed_window_mapping, racl_group, policy_names

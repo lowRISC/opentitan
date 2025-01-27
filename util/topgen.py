@@ -594,7 +594,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
     # Generate the RACL mappings for all subscribing IPs
     for m in topcfg['module']:
         for if_name, mapping_path in m.get('racl_mappings', {}).items():
-            parsed_register_mapping, racl_group, _ = parse_racl_mapping(
+            parsed_register_mapping, parsed_window_mapping, racl_group, _ = parse_racl_mapping(
                 topcfg['racl'],
                 mapping_path,
                 if_name,
@@ -602,6 +602,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
             m['racl_mappings'][if_name] = {
                 'racl_group': racl_group,
                 'register_mapping': parsed_register_mapping,
+                'window_mapping': parsed_window_mapping,
             }
 
     log.info('Generating RACL Control IP with ipgen')

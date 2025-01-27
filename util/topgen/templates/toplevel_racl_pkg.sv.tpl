@@ -126,10 +126,12 @@ package top_racl_pkg;
   % if 'racl_mappings' in m:
     % for if_name in m['racl_mappings'].keys():
 <% register_mapping = m['racl_mappings'][if_name]['register_mapping'] %>\
+<% window_mapping = m['racl_mappings'][if_name]['window_mapping'] %>\
 <% racl_group = m['racl_mappings'][if_name]['racl_group'] %>\
 <% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
 <% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
-<% reg_name_len = max( (len(name) for name in register_mapping.keys()) ) %>\
+<% reg_name_len = max( (len(name) for name in register_mapping.keys()), default=0 ) %>\
+<% window_name_len = max( (len(name) for name in window_mapping.keys()), default=0 ) %>\
   /**
    * Policy selection vector for ${m["name"]}
    *   TLUL interface name: ${if_name}
@@ -140,10 +142,19 @@ package top_racl_pkg;
    *     ${f"{reg_name}:".ljust(reg_name_len+1)} ${policy_names[policy_idx]} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
         % endfor
       % endif
+      % if len(window_mapping) > 0:
+   *   Window to policy mapping:
+        % for window_name, policy_idx in window_mapping.items():
+   *     ${f"{window_name}:".ljust(window_name_len+1)} ${policy_names[policy_idx]} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
+        % endfor
+      % endif
    */
 <% policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}" %>\
 <% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
   parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
+      % for window_name, policy_idx in window_mapping.items():
+  parameter int unsigned ${policy_sel_name}_WIN_${window_name} = ${policy_idx};
+      % endfor
 
     % endfor
   % endif
