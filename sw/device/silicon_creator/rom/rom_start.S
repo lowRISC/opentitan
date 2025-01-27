@@ -236,12 +236,17 @@ LABEL_FOR_TEST(kRomStartWatchdogEnabled)
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
-  // Enable jittery clock if enabled in OTP.
+  // Enable jittery clock if not strictly disabled in OTP.
+  // Use hardcoded MULTIBIT_ASM_BOOL4_TRUE as the enable word to reduce all
+  // other possible OTP values to true.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_FALSE
+  beq  t0, t1, .L_ast_init_end
   li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
-  sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
+  li   t1, MULTIBIT_ASM_BOOL4_TRUE
+  sw   t1, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
 
 .L_ast_init_end:
   // Check if we are trying to transition to RMA. If so, busy loop for
