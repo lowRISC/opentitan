@@ -19,16 +19,27 @@ _SKU_SPECIFIC_FORMAT_VERSION = 1
 
 @dataclass
 class DeviceIdentificationNumber:
-    """Class for storing Device Identification Number portion of Device ID."""
+    """Class for storing Device Identification Number portion of Device ID.
+
+    DINs for blind assembly parts have all values set to -1 or (UINT*_MAX).
+    """
     year: int = 0  # valid range: [0, 9]
     week: int = 0  # valid range: [0, 51]
     lot: int = 0  # valid range: [0, 999]
     wafer: int = 0  # valid range: [0,99]
     wafer_x_coord: int = 0  # valid range: [0, 999]
     wafer_y_coord: int = 0  # valid range: [0, 999]
+    blind_asm: bool = False  # boolean indicating if blind assembly part
 
     def __post_init__(self):
-        self.validate()
+        # Check if blind assembly part, if so, we skip field validation.
+        if (self.year == -1 and self.week == -1 and self.lot == -1 and
+                self.wafer == -1 and self.wafer_x_coord == -1 and
+                self.wafer_y_coord == -1):
+            self.blind_asm = True
+        else:
+            self.blind_asm = False
+            self.validate()
 
     def validate(self) -> None:
         """Validates this object's attributes."""
@@ -57,6 +68,10 @@ class DeviceIdentificationNumber:
                     self.wafer_y_coord))
 
     def to_int(self) -> int:
+        """Convert DIN to an int."""
+        # If blind assembly part, the DIN is UINT64_MAX.
+        if self.blind_asm:
+            return 2**64 - 1
         din = 0
         din |= util.bcd_encode(self.wafer_y_coord) << 44
         din |= util.bcd_encode(self.wafer_x_coord) << 32
@@ -80,6 +95,15 @@ class DeviceIdentificationNumber:
                                           wafer=wafer,
                                           wafer_x_coord=wafer_x_coord,
                                           wafer_y_coord=wafer_y_coord)
+
+    @staticmethod
+    def blind_asm() -> "DeviceIdentificationNumber":
+        return DeviceIdentificationNumber(year=-1,
+                                          week=-1,
+                                          lot=-1,
+                                          wafer=-1,
+                                          wafer_x_coord=-1,
+                                          wafer_y_coord=-1)
 
 
 class DeviceId():
@@ -199,7 +223,6 @@ class DeviceId():
                    f"{otp_version:02x}")
         except UnicodeDecodeError:
             otp = "Invalid"
-        print("HERE", otp)
 
         # Extract SKU config.
         sku_config = SkuConfig.from_ids(product_id, si_creator_id, package_id,
