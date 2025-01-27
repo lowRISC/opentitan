@@ -123,12 +123,12 @@ module tlul_adapter_reg_racl
     .error_i
   );
 
+  // Not all RACL policies are used, even if RACL is enabled
+  logic unused_policy;
+  assign unused_policy = ^racl_policies_i;
+
   // Ensure that RACL signals are not undefined
   `ASSERT_KNOWN(RaclAdapterRegErrorKnown_A, racl_error_o)
   `ASSERT_KNOWN(RaclAdapterRegErrorLogKnown_A, racl_error_log_o)
-
-  // Ensure that RACL signals are not undefined
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
 
 endmodule
