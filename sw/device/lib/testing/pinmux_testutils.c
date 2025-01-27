@@ -127,41 +127,29 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
 //
 // The pinout spreadsheet allocates fewer pins to GPIOs than what the GPIO IP
 // supports. This oversubscription is intentional to maximize testing.
-const dif_pinmux_index_t kPinmuxTestutilsGpioInselPins[kDifGpioNumPins] = {
-    kTopEarlgreyPinmuxInselIoa0,  kTopEarlgreyPinmuxInselIoa1,
-    kTopEarlgreyPinmuxInselIoa2,  kTopEarlgreyPinmuxInselIoa3,
-    kTopEarlgreyPinmuxInselIoa4,  kTopEarlgreyPinmuxInselIoa5,
-    kTopEarlgreyPinmuxInselIoa6,  kTopEarlgreyPinmuxInselIoa7,
-    kTopEarlgreyPinmuxInselIoa8,  kTopEarlgreyPinmuxInselIob6,
-    kTopEarlgreyPinmuxInselIob7,  kTopEarlgreyPinmuxInselIob8,
-    kTopEarlgreyPinmuxInselIob9,  kTopEarlgreyPinmuxInselIob10,
-    kTopEarlgreyPinmuxInselIob11, kTopEarlgreyPinmuxInselIob12,
-    kTopEarlgreyPinmuxInselIoc9,  kTopEarlgreyPinmuxInselIoc10,
-    kTopEarlgreyPinmuxInselIoc11, kTopEarlgreyPinmuxInselIoc12,
-    kTopEarlgreyPinmuxInselIor0,  kTopEarlgreyPinmuxInselIor1,
-    kTopEarlgreyPinmuxInselIor2,  kTopEarlgreyPinmuxInselIor3,
-    kTopEarlgreyPinmuxInselIor4,  kTopEarlgreyPinmuxInselIor5,
-    kTopEarlgreyPinmuxInselIor6,  kTopEarlgreyPinmuxInselIor7,
-    kTopEarlgreyPinmuxInselIor10, kTopEarlgreyPinmuxInselIor11,
-    kTopEarlgreyPinmuxInselIor12, kTopEarlgreyPinmuxInselIor13};
-
-const dif_pinmux_index_t kPinmuxTestutilsGpioMioOutPins[kDifGpioNumPins] = {
-    kTopEarlgreyPinmuxMioOutIoa0,  kTopEarlgreyPinmuxMioOutIoa1,
-    kTopEarlgreyPinmuxMioOutIoa2,  kTopEarlgreyPinmuxMioOutIoa3,
-    kTopEarlgreyPinmuxMioOutIoa4,  kTopEarlgreyPinmuxMioOutIoa5,
-    kTopEarlgreyPinmuxMioOutIoa6,  kTopEarlgreyPinmuxMioOutIoa7,
-    kTopEarlgreyPinmuxMioOutIoa8,  kTopEarlgreyPinmuxMioOutIob6,
-    kTopEarlgreyPinmuxMioOutIob7,  kTopEarlgreyPinmuxMioOutIob8,
-    kTopEarlgreyPinmuxMioOutIob9,  kTopEarlgreyPinmuxMioOutIob10,
-    kTopEarlgreyPinmuxMioOutIob11, kTopEarlgreyPinmuxMioOutIob12,
-    kTopEarlgreyPinmuxMioOutIoc9,  kTopEarlgreyPinmuxMioOutIoc10,
-    kTopEarlgreyPinmuxMioOutIoc11, kTopEarlgreyPinmuxMioOutIoc12,
-    kTopEarlgreyPinmuxMioOutIor0,  kTopEarlgreyPinmuxMioOutIor1,
-    kTopEarlgreyPinmuxMioOutIor2,  kTopEarlgreyPinmuxMioOutIor3,
-    kTopEarlgreyPinmuxMioOutIor4,  kTopEarlgreyPinmuxMioOutIor5,
-    kTopEarlgreyPinmuxMioOutIor6,  kTopEarlgreyPinmuxMioOutIor7,
-    kTopEarlgreyPinmuxMioOutIor10, kTopEarlgreyPinmuxMioOutIor11,
-    kTopEarlgreyPinmuxMioOutIor12, kTopEarlgreyPinmuxMioOutIor13};
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
+const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
+    kDtPadIoa0,  kDtPadIoa1, kDtPadIoa2,  kDtPadIoa3,  kDtPadIoa4,
+    kDtPadIoa5,  kDtPadIoa6, kDtPadIoa7,  kDtPadIoa8,  kDtPadIob6,
+    kDtPadIob7,  kDtPadIob8, kDtPadIob9,  kDtPadIob10, kDtPadIob11,
+    kDtPadIob12, kDtPadIoc9, kDtPadIoc10, kDtPadIoc11, kDtPadIoc12,
+    kDtPadIor0,  kDtPadIor1, kDtPadIor2,  kDtPadIor3,  kDtPadIor4,
+    kDtPadIor5,  kDtPadIor6, kDtPadIor7,  kDtPadIor10, kDtPadIor11,
+    kDtPadIor12, kDtPadIor13};
+#elif defined(OPENTITAN_IS_DARJEELING)
+const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
+    kDtPadGpioGpio0,  kDtPadGpioGpio1,  kDtPadGpioGpio2,  kDtPadGpioGpio3,
+    kDtPadGpioGpio4,  kDtPadGpioGpio5,  kDtPadGpioGpio6,  kDtPadGpioGpio7,
+    kDtPadGpioGpio8,  kDtPadGpioGpio9,  kDtPadGpioGpio10, kDtPadGpioGpio11,
+    kDtPadGpioGpio12, kDtPadGpioGpio13, kDtPadGpioGpio14, kDtPadGpioGpio15,
+    kDtPadGpioGpio16, kDtPadGpioGpio17, kDtPadGpioGpio18, kDtPadGpioGpio19,
+    kDtPadGpioGpio20, kDtPadGpioGpio21, kDtPadGpioGpio22, kDtPadGpioGpio23,
+    kDtPadGpioGpio24, kDtPadGpioGpio25, kDtPadGpioGpio26, kDtPadGpioGpio27,
+    kDtPadGpioGpio28, kDtPadGpioGpio29, kDtPadGpioGpio30, kDtPadGpioGpio31,
+};
+#else /* OPENTITAN_IS_* */
+#error Unsupported top
+#endif /* OPENTITAN_IS_* */
 
 uint32_t pinmux_testutils_get_testable_gpios_mask(void) {
   switch (kDeviceType) {
