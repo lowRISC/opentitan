@@ -3861,6 +3861,46 @@
           index: -1
         }
         {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
+          name: racl_error
+          desc:
+            '''
+            RACL error indication signal.
+            If 1, the error log contains valid information.
+            '''
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
+          name: racl_error_log
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
           name: regs_tl
           struct: tl
           package: tlul_pkg
@@ -10883,6 +10923,46 @@
         default: prim_mubi_pkg::MuBi8False
         inst_name: sram_ctrl_main
         top_signame: sram_ctrl_main_otp_en_sram_ifetch
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: sram_ctrl_main
+        index: -1
+      }
+      {
+        name: racl_error
+        desc:
+          '''
+          RACL error indication signal.
+          If 1, the error log contains valid information.
+          '''
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_main
+        index: -1
+      }
+      {
+        name: racl_error_log
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_main
         index: -1
       }
       {

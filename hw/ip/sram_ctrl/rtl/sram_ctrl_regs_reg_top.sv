@@ -6,7 +6,12 @@
 
 `include "prim_assert.sv"
 
-module sram_ctrl_regs_reg_top (
+module sram_ctrl_regs_reg_top
+  # (
+    parameter bit          EnableRacl           = 1'b0,
+    parameter bit          RaclErrorRsp         = 1'b1,
+    parameter int unsigned RaclPolicySelVec[9] = '{9{0}}
+  ) (
   input clk_i,
   input rst_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
@@ -14,6 +19,11 @@ module sram_ctrl_regs_reg_top (
   // To HW
   output sram_ctrl_reg_pkg::sram_ctrl_regs_reg2hw_t reg2hw, // Write
   input  sram_ctrl_reg_pkg::sram_ctrl_regs_hw2reg_t hw2reg, // Read
+
+  // RACL interface
+  input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
+  output logic                           racl_error_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -110,7 +120,8 @@ module sram_ctrl_regs_reg_top (
     .be_o    (reg_be),
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
-    .error_i (reg_error)
+    // Translate RACL error to TLUL error if enabled
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o))
   );
 
   // cdc oversampling signals
@@ -640,8 +651,32 @@ module sram_ctrl_regs_reg_top (
 
 
   logic [8:0] addr_hit;
+  top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
+
+  logic [8:0] racl_addr_hit_read;
+  logic [8:0] racl_addr_hit_write;
+
+  if (EnableRacl) begin : gen_racl_role_logic
+    // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
+    assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(tl_i.a_user.rsvd);
+
+    prim_onehot_enc #(
+      .OneHotWidth( $bits(top_racl_pkg::racl_role_vec_t) )
+    ) u_racl_role_encode (
+      .in_i ( racl_role     ),
+      .en_i ( 1'b1          ),
+      .out_o( racl_role_vec )
+    );
+  end else begin : gen_no_racl_role_logic
+    assign racl_role     = '0;
+    assign racl_role_vec = '0;
+  end
+
   always_comb begin
     addr_hit = '0;
+    racl_addr_hit_read  = '0;
+    racl_addr_hit_write = '0;
     addr_hit[0] = (reg_addr == SRAM_CTRL_ALERT_TEST_OFFSET);
     addr_hit[1] = (reg_addr == SRAM_CTRL_STATUS_OFFSET);
     addr_hit[2] = (reg_addr == SRAM_CTRL_EXEC_REGWEN_OFFSET);
@@ -651,49 +686,75 @@ module sram_ctrl_regs_reg_top (
     addr_hit[6] = (reg_addr == SRAM_CTRL_SCR_KEY_ROTATED_OFFSET);
     addr_hit[7] = (reg_addr == SRAM_CTRL_READBACK_REGWEN_OFFSET);
     addr_hit[8] = (reg_addr == SRAM_CTRL_READBACK_OFFSET);
+
+    if (EnableRacl) begin : gen_racl_hit
+      for (int unsigned slice_idx = 0; slice_idx < 9; slice_idx++) begin
+        racl_addr_hit_read[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
+                                      & racl_role_vec));
+        racl_addr_hit_write[slice_idx] =
+            addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].write_perm
+                                      & racl_role_vec));
+      end
+    end else begin : gen_no_racl
+      racl_addr_hit_read  = addr_hit;
+      racl_addr_hit_write = addr_hit;
+    end
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
+  // A valid address hit, access, but failed the RACL check
+  assign racl_error_o = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
+                                     (reg_we & ~|racl_addr_hit_write));
+  assign racl_error_log_o.racl_role  = racl_role;
+
+  if (EnableRacl) begin : gen_racl_log
+    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+  end else begin : gen_no_racl_log
+    assign racl_error_log_o.ctn_uid     = '0;
+    assign racl_error_log_o.read_access = 1'b0;
+  end
 
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(SRAM_CTRL_REGS_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(SRAM_CTRL_REGS_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(SRAM_CTRL_REGS_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(SRAM_CTRL_REGS_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(SRAM_CTRL_REGS_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(SRAM_CTRL_REGS_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(SRAM_CTRL_REGS_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(SRAM_CTRL_REGS_PERMIT[8] & ~reg_be)))));
+              ((racl_addr_hit_write[0] & (|(SRAM_CTRL_REGS_PERMIT[0] & ~reg_be))) |
+               (racl_addr_hit_write[1] & (|(SRAM_CTRL_REGS_PERMIT[1] & ~reg_be))) |
+               (racl_addr_hit_write[2] & (|(SRAM_CTRL_REGS_PERMIT[2] & ~reg_be))) |
+               (racl_addr_hit_write[3] & (|(SRAM_CTRL_REGS_PERMIT[3] & ~reg_be))) |
+               (racl_addr_hit_write[4] & (|(SRAM_CTRL_REGS_PERMIT[4] & ~reg_be))) |
+               (racl_addr_hit_write[5] & (|(SRAM_CTRL_REGS_PERMIT[5] & ~reg_be))) |
+               (racl_addr_hit_write[6] & (|(SRAM_CTRL_REGS_PERMIT[6] & ~reg_be))) |
+               (racl_addr_hit_write[7] & (|(SRAM_CTRL_REGS_PERMIT[7] & ~reg_be))) |
+               (racl_addr_hit_write[8] & (|(SRAM_CTRL_REGS_PERMIT[8] & ~reg_be)))));
   end
 
   // Generate write-enables
-  assign alert_test_we = addr_hit[0] & reg_we & !reg_error;
+  assign alert_test_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign exec_regwen_we = addr_hit[2] & reg_we & !reg_error;
+  assign exec_regwen_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign exec_regwen_wd = reg_wdata[0];
-  assign exec_we = addr_hit[3] & reg_we & !reg_error;
+  assign exec_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign exec_wd = reg_wdata[3:0];
-  assign ctrl_regwen_we = addr_hit[4] & reg_we & !reg_error;
+  assign ctrl_regwen_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
   assign ctrl_regwen_wd = reg_wdata[0];
-  assign ctrl_we = addr_hit[5] & reg_we & !reg_error;
+  assign ctrl_we = racl_addr_hit_write[5] & reg_we & !reg_error;
 
   assign ctrl_renew_scr_key_wd = reg_wdata[0];
 
   assign ctrl_init_wd = reg_wdata[1];
-  assign scr_key_rotated_we = addr_hit[6] & reg_we & !reg_error;
+  assign scr_key_rotated_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign scr_key_rotated_wd = reg_wdata[3:0];
-  assign readback_regwen_we = addr_hit[7] & reg_we & !reg_error;
+  assign readback_regwen_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign readback_regwen_wd = reg_wdata[0];
-  assign readback_we = addr_hit[8] & reg_we & !reg_error;
+  assign readback_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign readback_wd = reg_wdata[3:0];
 
@@ -715,11 +776,11 @@ module sram_ctrl_regs_reg_top (
   always_comb begin
     reg_rdata_next = '0;
     unique case (1'b1)
-      addr_hit[0]: begin
+      racl_addr_hit_read[0]: begin
         reg_rdata_next[0] = '0;
       end
 
-      addr_hit[1]: begin
+      racl_addr_hit_read[1]: begin
         reg_rdata_next[0] = status_bus_integ_error_qs;
         reg_rdata_next[1] = status_init_error_qs;
         reg_rdata_next[2] = status_escalated_qs;
@@ -730,32 +791,32 @@ module sram_ctrl_regs_reg_top (
         reg_rdata_next[7] = status_sram_alert_qs;
       end
 
-      addr_hit[2]: begin
+      racl_addr_hit_read[2]: begin
         reg_rdata_next[0] = exec_regwen_qs;
       end
 
-      addr_hit[3]: begin
+      racl_addr_hit_read[3]: begin
         reg_rdata_next[3:0] = exec_qs;
       end
 
-      addr_hit[4]: begin
+      racl_addr_hit_read[4]: begin
         reg_rdata_next[0] = ctrl_regwen_qs;
       end
 
-      addr_hit[5]: begin
+      racl_addr_hit_read[5]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[6]: begin
+      racl_addr_hit_read[6]: begin
         reg_rdata_next[3:0] = scr_key_rotated_qs;
       end
 
-      addr_hit[7]: begin
+      racl_addr_hit_read[7]: begin
         reg_rdata_next[0] = readback_regwen_qs;
       end
 
-      addr_hit[8]: begin
+      racl_addr_hit_read[8]: begin
         reg_rdata_next[3:0] = readback_qs;
       end
 
@@ -780,6 +841,8 @@ module sram_ctrl_regs_reg_top (
   logic unused_be;
   assign unused_wdata = ^reg_wdata;
   assign unused_be = ^reg_be;
+  logic unused_policy_sel;
+  assign unused_policy_sel = ^racl_policies_i;
 
   // Assertions for Register Interface
   `ASSERT_PULSE(wePulse, reg_we, clk_i, !rst_ni)
