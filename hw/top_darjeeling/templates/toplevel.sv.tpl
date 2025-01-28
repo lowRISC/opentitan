@@ -511,11 +511,11 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
     .RaclPolicySelVec${if_suffix2}(top_racl_pkg::${policy_sel_name}),
       % endif
       % for window_name, policy_idx in window_mapping.items():
-    .RaclPolicySelWin${window_name.replace("_","").title()}(top_racl_pkg::${policy_sel_name}_WIN_${window_name.upper()}),
+    .RaclPolicySelWin${if_suffix2}${window_name.replace("_","").title()}(top_racl_pkg::${policy_sel_name}_WIN_${window_name.upper()}),
       % endfor
     % endfor
   % endif
-  % if m['type'].startswith('racl_ctrl'):
+  % if m.get('template_type') == 'racl_ctrl':
     .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
   % endif
   % if block.alerts:
