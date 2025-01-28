@@ -53,12 +53,16 @@ def main():
     parsed_register_mapping, parsed_window_mapping, racl_group, policy_names = parse_racl_mapping(
         parsed_racl_config, args.mapping, args.if_name, ip_block)
 
-    template = """
+    template = """\
 <%doc>
-  Note: This template needs to be manually synced between the following files:
+  Note: The RACL parameters must be generated identically across multiple files.
+        Thus, this template needs to be manually synced between the following files:
         util/raclgen.py
         util/topgen/templates/toplevel_racl_pkg.sv.tpl
-</%doc>
+        hw/top_darjeeling/templates/toplevel.sv.tpl
+        hw/top_earlgrey/templates/toplevel.sv.tpl
+        hw/top_englishbreakfast/templates/toplevel.sv.tpl
+</%doc>\
 <% import math %>\
 <% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
 <% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
@@ -88,7 +92,7 @@ def main():
 <% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
   parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
       % for window_name, policy_idx in window_mapping.items():
-  parameter int unsigned ${policy_sel_name}_WIN_${window_name} = ${policy_idx};
+  parameter int unsigned ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
       % endfor
     """
 
