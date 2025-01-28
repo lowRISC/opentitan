@@ -15,7 +15,6 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -25,7 +24,6 @@
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
-#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
@@ -44,8 +42,6 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 
 static manuf_ft_individualize_data_t in_data;
-static uint32_t cp_device_id[kFlashInfoFieldCpDeviceIdSizeIn32BitWords];
-static uint32_t ast_cfg_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
 
 // Switching to external clocks causes the clocks to be unstable for some time.
 // This is used to delay further action when the switch happens.
@@ -79,43 +75,6 @@ static status_t peripheral_handles_init(void) {
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
                       &pinmux));
-  return OK_STATUS();
-}
-
-/**
- * Print data stored in flash info page 0 to console for manual verification
- * purposes during silicon bring-up.
- */
-static status_t read_and_print_flash_and_ast_data(void) {
-  uint32_t byte_address = 0;
-  TRY(flash_ctrl_testutils_info_region_setup_properties(
-      &flash_ctrl_state, kFlashInfoFieldCpDeviceId.page,
-      kFlashInfoFieldCpDeviceId.bank, kFlashInfoFieldCpDeviceId.partition,
-      kFlashInfoPage0Permissions, &byte_address));
-
-  LOG_INFO("CP Device ID:");
-  TRY(manuf_flash_info_field_read(&flash_ctrl_state, kFlashInfoFieldCpDeviceId,
-                                  cp_device_id,
-                                  kFlashInfoFieldCpDeviceIdSizeIn32BitWords));
-  for (size_t i = 0; i < kHwCfgDeviceIdSizeIn32BitWords; ++i) {
-    LOG_INFO("0x%08x", cp_device_id[i]);
-  }
-
-  LOG_INFO("AST Calibration Values (in flash):");
-  TRY(manuf_flash_info_field_read(
-      &flash_ctrl_state, kFlashInfoFieldAstCalibrationData, ast_cfg_data,
-      kFlashInfoAstCalibrationDataSizeIn32BitWords));
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO("Word %d = 0x%08x", i, ast_cfg_data[i]);
-  }
-
-  LOG_INFO("AST Calibration Values (in CSRs):");
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
-    LOG_INFO(
-        "Word %d = 0x%08x", i,
-        abs_mmio_read32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t)));
-  }
-
   return OK_STATUS();
 }
 
@@ -250,10 +209,6 @@ bool test_main(void) {
 
   // Clear the reset reasons.
   rstmgr_reason_clear(UINT8_MAX);
-
-  // Read and log flash and AST data to console (for manual verification
-  // purposes), and perform provisioning operations.
-  CHECK_STATUS_OK(read_and_print_flash_and_ast_data());
 
   // Perform provisioning operations.
   CHECK_STATUS_OK(provision(&uj));
