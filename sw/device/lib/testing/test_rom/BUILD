@@ -116,12 +116,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "darjeeling_test_rom_lib",
+    srcs = [
+        "darjeeling_fake_driver_funcs.c",
+    ],
+    deps = [
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 alias(
     name = "target_test_rom_lib",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
-        "//conditions:default": ":earl_grey_test_rom_lib",
-    }),
+    actual = opentitan_select_top(
+        {
+            "darjeeling": ":darjeeling_test_rom_lib",
+            "englishbreakfast": ":english_breakfast_test_rom_lib",
+        },
+        ":earl_grey_test_rom_lib",
+    ),
     visibility = ["//visibility:private"],
 )
 
