@@ -15,7 +15,8 @@
 class gpio_rand_straps_vseq extends gpio_base_vseq;
 
   `uvm_object_utils(gpio_rand_straps_vseq)
-
+  //`uvm_declare_p_sequencer(gpio_virtual_sequencer)
+  
   // gpio input to drive
   rand bit [NUM_GPIOS-1:0] gpio_in;
   // gpio output to program in register
@@ -28,6 +29,9 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
   // Read straps_data_in valid
   bit                 rd_hw_straps_data_in_valid;
 
+  gpio_strap_en_vseq strap_en_seq;
+  //gpio_base_sequencer gpio_sqr;
+
   constraint num_trans_c {
     num_trans inside {[20:200]};
   }
@@ -36,7 +40,22 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     super.new(name);
   endfunction
 
+  task drive_strap_en(bit strap_en);
+    fork
+    `uvm_info(`gfn, $sformatf("Driving strap_en = %0d", strap_en), UVM_HIGH)
+    // Drive the strap_en
+    if (!strap_en_seq.strap_en_item.randomize()
+        with {strap_en_seq.strap_en_item.strap_en_i == strap_en;}) begin
+      `uvm_error("gpio_rand_straps_vseq", "Randomization failed")
+    end
+    `uvm_do_on(strap_en_seq,  sqr_h);
+    join
+  endtask : drive_strap_en
+
   task test_straps_gpio_in();
+
+    // Instantiate the strap_en sequence
+    strap_en_seq = gpio_strap_en_vseq::type_id::create("strap_en_seq");
 
     // Drive the gpio_in
     drive_gpio_in(gpio_in);
@@ -47,8 +66,15 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     cfg.clk_rst_vif.wait_clks(delay);
 
     // Trigger the snapshot of gpio_in to be stored in the straps registers
-    cfg.straps_vif_inst.port_out.strap_en = 1;
-    cfg.clk_rst_vif.wait_clks(1);
+    //cfg.straps_vif_inst.port_out.strap_en = 1;
+
+    //  Get the sequencer from the config_db
+    //if (!uvm_config_db#(gpio_base_sequencer)::get(this, "", "uvm_test_top.env", gpio_sqr)) begin
+    //  `uvm_error("gpio_rand_straps_vseq", "Failed to get gpio_sqr from config_db")
+    //end
+
+    // Drive the strap_en
+    drive_strap_en('b1);
 
     // Wait at least two clock cycles to avoid race condition with the predict value updated
     // in the scoreboard
@@ -117,8 +143,9 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // Disable the straps.
-    cfg.straps_vif_inst.port_out.strap_en = 0;
+    // Disable the strap_en
+    drive_strap_en('b0);
+
     // Apply reset and make sure the strap registers are clean
     apply_reset();
 
