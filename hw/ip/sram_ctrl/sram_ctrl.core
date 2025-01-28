@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:sram_ctrl_pkg
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/sram_ctrl_regs_reg_top.sv
       - rtl/sram_ctrl.sv
