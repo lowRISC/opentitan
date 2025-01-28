@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/runtime/ibex.h"
 

@@ -7,7 +7,7 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -59,13 +59,12 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
       .len = sizeof(kMessage) - 1,
       .data = (unsigned char *)&kMessage,
   };
-  uint32_t msg_digest_data[kSha384DigestWords];
+  uint32_t msg_digest_data[384 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha384,
   };
-  TRY(otcrypto_hash(msg, msg_digest));
+  TRY(otcrypto_sha2_384(msg, &msg_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP384SignatureWords] = {0};

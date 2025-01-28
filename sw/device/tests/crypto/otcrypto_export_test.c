@@ -51,9 +51,8 @@ enum {
 
 int32_t hash_test(void) {
   uint32_t digest_content[kHashLength];
-  otcrypto_hash_context_t ctx;
+  otcrypto_sha2_context_t ctx;
   otcrypto_hash_digest_t digest = {
-      .mode = kOtcryptoHashModeSha256,
       .len = kHashLength,
       .data = digest_content,
   };
@@ -62,9 +61,9 @@ int32_t hash_test(void) {
       .data = (const uint8_t *)kGettysburgPrelude,
   };
 
-  RETURN_IF_ERROR(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
-  RETURN_IF_ERROR(otcrypto_hash_update(&ctx, buf));
-  RETURN_IF_ERROR(otcrypto_hash_final(&ctx, digest));
+  RETURN_IF_ERROR(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
+  RETURN_IF_ERROR(otcrypto_sha2_update(&ctx, buf));
+  RETURN_IF_ERROR(otcrypto_sha2_final(&ctx, &digest));
 
   if (memcmp(digest.data, kGettysburgDigest, sizeof(kGettysburgDigest)) != 0) {
     return -1;
