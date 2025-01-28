@@ -10,7 +10,9 @@
 #include "sw/device/lib/dif/dif_alert_handler.h"
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
+#include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
@@ -38,6 +40,7 @@ OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
 static dif_alert_handler_t alert_handler;
 static dif_clkmgr_t clkmgr;
 static dif_flash_ctrl_state_t flash_ctrl_state;
+static dif_gpio_t gpio;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux;
 
@@ -47,7 +50,14 @@ static manuf_ft_individualize_data_t in_data;
 // This is used to delay further action when the switch happens.
 static const int kSettleDelayMicros = 200;
 
+// Number of NMIs seen as a result of alerts firing.
 static size_t alert_nmi_count = 0;
+
+// OTP programming indicator GPIOs.
+static const dif_gpio_pin_t kGpioPinOtpDaiWaitHook = 0;
+static const dif_gpio_pin_t kGpioPinOtpDaiWriteHook = 1;
+static const dif_gpio_pin_t kGpioPinOtpDaiReadHook = 2;
+static const dif_gpio_pin_t kGpioPinOtpDaiErrorCheckHook = 3;
 
 /**
  * Handle NMIs from the alert escalation mechanism.
@@ -71,6 +81,7 @@ static status_t peripheral_handles_init(void) {
   TRY(dif_flash_ctrl_init_state(
       &flash_ctrl_state,
       mmio_region_from_addr(TOP_EARLGREY_FLASH_CTRL_CORE_BASE_ADDR)));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
   TRY(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR),
@@ -140,6 +151,65 @@ static status_t configure_all_alerts(void) {
   return OK_STATUS();
 }
 
+static status_t configure_gpio_indicators(void) {
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc9,
+                               kTopEarlgreyPinmuxOutselGpioGpio0));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc10,
+                               kTopEarlgreyPinmuxOutselGpioGpio1));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc11,
+                               kTopEarlgreyPinmuxOutselGpioGpio2));
+  TRY(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoc12,
+                               kTopEarlgreyPinmuxOutselGpioGpio3));
+  TRY(dif_gpio_output_set_enabled_all(&gpio, 0xF));  // Enable first 4 GPIOs.
+  TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_wait_for_dai_pre_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWaitHook, true));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_wait_for_dai_post_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWaitHook, false));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_write_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWriteHook, true));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_write_post_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiWriteHook, false));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_read_pre_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiReadHook, true));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_read_post_hook(const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiReadHook, false));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_write_pre_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiErrorCheckHook, true));
+  return OK_STATUS();
+}
+
+status_t otp_ctrl_testutils_dai_write_post_error_check_hook(
+    const dif_otp_ctrl_t *otp_ctrl) {
+  TRY(dif_gpio_write(&gpio, kGpioPinOtpDaiErrorCheckHook, false));
+  return OK_STATUS();
+}
+
 /**
  * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg and RotCreatorAuth{Codesign,State}
  * partitions.
@@ -160,11 +230,14 @@ static status_t provision(ujson_t *uj) {
 
   // Enable external clock on silicon platforms if requested.
   if (kDeviceType == kDeviceSilicon && in_data.use_ext_clk) {
-    CHECK_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr,
-                                                       /*is_low_speed=*/true));
+    TRY(dif_clkmgr_external_clock_set_enabled(&clkmgr,
+                                              /*is_low_speed=*/true));
     IBEX_SPIN_FOR(did_extclk_settle(&clkmgr), kSettleDelayMicros);
     LOG_INFO("External clock enabled.");
   }
+
+  // Enable GPIO indicators during OTP writes.
+  TRY(configure_gpio_indicators());
 
   // Turn off OTP runtime checks.
   TRY(dif_otp_ctrl_configure(
@@ -180,8 +253,10 @@ static status_t provision(ujson_t *uj) {
   TRY(manuf_individualize_device_hw_cfg(&flash_ctrl_state, &otp_ctrl,
                                         kFlashInfoPage0Permissions,
                                         in_data.ft_device_id));
+
   LOG_INFO("Writing ROT_CREATOR_AUTH_CODESIGN OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_codesign(&otp_ctrl));
+
   LOG_INFO("Writing ROT_CREATOR_AUTH_STATE OTP partition ...");
   TRY(manuf_individualize_device_rot_creator_auth_state(&otp_ctrl));
   LOG_INFO("Writing OWNER_SW_CFG OTP partition ...");

@@ -172,6 +172,7 @@ opentitan_test(
             "//sw/device/lib/dif:alert_handler",
             "//sw/device/lib/dif:clkmgr",
             "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/dif:gpio",
             "//sw/device/lib/dif:otp_ctrl",
             "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/runtime:hart",
