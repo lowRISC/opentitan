@@ -9,7 +9,7 @@ class chip_sw_rom_e2e_self_hash_gls_vseq extends
 
   // Must match the `kSiliconGoldenRomHash` value in
   // `sw/device/silicon_creator/rom/e2e/release/rom_e2e_self_hash_test.c`.
-  localparam string ROM_HASH = "5b2ba0baf66b45b5e5a4ddfcbd023b8a356bc7f1eeceb60abfa8034743b60e89";
+  localparam string ROM_HASH = "4f41f620ca885ef2198ce068ac8c89a57ee119d1e73816f2ddec31a15eb4c370";
 
   virtual task body();
     super.body();
