@@ -140,4 +140,140 @@ package top_racl_pkg;
    *     SOC_ROT     (Idx 2)
    */
 
+  /**
+   * Policy selection vector for mbx0
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx1
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx2
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx4
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx5
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx_jtag
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           ALL_RD_WR (Idx 0)
+   *     SOC_STATUS:            ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_ADDR: ALL_RD_WR (Idx 0)
+   *     SOC_DOE_INTR_MSG_DATA: ALL_RD_WR (Idx 0)
+   *   Window to policy mapping:
+   *     WDATA: ALL_RD_WR (Idx 0)
+   *     RDATA: ALL_RD_WR (Idx 0)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC [4] = '{0, 0, 0, 0};
+  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_WDATA = 0;
+  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_RDATA = 0;
+
+  /**
+   * Policy selection vector for mbx_pcie0
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           SOC_ROT (Idx 2)
+   *     SOC_STATUS:            SOC_ROT (Idx 2)
+   *     SOC_DOE_INTR_MSG_ADDR: SOC_ROT (Idx 2)
+   *     SOC_DOE_INTR_MSG_DATA: SOC_ROT (Idx 2)
+   *   Window to policy mapping:
+   *     WDATA: SOC_ROT (Idx 2)
+   *     RDATA: SOC_ROT (Idx 2)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC [4] = '{2, 2, 2, 2};
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_WDATA = 2;
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_RDATA = 2;
+
+  /**
+   * Policy selection vector for mbx_pcie1
+   *   TLUL interface name: soc
+   *   RACL group: Null
+   *   Register to policy mapping:
+   *     SOC_CONTROL:           SOC_ROT (Idx 2)
+   *     SOC_STATUS:            SOC_ROT (Idx 2)
+   *     SOC_DOE_INTR_MSG_ADDR: SOC_ROT (Idx 2)
+   *     SOC_DOE_INTR_MSG_DATA: SOC_ROT (Idx 2)
+   *   Window to policy mapping:
+   *     WDATA: SOC_ROT (Idx 2)
+   *     RDATA: SOC_ROT (Idx 2)
+   */
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC [4] = '{2, 2, 2, 2};
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_WDATA = 2;
+  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_RDATA = 2;
+
 endpackage
