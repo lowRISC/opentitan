@@ -85,7 +85,7 @@ package top_racl_pkg;
    */
 <% racl_role_name_len = max((len(name) for name in racl_config.get('roles', {}).keys()), default=0) %>\
   % for racl_role_name, racl_role in racl_config.get('roles', {}).items():
-  parameter role_t RACL_ROLE_${racl_role_name.upper().ljust(racl_role_name_len)} = ${racl_config['nr_role_bits']}'h${f"{racl_role['role_id']:x}"};
+  parameter racl_role_t RACL_ROLE_${racl_role_name.upper().ljust(racl_role_name_len)} = ${racl_config['nr_role_bits']}'h${f"{racl_role['role_id']:x}"};
   % endfor
 
 % endif
