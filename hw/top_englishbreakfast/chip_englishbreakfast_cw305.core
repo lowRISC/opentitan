@@ -46,7 +46,7 @@ parameters:
   BootRomInitFile:
     datatype: str
     description: Boot ROM initialization file in 32 bit vmem hex format
-    default: "../../../../../build-bin/sw/device/lib/testing/test_rom/test_rom_fpga_cw305.32.vmem"
+    default: ""
     paramtype: vlogparam
   # For value definition, please see ip/prim/rtl/prim_pkg.sv
   PRIM_DEFAULT_IMPL:
