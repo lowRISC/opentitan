@@ -22,6 +22,7 @@ filesets:
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:lc_sync
       - lowrisc:ip:spi_device_pkg
+      - lowrisc:systems:top_racl_pkg
     files:
       - rtl/spi_device_reg_top.sv
       - rtl/spi_cmdparse.sv
