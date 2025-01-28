@@ -150,7 +150,7 @@ The following data structures are considered implementation specific.
 The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_context }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_context }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
 
 ## AES
@@ -206,26 +206,30 @@ Note that hardware support for one-shot SHA-256 means that the one-shot version 
 
 This mode is used when the entire data to be hashed is available upfront.
 
-This is a generic hash API where the required digest type and length is passed as an input parameter.
-The supported hash modes are SHA256, SHA384, SHA512, SHA3-224, SHA3-256, SHA3-384 and SHA3-512.
-
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_512 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_224 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_512 }}
 
 The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_shake }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_cshake }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake256 }}
 
 ### Streaming mode
 
 The streaming mode API is used for incremental hashing, where the data to be hashed is split and passed in multiple blocks.
-Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because these hash functions are implemented in software and their state can therefore be saved without locking up hardware blocks.
-Attempting to use the streaming API for SHA3 will result in an error.
+Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because the SHA-3 hardware does not support saving and restoring a hash context.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_init }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_update }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_final }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
 
 ## Message Authentication
 
