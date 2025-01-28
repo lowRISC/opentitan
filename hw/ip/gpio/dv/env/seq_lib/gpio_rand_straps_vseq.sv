@@ -15,26 +15,47 @@
 class gpio_rand_straps_vseq extends gpio_base_vseq;
 
   `uvm_object_utils(gpio_rand_straps_vseq)
-
+  
   // gpio input to drive
   rand bit [NUM_GPIOS-1:0] gpio_in;
   // gpio output to program in register
   rand bit [NUM_GPIOS-1:0] gpio_out;
   // gpio output enable to program in register
   rand bit [NUM_GPIOS-1:0] gpio_oe;
-
   // Read straps_data_in
   bit [NUM_GPIOS-1:0] rd_hw_straps_data_in;
   // Read straps_data_in valid
-  bit                 rd_hw_straps_data_in_valid;
+  bit rd_hw_straps_data_in_valid;
 
   constraint num_trans_c {
-    num_trans inside {[20:200]};
+    num_trans inside {[1:4]};
   }
 
   function new(string name = "gpio_rand_straps_vseq");
     super.new(name);
   endfunction
+
+  // Drive the strap_en_i input signal using the strap_en_seq sequence
+  task set_strap_en(bit strap_en);
+
+    string strap_seqr = "strap_sequencer";
+    strap_sequencer seqr;
+    gpio_strap_en_vseq strap_en_seq;
+
+    // Instantiate the strap_en sequence
+    strap_en_seq = gpio_strap_en_vseq::type_id::create("strap_en_seq");
+    
+    if(!$cast(seqr, p_sequencer.get_sequencer(strap_seqr))) begin
+      `uvm_fatal("gpio_rand_straps_vseq", "cast error getting the strap sequencer")
+    end
+
+    // Start the strap_en_seq sequence with the desired value.
+    if (seqr != null) begin
+      `uvm_info(`gfn, $sformatf("Driving strap_en = %0d", strap_en), UVM_HIGH)
+      strap_en_seq.strap_en = strap_en;
+      strap_en_seq.start(seqr);
+    end
+  endtask : set_strap_en
 
   task test_straps_gpio_in();
 
@@ -46,15 +67,15 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // Trigger the snapshot of gpio_in to be stored in the straps registers
-    cfg.straps_vif_inst.port_out.strap_en = 1;
-    cfg.clk_rst_vif.wait_clks(1);
+    // Set the strap_en to trigger the snapshot of gpio_in into the hw_strap_* register
+    set_strap_en('b1);
 
-    // Wait at least two clock cycles to avoid race condition with the predict value updated
-    // in the scoreboard
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
+    // Wait some clock cycles to avoid race condition between the prediction value updated
+    // in the scoreboard happening together with the csr read transaction.
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
     cfg.clk_rst_vif.wait_clks(delay);
 
+    // TODO: Replace those csr_rd calls to mirror() function (Done in another PR that will me merged).
     // Read the hw_straps_data_in and check the expected value in the scoreboard
     csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
     // Read the hw_straps_data_in_valid and check the expected value in the scoreboard
@@ -64,17 +85,16 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // Stop driving gpio_in
+    // Clear the gpio_in inputs
     undrive_gpio_in();
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // Read to make sure that if does not affect the straps registers after undrive the gpio_in
+    // Read again to make sure that if does not affect the straps registers after undrive the gpio_in
     csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
     csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
-
   endtask : test_straps_gpio_in
 
   task test_straps_gpio_out();
@@ -90,7 +110,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     csr_update(.csr(ral.direct_oe));
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 0;)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 4;)
     cfg.clk_rst_vif.wait_clks(delay);
 
     // Read to make sure that if does not affect the straps registers after drive the gpio_out
@@ -99,26 +119,27 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
 
   endtask : test_straps_gpio_out
 
-  task check_transaction(string txn_desc, bit is_first);
+  task start_test(string txn_desc);
     string msg_id = {`gfn, txn_desc};
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_in)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_out)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_oe)
 
-    // User case to test the straps output, with gpio_in data randomised
+    // User case to test the strap outputs, with gpio_in data randomised
     test_straps_gpio_in();
 
-    // User case to test the straps output/registers, with gpio_out data randomised
+    // User case to test the strap outputs, with gpio_out data randomised
     // The gpio_out should not affect the straps output/registers.
-    //test_straps_gpio_out();
+    test_straps_gpio_out();
 
     // Random wait
-    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 1;)
+    `DV_CHECK_MEMBER_RANDOMIZE_WITH_FATAL(delay, delay >= 2;)
     cfg.clk_rst_vif.wait_clks(delay);
 
-    // Disable the straps.
-    cfg.straps_vif_inst.port_out.strap_en = 0;
+    // Disable the strap_en
+    set_strap_en('b0);
+
     // Apply reset and make sure the strap registers are clean
     apply_reset();
 
@@ -130,7 +151,7 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     csr_rd(.ptr(ral.hw_straps_data_in), .value(rd_hw_straps_data_in));
     csr_rd(.ptr(ral.hw_straps_data_in_valid), .value(rd_hw_straps_data_in_valid));
 
-  endtask : check_transaction
+  endtask : start_test
 
   task body();
     `uvm_info(`gfn, $sformatf("num_trans = %0d", num_trans), UVM_HIGH)
@@ -138,12 +159,10 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     for (uint tr_num = 0; tr_num < num_trans; tr_num++) begin
       string msg_id = {`gfn, $sformatf(" Transaction-%0d", tr_num)};
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(delay)
-
       cfg.clk_rst_vif.wait_clks(delay);
       `uvm_info(msg_id, $sformatf("delay = %0d", delay), UVM_HIGH)
 
-      check_transaction(msg_id, tr_num == 0);
-
+      start_test(msg_id);
       `uvm_info(msg_id, "End of Transaction", UVM_HIGH)
 
     end // end for

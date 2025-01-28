@@ -33,7 +33,8 @@ module tb;
     .rst_n(rst_n)
   );
   pins_if #(NUM_MAX_INTERRUPTS) intr_if (.pins(interrupts));
-  gpio_straps_if straps_if_inst ();
+  gpio_straps_if straps_if_inst (.clk(clk), 
+                                 .rst_n(rst_n));
   tl_if tl_if (
     .clk  (clk),
     .rst_n(rst_n)
