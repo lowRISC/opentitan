@@ -9,7 +9,7 @@
     nr_role_bits: 4
     nr_ctn_uid_bits: 5
     nr_policies: 3
-    nr_subscribing_ips: 1
+    nr_subscribing_ips: 8
     policies:
     [
       {
