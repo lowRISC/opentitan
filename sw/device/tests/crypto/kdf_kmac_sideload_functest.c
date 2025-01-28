@@ -7,9 +7,8 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
-#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac_kdf.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -302,33 +301,6 @@ static kmac_test_vector_t sha3_test_vector = {
 static kdf_kmac_test_vector_t *current_test_vector = NULL;
 
 /**
- * Get the mode for SHA3 based on the security strength.
- *
- * @param security_str Security strength (in bits).
- * @param[out] mode Hash mode enum value.
- */
-status_t get_sha3_mode(size_t security_strength, otcrypto_hash_mode_t *mode) {
-  switch (security_strength) {
-    case 224:
-      *mode = kOtcryptoHashModeSha3_224;
-      break;
-    case 256:
-      *mode = kOtcryptoHashModeSha3_256;
-      break;
-    case 384:
-      *mode = kOtcryptoHashModeSha3_384;
-      break;
-    case 512:
-      *mode = kOtcryptoHashModeSha3_512;
-      break;
-    default:
-      LOG_INFO("Invalid size for SHA3: %d bits", security_strength);
-      return INVALID_ARGUMENT();
-  }
-  return OK_STATUS();
-}
-
-/**
  * Run the test pointed to by `current_test_vector`.
  */
 static status_t run_test_vector(void) {
@@ -399,8 +371,24 @@ static status_t run_test_vector(void) {
 
   // Run a SHA-3 operation in between the two KMAC operations.
   LOG_INFO("Running the intermediate SHA3 operation.");
-  TRY(get_sha3_mode(sha3_test_vector.security_strength, &digest_buf.mode));
-  TRY(otcrypto_hash(sha3_test_vector.input_msg, digest_buf));
+  switch (sha3_test_vector.security_strength) {
+    case 224:
+      TRY(otcrypto_sha3_224(sha3_test_vector.input_msg, &digest_buf));
+      break;
+    case 256:
+      TRY(otcrypto_sha3_256(sha3_test_vector.input_msg, &digest_buf));
+      break;
+    case 384:
+      TRY(otcrypto_sha3_384(sha3_test_vector.input_msg, &digest_buf));
+      break;
+    case 512:
+      TRY(otcrypto_sha3_512(sha3_test_vector.input_msg, &digest_buf));
+      break;
+    default:
+      LOG_INFO("Invalid security level for SHA3: %d bits",
+               sha3_test_vector.security_strength);
+      return INVALID_ARGUMENT();
+  }
 
   LOG_INFO("Running the second KDF-KMAC sideload operation for comparison.");
   TRY(otcrypto_kmac_kdf(current_test_vector->key_derivation_key,

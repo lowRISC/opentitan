@@ -7,7 +7,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
@@ -35,9 +35,8 @@ static const uint8_t kGettysburgDigest[] = {
 
 status_t hash_test(void) {
   uint32_t digest_content[8];
-  otcrypto_hash_context_t ctx;
+  otcrypto_sha2_context_t ctx;
   otcrypto_hash_digest_t digest = {
-      .mode = kOtcryptoHashModeSha256,
       .len = ARRAYSIZE(digest_content),
       .data = digest_content,
   };
@@ -46,12 +45,13 @@ status_t hash_test(void) {
       .data = (const uint8_t *)kGettysburgPrelude,
   };
 
-  TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha256));
-  TRY(otcrypto_hash_update(&ctx, buf));
-  TRY(otcrypto_hash_final(&ctx, digest));
+  TRY(otcrypto_sha2_init(kOtcryptoHashModeSha256, &ctx));
+  TRY(otcrypto_sha2_update(&ctx, buf));
+  TRY(otcrypto_sha2_final(&ctx, &digest));
 
   TRY_CHECK_ARRAYS_EQ((const uint8_t *)digest.data, kGettysburgDigest,
                       ARRAYSIZE(kGettysburgDigest));
+  TRY_CHECK(digest.mode == kOtcryptoHashModeSha256);
   return OK_STATUS();
 }
 
