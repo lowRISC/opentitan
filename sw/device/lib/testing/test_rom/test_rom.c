@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
-#include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_gpio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -17,29 +16,53 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
-#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/chip_info.h"
-#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
-#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
-#include "dt/dt_otp_ctrl.h"
-#endif
 #include "sw/device/silicon_creator/lib/manifest.h"
+
+#ifdef HAS_RETENTION_RAM
+#include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
+#endif
+
+// FIXME disabled for now
+#ifndef OPENTITAN_IS_DARJEELING
 #include "sw/device/silicon_creator/rom/bootstrap.h"
+#endif
+
+#ifdef HAS_FLASH_CTRL
+#include "dt/dt_flash_ctrl.h"
+#include "sw/device/lib/dif/dif_flash_ctrl.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
+#include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 
 #include "flash_ctrl_regs.h"
+#endif
+
+#ifdef HAS_OTP_CTRL
+#include "dt/dt_otp_ctrl.h"
+
 #include "otp_ctrl_regs.h"
+#endif
+
+#ifdef OPENTITAN_IS_DARJEELING
+#include "dt/dt_soc_proxy.h"
+#endif
 
 static const dt_pinmux_t kPinmuxDt = kDtPinmuxAon;
 static const dt_rstmgr_t kRstmgrDt = kDtRstmgrAon;
+
+#ifdef HAS_FLASH_CTRL
 static const dt_flash_ctrl_t kFlashCtrlDt = kDtFlashCtrl;
+static dif_flash_ctrl_state_t flash_ctrl;
+#endif
+
 static const dt_uart_t kUart0Dt = kDtUart0;
 static const dt_rv_core_ibex_t kRvCoreIbexDt = kDtRvCoreIbex;
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+
+#ifdef HAS_OTP_CTRL
 static const dt_otp_ctrl_t kOtpCtrlDt = kDtOtpCtrl;
 #endif
 
@@ -58,7 +81,6 @@ extern char _rom_ext_virtual_size[];
  */
 typedef void ottf_entry_point(void);
 
-static dif_flash_ctrl_state_t flash_ctrl;
 static dif_pinmux_t pinmux;
 static dif_rstmgr_t rstmgr;
 static dif_uart_t uart0;
@@ -81,7 +103,7 @@ static inline uintptr_t rom_ext_vma_get(const manifest_t *manifest,
 // rom tests. By default, it simply jumps into the OTTF's flash.
 OT_WEAK
 bool rom_test_main(void) {
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef HAS_OTP_CTRL
   // Check the otp to see if execute should start
   const uint32_t otp_ctrl_base = dt_otp_ctrl_primary_reg_block(kOtpCtrlDt);
   uint32_t otp_val =
@@ -93,7 +115,9 @@ bool rom_test_main(void) {
     // Abort simply forever loops on a wait_for_interrupt;
     abort();
   }
+#endif
 
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
   // Initialize Ibex cpuctrl (contains icache / security feature enablements).
   uint32_t cpuctrl_csr;
   CSR_READ(CSR_REG_CPUCTRL, &cpuctrl_csr);
@@ -116,12 +140,11 @@ bool rom_test_main(void) {
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kRstmgrDt, &rstmgr));
 
   // Initialize the flash.
-  CHECK_DIF_OK(dif_flash_ctrl_init_state(
-      &flash_ctrl, mmio_region_from_addr(dt_flash_ctrl_reg_block(
-                       kFlashCtrlDt, kDtFlashCtrlRegBlockCore))));
+#ifdef HAS_FLASH_CTRL
+  CHECK_DIF_OK(dif_flash_ctrl_init_state_from_dt(&flash_ctrl, kFlashCtrlDt));
   CHECK_DIF_OK(dif_flash_ctrl_start_controller_init(&flash_ctrl));
   CHECK_STATUS_OK(flash_ctrl_testutils_wait_for_init(&flash_ctrl));
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef HAS_OTP_CTRL
   // Check the otp to see if flash scramble should be enabled.
   otp_val = abs_mmio_read32(
       otp_ctrl_base + OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET +
@@ -139,9 +162,10 @@ bool rom_test_main(void) {
     CHECK_DIF_OK(dif_flash_ctrl_set_default_region_properties(
         &flash_ctrl, default_properties));
   }
-#endif
+#endif /* HAS_OTP_CTRL */
   CHECK_DIF_OK(
       dif_flash_ctrl_set_flash_enablement(&flash_ctrl, kDifToggleEnabled));
+#endif /* HAS_FLASH_CTRL */
 
   // Setup the UART for printing messages to the console.
   if (kDeviceType != kDeviceSimDV) {
@@ -168,7 +192,7 @@ bool rom_test_main(void) {
   dif_rstmgr_reset_info_bitfield_t reset_reasons;
   CHECK_DIF_OK(dif_rstmgr_reset_info_get(&rstmgr, &reset_reasons));
 
-#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
+#ifdef HAS_RETENTION_RAM
   // Store the reset reason in retention RAM and clear the register.
   volatile retention_sram_t *ret_ram = retention_sram_get();
   ret_ram->creator.reset_reasons = reset_reasons;
@@ -190,6 +214,8 @@ bool rom_test_main(void) {
     LOG_INFO("TestROM:%08x", fpga);
   }
 
+  // FIXME Disabled for now
+#ifndef OPENTITAN_IS_DARJEELING
   if (bootstrap_requested() == kHardenedBoolTrue) {
     // This log statement is used to synchronize the rom and DV testbench
     // for specific test cases.
@@ -203,12 +229,23 @@ bool rom_test_main(void) {
       test_status_set(kTestStatusFailed);
     }
   }
+#endif
+
+#if defined(HAS_FLASH_CTRL)
   CHECK_DIF_OK(
       dif_flash_ctrl_set_exec_enablement(&flash_ctrl, kDifToggleEnabled));
 
   // Always select slot a and enable address translation if manifest says to.
   const manifest_t *manifest = (const manifest_t *)dt_flash_ctrl_reg_block(
       kFlashCtrlDt, kDtFlashCtrlRegBlockMem);
+#elif defined(OPENTITAN_IS_DARJEELING)
+  // Always select slot a and enable address translation if manifest says to.
+  const manifest_t *manifest = (const manifest_t *)dt_soc_proxy_reg_block(
+      kDtSocProxy, kDtSocProxyRegBlockCtn);
+#else
+#error I don't know how to find the test code on this platform!
+#endif
+
   uintptr_t entry_point = manifest_entry_point_get(manifest);
   if (manifest->address_translation == kHardenedBoolTrue) {
     dif_rv_core_ibex_addr_translation_mapping_t addr_map = {
