@@ -440,7 +440,7 @@ jobs:
       timeout: 90
 
   execute_rom_ext_fpga_tests_cw310:
-    name: CW310 ROM_EXT Tests
+    name: Hyper310 ROM_EXT Tests
     needs: chip_earlgrey_cw310_hyperdebug
     uses: ./.github/workflows/fpga.yml
     secrets: inherit
