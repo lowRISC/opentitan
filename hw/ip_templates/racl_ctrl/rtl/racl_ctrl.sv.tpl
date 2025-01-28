@@ -34,15 +34,17 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
 % if enable_shadow_reg:
   logic shadowed_storage_err, shadowed_update_err;
 % endif
+  logic racl_ctrl_racl_error;
+  top_racl_pkg::racl_error_log_t racl_ctrl_racl_error_log;
 
   // SEC_CM: BUS.INTEGRITY
 % if enable_shadow_reg:
   // SEC_CM: RACL_POLICY.CONFIG.SHADOW
 % endif
-  ${module_instance_name}_reg_top u_racl_ctrl_reg #(
+  ${module_instance_name}_reg_top #(
     .EnableRacl   ( 1'b1         ),
     .RaclErrorRsp ( RaclErrorRsp )
-  u_racl_ctrl_reg (
+  ) u_racl_ctrl_reg (
     .clk_i                  ( clk_i                    ),
     .rst_ni                 ( rst_ni                   ),
 % if enable_shadow_reg:
@@ -151,7 +153,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
     racl_error_role        = racl_ctrl_racl_error_log.racl_role;
     racl_error_ctn_uid     = racl_ctrl_racl_error_log.ctn_uid;
     racl_error_read_access = racl_ctrl_racl_error_log.read_access;
-    for (int i = 0; i < NumSubscribingIps; i++) begin
+    for (int unsigned i = 0; i < NumSubscribingIps; i++) begin
       racl_error_role        |= racl_error_log_i[i].racl_role;
       racl_error_ctn_uid     |= racl_error_log_i[i].ctn_uid;
       racl_error_read_access |= racl_error_log_i[i].read_access;
