@@ -40,15 +40,18 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   string common_seq_type;
 
+  uvm_analysis_imp #(gpio_seq_item, gpio_scoreboard) sb_exp;
+
   `uvm_component_utils(gpio_scoreboard)
 
-  function new (string name = "gpio_scoreboard", uvm_component parent = null);
+  function new (string name, uvm_component parent = null);
     super.new (name, parent);
   endfunction
 
   // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    sb_exp = new("sb_exp", this);
   endfunction
 
   // Task: run_phase
@@ -58,9 +61,30 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     fork
       monitor_gpio_i();
       monitor_gpio_interrupt_pins();
-      monitor_gpio_straps();
     join_none
   endtask
+
+  // Task: write function to get the gpio_seq_item from the straps monitor 
+  // and call the checker function.
+  virtual function void write(gpio_seq_item item);
+      check_straps_data(item);
+  endfunction : write
+
+  // Task: check_straps_data
+  // Check the sampled straps data
+  virtual function void check_straps_data(gpio_seq_item item);
+    // Check the sampled straps data
+    `uvm_info(`gfn, "Checking the sampled straps data", UVM_HIGH)
+    if (!first_strap_triggered) begin
+      // Checker: Compare actual values of gpio pins with straps register.
+      // Check the register hw_straps_data_in against gpio_i pins
+      `DV_CHECK_CASE_EQ(gpio_i_driven, item.sampled_straps_o.data)
+      // Check the register hw_straps_data_in_valid
+      `DV_CHECK_CASE_EQ(1, item.sampled_straps_o.valid)
+      // Turn-off the checker after the first strap trigger.
+      first_strap_triggered = 1;
+    end
+  endfunction : check_straps_data
 
   // Task : process_tl_access
   // process monitored tl transaction
@@ -375,34 +399,6 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     ral.hw_straps_data_in_valid.predict(.value('b1),
                                         .kind(UVM_PREDICT_DIRECT)));
   endtask : update_gpio_straps_regs
-
-  // Task: monitor_gpio_straps
-  // The task monitors the gpio straps enable signal
-  // and checks the straps output signal after the first strap trigger
-  virtual task monitor_gpio_straps();
-    forever begin : monitor_gpio_straps
-      @(posedge cfg.clk_rst_vif.clk)
-      if(!cfg.under_reset) begin
-        if (|gpio_i_driven === 1'b1) begin
-          @(posedge cfg.straps_vif_inst.port_out.strap_en) begin
-            // Wait for at least 1 clock cycle after strap_en is asserted, to allow the straps to be
-            // ready for sampling.
-            cfg.clk_rst_vif.wait_clks(1);
-            update_gpio_straps_regs();
-            if (!first_strap_triggered) begin
-              // Checker: Compare actual values of gpio pins with straps register.
-              // Check the register hw_straps_data_in against gpio_i pins
-              `DV_CHECK_CASE_EQ(gpio_i_driven, cfg.straps_vif_inst.port_out.sampled_straps.data)
-              // Check the register hw_straps_data_in_valid
-              `DV_CHECK_CASE_EQ('b1, cfg.straps_vif_inst.port_out.sampled_straps.valid)
-              // Turn-off the checker after the first strap trigger.
-              first_strap_triggered = 1;
-            end
-          end
-        end
-      end
-    end
-  endtask : monitor_gpio_straps
 
   // Function: actual_gpio_i_activity
   function bit actual_gpio_i_activity();
