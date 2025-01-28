@@ -22,8 +22,12 @@ class gpio_base_test extends cip_base_test #(
 
   virtual function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", straps_vif_inst)) begin
-      `uvm_fatal("SEQ", "Virtual interface straps_vif_inst is not set")
+    if (!uvm_config_db#(straps_vif)::get(this, "*.*", "straps_vif", m_straps_vif)) begin
+      `uvm_fatal(`gfn, "Virtual interface straps_vif_inst is not set in the uvm_config_db")
     end
   endfunction : build_phase
+
+  task run_phase(uvm_phase phase);
+    super.run_phase(phase);
+  endtask
 endclass : gpio_base_test

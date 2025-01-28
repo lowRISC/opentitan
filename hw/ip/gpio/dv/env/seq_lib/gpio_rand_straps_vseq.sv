@@ -106,10 +106,10 @@ class gpio_rand_straps_vseq extends gpio_base_vseq;
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_out)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(gpio_oe)
 
-    // User case to test the straps output, with gpio_in data randomised
+    // User case to test the strap outputs, with gpio_in data randomised
     test_straps_gpio_in();
 
-    // User case to test the straps output/registers, with gpio_out data randomised
+    // User case to test the strap outputs, with gpio_out data randomised
     // The gpio_out should not affect the straps output/registers.
     test_straps_gpio_out();
 
