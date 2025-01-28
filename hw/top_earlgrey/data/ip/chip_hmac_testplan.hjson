@@ -192,13 +192,14 @@
             - `SwUpdateSecretKeyInProcess`: Update secret key when hash is in progress.
             - `SwHashStartWhenActive`: Issue hash start when hash is in progress.
             - `SwPushMsgWhenDisallowed`: Push message when HMAC is not idle.
+	    - `SwInvalidConfig`: Issue when HMAC configured with incorrect digest-size or key-length
             '''
       features: []
       stage: V3
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:hmac_error_conditions_test"]
     }
   ]
 }
