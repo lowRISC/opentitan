@@ -14,10 +14,7 @@
 module chip_englishbreakfast_cw305 #(
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
-  parameter BootRomInitFile = "test_rom_fpga_cw305.32.vmem",
-  // Path to a VMEM file containing the contents of the emulated OTP, which will be
-  // baked into the FPGA bitstream.
-  parameter OtpCtrlMemInitFile = "otp_img_fpga_cw305.vmem"
+  parameter BootRomInitFile = ""
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad

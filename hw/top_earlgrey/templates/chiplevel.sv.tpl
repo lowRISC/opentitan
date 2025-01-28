@@ -60,12 +60,18 @@ for pad in target["pinout"]["add_pads"]:
 
 % if target["name"] != "asic":
 module chip_${top["name"]}_${target["name"]} #(
+%   if top["name"] == "englishbreakfast":
+  // Path to a VMEM file containing the contents of the boot ROM, which will be
+  // baked into the FPGA bitstream.
+  parameter BootRomInitFile = ""
+%   else:
   // Path to a VMEM file containing the contents of the boot ROM, which will be
   // baked into the FPGA bitstream.
   parameter BootRomInitFile = "test_rom_fpga_${target["name"]}.32.vmem",
   // Path to a VMEM file containing the contents of the emulated OTP, which will be
   // baked into the FPGA bitstream.
   parameter OtpCtrlMemInitFile = "otp_img_fpga_${target["name"]}.vmem"
+%   endif
 ) (
 % else:
 module chip_${top["name"]}_${target["name"]} #(
