@@ -284,9 +284,9 @@ cc_library(
         "//sw/device/lib/crypto/include:hmac.h",
     ],
     deps = [
-        ":sha2",
         ":integrity",
         ":keyblob",
+        ":sha2",
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:hmac",
