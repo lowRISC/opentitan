@@ -23,6 +23,7 @@ cc_library(
     name = "boot_data_header",
     hdrs = ["boot_data.h"],
     deps = [
+        ":nonce_header",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
     ],
 )
