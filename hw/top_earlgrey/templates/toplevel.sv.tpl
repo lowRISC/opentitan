@@ -502,6 +502,15 @@ max_intrwidth = (max(len(x.name) for x in block.interrupts)
 %>\
   % if m["param_list"] or block.alerts:
   ${m["type"]} #(
+<%doc>
+  Note: The RACL parameters must be generated identically across multiple files.
+        Thus, this template needs to be manually synced between the following files:
+        util/raclgen.py
+        util/topgen/templates/toplevel_racl_pkg.sv.tpl
+        hw/top_darjeeling/templates/toplevel.sv.tpl
+        hw/top_earlgrey/templates/toplevel.sv.tpl
+        hw/top_englishbreakfast/templates/toplevel.sv.tpl
+</%doc>\
   % if m.get('racl_mappings'):
     .EnableRacl(1'b1),
     .RaclErrorRsp(${"1'b1" if top['racl']['error_response'] else "1'b0"}),
