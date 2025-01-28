@@ -150,6 +150,10 @@ Formal Property Verification.
 
 Final Test.
 
+#### GCM
+
+Galois/Counter Mode.
+
 #### GF2
 
 Galois Field of order 2.
@@ -185,6 +189,10 @@ The 32-bit RISC-V core used in OpenTitan chips.
 #### IP
 
 Intellectual Property.
+
+#### IV
+
+Initialisation vector.
 
 #### KMAC
 
