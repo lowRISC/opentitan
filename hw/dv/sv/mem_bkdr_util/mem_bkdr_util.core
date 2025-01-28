@@ -22,6 +22,7 @@ filesets:
       - sram_scrambler_pkg.sv
       - mem_bkdr_util_pkg.sv
       - flash_bkdr_util.sv: {is_include_file: true}
+      - mem_bkdr_util_row_adapter.sv: {is_include_file: true}
       - mem_bkdr_util.sv: {is_include_file: true}
       - rom_bkdr_util.sv: {is_include_file: true}
       - sram_bkdr_util.sv: {is_include_file: true}

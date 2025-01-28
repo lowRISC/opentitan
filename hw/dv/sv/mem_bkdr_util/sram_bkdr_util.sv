@@ -11,10 +11,11 @@ class sram_bkdr_util extends mem_bkdr_util;
   // secded package.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
+               mem_bkdr_util_row_adapter row_adapter = null,
                int num_prince_rounds_half = 3,
                int extra_bits_per_subword = 0, int unsigned system_base_addr = 0);
-    super.new(name, path, depth, n_bits, err_detection_scheme, num_prince_rounds_half,
-              extra_bits_per_subword, system_base_addr);
+    super.new(name, path, depth, n_bits, err_detection_scheme, row_adapter,
+              num_prince_rounds_half, extra_bits_per_subword, system_base_addr);
   endfunction
 
   // Returns the address after scrambling it using the given nonce.
