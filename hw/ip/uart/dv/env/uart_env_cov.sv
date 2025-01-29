@@ -5,12 +5,9 @@
 class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
   `uvm_component_utils(uart_env_cov)
 
-  import uart_reg_pkg::RxFifoDepth;
-  import uart_reg_pkg::TxFifoDepth;
-
   covergroup rx_fifo_level_cg with function sample(int lvl, bit rst);
     cp_lvl: coverpoint lvl {
-      bins all_levels[] = {[0:RxFifoDepth]};
+      bins all_levels[] = {[0:uart_reg_pkg::RxFifoDepth]};
     }
     cp_rst: coverpoint rst;
     cross cp_lvl, cp_rst;
@@ -18,7 +15,7 @@ class uart_env_cov extends cip_base_env_cov #(.CFG_T(uart_env_cfg));
 
   covergroup tx_fifo_level_cg with function sample(int lvl, bit rst);
     cp_lvl: coverpoint lvl {
-      bins all_levels[] = {[0:TxFifoDepth]};
+      bins all_levels[] = {[0:uart_reg_pkg::TxFifoDepth]};
     }
     cp_rst: coverpoint rst;
     cross cp_lvl, cp_rst;
