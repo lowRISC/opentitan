@@ -70,7 +70,7 @@ module keymgr_dpe
   output prim_alert_pkg::alert_tx_t [keymgr_reg_pkg::NumAlerts-1:0] alert_tx_o
 );
 
-  `ASSERT_INIT(AdvDataWidth_A, AdvDataWidth <= KDFMaxWidth)
+  `ASSERT_INIT(DpeAdvDataWidth_A, DpeAdvDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(GenDataWidth_A, GenDataWidth <= KDFMaxWidth)
   `ASSERT_INIT(OutputKeyDiff_A, RndCnstHardOutputSeed != RndCnstSoftOutputSeed)
 
@@ -418,7 +418,7 @@ module keymgr_dpe
 
   // The various arrays of inputs for each operation
   logic rom_digest_vld;
-  logic [2 ** DpeNumBootStagesWidth-1:0][AdvDataWidth-1:0] adv_matrix;
+  logic [2 ** DpeNumBootStagesWidth-1:0][DpeAdvDataWidth-1:0] adv_matrix;
   logic [2 ** DpeNumBootStagesWidth-1:0] adv_dvalid;
   logic [GenDataWidth-1:0] gen_in;
 
@@ -458,10 +458,10 @@ module keymgr_dpe
   assign owner_seed = otp_key_i.owner_seed;
 
   always_comb begin : gen_adv_matrix_all
-    adv_matrix = {(2**DpeNumBootStagesWidth){AdvDataWidth'(sw_binding)}};
+    adv_matrix = {(2**DpeNumBootStagesWidth){DpeAdvDataWidth'(sw_binding)}};
     adv_dvalid = {(2**DpeNumBootStagesWidth){1'b1}};
     // For (0 = Creator) and (1 = OwnerInt), check seed validity
-    adv_matrix[Creator] = AdvDataWidth'({sw_binding,
+    adv_matrix[Creator] = DpeAdvDataWidth'({sw_binding,
                                         revision_seed,
                                         otp_device_id_i,
                                         lc_keymgr_div_i,
@@ -471,7 +471,7 @@ module keymgr_dpe
                           devid_vld &
                           health_state_vld &
                           rom_digest_vld;
-    adv_matrix[OwnerInt] = AdvDataWidth'({sw_binding,owner_seed});
+    adv_matrix[OwnerInt] = DpeAdvDataWidth'({sw_binding,owner_seed});
     adv_dvalid[OwnerInt] = owner_seed_vld;
   end
 
@@ -570,7 +570,9 @@ module keymgr_dpe
 
   // Keymgr DPE does not have id generation, so assign '0 to `id_en`
   assign id_en = 1'b0;
-  keymgr_kmac_if u_kmac_if (
+  keymgr_kmac_if #(
+    .MaxAdvDataWidth(DpeAdvDataWidth)
+  ) u_kmac_if (
     .clk_i,
     .rst_ni,
     .prng_en_o(data_lfsr_en),
