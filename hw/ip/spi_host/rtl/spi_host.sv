@@ -14,7 +14,7 @@ module spi_host
   parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
   parameter int unsigned          NumCS         = 1,
   parameter bit          EnableRacl             = 1'b0,
-  parameter bit          RaclErrorRsp           = 1'b1,
+  parameter bit          RaclErrorRsp           = EnableRacl,
   parameter int unsigned RaclPolicySelVec[12]   = '{12{0}},
   parameter int unsigned RaclPolicySelWinRXDATA = 0,
   parameter int unsigned RaclPolicySelWinTXDATA = 0

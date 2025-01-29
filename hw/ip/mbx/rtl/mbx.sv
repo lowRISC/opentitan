@@ -15,7 +15,7 @@ module mbx
   parameter bit          DoeIrqSupport            = 1'b1,
   parameter bit          DoeAsyncMsgSupport       = 1'b1,
   parameter bit          EnableRacl               = 1'b0,
-  parameter bit          RaclErrorRsp             = 1'b1,
+  parameter bit          RaclErrorRsp             = EnableRacl,
   parameter int unsigned RaclPolicySelVecSoc[4]   = '{4{0}},
   parameter int unsigned RaclPolicySelWinSocWDATA = 0,
   parameter int unsigned RaclPolicySelWinSocRDATA = 0
