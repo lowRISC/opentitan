@@ -10,13 +10,14 @@
 module keymgr_kmac_if
   import keymgr_pkg::*;
 #(
-  parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault
+  parameter rand_perm_t RndCnstRandPerm = RndCnstRandPermDefault,
+  parameter int MaxAdvDataWidth         = AdvDataWidth
 ) (
   input clk_i,
   input rst_ni,
 
   // data input interfaces
-  input [AdvDataWidth-1:0] adv_data_i,
+  input [MaxAdvDataWidth-1:0] adv_data_i,
   input [IdDataWidth-1:0] id_data_i,
   input [GenDataWidth-1:0] gen_data_i,
   input [3:0] inputs_invalid_i,
@@ -78,9 +79,9 @@ module keymgr_kmac_if
     StError   = 10'b0011101110
   } data_state_e;
 
-  localparam int AdvRem = AdvDataWidth % KmacDataIfWidth;
-  localparam int IdRem  = IdDataWidth  % KmacDataIfWidth;
-  localparam int GenRem = GenDataWidth % KmacDataIfWidth;
+  localparam int AdvRem = MaxAdvDataWidth % KmacDataIfWidth;
+  localparam int IdRem  = IdDataWidth     % KmacDataIfWidth;
+  localparam int GenRem = GenDataWidth    % KmacDataIfWidth;
 
   // the remainder must be in number of bytes
   `ASSERT_INIT(AdvRemBytes_A, AdvRem % 8 == 0)
@@ -88,7 +89,7 @@ module keymgr_kmac_if
   `ASSERT_INIT(GenRemBytes_A, GenRem % 8 == 0)
 
   // Number of kmac transactions required
-  localparam int AdvRounds = (AdvDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
+  localparam int AdvRounds = (MaxAdvDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int IdRounds  = (IdDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int GenRounds = (GenDataWidth + KmacDataIfWidth - 1) / KmacDataIfWidth;
   localparam int MaxRounds = KDFMaxWidth  / KmacDataIfWidth;

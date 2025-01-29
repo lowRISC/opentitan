@@ -12,6 +12,16 @@ package keymgr_dpe_pkg;
   parameter int DpeNumSlotsWidth = prim_util_pkg::vbits(DpeNumSlots);
   parameter int DpeNumBootStagesWidth = $clog2(DpeNumBootStages);
 
+  // keymgr and keymgr_dpe have different maximum KMAC input widths. The below widths correspond to
+  // the following inputs to advance to the creator root key state:
+  //   - Software binding
+  //   - Revision seed
+  //   - OTP device ID
+  //   - LC keymgr diversification value
+  //   - ROM digests
+  //   - Creator seed
+  parameter int DpeAdvDataWidth = SwBindingWidth + KeyWidth + otp_ctrl_pkg::DeviceIdWidth +
+      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth*keymgr_dpe_reg_pkg::NumRomDigestInputs + KeyWidth;
 
   typedef logic [DpeNumSlotsWidth-1:0] keymgr_dpe_slot_idx_e;
 

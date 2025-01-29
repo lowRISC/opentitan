@@ -29,7 +29,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0] unused;
+    bit [keymgr_dpe_pkg::DpeAdvDataWidth-keymgr_pkg::KeyWidth-keymgr_pkg::SwBindingWidth-1:0]
+        unused;
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
     // OWNER SEED
@@ -38,7 +39,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   typedef struct packed {
     // some portions are unused, which are 0s
-    bit [keymgr_pkg::AdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
+    bit [keymgr_dpe_pkg::DpeAdvDataWidth-keymgr_pkg::SwBindingWidth-1:0]  unused;
     // SW_CDI_INPUT
     bit [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0][TL_DW-1:0] SoftwareBinding;
   } adv_owner_data_t;
@@ -91,7 +92,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
 
   // local queues to hold incoming packets pending comparison
   // store meaningful data, in non-working state, should not match to these data
-  bit [keymgr_pkg::AdvDataWidth-1:0] adv_data_a_array[
+  bit [keymgr_dpe_pkg::DpeAdvDataWidth-1:0] adv_data_a_array[
     keymgr_dpe_pkg::DpeNumSlots][
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e];
   bit [keymgr_pkg::IdDataWidth-1:0]  id_data_a_array[
@@ -1259,7 +1260,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     adv_creator_data_t exp, act;
     string str = $sformatf("src_slot: %0d\n", current_key_slot.src_slot);
 
-    if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_pkg::AdvDataWidth / 8)
+    if (exp_match) `DV_CHECK_EQ(byte_data_q.size, keymgr_dpe_pkg::DpeAdvDataWidth / 8)
     act = {<<8{byte_data_q}};
     exp.DiversificationKey = cfg.keymgr_dpe_vif.otp_key.creator_seed;
 
