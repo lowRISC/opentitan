@@ -13,7 +13,7 @@ module ${module_instance_name}
 #(
 % if racl_support:
   parameter bit                   EnableRacl           = 1'b0,
-  parameter bit                   RaclErrorRsp         = 1'b1,
+  parameter bit                   RaclErrorRsp         = EnableRacl,
 <% 
 num_regs = 6 + 4 * n_alerts + 4 * 7 + n_classes * 14
 %>\

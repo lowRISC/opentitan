@@ -22,25 +22,26 @@ module tlul_adapter_sram_racl
   import prim_mubi_pkg::mubi4_t;
 #(
   parameter int SramAw            = 12,
-  parameter int SramDw            = 32, // Must be multiple of the TL width
-  parameter int Outstanding       = 1,  // Only one request is accepted
-  parameter int SramBusBankAW     = 12, // SRAM bus address width of the SRAM bank. Only used
-                                        // when DataXorAddr=1.
-  parameter bit ByteAccess        = 1,  // 1: Enables sub-word write transactions. Note that this
-                                        //    results in read-modify-write operations for integrity
-                                        //    re-generation if EnableDataIntgPt is set to 1.
-  parameter bit ErrOnWrite        = 0,  // 1: Writes not allowed, automatically error
-  parameter bit ErrOnRead         = 0,  // 1: Reads not allowed, automatically error
-  parameter bit CmdIntgCheck      = 0,  // 1: Enable command integrity check
-  parameter bit EnableRspIntgGen  = 0,  // 1: Generate response integrity
-  parameter bit EnableDataIntgGen = 0,  // 1: Generate response data integrity
-  parameter bit EnableDataIntgPt  = 0,  // 1: Passthrough command/response data integrity
-  parameter bit SecFifoPtr        = 0,  // 1: Duplicated fifo pointers
-  parameter bit EnableReadback    = 0,  // 1: Readback and check written/read data.
-  parameter bit DataXorAddr       = 0,  // 1: XOR data and address for address protection
-  parameter bit EnableRacl        = 0,  // 1: Enable RACL checks on access
-  parameter bit RaclErrorRsp      = 1,  // 1: Return TLUL error on RACL errors
-  parameter int RaclPolicySelVec  = 0,  // RACL policy for this SRAM adapter
+  parameter int SramDw            = 32,         // Must be multiple of the TL width
+  parameter int Outstanding       = 1,          // Only one request is accepted
+  parameter int SramBusBankAW     = 12,         // SRAM bus address width of the SRAM bank. Only
+                                                // used when DataXorAddr=1.
+  parameter bit ByteAccess        = 1,          // 1: Enables sub-word write transactions. Note that
+                                                //    this results in read-modify-write operations
+                                                //    for integrity re-generation if
+                                                //    EnableDataIntgPt is set to 1.
+  parameter bit ErrOnWrite        = 0,          // 1: Writes not allowed, automatically error
+  parameter bit ErrOnRead         = 0,          // 1: Reads not allowed, automatically error
+  parameter bit CmdIntgCheck      = 0,          // 1: Enable command integrity check
+  parameter bit EnableRspIntgGen  = 0,          // 1: Generate response integrity
+  parameter bit EnableDataIntgGen = 0,          // 1: Generate response data integrity
+  parameter bit EnableDataIntgPt  = 0,          // 1: Passthrough command/response data integrity
+  parameter bit SecFifoPtr        = 0,          // 1: Duplicated fifo pointers
+  parameter bit EnableReadback    = 0,          // 1: Readback and check written/read data.
+  parameter bit DataXorAddr       = 0,          // 1: XOR data and address for address protection
+  parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
+  parameter bit RaclErrorRsp      = EnableRacl, // 1: Return TLUL error on RACL errors
+  parameter int RaclPolicySelVec  = 0,          // RACL policy for this SRAM adapter
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw

@@ -11,7 +11,7 @@ module uart
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit                   EnableRacl           = 1'b0,
-  parameter bit                   RaclErrorRsp         = 1'b1,
+  parameter bit                   RaclErrorRsp         = EnableRacl,
   parameter int unsigned          RaclPolicySelVec[13] = '{13{0}}
 ) (
   input           clk_i,

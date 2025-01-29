@@ -12,15 +12,15 @@ module tlul_adapter_reg_racl
   import tlul_pkg::*;
   import prim_mubi_pkg::mubi4_t;
 #(
-  parameter  bit CmdIntgCheck      = 0,     // 1: Enable command integrity check
-  parameter  bit EnableRspIntgGen  = 0,     // 1: Generate response integrity
-  parameter  bit EnableDataIntgGen = 0,     // 1: Generate response data integrity
-  parameter  int RegAw             = 8,     // Width of register address
-  parameter  int RegDw             = 32,    // Shall be matched with TL_DW
-  parameter  int AccessLatency     = 0,     // 0: same cycle, 1: next cycle
-  parameter  bit EnableRacl        = 0,     // 1: Enable RACL checks on access
-  parameter  bit RaclErrorRsp      = 1,     // 1: Return TLUL error on RACL errors
-  parameter  int RaclPolicySelVec  = 0,     // RACL policy for this reg adapter
+  parameter  bit CmdIntgCheck      = 0,           // 1: Enable command integrity check
+  parameter  bit EnableRspIntgGen  = 0,           // 1: Generate response integrity
+  parameter  bit EnableDataIntgGen = 0,           // 1: Generate response data integrity
+  parameter  int RegAw             = 8,           // Width of register address
+  parameter  int RegDw             = 32,          // Shall be matched with TL_DW
+  parameter  int AccessLatency     = 0,           // 0: same cycle, 1: next cycle
+  parameter  bit EnableRacl        = 0,           // 1: Enable RACL checks on access
+  parameter  bit RaclErrorRsp      = EnableRacl,  // 1: Return TLUL error on RACL errors
+  parameter  int RaclPolicySelVec  = 0,           // RACL policy for this reg adapter
   localparam int RegBw             = RegDw/8
 ) (
   input clk_i,

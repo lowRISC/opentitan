@@ -7,7 +7,8 @@ module ${module_instance_name}
   import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit                   RaclErrorRsp = 1'b1,
+  parameter bit                   EnableRacl   = 1'b0,
+  parameter bit                   RaclErrorRsp = EnableRacl,
   parameter int unsigned          RaclPolicySelVec[${3 + 5*num_ranges}] = '{${3 + 5*num_ranges}{0}}
 ) (
   input  logic                                      clk_i,

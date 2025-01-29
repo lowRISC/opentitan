@@ -25,8 +25,8 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // and routing the source clocks / resets to the PLIC).
   parameter logic [NumSrc-1:0]    LevelEdgeTrig = '0, // 0: level, 1: edge
 % if racl_support:
-  parameter bit                   EnableRacl           = 1'b0,
-  parameter bit                   RaclErrorRsp         = 1'b1,
+  parameter bit                   EnableRacl    = 1'b0,
+  parameter bit                   RaclErrorRsp  = EnableRacl,
 <% 
 from math import ceil
 num_regs = src + ceil(src / 32) + target * ceil(src / 32) + 3 * target + 1
