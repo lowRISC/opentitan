@@ -12,18 +12,18 @@ module sram_ctrl
   import sram_ctrl_reg_pkg::*;
 #(
   // Number of words stored in the SRAM.
-  parameter int MemSizeRam      = 32'h1000,
-  parameter int InstSize        = MemSizeRam,
-  parameter int NumRamInst      = 1,
+  parameter int MemSizeRam                               = 32'h1000,
+  parameter int InstSize                                 = MemSizeRam,
+  parameter int NumRamInst                               = 1,
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn          = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn           = {NumAlerts{1'b1}},
   // Enables the execute from SRAM feature.
-  parameter bit InstrExec                               = 1,
+  parameter bit InstrExec                                = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
   // Note that this needs to be low-latency, hence we have to keep the amount of cipher rounds low.
   // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
   // Setting this to 3 lowers this to approximately 7 effective rounds.
-  parameter int NumPrinceRoundsHalf                     = 3,
+  parameter int NumPrinceRoundsHalf                      = 3,
   // Random netlist constants
   parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
@@ -34,20 +34,20 @@ module sram_ctrl
   parameter int unsigned RaclPolicySelVecRegs[9]         = '{9{0}}
 ) (
   // SRAM Clock
-  input  logic                                              clk_i,
-  input  logic                                              rst_ni,
+  input  logic                                               clk_i,
+  input  logic                                               rst_ni,
   // OTP Clock (for key interface)
-  input  logic                                              clk_otp_i,
-  input  logic                                              rst_otp_ni,
+  input  logic                                               clk_otp_i,
+  input  logic                                               rst_otp_ni,
   // Bus Interface (device) for SRAM
-  input  tlul_pkg::tl_h2d_t                                 ram_tl_i,
-  output tlul_pkg::tl_d2h_t                                 ram_tl_o,
+  input  tlul_pkg::tl_h2d_t                                  ram_tl_i,
+  output tlul_pkg::tl_d2h_t                                  ram_tl_o,
   // Bus Interface (device) for CSRs
-  input  tlul_pkg::tl_h2d_t                                 regs_tl_i,
-  output tlul_pkg::tl_d2h_t                                 regs_tl_o,
+  input  tlul_pkg::tl_h2d_t                                  regs_tl_i,
+  output tlul_pkg::tl_d2h_t                                  regs_tl_o,
   // Alert outputs.
-  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]         alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]         alert_tx_o,
+  input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0]          alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]          alert_tx_o,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t                     racl_policies_i,
   output logic                                               racl_error_o,
@@ -131,8 +131,8 @@ module sram_ctrl
   ) u_reg_regs (
     .clk_i,
     .rst_ni,
-    .tl_i      (regs_tl_i),
-    .tl_o      (regs_tl_o),
+    .tl_i             ( regs_tl_i          ),
+    .tl_o             ( regs_tl_o          ),
     .reg2hw,
     .hw2reg,
     // RACL interface
@@ -140,7 +140,7 @@ module sram_ctrl
     .racl_error_o     ( racl_error_o       ),
     .racl_error_log_o ( racl_error_log_o   ),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(bus_integ_error[0])
+    .intg_err_o       ( bus_integ_error[0] )
    );
 
   // Key and attribute outputs to scrambling device
