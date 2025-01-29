@@ -8,15 +8,28 @@
 
 # Overview
 
-This document describes the ROM controller (`rom_ctrl`).
-This module attaches as a peripheral to the system bus, and thus follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
+The ROM controller (`rom_ctrl`) is the connection between the chip and its ROM.
+It has three main tasks:
+- Pass read requests to the ROM and respond with the memory contents.
+- Generate a checksum of the ROM contents and feed its value to [keymgr](../keymgr/README.md) to be included in the device identity.
+- Inform pwrmgr, once the checksum has been computed and looks reasonable, to allow the rest of the chip startup.
+  This power manager is a templated class which is documented separately for the different instantiations.
+  The instantiation in Earlgrey is documented [here](../../top_earlgrey/ip_autogen/pwrmgr/README.md).
 
-The ROM controller interfaces between the system bus and the ROM.
-This ROM has scrambled contents (scrambled with a fixed key, derived from a global constant).
-The controller is responsible for descrambling these contents on memory fetches.
+In order to fulfil the first task, the ROM controller attaches as a peripheral to the system bus.
+As a peripheral on the system bus, it follows the [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
+The contents of the ROM are laid out in a scrambled order.
+The addresses are scrambled with a substitution-permutation network and `rom_ctrl` is responsible for scrambling addresses when doing memory reads.
+See the [theory of operation](./doc/theory_of_operation.md#rom-access-when-chip-is-in-operation) document for more information.
 
-Unlike the [SRAM controller](../sram_ctrl/README.md), which performs the equivalent task for SRAM, the ROM controller also contains a *ROM checker* block.
-This ROM checker is used to compute a cryptographic hash of the ROM contents just after boot, detecting any malicious changes that have been made to the ROM when the system was at rest.
+The contents of the ROM are read immediately after coming out of reset.
+The words read are passed to KMAC (which computes a SHA3 checksum from them).
+Once that is done, the resulting checksum is passed to `keymgr` over a dedicated connection.
+The checksum can also be read by software, using the `DIGEST_*` registers.
+
+There is also a dedicated connection to the power manager (to allow the third item).
+A basic check that the contents look reasonable is performed by storing the expected value of the hash in the top 8 words of the ROM.
+The ROM controller checks that this matches the hash that was computed, and passes this information to the power manager (which can stop the startup if the SHA doesn't match).
 
 ## Features
 
