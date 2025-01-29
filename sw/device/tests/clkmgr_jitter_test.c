@@ -16,19 +16,19 @@ bool test_main(void) {
   dif_clkmgr_t clkmgr;
   CHECK_DIF_OK(dif_clkmgr_init(
       mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
-  // Get the initial jitter state. It might be enabled or disabled depending
-  // on reset behavior - either is fine for the purposes of this test.
+
+  // Get the initial jitter state: this is right after reset so it should be
+  // disabled.
   dif_toggle_t state;
   CHECK_DIF_OK(dif_clkmgr_jitter_get_enabled(&clkmgr, &state));
-
-  // Toggle the enable twice so that it ends up in its original state.
-  for (int j = 0; j < 2; ++j) {
-    dif_toggle_t expected_state =
-        state == kDifToggleEnabled ? kDifToggleDisabled : kDifToggleEnabled;
-    dif_toggle_t actual_state = state;
-    CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr, expected_state));
-    CHECK_DIF_OK(dif_clkmgr_jitter_get_enabled(&clkmgr, &actual_state));
-    CHECK(actual_state == expected_state);
-  }
+  CHECK(state == kDifToggleDisabled);
+  // Check that enabling jitter doesn't depend on jitter_regwen.
+  // Lock jitter_enable with jitter_regwen.
+  CHECK_DIF_OK(dif_clkmgr_lock_jitter_enable(&clkmgr));
+  // A write to enable succeeds.
+  dif_toggle_t actual_state = kDifToggleDisabled;
+  CHECK_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_jitter_get_enabled(&clkmgr, &actual_state));
+  CHECK(actual_state == kDifToggleEnabled);
   return true;
 }

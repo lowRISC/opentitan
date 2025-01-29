@@ -27,22 +27,48 @@ class ClkMgrTest : public Test, public MmioTest {
   dif_clkmgr_t clkmgr_ = {.base_addr = dev().region()};
 };
 
+class JitterRegwenTest : public ClkMgrTest {};
+
+TEST_F(JitterRegwenTest, GetLocked) {
+  // Get regwen locked
+  {
+    bool locked = false;
+    EXPECT_READ32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 0);
+    EXPECT_DIF_OK(dif_clkmgr_jitter_enable_is_locked(&clkmgr_, &locked));
+    EXPECT_EQ(locked, true);
+  }
+  // Get regwen unlocked
+  {
+    bool locked = true;
+    EXPECT_READ32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 1);
+    EXPECT_DIF_OK(dif_clkmgr_jitter_enable_is_locked(&clkmgr_, &locked));
+    EXPECT_EQ(locked, false);
+  }
+}
+
+TEST_F(JitterRegwenTest, GetLockedError) {
+  bool locked;
+  EXPECT_DIF_BADARG(dif_clkmgr_jitter_enable_is_locked(nullptr, nullptr));
+  EXPECT_DIF_BADARG(dif_clkmgr_jitter_enable_is_locked(nullptr, &locked));
+  EXPECT_DIF_BADARG(dif_clkmgr_jitter_enable_is_locked(&clkmgr_, nullptr));
+}
+
+TEST_F(JitterRegwenTest, SetLocked) {
+  EXPECT_WRITE32(CLKMGR_JITTER_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_clkmgr_lock_jitter_enable(&clkmgr_));
+  // There is no support for unlock in the hardware.
+}
+
+TEST_F(JitterRegwenTest, SetLockedError) {
+  EXPECT_DIF_BADARG(dif_clkmgr_lock_jitter_enable(nullptr));
+}
+
 class JitterEnableTest : public ClkMgrTest {};
 
 TEST_F(JitterEnableTest, SetEnabled) {
-  // Attempt to disable jitter.
-  EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
-  EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleDisabled));
-
-  // Enable jitter.
-  EXPECT_READ32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4False);
+  // Enable jitter regardless of the current state will enable it.
   EXPECT_WRITE32(CLKMGR_JITTER_ENABLE_REG_OFFSET, kMultiBitBool4True);
-  EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_, kDifToggleEnabled));
-}
-
-TEST_F(JitterEnableTest, SetEnabledError) {
-  // Null handle.
-  EXPECT_DIF_BADARG(dif_clkmgr_jitter_set_enabled(nullptr, kDifToggleEnabled));
+  EXPECT_DIF_OK(dif_clkmgr_jitter_set_enabled(&clkmgr_));
 }
 
 TEST_F(JitterEnableTest, GetEnabled) {
@@ -255,6 +281,47 @@ TEST_F(HintableClockTest, GetEnabledError) {
       &clkmgr_, CLKMGR_PARAM_NUM_HINTABLE_CLOCKS, &state));
 }
 
+class ExternalClkRegwenTest : public ClkMgrTest {};
+
+TEST_F(ExternalClkRegwenTest, GetLocked) {
+  // Get regwen locked
+  {
+    bool locked = false;
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 0);
+    EXPECT_DIF_OK(
+        dif_clkmgr_external_clock_control_is_locked(&clkmgr_, &locked));
+    EXPECT_EQ(locked, true);
+  }
+  // Get regwen unlocked
+  {
+    bool locked = true;
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 1);
+    EXPECT_DIF_OK(
+        dif_clkmgr_external_clock_control_is_locked(&clkmgr_, &locked));
+    EXPECT_EQ(locked, false);
+  }
+}
+
+TEST_F(ExternalClkRegwenTest, GetLockedError) {
+  bool locked;
+  EXPECT_DIF_BADARG(
+      dif_clkmgr_external_clock_control_is_locked(nullptr, nullptr));
+  EXPECT_DIF_BADARG(
+      dif_clkmgr_external_clock_control_is_locked(nullptr, &locked));
+  EXPECT_DIF_BADARG(
+      dif_clkmgr_external_clock_control_is_locked(&clkmgr_, nullptr));
+}
+
+TEST_F(ExternalClkRegwenTest, SetLocked) {
+  EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 0);
+  EXPECT_DIF_OK(dif_clkmgr_lock_external_clock_control(&clkmgr_));
+  // There is no support for unlock in the hardware.
+}
+
+TEST_F(ExternalClkRegwenTest, SetLockedError) {
+  EXPECT_DIF_BADARG(dif_clkmgr_lock_external_clock_control(nullptr));
+}
+
 class ExternalClkTest : public ClkMgrTest {};
 
 TEST_F(ExternalClkTest, EnableError) {
@@ -276,22 +343,43 @@ TEST_F(ExternalClkTest, Enable) {
        .offset = CLKMGR_EXTCLK_CTRL_HI_SPEED_SEL_OFFSET,               \
        .value = low_speed_ ? kMultiBitBool4False : kMultiBitBool4True, \
    }}
-  {  // low speed
+  {  // low speed with control unlocked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 1);
     EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
                    EXTCLK_CTRL_REG_VALUE(true, true));
     EXPECT_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr_, true));
   }
-  {  // high speed
+  {  // high speed with control unlocked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 1);
     EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
                    EXTCLK_CTRL_REG_VALUE(true, false));
     EXPECT_DIF_OK(dif_clkmgr_external_clock_set_enabled(&clkmgr_, false));
   }
+  {
+    // low speed with control locked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 0);
+    EXPECT_DIF_LOCKED(dif_clkmgr_external_clock_set_enabled(&clkmgr_, true));
+  }
+  {
+    // high speed with control locked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 0);
+    EXPECT_DIF_LOCKED(dif_clkmgr_external_clock_set_enabled(&clkmgr_, false));
+  }
 }
 
 TEST_F(ExternalClkTest, Disable) {
-  EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
-                 EXTCLK_CTRL_REG_VALUE(false, false));
-  EXPECT_DIF_OK(dif_clkmgr_external_clock_set_disabled(&clkmgr_));
+  {
+    // disable with control unlocked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 1);
+    EXPECT_WRITE32(CLKMGR_EXTCLK_CTRL_REG_OFFSET,
+                   EXTCLK_CTRL_REG_VALUE(false, false));
+    EXPECT_DIF_OK(dif_clkmgr_external_clock_set_disabled(&clkmgr_));
+  }
+  {
+    // disable with control locked
+    EXPECT_READ32(CLKMGR_EXTCLK_CTRL_REGWEN_REG_OFFSET, 0);
+    EXPECT_DIF_LOCKED(dif_clkmgr_external_clock_set_disabled(&clkmgr_));
+  }
 }
 #undef EXTCLK_CTRL_REG_VALUE
 
