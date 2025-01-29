@@ -118,11 +118,14 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash);
  * @param owner_lockdown Apply any special lockdown configuration to
  *                       silicon_owner regions on the specified side of the
  *                       flash.  May use kHardenedBoolFalse to skip lockdown.
+ * @param mp_index The destination configuration index.  The value should be
+ *                 initialized to zero before the first call to this function.
  * @return error code.
  */
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
                                     uint32_t config_side,
-                                    uint32_t owner_lockdown);
+                                    uint32_t owner_lockdown,
+                                    uint32_t *mp_index);
 
 /**
  * Apply the flash info configuration parameters from the owner block.
