@@ -24,6 +24,9 @@ main:
   /* w19 <= 19 */
   bn.addi w19, w31, 19
 
+  /* w30 <= 38 */
+  bn.addi w30, w31, 38
+
   /* Call multiply test. */
   jal     x1, fe_mul_test
 
