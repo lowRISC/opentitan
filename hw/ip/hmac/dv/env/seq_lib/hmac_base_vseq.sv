@@ -91,7 +91,6 @@ class hmac_base_vseq extends cip_base_vseq #(.CFG_T               (hmac_env_cfg)
   extern task read_status_intr_clr();
   // Check intr_pin, intr_state, and error_code registers
   extern task check_error_code(bit check_err = 1);
-  extern task compare_digest(bit [7:0] exp_digest[], int tag_len_byte, bit [3:0] digest_size_i);
   extern task save_and_restore();
   extern task sar_stop_and_continue();
   extern task sar_same_context();
@@ -278,7 +277,9 @@ endfunction : clear_wipe_secret
 
 // Read digest value and output read value
 task hmac_base_vseq::csr_rd_digest(output bit [TL_DW-1:0] digest[16]);
-  foreach (digest[i]) begin
+  // Read digest value from 0 to 15, as the 16th time will trigger full NIST comparison. This is
+  // to avoid the NIST vector files parsing multiple times to save CPU time.
+  for (int i=0; i<16; i++) begin
     csr_rd(.ptr(ral.digest[i]), .value(digest[i]));
     if (cfg.under_reset) break;   // Skip if a reset is ongoing...
     `uvm_info(`gfn, $sformatf("digest[%0d]=32'h%08x", i, digest[i]), UVM_MEDIUM)
@@ -528,38 +529,6 @@ task hmac_base_vseq::check_error_code(bit check_err = 1);
   csr_rd(ral.err_code, error_code);
   `uvm_info(`gfn, $sformatf("Error code: 0x%0h", error_code), UVM_HIGH)
 endtask : check_error_code
-
-// TODO (#23288): remove this check from the seq
-task hmac_base_vseq::compare_digest(bit [7:0] exp_digest[], int tag_len_byte, bit [3:0] digest_size_i);
-  bit [TL_DW-1:0] act_digest[16];
-  bit [TL_DW-1:0] packed_exp_digest[16];
-  csr_rd_digest(act_digest);
-  // `exp_digest` is guaranteed to always contain 16 words (64 bytes) of data
-  // since HMAC digest size is max 512 bits.
-  packed_exp_digest = {>>byte{exp_digest}};
-  if (cfg.clk_rst_vif.rst_n) begin
-    foreach (act_digest[i]) begin
-        // for HMAC test vectors:
-        //  -only compare up to expected tag length (parsed in for each test vector)
-        //  -which is always divisble by 4 (word-aligned) --> (tag_len_byte/4)
-        // for SHA-2 (!hmac_en) test vectors:
-        //  -compare up to the correct digest index depending on the digest size
-      if ((hmac_en  && (i < (tag_len_byte/4))) ||
-          (!hmac_en &&
-            ((i  < 8) ||
-            ((i >= 8 && i < 12) && (digest_size_i == SHA2_384 || digest_size_i == SHA2_512)) ||
-            ((i >= 12)          && (digest_size_i == SHA2_512))))) begin
-
-          `uvm_info(`gfn, $sformatf("Actual digest[%0d]: 0x%0h", i, act_digest[i]), UVM_HIGH)
-          `uvm_info(`gfn, $sformatf("Expected digest[%0d]: 0x%0h", i,
-                    packed_exp_digest[i]), UVM_HIGH)
-          `DV_CHECK_EQ(act_digest[i], packed_exp_digest[i], $sformatf("for index %0d", i))
-      end
-    end
-  end else begin
-    `uvm_info(`gfn, "skipped comparison due to reset", UVM_LOW)
-  end
-endtask : compare_digest
 
 // Stop hash, save current context, do something/nothing and restore context
 //    - Test with context A saved and restored
