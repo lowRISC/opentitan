@@ -140,6 +140,24 @@ typedef enum dif_clkmgr_fatal_err_type {
 typedef uint32_t dif_clkmgr_fatal_err_codes_t;
 
 /**
+ * Check if jitter enable is locked.
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] is_locked whether jitter is locked or not.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_jitter_enable_is_locked(const dif_clkmgr_t *clkmgr,
+                                                bool *is_locked);
+
+/**
+ * Lock jitter enable.
+ * @param clkmgr Clock Manager Handle.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_lock_jitter_enable(const dif_clkmgr_t *clkmgr);
+
+/**
  * Check if jitter is Enabled.
  * @param clkmgr Clock Manager Handle.
  * @param[out] is_enabled whether jitter is enabled or not.
@@ -150,14 +168,12 @@ dif_result_t dif_clkmgr_jitter_get_enabled(const dif_clkmgr_t *clkmgr,
                                            dif_toggle_t *state);
 
 /**
- * Enable or attempt to disable jitter.
+ * Enable jitter.
  * @param clkmgr Clock Manager Handle.
- * @param new_state whether to enable or disable jitter.
  * @returns The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr,
-                                           dif_toggle_t new_state);
+dif_result_t dif_clkmgr_jitter_set_enabled(const dif_clkmgr_t *clkmgr);
 
 /**
  * Check if a Gateable Clock is Enabled or Disabled.
@@ -246,6 +262,24 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_clkmgr_hintable_clock_get_hint(
     const dif_clkmgr_t *clkmgr, dif_clkmgr_hintable_clock_t clock,
     dif_toggle_t *state);
+
+/**
+ * Check if external clock control is locked.
+ * @param clkmgr Clock Manager Handle.
+ * @param[out] is_locked whether external clock control is locked or not.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_external_clock_control_is_locked(
+    const dif_clkmgr_t *clkmgr, bool *is_locked);
+
+/**
+ * Lock external clock control.
+ * @param clkmgr Clock Manager Handle.
+ * @returns The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_clkmgr_lock_external_clock_control(const dif_clkmgr_t *clkmgr);
 
 /**
  * Enable chip to use the external clock.

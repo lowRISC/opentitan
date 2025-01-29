@@ -188,8 +188,13 @@
             jitter_o clkmgr output to toggle. Verify this output is connected to AST's
             clk_src_sys_jen_i input using formal.
 
+            Test the following properties of jitter enable:
+            - The reset value of jitter_enable is off.
+            - Any write to jitter_enable turns jitter on.
+            - jitter_regwen has no impact on jitter_enable.
+
             X-ref with various specific jitter enable tests.
-            SiVal: This is a connectivity test only, not suitable for sival.
+            SiVal: CPU must be enabled, but no other OTP or lifecycle dependencies.
             '''
       stage: V2
       si_stage: NA
@@ -211,7 +216,14 @@
       name: chip_sw_clkmgr_jitter_cycle_measurements
       desc: '''Verify jitter via clock cycle measurements after calibration.
             The clock count thresholds for main clk need to be set wider than when jitter is disabled.
-            SiVal: This is only useful on real silicon.
+            Check when jitter is enabled:
+            - Using jitter thresholds no errors are detected.
+            - Using normal thresholds results in recoverable errors.
+            - Don't test normal thresholds for FPGAs since they don't support jitter and no errors will occur.
+            Check when jitter is disabled:
+            - Using either sets of thresholds result in no errors.
+
+            SiVal: This is only useful on real silicon since FPGAs don't support jitter.
             Should be done after clock calibration.
             '''
       stage: V3
