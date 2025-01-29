@@ -229,22 +229,28 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             region[1],
             FlashRegion("data", 1, 256, 32, romext_region[1], "LK")
         );
+
+        // Current owner (fake_owner in flash SideA) doesn't have a configuration,
+        // so no MP_REGION registers are programmed.
+
+        // Next owner (dummy_owner in Flash SideB) is the next owner configuration.
         assert_eq!(
             region[2],
-            FlashRegion("data", 2, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
+            FlashRegion("data", 2, 288, 192, "RD-WR-ER-SC-EC-xx", "UN")
         );
         assert_eq!(
             region[3],
-            FlashRegion("data", 3, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
+            FlashRegion("data", 3, 480, 32, "RD-WR-ER-xx-xx-HE", "UN")
         );
-        // Flash SideB is the next owner configuration.
+
+        // The remaining flash regions are unused.
         assert_eq!(
             region[4],
-            FlashRegion("data", 4, 288, 192, "RD-WR-ER-SC-EC-xx", "UN")
+            FlashRegion("data", 4, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
         );
         assert_eq!(
             region[5],
-            FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", "UN")
+            FlashRegion("data", 5, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
         );
         assert_eq!(
             region[6],
@@ -296,14 +302,6 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     }
     let region = FlashRegion::find_all(&capture[1])?;
 
-    // The rescue_slot should be the active side and has protect_when_active = true.
-    let app_region = match opts.rescue_slot {
-        BootSlot::SlotA => ["RD-xx-xx-SC-EC-xx", "RD-WR-ER-SC-EC-xx"],
-        BootSlot::SlotB => ["RD-WR-ER-SC-EC-xx", "RD-xx-xx-SC-EC-xx"],
-        _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
-    };
-
-    //
     // Since we are in a locked ownership state, we expect the region configuration
     // to reflect both the `protect_when_active` and `lock` properties of the
     // owner's flash configuration.
@@ -312,6 +310,26 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
     } else {
         "UN"
     };
+
+    // The rescue_slot should be the active side and has protect_when_active = true.
+    let app_region = match opts.rescue_slot {
+        BootSlot::SlotA => [
+            // Slot A protected, Slot B writable.
+            FlashRegion("data", 2, 32, 192, "RD-xx-xx-SC-EC-xx", locked),
+            FlashRegion("data", 3, 224, 32, "RD-WR-ER-xx-xx-HE", locked),
+            FlashRegion("data", 4, 288, 192, "RD-WR-ER-SC-EC-xx", locked),
+            FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", locked),
+        ],
+        BootSlot::SlotB => [
+            // Slot A writable, Slot B protected.
+            FlashRegion("data", 2, 32, 192, "RD-WR-ER-SC-EC-xx", locked),
+            FlashRegion("data", 3, 224, 32, "RD-WR-ER-xx-xx-HE", locked),
+            FlashRegion("data", 4, 288, 192, "RD-xx-xx-SC-EC-xx", locked),
+            FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", locked),
+        ],
+        _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
+    };
+
     // The ROM_EXT always protects itself in regions 0 and 1.
     assert_eq!(
         region[0],
@@ -322,25 +340,12 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         FlashRegion("data", 1, 256, 32, romext_region[1], "LK")
     );
     // Flash Slot A:
-    assert_eq!(
-        region[2],
-        FlashRegion("data", 2, 32, 192, app_region[0], locked)
-    );
-    assert_eq!(
-        region[3],
-        FlashRegion("data", 3, 224, 32, "RD-WR-ER-xx-xx-HE", locked)
-    );
+    assert_eq!(region[2], app_region[0],);
+    assert_eq!(region[3], app_region[1],);
     // Flash Slot B:
-    assert_eq!(
-        region[4],
-        FlashRegion("data", 4, 288, 192, app_region[1], locked)
-    );
-    assert_eq!(
-        region[5],
-        FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", locked)
-    );
-    // Regions 6 and 7 aren't specified in the owner config and therefore
-    // should be left unlocked.
+    assert_eq!(region[4], app_region[2],);
+    assert_eq!(region[5], app_region[3],);
+    // The last two regions are unused, and therefore, should be left unlocked.
     assert_eq!(
         region[6],
         FlashRegion("data", 6, 0, 0, "xx-xx-xx-xx-xx-xx", "UN")
