@@ -603,6 +603,10 @@ module racl_ctrl_reg_top
       .en_i ( 1'b1          ),
       .out_o( racl_role_vec )
     );
+    // For the static RACL assignment for racl_ctrl only one role (ROT_PRIVATE) is used,
+    // leaving others unread. Intentionally read them to avoid linting errors.
+    logic unused_role_vec;
+    assign unused_role_vec = ^racl_role_vec;
   end else begin : gen_no_racl_role_logic
     assign racl_role     = '0;
     assign racl_role_vec = '0;
