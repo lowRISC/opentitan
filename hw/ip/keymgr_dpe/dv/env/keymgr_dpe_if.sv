@@ -183,20 +183,18 @@ interface keymgr_dpe_if(input clk, input rst_n);
     rom_digests[i].valid = !bad_valid;
   endfunction
 
-  // randomize lc, flash input data
+  // randomize lc and input data
   task automatic drive_random_hw_input_data(int num_invalid_input = 0);
     // Firstly, decide which signals should be driven with invalid data. Store the choices we make
     // as a set of flags / counters.
     bit bad_keymgr_dpe_div = 1'b0;
     bit bad_otp_device_id = 1'b0;
-    int bad_flash_seeds = 0;
     bit [NumRomDigestInputs-1:0] bad_rom_data = '0, bad_rom_valid = '0;
 
     repeat (num_invalid_input) begin
       randcase
         1: bad_keymgr_dpe_div = 1'b1;
         1: bad_otp_device_id = 1'b1;
-        1: bad_flash_seeds++;
         1: bad_rom_data[$urandom % NumRomDigestInputs] = 1'b1;
         1: bad_rom_valid[$urandom % NumRomDigestInputs] = 1'b1;
       endcase
@@ -215,12 +213,6 @@ interface keymgr_dpe_if(input clk, input rst_n);
       begin
         #($urandom_range(1000, 0) * 1ns);
         set_random_otp_device_id(bad_otp_device_id);
-      end
-
-      // flash
-      begin
-        #($urandom_range(1000, 0) * 1ns);
-        set_random_flash(bad_flash_seeds);
       end
 
       // rom_digests
