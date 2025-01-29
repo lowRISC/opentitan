@@ -283,7 +283,11 @@ jobs:
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build simulator with Verilator
-        run: ./ci/scripts/build-chip-verilator.sh englishbreakfast
+        run: |
+          ./bazelisk.sh build //hw/top_englishbreakfast:verilator_sim
+          sim_binary_path=$(./bazelisk.sh cquery --output=files //hw/top_englishbreakfast:verilator_sim)
+          mkdir -p build-bin/hw/top_englishbreakfast
+          cp ${sim_binary_path} build-bin/hw/top_englishbreakfast/
       - name: Upload binary
         uses: actions/upload-artifact@v4
         with:
@@ -330,6 +334,30 @@ jobs:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
       - name: Build bitstream
         run: |
+          . util/build_consts.sh
+
+          bitstream_target=//hw/top_englishbreakfast/bitstream:fpga_cw305
+          archive_target=//hw/top_englishbreakfast/bitstream:englishbreakfast_cw305_archive
+          bitstream_archive=$(./bazelisk.sh outquery ${archive_target})
+
+          trap 'get_logs' EXIT
+          get_logs() {
+            design_name=chip_englishbreakfast_cw305
+            SUB_PATH="hw/top_englishbreakfast/${design_name}"
+            mkdir -p "$OBJ_DIR/$SUB_PATH" "$BIN_DIR/$SUB_PATH"
+            # This can fail if the build result is from Bazel cache
+            cp -rLvt "$OBJ_DIR/$SUB_PATH/" \
+              $(./bazelisk.sh outquery-all ${bitstream_target}) || true
+
+            # TODO: Splice ROM into the bitstream?
+            cp -Lv ${bitstream_archive} build-bin.tar
+          }
+
+          # Build the bitstream first. It has an empty ROM (all zeroes).
+          module load "xilinx/vivado/${VIVADO_VERSION}"
+          ./bazelisk.sh build //hw/top_englishbreakfast/bitstream:englishbreakfast_cw305_archive
+          tar xvf ${bitstream_archive}
+
           # Build CW305 test rom required by `build-bitstream-vivado.sh`
           rom_path="sw/device/lib/testing/test_rom"
           ./bazelisk.sh build "//${rom_path}:test_rom_fpga_cw305" \
@@ -342,13 +370,11 @@ jobs:
           mkdir -p "build-bin/${rom_path}"
           cp "$vmem" "build-bin/${rom_path}"
 
-          module load "xilinx/vivado/${VIVADO_VERSION}"
-          ci/scripts/build-bitstream-vivado.sh top_englishbreakfast cw305
       - name: Upload bitstream
         uses: actions/upload-artifact@v4
         with:
           name: chip_englishbreakfast_cw305
-          path: build-bin/hw/top_englishbreakfast/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit
+          path: build-bin.tar
           overwrite: true
 
   chip_earlgrey_cw310:
