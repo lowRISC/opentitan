@@ -70,9 +70,9 @@ package keymgr_dpe_pkg;
 
   // TODO(#354): Define further policy bits and extend this struct
   typedef struct packed {
-    logic allow_child;
-    logic exportable;
     logic retain_parent;
+    logic exportable;
+    logic allow_child;
   } keymgr_dpe_policy_t;
 
   // An internal secret key slot
@@ -95,9 +95,9 @@ package keymgr_dpe_pkg;
   } keymgr_dpe_key_update_e;
 
   localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
-    allow_child   : 1'b1,
+    retain_parent : 1'b0,
     exportable    : 1'b0,
-    retain_parent : 1'b0
+    allow_child   : 1'b1
   };
 
   // Keymgr_dpe requires more lc_en copies than keymgr
