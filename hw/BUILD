@@ -32,19 +32,33 @@ string_list_flag(
     ],
 )
 
+filegroup(
+    name = "verilator_files",
+    srcs = glob(["dv/verilator/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dpi_files",
+    srcs = glob(["dv/dpi/**"]),
+    visibility = ["//visibility:public"],
+)
+
+filegroup(
+    name = "dv_common_files",
+    srcs = glob(["dv/sv/**"]),
+    visibility = ["//visibility:public"],
+)
+
 fusesoc_build(
     name = "verilator_real",
     srcs = [
+        ":dpi_files",
+        ":dv_common_files",
         ":rtl_files",
+        ":verilator_files",
         "//hw/ip:verilator_files",
-    ] + glob(
-        # Verilator needs additional DV files.
-        [
-            "dv/verilator/**",
-            "dv/dpi/**",
-            "dv/sv/**",
-        ],
-    ),
+    ],
     cores = [
         "//:cores",
     ],
