@@ -58,7 +58,8 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
+    #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -85,7 +86,8 @@ opentitan_binary(
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
+    #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",

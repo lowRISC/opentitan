@@ -242,7 +242,8 @@ opentitan_binary(
     immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
+    #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -271,7 +272,8 @@ opentitan_binary(
     immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
-    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
+    #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
