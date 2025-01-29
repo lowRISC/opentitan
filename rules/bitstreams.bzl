@@ -61,6 +61,7 @@ def _bitstreams_repo_impl(rctx):
         [
             rctx.path(rctx.attr.python_interpreter),
             rctx.attr._cache_manager,
+            "--branch=earlgrey_1.0.0",
             "--build-file=BUILD.bazel",
             "--bucket-url={}".format(rctx.attr.bucket_url),
             "--cache={}".format(cache_path),
