@@ -26,6 +26,11 @@ enum {
   kFlashPageSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE,
   kFlashTotalSize = FLASH_CTRL_PARAM_REG_NUM_BANKS * kFlashBankSize,
 
+  kFlashSlotAStart = 0,
+  kFlashSlotAEnd = kFlashSlotAStart + kFlashBankSize,
+  kFlashSlotBStart = kFlashBankSize,
+  kFlashSlotBEnd = kFlashSlotBStart + kFlashBankSize,
+
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / kFlashPageSize,
   kRomExtAStart = 0 / kFlashPageSize,
   kRomExtAEnd = kRomExtAStart + kRomExtSizeInPages,
@@ -197,6 +202,15 @@ hardened_bool_t rom_ext_flash_exclusive(uint32_t start, uint32_t end) {
              : kHardenedBoolFalse;
 }
 
+static hardened_bool_t in_flash_slot(uint32_t bank_start, uint32_t start,
+                                     uint32_t end) {
+  uint32_t bank_end = bank_start + kFlashBankSize;
+  return (bank_start <= start && start < bank_end && bank_start < end &&
+          end <= bank_end)
+             ? kHardenedBoolTrue
+             : kHardenedBoolFalse;
+}
+
 rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
   size_t len = (flash->header.length - sizeof(owner_flash_config_t)) /
                sizeof(owner_flash_region_t);
@@ -204,19 +218,34 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
     return kErrorOwnershipFlashConfigLength;
   }
 
+  uint32_t num_slot_a = 0;
+  uint32_t num_slot_b = 0;
   const owner_flash_region_t *config = flash->config;
   uint32_t crypt = 0;
   for (size_t i = 0; i < len; ++i, ++config, crypt += 0x11111111) {
     uint32_t start = config->start;
     uint32_t end = start + config->size;
-    if (end > kFlashTotalSize) {
-      return kErrorOwnershipFlashConfigBounds;
-    }
     // When checking the flash configuration, a region is a ROM_EXT region if
     // it overlaps the ROM_EXT bounds.  It is an error to accept a new config
     // with a flash region that overlaps the ROM_EXT.
     if (rom_ext_flash_overlap(start, end) == kHardenedBoolTrue) {
       return kErrorOwnershipFlashConfigRomExt;
+    } else if (in_flash_slot(kFlashSlotAStart, start, end) ==
+               kHardenedBoolTrue) {
+      num_slot_a += 1;
+      if (num_slot_a > FLASH_CONFIG_REGIONS_PER_SLOT) {
+        return kErrorOwnershipFlashConfigSlots;
+      }
+    } else if (in_flash_slot(kFlashSlotBStart, start, end) ==
+               kHardenedBoolTrue) {
+      num_slot_b += 1;
+      if (num_slot_b > FLASH_CONFIG_REGIONS_PER_SLOT) {
+        return kErrorOwnershipFlashConfigSlots;
+      }
+    } else {
+      // Flash regions are not allowed to span between slots or extend beyond
+      // the end of flash.
+      return kErrorOwnershipFlashConfigBounds;
     }
   }
   return kErrorOk;
@@ -224,9 +253,20 @@ rom_error_t owner_block_flash_check(const owner_flash_config_t *flash) {
 
 rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
                                     uint32_t config_side,
-                                    uint32_t owner_lockdown) {
-  if ((hardened_bool_t)flash == kHardenedBoolFalse)
+                                    uint32_t owner_lockdown,
+                                    uint32_t *mp_index) {
+  if ((hardened_bool_t)flash == kHardenedBoolFalse) {
+    // If there is no flash configuration, there is nothing to do in this
+    // function.
     return kErrorOk;
+  }
+  // We don't check `mp_index` for null because:
+  // - it is a programming error to pass null for that parameter.
+  // - if we were to return an error, we'd either skip flash configuration or
+  //   bail out of the boot flow, resulting in a boot fault.
+  // - if an attacker were to fault the value to null, we don't want an error
+  //   case to cause skipping flash configuration.  By allowing a read to null,
+  //   a fault will occur and reboot the chip.
 
   // TODO: Hardening: lockdown should be one of kBootSlotA, kBootSlotB or
   // kHardenedBoolFalse.
@@ -265,40 +305,33 @@ rom_error_t owner_block_flash_apply(const owner_flash_config_t *flash,
           bitfield_field32_read(val, FLASH_CONFIG_LOCK) != kMultiBitBool4False
               ? kHardenedBoolTrue
               : kHardenedBoolFalse;
-      uint32_t region_start = config->start;
-      uint32_t region_end = region_start + config->size;
 
-      // When applying the flash configuration, a region is a ROM_EXT region if
-      // it is exclusively within the ROM_EXT bounds.  This sets the creator
-      // the lockdown policy for a region that is exclusively the creator
-      // region.
-      if (rom_ext_flash_exclusive(region_start, region_end) ==
-          kHardenedBoolTrue) {
-        // Flash region is a ROM_EXT region.  Do nothing.
-        // Some early configurations explicitly set parameters for the ROM_EXT
-        // region.  We ignore these regions in favor of the ROM_EXT setting
-        // its own protection parameters.
-        continue;
-      } else {
-        // Flash region is an owner region.
-        // If the config_side is the same as the owner lockdown side, and
-        // protect_when_primary is requested, deny write/erase to the region.
-        if (config_side == owner_lockdown && pwp != kMultiBitBool4False) {
-          perm.write = kMultiBitBool4False;
-          perm.erase = kMultiBitBool4False;
-        }
-        // If we aren't in a lockdown state, then do not lock the region
-        // configuration via the flash_ctrl regwen bits.
-        if (owner_lockdown == kHardenedBoolFalse) {
-          lock = kHardenedBoolFalse;
-        }
+      // Flash region is an owner region.
+      // If the config_side is the same as the owner lockdown side, and
+      // protect_when_primary is requested, deny write/erase to the region.
+      if (config_side == owner_lockdown && pwp != kMultiBitBool4False) {
+        perm.write = kMultiBitBool4False;
+        perm.erase = kMultiBitBool4False;
       }
-      flash_ctrl_data_region_protect(kRomExtRegions + i, config->start,
-                                     config->size, perm, cfg, lock);
-      SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect +
-                               (lock == kHardenedBoolTrue
-                                    ? kFlashCtrlSecMmioDataRegionProtectLock
-                                    : 0));
+
+      // If we aren't in a lockdown state, then do not lock the region
+      // configuration via the flash_ctrl regwen bits.
+      if (owner_lockdown == kHardenedBoolFalse) {
+        lock = kHardenedBoolFalse;
+      }
+
+      if (*mp_index < 2 * FLASH_CONFIG_REGIONS_PER_SLOT) {
+        // We can only apply the region protection of mp_index is
+        // within its acceptable bounds.
+        flash_ctrl_data_region_protect(kRomExtRegions + *mp_index,
+                                       config->start, config->size, perm, cfg,
+                                       lock);
+        SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect +
+                                 (lock == kHardenedBoolTrue
+                                      ? kFlashCtrlSecMmioDataRegionProtectLock
+                                      : 0));
+      }
+      *mp_index += 1;
     }
   }
   return kErrorOk;

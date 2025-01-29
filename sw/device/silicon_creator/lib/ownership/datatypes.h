@@ -298,6 +298,11 @@ enum {
 // clang-format on
 
 /**
+ * The maximum number of owner_flash_region_t allower per slot.
+ */
+#define FLASH_CONFIG_REGIONS_PER_SLOT 3
+
+/**
  * The owner flash region describes a region of flash and its configuration
  * properties (ie: ECC, Scrambling, High Endurance, etc).
  */
