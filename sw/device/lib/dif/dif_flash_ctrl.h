@@ -52,6 +52,17 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_flash_ctrl_init_state(dif_flash_ctrl_state_t *handle,
                                        mmio_region_t base_addr);
 
+/**
+ * Initialize the DIF state for the flash controller.
+ *
+ * @param handle The flash controller DIF state to initialize.
+ * @param dt The flash controller dt.
+ * @return `kDifBadArg` if `handle` is null. `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_flash_ctrl_init_state_from_dt(dif_flash_ctrl_state_t *handle,
+                                               dt_flash_ctrl_t dt);
+
 typedef struct dif_flash_ctrl_device_info {
   /** Number of banks under this flash controller. */
   uint32_t num_banks;

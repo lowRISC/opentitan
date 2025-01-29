@@ -132,6 +132,12 @@ dif_result_t dif_flash_ctrl_init_state(dif_flash_ctrl_state_t *handle,
   return kDifOk;
 }
 
+dif_result_t dif_flash_ctrl_init_state_from_dt(dif_flash_ctrl_state_t *handle,
+                                               dt_flash_ctrl_t dt) {
+  return dif_flash_ctrl_init_state(
+      handle, mmio_region_from_addr(dt_flash_ctrl_primary_reg_block(dt)));
+}
+
 OT_WARN_UNUSED_RESULT
 dif_flash_ctrl_device_info_t dif_flash_ctrl_get_device_info(void) {
   const dif_flash_ctrl_device_info_t info = {
