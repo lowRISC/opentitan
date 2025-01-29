@@ -54,10 +54,10 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext_epmp.h"
 #include "sw/device/silicon_creator/rom_ext/sigverify_keys.h"
 
+#include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"  // Generated.
 #include "otp_ctrl_regs.h"
 #include "sram_ctrl_regs.h"
-#include "flash_ctrl_regs.h"
 
 static_assert(kCertX509Asn1SerialNumberSizeInBytes <= kHmacDigestNumBytes,
               "The ASN.1 encoded X.509 serial number field should be <= the "
