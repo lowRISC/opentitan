@@ -190,6 +190,19 @@ package hmac_env_pkg;
     endcase
   endfunction : get_key_length
 
+  function automatic key_length_e get_key_length_reg(int key_length);
+    key_length_e key_length_reg;
+    case (key_length)
+      128:     key_length_reg = Key_128;
+      256:     key_length_reg = Key_256;
+      384:     key_length_reg = Key_384;
+      512:     key_length_reg = Key_512;
+      1024:    key_length_reg = Key_1024;
+      default: key_length_reg = Key_None;
+    endcase
+    return key_length_reg;
+  endfunction : get_key_length_reg
+
   function automatic string get_digest_size(int digest_size_reg);
     case (digest_size_reg)
       'h01:    return "SHA2_256";    // SHA-2 256 digest
@@ -210,6 +223,39 @@ package hmac_env_pkg;
       default: return 0;
     endcase
   endfunction : get_block_size
+
+  // Extract NIST vector list name
+  function automatic string get_nist_list_name(string vector_list_path);
+    int last_slash   = -1;
+    int last_dot     = -1;
+    string list_name = "";
+
+    // Find the last slash and last dot positions in this string
+    for (int i=vector_list_path.len()-1; i>=0; i--) begin
+      if ((last_slash == -1) && (vector_list_path[i] == "/")) begin
+        last_slash = i;
+      end
+      if ((last_dot == -1) && (vector_list_path[i] == ".")) begin
+        last_dot = i;
+      end
+      if (last_dot != -1 && last_slash != -1) begin
+        break;
+      end
+    end
+
+    // Finally, extract the list name based on the last slash and last dot positions
+    list_name  = vector_list_path.substr(last_slash+1, last_dot-1);
+
+    // Check that vector list is not empty and that expected slash and dot were found
+    if (list_name == "" || last_dot == -1 || last_slash == -1) begin
+      `uvm_fatal($sformatf("%m"), $sformatf("Vector file name is incorrect: %0s", vector_list_path))
+    end else begin
+      `uvm_info("hmac_env_pkg", $sformatf("NIST list_name is %0s", list_name), UVM_DEBUG)
+    end
+
+    return list_name;
+  endfunction : get_nist_list_name
+
 
   typedef virtual hmac_if hmac_vif;
 

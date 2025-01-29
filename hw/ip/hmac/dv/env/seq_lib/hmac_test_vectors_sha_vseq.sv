@@ -16,6 +16,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
 
   // Constraints
   extern constraint hmac_disabled_c;
+  extern constraint num_trans_c;
 
   // Standard SV/UVM methods
   extern function new(string name="");
@@ -23,12 +24,16 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   extern task body();
 
   // Class specific methods
-  extern task feed_vectors (string vector_list[], bit [3:0] digest_size);
+  extern task feed_vectors(string vector_name, bit [3:0] digest_size);
 endclass : hmac_test_vectors_sha_vseq
 
 
 constraint hmac_test_vectors_sha_vseq::hmac_disabled_c {
   soft hmac_en == 0;
+}
+
+constraint hmac_test_vectors_sha_vseq::num_trans_c {
+  soft num_trans == 30;
 }
 
 function hmac_test_vectors_sha_vseq::new(string name="");
@@ -52,79 +57,80 @@ task hmac_test_vectors_sha_vseq::pre_start();
   super.pre_start();
 endtask : pre_start
 
-task hmac_test_vectors_sha_vseq::feed_vectors (string vector_list[], bit [3:0] digest_size);
+task hmac_test_vectors_sha_vseq::feed_vectors(string vector_name, bit [3:0] digest_size);
   test_vectors_pkg::test_vectors_t parsed_vectors[];
+  bit hmac_invalid_cfg = 0;
 
-  foreach (vector_list[i]) begin
-    // import function from the test_vectors_pkg to parse the sha vector file
-    test_vectors_pkg::get_hash_test_vectors(.test_name(vector_list[i]),
-                                            .parsed_vectors(parsed_vectors),
-                                            .reverse_key(0));
-    parsed_vectors.shuffle();
+  // import function from the test_vectors_pkg to parse the sha vector file
+  test_vectors_pkg::get_hash_test_vectors(.test_name(vector_name),
+                                          .parsed_vectors(parsed_vectors),
+                                          .reverse_key(0));
+  // Randomize the order of the vectors as only the firsts "num_trans" vectors will be run
+  parsed_vectors.shuffle();
 
-    // if in smoke_regression mode, to reduce the run time, we will randomly pick 2 vectors to
-    // run this sequence
-    if (cfg.smoke_test) begin
-      parsed_vectors = parsed_vectors[0:1];
+  // if in smoke_regression mode, to reduce the run time, we will randomly pick 2 vectors to
+  // run this sequence
+  if (cfg.smoke_test) begin
+    parsed_vectors = parsed_vectors[0:1];
+  end
+
+  // Ensure that the number of vectors to run is not more than the number of vectors available
+  if (parsed_vectors.size() < num_trans) begin
+    num_trans = parsed_vectors.size();
+  end
+
+  for (int j=0; j<num_trans; j++) begin
+    bit [TL_DW-1:0] intr_state_val;
+    `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_MEDIUM)
+
+    key_length = get_key_length_reg(parsed_vectors[j].sha2_key_length);
+
+    // Check if the key length is valid for the current digest size (only used in HMAC mode)
+    if ((key_length == Key_None) || (digest_size == SHA2_256 && key_length == Key_1024)) begin
+      hmac_invalid_cfg = 1;
+    end else begin
+      hmac_invalid_cfg = 0;
     end
 
-    foreach (parsed_vectors[j]) begin
-      bit [TL_DW-1:0] intr_state_val;
-      `uvm_info(`gfn, $sformatf("vector[%0d]: %0p", j, parsed_vectors[j]), UVM_LOW)
+    // only input HMAC test vectors with valid key length and while key length is
+    // not 1024-bit for SHA-2 256 to avoid invalid configuration case
+    if ((!hmac_en) || (hmac_en && !hmac_invalid_cfg)) begin
+      hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0), .key_swap(1'b0),
+                .digest_size(digest_size), .key_length(key_length));
 
-      case (parsed_vectors[j].sha2_key_length)
-        128:     key_length = Key_128;
-        256:     key_length = Key_256;
-        384:     key_length = Key_384;
-        512:     key_length = Key_512;
-        1024:    key_length = Key_1024;
-        default: key_length = Key_None;
-      endcase
+      `uvm_info(`gtn, $sformatf("%s, starting seq %0d/%0d, message size %0d bits",
+                vector_name, j+1, num_trans, parsed_vectors[j].msg_length_byte*8), UVM_LOW)
 
-      // only input HMAC test vectors with valid key length and while key length is
-      // not 1024-bit for SHA-2 256 to avoid invalid configuration case
-      if ((!hmac_en) || (hmac_en &&
-                        (key_length!= Key_None) &&
-                        !(digest_size == SHA2_256 && key_length == Key_1024))) begin
-        hmac_init(.hmac_en(hmac_en), .endian_swap(1'b1), .digest_swap(1'b0), .key_swap(1'b0),
-                  .digest_size(digest_size), .key_length(key_length));
+      `uvm_info(`gfn, $sformatf("digest size=%s, key length=%0d",
+                get_digest_size(digest_size), get_key_length(key_length)), UVM_LOW)
 
-        `uvm_info(`gtn, $sformatf("%s, starting seq %0d/%0d, message size %0d bits",
-                  vector_list[i], j+1, parsed_vectors.size(),
-                  parsed_vectors[j].msg_length_byte*8),
-                  UVM_LOW)
+      // always start off the transaction by reading previous digest to clear
+      // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
+      rd_digest();
 
-        `uvm_info(`gfn, $sformatf("digest size=%s, key length=%0d",
-                  get_digest_size(digest_size), get_key_length(key_length)), UVM_LOW)
-
-        // always start off the transaction by reading previous digest to clear
-        // cfg.wipe_secret_triggered flag and update the exp digest val in scb with last digest
-        rd_digest();
-
-        if ($urandom_range(0, 1) && !hmac_en) begin
-          `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized
-          wr_key(key);
-        end else begin
-          wr_key(parsed_vectors[j].keys);
-        end
-
-        trigger_hash();
-
-        // wr_msg is non_blocking to ensure the order of input msg
-        wr_msg(parsed_vectors[j].msg);
-
-        trigger_process();
-
-        wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
-        csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
-        csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
-        compare_digest(parsed_vectors[j].exp_digest,
-                       parsed_vectors[j].digest_length_byte,
-                       digest_size);
+      if ($urandom_range(0, 1) && !hmac_en) begin
+        `DV_CHECK_RANDOMIZE_FATAL(this) // only key is randomized
+        wr_key(key);
       end else begin
-        `uvm_info(`gtn, $sformatf("Discarding HMAC seq with invalid key length"), UVM_LOW)
-        continue;
+        wr_key(parsed_vectors[j].keys);
       end
+
+      trigger_hash();
+
+      // wr_msg is non_blocking to ensure the order of input msg
+      wr_msg(parsed_vectors[j].msg);
+
+      trigger_process();
+
+      wait(cfg.intr_vif.pins[HmacDone] === 1'b1);
+      csr_rd(.ptr(ral.intr_state), .value(intr_state_val));
+      csr_wr(.ptr(ral.intr_state), .value(intr_state_val));
+      // Read of the digest registers to trigger the comparison in the scoreboard
+      rd_digest();
+    end else begin
+      `uvm_info(`gtn, $sformatf("Discarding HMAC seq %0d/%0d from %0s, due to invalid key length",
+                j+1, num_trans, vector_name), UVM_LOW)
+      continue;
     end
   end
 endtask : feed_vectors
@@ -146,5 +152,7 @@ task hmac_test_vectors_sha_vseq::body();
   end
   `uvm_info(`gfn, $sformatf("Starting SHA-2/HMAC %s NIST test vectors...",
             digest_size_arg), UVM_LOW)
-  feed_vectors (vector_list, digest_size);
+  // Pick only one random vectors list
+  vector_list.shuffle();
+  feed_vectors(vector_list[0], digest_size);
 endtask : body

@@ -18,6 +18,9 @@ class hmac_env_cfg extends cip_base_env_cfg #(.RAL_T(hmac_reg_block));
   // continue hashing.
   int save_and_restore_pct;
 
+  // Flag to notify the scoreboard to treat the current digest as NIST
+  bit is_nist_test = 0;
+
   // TODO (#23562): will be removed when tackling this issue
   // Flag to notify the scoreboard to skip the current message writes and don't flush its variables
   bit sar_skip_ctxt = 0;
@@ -47,4 +50,6 @@ function void hmac_env_cfg::initialize(bit [TL_AW-1:0] csr_base_addr = '1);
 
   // Used to allow reset operations without waiting for CSR accesses to complete
   can_reset_with_csr_accesses = 1;
+
+  void'($value$plusargs("is_nist_test=%b", is_nist_test));
 endfunction : initialize

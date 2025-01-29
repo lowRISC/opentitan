@@ -2,8 +2,52 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// This covergroup requires to be wrapped into class to be replicated as much as needed and
+// be referenced in a generic way from the scoreboard
+class nist_cov_wrap;
+  // Usage of queue is supported since the set_covergroup_expression construct has been introduced
+  // in SystemVerilog LRM 1800-2012
+  int valid_vec_q[$];
+
+  covergroup nist_test_cg(string name) with function sample(int vec_i);
+    option.per_instance = 1;
+    option.name         = name;
+
+    vec_cg : coverpoint vec_i {
+      bins vector_list[] = valid_vec_q;
+    }
+  endgroup : nist_test_cg
+
+  function new(string name, string vec_type, test_vectors_pkg::test_vectors_t nist_vectors[]);
+    // Check if the nist_vectors is not empty
+    if (nist_vectors.size() == 0) begin
+      `uvm_fatal("hmac_env_cov", $sformatf("No vectors found for %0s", vec_type))
+    end
+
+    // Create a queue with only supported configurations to avoid unexpected holes
+    foreach (nist_vectors[j]) begin
+      string key_len;
+
+      // Get the key length name from the enum key_length_e
+      key_len = get_key_length_reg(nist_vectors[j].sha2_key_length).name();
+
+      // Check if the configuration is invalid (only for HMAC)
+      if ((vec_type == "SHA2_256") || (vec_type == "SHA2_384") || (vec_type == "SHA2_512") ||
+         ((key_len != "Key_None") && !(vec_type == "HMAC_SHA2_256" && key_len == "Key_1024"))) begin
+        valid_vec_q.push_back(j);
+      end else begin
+        `uvm_info("hmac_env_cov", $sformatf("Removed vector %0d from list %0s", j, name), UVM_DEBUG)
+      end
+    end
+
+    nist_test_cg = new(name);
+  endfunction : new
+endclass : nist_cov_wrap
+
 class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
   `uvm_component_utils(hmac_env_cov)
+
+  nist_cov_wrap nist_cov[string];
 
   covergroup cfg_cg with function sample (bit [TL_DW-1:0] cfg);
     hmac_en: coverpoint cfg[HmacEn] {
@@ -145,10 +189,14 @@ class hmac_env_cov extends cip_base_env_cov #(.CFG_T(hmac_env_cfg));
 
   // Standard SV/UVM methods
   extern function new(string name, uvm_component parent);
+
+  // Class specific methods
+  extern function void create_nist_cg(string vec_type, string vector_list[]);
 endclass : hmac_env_cov
 
 
 function hmac_env_cov::new(string name, uvm_component parent);
+  bit is_nist_test;
   super.new(name, parent);
   cfg_cg                      = new();
   status_cg                   = new();
@@ -161,4 +209,33 @@ function hmac_env_cov::new(string name, uvm_component parent);
   trig_rst_during_hash_cg     = new();
   rd_digest_during_hmac_en_cg = new();
   save_and_restore_cg         = new();
+
+  // We cannot use the `cfg` object here because it has not been created yet and we need to call
+  // new before the build_phase
+  void'($value$plusargs("is_nist_test=%b", is_nist_test));
+  if (is_nist_test) begin
+    create_nist_cg("SHA2_256"     , test_vectors_pkg::sha2_256_file_list);
+    create_nist_cg("SHA2_384"     , test_vectors_pkg::sha2_384_file_list);
+    create_nist_cg("SHA2_512"     , test_vectors_pkg::sha2_512_file_list);
+    create_nist_cg("HMAC_SHA2_256", test_vectors_pkg::hmac_sha256_file_list);
+    create_nist_cg("HMAC_SHA2_384", test_vectors_pkg::hmac_sha384_file_list);
+    create_nist_cg("HMAC_SHA2_512", test_vectors_pkg::hmac_sha512_file_list);
+  end
 endfunction : new
+
+function void hmac_env_cov::create_nist_cg(string vec_type, string vector_list[]);
+  test_vectors_pkg::test_vectors_t nist_vectors[];
+  string list_name;
+
+  foreach (vector_list[list_i]) begin
+    nist_vectors.delete();
+    // Get the vector list name
+    list_name = get_nist_list_name(vector_list[list_i]);
+
+    // Get the vectors from this list
+    test_vectors_pkg::get_hash_test_vectors(vector_list[list_i], nist_vectors, 0);
+
+    // Create one covergroup per vector list
+    nist_cov[list_name] = new($sformatf("nist_test_cg[%0s]", list_name), vec_type, nist_vectors);
+  end
+endfunction : create_nist_cg

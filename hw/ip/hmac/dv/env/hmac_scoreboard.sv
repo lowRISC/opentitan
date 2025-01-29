@@ -32,6 +32,8 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   bit             hmac_fifo_full_last;
   bit [TL_DW-1:0] last_intr_test_wr;
   bit [TL_DW-1:0] intr_state_exp;
+  bit [TL_DW-1:0] nist_act_digest[NUM_DIGESTS];
+  bit             hmac_done_seen;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -59,6 +61,9 @@ class hmac_scoreboard extends cip_base_scoreboard #(.CFG_T (hmac_env_cfg),
   // Query SHA/HMAC to the C model to get expected digest
   extern virtual function void predict_digest(bit [7:0] msg_i[], bit use_gmv = 1, bit sha_en = 0,
     bit hmac_en = 0, bit [3:0] digest_size = 0, bit [5:0] key_length = 0);
+  // Compare digest for NIST test vectors
+  extern function void compare_nist_digest(
+    bit [TL_DW-1:0] act_digest[NUM_DIGESTS], bit [3:0] digest_size);
   // Update the write message length
   extern virtual function void update_wr_msg_length(int size_bytes);
   // Model the interrupt code error
@@ -409,6 +414,8 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
           end
           check_idle(1'b1);
           flush();
+          // Flag to allow NIST digest comparison, clear it on reset or on last digest read
+          hmac_done_seen = 1;
         end
         // hmac has been triggered and config is invalid
         if (hmac_start && invalid_cfg) begin
@@ -450,29 +457,41 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
                     previous_digest_size, `gmv(ral.cfg.digest_size),
                     expected_digest_size), UVM_HIGH)
 
-        // Predict intermediate digest values when S&R has been triggered
-        // TODO (#23240): modify the C model to be able to provide intermediate digest
-        // if (hmac_stopped) predict_digest(msg_q);
-        // And remove lines, when C model will support intermediate hash. For the moment don't
-        // compare digest. Only the final digest will be compared in case of S&R, this is enough
-        // for the moment
-        // Proceed with read digest and compare values with expected
-        if (!hmac_stopped) begin
-          // If wipe_secret is triggered, ensure the predicted value does not match the read out
-          // digest and update the predicted value with the read out value.
-          if (cfg.wipe_secret_triggered) begin
-            `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
-            `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
-                      exp_digest[digest_idx]), UVM_HIGH)
-            // update new digest data to the exp_digest variable.
-            exp_digest[digest_idx] = real_digest_val;
-          end else begin // !cfg.wipe_secret_triggered
-            // only check till digest_idx = 7 for SHA-2 256 and till digest_idx = 11 for SHA-2 384
-            // Remaining digest values are irrelevant or truncated for these digest sizes.
-            if (((expected_digest_size == SHA2_256) && (digest_idx < 8))  ||
-                ((expected_digest_size == SHA2_384) && (digest_idx < 12)) ||
-                  expected_digest_size == SHA2_512) begin
-              `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
+        if (cfg.is_nist_test) begin
+          // For the NIST, don't swap the read digest value
+          nist_act_digest[digest_idx] = item.d_data;
+          // Compare digest only when hmac_done_seen. This is needed as
+          // we are performing reads from the sequences even when the disgest is not supposed to be
+          // ready from the DUT.
+          if ((digest_idx == NUM_DIGESTS-1) && hmac_done_seen) begin
+            compare_nist_digest(nist_act_digest, expected_digest_size);
+            hmac_done_seen = 0;
+          end
+        end else begin
+          // Predict intermediate digest values when S&R has been triggered
+          // TODO (#23240): modify the C model to be able to provide intermediate digest
+          // if (hmac_stopped) predict_digest(msg_q);
+          // And remove lines, when C model will support intermediate hash. For the moment don't
+          // compare digest. Only the final digest will be compared in case of S&R, this is enough
+          // for the moment
+          // Proceed with read digest and compare values with expected
+          if (!hmac_stopped) begin
+            // If wipe_secret is triggered, ensure the predicted value does not match the read out
+            // digest and update the predicted value with the read out value.
+            if (cfg.wipe_secret_triggered) begin
+              `DV_CHECK_NE(real_digest_val, exp_digest[digest_idx])
+              `uvm_info(`gfn, $sformatf("updating digest to read value after wiping 0x%0h",
+                        exp_digest[digest_idx]), UVM_HIGH)
+              // update new digest data to the exp_digest variable.
+              exp_digest[digest_idx] = real_digest_val;
+            end else begin // !cfg.wipe_secret_triggered
+              // only check till digest_idx = 7 for SHA-2 256 and till digest_idx = 11 for SHA-2 384
+              // Remaining digest values are irrelevant or truncated for these digest sizes.
+              if (((expected_digest_size == SHA2_256) && (digest_idx < 8))  ||
+                  ((expected_digest_size == SHA2_384) && (digest_idx < 12)) ||
+                    expected_digest_size == SHA2_512) begin
+                `DV_CHECK_EQ(real_digest_val, exp_digest[digest_idx])
+              end
             end
           end
         end
@@ -555,10 +574,11 @@ function void hmac_scoreboard::reset(string kind = "HARD");
   hmac_start        = ral.cmd.hash_start.get_reset();
   sha_en            = ral.cfg.sha_en.get_reset();
   last_intr_test_wr = ral.intr_test.get_reset();
-  hmac_stopped      = 0;
+  hmac_done_seen    = 0;
   msg_q.delete();
   msg_part_q.delete();
   cfg.wipe_secret_triggered = 0;
+  foreach (nist_act_digest[i]) nist_act_digest[i] = ral.digest[i].get_reset();
 endfunction : reset
 
 // clear variables after hmac_done
@@ -887,7 +907,7 @@ function void hmac_scoreboard::predict_digest(
                                                   big_endian_key[0:31], msg_i, exp_digest);
       end
       `uvm_info(`gfn, $sformatf("HMAC of key=%p (key_swap=%1b), msg_i=%p: %p",
-                                key, `gmv(ral.cfg.key_swap), msg_i, exp_digest), UVM_LOW)
+                                key, `gmv(ral.cfg.key_swap), msg_i, exp_digest), UVM_MEDIUM)
     end
     2'b01: begin
       if (digest_size == SHA2_256) begin
@@ -897,7 +917,7 @@ function void hmac_scoreboard::predict_digest(
       end else if (digest_size == SHA2_512) begin
         cryptoc_dpi_pkg::sv_dpi_get_sha512_digest(msg_i, exp_digest);
       end
-      `uvm_info(`gfn, $sformatf("SHA-2 digest of msg_i=%p: %p", msg_i, exp_digest), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("SHA-2 digest of msg_i=%p: %p", msg_i, exp_digest), UVM_MEDIUM)
     end
     default: begin
       // disgest is cleared if sha_en = 0
@@ -905,6 +925,109 @@ function void hmac_scoreboard::predict_digest(
     end
   endcase
 endfunction : predict_digest
+
+// Compare digest for NIST test vectors, which means that the expected digests are taken from the
+// test vector files. As the sequence is not supposed to provide any information, we need to
+// parse all the NIST files matching with the current digest size and HMAC enablement, and find
+// out where the current digests are matching with the expected digests. If all the 16 digests are
+// matching, then this comparison is successful and the coverage sampling can happen.
+function void hmac_scoreboard::compare_nist_digest(bit [TL_DW-1:0] act_digest[NUM_DIGESTS],
+                                                   bit [3:0]       digest_size);
+  bit [TL_DW-1:0] exp_nist_digest[NUM_DIGESTS];
+  string vector_list[];
+  test_vectors_pkg::test_vectors_t nist_vectors[string][];
+  bit hmac_en              = `gmv(ral.cfg.hmac_en);
+  int matching_digest_cnt  = 0;
+  int nb_relevant_digest   = 0;
+  int list_i, vec_i, dig_i = 0;
+
+  // Retrieve the appropriate test vector list based on the digest size and HMAC enablement
+  if (hmac_en) begin
+    if (digest_size == SHA2_256) begin
+      vector_list = test_vectors_pkg::hmac_sha256_file_list;
+    end else if (digest_size == SHA2_384) begin
+      vector_list = test_vectors_pkg::hmac_sha384_file_list;
+    end else if (digest_size == SHA2_512) begin
+      vector_list = test_vectors_pkg::hmac_sha512_file_list;
+    end else begin
+      `uvm_error(`gfn, "Invalid digest size for HMAC SHA-2 test vectors")
+    end
+  end else begin
+    if (digest_size == SHA2_256) begin
+      vector_list = test_vectors_pkg::sha2_256_file_list;
+    end else if (digest_size == SHA2_384) begin
+      vector_list = test_vectors_pkg::sha2_384_file_list;
+    end else if (digest_size == SHA2_512) begin
+      vector_list = test_vectors_pkg::sha2_512_file_list;
+    end else begin
+      `uvm_error(`gfn, "Invalid digest size for SHA-2 only test vectors")
+    end
+  end
+
+  // Retrieve the expected digest from each of the test vector files, and store it into
+  // an associative array indexed by the test vector name
+  foreach (vector_list[i]) begin
+    test_vectors_pkg::get_hash_test_vectors(vector_list[i], nist_vectors[vector_list[i]], 0);
+  end
+
+  // Find if an expected digest is matching the current digest, if yes carry on with the next
+  // digest, otherwise break the loop and jump to the next test vector. If all the 16 digests are
+  // matching, then the comparison is successful.
+  // When the expected number of digests are matching, then no comparison is needed for the
+  // remaining vectors.
+  do begin
+    do begin
+      // Store the required number of matching digests to be found:
+      // For SHA-2 only (when HMAC is disabled):
+      //   - based on the digest size
+      // For SHA-2 only (when HMAC is disabled):
+      //   - this information should be taken from the test vector file, and is always a multiple
+      //     of 4 bytes (word-aligned) --> (tag_len_byte/4)
+      if (!hmac_en) begin
+        if (digest_size == SHA2_256) begin
+          nb_relevant_digest = 8;
+        end else if (digest_size == SHA2_384) begin
+          nb_relevant_digest = 12;
+        end else if (digest_size == SHA2_512) begin
+          nb_relevant_digest = NUM_DIGESTS;
+        end
+      end else begin
+        nb_relevant_digest = nist_vectors[vector_list[list_i]][vec_i].digest_length_byte / 4;
+      end
+
+      // Reorganize the expected digest from the test vector file into a packed array
+      exp_nist_digest = {>>byte{nist_vectors[vector_list[list_i]][vec_i].exp_digest}};
+
+      // Compare only the relevant digests slices based on the digest size as the remaining
+      // digest register values are irrelevant and may contain previous values or zeroes.
+      do begin
+        if (act_digest[dig_i] == exp_nist_digest[dig_i]) begin
+          matching_digest_cnt++;
+        end else begin
+          matching_digest_cnt = 0;
+          break;  // Break the for loop and jump to the next vector
+        end
+        // Sample which vectors were fully matching
+        if (cfg.en_cov && (matching_digest_cnt == nb_relevant_digest)) begin
+          cov.nist_cov[get_nist_list_name(vector_list[list_i])].nist_test_cg.sample(vec_i);
+        end
+        dig_i++;
+      end while ((matching_digest_cnt < nb_relevant_digest) && (dig_i < nb_relevant_digest));
+      vec_i++;
+      dig_i = 0;
+    end while ((matching_digest_cnt < nb_relevant_digest) &&
+               (vec_i < nist_vectors[vector_list[list_i]].size()));
+    list_i++;
+    vec_i = 0;
+  end while ((matching_digest_cnt < nb_relevant_digest) && (list_i < vector_list.size()));
+
+  // Raise error if the whole actual digest array hasn't found any full matching vector
+  if (matching_digest_cnt < nb_relevant_digest) begin
+    `uvm_error(`gfn, $sformatf({"Expected to get %0d number of matching digests but got %0d for ",
+      "the current configuration: digest_size=%0s, hmac_en=%0d"},
+      nb_relevant_digest, matching_digest_cnt, get_digest_size(digest_size), hmac_en))
+  end
+endfunction : compare_nist_digest
 
 function void hmac_scoreboard::update_wr_msg_length(int size_bytes);
   uint64 size_bits = size_bytes * 8;
