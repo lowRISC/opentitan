@@ -36,6 +36,7 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_darjeeling:sim_dv_base",
     ],
+    features = ["use_lld"],
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
