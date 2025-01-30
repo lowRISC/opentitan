@@ -11,7 +11,7 @@
 // used by the silicon_creator bootstrap implementation and to set reset_reason
 // but missing in the english breakfast top level due to hardware limitations.
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifndef OPENTITAN_IS_ENGLISHBREAKFAST
 #error "This file should be compiled only for the english breakfast top level"
 #endif
 
