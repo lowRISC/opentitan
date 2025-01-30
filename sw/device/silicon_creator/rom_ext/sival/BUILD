@@ -42,6 +42,11 @@ manifest(d = {
     "visibility": ["//visibility:private"],
 })
 
+ROM_EXT_FEATURES = [
+    "minsize",
+    "use_lld",
+]
+
 # To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need a bitstream
 # with the sival keys pre-programmed into OTP.
 # You can manually create such a bitstream with:
@@ -58,14 +63,11 @@ manifest(d = {
             "//hw/top_earlgrey:sim_dv_base",
             "//hw/top_earlgrey:sim_verilator_base",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         immutable_rom_ext_sections = imm_sections["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
         manifest = ":manifest_sival",
+        transitive_features = ROM_EXT_FEATURES,
         # TODO(#26060): Temporarily disable SPX signing of ROM_EXT.
         #spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
         deps = [
@@ -86,13 +88,10 @@ manifest(d = {
             "//hw/top_earlgrey:fpga_cw310",
             "//hw/top_earlgrey:fpga_cw340",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         immutable_rom_ext_sections = imm_sections["main"],
         linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_{}".format(slot),
         linkopts = LINK_ORDER,
+        transitive_features = ROM_EXT_FEATURES,
         deps = [
             ":sival_owner",
             "//sw/device/lib/crt",
