@@ -9,10 +9,10 @@
 module uart
     import uart_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit                   EnableRacl           = 1'b0,
-  parameter bit                   RaclErrorRsp         = EnableRacl,
-  parameter int unsigned          RaclPolicySelVec[13] = '{13{0}}
+  parameter logic [NumAlerts-1:0] AlertAsyncOn                    = {NumAlerts{1'b1}},
+  parameter bit                   EnableRacl                      = 1'b0,
+  parameter bit                   RaclErrorRsp                    = EnableRacl,
+  parameter int unsigned          RaclPolicySelVec[UART_NUM_REGS] = '{UART_NUM_REGS{0}}
 ) (
   input           clk_i,
   input           rst_ni,

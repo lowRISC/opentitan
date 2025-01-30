@@ -5,16 +5,16 @@
 module mbx_sysif
   import tlul_pkg::*;
 #(
-  parameter int unsigned CfgSramAddrWidth         = 32,
-  parameter int unsigned CfgSramDataWidth         = 32,
+  parameter int unsigned CfgSramAddrWidth                      = 32,
+  parameter int unsigned CfgSramDataWidth                      = 32,
   // PCIe capabilities
-  parameter bit          DoeIrqSupport            = 1'b1,
-  parameter bit          DoeAsyncMsgSupport       = 1'b1,
-  parameter bit          EnableRacl               = 1'b0,
-  parameter bit          RaclErrorRsp             = 1'b1,
-  parameter int unsigned RaclPolicySelVecSoc[4]   = '{4{0}},
-  parameter int unsigned RaclPolicySelWinSocWDATA = 0,
-  parameter int unsigned RaclPolicySelWinSocRDATA = 0
+  parameter bit          DoeIrqSupport                         = 1'b1,
+  parameter bit          DoeAsyncMsgSupport                    = 1'b1,
+  parameter bit          EnableRacl                            = 1'b0,
+  parameter bit          RaclErrorRsp                          = 1'b1,
+  parameter int unsigned RaclPolicySelVecSoc[MBX_SOC_NUM_REGS] = '{MBX_SOC_NUM_REGS{0}},
+  parameter int unsigned RaclPolicySelWinSocWDATA              = 0,
+  parameter int unsigned RaclPolicySelWinSocRDATA              = 0
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
