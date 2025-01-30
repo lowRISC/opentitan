@@ -87,7 +87,7 @@ module prim_reg_cdc_arb #(
     SelHwReq
   } req_sel_e;
 
-  typedef enum logic [1:0] {
+  typedef enum logic {
     StIdle,
     StWait
   } state_e;
