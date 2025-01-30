@@ -91,10 +91,19 @@ ld_library(
 )
 
 ld_library(
+    name = "ottf_ld_top_config",
+    includes = ["ottf_ld_top_config.ld"],
+    deps = [
+        "//hw/top:top_ld",
+    ],
+)
+
+ld_library(
     name = "ottf_ld_silicon_creator_slot_a",
     script = "ottf_silicon_creator_a.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
@@ -104,6 +113,7 @@ ld_library(
     script = "ottf_silicon_creator_b.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
@@ -113,6 +123,7 @@ ld_library(
     script = "ottf_silicon_creator_virtual.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
@@ -122,6 +133,7 @@ ld_library(
     script = "ottf_silicon_owner_a.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
@@ -131,6 +143,7 @@ ld_library(
     script = "ottf_silicon_owner_b.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
@@ -140,6 +153,7 @@ ld_library(
     script = "ottf_silicon_owner_virtual.ld",
     deps = [
         ":ottf_ld_common",
+        ":ottf_ld_top_config",
         "//hw/top:top_ld",
     ],
 )
