@@ -311,6 +311,12 @@ impl<T: Flavor> Hyperdebug<T> {
             cmsis_google_capabilities: Cell::new(None),
             phantom: PhantomData,
         };
+        result.inner.execute_command("panicinfo", |line| {
+            log::warn!("HyperDebug panic: {}", line);
+        })?;
+        result
+            .inner
+            .execute_command("panicinfo clear", |_line| {})?;
         Ok(result)
     }
 
@@ -584,10 +590,15 @@ impl Conn {
         // we just "typed". Then zero, one or more lines of useful output, which we want to pass
         // to the callback, and then a prompt characters, indicating that the output is
         // complete.
-        let mut buf = [0u8; 128];
+        let mut buf = [0u8; 4096];
         let mut seen_echo = false;
         let mut len: usize = 0;
         loop {
+            if len == buf.len() {
+                bail!(TransportError::CommunicationError(
+                    "HyperDebug output line too long".to_string()
+                ));
+            }
             // Read more data, appending to existing buffer.
             match port.read(&mut buf[len..]) {
                 Ok(rc) => {
