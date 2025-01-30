@@ -4,6 +4,11 @@
 
 {
   Null: {
-    "*": "SOC_ROT"
+    registers: {
+      "*": "SOC_ROT"
+    }
+    windows: {
+      "*": "SOC_ROT"
+    }
   }
 }

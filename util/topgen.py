@@ -598,15 +598,16 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
     num_subscribing_ips = defaultdict(int)
     for m in topcfg['module']:
         for if_name, mapping_path in m.get('racl_mappings', {}).items():
-            parsed_register_mapping, parsed_window_mapping, racl_group, _ = parse_racl_mapping(
+            register_mapping, window_mapping, range_mapping, racl_group, _ = parse_racl_mapping(
                 topcfg['racl'],
                 mapping_path,
                 if_name,
                 name_to_block[m['type']])
             m['racl_mappings'][if_name] = {
                 'racl_group': racl_group,
-                'register_mapping': parsed_register_mapping,
-                'window_mapping': parsed_window_mapping,
+                'register_mapping': register_mapping,
+                'window_mapping': window_mapping,
+                'range_mapping': range_mapping,
             }
             num_subscribing_ips[racl_group] += 1
 
