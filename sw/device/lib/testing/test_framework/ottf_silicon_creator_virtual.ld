@@ -14,6 +14,8 @@
  * set by Bazel to point to the top's linker file. */
 INCLUDE OPENTITAN_TOP_MEMORY_LD
 
+#include "ottf_ld_top_config.ld"
+
 /**
  * Symbols to be used in the setup of the address translation for the OTTF run
  * at the Silicon Creator boot stage in the virtual slot.
