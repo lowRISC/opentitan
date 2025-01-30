@@ -60,7 +60,7 @@ The parameters that have an effect on the generated block are:
 Parameter         | Default (Max)                 | Top Earlgrey                                       | Description
 ------------------|-------------------------------|----------------------------------------------------|---------------
 `AlertAsyncOn`    | True                          | True                                               | This is passed to the single `prim_alert_sender` instance and causes it to generate synchronization logic to support alert rx and tx being on different clocks.
-`RndCnstRomNonce` | `RND_CNST_SCR_NONCE` (define) | `top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce`| Compile-time random default constant for scrambling nonce (used in `prim_prince` block and the two S&P blocks).
+`RndCnstRomNonce` | `RND_CNST_SCR_NONCE` (define) | `top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce`| Compile-time random default constant for scrambling nonce (used in `prim_prince` block and the S&P block).
 `RndCnstRomKey`   | `RND_CNST_SCR_KEY` (define)   | `top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey`  | 128-bit compile-time random default constant for scrambling key (used in `prim_prince` block).
 `MemSizeRom`      | 64kB                          | 32kB                                               | The size of the ROM itself
 
