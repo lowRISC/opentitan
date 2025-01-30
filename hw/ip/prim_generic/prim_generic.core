@@ -16,11 +16,9 @@ filesets:
       - lowrisc:prim_generic:clock_gating
       - lowrisc:prim_generic:clock_inv
       - lowrisc:prim_generic:clock_mux2
-      - lowrisc:prim_generic:flash
       - lowrisc:prim_generic:flop
       - lowrisc:prim_generic:flop_2sync
       - lowrisc:prim_generic:flop_en
-      - lowrisc:prim_generic:otp
       - lowrisc:prim_generic:pad_attr
       - lowrisc:prim_generic:pad_wrapper
       - lowrisc:prim_generic:ram_1p
@@ -30,6 +28,10 @@ filesets:
       - lowrisc:prim_generic:usb_diff_rx
       - lowrisc:prim_generic:xnor2
       - lowrisc:prim_generic:xor2
+# Note that flash and otp are macros that depend on IPs, so they are not
+# included here. They must be brought in explicitly.
+#      - lowrisc:prim_generic:flash
+#      - lowrisc:prim_generic:otp
 
 targets:
   default:
