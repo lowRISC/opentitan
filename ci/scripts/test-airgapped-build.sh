@@ -23,7 +23,7 @@ sudo ip netns exec airgapped ip link set dev lo up
 sudo ip netns exec airgapped sudo -u "$USER" \
   env \
     BAZEL_BITSTREAMS_CACHE="${PWD}/bazel-airgapped/bitstreams-cache" \
-    OT_AIRGAPPED="true"                                              \
+    BAZEL_PYTHON_WHEELS_REPO="${PWD}/bazel-airgapped/ot_python_wheels" \
     BITSTREAM="--offline latest"                                     \
   "${PWD}/bazel-airgapped/bazel" build                               \
     --distdir="${PWD}/bazel-airgapped/bazel-distdir"                 \
