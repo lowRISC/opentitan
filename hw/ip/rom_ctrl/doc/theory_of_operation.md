@@ -70,7 +70,7 @@ This is taken by the checker FSM (ignoring ECC bits) and will be compared with t
 
 Once it comes back, the digest is forwarded directly to the [Key Manager](../../keymgr/README.md).
 It is also compared with the hash that was read from the top eight words of ROM.
-On a match, `pwrmgr_data_o.good` is signalled as `Mubi4True`.
+On a match, `pwrmgr_data_o.good` is signalled as `MuBi4True`.
 In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
 
 The diagram below shows the operation of the simple FSM.
