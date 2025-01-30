@@ -16,16 +16,16 @@ It runs exactly once, and releases the green multiplexer when it is done.
 ## ROM access when chip is in operation
 
 Once the chip has booted, ROM accesses are requested over the system TL-UL bus.
-These come in through the TL-UL SRAM adapter (top-left of block diagram).
+These arrive through the TL-UL SRAM adapter (top-left of block diagram).
 In normal operation, the green multiplexer will give access to these TL reads.
-The address is scrambled at the first substitution-permutation network (marked S&P in the diagram).
+The address is scrambled by a substitution-permutation network (marked S&P in the diagram).
 
 In parallel with the ROM access, a reduced `prim_prince` primitive (7 rounds with latency 1; equivalent to the cipher used for SRAM) computes a 39-bit truncated keystream for the block.
-On the following cycle, the scrambled data from ROM goes through a substitution-permutation network and is then XOR'd with the keystream.
+On the following cycle, the data returned from ROM is XOR'd with the keystream.
 This scheme is the same as that used by the [SRAM controller](../../sram_ctrl/README.md), but is much simplified because the ROM doesn't have to deal with writes, byte accesses or key changes.
 
-The output from the XOR is the unscrambled 32-bit data, plus seven ECC bits.
-This data is passed straight through the TL-UL SRAM adapter; the ECC bits are used as a signal integrity check by the system bus.
+The output from the XOR has a 32-bit data word plus seven ECC bits.
+This data word is passed straight through the TL-UL SRAM adapter; the ECC bits are used as a signal integrity check by the system bus.
 
 The following diagram shows the timing of the different signals.
 The time from the `req` output from the `tlul_adapter_sram` to the response that appears on its `rvalid` input is one cycle.
@@ -40,9 +40,9 @@ The unscrambled ROM data for (logical) address 12 is denoted `d12`.
   {name: 'req', wave: '0.1...0...'},
   {name: 'addr', wave: 'x.3.4.x...', data: ['12', '34']},
   {name: 'scrambled addr', wave: 'x.3.4.x...', data: ['21', '43']},
-  {name: 'scrambled rdata + ecc', wave: 'x...3.4.x.', data: ['w21', 'w43']},
+  {name: 'encrypted rdata + ecc', wave: 'x...3.4.x.', data: ['w21', 'w43']},
   {name: 'keystream', wave: 'x...3.4.x.', data: ['k12', 'k34']},
-  {name: 'rdata + ecc', wave: 'x...3.4.x.', data: ['d12', 'd34']},
+  {name: 'cleartext rdata + ecc', wave: 'x...3.4.x.', data: ['d12', 'd34']},
   {name: 'rvalid', wave: '0...1...0.'},
 ]}
 ```
@@ -66,7 +66,6 @@ The checker FSM loops through almost all the words in ROM (from bottom to top), 
 Once the last word has been sent, the FSM releases the multiplexer; this now switches over permanently to allow access through the TL-UL SRAM adapter.
 
 The top eight words in ROM (by logical address) are interpreted as a 256-bit expected hash.
-Unlike the rest of ROM, their data is not stored scrambled, so the expected hash can be read directly.
 This is taken by the checker FSM (ignoring ECC bits) and will be compared with the digest that is read back from the KMAC block.
 
 Once it comes back, the digest is forwarded directly to the [Key Manager](../../keymgr/README.md).

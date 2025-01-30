@@ -9,8 +9,8 @@ The [`FATAL_ALERT_CAUSE`](registers.md#fatal_alert_cause) register might change 
 
 To get the computed ROM digest, software can read [`DIGEST_0`](registers.md#digest) through [`DIGEST_7`](registers.md#digest).
 The ROM also contains an expected ROM digest.
-Unlike the rest of the contents of ROM, this isn't scrambled.
-As such, software can't read it through the standard ROM interface (which would try to unscramble it again, resulting in rubbish data that would cause a failed ECC check).
+Unlike the rest of the contents of ROM, the address of this digest isn't scrambled.
+As such, software can't read it through the standard ROM interface (since the address isn't very predictable).
 In case software needs access to this value, it can be read at [`EXP_DIGEST_0`](registers.md#exp_digest) through [`EXP_DIGEST_7`](registers.md#exp_digest).
 
 ## Device Interface Functions (DIFs)
