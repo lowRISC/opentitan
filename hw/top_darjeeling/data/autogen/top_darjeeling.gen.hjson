@@ -7732,6 +7732,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -7934,6 +7935,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -8136,6 +8138,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -8514,6 +8517,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -8716,6 +8720,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -9094,6 +9099,7 @@
             WDATA: 0
             RDATA: 0
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -9296,6 +9302,7 @@
             WDATA: 2
             RDATA: 2
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -9498,6 +9505,7 @@
             WDATA: 2
             RDATA: 2
           }
+          range_mapping: []
         }
       }
       clock_connections:
@@ -10383,6 +10391,7 @@
             RANGE_RACL_POLICY_SHADOWED_31: 2
           }
           window_mapping: {}
+          range_mapping: []
         }
       }
       domain:

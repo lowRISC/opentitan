@@ -48,6 +48,12 @@ package top_racl_pkg;
   // Default policy vector for unconnected RACL IPs
   parameter racl_policy_vec_t RACL_POLICY_VEC_DEFAULT = '0;
 
+  typedef struct packed {
+    logic [top_pkg::TL_AW-1:0] base;
+    logic [top_pkg::TL_AW-1:0] mask;
+    racl_policy_sel_t          policy_sel;
+  } racl_range_t;
+
   // Default ROT Private read policy value
   parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_RD = 16'h1;
 
