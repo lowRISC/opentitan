@@ -8,9 +8,7 @@
 `include "prim_assert.sv"
 
 module spi_device
-  import spi_device_reg_pkg::NumAlerts;
-  import spi_device_reg_pkg::SPI_DEVICE_EGRESS_BUFFER_IDX;
-  import spi_device_reg_pkg::SPI_DEVICE_INGRESS_BUFFER_IDX;
+  import spi_device_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
   parameter spi_device_pkg::sram_type_e SramType       = spi_device_pkg::DefaultSramType,

@@ -12,26 +12,26 @@ module sram_ctrl
   import sram_ctrl_reg_pkg::*;
 #(
   // Number of words stored in the SRAM.
-  parameter int MemSizeRam                               = 32'h1000,
-  parameter int InstSize                                 = MemSizeRam,
-  parameter int NumRamInst                               = 1,
+  parameter int MemSizeRam                                 = 32'h1000,
+  parameter int InstSize                                   = MemSizeRam,
+  parameter int NumRamInst                                 = 1,
   // Enable asynchronous transitions on alerts.
-  parameter logic [NumAlerts-1:0] AlertAsyncOn           = {NumAlerts{1'b1}},
+  parameter logic [NumAlerts-1:0] AlertAsyncOn             = {NumAlerts{1'b1}},
   // Enables the execute from SRAM feature.
-  parameter bit InstrExec                                = 1,
+  parameter bit InstrExec                                  = 1,
   // Number of PRINCE half rounds for the SRAM scrambling feature, can be [1..5].
   // Note that this needs to be low-latency, hence we have to keep the amount of cipher rounds low.
   // PRINCE has 5 half rounds in its original form, which corresponds to 2*5 + 1 effective rounds.
   // Setting this to 3 lowers this to approximately 7 effective rounds.
-  parameter int NumPrinceRoundsHalf                      = 3,
+  parameter int NumPrinceRoundsHalf                        = 3,
   // Random netlist constants
-  parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
-  parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
-  parameter  lfsr_seed_t                RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
-  parameter  lfsr_perm_t                RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
-  parameter bit          EnableRacl                      = 1'b0,
-  parameter bit          RaclErrorRsp                    = EnableRacl,
-  parameter int unsigned RaclPolicySelVecRegs[9]         = '{9{0}}
+  parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey     = RndCnstSramKeyDefault,
+  parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce   = RndCnstSramNonceDefault,
+  parameter  lfsr_seed_t                RndCnstLfsrSeed    = RndCnstLfsrSeedDefault,
+  parameter  lfsr_perm_t                RndCnstLfsrPerm    = RndCnstLfsrPermDefault,
+  parameter bit          EnableRacl                        = 1'b0,
+  parameter bit          RaclErrorRsp                      = EnableRacl,
+  parameter int unsigned RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}}
 ) (
   // SRAM Clock
   input  logic                                               clk_i,
