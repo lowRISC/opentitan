@@ -11,17 +11,12 @@ load(
     "//rules/opentitan:defs.bzl",
     "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
-    "cw310_params",
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "qemu_params",
     "silicon_params",
     "verilator_params",
-)
-load(
-    "@bazel_skylib//lib:dicts.bzl",
-    "dicts",
 )
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
@@ -509,7 +504,7 @@ opentitan_test(
 opentitan_test(
     name = "kdf_hmac_ctr_functest",
     srcs = ["kdf_hmac_ctr_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -527,7 +522,7 @@ opentitan_test(
 opentitan_test(
     name = "kdf_kmac_functest",
     srcs = ["kdf_kmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -550,7 +545,7 @@ opentitan_test(
 opentitan_test(
     name = "hmac_functest",
     srcs = ["hmac_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
     ),
@@ -568,7 +563,7 @@ opentitan_test(
 opentitan_test(
     name = "hmac_multistream_functest",
     srcs = ["hmac_multistream_functest.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     verilator = verilator_params(
         timeout = "long",
         # This test can take > 60 minutes, so mark it manual as it shouldn't
@@ -589,9 +584,7 @@ opentitan_test(
 opentitan_test(
     name = "kdf_kmac_sideload_functest_hardcoded",
     srcs = ["kdf_kmac_sideload_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     qemu = qemu_params(
         globals = {
             # Test uses rstmgr, keep running on fatal resets:
@@ -618,9 +611,7 @@ opentitan_test(
 opentitan_test(
     name = "kmac_sideload_functest_hardcoded",
     srcs = ["kmac_sideload_functest.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-    ),
+    exec_env = CRYPTOTEST_EXEC_ENVS,
     qemu = qemu_params(
         globals = {
             # Test uses rstmgr, keep running on fatal resets:
