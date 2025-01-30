@@ -18,6 +18,9 @@ package kmac_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 12;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 57;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

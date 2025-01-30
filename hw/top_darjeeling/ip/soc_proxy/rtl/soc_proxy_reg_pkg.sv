@@ -14,6 +14,10 @@ package soc_proxy_reg_pkg;
   parameter int CoreAw = 4;
   parameter int CtnAw = 1;
 
+  // Number of registers for every interface
+  parameter int NumRegsCore = 4;
+  parameter int NumRegsCtn = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

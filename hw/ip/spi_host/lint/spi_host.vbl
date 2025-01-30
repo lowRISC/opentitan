@@ -1,0 +1,8 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for spi_host
+
+# waive long line violations in generated code
+waive --rule=line-length --location="spi_host_reg_top.sv"

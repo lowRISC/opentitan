@@ -13,6 +13,9 @@ package ast_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 10;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 36;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

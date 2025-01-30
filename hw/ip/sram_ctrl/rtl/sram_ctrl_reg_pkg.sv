@@ -13,6 +13,10 @@ package sram_ctrl_reg_pkg;
   parameter int RegsAw = 6;
   parameter int RamAw = 1;
 
+  // Number of registers for every interface
+  parameter int NumRegsRegs = 9;
+  parameter int NumRegsRam = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

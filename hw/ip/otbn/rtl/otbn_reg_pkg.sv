@@ -12,6 +12,9 @@ package otbn_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 16;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 11;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

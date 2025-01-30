@@ -24,6 +24,10 @@ package lc_ctrl_reg_pkg;
   parameter int RegsAw = 8;
   parameter int DmiAw = 12;
 
+  // Number of registers for every interface
+  parameter int NumRegsRegs = 35;
+  parameter int NumRegsDmi = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

@@ -13,6 +13,10 @@ package rom_ctrl_reg_pkg;
   parameter int RegsAw = 7;
   parameter int RomAw = 1;
 
+  // Number of registers for every interface
+  parameter int NumRegsRegs = 18;
+  parameter int NumRegsRom = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////
