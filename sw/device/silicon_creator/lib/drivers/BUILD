@@ -276,6 +276,7 @@ opentitan_functest(
     ),
     deps = [
         ":keymgr",
+        ":kmac",
         ":lifecycle",
         ":retention_sram",
         "//hw/ip/kmac/data:kmac_regs",

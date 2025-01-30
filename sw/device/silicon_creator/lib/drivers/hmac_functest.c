@@ -37,11 +37,8 @@ static const uint32_t kGettysburgDigest[] = {
 };
 
 rom_error_t hmac_test(void) {
-  hmac_sha256_init();
-  hmac_sha256_update(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1);
-
   hmac_digest_t digest;
-  hmac_sha256_final(&digest);
+  hmac_sha256(kGettysburgPrelude, sizeof(kGettysburgPrelude) - 1, &digest);
 
   const size_t len = ARRAYSIZE(digest.digest);
   for (int i = 0; i < len; ++i) {
