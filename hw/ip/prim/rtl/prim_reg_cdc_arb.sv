@@ -87,11 +87,6 @@ module prim_reg_cdc_arb #(
     SelHwReq
   } req_sel_e;
 
-  typedef enum logic {
-    StIdle,
-    StWait
-  } state_e;
-
 
   // Only honor the incoming destination update request if the incoming
   // value is actually different from what is already completed in the
@@ -106,12 +101,12 @@ module prim_reg_cdc_arb #(
     logic dst_update_ack;
     req_sel_e id_q;
 
-    state_e state_q, state_d;
+    logic idle_q, idle_d;
     always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
       if (!rst_dst_ni) begin
-        state_q <= StIdle;
+        idle_q <= 1'b1;
       end else begin
-        state_q <= state_d;
+        idle_q <= idle_d;
       end
     end
 
@@ -194,7 +189,7 @@ module prim_reg_cdc_arb #(
 
     logic dst_hold_req;
     always_comb begin
-      state_d = state_q;
+      idle_d = idle_q;
       dst_hold_req = '0;
 
       // depending on when the request is received, we
@@ -204,35 +199,28 @@ module prim_reg_cdc_arb #(
 
       busy = 1'b1;
 
-      unique case (state_q)
-        StIdle: begin
-          busy = '0;
-          if (dst_req) begin
-            // there's a software issued request for change
-            state_d = StWait;
-            dst_lat_d = 1'b1;
-          end else if (dst_update) begin
-            state_d = StWait;
-            dst_lat_d = 1'b1;
-          end else if (dst_qs_o != dst_qs_i) begin
-            // there's a direct destination update
-            // that was blocked by an ongoing transaction
-            state_d = StWait;
-            dst_lat_q = 1'b1;
-          end
-        end
+      if (idle_q) begin
+        busy = 1'b0;
 
-        StWait: begin
-          dst_hold_req = 1'b1;
-          if (dst_update_ack) begin
-            state_d = StIdle;
-          end
+        if (dst_req) begin
+          // there's a software issued request for change
+          idle_d = 1'b0;
+          dst_lat_d = 1'b1;
+        end else if (dst_update) begin
+          idle_d = 1'b0;
+          dst_lat_d = 1'b1;
+        end else if (dst_qs_o != dst_qs_i) begin
+          // there's a direct destination update
+          // that was blocked by an ongoing transaction
+          idle_d = 1'b0;
+          dst_lat_q = 1'b1;
         end
-
-        default: begin
-          state_d = StIdle;
+      end else begin
+        dst_hold_req = 1'b1;
+        if (dst_update_ack) begin
+          idle_d = 1'b1;
         end
-      endcase // unique case (state_q)
+      end
     end // always_comb
 
     assign dst_update_req = dst_hold_req | dst_lat_d | dst_lat_q;
