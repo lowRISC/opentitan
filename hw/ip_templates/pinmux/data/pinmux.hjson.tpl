@@ -1136,7 +1136,7 @@
                   regwen_multi: "true",
                   cname:        "DETECTOR",
                   fields: [
-                    { bits: "${max(2 + n_mio_pads-1, n_dio_periph_in-1).bit_length()-1}:0",
+                    { bits: "${max(2 + n_mio_pads-1, n_dio_pads-1).bit_length()-1}:0",
                       name: "SEL",
                       resval: 0,
                       desc: '''Selects a specific MIO or DIO pad (depending on !!WKUP_DETECTOR configuration).

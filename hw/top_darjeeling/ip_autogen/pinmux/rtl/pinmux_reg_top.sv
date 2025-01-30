@@ -3382,29 +3382,29 @@ module pinmux_reg_top (
   logic [7:0] wkup_detector_cnt_th_7_qs;
   logic wkup_detector_cnt_th_7_busy;
   logic wkup_detector_padsel_0_we;
-  logic [5:0] wkup_detector_padsel_0_qs;
-  logic [5:0] wkup_detector_padsel_0_wd;
+  logic [6:0] wkup_detector_padsel_0_qs;
+  logic [6:0] wkup_detector_padsel_0_wd;
   logic wkup_detector_padsel_1_we;
-  logic [5:0] wkup_detector_padsel_1_qs;
-  logic [5:0] wkup_detector_padsel_1_wd;
+  logic [6:0] wkup_detector_padsel_1_qs;
+  logic [6:0] wkup_detector_padsel_1_wd;
   logic wkup_detector_padsel_2_we;
-  logic [5:0] wkup_detector_padsel_2_qs;
-  logic [5:0] wkup_detector_padsel_2_wd;
+  logic [6:0] wkup_detector_padsel_2_qs;
+  logic [6:0] wkup_detector_padsel_2_wd;
   logic wkup_detector_padsel_3_we;
-  logic [5:0] wkup_detector_padsel_3_qs;
-  logic [5:0] wkup_detector_padsel_3_wd;
+  logic [6:0] wkup_detector_padsel_3_qs;
+  logic [6:0] wkup_detector_padsel_3_wd;
   logic wkup_detector_padsel_4_we;
-  logic [5:0] wkup_detector_padsel_4_qs;
-  logic [5:0] wkup_detector_padsel_4_wd;
+  logic [6:0] wkup_detector_padsel_4_qs;
+  logic [6:0] wkup_detector_padsel_4_wd;
   logic wkup_detector_padsel_5_we;
-  logic [5:0] wkup_detector_padsel_5_qs;
-  logic [5:0] wkup_detector_padsel_5_wd;
+  logic [6:0] wkup_detector_padsel_5_qs;
+  logic [6:0] wkup_detector_padsel_5_wd;
   logic wkup_detector_padsel_6_we;
-  logic [5:0] wkup_detector_padsel_6_qs;
-  logic [5:0] wkup_detector_padsel_6_wd;
+  logic [6:0] wkup_detector_padsel_6_qs;
+  logic [6:0] wkup_detector_padsel_6_wd;
   logic wkup_detector_padsel_7_we;
-  logic [5:0] wkup_detector_padsel_7_qs;
-  logic [5:0] wkup_detector_padsel_7_wd;
+  logic [6:0] wkup_detector_padsel_7_qs;
+  logic [6:0] wkup_detector_padsel_7_wd;
   logic wkup_cause_we;
   logic [7:0] wkup_cause_qs;
   logic wkup_cause_busy;
@@ -33951,9 +33951,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_0_gated_we;
   assign wkup_detector_padsel_0_gated_we = wkup_detector_padsel_0_we & wkup_detector_regwen_0_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_0 (
     .clk_i   (clk_i),
@@ -33983,9 +33983,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_1_gated_we;
   assign wkup_detector_padsel_1_gated_we = wkup_detector_padsel_1_we & wkup_detector_regwen_1_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_1 (
     .clk_i   (clk_i),
@@ -34015,9 +34015,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_2_gated_we;
   assign wkup_detector_padsel_2_gated_we = wkup_detector_padsel_2_we & wkup_detector_regwen_2_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_2 (
     .clk_i   (clk_i),
@@ -34047,9 +34047,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_3_gated_we;
   assign wkup_detector_padsel_3_gated_we = wkup_detector_padsel_3_we & wkup_detector_regwen_3_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_3 (
     .clk_i   (clk_i),
@@ -34079,9 +34079,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_4_gated_we;
   assign wkup_detector_padsel_4_gated_we = wkup_detector_padsel_4_we & wkup_detector_regwen_4_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_4 (
     .clk_i   (clk_i),
@@ -34111,9 +34111,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_5_gated_we;
   assign wkup_detector_padsel_5_gated_we = wkup_detector_padsel_5_we & wkup_detector_regwen_5_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_5 (
     .clk_i   (clk_i),
@@ -34143,9 +34143,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_6_gated_we;
   assign wkup_detector_padsel_6_gated_we = wkup_detector_padsel_6_we & wkup_detector_regwen_6_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_6 (
     .clk_i   (clk_i),
@@ -34175,9 +34175,9 @@ module pinmux_reg_top (
   logic wkup_detector_padsel_7_gated_we;
   assign wkup_detector_padsel_7_gated_we = wkup_detector_padsel_7_we & wkup_detector_regwen_7_qs;
   prim_subreg #(
-    .DW      (6),
+    .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (6'h0),
+    .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_wkup_detector_padsel_7 (
     .clk_i   (clk_i),
@@ -38695,28 +38695,28 @@ module pinmux_reg_top (
 
   assign wkup_detector_padsel_0_we = addr_hit[494] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_0_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_0_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_1_we = addr_hit[495] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_1_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_1_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_2_we = addr_hit[496] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_2_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_2_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_3_we = addr_hit[497] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_3_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_3_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_4_we = addr_hit[498] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_4_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_4_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_5_we = addr_hit[499] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_5_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_5_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_6_we = addr_hit[500] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_6_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_6_wd = reg_wdata[6:0];
   assign wkup_detector_padsel_7_we = addr_hit[501] & reg_we & !reg_error;
 
-  assign wkup_detector_padsel_7_wd = reg_wdata[5:0];
+  assign wkup_detector_padsel_7_wd = reg_wdata[6:0];
   assign wkup_cause_we = addr_hit[502] & reg_we & !reg_error;
 
 
@@ -42038,35 +42038,35 @@ module pinmux_reg_top (
         reg_rdata_next = DW'(wkup_detector_cnt_th_7_qs);
       end
       addr_hit[494]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_0_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_0_qs;
       end
 
       addr_hit[495]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_1_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_1_qs;
       end
 
       addr_hit[496]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_2_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_2_qs;
       end
 
       addr_hit[497]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_3_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_3_qs;
       end
 
       addr_hit[498]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_4_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_4_qs;
       end
 
       addr_hit[499]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_5_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_5_qs;
       end
 
       addr_hit[500]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_6_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_6_qs;
       end
 
       addr_hit[501]: begin
-        reg_rdata_next[5:0] = wkup_detector_padsel_7_qs;
+        reg_rdata_next[6:0] = wkup_detector_padsel_7_qs;
       end
 
       addr_hit[502]: begin
