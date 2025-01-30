@@ -188,6 +188,9 @@ package aon_timer_reg_pkg;
     AON_TIMER_WKUP_CAUSE
   } aon_timer_id_e;
 
+  // The number of registers
+  parameter int unsigned AON_TIMER_NUM_REGS = 14;
+
   // Register width information to check illegal writes
   parameter logic [3:0] AON_TIMER_PERMIT [14] = '{
     4'b 0001, // index[ 0] AON_TIMER_ALERT_TEST

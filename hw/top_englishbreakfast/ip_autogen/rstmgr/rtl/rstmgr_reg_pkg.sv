@@ -223,6 +223,9 @@ package rstmgr_reg_pkg;
     RSTMGR_ERR_CODE
   } rstmgr_id_e;
 
+  // The number of registers
+  parameter int unsigned RSTMGR_NUM_REGS = 18;
+
   // Register width information to check illegal writes
   parameter logic [3:0] RSTMGR_PERMIT [18] = '{
     4'b 0001, // index[ 0] RSTMGR_ALERT_TEST

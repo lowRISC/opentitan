@@ -50,6 +50,9 @@ package rv_dm_reg_pkg;
     RV_DM_LATE_DEBUG_ENABLE
   } rv_dm_regs_id_e;
 
+  // The number of registers for regs interface
+  parameter int unsigned RV_DM_REGS_NUM_REGS = 3;
+
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] RV_DM_REGS_PERMIT [3] = '{
     4'b 0001, // index[0] RV_DM_ALERT_TEST
@@ -698,6 +701,9 @@ package rv_dm_reg_pkg;
     RV_DM_FLAGS_254,
     RV_DM_FLAGS_255
   } rv_dm_mem_id_e;
+
+  // The number of registers for mem interface
+  parameter int unsigned RV_DM_MEM_NUM_REGS = 281;
 
   // Register width information to check illegal writes for mem interface
   parameter logic [3:0] RV_DM_MEM_PERMIT [281] = '{

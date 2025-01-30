@@ -813,6 +813,9 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_SECRET2_DIGEST_1
   } otp_ctrl_core_id_e;
 
+  // The number of registers for core interface
+  parameter int unsigned OTP_CTRL_CORE_NUM_REGS = 56;
+
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] OTP_CTRL_CORE_PERMIT [56] = '{
     4'b 0001, // index[ 0] OTP_CTRL_INTR_STATE
@@ -1145,6 +1148,9 @@ package otp_ctrl_reg_pkg;
     OTP_CTRL_CSR6,
     OTP_CTRL_CSR7
   } otp_ctrl_prim_id_e;
+
+  // The number of registers for prim interface
+  parameter int unsigned OTP_CTRL_PRIM_NUM_REGS = 8;
 
   // Register width information to check illegal writes for prim interface
   parameter logic [3:0] OTP_CTRL_PRIM_PERMIT [8] = '{

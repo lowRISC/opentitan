@@ -344,6 +344,9 @@ value = "{}'h {:x}".format(aw, r.offset)
 % endfor
   } ${lpfx}_id_e;
 
+  // The number of registers${for_iface}
+  parameter int unsigned ${upfx}_NUM_REGS = ${len(rb.flat_regs)};
+
   // Register width information to check illegal writes${for_iface}
   parameter logic [3:0] ${upfx}_PERMIT [${len(rb.flat_regs)}] = '{
   % for i, r in enumerate(rb.flat_regs):

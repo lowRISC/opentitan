@@ -148,6 +148,9 @@ package sram_ctrl_reg_pkg;
     SRAM_CTRL_READBACK
   } sram_ctrl_regs_id_e;
 
+  // The number of registers for regs interface
+  parameter int unsigned SRAM_CTRL_REGS_NUM_REGS = 9;
+
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] SRAM_CTRL_REGS_PERMIT [9] = '{
     4'b 0001, // index[0] SRAM_CTRL_ALERT_TEST

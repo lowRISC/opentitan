@@ -337,6 +337,9 @@ package lc_ctrl_reg_pkg;
     LC_CTRL_MANUF_STATE_7
   } lc_ctrl_regs_id_e;
 
+  // The number of registers for regs interface
+  parameter int unsigned LC_CTRL_REGS_NUM_REGS = 35;
+
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] LC_CTRL_REGS_PERMIT [35] = '{
     4'b 0001, // index[ 0] LC_CTRL_ALERT_TEST

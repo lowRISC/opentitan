@@ -269,6 +269,9 @@ package gpio_reg_pkg;
     GPIO_HW_STRAPS_DATA_IN
   } gpio_id_e;
 
+  // The number of registers
+  parameter int unsigned GPIO_NUM_REGS = 18;
+
   // Register width information to check illegal writes
   parameter logic [3:0] GPIO_PERMIT [18] = '{
     4'b 1111, // index[ 0] GPIO_INTR_STATE

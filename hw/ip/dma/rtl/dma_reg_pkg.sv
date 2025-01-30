@@ -499,6 +499,9 @@ package dma_reg_pkg;
     DMA_INTR_SRC_WR_VAL_10
   } dma_id_e;
 
+  // The number of registers
+  parameter int unsigned DMA_NUM_REGS = 63;
+
   // Register width information to check illegal writes
   parameter logic [3:0] DMA_PERMIT [63] = '{
     4'b 0001, // index[ 0] DMA_INTR_STATE

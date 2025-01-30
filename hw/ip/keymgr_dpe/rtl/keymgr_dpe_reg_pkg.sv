@@ -484,6 +484,9 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_DEBUG
   } keymgr_dpe_id_e;
 
+  // The number of registers
+  parameter int unsigned KEYMGR_DPE_NUM_REGS = 53;
+
   // Register width information to check illegal writes
   parameter logic [3:0] KEYMGR_DPE_PERMIT [53] = '{
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE

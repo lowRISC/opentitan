@@ -250,6 +250,9 @@ package sensor_ctrl_reg_pkg;
     SENSOR_CTRL_MANUAL_PAD_ATTR_3
   } sensor_ctrl_id_e;
 
+  // The number of registers
+  parameter int unsigned SENSOR_CTRL_NUM_REGS = 29;
+
   // Register width information to check illegal writes
   parameter logic [3:0] SENSOR_CTRL_PERMIT [29] = '{
     4'b 0001, // index[ 0] SENSOR_CTRL_INTR_STATE

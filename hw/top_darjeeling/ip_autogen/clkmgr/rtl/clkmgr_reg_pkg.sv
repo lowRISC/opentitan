@@ -292,6 +292,9 @@ package clkmgr_reg_pkg;
     CLKMGR_FATAL_ERR_CODE
   } clkmgr_id_e;
 
+  // The number of registers
+  parameter int unsigned CLKMGR_NUM_REGS = 18;
+
   // Register width information to check illegal writes
   parameter logic [3:0] CLKMGR_PERMIT [18] = '{
     4'b 0001, // index[ 0] CLKMGR_ALERT_TEST

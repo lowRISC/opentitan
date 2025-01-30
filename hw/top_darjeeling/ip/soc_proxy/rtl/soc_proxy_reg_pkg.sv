@@ -216,6 +216,9 @@ package soc_proxy_reg_pkg;
     SOC_PROXY_ALERT_TEST
   } soc_proxy_core_id_e;
 
+  // The number of registers for core interface
+  parameter int unsigned SOC_PROXY_CORE_NUM_REGS = 4;
+
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] SOC_PROXY_CORE_PERMIT [4] = '{
     4'b 1111, // index[0] SOC_PROXY_INTR_STATE

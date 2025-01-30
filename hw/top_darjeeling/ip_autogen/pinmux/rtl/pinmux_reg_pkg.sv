@@ -2234,6 +2234,9 @@ package pinmux_reg_pkg;
     PINMUX_WKUP_CAUSE
   } pinmux_id_e;
 
+  // The number of registers
+  parameter int unsigned PINMUX_NUM_REGS = 503;
+
   // Register width information to check illegal writes
   parameter logic [3:0] PINMUX_PERMIT [503] = '{
     4'b 0001, // index[  0] PINMUX_ALERT_TEST

@@ -445,6 +445,9 @@ package csrng_reg_pkg;
     CSRNG_MAIN_SM_STATE
   } csrng_id_e;
 
+  // The number of registers
+  parameter int unsigned CSRNG_NUM_REGS = 24;
+
   // Register width information to check illegal writes
   parameter logic [3:0] CSRNG_PERMIT [24] = '{
     4'b 0001, // index[ 0] CSRNG_INTR_STATE

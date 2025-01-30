@@ -435,6 +435,9 @@ package kmac_reg_pkg;
     KMAC_ERR_CODE
   } kmac_id_e;
 
+  // The number of registers
+  parameter int unsigned KMAC_NUM_REGS = 57;
+
   // Register width information to check illegal writes
   parameter logic [3:0] KMAC_PERMIT [57] = '{
     4'b 0001, // index[ 0] KMAC_INTR_STATE

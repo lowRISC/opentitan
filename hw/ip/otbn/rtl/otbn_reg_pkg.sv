@@ -327,6 +327,9 @@ package otbn_reg_pkg;
     OTBN_LOAD_CHECKSUM
   } otbn_id_e;
 
+  // The number of registers
+  parameter int unsigned OTBN_NUM_REGS = 11;
+
   // Register width information to check illegal writes
   parameter logic [3:0] OTBN_PERMIT [11] = '{
     4'b 0001, // index[ 0] OTBN_INTR_STATE

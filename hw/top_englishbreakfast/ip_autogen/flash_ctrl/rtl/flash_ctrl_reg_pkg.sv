@@ -1042,6 +1042,9 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_CURR_FIFO_LVL
   } flash_ctrl_core_id_e;
 
+  // The number of registers for core interface
+  parameter int unsigned FLASH_CTRL_CORE_NUM_REGS = 108;
+
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] FLASH_CTRL_CORE_PERMIT [108] = '{
     4'b 0001, // index[  0] FLASH_CTRL_INTR_STATE
@@ -1511,6 +1514,9 @@ package flash_ctrl_reg_pkg;
     FLASH_CTRL_CSR19,
     FLASH_CTRL_CSR20
   } flash_ctrl_prim_id_e;
+
+  // The number of registers for prim interface
+  parameter int unsigned FLASH_CTRL_PRIM_NUM_REGS = 21;
 
   // Register width information to check illegal writes for prim interface
   parameter logic [3:0] FLASH_CTRL_PRIM_PERMIT [21] = '{

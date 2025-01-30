@@ -437,6 +437,9 @@ package hmac_reg_pkg;
     HMAC_MSG_LENGTH_UPPER
   } hmac_id_e;
 
+  // The number of registers
+  parameter int unsigned HMAC_NUM_REGS = 59;
+
   // Register width information to check illegal writes
   parameter logic [3:0] HMAC_PERMIT [59] = '{
     4'b 0001, // index[ 0] HMAC_INTR_STATE

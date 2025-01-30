@@ -468,6 +468,9 @@ package keymgr_reg_pkg;
     KEYMGR_DEBUG
   } keymgr_id_e;
 
+  // The number of registers
+  parameter int unsigned KEYMGR_NUM_REGS = 63;
+
   // Register width information to check illegal writes
   parameter logic [3:0] KEYMGR_PERMIT [63] = '{
     4'b 0001, // index[ 0] KEYMGR_INTR_STATE

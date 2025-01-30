@@ -674,6 +674,9 @@ package sysrst_ctrl_reg_pkg;
     SYSRST_CTRL_KEY_INTR_STATUS
   } sysrst_ctrl_id_e;
 
+  // The number of registers
+  parameter int unsigned SYSRST_CTRL_NUM_REGS = 43;
+
   // Register width information to check illegal writes
   parameter logic [3:0] SYSRST_CTRL_PERMIT [43] = '{
     4'b 0001, // index[ 0] SYSRST_CTRL_INTR_STATE

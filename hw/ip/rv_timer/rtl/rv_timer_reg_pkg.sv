@@ -134,6 +134,9 @@ package rv_timer_reg_pkg;
     RV_TIMER_COMPARE_UPPER0_0
   } rv_timer_id_e;
 
+  // The number of registers
+  parameter int unsigned RV_TIMER_NUM_REGS = 10;
+
   // Register width information to check illegal writes
   parameter logic [3:0] RV_TIMER_PERMIT [10] = '{
     4'b 0001, // index[0] RV_TIMER_ALERT_TEST

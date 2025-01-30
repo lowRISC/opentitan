@@ -308,6 +308,9 @@ package trial1_reg_pkg;
     TRIAL1_RWTYPE7
   } trial1_id_e;
 
+  // The number of registers
+  parameter int unsigned TRIAL1_NUM_REGS = 20;
+
   // Register width information to check illegal writes
   parameter logic [3:0] TRIAL1_PERMIT [20] = '{
     4'b 1111, // index[ 0] TRIAL1_RWTYPE0

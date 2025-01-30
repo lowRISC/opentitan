@@ -976,6 +976,9 @@ package entropy_src_reg_pkg;
     ENTROPY_SRC_MAIN_SM_STATE
   } entropy_src_id_e;
 
+  // The number of registers
+  parameter int unsigned ENTROPY_SRC_NUM_REGS = 57;
+
   // Register width information to check illegal writes
   parameter logic [3:0] ENTROPY_SRC_PERMIT [57] = '{
     4'b 0001, // index[ 0] ENTROPY_SRC_INTR_STATE

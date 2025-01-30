@@ -253,6 +253,9 @@ package pwrmgr_reg_pkg;
     PWRMGR_FAULT_STATUS
   } pwrmgr_id_e;
 
+  // The number of registers
+  parameter int unsigned PWRMGR_NUM_REGS = 17;
+
   // Register width information to check illegal writes
   parameter logic [3:0] PWRMGR_PERMIT [17] = '{
     4'b 0001, // index[ 0] PWRMGR_INTR_STATE

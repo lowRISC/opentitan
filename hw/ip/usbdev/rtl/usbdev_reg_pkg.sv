@@ -1000,6 +1000,9 @@ package usbdev_reg_pkg;
     USBDEV_COUNT_ERRORS
   } usbdev_id_e;
 
+  // The number of registers
+  parameter int unsigned USBDEV_NUM_REGS = 43;
+
   // Register width information to check illegal writes
   parameter logic [3:0] USBDEV_PERMIT [43] = '{
     4'b 0111, // index[ 0] USBDEV_INTR_STATE

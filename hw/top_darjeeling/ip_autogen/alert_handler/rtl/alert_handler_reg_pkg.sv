@@ -1764,6 +1764,9 @@ package alert_handler_reg_pkg;
     ALERT_HANDLER_CLASSD_STATE
   } alert_handler_id_e;
 
+  // The number of registers
+  parameter int unsigned ALERT_HANDLER_NUM_REGS = 486;
+
   // Register width information to check illegal writes
   parameter logic [3:0] ALERT_HANDLER_PERMIT [486] = '{
     4'b 0001, // index[  0] ALERT_HANDLER_INTR_STATE

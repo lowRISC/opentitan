@@ -348,6 +348,9 @@ package spi_host_reg_pkg;
     SPI_HOST_EVENT_ENABLE
   } spi_host_id_e;
 
+  // The number of registers
+  parameter int unsigned SPI_HOST_NUM_REGS = 12;
+
   // Register width information to check illegal writes
   parameter logic [3:0] SPI_HOST_PERMIT [12] = '{
     4'b 0001, // index[ 0] SPI_HOST_INTR_STATE

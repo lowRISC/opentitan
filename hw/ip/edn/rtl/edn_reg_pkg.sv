@@ -307,6 +307,9 @@ package edn_reg_pkg;
     EDN_MAIN_SM_STATE
   } edn_id_e;
 
+  // The number of registers
+  parameter int unsigned EDN_NUM_REGS = 18;
+
   // Register width information to check illegal writes
   parameter logic [3:0] EDN_PERMIT [18] = '{
     4'b 0001, // index[ 0] EDN_INTR_STATE

@@ -151,6 +151,9 @@ package pwm_reg_pkg;
     PWM_BLINK_PARAM_5
   } pwm_id_e;
 
+  // The number of registers
+  parameter int unsigned PWM_NUM_REGS = 23;
+
   // Register width information to check illegal writes
   parameter logic [3:0] PWM_PERMIT [23] = '{
     4'b 0001, // index[ 0] PWM_ALERT_TEST

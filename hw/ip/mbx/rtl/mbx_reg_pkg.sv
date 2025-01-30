@@ -261,6 +261,9 @@ package mbx_reg_pkg;
     MBX_DOE_INTR_MSG_DATA
   } mbx_core_id_e;
 
+  // The number of registers for core interface
+  parameter int unsigned MBX_CORE_NUM_REGS = 17;
+
   // Register width information to check illegal writes for core interface
   parameter logic [3:0] MBX_CORE_PERMIT [17] = '{
     4'b 0001, // index[ 0] MBX_INTR_STATE
@@ -408,6 +411,9 @@ package mbx_reg_pkg;
     MBX_SOC_DOE_INTR_MSG_ADDR,
     MBX_SOC_DOE_INTR_MSG_DATA
   } mbx_soc_id_e;
+
+  // The number of registers for soc interface
+  parameter int unsigned MBX_SOC_NUM_REGS = 4;
 
   // Register width information to check illegal writes for soc interface
   parameter logic [3:0] MBX_SOC_PERMIT [4] = '{

@@ -1410,6 +1410,9 @@ package rv_plic_reg_pkg;
     RV_PLIC_ALERT_TEST
   } rv_plic_id_e;
 
+  // The number of registers
+  parameter int unsigned RV_PLIC_NUM_REGS = 202;
+
   // Register width information to check illegal writes
   parameter logic [3:0] RV_PLIC_PERMIT [202] = '{
     4'b 0001, // index[  0] RV_PLIC_PRIO0

@@ -176,6 +176,9 @@ package pattgen_reg_pkg;
     PATTGEN_SIZE
   } pattgen_id_e;
 
+  // The number of registers
+  parameter int unsigned PATTGEN_NUM_REGS = 12;
+
   // Register width information to check illegal writes
   parameter logic [3:0] PATTGEN_PERMIT [12] = '{
     4'b 0001, // index[ 0] PATTGEN_INTR_STATE

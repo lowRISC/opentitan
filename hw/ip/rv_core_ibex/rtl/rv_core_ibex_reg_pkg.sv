@@ -246,6 +246,9 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_FPGA_INFO
   } rv_core_ibex_cfg_id_e;
 
+  // The number of registers for cfg interface
+  parameter int unsigned RV_CORE_IBEX_CFG_NUM_REGS = 25;
+
   // Register width information to check illegal writes for cfg interface
   parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [25] = '{
     4'b 0001, // index[ 0] RV_CORE_IBEX_ALERT_TEST

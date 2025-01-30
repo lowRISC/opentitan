@@ -782,6 +782,9 @@ package i2c_reg_pkg;
     I2C_TARGET_EVENTS
   } i2c_id_e;
 
+  // The number of registers
+  parameter int unsigned I2C_NUM_REGS = 32;
+
   // Register width information to check illegal writes
   parameter logic [3:0] I2C_PERMIT [32] = '{
     4'b 0011, // index[ 0] I2C_INTR_STATE

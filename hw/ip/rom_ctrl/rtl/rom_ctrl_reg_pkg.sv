@@ -111,6 +111,9 @@ package rom_ctrl_reg_pkg;
     ROM_CTRL_EXP_DIGEST_7
   } rom_ctrl_regs_id_e;
 
+  // The number of registers for regs interface
+  parameter int unsigned ROM_CTRL_REGS_NUM_REGS = 18;
+
   // Register width information to check illegal writes for regs interface
   parameter logic [3:0] ROM_CTRL_REGS_PERMIT [18] = '{
     4'b 0001, // index[ 0] ROM_CTRL_ALERT_TEST

@@ -273,6 +273,9 @@ package ast_reg_pkg;
     AST_REGB_4
   } ast_id_e;
 
+  // The number of registers
+  parameter int unsigned AST_NUM_REGS = 36;
+
   // Register width information to check illegal writes
   parameter logic [3:0] AST_PERMIT [36] = '{
     4'b 1111, // index[ 0] AST_REGA0

@@ -833,6 +833,9 @@ package spi_device_reg_pkg;
     SPI_DEVICE_TPM_READ_FIFO
   } spi_device_id_e;
 
+  // The number of registers
+  parameter int unsigned SPI_DEVICE_NUM_REGS = 73;
+
   // Register width information to check illegal writes
   parameter logic [3:0] SPI_DEVICE_PERMIT [73] = '{
     4'b 0001, // index[ 0] SPI_DEVICE_INTR_STATE

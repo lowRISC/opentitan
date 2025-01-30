@@ -373,6 +373,9 @@ package aes_reg_pkg;
     AES_STATUS
   } aes_id_e;
 
+  // The number of registers
+  parameter int unsigned AES_NUM_REGS = 34;
+
   // Register width information to check illegal writes
   parameter logic [3:0] AES_PERMIT [34] = '{
     4'b 0001, // index[ 0] AES_ALERT_TEST

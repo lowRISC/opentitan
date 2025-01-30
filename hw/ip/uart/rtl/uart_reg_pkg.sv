@@ -393,6 +393,9 @@ package uart_reg_pkg;
     UART_TIMEOUT_CTRL
   } uart_id_e;
 
+  // The number of registers
+  parameter int unsigned UART_NUM_REGS = 13;
+
   // Register width information to check illegal writes
   parameter logic [3:0] UART_PERMIT [13] = '{
     4'b 0011, // index[ 0] UART_INTR_STATE

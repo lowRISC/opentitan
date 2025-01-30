@@ -301,6 +301,9 @@ package adc_ctrl_reg_pkg;
     ADC_CTRL_ADC_FSM_STATE
   } adc_ctrl_id_e;
 
+  // The number of registers
+  parameter int unsigned ADC_CTRL_NUM_REGS = 32;
+
   // Register width information to check illegal writes
   parameter logic [3:0] ADC_CTRL_PERMIT [32] = '{
     4'b 0001, // index[ 0] ADC_CTRL_INTR_STATE
