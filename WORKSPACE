@@ -20,7 +20,7 @@ load("//third_party/python:deps.bzl", "python_deps")
 python_deps()
 load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
-load("@ot_python_deps//:requirements.bzl", install_ot_python_deps="install_deps")
+load("//third_party/python:requirements.bzl", install_ot_python_deps="install_deps")
 install_ot_python_deps()
 
 # Google/Bazel dependencies.  This needs to be after Python initialization
