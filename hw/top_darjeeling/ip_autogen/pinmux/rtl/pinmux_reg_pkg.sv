@@ -166,7 +166,7 @@ package pinmux_reg_pkg;
   } pinmux_reg2hw_wkup_detector_cnt_th_mreg_t;
 
   typedef struct packed {
-    logic [5:0]  q;
+    logic [6:0]  q;
   } pinmux_reg2hw_wkup_detector_padsel_mreg_t;
 
   typedef struct packed {
@@ -256,21 +256,21 @@ package pinmux_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    pinmux_reg2hw_alert_test_reg_t alert_test; // [2601:2600]
-    pinmux_reg2hw_mio_periph_insel_mreg_t [3:0] mio_periph_insel; // [2599:2584]
-    pinmux_reg2hw_mio_outsel_mreg_t [11:0] mio_outsel; // [2583:2548]
-    pinmux_reg2hw_mio_pad_attr_mreg_t [11:0] mio_pad_attr; // [2547:2260]
-    pinmux_reg2hw_dio_pad_attr_mreg_t [72:0] dio_pad_attr; // [2259:508]
-    pinmux_reg2hw_mio_pad_sleep_status_mreg_t [11:0] mio_pad_sleep_status; // [507:496]
-    pinmux_reg2hw_mio_pad_sleep_en_mreg_t [11:0] mio_pad_sleep_en; // [495:484]
-    pinmux_reg2hw_mio_pad_sleep_mode_mreg_t [11:0] mio_pad_sleep_mode; // [483:460]
-    pinmux_reg2hw_dio_pad_sleep_status_mreg_t [72:0] dio_pad_sleep_status; // [459:387]
-    pinmux_reg2hw_dio_pad_sleep_en_mreg_t [72:0] dio_pad_sleep_en; // [386:314]
-    pinmux_reg2hw_dio_pad_sleep_mode_mreg_t [72:0] dio_pad_sleep_mode; // [313:168]
-    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [167:160]
-    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [159:120]
-    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [119:56]
-    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [55:8]
+    pinmux_reg2hw_alert_test_reg_t alert_test; // [2609:2608]
+    pinmux_reg2hw_mio_periph_insel_mreg_t [3:0] mio_periph_insel; // [2607:2592]
+    pinmux_reg2hw_mio_outsel_mreg_t [11:0] mio_outsel; // [2591:2556]
+    pinmux_reg2hw_mio_pad_attr_mreg_t [11:0] mio_pad_attr; // [2555:2268]
+    pinmux_reg2hw_dio_pad_attr_mreg_t [72:0] dio_pad_attr; // [2267:516]
+    pinmux_reg2hw_mio_pad_sleep_status_mreg_t [11:0] mio_pad_sleep_status; // [515:504]
+    pinmux_reg2hw_mio_pad_sleep_en_mreg_t [11:0] mio_pad_sleep_en; // [503:492]
+    pinmux_reg2hw_mio_pad_sleep_mode_mreg_t [11:0] mio_pad_sleep_mode; // [491:468]
+    pinmux_reg2hw_dio_pad_sleep_status_mreg_t [72:0] dio_pad_sleep_status; // [467:395]
+    pinmux_reg2hw_dio_pad_sleep_en_mreg_t [72:0] dio_pad_sleep_en; // [394:322]
+    pinmux_reg2hw_dio_pad_sleep_mode_mreg_t [72:0] dio_pad_sleep_mode; // [321:176]
+    pinmux_reg2hw_wkup_detector_en_mreg_t [7:0] wkup_detector_en; // [175:168]
+    pinmux_reg2hw_wkup_detector_mreg_t [7:0] wkup_detector; // [167:128]
+    pinmux_reg2hw_wkup_detector_cnt_th_mreg_t [7:0] wkup_detector_cnt_th; // [127:64]
+    pinmux_reg2hw_wkup_detector_padsel_mreg_t [7:0] wkup_detector_padsel; // [63:8]
     pinmux_reg2hw_wkup_cause_mreg_t [7:0] wkup_cause; // [7:0]
   } pinmux_reg2hw_t;
 

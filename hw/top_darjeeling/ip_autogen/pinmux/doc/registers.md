@@ -1752,7 +1752,7 @@ However, read/write accesses following a write will block until that write has c
 Pad selects for pad wakeup condition detectors.
 This register is NOT synced to the AON domain since the muxing mechanism is implemented in the same way as the pinmux muxing matrix.
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 - Register enable: [`WKUP_DETECTOR_REGWEN`](#wkup_detector_regwen)
 
 ### Instances
@@ -1772,13 +1772,13 @@ This register is NOT synced to the AON domain since the muxing mechanism is impl
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SEL", "bits": 6, "attr": ["rw"], "rotate": 0}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "SEL", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                              |
 |:------:|:------:|:-------:|:----------------------------------|
-|  31:6  |        |         | Reserved                          |
-|  5:0   |   rw   |   0x0   | [SEL](#wkup_detector_padsel--sel) |
+|  31:7  |        |         | Reserved                          |
+|  6:0   |   rw   |   0x0   | [SEL](#wkup_detector_padsel--sel) |
 
 ### WKUP_DETECTOR_PADSEL . SEL
 Selects a specific MIO or DIO pad (depending on [`WKUP_DETECTOR`](#wkup_detector) configuration).
