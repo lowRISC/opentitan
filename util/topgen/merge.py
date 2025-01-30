@@ -1466,13 +1466,14 @@ def amend_racl(top_cfg: OrderedDict,
                 # The racl_mappings values are expanded in place into a dict
                 # once and need no further updates.
                 continue
-            parsed_register_mapping, parsed_window_mapping, racl_group, _ = (
+            parsed_register_mapping, parsed_window_mapping, parsed_range_mapping, racl_group, _ = (
                 parse_racl_mapping(top_cfg["racl"], top_cfg["cfg_path"] / mapping_path,
                                    if_name, block))
             m['racl_mappings'][if_name] = {
                 'racl_group': racl_group,
                 'register_mapping': parsed_register_mapping,
                 'window_mapping': parsed_window_mapping,
+                'range_mapping': parsed_range_mapping,
             }
 
 

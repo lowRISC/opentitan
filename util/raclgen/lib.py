@@ -25,6 +25,24 @@ racl_required = {
     'policies': ['g', 'Dict, specifying the policies of all RACL groups']
 }
 
+# Required fields for the RACL mapping hjson
+mapping_required = {
+}
+mapping_optional = {
+    'registers': ['g', 'Dict, specifying the policy for each register'],
+    'windows': ['g', 'Dict, specifying the policy for each window'],
+    'ranges': ['l', 'List, specifying the policy for each range.'
+               'Each element in this list must be a dict'
+               'which contain the keys defined in range_required.']
+}
+
+# Required fields for each range within the RACL mapping hjson
+range_required = {
+    'base': ['d', 'Base address of range'],
+    'size': ['d', 'Size of range'],
+    'policy': ['s', 'Policy name']
+}
+
 # Default configuration to render the RACL package for systems that don't use RACL but need the
 # type definitions
 DEFAULT_RACL_CONFIG = {
@@ -50,6 +68,17 @@ def _read_hjson(filename: str) -> Dict[str, object]:
         raise SystemExit(sys.exc_info()[1])
     except OSError:
         raise SystemExit(sys.exc_info()[1])
+
+
+def format_parameter_name_prefix(
+        module_name: str, racl_group: str = None, if_name: str = None) -> str:
+    group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else ""
+    if_suffix = f"_{if_name.upper()}" if if_name else ""
+    return f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}"
+
+
+def format_parameter_range_value(range: Dict) -> str:
+    return f"'{{base:'h{range['base']:x},mask:'h{range['mask']:x},policy:{range['policy']}}}"
 
 
 def parse_racl_config(config_path: str) -> Dict[str, object]:
@@ -120,55 +149,109 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
 def parse_racl_mapping(
         racl_config: Dict[str,
                           object], mapping_path: str, if_name: Optional[str],
-        ip_block: IpBlock) -> Tuple[Dict[str, int], Dict[str, int], str, List[str]]:
+        ip_block: IpBlock) -> Tuple[Dict[str, int], Dict[str, int], List, str, List[str]]:
 
     mapping = _read_hjson(mapping_path)
     parsed_register_mapping = OrderedDict()
     parsed_window_mapping = OrderedDict()
+    parsed_range_mapping = []
 
     # Mapping must be a dict with a single entry:
     # RACL_GROUP => register mapping
     if len(mapping) != 1:
         raise SystemExit('Mapping file must be a single-element dict mapping '
                          'the RACL group to the register mapping')
-    racl_group, register_mapping = list(mapping.items())[0]
+    racl_group, mapping = list(mapping.items())[0]
 
     if not isinstance(racl_group, str):
         raise SystemExit('RACL group must be a string')
-    if not isinstance(register_mapping, dict):
+    if not isinstance(mapping, dict):
         raise SystemExit('Register mapping must be a a dict')
 
-    racl_policy = racl_config['policies'].get(racl_group)
-    if racl_policy is None:
+    racl_policies = racl_config['policies'].get(racl_group)
+    if racl_policies is None:
         raise SystemExit(f'RACL group {racl_group} not defined in RACL config')
 
-    policy_names = [policy['name'] for policy in racl_policy]
+    error = check_keys(mapping, mapping_required, mapping_optional, [], 'RACL Mapping')
+    if error:
+        raise SystemExit(f"Error occurred while validating {mapping_path}")
 
-    # Special handling of the all star assignment:
-    # "*": POLICY
-    # Assigns all registers to a given policy
-    if list(register_mapping.keys()) == ["*"]:
-        policy_name = register_mapping["*"]
+    for range in mapping.get('ranges', []):
+        error = check_keys(range, range_required, [], [], 'RACL Range')
+        if error:
+            raise SystemExit(f"Error occurred while validating {mapping_path}")
+
+    policy_names = [policy['name'] for policy in racl_policies]
+
+    def policy_name_to_idx(policy_name: str) -> int:
         try:
-            policy_idx = policy_names.index(policy_name)
+            return policy_names.index(policy_name)
         except ValueError:
             raise SystemExit(
                 f'RACL policy {policy_name} not defined in RACL config '
                 f'for group {racl_group}')
 
-        reg_block = ip_block.reg_blocks.get(if_name)
-        if not reg_block:
-            raise SystemExit(
-                f"Register interface {if_name} not defined in {ip_block.name}")
+    reg_block = ip_block.reg_blocks.get(if_name)
+    if not reg_block:
+        raise SystemExit(f"Register interface {if_name} not defined in {ip_block.name}")
 
+    if len(reg_block.flat_regs) > 0 and not mapping.get('registers'):
+        raise SystemExit('RACL Mapping is missing the field: registers')
+
+    if len(reg_block.windows) > 0 and not mapping.get('windows'):
+        raise SystemExit('RACL Mapping is missing the field: windows')
+
+    # translate star mappings:
+    if list(mapping.get('registers', {}).keys()) == ["*"]:
+        policy_name = mapping['registers'].pop("*")
         for reg in reg_block.flat_regs:
-            parsed_register_mapping[reg.name] = policy_idx
+            mapping['registers'][reg.name] = policy_name
 
+    if list(mapping.get('windows', {}).keys()) == ["*"]:
+        policy_name = mapping['windows'].pop("*")
         for window in reg_block.windows:
-            parsed_window_mapping[window.name] = policy_idx
+            mapping['windows'][window.name] = policy_name
 
-    else:
-        # General case not yet implemented
-        assert False
+    # Assign all registers to a given policy
+    for reg in reg_block.flat_regs:
+        policy_name = mapping['registers'].get(reg.name)
+        if not policy_name:
+            raise SystemExit(f"Policy for register {reg.name} not defined in {mapping_path}")
+        parsed_register_mapping[reg.name] = policy_name_to_idx(policy_name)
 
-    return parsed_register_mapping, parsed_window_mapping, racl_group, policy_names
+    # Assign all windows to a given policy
+    for window in reg_block.windows:
+        policy_name = mapping['windows'].get(window.name)
+        if not policy_name:
+            raise SystemExit(f"Policy for window {window.name} not defined in {mapping_path}")
+        parsed_window_mapping[window.name] = policy_name_to_idx(policy_name)
+
+    # Assign all ranges to a given policy
+    for range in mapping.get('ranges', []):
+        try:
+            base = int(range['base'], 0)
+            size = int(range['size'], 0)
+            mask = size - 1
+            if size <= 0 or size.bit_count() != 1 or base & mask:
+                raise ValueError
+        except ValueError:
+            raise SystemExit(f'Invalid RACL range mapping ({range}) in {mapping_path}')
+
+        # ensure disjunct ranges:
+        for range_mapping in parsed_range_mapping:
+            start = range_mapping['base']
+            end = range_mapping['base'] + range_mapping['size'] - 1
+            if max(base, start) <= min(base + size - 1, end):
+                raise SystemExit(f'Overlapping RACL range ({range}) in {mapping_path}')
+
+        parsed_range_mapping.append(
+            {
+                'base': base,
+                'size': size,
+                'mask': mask,
+                'policy': policy_name_to_idx(range['policy'])
+            }
+        )
+
+    return parsed_register_mapping, parsed_window_mapping, parsed_range_mapping, racl_group, \
+        policy_names
