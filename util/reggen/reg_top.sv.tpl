@@ -28,6 +28,9 @@
   lblock = block.name.lower()
   ublock = lblock.upper()
 
+  reg_pkg = f'{lblock}{alias_impl}_reg_pkg'
+  num_regs = f'NumRegs{if_name.title() if if_name else ""}'
+
   u_mod_base = mod_base.upper()
 
   reg2hw_t = gen_rtl.get_iface_tx_type(block, if_name, False)
@@ -125,7 +128,7 @@ module ${mod_name}${' (' if not racl_support else ''}
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1${"," if dynamic_racl_support else ""}
   % if dynamic_racl_support:
-    parameter int unsigned RaclPolicySelVec[${len(rb.flat_regs)}] = '{${len(rb.flat_regs)}{0}}
+    parameter int unsigned RaclPolicySelVec[${reg_pkg}::${num_regs}] = '{${reg_pkg}::${num_regs}{0}}
   % endif
   ) (
 % endif
@@ -149,10 +152,10 @@ module ${mod_name}${' (' if not racl_support else ''}
 % endif
   // To HW
 % if rb.get_n_bits(["q","qe","re"]):
-  output ${lblock}${alias_impl}_reg_pkg::${reg2hw_t} reg2hw, // Write
+  output ${reg_pkg}::${reg2hw_t} reg2hw, // Write
 % endif
 % if rb.get_n_bits(["d","de"]):
-  input  ${lblock}${alias_impl}_reg_pkg::${hw2reg_t} hw2reg, // Read
+  input  ${reg_pkg}::${hw2reg_t} hw2reg, // Read
 % endif
 
 % if rb.has_internal_shadowed_reg():
@@ -173,7 +176,7 @@ module ${mod_name}${' (' if not racl_support else ''}
   output logic intg_err_o
 );
 
-  import ${lblock}${alias_impl}_reg_pkg::* ;
+  import ${reg_pkg}::* ;
 
 % if needs_aw:
   localparam int AW = ${addr_width};

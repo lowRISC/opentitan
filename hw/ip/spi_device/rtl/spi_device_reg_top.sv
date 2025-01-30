@@ -10,7 +10,7 @@ module spi_device_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[73] = '{73{0}}
+    parameter int unsigned RaclPolicySelVec[spi_device_reg_pkg::NumRegs] = '{spi_device_reg_pkg::NumRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

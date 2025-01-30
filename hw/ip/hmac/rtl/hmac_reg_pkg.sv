@@ -14,6 +14,9 @@ package hmac_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 13;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 59;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

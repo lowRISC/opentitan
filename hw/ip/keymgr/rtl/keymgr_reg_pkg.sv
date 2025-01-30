@@ -16,6 +16,9 @@ package keymgr_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 8;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 63;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

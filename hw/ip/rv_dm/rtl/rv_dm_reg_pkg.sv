@@ -15,6 +15,11 @@ package rv_dm_reg_pkg;
   parameter int MemAw = 12;
   parameter int DbgAw = 9;
 
+  // Number of registers for every interface
+  parameter int NumRegsRegs = 3;
+  parameter int NumRegsMem = 281;
+  parameter int NumRegsDbg = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for regs interface //
   ///////////////////////////////////////////////

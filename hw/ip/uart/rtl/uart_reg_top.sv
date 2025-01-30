@@ -10,7 +10,7 @@ module uart_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[13] = '{13{0}}
+    parameter int unsigned RaclPolicySelVec[uart_reg_pkg::NumRegs] = '{uart_reg_pkg::NumRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

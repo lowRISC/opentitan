@@ -67,6 +67,9 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
+    files:
+      - lint/spi_device.vbl
+    file_type: veribleLintWaiver
 
 parameters:
   SYNTHESIS:

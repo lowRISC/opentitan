@@ -14,6 +14,9 @@ package rv_timer_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 9;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 10;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

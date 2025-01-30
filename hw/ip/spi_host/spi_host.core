@@ -52,6 +52,9 @@ filesets:
       # common waivers
       - lowrisc:lint:common
       - lowrisc:lint:comportable
+    files:
+      - lint/spi_host.vbl
+    file_type: veribleLintWaiver
 
 parameters:
   SYNTHESIS:
