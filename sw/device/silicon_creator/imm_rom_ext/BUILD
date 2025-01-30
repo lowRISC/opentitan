@@ -100,12 +100,12 @@ ld_library(
 opentitan_binary(
     name = "main_binaries_slot_a",
     exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
+    linker_script = ":ld_slot_a",
+    manifest = "//hw/top_earlgrey:none_manifest",
+    transitive_features = [
         "minsize",
         "use_lld",
     ],
-    linker_script = ":ld_slot_a",
-    manifest = "//hw/top_earlgrey:none_manifest",
     deps = [
         ":main_lib",
         "//sw/device/lib/crt",
@@ -124,12 +124,12 @@ opentitan_binary(
 opentitan_binary(
     name = "main_binaries_slot_b",
     exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
+    linker_script = ":ld_slot_b",
+    manifest = "//hw/top_earlgrey:none_manifest",
+    transitive_features = [
         "minsize",
         "use_lld",
     ],
-    linker_script = ":ld_slot_b",
-    manifest = "//hw/top_earlgrey:none_manifest",
     deps = [
         ":main_lib",
         "//sw/device/lib/crt",
@@ -148,12 +148,12 @@ opentitan_binary(
 opentitan_binary(
     name = "main_binaries_slot_virtual",
     exec_env = DEFAULT_EXEC_ENV,
-    extra_bazel_features = [
+    linker_script = ":ld_slot_virtual",
+    manifest = "//hw/top_earlgrey:none_manifest",
+    transitive_features = [
         "minsize",
         "use_lld",
     ],
-    linker_script = ":ld_slot_virtual",
-    manifest = "//hw/top_earlgrey:none_manifest",
     deps = [
         ":main_lib",
         "//sw/device/lib/crt",
