@@ -13,6 +13,9 @@ package usbdev_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 12;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 43;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

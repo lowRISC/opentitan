@@ -15,6 +15,9 @@ package rv_core_ibex_reg_pkg;
   // Address widths within the block
   parameter int CfgAw = 8;
 
+  // Number of registers for every interface
+  parameter int NumRegsCfg = 25;
+
   //////////////////////////////////////////////
   // Typedefs for registers for cfg interface //
   //////////////////////////////////////////////

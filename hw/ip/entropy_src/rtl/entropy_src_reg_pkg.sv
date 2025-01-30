@@ -13,6 +13,9 @@ package entropy_src_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 8;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 57;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

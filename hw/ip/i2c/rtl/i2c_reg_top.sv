@@ -10,7 +10,7 @@ module i2c_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[32] = '{32{0}}
+    parameter int unsigned RaclPolicySelVec[i2c_reg_pkg::NumRegs] = '{i2c_reg_pkg::NumRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

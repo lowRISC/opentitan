@@ -15,6 +15,9 @@ package clkmgr_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 7;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 20;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

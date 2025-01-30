@@ -10,7 +10,7 @@ module mbx_soc_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[4] = '{4{0}}
+    parameter int unsigned RaclPolicySelVec[mbx_reg_pkg::NumRegsSoc] = '{mbx_reg_pkg::NumRegsSoc{0}}
   ) (
   input clk_i,
   input rst_ni,

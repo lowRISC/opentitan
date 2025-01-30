@@ -380,6 +380,11 @@ package ${lblock}${"_" + block.alias_impl if block.alias_impl else ""}_reg_pkg;
 % for param_name, width in addr_widths.values():
   parameter int ${param_name} = ${width};
 % endfor
+
+  // Number of registers for every interface
+% for iface_name, rb in block.reg_blocks.items():
+  parameter int NumRegs${iface_name.title() if iface_name else ""} = ${len(rb.flat_regs)};
+% endfor
 <%
   just_default = len(block.reg_blocks) == 1 and None in block.reg_blocks
 %>\
