@@ -106,7 +106,7 @@ This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../..
 The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
 
-`CreatorRootKey` forms the first key in the chain described in Identities and Root Keys.
+`CreatorRootKey` forms the first key in the chain described in [Identities and Root Keys](../../../../doc/security/specs/identities_and_root_keys/README.md).
 An attacker who modifies the ROM will perturb `CreatorRootKey` (to avoid doing so would require a preimage attack on the ROM checksum calculation or the `KM_DERIVE` function).
 The result is that, while the chip will function, it will have the "wrong" root key and the chain of trust used for attestation will be broken.
 
