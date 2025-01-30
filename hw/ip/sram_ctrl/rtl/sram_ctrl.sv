@@ -285,8 +285,13 @@ module sram_ctrl
 
   // The scrambling key and nonce have to be requested from the OTP controller via a req/ack
   // protocol. Since the OTP controller works in a different clock domain, we have to synchronize
-  // the req/ack protocol as described in more details here:
-  // https://docs.opentitan.org/hw/ip/otp_ctrl/doc/index.html#interfaces-to-sram-and-otbn-scramblers
+  // the req/ack protocol as described in more details in the OTP controller documentation.
+  //
+  // This is specialised for different tops that use it but the req/ack protocol is the same in each
+  // case. For one example, see
+  //
+  // https://opentitan.org/book/hw/top_earlgrey/
+  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-otbn-scramblers
   logic key_req, key_ack;
   assign key_req = reg2hw.ctrl.renew_scr_key.q &&
                    reg2hw.ctrl.renew_scr_key.qe &&
