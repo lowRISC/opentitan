@@ -199,10 +199,14 @@ module aon_timer import aon_timer_reg_pkg::*;
 
   // Registers to interrupt
   assign intr_test_qe           = reg2hw.intr_test.wkup_timer_expired.qe;
-  // All the fields of a register have the same value for their qe signals, so we just pick one
-  // of them. This assertion checks that we don't miss writes if the register top changes."
+
+  // The fields of a register all have the same value for their qe signals, so we just pick one of
+  // them. This assertion checks that we don't miss writes if the register top changes and the
+  // unused_extra_qe signal avoids a lint error (because the lint tool doesn't expand the assertion)
   `ASSERT(IntrTestFieldsQeMatch_A,
           reg2hw.intr_test.wkup_timer_expired.qe == reg2hw.intr_test.wdog_timer_bark.qe)
+  logic unused_extra_qe;
+  assign unused_extra_qe = reg2hw.intr_test.wdog_timer_bark.qe;
 
   assign intr_test_q [AON_WKUP] = reg2hw.intr_test.wkup_timer_expired.q;
   assign intr_state_q[AON_WKUP] = reg2hw.intr_state.wkup_timer_expired.q;
