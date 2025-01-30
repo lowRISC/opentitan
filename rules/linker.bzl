@@ -68,14 +68,6 @@ def _ld_library_impl(ctx):
     user_link_flags = []
     files = []
 
-    # Disable non-volatile scratch region and counters if building for english
-    # breakfast. This should appear before the linker script.
-    # FIXME Get rid of this.
-    if "-DOT_IS_ENGLISH_BREAKFAST_REDUCED_SUPPORT_FOR_INTERNAL_USE_ONLY_" in ctx.fragments.cpp.copts:
-        user_link_flags += [
-            "-Wl,--defsym=no_ottf_nv_scratch=1",
-            "-Wl,--defsym=no_ottf_nv_counter=1",
-        ]
     if ctx.attr.non_page_aligned_segments:
         user_link_flags += [
             "-Wl,-nmagic",

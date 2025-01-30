@@ -14,13 +14,15 @@
  * set by Bazel to point to the top's linker file. */
 INCLUDE OPENTITAN_TOP_MEMORY_LD
 
+#include "ottf_ld_top_config.ld"
+
 /**
  * Symbols to be used in the setup of the address translation for ROM_EXT.
  */
 /* TODO(#9045): Move BL0 size to a common location. */
 _ottf_size = LENGTH(owner_virtual) - 64K;
 _ottf_start_address = ORIGIN(owner_virtual) + 64K;
-ASSERT((_ottf_size <= (LENGTH(eflash) / 2)),
+ASSERT((_ottf_size <= (LENGTH(ottf_storage) / 2)),
   "Error: BL0 flash is bigger than slot.");
 
 REGION_ALIAS("ottf_flash", owner_virtual);
