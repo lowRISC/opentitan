@@ -133,7 +133,10 @@ sram_start:
 
 .L_crc_match:
   // Set up the stack.
+  .option push
+  .option norelax
   la  sp, _stack_end
+  .option pop
 
   /**
    * Setup the interrupt/exception handlers.
