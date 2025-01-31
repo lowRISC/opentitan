@@ -10,7 +10,7 @@ module tb;
   import flash_ctrl_pkg::*;
   import flash_ctrl_env_pkg::*;
   import flash_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import flash_bkdr_util_pkg::flash_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -262,31 +262,31 @@ module tb;
       flash_dv_part_e part = part.first();
 
       initial begin
-        flash_mem_bkdr_util m_mem_bkdr_util;
+        flash_bkdr_util m_mem_bkdr_util;
         m_mem_bkdr_util = new(
-            .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+            .name($sformatf("flash_bkdr_util[%0s][%0d]", part.name(), i)),
             .path(`FLASH_DATA_MEM_HIER_STR(i)),
             .depth($size(`FLASH_DATA_MEM_HIER(i))),
             .n_bits($bits(`FLASH_DATA_MEM_HIER(i))),
             .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
         );
-        uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
-                                           m_mem_bkdr_util);
+        uvm_config_db#(flash_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                             m_mem_bkdr_util);
         part = part.next();
       end
 
       for (genvar j = 0; j < flash_ctrl_pkg::InfoTypes; j++) begin : gen_each_info_type
         initial begin
-          flash_mem_bkdr_util m_mem_bkdr_util;
+          flash_bkdr_util m_mem_bkdr_util;
           m_mem_bkdr_util = new(
-              .name($sformatf("mem_bkdr_util[%0s][%0d]", part.name(), i)),
+              .name($sformatf("flash_bkdr_util[%0s][%0d]", part.name(), i)),
               .path(`FLASH_INFO_MEM_HIER_STR(i, j)),
               .depth($size(`FLASH_INFO_MEM_HIER(i, j))),
               .n_bits($bits(`FLASH_INFO_MEM_HIER(i, j))),
               .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68)
           );
-          uvm_config_db#(mem_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
-                                             m_mem_bkdr_util);
+          uvm_config_db#(flash_bkdr_util)::set(null, "*.env", m_mem_bkdr_util.get_name(),
+                                               m_mem_bkdr_util);
           part = part.next();
         end
       end : gen_each_info_type

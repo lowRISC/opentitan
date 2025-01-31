@@ -16,6 +16,7 @@ package flash_ctrl_env_pkg;
   import flash_ctrl_core_ral_pkg::*;
   import flash_ctrl_eflash_ral_pkg::*;
   import flash_ctrl_prim_ral_pkg::*;
+  import flash_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
   import prim_mubi_pkg::*;
   import lc_ctrl_pkg::*;
@@ -553,7 +554,6 @@ package flash_ctrl_env_pkg;
   endfunction
 
   // package sources
-  `include "flash_mem_bkdr_util.sv"
   `include "flash_mem_addr_attrs.sv"
   `include "flash_otf_item.sv"
   `include "flash_otf_read_entry.sv"

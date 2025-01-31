@@ -8,7 +8,7 @@ module tb;
   import dv_utils_pkg::*;
   import rom_ctrl_env_pkg::*;
   import rom_ctrl_test_pkg::*;
-  import mem_bkdr_util_pkg::rom_bkdr_util;
+  import rom_bkdr_util_pkg::rom_bkdr_util;
 
   // macro includes
   `include "uvm_macros.svh"

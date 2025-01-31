@@ -34,7 +34,9 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:sw_logger_if
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_bkdr_util
+      - lowrisc:dv:rom_bkdr_util
+      - lowrisc:dv:sram_bkdr_util
       - lowrisc:dv_dpi_c:gpiodpi
       - lowrisc:dv_dpi_sv:gpiodpi
       - lowrisc:dv_dpi_c:uartdpi

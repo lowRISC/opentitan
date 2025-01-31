@@ -13,7 +13,7 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:sram_bkdr_util
       - lowrisc:dv:sram_ctrl_test
       - lowrisc:dv:sram_ctrl_sva
     files:
