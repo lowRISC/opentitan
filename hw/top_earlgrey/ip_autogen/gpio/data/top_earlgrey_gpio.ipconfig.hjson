@@ -10,6 +10,7 @@
     topname: earlgrey
     uniquified_modules:
     {
+      rv_core_ibex: rv_core_ibex
       alert_handler: alert_handler
       rv_plic: rv_plic
     }
