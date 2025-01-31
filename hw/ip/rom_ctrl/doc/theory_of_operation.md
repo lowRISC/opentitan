@@ -16,16 +16,16 @@ It runs exactly once, and releases the green multiplexer when it is done.
 ## ROM access when chip is in operation
 
 Once the chip has booted, ROM accesses are requested over the system TL-UL bus.
-These come in through the TL-UL SRAM adapter (top-left of block diagram).
+These arrive through the TL-UL SRAM adapter (top-left of block diagram).
 In normal operation, the green multiplexer will give access to these TL reads.
-The address is scrambled at the first substitution-permutation network (marked S&P in the diagram).
+The address is scrambled by a substitution-permutation network (marked S&P in the diagram).
 
 In parallel with the ROM access, a reduced `prim_prince` primitive (7 rounds with latency 1; equivalent to the cipher used for SRAM) computes a 39-bit truncated keystream for the block.
-On the following cycle, the scrambled data from ROM goes through a substitution-permutation network and is then XOR'd with the keystream.
+On the following cycle, the data returned from ROM is XOR'd with the keystream.
 This scheme is the same as that used by the [SRAM controller](../../sram_ctrl/README.md), but is much simplified because the ROM doesn't have to deal with writes, byte accesses or key changes.
 
-The output from the XOR is the unscrambled 32-bit data, plus seven ECC bits.
-This data is passed straight through the TL-UL SRAM adapter; the ECC bits are used as a signal integrity check by the system bus.
+The output from the XOR has a 32-bit data word plus seven ECC bits.
+This data word is passed straight through the TL-UL SRAM adapter; the ECC bits are used as a signal integrity check by the system bus.
 
 The following diagram shows the timing of the different signals.
 The time from the `req` output from the `tlul_adapter_sram` to the response that appears on its `rvalid` input is one cycle.
@@ -40,9 +40,9 @@ The unscrambled ROM data for (logical) address 12 is denoted `d12`.
   {name: 'req', wave: '0.1...0...'},
   {name: 'addr', wave: 'x.3.4.x...', data: ['12', '34']},
   {name: 'scrambled addr', wave: 'x.3.4.x...', data: ['21', '43']},
-  {name: 'scrambled rdata + ecc', wave: 'x...3.4.x.', data: ['w21', 'w43']},
+  {name: 'encrypted rdata + ecc', wave: 'x...3.4.x.', data: ['w21', 'w43']},
   {name: 'keystream', wave: 'x...3.4.x.', data: ['k12', 'k34']},
-  {name: 'rdata + ecc', wave: 'x...3.4.x.', data: ['d12', 'd34']},
+  {name: 'cleartext rdata + ecc', wave: 'x...3.4.x.', data: ['d12', 'd34']},
   {name: 'rvalid', wave: '0...1...0.'},
 ]}
 ```
@@ -66,12 +66,11 @@ The checker FSM loops through almost all the words in ROM (from bottom to top), 
 Once the last word has been sent, the FSM releases the multiplexer; this now switches over permanently to allow access through the TL-UL SRAM adapter.
 
 The top eight words in ROM (by logical address) are interpreted as a 256-bit expected hash.
-Unlike the rest of ROM, their data is not stored scrambled, so the expected hash can be read directly.
 This is taken by the checker FSM (ignoring ECC bits) and will be compared with the digest that is read back from the KMAC block.
 
 Once it comes back, the digest is forwarded directly to the [Key Manager](../../keymgr/README.md).
 It is also compared with the hash that was read from the top eight words of ROM.
-On a match, `pwrmgr_data_o.good` is signalled as `Mubi4True`.
+On a match, `pwrmgr_data_o.good` is signalled as `MuBi4True`.
 In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
 
 The diagram below shows the operation of the simple FSM.
@@ -107,7 +106,7 @@ This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../..
 The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
 
-`CreatorRootKey` forms the first key in the chain described in Identities and Root Keys.
+`CreatorRootKey` forms the first key in the chain described in [Identities and Root Keys](../../../../doc/security/specs/identities_and_root_keys/README.md).
 An attacker who modifies the ROM will perturb `CreatorRootKey` (to avoid doing so would require a preimage attack on the ROM checksum calculation or the `KM_DERIVE` function).
 The result is that, while the chip will function, it will have the "wrong" root key and the chain of trust used for attestation will be broken.
 
@@ -125,74 +124,4 @@ To avoid attacks propagating into the rest of the system, we take the following 
 
 ## Hardware Interfaces
 
-* [Interface Tables](../data/rom_ctrl.hjson#interfaces)
-
-### Parameters
-
-Parameter                   | Default (Max)         | Top Earlgrey | Description
-----------------------------|-----------------------|--------------|---------------
-`RndCnstRomKey`             | (see RTL)             | (see RTL)    | Compile-time random default constant for scrambling key (used in `prim_prince` block).
-`RndCnstRomNonce`           | (see RTL)             | (see RTL)    | Compile-time random default constant for scrambling nonce (used in `prim_prince` block and the S&P block).
-
-### Signals
-
-The table below lists other ROM controller inter-module signals.
-
-<table>
-  <tr>
-    <th>Signal</th>
-    <th>Type</th>
-    <th>Destination</th>
-    <th>Description</th>
-  </tr>
-  <tr>
-    <td><code>pwrmgr_data_o</code></td>
-    <td><code>rom_ctrl_pkg::pwrmgr_data_t</code></td>
-    <td>pwrmgr</td>
-    <td>
-      <p>
-        A structure with two fields.
-        The first, <code>done</code>, becomes true when the ROM check is complete and remains true until reset.
-      </p><p>
-        The second, <code>good</code>, is only valid if <code>done</code> is true.
-        This is true if the digest computation matched the expected value stored in the top words of ROM and false otherwise.
-        This field stays constant when <code>done</code> is true.
-      </p>
-    </td>
-  </tr>
-
-  <tr>
-    <td><code>keymgr_data_o</code></td>
-    <td><code>rom_ctrl_pkg::keymgr_data_t</code></td>
-    <td>keymgr</td>
-    <td>
-      A 256-bit digest, together with a <code>valid</code> signal.
-      Once the ROM check is complete, <code>valid</code> will become true and will then remain true until reset.
-      The digest in <code>data</code> is only valid when <code>valid</code> is true and is be constant until reset.
-    </td>
-  </tr>
-
-  <tr>
-    <td><code>kmac_data_o</code></td>
-    <td>kmac_pkg::app_req_t</td>
-    <td>kmac</td>
-    <td>
-      Outgoing data to KMAC.
-      Data is sent in 64-bit words in the <code>data</code> field.
-      When a word of data is available, the <code>valid</code> field is true.
-      When this is the last word of data, the <code>last</code> field is also true.
-      Since we never send partial words, the <code>strb</code> field is always zero.
-    </td>
-  </tr>
-  <tr>
-    <td><code>kmac_data_i</code></td>
-    <td>kmac_pkg::app_rsp_t</td>
-    <td>kmac</td>
-    <td>
-      Incoming data from KMAC interface.
-      This contains a <code>ready</code> signal for passing ROM data and a <code>done</code> signal that shows a digest has been computed.
-      When <code>done</code> is true, the digest is exposed in two shares (<code>digest_share0</code> and <code>digest_share1</code>).
-      The <code>error</code> field is ignored.
-    </td>
-  </tr>
-</table>
+The interfaces to `rom_ctrl` are described in detail at [interfaces](./interfaces.md).
