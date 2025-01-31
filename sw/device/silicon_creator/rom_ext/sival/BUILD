@@ -35,6 +35,11 @@ manifest(d = {
     "visibility": ["//visibility:private"],
 })
 
+ROM_EXT_FEATURES = [
+    "minsize",
+    "use_lld",
+]
+
 # To test that the prod-signed SiVAL ROM_EXT boots on the FPGA, you need a bitstream
 # with the sival keys pre-programmed into OTP.
 # You can manually create such a bitstream with:
@@ -50,15 +55,12 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -77,15 +79,12 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
     manifest = ":manifest_sival",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -100,13 +99,10 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_a",
     linkopts = LINK_ORDER,
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
@@ -121,13 +117,10 @@ opentitan_binary(
         "//hw/top_earlgrey:silicon_creator",
         "//hw/top_earlgrey:fpga_cw310",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = "//sw/device/silicon_creator/rom_ext:ld_slot_b",
     linkopts = LINK_ORDER,
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",

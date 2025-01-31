@@ -223,6 +223,11 @@ manifest(d = {
     "security_version": ROM_EXT_VERSION.SECURITY,
 })
 
+ROM_EXT_FEATURES = [
+    "minsize",
+    "use_lld",
+]
+
 opentitan_binary(
     name = "rom_ext_slot_a",
     testonly = True,
@@ -235,14 +240,11 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_A_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_a",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -264,14 +266,11 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_B_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_b",
     manifest = ":manifest",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:prod_key_0_spx": "prod_key_0"},
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -293,13 +292,10 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_verilator_base",
         "//hw/top_earlgrey:silicon_creator",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     immutable_rom_ext_sections = SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS["main"],
     linker_script = ":ld_slot_virtual",
     manifest = ":manifest",
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
@@ -321,13 +317,10 @@ opentitan_binary(
             "//hw/top_earlgrey:sim_verilator_base",
             "//hw/top_earlgrey:silicon_creator",
         ],
-        extra_bazel_features = [
-            "minsize",
-            "use_lld",
-        ],
         immutable_rom_ext_sections = imm_rom_ext_sections,
         linker_script = ":ld_slot_virtual",
         manifest = ":manifest",
+        transitive_features = ROM_EXT_FEATURES,
         deps = [
             ":rom_ext",
             "//sw/device/lib/crt",
@@ -354,12 +347,9 @@ opentitan_binary(
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
     ],
-    extra_bazel_features = [
-        "minsize",
-        "use_lld",
-    ],
     linker_script = ":ld_slot_a",
     manifest = ":manifest_bad_address_translation",
+    transitive_features = ROM_EXT_FEATURES,
     deps = [
         ":rom_ext",
         "//sw/device/lib/crt",
