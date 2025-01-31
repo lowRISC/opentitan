@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name: "rv_core_ibex"
-  import_testplans: ["rv_core_ibex_sec_cm_testplan.hjson"]
+  name: "${module_instance_name}"
+  import_testplans: ["${module_instance_name}_sec_cm_testplan.hjson"]
   testpoints: [
     {
       name: riscv_arithmetic_basic_test

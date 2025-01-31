@@ -14,6 +14,6 @@ filegroup(
             "README.md",
         ],
     ) + [
-        "//hw/ip/rv_core_ibex/data:all_files",
+        "//hw/${topname}/ip_autogen/${module_instance_name}/data:all_files",
     ],
 )

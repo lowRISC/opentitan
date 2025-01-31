@@ -8,9 +8,9 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex
+module ${module_instance_name}
   import rv_core_ibex_pkg::*;
-  import rv_core_ibex_reg_pkg::*;
+  import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
   parameter bit                     PMPEnable        = 1'b1,
@@ -132,8 +132,8 @@ module rv_core_ibex
   import tlul_pkg::*;
 
   // Register module
-  rv_core_ibex_cfg_reg2hw_t reg2hw;
-  rv_core_ibex_cfg_hw2reg_t hw2reg;
+  ${module_instance_name}_cfg_reg2hw_t reg2hw;
+  ${module_instance_name}_cfg_hw2reg_t hw2reg;
 
   // if pipeline=1, do not allow pass through and always break the path
   // if pipeline is 0, passthrough the fifo completely
@@ -717,7 +717,7 @@ module rv_core_ibex
   logic intg_err;
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
-  rv_core_ibex_cfg_reg_top u_reg_cfg (
+  ${module_instance_name}_cfg_reg_top u_reg_cfg (
     .clk_i,
     .rst_ni,
     .tl_i(cfg_tl_d_i),
