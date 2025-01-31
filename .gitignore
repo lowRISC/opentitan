@@ -3,9 +3,12 @@
 *.swp
 *.swo
 tags
-__pycache__
 /.vscode
 opentitan-docs
+
+# Python
+__pycache__
+*.egg-info
 
 # fusesoc result
 build/
