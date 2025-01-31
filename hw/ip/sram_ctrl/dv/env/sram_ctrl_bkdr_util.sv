@@ -4,7 +4,7 @@
 
 // Specialization of the `mem_bkdr_util` class for SRAM's encrypted read/write operations.
 
-class sram_bkdr_util extends mem_bkdr_util;
+class sram_ctrl_bkdr_util extends mem_bkdr_util;
 
   // Initialize the class instance.
   // `extra_bits_per_subword` is the width of any additional metadata that is not captured in the
@@ -207,4 +207,4 @@ class sram_bkdr_util extends mem_bkdr_util;
     end
   endtask : bkdr_load_from_file
 
-endclass : sram_bkdr_util
+endclass : sram_ctrl_bkdr_util

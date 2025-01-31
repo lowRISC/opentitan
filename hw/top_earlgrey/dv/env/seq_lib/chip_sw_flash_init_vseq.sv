@@ -133,9 +133,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task calculate_and_write_scrambled();
-    flash_bkdr_util data0;
-    flash_bkdr_util data1;
-    flash_bkdr_util info0;
+    flash_ctrl_bkdr_util data0;
+    flash_ctrl_bkdr_util data1;
+    flash_ctrl_bkdr_util info0;
     bit [15:0] base_addr_bytes;
 
     `downcast(data0, cfg.mem_bkdr_util_h[FlashBank0Data])

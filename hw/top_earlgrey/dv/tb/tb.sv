@@ -13,7 +13,10 @@ module tb;
   import top_earlgrey_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
+  import flash_ctrl_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import rom_ctrl_bkdr_util_pkg::*;
+  import sram_ctrl_bkdr_util_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -458,9 +461,9 @@ module tb;
     initial begin
       // Unfortunately xcelium does not understand typed constructors so we must assign to local
       // variables first.
-      flash_bkdr_util data0, info0, data1, info1;
-      sram_bkdr_util ram_main0, ram_ret0;
-      rom_bkdr_util rom;
+      flash_ctrl_bkdr_util data0, info0, data1, info1;
+      sram_ctrl_bkdr_util ram_main0, ram_ret0;
+      rom_ctrl_bkdr_util rom;
       chip_mem_e    mem;
       mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
 

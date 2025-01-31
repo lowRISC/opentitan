@@ -78,7 +78,7 @@ class chip_base_vseq #(
   // having to rely on a ROM software build prior to running the simulation.
   virtual function void random_rom_init_with_digest();
     bit [TL_DW-1:0] rnd_data;
-    rom_bkdr_util rom;
+    rom_ctrl_bkdr_util rom;
 
     `uvm_info(`gfn, "Random ROM init with digest", UVM_MEDIUM)
     `downcast(rom, cfg.mem_bkdr_util_h[Rom])
@@ -335,7 +335,7 @@ class chip_base_vseq #(
     int unsigned expected_data[int unsigned];
     int offmax = mem.get_size() - 1;
     int sizemax = offmax / 4;
-    rom_bkdr_util rom;
+    rom_ctrl_bkdr_util rom;
 
     `uvm_info(`gfn, $sformatf("Mem writes to %s %0d times", mem.get_full_name(), max_access),
               UVM_MEDIUM)

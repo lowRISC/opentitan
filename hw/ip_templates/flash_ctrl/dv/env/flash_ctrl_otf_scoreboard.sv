@@ -131,7 +131,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
     // for debug print
     obs.start_addr = exp.start_addr;
     obs.cmd.num_words = 1;
-    obs.mem_addr = exp.start_addr >> 3;
+    obs.mem_addr = exp.start_addr >> FlashDataByteWidth;
 
     obs.print("RAW");
     cfg.flash_mem_otf_read(obs.cmd, obs.fq);
@@ -262,7 +262,7 @@ class flash_ctrl_otf_scoreboard extends uvm_scoreboard;
 
     // Read descramble has to be done Qword by Qword because
     // Each Qword can be in different region.
-    send.mem_addr = exp.start_addr >> 3;
+    send.mem_addr = exp.start_addr >> FlashDataByteWidth;
     send.ctrl_rd_region_q = exp.ctrl_rd_region_q;
 
     // Mask descramble error chk whem comp_off is set.

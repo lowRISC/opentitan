@@ -24,8 +24,9 @@ function void rom_ctrl_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
   // Get the rom_bkdr interface
-  if (!uvm_config_db#(rom_bkdr_util)::get(this, "", "rom_bkdr_util", cfg.rom_bkdr_util_h)) begin
-    `uvm_fatal(`gfn, "failed to get rom_bkdr_util from uvm_config_db")
+  if (!uvm_config_db#(rom_ctrl_bkdr_util)::get(this, "", "rom_ctrl_bkdr_util",
+                                               cfg.rom_ctrl_bkdr_util_h)) begin
+    `uvm_fatal(`gfn, "failed to get rom_ctrl_bkdr_util from uvm_config_db")
   end
   // Get the rom_ctrl interface
   if (!uvm_config_db#(rom_ctrl_vif)::get(this, "", "rom_ctrl_vif", cfg.rom_ctrl_vif)) begin

@@ -35,10 +35,10 @@ class sram_ctrl_env #(parameter int AddrWidth = 10) extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get exec_vif from uvm_config_db")
     end
 
-    // Get the sram_bkdr interface
-    if (!uvm_config_db#(sram_bkdr_util)::get(this, "", "sram_bkdr_util",
-                                             cfg.sram_bkdr_util_h)) begin
-      `uvm_fatal(`gfn, "failed to get sram_bkdr_util from uvm_config_db")
+    // Get the sram_ctrl_bkdr interface
+    if (!uvm_config_db#(sram_ctrl_bkdr_util)::get(this, "", "sram_ctrl_bkdr_util",
+                                                  cfg.sram_ctrl_bkdr_util_h)) begin
+      `uvm_fatal(`gfn, "failed to get sram_ctrl_bkdr_util from uvm_config_db")
     end
 
     // Build the KDI agent
