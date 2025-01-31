@@ -146,6 +146,31 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
+
+  // Remove address space protections by configuring entry 15 as
+  // read-write-execute for the entire address space and then clearing
+  // all other entries.
+  // NOTE: This should happen before attemting to access any address outside
+  // the initial ePMP RX region at reset, e.g. `kDeviceType` which is in
+  // .rodata.
+  li   t0, (0x9f << 24) // Locked NAPOT read-write-execute.
+  csrw pmpcfg3, t0
+  li   t0, 0x7fffffff   // NAPOT encoded region covering entire 34-bit address space.
+  csrw pmpaddr15, t0
+  csrw pmpcfg0, zero
+  csrw pmpcfg1, zero
+  csrw pmpcfg2, zero
+
+  // TODO: Darjeeling bring up
+  li   a0, 0x211f0080
+  li   a1, 0xb090
+  sw   a1, (a0)
+  li   a1, 0x4354
+  sw   a1, (a0)
+  li   a1, 0x900d
+  sw   a1, (a0)
+  wfi
+
 #if !OT_IS_ENGLISH_BREAKFAST
   // Check if AST initialization should be skipped.
   li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
