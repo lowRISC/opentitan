@@ -197,9 +197,15 @@
                   ]
              },
              {    name: rv_core_ibex
-                  fusesoc_core: lowrisc:ip:rv_core_ibex
-                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
-                  rel_path: "hw/ip/rv_core_ibex/lint/{tool}"
+                  fusesoc_core: lowrisc:darjeeling_ip:rv_core_ibex
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"],
+                  rel_path: "hw/top_darjeeling/ip_autogen/rv_core_ibex/lint/{tool}",
+                  overrides: [
+                    {
+                      name: design_level
+                      value: "top"
+                    }
+                  ]
              },
              {    name: rv_dm
                   fusesoc_core: lowrisc:ip:rv_dm
