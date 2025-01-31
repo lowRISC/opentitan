@@ -113,22 +113,38 @@ task tl_host_driver::flush_during_reset();
 endtask
 
 task tl_host_driver::reset_signals();
-  invalidate_a_channel();
-  cfg.vif.h2d_int.d_ready <= 1'b0;
+  reset_asserted = (cfg.vif.rst_n === 1'b0);
   forever begin
-    @(negedge cfg.vif.rst_n);
-    reset_asserted = 1'b1;
+    // At the start of the loop body, we should either be at the start of the simulation or have
+    // just entered reset. Invalidate all signals and mark ourselves as not ready on the D channel.
     invalidate_a_channel();
     cfg.vif.h2d_int.d_ready <= 1'b0;
-    @(posedge cfg.vif.rst_n);
+
+    // Now wait to come out of reset then clear the reset_asserted signal. (Note that if the
+    // simulation started not in reset then this first wait will take zero time).
+    wait(cfg.vif.rst_n);
     reset_asserted = 1'b0;
-    // Check for seq_item_port FIFO & pending req queue is empty when coming out of reset
+
+    // When we were in reset, we should have flushed all sequence items immediately. To check this
+    // has worked correctly, the following things should be true when we leave reset:
+    //
+    //  - The pending_a_req queue should be empty (d_channel_thread should have sent responses and
+    //    flushed the requests).
+    //
+    //  - The sequencer shouldn't have any items available through seq_item_port. If an item had
+    //    been available, we should have taken it immediately in get_and_drive.
     `DV_CHECK_EQ(pending_a_req.size(), 0)
     `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
     // Check if the a_source_pend_q maintained in the cfg is empty.
     if (cfg.check_tl_errs) begin
       `DV_CHECK_EQ(cfg.a_source_pend_q.size(), 0)
     end
+
+    // At this point, we're in the main part of the simulation and the get_and_drive task will be
+    // driving sequence items over the bus. Wait until reset is asserted then set the reset_asserted
+    // signal again.
+    wait(!cfg.vif.rst_n);
+    reset_asserted = 1'b1;
   end
 endtask
 
