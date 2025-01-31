@@ -26,6 +26,7 @@ load(
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
+    "qemu_params",
     "silicon_params",
     "verilator_params",
 )
@@ -96,6 +97,12 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            "ot-aes.fast-mode": "false",
         },
     ),
     deps = [
@@ -3572,6 +3579,12 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            "ot-rstmgr.fatal_reset": "0",
         },
     ),
     deps = [
@@ -4256,6 +4269,7 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
         },
     ),
     deps = [

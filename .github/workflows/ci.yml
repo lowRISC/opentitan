@@ -733,3 +733,29 @@ jobs:
       - name: Check for unrunnable tests
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
+
+  execute_rom_qemu_tests:
+    name: QEMU ROM Tests
+    needs: quick_lint
+    runs-on: ubuntu-22.04-vivado
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for bitstream cache to work.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute QEMU tests
+        continue-on-error: true
+        run: |
+          ./bazelisk.sh test                       \
+            --run_under=//ci/scripts:run_test      \
+            --define DISABLED_VERILATOR_BUILD=true \
+            --nokeep_going                         \
+            --test_timeout_filters=short,moderate  \
+            --test_output=all                      \
+            --build_tests_only                     \
+            --flaky_test_attempts=2                \
+            --test_tag_filters=qemu                \
+            //...
