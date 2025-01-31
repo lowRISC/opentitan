@@ -10,7 +10,7 @@ class rom_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rom_ctrl_regs_reg_block
   rand kmac_app_agent_cfg m_kmac_agent_cfg;
 
   // Memory backdoor util instance for ROM.
-  rom_bkdr_util rom_bkdr_util_h;
+  rom_ctrl_bkdr_util rom_ctrl_bkdr_util_h;
 
   // ext interfaces
   rom_ctrl_vif rom_ctrl_vif;

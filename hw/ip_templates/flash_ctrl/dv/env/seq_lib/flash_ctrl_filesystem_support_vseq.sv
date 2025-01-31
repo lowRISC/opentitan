@@ -122,7 +122,7 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
   // to the address.
   // After program, store write data for readback check.
   task filesys_ctrl_prgm(flash_op_t flash_op_p, bit all_zero, output data_q_t wdata);
-    bit [BusBankAddrW-1:0] mem_addr = (flash_op_p.addr >> 3);
+    bit [BusBankAddrW-1:0] mem_addr = (flash_op_p.addr >> FlashDataByteWidth);
     bit                    ovwr_zero = 0;
 
     flash_op_p.op = FlashOpProgram;
@@ -239,8 +239,8 @@ class flash_ctrl_filesystem_support_vseq extends flash_ctrl_otf_base_vseq;
     // For odd numbers, add one more address.
     int addr_end = (flash_op.num_words + 1) / 2;
     for (int i = 0; i < addr_end; i++) begin
-      generate_all_addr.push_back((flash_op.addr >> 3));
-      flash_op.addr += 8;
+      generate_all_addr.push_back(flash_op.addr >> FlashDataByteWidth);
+      flash_op.addr += FlashBankBytesPerWord;
     end
   endfunction : generate_all_addr
 

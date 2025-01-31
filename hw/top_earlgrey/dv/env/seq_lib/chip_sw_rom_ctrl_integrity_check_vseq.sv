@@ -68,7 +68,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     bit [38:0]                                      flip_bit;
     bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0]  nonce;
     bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]    key;
-    rom_bkdr_util rom;
+    rom_ctrl_bkdr_util rom;
 
     `downcast(rom, cfg.mem_bkdr_util_h[Rom])
 

@@ -88,7 +88,7 @@ task rom_ctrl_base_vseq::rom_ctrl_mem_init();
   // that we also need to pick ECC values that match.
   for (int i = 0; i < ROM_SIZE_WORDS; i++) begin
     `DV_CHECK_STD_RANDOMIZE_FATAL(rnd_data)
-    cfg.rom_bkdr_util_h.rom_encrypt_write32_integ(i * 4,
+    cfg.rom_ctrl_bkdr_util_h.rom_encrypt_write32_integ(i * 4,
                                                   rnd_data,
                                                   RND_CNST_SCR_KEY,
                                                   RND_CNST_SCR_NONCE,
@@ -157,7 +157,7 @@ function bit [DIGEST_SIZE-1:0] rom_ctrl_base_vseq::get_expected_digest();
   // The digest is the top 8 words in memory (unscrambled)
   dig_addr = MAX_CHECK_ADDR;
   for (int i = 0; i < DIGEST_SIZE / TL_DW; i++) begin
-    bit [ROM_MEM_W-1:0] mem_data = cfg.rom_bkdr_util_h.rom_encrypt_read32(
+    bit [ROM_MEM_W-1:0] mem_data = cfg.rom_ctrl_bkdr_util_h.rom_encrypt_read32(
         dig_addr, RND_CNST_SCR_KEY, RND_CNST_SCR_NONCE, 1'b0);
     digest[i*TL_DW+:TL_DW] = mem_data[TL_DW-1:0];
     dig_addr += (TL_DW / 8);

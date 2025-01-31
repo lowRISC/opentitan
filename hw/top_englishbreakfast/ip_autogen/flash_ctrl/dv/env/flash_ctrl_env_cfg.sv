@@ -13,8 +13,8 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
   // Type for a regular array per read_task_e of the associative array above.
   typedef per_caller_err_addr_tbl_t err_addr_tbl_t[NumReadTask];
 
-  // Memory backdoor util instances for each partition in each bank.
-  mem_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
+  // Flash memory backdoor util instances for each partition in each bank.
+  flash_ctrl_bkdr_util mem_bkdr_util_h[flash_dv_part_e][flash_ctrl_pkg::NumBanks];
 
   // Pass scoreboard handle to address multiple exp_alert issue.
   flash_ctrl_scoreboard scb_h;
@@ -1228,7 +1228,7 @@ class flash_ctrl_env_cfg extends cip_base_env_cfg #(
 
       mem_bkdr_util_h[part][bank].write(addr, item.fq[0]);
       // address should be mem_addr
-      mem_addr = addr >> 3;
+      mem_addr = addr >> FlashDataByteWidth;
       if (part == FlashPartData) otf_scb_h.data_mem[bank][mem_addr] = item.fq[0];
       else otf_scb_h.info_mem[bank][part>>1][mem_addr] = item.fq[0];
     end

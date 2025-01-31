@@ -1538,7 +1538,7 @@ class flash_ctrl_otf_base_vseq extends flash_ctrl_base_vseq;
     // for debug print
     obs.start_addr = exp.start_addr;
     obs.cmd.num_words = 1;
-    obs.mem_addr = exp.start_addr >> 3;
+    obs.mem_addr = exp.start_addr >> FlashDataByteWidth;
 
     cfg.flash_mem_otf_read(obs.cmd, obs.fq);
 

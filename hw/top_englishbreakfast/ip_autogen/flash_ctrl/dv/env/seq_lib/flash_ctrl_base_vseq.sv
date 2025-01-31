@@ -1275,7 +1275,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_wipe_idx);
+        `DV_CHECK(uvm_hdl_read(mypath, rma_wipe_idx));
       end while (rma_wipe_idx != 3'h3);,
       "waiting for rma index = 3", 50_000_000
     )
@@ -1289,7 +1289,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_ack);
+        `DV_CHECK(uvm_hdl_read(mypath, rma_ack));
       end while (rma_ack != lc_ctrl_pkg::On);,
       "waiting for rma ack == On", 100_000_000
     )
@@ -1642,7 +1642,7 @@ class flash_ctrl_base_vseq extends cip_base_vseq #(
         item.region.ecc_en = ecc_en;
         item.scramble(otp_addr_key, otp_data_key, addr, dis);
         cfg.mem_bkdr_util_h[FlashPartInfo][0].write(addr, item.fq[0]);
-        mem_addr = addr >> 3;
+        mem_addr = addr >> FlashDataByteWidth;
         cfg.otf_scb_h.info_mem[0][0][mem_addr] = item.fq[0];
         cfg.scb_flash_info[addr] = item.fq[0][31:0];
         cfg.scb_flash_info[addr+4] = item.fq[0][63:32];

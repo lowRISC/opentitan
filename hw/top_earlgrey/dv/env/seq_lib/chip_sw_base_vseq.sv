@@ -207,7 +207,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce,
       bit [38:0] flip_bits);
 
-    sram_bkdr_util sram;
+    sram_ctrl_bkdr_util sram;
     chip_mem_e mem;
     int        num_tiles;
     bit [31:0] addr_scr;
@@ -243,7 +243,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]   key,
       bit [sram_scrambler_pkg::SRAM_BLOCK_WIDTH-1:0] nonce);
 
-    sram_bkdr_util sram;
+    sram_ctrl_bkdr_util sram;
     chip_mem_e mem;
     int        num_tiles;
     bit [31:0] addr_scr;
@@ -645,7 +645,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
       for (int i = 0; i < size; i++) mem_bkdr_write8(mem, mem_addr + i, data[i]);
 
       if (mem == Rom) begin
-        rom_bkdr_util rom;
+        rom_ctrl_bkdr_util rom;
         `downcast(rom, cfg.mem_bkdr_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
         rom.update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
