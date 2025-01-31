@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// rv_core_ibex package
+// ${module_instance_name} package
 //
 
-package rv_core_ibex_pkg;
+package ${module_instance_name}_pkg;
 
   typedef struct packed {
     logic en;
@@ -31,4 +31,4 @@ package rv_core_ibex_pkg;
     core_sleeping: 1'b0
   };
 
-endpackage // rv_core_ibex_pkg
+endpackage // ${module_instance_name}_pkg
