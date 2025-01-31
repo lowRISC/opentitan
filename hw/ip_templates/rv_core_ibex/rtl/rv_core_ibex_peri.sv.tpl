@@ -7,9 +7,9 @@
 
 `include "prim_assert.sv"
 
-module rv_core_ibex_peri
-  import rv_core_ibex_peri_pkg::*;
-  import rv_core_ibex_peri_reg_pkg::*;
+module ${module_instance_name}_peri
+  import ${module_instance_name}_peri_pkg::*;
+  import ${module_instance_name}_peri_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}}
 ) (
@@ -20,7 +20,7 @@ module rv_core_ibex_peri
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // alert events from rv_core_ibex
+  // alert events from ${module_instance_name}
   input alert_event_t fatal_intg_event_i,
   input alert_event_t fatal_core_event_i,
   input alert_event_t recov_core_event_i,
@@ -35,11 +35,11 @@ module rv_core_ibex_peri
 );
 
   // Register module
-  rv_core_ibex_peri_reg2hw_t reg2hw;
-  rv_core_ibex_peri_hw2reg_t hw2reg;
+  ${module_instance_name}_peri_reg2hw_t reg2hw;
+  ${module_instance_name}_peri_hw2reg_t hw2reg;
 
   logic intg_err;
-  rv_core_ibex_peri_reg_top u_reg (
+  ${module_instance_name}_peri_reg_top u_reg (
     .clk_i,
     .rst_ni,
     .tl_i,
@@ -124,4 +124,4 @@ module rv_core_ibex_peri
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[2])
-endmodule // rv_core_ibex_peri
+endmodule // ${module_instance_name}_peri
