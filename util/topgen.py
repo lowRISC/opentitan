@@ -1031,8 +1031,9 @@ def create_ipgen_blocks(
     multi_instance_ipgens = [
         k for k, v in ipgen_instances.items() if len(v) > 1
     ]
-    log.warning("There are ipgen modules with multiple instances: "
-                f"{multi_instance_ipgens}")
+    if multi_instance_ipgens:
+        log.warning("There are ipgen modules with multiple instances: "
+                    f"{multi_instance_ipgens}")
 
     if "racl_config" in topcfg:
         amend_racl(topcfg, name_to_block, allow_missing_blocks=True)
