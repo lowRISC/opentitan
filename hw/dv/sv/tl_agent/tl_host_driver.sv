@@ -6,8 +6,8 @@
 class tl_host_driver extends tl_base_driver;
   `uvm_component_utils(tl_host_driver)
 
-  tl_seq_item pending_a_req[$];
-  bit reset_asserted;
+  protected tl_seq_item pending_a_req[$];
+  protected bit reset_asserted;
 
   extern function new (string name="", uvm_component parent=null);
 
