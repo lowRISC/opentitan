@@ -2,7 +2,7 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:ip:rv_core_ibex:0.1"
+name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 description: "Wrapper around ibex with TL-UL ports"
 filesets:
   files_rtl:
@@ -10,7 +10,6 @@ filesets:
       - lowrisc:ibex:ibex_top
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:ip:otp_ctrl_pkg
-      - lowrisc:ip:rv_core_ibex_pkg
       - lowrisc:ip:tlul
       - lowrisc:prim:all
       - lowrisc:prim:clock_gating
@@ -20,12 +19,13 @@ filesets:
       - lowrisc:prim:lc_sender
       - lowrisc:prim:mubi
       - lowrisc:tlul:adapter_host
+      - lowrisc:ip:rv_core_ibex_pkg
 
     files:
-      - rtl/rv_core_ibex_reg_pkg.sv
-      - rtl/rv_core_ibex_cfg_reg_top.sv
-      - rtl/rv_core_ibex.sv
-      - rtl/rv_core_addr_trans.sv
+      - rtl/${module_instance_name}_reg_pkg.sv
+      - rtl/${module_instance_name}_cfg_reg_top.sv
+      - rtl/${module_instance_name}_addr_trans.sv
+      - rtl/${module_instance_name}.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:
@@ -62,7 +62,7 @@ targets:
       - tool_ascentlint  ? (files_ascentlint_waiver)
       - tool_veriblelint ? (files_veriblelint_waiver)
       - files_rtl
-    toplevel: rv_core_ibex
+    toplevel: ${module_instance_name}
 
   lint:
     <<: *default_target

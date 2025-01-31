@@ -13,7 +13,5 @@ filegroup(
             "doc/**",
             "README.md",
         ],
-    ) + [
-        "//hw/ip/rv_core_ibex/data:all_files",
-    ],
+    ),
 )
