@@ -75,7 +75,7 @@ def opentitan_select_top(values, default):
         if type(tops) == "string":
             tops = [tops]
         for top in tops:
-            branches["//hw/top:is_{}".format(top)] = value
+            branches["@lowrisc_opentitan//hw/top:is_{}".format(top)] = value
     branches["//conditions:default"] = default
     return select(branches)
 
