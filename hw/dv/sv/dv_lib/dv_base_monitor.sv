@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// Use this UVM macro as we may need to implement multiple uvm_analysis_imp, which means
+// implemneting multiple write methods which is not possible with the same name.
+`uvm_analysis_imp_decl(_mon_reset)
+
 class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
                         type REQ_ITEM_T = ITEM_T,
                         type RSP_ITEM_T = ITEM_T,
@@ -27,7 +31,14 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   // item will be sent to this port for seq when rsp phase is done (rsp_done is set)
   uvm_analysis_port #(RSP_ITEM_T) rsp_analysis_port;
 
-  `uvm_component_new
+  uvm_analysis_imp_mon_reset #(
+    reset_state_e, dv_base_monitor#(ITEM_T,REQ_ITEM_T,RSP_ITEM_T,CFG_T,COV_T)) reset_st_imp;
+
+
+  function new (string name="", uvm_component parent=null);
+    super.new(name, parent);
+    reset_st_imp = new ("reset_st_imp", this);
+  endfunction : new
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -37,15 +48,49 @@ class dv_base_monitor #(type ITEM_T = uvm_sequence_item,
   endfunction
 
   virtual task run_phase(uvm_phase phase);
-    fork
-      collect_trans();
-    join
+    // After each reset, the current transaction should be dropped and collect_trans should be
+    // restarted once the reset is being deasserted.
+    forever begin
+      // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+      // processes at the same level from the base classes
+      fork begin : isolation_fork
+        fork
+          begin : main_thread
+            collect_trans();
+          end
+          begin : reset_thread
+            wait(cfg.in_reset);
+          end
+        join_any
+        disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+        wait(!cfg.in_reset);
+      end join
+    end
   endtask
 
   // collect transactions forever
   virtual protected task collect_trans();
     `uvm_fatal(`gfn, "this method is not supposed to be called directly!")
   endtask
+
+
+  // TODO MVy: some monitors extended from this class are declaring under_reset bit and are
+  // managing it, so it should be removed from these child-classes as the configuration class is
+  // already providing a similar information.
+  // There is also the case for reset_thread, reset_signals... methods which can be removed then.
+  // Probably the cfg.in_reset should be removed as it's not a good practice to share info
+  // through the cfg object and a under_reset bit should be declared instead here.
+
+  // This function will be executed each time the reset monitor will detect a reset activity. As
+  // the monitor will broadcast this activity on a UVM TLM port uvm_analysis_port which is connected
+  // to this component via a UVM analysis import.
+  virtual function void write_mon_reset(reset_state_e reset_st);
+    if (reset_st == ResetAsserted) begin
+      cfg.in_reset = 1;
+    end else begin
+      cfg.in_reset = 0;
+    end
+  endfunction : write_mon_reset
 
   // UVM callback which is invoked during phase sequencing.
   virtual function void phase_ready_to_end(uvm_phase phase);
