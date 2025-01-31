@@ -13,8 +13,8 @@ module mbx_sysif
   parameter bit          EnableRacl               = 1'b0,
   parameter bit          RaclErrorRsp             = 1'b1,
   parameter int unsigned RaclPolicySelVecSoc[4]   = '{4{0}},
-  parameter int unsigned RaclPolicySelWinSocWDATA = 0,
-  parameter int unsigned RaclPolicySelWinSocRDATA = 0
+  parameter int unsigned RaclPolicySelWinSocWdata = 0,
+  parameter int unsigned RaclPolicySelWinSocRdata = 0
 ) (
   input  logic                           clk_i,
   input  logic                           rst_ni,
@@ -232,7 +232,7 @@ module mbx_sysif
     .EnableDataIntgGen ( 0                        ),
     .EnableRacl        ( EnableRacl               ),
     .RaclErrorRsp      ( RaclErrorRsp             ),
-    .RaclPolicySelVec  ( RaclPolicySelWinSocWDATA )
+    .RaclPolicySelVec  ( RaclPolicySelWinSocWdata )
   ) u_wdata_reg_if (
     .clk_i            ( clk_i                        ),
     .rst_ni           ( rst_ni                       ),
@@ -264,7 +264,7 @@ module mbx_sysif
     .EnableDataIntgGen ( 0                        ),
     .EnableRacl        ( EnableRacl               ),
     .RaclErrorRsp      ( RaclErrorRsp             ),
-    .RaclPolicySelVec  ( RaclPolicySelWinSocRDATA )
+    .RaclPolicySelVec  ( RaclPolicySelWinSocRdata )
   ) u_rdata_reg_if (
     .clk_i            ( clk_i                        ),
     .rst_ni           ( rst_ni                       ),
