@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Specialization of the `mem_bkdr_util` class for flash memories.
+// Specialization of the `mem_util` class for flash control's scrambling operations.
 
-class flash_bkdr_util extends mem_bkdr_util;
+class flash_ctrl_util extends mem_bkdr_util;
 
   localparam int unsigned FlashDataWidth = flash_phy_pkg::DataWidth;
   localparam int unsigned FlashStagesPerCycle = FlashDataWidth / flash_phy_pkg::GfMultCycles;

@@ -8,7 +8,7 @@
 // Also note that this function returns the raw data rather than data + syndrome + error because
 // the rom_ctrl testbench needs this for checking.
 
-class rom_bkdr_util extends mem_bkdr_util;
+class rom_ctrl_util extends mem_bkdr_util;
 
   // Encryption configuration.
   bit [127:0] m_key;
