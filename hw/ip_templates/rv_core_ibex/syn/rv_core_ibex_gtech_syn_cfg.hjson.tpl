@@ -3,10 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   // Top level dut name (sv module).
-  name: rv_core_ibex
+  name: ${module_instance_name}
 
   // Fusesoc core file used for building the file list.
-  fusesoc_core: lowrisc:ip:{name}:0.1
+  fusesoc_core: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}")}:0.1
 
   import_cfgs: [// Project wide common GTECH synthesis config file
                 "{proj_root}/hw/syn/tools/dvsim/common_gtech_syn_cfg.hjson"]

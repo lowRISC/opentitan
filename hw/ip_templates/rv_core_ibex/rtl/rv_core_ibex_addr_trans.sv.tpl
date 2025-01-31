@@ -8,7 +8,7 @@
  * https://docs.google.com/document/d/1uU2Zh46SJtoaOqZ9dCRO7oAQnhTUcWWZ7CstOa1PZiM/edit?usp=sharing
  */
 
-module rv_core_addr_trans import rv_core_ibex_pkg::*; #(
+module ${module_instance_name}_addr_trans import rv_core_ibex_pkg::*; #(
   parameter int AddrWidth = 32,
   parameter int NumRegions = 2
 ) (
@@ -83,4 +83,4 @@ module rv_core_addr_trans import rv_core_ibex_pkg::*; #(
   assign unused_clk = clk_i;
   assign unused_rst_n = rst_ni;
 
-endmodule // rv_core_addr_trans
+endmodule // ${module_instance_name}_addr_trans
