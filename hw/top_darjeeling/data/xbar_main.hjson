@@ -106,7 +106,7 @@
       type:      "device",
       clock:     "clk_main_i",
       reset:     "rst_main_ni",
-      pipefile:  false,
+      pipeline:  false,
     },
     { name:      "hmac",
       type:      "device",
