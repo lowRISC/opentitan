@@ -526,7 +526,17 @@ slice = f"{lo+w-1}:{lo}"
   % endif
   % endif
     % for i in m["param_list"]:
+      % if i["name"] == "RndCnstScrNonce":
+    // TODO: Replace this with the proper parameter; temporary for Darjeeling bring up!
+    .RndCnstScrNonce('h3f40a5e816a506c2),
+      % else:
+        % if i["name"] == "RndCnstScrKey":
+    // TODO: Replace this with the proper parameter; temporary for Darjeeling bring up!
+    .RndCnstScrKey('hab1f4a2f01cbe908a34c2a20fecda9a5),
+        % else:
     .${i["name"]}(${i["name_top" if i.get("expose") == "true" or i.get("randtype", "none") != "none" else "default"]})${"," if not loop.last else ""}
+        % endif
+      %endif
     % endfor
   ) u_${m["name"]} (
   % else:
