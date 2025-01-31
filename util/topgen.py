@@ -636,6 +636,22 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
     ipgen_render("racl_ctrl", topname, params, out_path)
 
 
+# Generate the rv_core_ibex
+def generate_rv_core_ibex(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
+                          out_path: Path) -> None:
+    log.info('Generating rv_core_ibex with ipgen')
+    topname = topcfg['name']
+
+    # Get the RV Core Ibex instance
+    rv_core = lib.find_module(topcfg['module'], 'rv_core_ibex')
+    params = {
+        "num_regions": rv_core['ipgen_param']['NumRegions'],
+        'module_instance_name': rv_core['type']
+    }
+
+    ipgen_render('rv_core_ibex', topname, params, out_path)
+
+
 def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
                       top_name: str, alt_hjson_path: str) -> None:
     log.info("Generating top only modules")
@@ -974,6 +990,10 @@ def _process_top(
 
     # Generate outgoing alerts
     generate_outgoing_alerts(completecfg, out_path)
+
+    # Generate rv_core_ibex if there is an instance
+    if lib.find_module(completecfg['module'], 'rv_core_ibex'):
+        generate_rv_core_ibex(completecfg, cfg_path, out_path)
 
     # Generate otp_ctrl if there is an instance
     if lib.find_module(completecfg['module'], 'otp_ctrl'):
