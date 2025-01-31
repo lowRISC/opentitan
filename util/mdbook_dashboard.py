@@ -34,7 +34,6 @@ DASHBOARDS: Dict[str, List[Path]] = {
         REPO_TOP / "hw/ip/kmac/data/kmac.hjson",
         REPO_TOP / "hw/ip/lc_ctrl/data/lc_ctrl.hjson",
         REPO_TOP / "hw/ip/otbn/data/otbn.hjson",
-        REPO_TOP / "hw/ip/otp_ctrl/data/otp_ctrl.hjson",
         REPO_TOP / "hw/ip/pattgen/data/pattgen.hjson",
         REPO_TOP / "hw/ip/pwm/data/pwm.hjson",
         REPO_TOP / "hw/ip/rom_ctrl/data/rom_ctrl.hjson",

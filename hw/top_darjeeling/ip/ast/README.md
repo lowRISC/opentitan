@@ -650,9 +650,7 @@ still needs an external clock for clock calibration and first flash/OTP
 programming.</p>
 <p>Clock calibration: AST clock sources are inaccurate by default and
 must be calibrated prior to use. The results of the calibration are
-stored in <a
-href="https://opentitan.org/book/hw/ip/otp_ctrl"><u>OTP</u></a> and
-reloaded by software upon system boot.</p>
+stored in OTP and reloaded by software upon system boot.</p>
 <p>First Flash / OTP programming: AST clock sources are inaccurate by
 default and may be out of range for initial flash and OTP programming.
 In this situation, an external clock may be required for initial

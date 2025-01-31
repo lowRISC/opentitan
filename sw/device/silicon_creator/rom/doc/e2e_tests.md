@@ -6,7 +6,11 @@ The [ROM](../README.md) is the first boot stage of secure boot flow and by natur
 The ROM E2E (End-to-End) tests validates the ROM features and can be used for regression tests.
 Each test is divided into components:
  - **ROM Image**, a C program built by `bazel` and spliced with the bitstream. The ROM is the DUT (Device Under Test) of the ROM E2E tests.
- - **OTP image**, contains HW and SW configurations, some of which control execution paths in the ROM, such as the lifecycle stage. As a result, we run some of tests with several different OTP images to increase coverage of ROM execution paths. Please refers to [OTP layout](https://opentitan.org/book/hw/ip/otp_ctrl/index.html?highlight=CREATOR_SW_CFG_AST_INIT_EN#direct-access-memory-map) for more details.
+ - **OTP image**, contains HW and SW configurations, some of which control execution paths in the ROM, such as the lifecycle stage.
+   As a result, we run some tests with several different OTP images to increase coverage of ROM execution paths.
+   There is more information in the documentation for the OTP layout.
+   That documentation is specialised for the different tops.
+   For an example, see earlgrey's [OTP memory map](../../../../../hw/top_earlgrey/ip_autogen/otp_ctrl/README.md#direct-access-memory-map).
  - **FPGA bitstream**, Opentitan Hardware implementation synthesized for the FPGA built by `bazel` and `vivado`.
  - **Device test firmware**, a C program (built by bazel to run on an OpenTitan device) that is loaded into flash, and booted by the ROM stage. It checks the HW registers and/or memory configurations performed by the ROM and relays information to the Host test software.
  - **opentitantool**, a Rust program that provides a common interface to interact with an OpenTitan device. `opentitantool` uses `opentitanlib` which provides the abstractions to communicate with an OpenTitan device.
