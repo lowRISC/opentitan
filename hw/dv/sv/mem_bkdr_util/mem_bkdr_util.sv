@@ -26,7 +26,7 @@ class mem_bkdr_util extends uvm_object;
   // The depth of a single SRAM tile.
   protected uint32_t tile_depth;
 
-  // The width of the memory.
+  // The logical width of the memory in bits, not including extra bits added by the row adapter.
   protected uint32_t width;
 
   // The number of subword entries in the whole memory
@@ -34,6 +34,10 @@ class mem_bkdr_util extends uvm_object;
 
   // Indicates the error detection scheme implemented for this memory.
   protected err_detection_e err_detection_scheme = ErrDetectionNone;
+
+  // Adapter to access the underlying memory organization
+  // Integrators can provide a custom row adapter for their SRAM primitives
+  protected mem_bkdr_util_row_adapter row_adapter;
 
   // Convenience macro to check if ECC / parity is enabled.
   `define HAS_ECC (!(err_detection_scheme inside {ErrDetectionNone, ParityEven, ParityOdd}))
@@ -84,6 +88,9 @@ class mem_bkdr_util extends uvm_object;
   //
   // Optional arguments:
   //
+  //   row_adapter             Adapter to access the internal row of a memory. Integrators can
+  //                           provide a custom adapter for a different memory architecture.
+  //
   //  num_prince_rounds_half   The number of rounds of PRINCE used to scramble the memory. This is
   //                           used for scrambled memories. This defaults to 3.
   //
@@ -104,18 +111,25 @@ class mem_bkdr_util extends uvm_object;
   //                           memory.
   function new(string name = "", string path, int unsigned depth,
                longint unsigned n_bits, err_detection_e err_detection_scheme,
+               mem_bkdr_util_row_adapter row_adapter = null,
                uint32_t num_prince_rounds_half = 3,
                uint32_t extra_bits_per_subword = 0, uint32_t system_base_addr = 0,
                string tiling_path = "", uint32_t tile_depth = depth);
     super.new(name);
     `DV_CHECK_FATAL(!(n_bits % depth), "n_bits must be divisible by depth.")
 
-    this.path                  = path;
-    this.tiling_path           = tiling_path;
-    this.depth                 = depth;
-    this.tile_depth            = tile_depth;
-    this.width                 = n_bits / depth;
-    this.err_detection_scheme  = err_detection_scheme;
+    if (row_adapter != null) begin
+      this.row_adapter = row_adapter;
+    end else begin
+      this.row_adapter = new();
+    end
+
+    this.path                   = path;
+    this.tiling_path            = tiling_path;
+    this.depth                  = depth;
+    this.tile_depth             = tile_depth;
+    this.width                  = (n_bits / depth) - this.row_adapter.get_num_extra_bits();
+    this.err_detection_scheme   = err_detection_scheme;
     this.num_prince_rounds_half = num_prince_rounds_half;
 
     // Check if the inferred path to each tile (or the whole memory) really exist
@@ -285,11 +299,12 @@ class mem_bkdr_util extends uvm_object;
   virtual function uvm_hdl_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
     bit res;
     uint32_t index, ram_tile;
-    uvm_hdl_data_t data;
+    uvm_hdl_data_t encoded_row, data;
     if (!check_addr_valid(addr)) return 'x;
     index    = addr >> addr_lsb;
     ram_tile = index / tile_depth;
-    res      = uvm_hdl_read($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
+    res      = uvm_hdl_read($sformatf("%0s[%0d]", get_full_path(ram_tile), index), encoded_row);
+    data     = row_adapter.decode_row(encoded_row);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_read failed at index %0d", index))
     return data;
   endfunction
@@ -399,11 +414,14 @@ class mem_bkdr_util extends uvm_object;
   // Updates the entire width of the memory at the given address, including the ECC bits.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
     bit res;
+    uvm_hdl_data_t encoded_row;
     uint32_t index, ram_tile;
     if (!check_addr_valid(addr)) return;
-    index    = addr >> addr_lsb;
-    ram_tile = index / tile_depth;
-    res      = uvm_hdl_deposit($sformatf("%0s[%0d]", get_full_path(ram_tile), index), data);
+    index       = addr >> addr_lsb;
+    ram_tile    = index / tile_depth;
+    encoded_row = row_adapter.encode_row(data);
+    res         = uvm_hdl_deposit($sformatf("%0s[%0d]", get_full_path(ram_tile), index),
+                                  encoded_row);
     `DV_CHECK_EQ(res, 1, $sformatf("uvm_hdl_deposit failed at index %0d", index))
   endfunction
 
@@ -455,9 +473,14 @@ class mem_bkdr_util extends uvm_object;
 
   // this is used to write 32bit of data plus 7 raw integrity bits.
   virtual function void write39integ(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [38:0] data);
+    uvm_hdl_data_t rw_data;
     `_ACCESS_CHECKS(addr, 32) // this is essentially an aligned 32bit access.
     if (!check_addr_valid(addr)) return;
-    write(addr, data);
+    // Perform a read-modify-write to access the underlying memory architecture
+    rw_data = read(addr);
+    rw_data = row_adapter.access_row_data39(addr, data, rw_data);
+    // Note the write function takes care of interleaving, if used.
+    write(addr, rw_data);
   endfunction
 
   virtual function void write64(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [63:0] data);
