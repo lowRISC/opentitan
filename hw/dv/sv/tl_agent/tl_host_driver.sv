@@ -37,12 +37,12 @@ class tl_host_driver extends tl_base_driver;
   //                 the cfg has allow_a_valid_drop_wo_a_ready, then the driver will drop a_valid
   //                 again after that time, write 'x values to the A channel and exit.
   //
-  // req_done [ref]  This is set to 1'b1 if a_ready has gone high on the host clock.
+  // req_done [out]  This is set to 1'b1 if a_ready has gone high on the host clock.
   //
-  // req_abort [ref] This is set to 1'b1 if the host decides to drop a_valid because the receiever
+  // req_abort [out] This is set to 1'b1 if the host decides to drop a_valid because the receiever
   //                 hasn't responded with a_ready.
-  extern task send_a_request_body(tl_seq_item req, int a_valid_len,
-                                  ref bit req_done, ref bit req_abort);
+  extern protected task send_a_request_body(tl_seq_item req, int a_valid_len,
+                                            output bit req_done, output bit req_abort);
 
   // Drive the d_ready pin (as the host) forever to allow a device to send responses back
   //
@@ -146,7 +146,7 @@ endtask
 
 task tl_host_driver::send_a_channel_request(tl_seq_item req);
   int unsigned a_valid_delay, a_valid_len;
-  bit req_done, req_abort;
+  bit req_done = 1'b0, req_abort = 1'b0;
 
   // Seq may override the a_source or all valid sources are used but still send req, in which case
   // it is possible that it might not have factored
@@ -214,8 +214,11 @@ task tl_host_driver::send_a_channel_request(tl_seq_item req);
 endtask
 
 task tl_host_driver::send_a_request_body(tl_seq_item req, int a_valid_len,
-                                         ref bit req_done, ref bit req_abort);
-  int unsigned a_valid_cnt;
+                                         output bit req_done, output bit req_abort);
+  int unsigned a_valid_cnt = 0;
+  req_done = 1'b0;
+  req_abort = 1'b0;
+
   while (1) begin
     @(cfg.vif.host_cb);
     a_valid_cnt++;
