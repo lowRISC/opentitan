@@ -12,7 +12,6 @@ filesets:
       - lowrisc:dv:otbn_model
       - lowrisc:ip:otbn_tracer
       - lowrisc:ip:keymgr_pkg
-      - lowrisc:prim_generic:all
   files_verilator:
     depend:
       - lowrisc:dv:otbn_memutil
