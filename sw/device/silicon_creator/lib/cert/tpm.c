@@ -38,15 +38,22 @@ rom_error_t tpm_ek_tbs_cert_build(cert_key_id_pair_t *key_ids,
                                   ecdsa_p256_public_key_t *tpm_ek_pubkey,
                                   uint8_t *tpm_ek_tbs,
                                   size_t *tpm_ek_tbs_size) {
+  static_assert(kTpmEkExactAuthKeyKeyIdSizeBytes == kCertKeyIdSizeInBytes,
+                "Invalid variable size.");
+  static_assert(
+      kTpmEkExactTpmEkPubKeyEcXSizeBytes == kEcdsaP256PublicKeyCoordBytes,
+      "Invalid variable size.");
+  static_assert(
+      kTpmEkExactTpmEkPubKeyEcYSizeBytes == kEcdsaP256PublicKeyCoordBytes,
+      "Invalid variable size.");
+  static_assert(kTpmEkExactTpmEkPubKeyIdSizeBytes == kCertKeyIdSizeInBytes,
+                "Invalid variable size.");
+
   tpm_ek_tbs_values_t tpm_ek_tbs_params = {
       .auth_key_key_id = (unsigned char *)key_ids->endorsement,
-      .auth_key_key_id_size = kCertKeyIdSizeInBytes,
       .tpm_ek_pub_key_ec_x = (unsigned char *)tpm_ek_pubkey->x,
-      .tpm_ek_pub_key_ec_x_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_ek_pub_key_ec_y = (unsigned char *)tpm_ek_pubkey->y,
-      .tpm_ek_pub_key_ec_y_size = kEcdsaP256PublicKeyCoordBytes,
       .tpm_ek_pub_key_id = (unsigned char *)key_ids->cert,
-      .tpm_ek_pub_key_id_size = kCertKeyIdSizeInBytes,
       .tpm_version = "0.0.1",
       .tpm_version_len = 5,
       .tpm_vendor = "Nuvoton",
