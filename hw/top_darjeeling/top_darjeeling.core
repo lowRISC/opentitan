@@ -12,7 +12,6 @@ filesets:
       - lowrisc:darjeeling_ip:alert_handler_reg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:ip:uart:0.1
-      - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
@@ -48,6 +47,7 @@ filesets:
       - lowrisc:darjeeling_ip:pwrmgr
       - lowrisc:darjeeling_ip:rstmgr
       - lowrisc:darjeeling_ip:rv_plic
+      - lowrisc:darjeeling_ip:rv_core_ibex
       - lowrisc:darjeeling_ip:racl_ctrl
       - lowrisc:darjeeling_ip:gpio
       - lowrisc:ip:aon_timer
