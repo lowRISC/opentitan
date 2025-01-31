@@ -12,7 +12,7 @@
 // make further manual updates.
 //
 // These countermeasures and their descriptions can be found here:
-// .../rv_core_ibex/data/rv_core_ibex.hjson
+// .../${module_instance_name}/data/${module_instance_name}.hjson
 //
 // It is possible that the testing of some of these countermeasures may already
 // be covered as a testpoint in a different testplan. This duplication is ok -
@@ -20,7 +20,7 @@
 // to the testpoints below using the `tests` key.
 //
 // Please ensure that this testplan is imported in:
-// .../rv_core_ibex/data/rv_core_ibex_testplan.hjson
+// .../${module_instance_name}/data/${module_instance_name}_testplan.hjson
 {
   testpoints: [
     {
