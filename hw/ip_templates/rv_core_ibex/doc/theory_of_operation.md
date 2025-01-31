@@ -33,7 +33,7 @@ The `FENCE.I` instruction forces the instruction cache to flush, and this aligns
 
 ## Random Number Generation
 
-The wrapper has a connection to the [Entropy Distribution Network (EDN)](../../edn/README.md) with a register based interface.
+The wrapper has a connection to the [Entropy Distribution Network (EDN)](../../../../ip/edn/README.md) with a register based interface.
 The [`RND_DATA`](registers.md#rnd_data) register provides 32-bits directly from the EDN.
 [`RND_STATUS.RND_DATA_VALID`](registers.md#rnd_status) indicates if the data in [`RND_DATA`](registers.md#rnd_data) is valid or not.
 A polling style interface is used to get new random data.

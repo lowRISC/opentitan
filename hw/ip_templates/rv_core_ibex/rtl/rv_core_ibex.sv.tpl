@@ -8,9 +8,9 @@
  * 32 bit RISC-V core supporting the RV32I + optionally EMC instruction sets.
  * Instruction and data bus are 32 bit wide TileLink-UL (TL-UL).
  */
-module rv_core_ibex
+module ${module_instance_name}
   import rv_core_ibex_pkg::*;
-  import rv_core_ibex_reg_pkg::*;
+  import ${module_instance_name}_reg_pkg::*;
 #(
   parameter logic [NumAlerts-1:0]   AlertAsyncOn     = {NumAlerts{1'b1}},
   parameter bit                     PMPEnable        = 1'b1,
@@ -132,8 +132,8 @@ module rv_core_ibex
   import tlul_pkg::*;
 
   // Register module
-  rv_core_ibex_cfg_reg2hw_t reg2hw;
-  rv_core_ibex_cfg_hw2reg_t hw2reg;
+  ${module_instance_name}_cfg_reg2hw_t reg2hw;
+  ${module_instance_name}_cfg_hw2reg_t hw2reg;
 
   // if pipeline=1, do not allow pass through and always break the path
   // if pipeline is 0, passthrough the fifo completely
@@ -564,7 +564,7 @@ module rv_core_ibex
   // Convert ibex data/instruction bus to TL-UL
   //
   logic [31:0] instr_addr_trans;
-  rv_core_addr_trans #(
+  ${module_instance_name}_addr_trans #(
     .AddrWidth(32),
     .NumRegions(NumRegions)
   ) u_ibus_trans (
@@ -624,7 +624,7 @@ module rv_core_ibex
     .spare_rsp_o ());
 
   logic [31:0] data_addr_trans;
-  rv_core_addr_trans #(
+  ${module_instance_name}_addr_trans #(
     .AddrWidth(32),
     .NumRegions(NumRegions)
   ) u_dbus_trans (
@@ -717,7 +717,7 @@ module rv_core_ibex
   logic intg_err;
   tlul_pkg::tl_h2d_t tl_win_h2d;
   tlul_pkg::tl_d2h_t tl_win_d2h;
-  rv_core_ibex_cfg_reg_top u_reg_cfg (
+  ${module_instance_name}_cfg_reg_top u_reg_cfg (
     .clk_i,
     .rst_ni,
     .tl_i(cfg_tl_d_i),
@@ -939,20 +939,20 @@ module rv_core_ibex
   `ASSERT(FpvSecCmIbexFetchEnable1_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(lc_cpu_en_i)
       |->
-      ##[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+      ${"##"}[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
   `ASSERT(FpvSecCmIbexFetchEnable2_A,
       lc_ctrl_pkg::lc_tx_test_false_loose(pwrmgr_cpu_en_i)
       |->
-      ##[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
+      ${"##"}[2:3] lc_ctrl_pkg::lc_tx_test_false_loose(fetch_enable))
   `ASSERT(FpvSecCmIbexFetchEnable3_A,
       lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i) &&
-      lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ##1
+      lc_ctrl_pkg::lc_tx_test_true_strict(pwrmgr_cpu_en_i) ${"##"}1
       lc_ctrl_pkg::lc_tx_test_true_strict(local_fetch_enable_q) &&
       !fatal_core_err
       |=>
-      ##[0:1] lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
+      ${"##"}[0:1] lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable))
   `ASSERT(FpvSecCmIbexFetchEnable3Rev_A,
-      ##2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
+      ${"##"}2 lc_ctrl_pkg::lc_tx_test_true_strict(fetch_enable)
       |->
       ($past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 2) ||
        $past(lc_ctrl_pkg::lc_tx_test_true_strict(lc_cpu_en_i), 3)) &&
@@ -993,7 +993,7 @@ module rv_core_ibex
     // memory primitives.
     `ASSERT(IbexIcacheScrambleKeyForwardedToCore_A,
             icache_otp_key_i.ack
-            |-> ##[0:10] // upper bound is not exact, but it should not take more than 10 cycles
+            |-> ${"##"}[0:10] // upper bound is not exact, but it should not take more than 10 cycles
             u_core.scramble_key_valid_i && (u_core.scramble_key_i == icache_otp_key_q)
     )
 
@@ -1002,22 +1002,22 @@ module rv_core_ibex
         u_core.u_ibex_core.id_stage_i.instr_valid_i
         && u_core.u_ibex_core.id_stage_i.decoder_i.opcode == ibex_pkg::OPCODE_MISC_MEM
         && u_core.u_ibex_core.id_stage_i.decoder_i.instr[14:12] == 3'b001 // FENCE.I
-        |-> ##[0:14] // upper bound is not exact, but it should not take more than a few cycles
+        |-> ${"##"}[0:14] // upper bound is not exact, but it should not take more than a few cycles
         icache_otp_key_o.req
     )
 
   end
 
-  `define ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(__assert_name, __alert_name, _hier, __error_name)   \
-    if (1) begin : g_``__error_name``_assert_signals                                               \
-      logic __error_name;                                                                          \
-      assign __error_name = u_core._hier``.__error_name;                                           \
-                                                                                                   \
-      logic unused_assert_connected;                                                               \
-      `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        \
-    end                                                                                            \
-    `ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, \
-        30, // MAX_CYCLES_, use a large value as ibex clock is 4x faster than clk in alert_handler \
+  `define ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(__assert_name, __alert_name, _hier, __error_name)   ${"\\"}
+    if (1) begin : g_``__error_name``_assert_signals                                               ${"\\"}
+      logic __error_name;                                                                          ${"\\"}
+      assign __error_name = u_core._hier``.__error_name;                                           ${"\\"}
+                                                                                                   ${"\\"}
+      logic unused_assert_connected;                                                               ${"\\"}
+      `ASSERT_INIT_NET(AssertConnected_A, unused_assert_connected === 1'b1)                        ${"\\"}
+    end                                                                                            ${"\\"}
+    `ASSERT_ERROR_TRIGGER_ALERT(__assert_name, g_``__error_name``_assert_signals, __alert_name, 0, ${"\\"}
+        30, // MAX_CYCLES_, use a large value as ibex clock is 4x faster than clk in alert_handler ${"\\"}
         __error_name)
 
   `ASSERT_IBEX_CORE_ERROR_TRIGGER_ALERT(IbexPcMismatchCheck_A, alert_tx_o[2],

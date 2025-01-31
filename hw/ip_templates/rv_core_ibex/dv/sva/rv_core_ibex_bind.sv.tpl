@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-module rv_core_ibex_bind;
+module ${module_instance_name}_bind;
 
-  bind rv_core_ibex tlul_assert #(
+  bind ${module_instance_name} tlul_assert #(
     .EndpointType("Host")
   ) tlul_assert_host_instr (
     .clk_i,
@@ -13,7 +13,7 @@ module rv_core_ibex_bind;
     .d2h  (tl_i_i)
   );
 
-  bind rv_core_ibex tlul_assert #(
+  bind ${module_instance_name} tlul_assert #(
     .EndpointType("Host")
   ) tlul_assert_host_data (
     .clk_i,

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  name:               "rv_core_ibex",
+  name:               "${module_instance_name}",
   human_name:         "RISC-V Core Wrapper for Ibex",
   one_line_desc:      "Dual-core lockstep 32-bit RISC-V processor running application and control software",
   one_paragraph_desc: '''
@@ -17,7 +17,7 @@
   cip_id:             "23",
   design_spec:        "../doc",
   hw_checklist:       "../doc/checklist",
-  sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
+  sw_checklist:       "/sw/device/lib/dif/dif_${module_instance_name}",
   dv_doc:             "../doc/dv",
   version:            "2.1.0",
   life_stage:         "L1",
@@ -480,7 +480,7 @@
     { name: "NumRegions",
       desc: "Number of translatable regions per ibex bus",
       type: "int",
-      default: "2",
+      default: "${num_regions}",
       local: "true"
     },
     { name:    "NumScratchWords",
