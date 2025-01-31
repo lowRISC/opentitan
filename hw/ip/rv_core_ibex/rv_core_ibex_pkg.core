@@ -10,7 +10,7 @@ filesets:
       - lowrisc:ibex:ibex_pkg
 
     files:
-      - rtl/${module_instance_name}_pkg.sv
+      - rtl/rv_core_ibex_pkg.sv
     file_type: systemVerilogSource
 
 targets:

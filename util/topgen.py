@@ -805,6 +805,25 @@ def generate_gpio(top: ConfigT, module: ConfigT,
     generate_ipgen(top, module, params, out_path)
 
 
+def _get_rv_core_ibex_params(topcfg: Dict[str, object]) -> Dict[str, object]:
+    """Extracts parameters for rv_core_ibex ipgen."""
+    module = lib.find_module(topcfg["module"], "rv_core_ibex")
+    uniquified_modules.add_module(module["template_type"], module["type"])
+
+    return {
+        "num_regions": module['ipgen_param']['NumRegions'],
+        'module_instance_name': module['type']
+    }
+
+
+def generate_rv_core_ibex(topcfg: Dict[str, object], module: Dict[str, object],
+                          out_path: Path) -> None:
+    log.info("Generating RV Core Ibex with ipgen")
+    params = _get_rv_core_ibex_params(topcfg)
+    generate_ipgen(topcfg, module, params, out_path)
+
+
+# def generate_top_only(top_only_dict: Dict[str, bool], out_path: Path,
 def generate_top_only(top_only_dict: List[str], out_path: Path, top_name: str,
                       alt_hjson_path: str) -> None:
     """Generate the regfile for top_only IPs."""
@@ -1132,6 +1151,11 @@ def create_ipgen_blocks(topcfg: ConfigT, alias_cfgs: Dict[str, ConfigT],
     if "ac_range_check" in ipgen_instances:
         instance = ipgen_instances["ac_range_check"][0]
         insert_ip_attrs(instance, _get_ac_range_check_params(topcfg))
+
+    if "rv_core_ibex" in ipgen_instances:
+        instance = ipgen_instances["rv_core_ibex"][0]
+        insert_ip_attrs(instance, _get_rv_core_ibex_params(topcfg))
+
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
         amend_pinmux_io(topcfg, name_to_block)
@@ -1287,6 +1311,10 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: ConfigT,
 
     # Generate gpio if there is an instance
     generate_modules("gpio", generate_gpio, single_instance=True)
+
+    # Generate rv_core_ibex if there is an instance
+    generate_modules("rv_core_ibex", generate_rv_core_ibex,
+                     single_instance=True)
 
     # Generate ac_range_check
     generate_modules("ac_range_check",
