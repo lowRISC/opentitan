@@ -2,28 +2,28 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:rv_core_ibex_sva:0.1"
-description: "RV_CORE_IBEX assertion modules and bind file."
+name: ${instance_vlnv(f"lowrisc:dv:{module_instance_name}_sva:0.1")}
+description: "${module_instance_name.upper()} assertion modules and bind file."
 filesets:
   files_dv:
     depend:
       - lowrisc:fpv:csr_assert_gen
-      - lowrisc:ip:rv_core_ibex
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
       - lowrisc:tlul:headers
       - lowrisc:prim:assert
     files:
-      - rv_core_ibex_bind.sv
+      - ${module_instance_name}_bind.sv
     file_type: systemVerilogSource
 
   files_formal:
     depend:
-      - lowrisc:ip:rv_core_ibex
+      - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 
 generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/rv_core_ibex.hjson
+      spec: ../../data/${module_instance_name}.hjson
 
 targets:
   default: &default_target
@@ -37,4 +37,4 @@ targets:
     filesets:
       - files_formal
       - files_dv
-    toplevel: rv_core_ibex
+    toplevel: ${module_instance_name}
