@@ -14,16 +14,19 @@ class tl_host_driver extends tl_base_driver;
   // Drive items received from the sequencer. This task is defined in dv_base_driver.
   extern task get_and_drive();
 
-  // Flush all pending items from the sequencer, and continue flushing items until reset is
-  // deasserted.
-  extern task flush_during_reset();
-
   // Clear output signals and internal state whenever a reset happens. This task runs forever,
   // looping over resets.
   //
   // This also controls an internal reset_asserted flag, which is used by other tasks in the class
   // to detect resets.
   extern task reset_signals();
+
+  // Get items from the sequencer and drive them on the A channel. This runs forever.
+  extern protected task a_channel_thread();
+
+  // Flush all pending items from the sequencer, and continue flushing items until reset is
+  // deasserted.
+  extern protected task flush_during_reset();
 
   // Send a request, req, on the A channel
   extern task send_a_channel_request(tl_seq_item req);
@@ -85,31 +88,10 @@ task tl_host_driver::get_and_drive();
   wait(cfg.vif.rst_n === 1'b1);
   @(cfg.vif.host_cb);
   fork
-    begin : process_seq_item
-      forever begin
-        seq_item_port.try_next_item(req);
-        if (req != null) begin
-          send_a_channel_request(req);
-        end else begin
-          if (reset_asserted) flush_during_reset();
-          if (!reset_asserted) begin
-            `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                              wait(reset_asserted);)
-          end
-        end // req != null
-      end // forever
-    end : process_seq_item
+    a_channel_thread();
     d_channel_thread();
     d_ready_rsp();
   join_none
-endtask
-
-task tl_host_driver::flush_during_reset();
-  `DV_SPINWAIT_EXIT(forever begin
-                      seq_item_port.get_next_item(req);
-                      send_a_channel_request(req);
-                    end,
-                    wait(!reset_asserted);)
 endtask
 
 task tl_host_driver::reset_signals();
@@ -142,6 +124,29 @@ task tl_host_driver::reset_signals();
     wait(!cfg.vif.rst_n);
     reset_asserted = 1'b1;
   end
+endtask
+
+task tl_host_driver::a_channel_thread();
+  forever begin
+    seq_item_port.try_next_item(req);
+    if (req != null) begin
+      send_a_channel_request(req);
+    end else begin
+      if (reset_asserted) flush_during_reset();
+      if (!reset_asserted) begin
+        `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
+                          wait(reset_asserted);)
+      end
+    end // req != null
+  end // forever
+endtask
+
+task tl_host_driver::flush_during_reset();
+  `DV_SPINWAIT_EXIT(forever begin
+                      seq_item_port.get_next_item(req);
+                      send_a_channel_request(req);
+                    end,
+                    wait(!reset_asserted);)
 endtask
 
 task tl_host_driver::send_a_channel_request(tl_seq_item req);
