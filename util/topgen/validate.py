@@ -55,8 +55,6 @@ top_required = {
 
 top_optional = {
     'ac_range_check': ['g', 'Optional AC range configuration'],
-    'alert_async': ['l', 'async alerts (generated)'],
-    'alert': ['lnw', 'alerts (generated)'],
     'alert_module': [
         'l',
         'list of the modules that connects to alert_handler'
@@ -64,20 +62,30 @@ top_optional = {
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
-    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
-    'incoming_alert': ['g', 'Parsed incoming alerts (generated)'],
     'inter_module': ['g', 'define the signal connections between the modules'],
-    'interrupt': ['lnw', 'interrupts (generated)'],
     'interrupt_module': ['l', 'list of the modules that connects to rv_plic'],
     'num_cores': ['pn', "number of computing units"],
+    'outgoing_alert': ['g', 'the outgoing alert groups'],
     'power': ['g', 'power domains supported by the design'],
     'port': ['g', 'assign special attributes to specific ports'],
     'racl_config': ['s', 'Path to a RACL configuration HJSON file'],
+    'reset_requests': ['g', 'define reset requests grouped by type'],
     'rnd_cnst_seed': ['int', "Seed for random netlist constant computation"],
     'unmanaged_resets': ['l', 'List of unmanaged external resets']
 }
 
-top_added = {}
+top_added = {
+    'alert': ['l', 'alerts'],
+    'exported_rsts': ['g', 'external resets grouped by something (TODO)'],
+    'incoming_alert': ['g', 'Parsed incoming alerts'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
+    'interrupt': ['l', 'interrupts'],
+    'racl': ['g', 'the expansion of the racl_config file'],
+    'wakeups': [
+        'l',
+        'list of wakeup requests each holding name, width, and module'
+    ],
+}
 
 pinmux_required = {
     'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
@@ -94,6 +102,7 @@ pinmux_optional = {
 }
 pinmux_added = {
     'ios': ['l', 'Full list of IO'],
+    'io_counts': ['g', 'count of ios grouped by dedicated or muxed'],
 }
 
 pinmux_sig_required = {
@@ -109,13 +118,37 @@ pinmux_sig_optional = {
 }
 pinmux_sig_added = {}
 
+pinmux_io_required = {
+    'name': ['s', 'the name of the io'],
+    'width': ['d', 'the bit width of the io'],
+    'connection': ['s', 'Specification of connection type, '
+                        'can be direct, manual or muxed'],
+    'type': ['s', 'input, output, or inout TODO'],
+}
+pinmux_io_optional = {
+    'glob_idx': ['d', 'TODO'],
+    'idx': ['d', 'TODO'],
+}.update(pinmux_sig_optional)
+pinmux_io_added = {}
+
+pinmux_io_count_required = {
+    'inouts': ['d', 'the count of inout ios of the io type'],
+    'inputs': ['d', 'the count of inout ios of the io type'],
+    'outputs': ['d', 'the count of inout ios of the io type'],
+    'pads': ['d', 'the count of pads of the io type'],
+}
+pinmux_io_count_optional = {}
+pinmux_io_count_added = {}
+
 pinout_required = {
     'banks': ['l', 'List of IO power banks'],
     'pads': ['l', 'List of pads']
 }
 pinout_optional = {
 }
-pinout_added = {}
+pinout_added = {
+    'idx': ['d', 'the index of the pin'],
+}
 
 pad_required = {
     'name': ['l', 'Pad name'],
@@ -128,7 +161,9 @@ pad_optional = {
     'desc': ['s', 'Pad description'],
     'port_type': ['s', 'Special port type other than `inout wire`']
 }
-pad_added = {}
+pad_added = {
+    'idx': ['d', 'the index of the pad'],
+}
 
 target_required = {
     'name': ['s', 'Name of target'],
@@ -178,7 +213,9 @@ special_sig_required = {
 special_sig_optional = {
     'desc': ['s', 'Description of signal connection'],
 }
-special_sig_added = {}
+special_sig_added = {
+    'idx': ['d', 'the index of the signal'],
+}
 
 eflash_required = {
     'type': ['s', 'string indicating type of memory'],
@@ -218,7 +255,6 @@ module_optional = {
                             'group'],
     'incoming_alert': ['l', 'optional list of paths to incoming alert configurations for the '
                             'alert_handler'],
-    'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
     'ipgen_param': ['g', 'Optional ipgen parameters for that instance'],
     'template_type': ['s', 'Base template type of ipgen IPs'],
     'racl_group': ['s', 'Only valid for racl_ctrl IPs. Defines the RACL group this control IP is '
@@ -230,7 +266,10 @@ module_optional = {
 }
 
 module_added = {
-    'clock_connections': ['g', 'generated clock connections']
+    'clock_connections': ['g', 'generated clock connections'],
+    'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
+    'inter_signal_list': ['l', 'generated signal information'],
+    'param_list': ['l', 'list of parameters'],
 }
 
 memory_required = {
@@ -260,6 +299,110 @@ reset_connection_required = {
 
 reset_connection_optional = {}
 reset_connection_added = {}
+
+reset_requests_required = {}
+reset_requests_optional = {
+    'int': [
+        's',
+        'internal request list, for example, escalation reset and '
+        'power glitches'
+    ],
+    'debug': [
+        's',
+        'debug request list, since a different set of resets becomes active'
+    ],
+    'peripheral': [
+        's',
+        'peripheral request list, where the reset requests are explicit in '
+        'the top config'
+    ],
+}
+reset_requests_added = {}
+
+reset_request_required = {
+    'name': ['s', 'the reset request name'],
+    'desc': ['s', 'the reset request descrption'],
+    'module': ['s', 'the reset request source'],
+}
+reset_request_optional = {
+    'width': ['d', 'TODO'],
+}
+reset_request_added = {}
+
+wakeup_required = {
+    'name': ['s', 'the wakeup name'],
+    'width': ['d', 'the width of the signal'],
+    'module': ['s', 'the module sourcing the wakeup'],
+}
+wakeup_optional = {}
+wakeup_added = {}
+
+alert_required = {
+    'name': ['s', 'name of the alert signal'],
+    'width': ['d', 'the number of alerts in this signal, typically 1'],
+    'async': ['s', 'string interpreted as boolean'],
+    'module_name': ['s', 'The module name of the source'],
+}
+alert_optional = {
+    'desc': ['s', 'the description of the alert'],
+    'lpg_name': ['s', 'the low power group of the alert'],
+    'lpg_idx': ['d', 'the index in the lpg group'],
+    'type': ['s', 'should contain "alert"'],
+}
+alert_added = {}
+
+interrupt_required = {
+    'name': ['s', 'the name of the interrupt'],
+    'width': ['d', 'the number of interrupts in this signal, typically 1'],
+    'module_name': ['s', 'The module name of the source'],
+    'intr_type': ['s', 'The IntrType, either Event or Status'],
+    'default_val': ['s', 'a string interpreted as boolean'],
+    'incoming': ['s', 'a string interpreted as boolean'],
+}
+interrupt_optional = {
+    'desc': ['s', 'the description of the interrupt'],
+    'type': ['s', 'should contain "interrupt"'],
+}
+interrupt_added = {}
+
+param_required = {
+    'name': ['s', 'the parameter name'],
+    'desc': ['s', 'the parameter description'],
+    'type': ['s', 'the data type of the parameter'],
+    'default': ['s', 'the default value of the parameter'],
+}
+param_optional = {
+    'expose': ['s', 'seems redundant TODO'],
+    'local': ['s', 'whether it is a localparam, interpreted as boolean'],
+    'name_top': ['s', 'the name in the top-level'],
+    'randcount': ['d', 'TODO'],
+    'randtype': ['s', 'whether it is for "data" or "perm"issions'],
+    'randwidth': ['d', 'the number of bits'],
+    'unpacked_dimensions': ['s', 'the unpacked dimensions for arrays'],
+}
+param_added = {}
+
+inter_sig_required = {
+    'name': ['s', 'the name of the signal'],
+    'struct': ['s', 'the data type of the signal'],
+    'type': [
+        's',
+        'whether the signal is unidirectional or part of a request-response '
+        'pair'
+    ],
+    'act': ['s', 'whether it is a request (req) or a response (rsp)'],
+    'width': ['d', 'the number of items of the signal for arrays'],
+}
+inter_sig_optional = {
+    'desc': ['s', 'the inter signal description'],
+    'inst_name': ['s', 'the instance this signal connects to'],
+    'index': ['d', 'the index when this is connected to an array'],
+    'package': ['s', 'the package declaring the struct'],
+    'default': ['s', 'TODO'],
+    'end_idx': ['d', 'TODO'],
+    'top_signame': ['s', 'TODO'],
+}
+inter_sig_added = {}
 
 
 # Supported PAD types.
@@ -432,6 +575,48 @@ def check_pad(top: Dict,
     return error
 
 
+def check_alerts(top: Dict, prefix: str) -> int:
+    if 'alert' not in top:
+        return 0
+    error = 0
+    for alert in top['alert']:
+        error += check_keys(alert, alert_required, alert_optional, alert_added,
+                            prefix + ' Alert')
+    return error
+
+
+def check_incoming_alerts(top: Dict, prefix: str) -> int:
+    if 'incoming_alert' not in top:
+        return 0
+    error = 0
+    # TODO
+    return error
+
+
+def check_outgoing_alerts(top: Dict, prefix: str) -> int:
+    if 'outgoing_alert' not in top:
+        return 0
+    error = 0
+    # TODO
+    return error
+
+
+def check_interrupts(top: Dict, prefix: str) -> int:
+    if 'interrupt' not in top:
+        return 0
+    error = 0
+    for interrupt in top['interrupt']:
+        error += check_keys(interrupt, interrupt_required, interrupt_optional,
+                            interrupt_added, prefix + ' Interrupt')
+    return error
+
+
+def check_incoming_interrupts(top: Dict, prefix: str) -> int:
+    error = 0
+    # TODO
+    return error
+
+
 def check_pinout(top: Dict, prefix: str) -> int:
     error = check_keys(top['pinout'], pinout_required, pinout_optional,
                        pinout_added, prefix + ' Pinout')
@@ -556,6 +741,21 @@ def check_pinmux(top: Dict, prefix: str) -> int:
                         .format(key))
             error += 1
 
+    # Check added ios
+    for io in top.get('ios', []):
+        error += check_keys(io, pinmux_io_required, pinmux_io_optional,
+                            pinmux_io_added, f'{prefix} Pinmux ios')
+
+    # Check added io_counts
+    for k, counts in top.get('io_counts', {}).items():
+        if k not in ['dedicated', 'muxed']:
+            log.error(f'{prefix} Pinmux io counts unexpected key {k}')
+            error += 1
+        for count in counts:
+            error += check_keys(count, pinmux_io_count_required,
+                                pinmux_io_count_optional,
+                                pinmux_io_count_added,
+                                f'{prefix} Pinmux io {k} counts')
     return error
 
 
@@ -687,6 +887,41 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
             log.error("xbar clock/reset checking failed")
             break
 
+    return error
+
+
+def check_reset_requests(top: Dict, component: str) -> int:
+    error = 0
+    for key, resets in top.get('reset_requests', {}).items():
+        all_keys = [
+            k for d in [
+                reset_requests_required, reset_requests_optional,
+                reset_requests_added
+            ] for k in d.keys()
+        ]
+        if key not in all_keys:
+            log.error(f'unknown key {key} in {component} Reset requests')
+            error += 1
+        for reset_req in resets:
+            error += check_keys(reset_req, reset_request_required,
+                                reset_request_optional, reset_request_added,
+                                f'{component} Reset request')
+    return error
+
+
+def check_exported_resets(top: Dict, component: str) -> int:
+    error = 0
+    for key, resets in top.get('exported_rsts', {}).items():
+        # TODO
+        pass
+    return error
+
+
+def check_wakeups(top: Dict, component: str) -> int:
+    error = 0
+    for wakeup in top.get('wakeups', []):
+        error += check_keys(wakeup, wakeup_required, wakeup_optional,
+                            wakeup_added, f'{component} Wakeups')
     return error
 
 
@@ -901,6 +1136,18 @@ def check_modules(top, prefix):
                     log.error('{} {} swaccess attribute {} of memory region {} '
                               'is not valid'.format(prefix, modname, attr, intf))
                     error += 1
+        if 'inter_signal_list' in m:
+            for sig in m['inter_signal_list']:
+                sig_name = sig.get('name', 'no name')
+                error += check_keys(sig, inter_sig_required,
+                                    inter_sig_optional, inter_sig_added,
+                                    f"{modname} Inter signal {sig_name}")
+        if 'param_list' in m:
+            for param in m['param_list']:
+                param_name = param.get('name', 'no name')
+                error += check_keys(param, param_required, param_optional,
+                                    param_added,
+                                    f"{modname} Parameter {param_name}")
     return error
 
 
@@ -931,6 +1178,10 @@ def validate_top(top, ipobjs, xbarobjs):
     # Power domain check
     check_power_domains(top)
 
+    error += check_reset_requests(top, component)
+    error += check_exported_resets(top, component)
+    error += check_wakeups(top, component)
+
     # Clock / Reset check
     error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
 
@@ -942,5 +1193,11 @@ def validate_top(top, ipobjs, xbarobjs):
     error += check_pinout(top, component)
     error += check_pinmux(top, component)
     error += check_implementation_targets(top, component)
+
+    error += check_alerts(top, component)
+    error += check_incoming_alerts(top, component)
+    error += check_outgoing_alerts(top, component)
+    error += check_interrupts(top, component)
+    error += check_incoming_interrupts(top, component)
 
     return top, error
