@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 load("//rules/opentitan:hw.bzl", "opentitan_ip")
 
-RV_CORE_IBEX = opentitan_ip(
-    name = "rv_core_ibex",
-    hjson = "//hw/ip/rv_core_ibex/data:rv_core_ibex.hjson",
+${module_instance_name.upper()} = opentitan_ip(
+    name = "${module_instance_name}",
+    hjson = "//hw/top_${topname}/ip_autogen/${module_instance_name}:data/${module_instance_name}.hjson",
 )
