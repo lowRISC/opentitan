@@ -16,7 +16,7 @@
  * `top_darjeeling_alert_peripheral_t`.
  */
 const top_darjeeling_alert_peripheral_t
-    top_darjeeling_alert_for_peripheral[99] = {
+    top_darjeeling_alert_for_peripheral[101] = {
   [kTopDarjeelingAlertIdUart0FatalFault] = kTopDarjeelingAlertPeripheralUart0,
   [kTopDarjeelingAlertIdGpioFatalFault] = kTopDarjeelingAlertPeripheralGpio,
   [kTopDarjeelingAlertIdSpiDeviceFatalFault] = kTopDarjeelingAlertPeripheralSpiDevice,
@@ -90,6 +90,8 @@ const top_darjeeling_alert_peripheral_t
   [kTopDarjeelingAlertIdRomCtrl0Fatal] = kTopDarjeelingAlertPeripheralRomCtrl0,
   [kTopDarjeelingAlertIdRomCtrl1Fatal] = kTopDarjeelingAlertPeripheralRomCtrl1,
   [kTopDarjeelingAlertIdDmaFatalFault] = kTopDarjeelingAlertPeripheralDma,
+  [kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr] = kTopDarjeelingAlertPeripheralAcRangeCheck,
+  [kTopDarjeelingAlertIdAcRangeCheckFatalFault] = kTopDarjeelingAlertPeripheralAcRangeCheck,
   [kTopDarjeelingAlertIdMbx0FatalFault] = kTopDarjeelingAlertPeripheralMbx0,
   [kTopDarjeelingAlertIdMbx0RecovFault] = kTopDarjeelingAlertPeripheralMbx0,
   [kTopDarjeelingAlertIdMbx1FatalFault] = kTopDarjeelingAlertPeripheralMbx1,
@@ -125,7 +127,7 @@ const top_darjeeling_alert_peripheral_t
  * `top_darjeeling_plic_peripheral_t`.
  */
 const top_darjeeling_plic_peripheral_t
-    top_darjeeling_plic_interrupt_for_peripheral[158] = {
+    top_darjeeling_plic_interrupt_for_peripheral[159] = {
   [kTopDarjeelingPlicIrqIdNone] = kTopDarjeelingPlicPeripheralUnknown,
   [kTopDarjeelingPlicIrqIdUart0TxWatermark] = kTopDarjeelingPlicPeripheralUart0,
   [kTopDarjeelingPlicIrqIdUart0RxWatermark] = kTopDarjeelingPlicPeripheralUart0,
@@ -254,6 +256,7 @@ const top_darjeeling_plic_peripheral_t
   [kTopDarjeelingPlicIrqIdDmaDmaDone] = kTopDarjeelingPlicPeripheralDma,
   [kTopDarjeelingPlicIrqIdDmaDmaChunkDone] = kTopDarjeelingPlicPeripheralDma,
   [kTopDarjeelingPlicIrqIdDmaDmaError] = kTopDarjeelingPlicPeripheralDma,
+  [kTopDarjeelingPlicIrqIdAcRangeCheckDenyCntReached] = kTopDarjeelingPlicPeripheralAcRangeCheck,
   [kTopDarjeelingPlicIrqIdMbx0MbxReady] = kTopDarjeelingPlicPeripheralMbx0,
   [kTopDarjeelingPlicIrqIdMbx0MbxAbort] = kTopDarjeelingPlicPeripheralMbx0,
   [kTopDarjeelingPlicIrqIdMbx0MbxError] = kTopDarjeelingPlicPeripheralMbx0,
