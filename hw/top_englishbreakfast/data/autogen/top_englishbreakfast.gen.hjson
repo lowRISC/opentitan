@@ -3045,7 +3045,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlAddrKey
-          default: 0x75867e60b021e247699d7befa2eaca5e
+          default: 0x7befa2eaca5e9e86b268b82b10ea8e91
           randwidth: 128
         }
         {
@@ -3055,7 +3055,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlDataKey
-          default: 0x9e86b268b82b10ea8e913c65a10e10da
+          default: 0x3c65a10e10daa910cd93e9e8dde03e8a
           randwidth: 128
         }
         {
@@ -3065,7 +3065,7 @@
           randcount: 512
           randtype: data
           name_top: RndCnstFlashCtrlAllSeeds
-          default: 0xa910cd93e9e8dde03e8ab0f1f4225b70de66ae2a2d2caf521284d078b2442c4dcdfffc136eaed4bf1a600233980bc4cf2116db51ec10b747b9011d99f556b893
+          default: 0xb0f1f4225b70de66ae2a2d2caf521284d078b2442c4dcdfffc136eaed4bf1a600233980bc4cf2116db51ec10b747b9011d99f556b893842a91cafc63cb10b944
           randwidth: 512
         }
         {
@@ -3075,7 +3075,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstFlashCtrlLfsrSeed
-          default: 0x842a91ca
+          default: 0x601633a4
           randwidth: 32
         }
         {
@@ -3085,7 +3085,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstFlashCtrlLfsrPerm
-          default: 0x1977a5be3574f12058f04f5aa09286e79171659f
+          default: 0xea0dbd7e58f2df985ae78946013a69651aa0f2a4
           randwidth: 160
         }
         {
@@ -3588,7 +3588,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstAesClearingLfsrSeed
-          default: 0xbb78951511213905
+          default: 0x5e9cb853bc8e152
           randwidth: 64
         }
         {
@@ -3598,7 +3598,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingLfsrPerm
-          default: 0x1231aaa3d2b9ed1c058932103e71d5360decd359406b35f163c98331db9e4ab5a425c0ad6ff2c1669d9fbd4e3e3a1cba
+          default: 0x8541885e2ad14f7138023a9568a1503e71fb372fb0f3d9a0e6560ea0331dd1e4b55a4bac25cc730ad6ff2c1e99a767ef
           randwidth: 384
         }
         {
@@ -3608,7 +3608,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingSharePerm
-          default: 0x131363a54d4762eb12ad17c5fa29fac3f2bdb5dcd35ef07921a7060245a0ca68496cb33797b3fce1ed0e0f6428642a95
+          default: 0x10546c53c047bb1aa7b4d4a9ee362242b54a0af7ff4dd5f2eb321a7060245a0e668496cbc0cf65a0f675e37f9ed0e0f6
           randwidth: 384
         }
         {
@@ -4207,6 +4207,12 @@
     {
       name: rv_core_ibex
       type: rv_core_ibex
+      template_type: rv_core_ibex
+      attr: ipgen
+      ipgen_param:
+      {
+        NumRegions: 2
+      }
       param_decl:
       {
         PMPEnable: "0"

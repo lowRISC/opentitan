@@ -1231,7 +1231,7 @@
           randcount: 40
           randtype: data
           name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0xc2c82deb51
+          default: 0x50c2c82deb
           randwidth: 40
         }
         {
@@ -1241,7 +1241,7 @@
           randcount: 40
           randtype: perm
           name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x8573e042648a54e4c07e42d470944376231b1c278894d1196231561816a7
+          default: 0x8573e042648a54e4c07e42e770944376231b1c278894d119623156181694
           randwidth: 240
         }
         {
@@ -10212,6 +10212,12 @@
     {
       name: rv_core_ibex
       type: rv_core_ibex
+      template_type: rv_core_ibex
+      attr: ipgen
+      ipgen_param:
+      {
+        NumRegions: 32
+      }
       param_decl:
       {
         PMPEnable: "1"
@@ -12427,7 +12433,7 @@
               {
                 hart: 0x211f0000
               }
-              size_byte: 0x100
+              size_byte: 0x800
             }
           ]
           xbar: false

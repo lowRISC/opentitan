@@ -747,7 +747,7 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x211F0000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #RV_CORE_IBEX_CFG_BASE_ADDR and
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
-pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
+pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x800;
 
 /// Memory base address for ctn in top darjeeling.
 pub const CTN_BASE_ADDR: usize = 0x40000000;

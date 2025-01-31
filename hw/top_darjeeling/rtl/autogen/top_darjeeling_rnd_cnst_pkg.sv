@@ -18,12 +18,12 @@ package top_darjeeling_rnd_cnst_pkg;
   ////////////////////////////////////////////
   // Compile-time random bits for initial LFSR seed
   parameter otp_ctrl_top_specific_pkg::lfsr_seed_t RndCnstOtpCtrlLfsrSeed = {
-    40'hC2_C82DEB51
+    40'h50_C2C82DEB
   };
 
   // Compile-time random permutation for LFSR output
   parameter otp_ctrl_top_specific_pkg::lfsr_perm_t RndCnstOtpCtrlLfsrPerm = {
-    240'h8573_E042648A_54E4C07E_42D47094_4376231B_1C278894_D1196231_561816A7
+    240'h8573_E042648A_54E4C07E_42E77094_4376231B_1C278894_D1196231_56181694
   };
 
   // Compile-time random permutation for scrambling key/nonce register reset value

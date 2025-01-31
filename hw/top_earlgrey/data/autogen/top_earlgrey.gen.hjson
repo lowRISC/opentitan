@@ -1841,7 +1841,7 @@
           randcount: 40
           randtype: data
           name_top: RndCnstOtpCtrlLfsrSeed
-          default: 0x519d69c705
+          default: 0x50c2c82deb
           randwidth: 40
         }
         {
@@ -1851,7 +1851,7 @@
           randcount: 40
           randtype: perm
           name_top: RndCnstOtpCtrlLfsrPerm
-          default: 0x85c64a39050b7534a78cf5c07a404944335594c7c76a012209b218985586
+          default: 0x8573e042648a54e4c07e42e770944376231b1c278894d119623156181694
           randwidth: 240
         }
         {
@@ -1861,7 +1861,7 @@
           randcount: 256
           randtype: data
           name_top: RndCnstOtpCtrlScrmblKeyInit
-          default: 0x7eb3b35f352752e34f64ce978305bfc3481a2162ea2792b7508f1eab067af954
+          default: 0xdbb4685f7eb27eb3b35f352752e34f64ce978305bfc3481a2162ea2792b7508f
           randwidth: 256
         }
       ]
@@ -2320,7 +2320,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivInvalid
-          default: 0xdda5491439a9dde6320801fdcf25a4fb
+          default: 0x1eab067af954dda5491439a9dde63208
           randwidth: 128
         }
         {
@@ -2330,7 +2330,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivTestUnlocked
-          default: 0xa528399117069e77c887f53dda6fb4ef
+          default: 0x1fdcf25a4fba528399117069e77c887
           randwidth: 128
         }
         {
@@ -2340,7 +2340,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivDev
-          default: 0x8758b99027b6aa7468bc0bd8d70368e7
+          default: 0xf53dda6fb4ef8758b99027b6aa7468bc
           randwidth: 128
         }
         {
@@ -2350,7 +2350,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivProduction
-          default: 0xcfb11a99675b146240619335a9e2d123
+          default: 0xbd8d70368e7cfb11a99675b14624061
           randwidth: 128
         }
         {
@@ -2360,7 +2360,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstLcCtrlLcKeymgrDivRma
-          default: 0x834d18744778be5e63c087e36838b56b
+          default: 0x9335a9e2d123834d18744778be5e63c0
           randwidth: 128
         }
         {
@@ -2370,7 +2370,7 @@
           randcount: 1024
           randtype: data
           name_top: RndCnstLcCtrlInvalidTokens
-          default: 0x1a45f6fd312f5353fa7b2ce9fc83ddaf1dd8c5a42e2ad24fa02221b6ff5aad7a9c09d5d9fdd1cfcf512835c0cfae2ed0c69fa488685cea9bc1c89bfb7399aef5c6eb5d6e4e23416a0aa6d7ac7ec9c3304470fbe505f9649400ca9864fd4ce49d2cfc6ecc102540ead8734700a5207132689471aa822bc51cdd4d37ac2d246c42
+          default: 0x87e36838b56b1a45f6fd312f5353fa7b2ce9fc83ddaf1dd8c5a42e2ad24fa02221b6ff5aad7a9c09d5d9fdd1cfcf512835c0cfae2ed0c69fa488685cea9bc1c89bfb7399aef5c6eb5d6e4e23416a0aa6d7ac7ec9c3304470fbe505f9649400ca9864fd4ce49d2cfc6ecc102540ead8734700a5207132689471aa822bc51cdd4d
           randwidth: 1024
         }
         {
@@ -2930,7 +2930,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstAlertHandlerLfsrSeed
-          default: 0x64f37ec1
+          default: 0x37ac2d24
           randwidth: 32
         }
         {
@@ -2940,7 +2940,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstAlertHandlerLfsrPerm
-          default: 0x85deba1dc1c699149720b1b7e429bfe747590893
+          default: 0x83a2b09fb9d7006b1534f2bf7d8eb2112787b10d
           randwidth: 160
         }
       ]
@@ -5645,7 +5645,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramKey
-          default: 0x21d8cb69d4f3a15faf834cad515d76bd
+          default: 0x46e4fecfda2375a6147421d8cb69d4f3
           randwidth: 128
         }
         {
@@ -5655,7 +5655,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstSramCtrlRetAonSramNonce
-          default: 0x37c7bec5f33fdca11a72dc05a2313b71
+          default: 0xa15faf834cad515d76bd37c7bec5f33f
           randwidth: 128
         }
         {
@@ -5665,7 +5665,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstSramCtrlRetAonLfsrSeed
-          default: 0x8e6d6dbb
+          default: 0xdca11a72
           randwidth: 32
         }
         {
@@ -5675,7 +5675,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstSramCtrlRetAonLfsrPerm
-          default: 0x716fd82fe16f8d3e6c4fc8e92a914703136d2311
+          default: 0x848bcb54640ebabb89f357fcc4a3386c5c73501b
           randwidth: 160
         }
         {
@@ -5988,7 +5988,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlAddrKey
-          default: 0xf0d23bb7dc0dc524d3b0554603562188
+          default: 0xcd066336e9b0bdf6a55f0d23bb7dc0d
           randwidth: 128
         }
         {
@@ -5998,7 +5998,7 @@
           randcount: 128
           randtype: data
           name_top: RndCnstFlashCtrlDataKey
-          default: 0x552794dd2bebf67f318b5a490e55f7d8
+          default: 0xc524d3b0554603562188552794dd2beb
           randwidth: 128
         }
         {
@@ -6008,7 +6008,7 @@
           randcount: 512
           randtype: data
           name_top: RndCnstFlashCtrlAllSeeds
-          default: 0xb8325652a92482cc34468c37bfee731a0ab430181cde15f40d83472dd252e38f2c5e24d201bdb435d5cff95c40a1643cc8f540230522d33a4ea485719e18a080
+          default: 0xf67f318b5a490e55f7d8b8325652a92482cc34468c37bfee731a0ab430181cde15f40d83472dd252e38f2c5e24d201bdb435d5cff95c40a1643cc8f540230522
           randwidth: 512
         }
         {
@@ -6018,7 +6018,7 @@
           randcount: 32
           randtype: data
           name_top: RndCnstFlashCtrlLfsrSeed
-          default: 0x49cf1240
+          default: 0xd33a4ea4
           randwidth: 32
         }
         {
@@ -6028,7 +6028,7 @@
           randcount: 32
           randtype: perm
           name_top: RndCnstFlashCtrlLfsrPerm
-          default: 0x13cad1d7737e78dc6542b6ac707227f130476c3
+          default: 0xb16325f54d0ed9e31c04c3eb9d5f88127f41cdd0
           randwidth: 160
         }
         {
@@ -6934,7 +6934,7 @@
           randcount: 64
           randtype: data
           name_top: RndCnstAesClearingLfsrSeed
-          default: 0x99531a3221a2eddc
+          default: 0x4922f7dc57cc668c
           randwidth: 64
         }
         {
@@ -6944,7 +6944,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingLfsrPerm
-          default: 0xe2883daeac36e41017c996ef58c392d142c257c93a888ff372128f24645fbb54d06a69defac0c4171b4d97b6378dd1e9
+          default: 0x5d2732570001b22c5987ad3e90b08f80ae6f3b8babff36ea27b45fd9341af677b50c416d365623747a77a08306526f16
           randwidth: 384
         }
         {
@@ -6954,7 +6954,7 @@
           randcount: 64
           randtype: perm
           name_top: RndCnstAesClearingSharePerm
-          default: 0x6454a32e1183730565a4e448de6a01bad1ecbc9e14916c97436013abed798bcc4ae9e9daf7b10f3606dd7c2d2b63fccc
+          default: 0x386fa8411f6af130d92e9b5c863cb0c54916b17226009147bf88b694ab9e9dadf513b3606dd7c2d2b63fccc04f495eb9
           randwidth: 384
         }
         {
@@ -6964,7 +6964,7 @@
           randcount: 288
           randtype: data
           name_top: RndCnstAesMaskingLfsrSeed
-          default: 0xe92af0b0266dcd3de77d58929920453cedc4bb4632d2ee9d3b62da487f4ba0d8482f0d2d
+          default: 0x4660c443df8e6e3a14e92af0b0266dcd3de77d58929920453cedc4bb4632d2ee9d3b62da
           randwidth: 288
         }
         {
@@ -6974,7 +6974,7 @@
           randcount: 160
           randtype: perm
           name_top: RndCnstAesMaskingLfsrPerm
-          default: 0x8f242b04906315338e4b0f4278749947235c0a393d4d671b5136261c4864940c851e0b97777f1f7a5d07026838848b3b628c5888176620960e7634032f937d57016b43325f1d306d313f2d9e8019862e374a2998926f1a914c3e552c69790d4535893c139b54497c9d401222725616709a60096105522875595a21539c2a44827383257e5b8a5e7b95816e117110184e4f146a279f506c3a008d410608874665
+          default: 0x486579742011b2324800a7a7215902b345b2662581c0c510f680b9d4a1e389c1f6d5f070247307332431d33173620926778039e8c3d4d8f6b843b55897d0e967631747c19692e7e29915e631a8a4c3e2c5d9a4535853c139454496f834077226656166493600961055228755a2153952a442539795988128b3f5c829970379b7b8e816e117110184e4f146a2798506c3a008d4106088746652d0d2f9f4b7f48
           randwidth: 1280
         }
       ]
@@ -7235,7 +7235,7 @@
           randcount: 288
           randtype: data
           name_top: RndCnstKmacLfsrSeed
-          default: 0x3828ee1a34f865c10b37a68df5d1293205f54724a965ab81ca6c31699e374bce117dd74f
+          default: 0x4fe255b13d5003ae3828ee1a34f865c10b37a68df5d1293205f54724a965ab81ca6c3169
           randwidth: 288
         }
         {
@@ -7245,7 +7245,7 @@
           randcount: 800
           randtype: perm
           name_top: RndCnstKmacLfsrPerm
-          default: 0x11113c089f84e7ab82ed36d487fac024d8f18b1fbf1ce6cc83961db0362714d4fc0e468bad5899456f0b03c4ac0bd654e52119a6c1dcf6709b570ee3c5cf8b69d721c691e98458969548cd50cc35e640aaa144f673866118aab4346df7289871d0e8055334e87ac6a09a695a263d800ff4bd76b6c9b8d98d86d6ca29240697200417a9000959474e0a28ad809960e16a72c4570256d64a9de88594ba2d88483525cd7b05cd119fc96d876bcccc2aea6eac7bc6b317d1499d224701c87d276a89a41e476ddb844a20551d1ae8c64b2170e1f2c611931d6f8d029108a16a158ab2cfbc9cf029f64751820006bb24b811250d9ee1ccb32d4ec095f9c70d090890392fba799dae1f50d055556b6adcfa2303f7316181dbb2cb074c9027028d99096b4aa14b597a4ae442ae7089c1914bdc41ff2feb9518542f8e54059c9d91ac5233a19564808829a39ad4211cad7295506b5047c55774277544fc3d2bdaa51fc1542062af15c757183e39d819e503b40487b4fe530674a2610c57a798e2174030aa7c566745d050053082ae32971868a28fc6d2e32da69046b2e41f6ac60ac9f49c2fa89540098a85a93bb4e1c64c1e95d3590c162e99067efdb20745f98b049b43d55dbe430bdd969bcda9fcddbd824b953404d36a11c90444c7acfb42e303387b7586d2a67d136ee721cbb891bba5f0622cb253048d4159a0239770d02c6c302160b22206c82c551758db2b3b190ce485ed053286e8ee061bd0920549c059e1466b1e516a458c03dfd8c64c03085b0e3f0edbe6159bbe17d434d837e6d8b29b9aa784005e2770e8623e835a9831f724649162bb3829ca9a5aa2e9329c866c4b87a03a6248ac2d7cb09955725182db959991a0644a6a032be8e430eab2a236b12ba0dd5b45e11f5e5a8cf93c0523c9c43b60213910ac1235116da8acd3cc78115a7076a8455e0b980947abc825dc2eefe60c65666661866e105a10a0e82121d966d43be4a5688e28db09507c3994bb67122dda24c4392d911bcd08c3ebe7910faac70a22cc4196027298579d3934eba75bfc18405fec97ecee68c5b6683c5c6bf18edc1a1b6324debfe1a538e11fc028b713316387769015a15a52710644a765d45dc5c3668052a8250526988f7321ef5e2eb534c4124d23f42b2d309b746aa59df2f0c20f5f3356520c9a5a300824aae590ad01c372c4a0b153a789375ae4e87899b84d494de3c79982aac623dda4fac438dea13d67bd0479f8ae9d410c3064bc0e9359f8c68c1762249829f5b98212c0e4a5bd2788b56c275cf007b1929ee85a5dc593c76955a0979d2a9d68941e9629fa0148d33e63c59754f00463ade83c591f9a40b9e72263a10e374ce106ba0a97e9957d3f0b6058bef5a96ad1c63c29130c7608080dcbbe29
+          default: 0xa111496869a41cc0bf1badf1c3c4f89d1806dd5434eeb721ab6cb04035b8112ff4494614f0e622acb24f636e878961b92d2026e1fbdae2341255b2288ee7921d6585df741eb12b0b0b1098a4d6125f1e9ab15a59f1b72ee1e9017063e9591888de690e31af9c7b76325a4629cd5651e198cea1068d10041735c00635435bc83ac150bd20c49265abdf4c1c931ddb53198f332d531c355668b6599c60466439d111b02965fe516d33e9cd27d72a889517dde26ab54641c8f700a7ad78fe54611b3408a2c7d5747daa4a2770e1f530ceca6c29108a1b42bdaa5867240aa251a5448001acc4aa0b488361ccb32d4e409538c66884b490486f8336b64c9ee0d05544e517dab42303f71ad883a673fe354f5396edcb84496ba94f42ae09126f91579089d7924bdc35272fd93508542f8e55499775a3476d2c89e2c73d74a756a168b2474882999fac8211c97e2954c6a1046d15372ac57c8fc3d27da991cacc18554571d5c00f8e78c21340ecd121903f94819ec70c5766f0e2174030aa7a902725c050053052adba8aed46528d8192e32eb86746b2e41f69860871ed9baf783540098a87ad3b7e66bbe41eb9dfc904162e98b932db8d8745e987049af3d55da1830986df9b4da738ddbcc24a053404d36a0dc30444c848fb42e2e3387b7406d2a6e1136a470ae480d1bb99beb2094c06260566608e5bb3c0b1b0c08502c81c1b20aaa45d636b6cbc58339197b970ca1ba398106f42481526fe678519a47945a8f6300f7567c9280c216c09c03b6159bc417d434d837e188aa989a2764005e2770b85b14801a9c22ba24647160e0c2aa3961ffa44a7219b12e1f00e98922b185f2bf6555cb96206e5666467f90ae3804afb490c7f65d885ac4ae22589054d4ea561e8b39e11f5e5a80f93c0523c9c43b60213910c49235116da2aca3cc78c75a707711455e0a540947ab9825dc2eefb60c65666641866c105a10a0e82121d95ee93be485688e28db0a707c3994bb5b0f2dda24c4392d911bc108c32bb7910faa070b46ae4196027294579d3934eba69bfc0c405fec67ecee68c5b6683c5c6bc18ed91a1b6324debf21a538e11fc028b6f2316387768e15a15a4a710644a765d45dc5c3668052a8250526988f7321ef5e2e8534c4124d23f42b2d306b686a77cbc3083d7ccd5948326968c02092aad642b4070dcb1282c24e9e24dd6b93a1e266fa3525378eec660aab0c8f7693eb04e37a84f59ef111e7e2ba7504309192ed3a4d67e317305d889260a7d6e6084b039296f49e22d5b09d73bf5ec64a7ba16977164f1da556825e74aa75a2507a58a7e805234cf98f135d53c0118eb7a0f1647e6902e79c898e8438dd33841ae82a5fa655f4fc2d8162fbd6a5ab4718f0a44c31a82020372ef8a4454be78
           randwidth: 8000
         }
         {
@@ -9077,6 +9077,12 @@
     {
       name: rv_core_ibex
       type: rv_core_ibex
+      template_type: rv_core_ibex
+      attr: ipgen
+      ipgen_param:
+      {
+        NumRegions: 2
+      }
       param_decl:
       {
         PMPEnable: "1"

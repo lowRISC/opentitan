@@ -59,7 +59,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h21140000, 32'h211400ff}
     }},
     '{"rv_core_ibex__cfg", '{
-        '{32'h211f0000, 32'h211f00ff}
+        '{32'h211f0000, 32'h211f07ff}
     }},
     '{"sram_ctrl_main__regs", '{
         '{32'h211c0000, 32'h211c003f}
