@@ -218,6 +218,7 @@ module_optional = {
     'incoming_alert': ['l', 'optional list of paths to incoming alert configurations for the '
                             'alert_handler'],
     'incoming_interrupt': ['g', 'Parsed incoming interrupts (generated)'],
+    'ipgen_param': ['g', 'Optional ipgen parameters for that instance'],
     'template_type': ['s', 'Base template type of ipgen IPs'],
     'racl_group': ['s', 'Only valid for racl_ctrl IPs. Defines the RACL group this control IP is '
                         'associated to'],
