@@ -161,7 +161,7 @@
       si_stage: SV3
       lc_states: ["PROD"]
       tests: []
-      bazel: []
+      bazel: ["//sw/device/tests:hmac_endianness_test"]
     }
     {
       name: chip_sw_hmac_secure_wipe
