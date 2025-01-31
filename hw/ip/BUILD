@@ -33,7 +33,6 @@ filegroup(
         "//hw/ip/prim_xilinx_ultrascale:rtl_files",
         "//hw/ip/pwm:rtl_files",
         "//hw/ip/rom_ctrl:rtl_files",
-        "//hw/ip/rv_core_ibex:rtl_files",
         "//hw/ip/rv_dm:rtl_files",
         "//hw/ip/rv_timer:rtl_files",
         "//hw/ip/spi_device:rtl_files",
