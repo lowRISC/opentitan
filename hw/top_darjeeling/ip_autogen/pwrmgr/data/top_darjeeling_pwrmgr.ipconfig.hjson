@@ -29,23 +29,9 @@
         module: soc_proxy
       }
     ]
+    NumRstReqs: 2
     rst_reqs:
     {
-      peripheral:
-      [
-        {
-          name: aon_timer_rst_req
-          width: "1"
-          module: aon_timer_aon
-          desc: watchdog reset requestt
-        }
-        {
-          name: rst_req_external
-          width: "1"
-          module: soc_proxy
-          desc: External reset request
-        }
-      ]
       int:
       [
         {
@@ -67,8 +53,22 @@
           module: rv_dm
         }
       ]
+      peripheral:
+      [
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
+        }
+        {
+          name: rst_req_external
+          width: "1"
+          module: soc_proxy
+          desc: External reset request
+        }
+      ]
     }
-    NumRstReqs: 2
     wait_for_external_reset: true
     NumRomInputs: 3
     top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
