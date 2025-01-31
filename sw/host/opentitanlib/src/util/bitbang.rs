@@ -171,7 +171,7 @@ pub fn parse_delay(num: &str, time_unit: &str, clock: Duration) -> Result<u32> {
     let actual_duration = clock.mul(closest_ticks);
     let ratio = actual_duration.as_secs_f64() / duration;
     ensure!(
-        (0.99..=1.00).contains(&ratio),
+        (0.99..=1.01).contains(&ratio),
         "Requested delay cannot be approximated to within 1%, try increasing clock frequency",
     );
     Ok(closest_ticks)
