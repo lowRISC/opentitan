@@ -58,7 +58,7 @@ cc_library(
     deps = [
         ":boot_svc_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_data_header",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
@@ -69,7 +69,7 @@ cc_test(
     srcs = ["boot_svc_min_bl0_sec_ver_unittest.cc"],
     deps = [
         ":boot_svc_min_bl0_sec_ver",
-        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_data_header",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
@@ -107,7 +107,7 @@ cc_library(
     deps = [
         ":boot_svc_header",
         "//sw/device/lib/base:macros",
-        "//sw/device/silicon_creator/lib:boot_data",
+        "//sw/device/silicon_creator/lib:boot_data_header",
         "//sw/device/silicon_creator/lib:error",
         "//sw/device/silicon_creator/lib/base:chip",
     ],

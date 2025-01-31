@@ -152,8 +152,8 @@ cc_library(
     hdrs = ["flash_ctrl_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        "//hw/top:dt",
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:flash_ctrl",
@@ -318,7 +318,7 @@ cc_library(
     hdrs = ["pinmux_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:gpio",
@@ -356,7 +356,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":rv_core_ibex_testutils",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:rv_core_ibex",
@@ -458,7 +458,7 @@ cc_library(
     hdrs = ["spi_device_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_device",

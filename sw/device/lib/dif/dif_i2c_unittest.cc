@@ -1137,7 +1137,7 @@ TEST_F(AddressTest, SetDeviceAddress) {
 }
 
 TEST_F(AddressTest, SetAddressBadArgs) {
-  dif_i2c_id_t id0, id1;
+  dif_i2c_id_t id0 = {}, id1 = {};
   EXPECT_DIF_BADARG(dif_i2c_set_device_id(nullptr, &id0, &id1));
 }
 

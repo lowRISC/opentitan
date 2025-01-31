@@ -6,9 +6,21 @@
 
 #include "sw/device/lib/arch/device.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 #include "rv_core_ibex_regs.h"
 #include "uart_regs.h"
+
+// FIXME: this is not a scalable solution. The kDeviceTestStatusAddress
+// constant should become a function that can then leverage the DT to
+// get the address.
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#define RV_CORE_IBEX_CFG_BASE_ADDR TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+#define RV_CORE_IBEX_CFG_BASE_ADDR TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR
+#else
+#error unsupported top
+#endif
 
 /**
  * Device-specific symbol definitions for the DV simulation device.
@@ -58,11 +70,9 @@ const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
 const uintptr_t kDeviceTestStatusAddress =
-    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
-    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
+    RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
 
 const uintptr_t kDeviceLogBypassUartAddress =
-    TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR +
-    RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
+    RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
 
 void device_fpga_version_print(void) {}
