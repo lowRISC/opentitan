@@ -28,7 +28,6 @@ IPS ?= aes           \
        pattgen       \
        pwm           \
        rom_ctrl      \
-       rv_core_ibex  \
        rv_dm         \
        rv_timer      \
        sensor_ctrl   \
