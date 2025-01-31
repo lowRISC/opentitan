@@ -17,8 +17,8 @@ module mbx
   parameter bit          EnableRacl               = 1'b0,
   parameter bit          RaclErrorRsp             = EnableRacl,
   parameter int unsigned RaclPolicySelVecSoc[4]   = '{4{0}},
-  parameter int unsigned RaclPolicySelWinSocWDATA = 0,
-  parameter int unsigned RaclPolicySelWinSocRDATA = 0
+  parameter int unsigned RaclPolicySelWinSocWdata = 0,
+  parameter int unsigned RaclPolicySelWinSocRdata = 0
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -200,8 +200,8 @@ module mbx
     .EnableRacl               ( EnableRacl               ),
     .RaclErrorRsp             ( RaclErrorRsp             ),
     .RaclPolicySelVecSoc      ( RaclPolicySelVecSoc      ),
-    .RaclPolicySelWinSocWDATA ( RaclPolicySelWinSocWDATA ),
-    .RaclPolicySelWinSocRDATA ( RaclPolicySelWinSocRDATA )
+    .RaclPolicySelWinSocWdata ( RaclPolicySelWinSocWdata ),
+    .RaclPolicySelWinSocRdata ( RaclPolicySelWinSocRdata )
   ) u_sysif (
     .clk_i                               ( clk_i                              ),
     .rst_ni                              ( rst_ni                             ),
