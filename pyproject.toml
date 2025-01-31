@@ -1,0 +1,85 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "opentitan"
+version = "0.0.0"
+description = "Open-source hardware root-of-trust"
+requires-python = ">=3.8"
+
+dependencies = [
+  # Dependency management
+  "pip-tools==7.1.0",
+
+  # Keep sorted
+  "beautifulsoup4==4.12.2",
+  "hjson==3.1.0",
+  "importlib_metadata==6.8.0",
+  "libclang==16.0.0",
+  "libcst==0.4.1",
+  "lxml==4.9.2",
+  "mako==1.1.6",
+  "pluralizer==1.2.0",
+  "pycryptodome==3.15.0",
+  "pyelftools==0.29",
+  "pytest-timeout==2.1.0",
+  "pytest==7.0.1",
+  "pyyaml==6.0",
+  "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
+  "semantic_version==2.10.0",
+  "tabulate==0.8.10",
+  "typer==0.6.1",
+
+  # Dependencies: bitstreams cache
+  "jsonschema==4.17.3",
+  # These are conditional dependency of jsonschema when Python<3.9.
+  # Add them here otherwise they'll get dropped when uv/pip tries to lock dependency with Python>=3.9.
+  "importlib-resources==1.4.0",
+  "pkgutil_resolve_name==1.3.10",
+
+  # Dependencies: gen-flash-img.py
+  "pyfinite==1.9.1",
+
+  # Dependencies: dv_sim
+  "enlighten==1.10.2",
+  "mistletoe==0.9.0",
+  # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files
+  # argument that is now mandatory, but didn't exist in previous versions.
+  # To relax the constraint we either need to do a runtime detection, or switch all
+  # users to a newer version.
+  "premailer==3.8.0",
+
+  # Dependencies: check_dif_statuses.py
+  "pydriller==2.1",
+  "termcolor==1.1.0",
+
+  # Linters
+  "flake8==5.0.4",
+  "isort==5.10.1",
+  "mypy==0.971",
+  "yapf==0.32.0",
+
+  # Type stubs for mypy checking.
+  "types-pkg_resources==0.1.3",
+  "types-pyyaml==6.0.11",
+  "types-tabulate==0.8.11",
+
+  # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
+  "anytree==2.8.0",
+
+  # Development version with OT-specific changes
+  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
+
+  # Development version with OT-specific changes
+  "edalize@https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip",
+
+  # Development version of minimal ChipWhisperer toolchain with latest features
+  # and bug fixes. We fix the version for improved stability and manually update
+  # if necessary.
+  "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
+]
+
+[tool.setuptools]
+# This is actually not a python project, we just use pyproject.toml to manage dependencies.
+py-modules = []
