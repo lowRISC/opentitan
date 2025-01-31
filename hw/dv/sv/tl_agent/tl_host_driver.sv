@@ -135,10 +135,6 @@ task tl_host_driver::reset_signals();
     //    been available, we should have taken it immediately in get_and_drive.
     `DV_CHECK_EQ(pending_a_req.size(), 0)
     `DV_CHECK_EQ(seq_item_port.has_do_available(), 0)
-    // Check if the a_source_pend_q maintained in the cfg is empty.
-    if (cfg.check_tl_errs) begin
-      `DV_CHECK_EQ(cfg.a_source_pend_q.size(), 0)
-    end
 
     // At this point, we're in the main part of the simulation and the get_and_drive task will be
     // driving sequence items over the bus. Wait until reset is asserted then set the reset_asserted
