@@ -10,7 +10,7 @@ module pwm_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[23] = '{23{0}}
+    parameter int unsigned RaclPolicySelVec[pwm_reg_pkg::NumRegs] = '{pwm_reg_pkg::NumRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

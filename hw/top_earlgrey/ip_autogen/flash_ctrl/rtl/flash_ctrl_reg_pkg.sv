@@ -31,6 +31,11 @@ package flash_ctrl_reg_pkg;
   parameter int PrimAw = 7;
   parameter int MemAw = 1;
 
+  // Number of registers for every interface
+  parameter int NumRegsCore = 108;
+  parameter int NumRegsPrim = 21;
+  parameter int NumRegsMem = 0;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

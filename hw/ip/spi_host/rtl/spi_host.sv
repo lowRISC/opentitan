@@ -11,13 +11,13 @@
 module spi_host
   import spi_host_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn  = {NumAlerts{1'b1}},
-  parameter int unsigned          NumCS         = 1,
-  parameter bit          EnableRacl             = 1'b0,
-  parameter bit          RaclErrorRsp           = EnableRacl,
-  parameter int unsigned RaclPolicySelVec[12]   = '{12{0}},
-  parameter int unsigned RaclPolicySelWinRXDATA = 0,
-  parameter int unsigned RaclPolicySelWinTXDATA = 0
+  parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
+  parameter int unsigned          NumCS            = 1,
+  parameter bit          EnableRacl                = 1'b0,
+  parameter bit          RaclErrorRsp              = EnableRacl,
+  parameter int unsigned RaclPolicySelVec[NumRegs] = '{NumRegs{0}},
+  parameter int unsigned RaclPolicySelWinRXDATA    = 0,
+  parameter int unsigned RaclPolicySelWinTXDATA    = 0
 ) (
   input              clk_i,
   input              rst_ni,

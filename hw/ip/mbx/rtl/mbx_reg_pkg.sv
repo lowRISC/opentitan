@@ -13,6 +13,10 @@ package mbx_reg_pkg;
   parameter int CoreAw = 7;
   parameter int SocAw = 5;
 
+  // Number of registers for every interface
+  parameter int NumRegsCore = 17;
+  parameter int NumRegsSoc = 4;
+
   ///////////////////////////////////////////////
   // Typedefs for registers for core interface //
   ///////////////////////////////////////////////

@@ -18,6 +18,9 @@ package pinmux_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 11;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 503;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////

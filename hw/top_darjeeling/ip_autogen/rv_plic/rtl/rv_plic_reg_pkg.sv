@@ -15,6 +15,9 @@ package rv_plic_reg_pkg;
   // Address widths within the block
   parameter int BlockAw = 27;
 
+  // Number of registers for every interface
+  parameter int NumRegs = 172;
+
   ////////////////////////////
   // Typedefs for registers //
   ////////////////////////////
