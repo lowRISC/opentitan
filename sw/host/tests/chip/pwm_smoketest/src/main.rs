@@ -13,6 +13,7 @@ use opentitanlib::io::gpio::GpioPin;
 use opentitanlib::io::gpio::PinMode;
 use opentitanlib::test_utils;
 use opentitanlib::test_utils::init::InitializeTest;
+use opentitanlib::uart::console::UartConsole;
 use std::borrow::Borrow;
 use std::fs;
 use std::path::PathBuf;
@@ -108,6 +109,10 @@ fn main() -> Result<()> {
     uart.set_flow_control(true)?;
     uart.clear_rx_buffer()?;
     transport.pin_strapping("RESET")?.remove()?;
+
+    // Wait until test is running.
+    let uart = transport.uart("console")?;
+    UartConsole::wait_for(&*uart, r"Running [^\r\n]*", opts.timeout)?;
 
     /* Load the ELF binary and get the expect data.*/
     let elf_binary = fs::read(&opts.firmware_elf)?;
