@@ -20,7 +20,11 @@ extern "C" {
  *
  * @param precalculated_nco NCO value used to set the speed of the UART.
  * @return kErrorOk if successful, else an error code.
+ *
+ * This symbol is marked as noinline because it is expected by several gdb
+ * e2e test to be able to set a breakpoint.
  */
+OT_NOINLINE
 void uart_init(uint32_t precalculated_nco);
 
 /**
