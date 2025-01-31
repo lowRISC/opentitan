@@ -13,6 +13,7 @@
     uniquified_modules:
     {
       gpio: gpio
+      rv_core_ibex: rv_core_ibex
       rv_plic: rv_plic
     }
   }
