@@ -121,9 +121,9 @@ module prim_reg_cdc #(
   // be copied back.
   logic dst_to_src;
   if (DstWrReq) begin : gen_wr_req
-    assign dst_to_src = src_busy_q && src_ack || src_update && !busy;
+    assign dst_to_src = src_ack || (src_update && !busy);
   end else begin : gen_passthru
-    assign dst_to_src = src_busy_q && src_ack;
+    assign dst_to_src = src_ack;
 
     logic unused_dst_wr;
     assign unused_dst_wr = src_update ^ busy;
