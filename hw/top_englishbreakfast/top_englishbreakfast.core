@@ -10,7 +10,6 @@ filesets:
       - lowrisc:englishbreakfast_ip:pwrmgr_pkg
       - lowrisc:earlgrey_ip:alert_handler_pkg
       # Manually instantiated
-      - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm
       - lowrisc:ip:tlul
       - lowrisc:prim:all
@@ -39,6 +38,7 @@ filesets:
       - lowrisc:englishbreakfast_ip:rstmgr
       - lowrisc:englishbreakfast_ip:rv_plic
       - lowrisc:englishbreakfast_ip:gpio
+      - lowrisc:englishbreakfast_ip:rv_core_ibex
       - lowrisc:ip:rom_ctrl
       - lowrisc:ip:aon_timer
       - lowrisc:tlul:headers
