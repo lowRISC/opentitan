@@ -200,11 +200,11 @@ class IpTemplateRendererBase:
         """ Get the name of the file without a '.tpl' suffix. """
         assert filepath.suffix == '.tpl'
         filename = filepath.stem
-        # Do not render the module_instance_name into Bazel BUILD and defs.bzl file templates
-        # Leave the filename as it is without the *.tpl suffix
-        if filename in ['BUILD', 'defs.bzl']:
-            return filename
-        if "module_instance_name" in self.ip_config.param_values:
+
+        # Only render the module instance name if the original template file starts with
+        # the template name. Otherwise, leave the filename untouched
+        if filename.startswith(self.ip_template.name) and \
+           "module_instance_name" in self.ip_config.param_values:
             filename = self.ip_config.param_values[
                 "module_instance_name"] + filename[len(self.ip_template.name):]
         return filename
