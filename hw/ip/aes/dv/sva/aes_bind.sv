@@ -63,6 +63,8 @@ if (`EN_MASKING) begin : gen_prng_bind
                      u_aes_control_fsm.aes_ctrl_cs),
     .ctrl_state_next(u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
                      u_aes_control_fsm.aes_ctrl_ns),
+    .cipher_in_valid(u_aes_core.u_aes_control.gen_fsm[0].gen_fsm_p.u_aes_control_fsm_i.
+                     u_aes_control_fsm.cipher_in_valid_o),
     .alert_fatal    (u_aes_core.alert_fatal_o)
   );
 end
