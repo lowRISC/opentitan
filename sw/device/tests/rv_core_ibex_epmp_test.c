@@ -184,7 +184,7 @@ inline uint32_t region_offset(uint32_t region) { return region % 4 * 8; }
  * Sets up the execution area of Machine Mode.
  *
  * This configuration adjusts the existing configuration from the
- * [reset PMP configuration](/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh)
+ * [reset PMP configuration](/hw/top_{}/ip_autogen/rtl/ibex_pmp_reset_pkg.sv)
  * and [SRAM loader](/sw/host/opentitanlib/src/test_utils/load_sram_program.rs).
  *
  * These changes are needed before mseccfg.MML is enabled,

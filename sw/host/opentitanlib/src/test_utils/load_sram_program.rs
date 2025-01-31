@@ -342,7 +342,7 @@ pub fn load_sram_program(jtag: &mut dyn Jtag, file: &SramProgramFile) -> Result<
 /// [0]: https://opentitan.org/book/sw/device/silicon_creator/rom/doc/memory_protection.html
 /// [1]: https://github.com/lowRISC/opentitan/issues/14978
 /// [2]: https://riscv.org/wp-content/uploads/2019/03/riscv-debug-release.pdf
-/// [3]: https://github.com/lowRISC/opentitan/blob/master/hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh
+/// [3]: https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/rtl/ibex_pmp_reset_pkg.sv
 pub fn prepare_epmp(jtag: &mut dyn Jtag) -> Result<()> {
     // Setup ePMP for SRAM execution.
     log::info!("Configure ePMP for SRAM execution.");

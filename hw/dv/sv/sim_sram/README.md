@@ -79,5 +79,5 @@ The disconnection must be made in the desired design block ONLY if `` `SYNTHESIS
 This module is instantiated in the testbench rather than in the design.
 Its inbound and outbound TL interfaces are then connected to the disconnected TL interface in the design by hierarchically referencing their paths.
 
-This disconnection is currently done in `hw/ip/rv_core_ibex/rtl/rv_core_ibex.sv`, which relies on `` `RV_CORE_IBEX_SIM_SRAM`` being defined.
+This disconnection is currently done in `hw/top_earlgrey/ip_autogen/rv_core_ibex/rtl/rv_core_ibex.sv`, which relies on `` `RV_CORE_IBEX_SIM_SRAM`` being defined.
 In UVM DV simulations, we do not disconnect anything - we use forces instead to make the connections.

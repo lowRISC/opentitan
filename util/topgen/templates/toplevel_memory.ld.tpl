@@ -119,6 +119,6 @@ _${mem["label"]}_chip_info_start = _${mem["label"]}_chip_info_end - _chip_info_s
  * large enough to cover the .crt section.
  *
  * NOTE: This value must match the size of the RX region in
- * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
+ * hw/${top['name']}/rtl/ibex_pmp_reset_pkg.sv.
  */
 _epmp_reset_rx_size = 2048;

@@ -306,7 +306,7 @@ Set [`ALERT_INFO_CTRL.INDEX`](registers.md#alert_info_ctrl) to the desired segme
 The CPU information register contains the value of the CPU state prior to a triggered reset.
 Since this information differs in length between system implementation, the information register only displays 32-bits at a time.
 
-For more details on the CPU dump details, please see [crash dump](../../../../ip/rv_core_ibex/README.md#crash-dump-collection).
+For more details on the CPU dump details, please see [crash dump](../../rv_core_ibex/README.md#crash-dump-collection).
 
 The [`CPU_INFO_ATTR`](registers.md#cpu_info_attr) register indicates how many 32-bit data segments must be read.
 Software then simply needs to write in [`CPU_INFO_CTRL.INDEX`](registers.md#cpu_info_ctrl) which segment it wishes and then read out the [`CPU_INFO`](registers.md#cpu_info) register.

@@ -54,6 +54,6 @@ _rom_chip_info_start = _rom_chip_info_end - _chip_info_size;
  * large enough to cover the .crt section.
  *
  * NOTE: This value must match the size of the RX region in
- * hw/ip/rv_core_ibex/rtl/ibex_pmp_reset.svh.
+ * hw/englishbreakfast/rtl/ibex_pmp_reset_pkg.sv.
  */
 _epmp_reset_rx_size = 2048;
