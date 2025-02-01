@@ -14,7 +14,7 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_bkdr_util
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_test")}
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_sva")}
       - ${instance_vlnv("lowrisc:dv:flash_ctrl_cov")}

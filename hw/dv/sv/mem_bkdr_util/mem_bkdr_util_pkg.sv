@@ -45,7 +45,6 @@ package mem_bkdr_util_pkg;
   // sources
   `include "mem_bkdr_util.sv"
   // extended classes
-  `include "flash_bkdr_util.sv"
   `include "rom_bkdr_util.sv"
   `include "sram_bkdr_util.sv"
 
