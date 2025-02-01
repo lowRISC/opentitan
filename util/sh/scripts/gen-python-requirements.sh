@@ -12,7 +12,7 @@ PYTHON_REQS_OUT_FILE="$REPO_TOP/python-requirements.txt"
 
 # The below shellcode autogenerates the `python-requirements.txt`, with hashes,
 # and prepends the license and auto-generated banners at the top of the file.
-pip-compile \
+uv pip compile \
   --allow-unsafe \
   --generate-hashes \
   --no-annotate \
@@ -24,6 +24,3 @@ add_autogen_banner "$PYTHON_REQS_OUT_FILE" \
   "./util/sh/scripts/gen-python-requirements.sh"
 echo -e "#\n$(cat "$PYTHON_REQS_OUT_FILE")" > "$PYTHON_REQS_OUT_FILE"
 add_license_banner "$PYTHON_REQS_OUT_FILE"
-
-# opentitan.egg-info is generated as part of pip-compile. Clean it up.
-rm -rf $REPO_TOP/opentitan.egg-info
