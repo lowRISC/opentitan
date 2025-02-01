@@ -416,7 +416,8 @@ def install_deps(**whl_library_kwargs):
 
         whl_library(
             name = name,
-            requirement = requirement,
+            # Ignore hashes due to mismatches when caching wheels for airgapped builds.
+            requirement = requirement.split(" ")[0],
             group_name = group_name,
             group_deps = group_deps,
             annotation = _get_annotation(requirement),

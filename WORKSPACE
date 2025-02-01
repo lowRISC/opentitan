@@ -21,7 +21,7 @@ python_deps()
 load("//third_party/python:pip.bzl", "pip_deps")
 pip_deps()
 load("//third_party/python:requirements.bzl", install_ot_python_deps="install_deps")
-install_ot_python_deps()
+install_ot_python_deps(local_wheels_repo_target = "@ot_python_wheels//:sanitized_requirements.txt")
 
 # Google/Bazel dependencies.  This needs to be after Python initialization
 # so that our preferred python configuration takes precedence.
