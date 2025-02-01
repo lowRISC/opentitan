@@ -222,18 +222,20 @@ module prim_reg_cdc_arb #(
           end
         end
 
-        StWait: begin
+        // StWait
+        default: begin
           dst_hold_req = 1'b1;
           if (dst_update_ack) begin
             state_d = StIdle;
           end
         end
-
-        default: begin
-          state_d = StIdle;
-        end
       endcase // unique case (state_q)
     end // always_comb
+
+    // The case statement above uses default for StWait to avoid a coverage hole. This is safe, so
+    // long as the default case only runs when state_q is StWait. This assertion checks that is
+    // true.
+    `ASSERT(GoodState_A, state_q inside {StIdle, StWait}, clk_dst_i, !rst_dst_ni)
 
     assign dst_update_req = dst_hold_req | dst_lat_d | dst_lat_q;
     logic src_req;
