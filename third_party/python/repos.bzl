@@ -15,4 +15,6 @@ def python_repos():
             _RULES_PYTHON_VERSION,
             _RULES_PYTHON_VERSION,
         ),
+        patches = [Label("//third_party/python:airgapped-wheels-cache.patch")],
+        patch_args = ["-p1"],
     )
