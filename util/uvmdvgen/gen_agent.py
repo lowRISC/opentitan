@@ -8,7 +8,7 @@ import os
 
 from mako import exceptions
 from mako.template import Template
-from pkg_resources import resource_filename
+import importlib_resources
 
 
 def gen_agent(name, has_separate_host_device_driver, root_dir, vendor):
@@ -50,7 +50,7 @@ def gen_agent(name, has_separate_host_device_driver, root_dir, vendor):
         fname = src_prefix + src + src_suffix
 
         # read template
-        tpl = Template(filename=resource_filename('uvmdvgen', ftpl))
+        tpl = Template(filename=str(importlib_resources.files('uvmdvgen') / ftpl))
 
         if not os.path.exists(path_dir): os.system("mkdir -p " + path_dir)
         with open(path_dir + "/" + fname, 'w') as fout:
