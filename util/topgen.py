@@ -562,19 +562,13 @@ def generate_otp_ctrl(topcfg: Dict[str, object], cfg_path: Path, out_path: Path,
 
 # generate ac_range_check with ipgen
 def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
-    # Not all tops have an ac range check instance
-    if 'ac_range_check' not in topcfg:
-        return
-
     log.info('Generating ac_range_check with ipgen')
     topname = topcfg['name']
 
     # Get the AC Range Check instance
     ac_ranges = lib.find_module(topcfg['module'], 'ac_range_check')
     params = {
-        "nr_role_bits": 4,
-        "nr_ctn_uid_bits": 5,
-        "num_ranges": topcfg['ac_range_check']['num_ranges'],
+        "num_ranges": ac_ranges['ipgen_param']['num_ranges'],
         "module_instance_name": ac_ranges['type']
     }
 
@@ -610,7 +604,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
     log.info('Generating RACL Control IP with ipgen')
     topname = topcfg['name']
 
-    # Get the AC Range Check instance
+    # Get the RACL Control instance
     racl_ctrl = lib.find_module(topcfg['module'], 'racl_ctrl')
 
     if len(topcfg['racl']['policies']) == 1:
@@ -988,8 +982,9 @@ def _process_top(
     if lib.find_module(completecfg['module'], 'rstmgr'):
         generate_rstmgr(completecfg, out_path)
 
-    # Generate ac_range_check
-    generate_ac_range_check(completecfg, out_path)
+    # Generate ac_range_check if there is an instance
+    if lib.find_module(completecfg['module'], 'ac_range_check'):
+        generate_ac_range_check(completecfg, out_path)
 
     # Generate RACL collateral
     generate_racl(completecfg, name_to_block, out_path)

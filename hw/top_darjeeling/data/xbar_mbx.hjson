@@ -87,12 +87,19 @@
       reset:      "rst_mbx_ni",
       pipeline:   false,
     },
+    { name:       "ac_range_check",
+      type:       "device",
+      addr_space: "soc_mbx",
+      clock:      "clk_mbx_i",
+      reset:      "rst_mbx_ni",
+      pipeline:   false,
+    },
   ],
 
   connections: {
     mbx: [
       "mbx0.soc", "mbx1.soc", "mbx2.soc", "mbx3.soc", "mbx4.soc", "mbx5.soc",
-      "mbx6.soc", "mbx_pcie0.soc", "mbx_pcie1.soc", "racl_ctrl"
+      "mbx6.soc", "mbx_pcie0.soc", "mbx_pcie1.soc", "racl_ctrl", "ac_range_check"
     ],
   },
 }
