@@ -68,7 +68,7 @@ fuzzing_repos()
 load("//third_party/google:fuzzing_deps.bzl", "fuzzing_deps")
 fuzzing_deps()
 load("@fuzzing_py_deps//:requirements.bzl", install_fuzzing_python_deps="install_deps")
-install_fuzzing_python_deps()
+install_fuzzing_python_deps(local_wheels_repo_target = "@ot_python_wheels//:sanitized_requirements.txt")
 
 # Rust Toolchain + crates.io Dependencies
 load("//third_party/rust:repos.bzl", "rust_repos")
