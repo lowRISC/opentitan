@@ -1014,6 +1014,20 @@
       },
       attr: "ipgen"
     },
+    { name: "ac_range_check",
+      type: "ac_range_check",
+      template_type: "ac_range_check",
+      clock_srcs: {clk_i: "main"},
+      clock_group: "secure",
+      reset_connections: {rst_ni: "lc"},
+      base_addr: {
+        soc_mbx: "0x01464000"
+      },
+      ipgen_param: {
+        num_ranges: 32
+      }
+      attr: "ipgen",
+    },
     { name: "rv_core_ibex",
       type: "rv_core_ibex",
       param_decl: {PMPEnable: "1",
@@ -1272,6 +1286,8 @@
       'soc_proxy.dma_tl_h2d' : ['dma.ctn_tl_h2d']
       'soc_proxy.dma_tl_d2h' : ['dma.ctn_tl_d2h']
 
+      'soc_proxy.ctn_tl_h2d' : ['ac_range_check.ctn_tl_h2d']
+      'soc_proxy.ctn_tl_d2h' : ['ac_range_check.ctn_tl_d2h']
     }
 
     // top is to connect to top net/struct.
@@ -1401,8 +1417,6 @@
         'otp_ctrl.cfg_rsp'                     : 'otp_cfg_rsp',
         'rstmgr_aon.por_n'                     : 'por_n'
         'rv_core_ibex.fpga_info'               : 'fpga_info'
-        'soc_proxy.ctn_tl_h2d'                 : 'ctn_tl_h2d',
-        'soc_proxy.ctn_tl_d2h'                 : 'ctn_tl_d2h'
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
         'soc_proxy.soc_fatal_alert'            : 'soc_fatal_alert',
@@ -1418,7 +1432,10 @@
         'soc_dbg_ctrl.halt_cpu_boot'           : 'debug_halt_cpu_boot',
         'racl_ctrl.racl_policies'              : 'racl_policies',
         'racl_ctrl.racl_error_external'        : 'racl_error',
-        'racl_ctrl.racl_error_log_external'    : 'racl_error_log'
+        'racl_ctrl.racl_error_log_external'    : 'racl_error_log',
+        'ac_range_check.range_check_overwrite' : 'ac_range_check_overwrite',
+        'ac_range_check.ctn_filtered_tl_h2d'   : 'ctn_tl_h2d',
+        'ac_range_check.ctn_filtered_tl_d2h'   : 'ctn_tl_d2h'
     },
   },
 
