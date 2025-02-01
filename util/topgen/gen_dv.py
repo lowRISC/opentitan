@@ -7,7 +7,7 @@ from typing import List, Optional, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
-from pkg_resources import resource_filename
+import importlib_resources
 
 from reggen.gen_dv import gen_core_file
 
@@ -24,8 +24,8 @@ def gen_dv(top: Top,
            outdir: str) -> int:
     '''Generate DV RAL model for a Top'''
     # Read template
-    lookup = TemplateLookup(directories=[resource_filename('topgen', '.'),
-                                         resource_filename('reggen', '.')])
+    lookup = TemplateLookup(directories=[str(importlib_resources.files('topgen')),
+                                         str(importlib_resources.files('reggen'))])
     uvm_reg_tpl = lookup.get_template('top_uvm_reg.sv.tpl')
 
     # Expand template
