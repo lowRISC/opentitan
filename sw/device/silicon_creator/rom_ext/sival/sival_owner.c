@@ -8,25 +8,24 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/error.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/activate_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_dev_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/app_test_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/owner_ecdsa_p256.h"
-#include "sw/device/silicon_creator/lib/ownership/keys/fake/unlock_ecdsa_p256.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership.h"
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/appkey_dev_0.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/appkey_prod_0.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/appkey_test_0.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/ownership_activate_key.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/ownership_owner_key.h"
+#include "sw/device/silicon_creator/rom_ext/sival/keys/ownership_unlock_key.h"
 
 /*
  * This module overrides the weak `sku_creator_owner_init` symbol in
- * ownership.c, thus allowing FPGA builds to boot in the `LockedOwner` state
- * with a valid set of keys.
+ * ownership.c, thus allowing existing sival chips without an ownership
+ * configuration to receive their ownership config simply installing the latest
+ * ROM_EXT.
  */
 
-// NOTE: if you update this version number, you must also update the version
-// number in the test library `sw/host/tests/ownership/transfer_lib.rs`.
-#define TEST_OWNER_CONFIG_VERSION 1
+#define SIVAL_OWNER_CONFIG_VERSION 1
 
 rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
                                    owner_config_t *config,
@@ -34,7 +33,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   owner_key_t owner = (owner_key_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
-      .raw = OWNER_ECDSA_P256};
+      .raw = OWNERSHIP_OWNER_KEY};
   ownership_state_t state = bootdata->ownership_state;
 
   if (state == kOwnershipStateUnlockedSelf ||
@@ -45,7 +44,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   } else if (state == kOwnershipStateLockedOwner) {
     if (hardened_memeq(owner.raw, owner_page[0].owner_key.raw,
                        ARRAYSIZE(owner.raw)) != kHardenedBoolTrue ||
-        TEST_OWNER_CONFIG_VERSION <= owner_page[0].config_version) {
+        SIVAL_OWNER_CONFIG_VERSION <= owner_page[0].config_version) {
       // Different owner or already newest config version; nothing to do.
       return kErrorOk;
     }
@@ -55,22 +54,23 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
     // into flash.
   }
 
+  memset(&owner_page[0], 0, sizeof(owner_page[0]));
   owner_page[0].header.tag = kTlvTagOwner;
   owner_page[0].header.length = 2048;
   owner_page[0].struct_version = 0;
   owner_page[0].sram_exec_mode = kOwnerSramExecModeDisabledLocked;
   owner_page[0].ownership_key_alg = kOwnershipKeyAlgEcdsaP256;
-  owner_page[0].config_version = TEST_OWNER_CONFIG_VERSION;
+  owner_page[0].config_version = SIVAL_OWNER_CONFIG_VERSION;
   owner_page[0].min_security_version_bl0 = UINT32_MAX;
   owner_page[0].owner_key = owner;
   owner_page[0].activate_key = (owner_key_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
-      .raw = ACTIVATE_ECDSA_P256};
+      .raw = OWNERSHIP_ACTIVATE_KEY};
   owner_page[0].unlock_key = (owner_key_t){
       // Although this is an ECDSA key, we initialize the `raw` member of the
       // union to zero-initialize the unused space.
-      .raw = UNLOCK_ECDSA_P256};
+      .raw = OWNERSHIP_UNLOCK_KEY};
 
   owner_application_key_t *app = (owner_application_key_t *)owner_page[0].data;
   *app = (owner_application_key_t){
@@ -85,24 +85,7 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
       .usage_constraint = 0,
       .data =
           {
-              .ecdsa = APP_TEST_ECDSA_P256,
-          },
-  };
-
-  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
-  *app = (owner_application_key_t){
-      .header =
-          {
-              .tag = kTlvTagApplicationKey,
-              .length = kTlvLenApplicationKeyEcdsa,
-          },
-      .key_alg = kOwnershipKeyAlgEcdsaP256,
-      .key_domain = kOwnerAppDomainDev,
-      .key_diversifier = {0},
-      .usage_constraint = 0,
-      .data =
-          {
-              .ecdsa = APP_DEV_ECDSA_P256,
+              .ecdsa = APPKEY_TEST_0,
           },
   };
 
@@ -119,7 +102,24 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
       .usage_constraint = 0,
       .data =
           {
-              .ecdsa = APP_PROD_ECDSA_P256,
+              .ecdsa = APPKEY_PROD_0,
+          },
+  };
+
+  app = (owner_application_key_t *)((uintptr_t)app + app->header.length);
+  *app = (owner_application_key_t){
+      .header =
+          {
+              .tag = kTlvTagApplicationKey,
+              .length = kTlvLenApplicationKeyEcdsa,
+          },
+      .key_alg = kOwnershipKeyAlgEcdsaP256,
+      .key_domain = kOwnerAppDomainDev,
+      .key_diversifier = {0},
+      .usage_constraint = 0,
+      .data =
+          {
+              .ecdsa = APPKEY_DEV_0,
           },
   };
 
@@ -132,11 +132,11 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata,
   ownership_seal_page(/*page=*/0);
   memcpy(&owner_page[1], &owner_page[0], sizeof(owner_page[0]));
 
-  // Since this module should only get linked in to FPGA builds, we can simply
-  // thunk the ownership state to LockedOwner.
+  // Since this code should only execute when the ownership state is unknown, we
+  // can thunk the ownership state to LockedOwner.
   bootdata->ownership_state = kOwnershipStateLockedOwner;
 
-  // Write the configuration to both owner pages.
+  // Write the configuration to page 0.
   OT_DISCARD(flash_ctrl_info_erase(&kFlashCtrlInfoPageOwnerSlot0,
                                    kFlashCtrlEraseTypePage));
   OT_DISCARD(flash_ctrl_info_write(&kFlashCtrlInfoPageOwnerSlot0, 0,
