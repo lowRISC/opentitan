@@ -28,7 +28,7 @@ import math
       default: "${num_ranges}",
     },
     { name:    "DenyCountWidth",
-      desc:    "Witdth of the deny counter",
+      desc:    "Width of the deny counter",
       type:    "int",
       default: "8",
       local:   "true"
@@ -105,7 +105,7 @@ import math
         { bits: "1"
           name: "log_clear"
           resval: 0x0
-          desc: '''Clears all log information for the first denied access including: 
+          desc: '''Clears all log information for the first denied access including:
                     - LOG_STATUS
                     - LOG_ADDRESS.
           '''
@@ -119,7 +119,7 @@ import math
     }
     { name: "LOG_STATUS"
       desc: '''
-            The LOG_STATUS register stores the number of denied accesses and gives more detailed diagnostics to the first denied request. 
+            The LOG_STATUS register stores the number of denied accesses and gives more detailed diagnostics to the first denied request.
             All fields of LOG_STATUS (other than deny_cnt) are only valid if deny_cnt > 0.
             '''
       swaccess: "ro"
@@ -202,7 +202,7 @@ import math
     { multireg: {
         name: "RANGE_REGWEN"
         desc: '''
-              This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register. 
+              This register exists per range and provides a regwen signal for the RANGE_BASE_x, RANGE_LIMIT_x, RANGE_PERM_x, and RANGE_RACL_POLICY_SHADOWED_x register.
               When cleared to Mubi4::False, the corresponding range configuration registers are locked and cannot be changed until the next reset.
               '''
         count: "NumRanges"
@@ -246,7 +246,7 @@ import math
     { multireg: {
         name: "RANGE_LIMIT"
         desc: '''
-              The (exclusive) limit address register used for the address matching. 
+              The (exclusive) limit address register used for the address matching.
               '''
         count: "NumRanges"
         cname: "BASE"
@@ -315,7 +315,7 @@ import math
         desc: '''
               The RACL policy register exists and allows the system to further restrict the access to specific source roles.
               The default value for both the read and write permission bitmap is set to a value to allow the access from all roles.
-              This register is protected against fault attacks by using a shadow register implementation. 
+              This register is protected against fault attacks by using a shadow register implementation.
               '''
         count: "NumRanges"
         cname: "RACL"
