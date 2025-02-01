@@ -22,15 +22,15 @@ dependencies = [
   "beautifulsoup4==4.12.2",
   "hjson==3.1.0",
   "libclang==16.0.0",
-  "libcst==0.4.1",
-  "lxml==4.9.2",
+  "libcst == 1.1.0", # 1.2.0+ needs Python 3.9+
+  "lxml ~= 5.0",
   "mako==1.1.6",
   "pluralizer==1.2.0",
   "pycryptodome==3.15.0",
   "pyelftools==0.29",
   "pytest-timeout==2.1.0",
   "pytest==7.0.1",
-  "pyyaml==6.0",
+  "pyyaml ~= 6.0.2",
   "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
   "semantic_version==2.10.0",
   "tabulate==0.8.10",
@@ -59,7 +59,7 @@ dependencies = [
   "termcolor==1.1.0",
 
   # Linters
-  "flake8==5.0.4",
+  "flake8 ~= 7.1",
   "isort==5.10.1",
   "mypy==0.971",
   "yapf==0.32.0",
