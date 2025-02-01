@@ -7,6 +7,7 @@ load("@rules_python//python:pip.bzl", "pip_utils")
 load("@rules_python//python/pip_install:pip_repository.bzl", "group_library", "whl_library")
 
 all_requirements = [
+    "@ot_python_deps_vendored_absl_py//:pkg",
     "@ot_python_deps_vendored_anytree//:pkg",
     "@ot_python_deps_vendored_attrs//:pkg",
     "@ot_python_deps_vendored_beautifulsoup4//:pkg",
@@ -92,6 +93,7 @@ all_requirements = [
 ]
 
 all_whl_requirements_by_package = {
+    "absl_py": "@ot_python_deps_vendored_absl_py//:whl",
     "anytree": "@ot_python_deps_vendored_anytree//:whl",
     "attrs": "@ot_python_deps_vendored_attrs//:whl",
     "beautifulsoup4": "@ot_python_deps_vendored_beautifulsoup4//:whl",
@@ -179,6 +181,7 @@ all_whl_requirements_by_package = {
 all_whl_requirements = all_whl_requirements_by_package.values()
 
 all_data_requirements = [
+    "@ot_python_deps_vendored_absl_py//:data",
     "@ot_python_deps_vendored_anytree//:data",
     "@ot_python_deps_vendored_attrs//:data",
     "@ot_python_deps_vendored_beautifulsoup4//:data",
@@ -264,6 +267,7 @@ all_data_requirements = [
 ]
 
 _packages = [
+    ("ot_python_deps_vendored_absl_py", "absl-py==2.0.0     --hash=sha256:9a28abb62774ae4e8edbe2dd4c49ffcd45a6a848952a5eccc6a49f3f0fc1e2f3     --hash=sha256:d9690211c5fcfefcdd1a45470ac2b5c5acd45241c3af71eed96bc5441746c0d5"),
     ("ot_python_deps_vendored_anytree", "anytree==2.8.0     --hash=sha256:14c55ac77492b11532395049a03b773d14c7e30b22aa012e337b1e983de31521     --hash=sha256:3f0f93f355a91bc3e6245319bf4c1d50e3416cc7a35cc1133c1ff38306bbccab"),
     ("ot_python_deps_vendored_attrs", "attrs==25.1.0     --hash=sha256:1c97078a80c814273a76b2a298a932eb681c87415c11dee0a6921de7f1b02c3e     --hash=sha256:c75a69e28a550a7e93789579c22aa26b0f5b83b75dc4e08fe092980051e1090a"),
     ("ot_python_deps_vendored_beautifulsoup4", "beautifulsoup4==4.12.2     --hash=sha256:492bbc69dca35d12daac71c4db1bfff0c876c00ef4a2ffacce226d4638eb72da     --hash=sha256:bd2520ca0d9d7d12694a53d44ac482d181b4ec1888909b035a3dbf40d0f57d4a"),
@@ -329,7 +333,7 @@ _packages = [
     ("ot_python_deps_vendored_rich", "rich==12.6.0     --hash=sha256:a4eb26484f2c82589bd9a17c73d32a010b1e29d89f1604cd9bf3a2097b81bb5e     --hash=sha256:ba3a3775974105c221d31141f2c116f4fd65c5ceb0698657a11e9f295ec93fd0"),
     ("ot_python_deps_vendored_semantic_version", "semantic-version==2.10.0     --hash=sha256:bdabb6d336998cbb378d4b9db3a4b56a1e3235701dc05ea2690d9a997ed5041c     --hash=sha256:de78a3b8e0feda74cabc54aab2da702113e33ac9d9eb9d2389bcf1f58b7d9177"),
     ("ot_python_deps_vendored_simplesat", "simplesat==0.9.1     --hash=sha256:4f7d7a121ba13db987ea635205db8897d7d01220962e8a9c8cfd41b9886e6b8a     --hash=sha256:990115b1bb32a76c30b2416f645e99e61360382c795203e25ab59b26cd173749"),
-    ("ot_python_deps_vendored_six", "six==1.17.0     --hash=sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274     --hash=sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81"),
+    ("ot_python_deps_vendored_six", "six==1.16.0     --hash=sha256:1e61c37477a1626458e36f7b1d82aa5c9b094fa4802892072e49de9c60c4c926     --hash=sha256:8abb2f1d86890a2dfb989f9a77cfcfd3e47c2a354b01111771326f8aa26e0254"),
     ("ot_python_deps_vendored_smmap", "smmap==5.0.2     --hash=sha256:26ea65a03958fa0c8a1c7e8c7a58fdc77221b8910f6be2131affade476898ad5     --hash=sha256:b30115f0def7d7531d22a0fb6502488d879e75b260a9db4d0819cfb25403af5e"),
     ("ot_python_deps_vendored_soupsieve", "soupsieve==2.6     --hash=sha256:e2e68417777af359ec65daac1057404a3c8a5455bb8abc36f1a9866ab1a51abb     --hash=sha256:e72c4ff06e4fb6e4b5a9f0f55fe6e81514581fca1515028625d0f299c602ccc9"),
     ("ot_python_deps_vendored_tabulate", "tabulate==0.8.10     --hash=sha256:0ba055423dbaa164b9e456abe7920c5e8ed33fcc16f6d1b2f2d152c8e1e8b4fc     --hash=sha256:6c57f3f3dd7ac2782770155f3adb2db0b1a269637e42f27599925e64b114f519"),

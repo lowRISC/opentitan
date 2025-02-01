@@ -68,6 +68,10 @@ dependencies = [
   "types-pyyaml==6.0.11",
   "types-tabulate==0.8.11",
 
+  # Dependencies of rules_fuzzing.
+  "absl-py==2.0.0",
+  "six==1.16.0",
+
   # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
   "anytree==2.8.0",
 
