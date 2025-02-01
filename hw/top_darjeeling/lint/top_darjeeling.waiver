@@ -71,3 +71,6 @@ waive -rules SAME_NAME_TYPE -location {spi_device.sv mbx.sv} -regexp {'mbx' is u
 # intentionally unused
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {top_darjeeling.sv} -regexp {.*cio_otp_ctrl_test_(en_)?d2p\[7:1\].* is not read} \
       -comment "otp test bus made deliberately larger on purpose"
+
+waive -rules {LINE_LENGTH} -location {top_racl_pkg.sv} -regexp {Line length of \[[0-9]+\] exceeds 100 character limit} \
+      -comment "top_racl_pkg is auto-generated and expected to exceed line length limit"

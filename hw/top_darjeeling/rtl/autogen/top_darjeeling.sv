@@ -316,7 +316,7 @@ module top_darjeeling #(
   // local parameters for spi_host0
   localparam int SpiHost0NumCS = 1;
   // local parameters for racl_ctrl
-  localparam int RaclCtrlNumSubscribingIps = 8;
+  localparam int RaclCtrlNumSubscribingIps = 9;
   // local parameters for rv_core_ibex
   localparam int unsigned RvCoreIbexNEscalationSeverities = alert_handler_reg_pkg::N_ESC_SEV;
   localparam int unsigned RvCoreIbexWidthPingCounter = alert_handler_reg_pkg::PING_CNT_DW;
@@ -2619,6 +2619,9 @@ module top_darjeeling #(
       .rst_ni (rstmgr_aon_resets.rst_lc_n[rstmgr_pkg::Domain0Sel])
   );
   ac_range_check #(
+    .EnableRacl(1'b1),
+    .RaclErrorRsp(1'b1),
+    .RaclPolicySelVec(top_racl_pkg::RACL_POLICY_SEL_AC_RANGE_CHECK),
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[98:97])
   ) u_ac_range_check (
 
@@ -2635,9 +2638,9 @@ module top_darjeeling #(
       .ctn_tl_d2h_o(soc_proxy_ctn_tl_d2h),
       .ctn_filtered_tl_h2d_o(ctn_tl_h2d_o),
       .ctn_filtered_tl_d2h_i(ctn_tl_d2h_i),
-      .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
-      .racl_error_o(),
-      .racl_error_log_o(),
+      .racl_policies_i(racl_ctrl_racl_policies),
+      .racl_error_o(racl_ctrl_racl_error[8]),
+      .racl_error_log_o(racl_ctrl_racl_error_log[8]),
       .tl_i(ac_range_check_tl_req),
       .tl_o(ac_range_check_tl_rsp),
 
