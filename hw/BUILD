@@ -65,7 +65,7 @@ fusesoc_build(
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
     output_groups = {
-        "binary": ["sim-verilator/Vchip_sim_tb"],
+        "binary": ["lowrisc_dv_top_earlgrey_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
     },
     systems = ["lowrisc:dv:chip_verilator_sim"],
     tags = [

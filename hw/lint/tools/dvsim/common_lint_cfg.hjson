@@ -22,10 +22,10 @@
   build_cmd:  "{job_prefix} fusesoc"
   build_opts: ["--cores-root {proj_root}",
                "run",
-               "--flag=fileset_{design_level}",
                "--target={flow}",
                "--tool={tool}",
-               "--build-root={build_dir}",
+               "--work-root={build_dir}/fusesoc-work",
+               "{sv_flist_gen_flags}",
                "{fusesoc_core}"]
 
   // Determines which message severities to print into report summaries.
@@ -41,6 +41,9 @@
     {category: "lint", severity: "warning",  label: ""},
     {category: "lint", severity: "error",    label: ""}
   ]
+
+  sv_flist_gen_flags: ["--flag=fileset_{design_level}",
+                       "--add-vlnv=lowrisc:prim_generic:all"]
 
   // These are not needed currently.
   sv_flist_gen_cmd:   ""

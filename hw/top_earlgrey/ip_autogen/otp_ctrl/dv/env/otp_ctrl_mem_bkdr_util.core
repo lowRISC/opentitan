@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_earlgrey_otp_ctrl_mem_bkdr_util:0.1
 description: "OTP_CTRL mem_bkdr_util support package"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_mem_bkdr_util
 
 filesets:
   files_dv:

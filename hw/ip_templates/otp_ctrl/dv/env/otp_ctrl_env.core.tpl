@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv("lowrisc:dv:otp_ctrl_env:0.1")}
 description: "OTP_CTRL DV UVM environment"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_env
 
 filesets:
   files_dv:
@@ -16,6 +14,7 @@ filesets:
       - lowrisc:dv:crypto_dpi_present
       - lowrisc:dv:lc_ctrl_dv_utils
       - ${instance_vlnv("lowrisc:dv:otp_ctrl_mem_bkdr_util:0.1")}
+      - ${top_pkg_vlnv}
     files:
       - otp_ctrl_env_pkg.sv
       - otp_ctrl_if.sv
@@ -54,6 +53,7 @@ generate:
     parameters:
       name: otp_ctrl
       ip_hjson: ../../data/otp_ctrl.hjson
+    position: prepend
 
 targets:
   default:

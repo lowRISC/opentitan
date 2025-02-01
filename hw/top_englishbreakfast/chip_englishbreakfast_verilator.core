@@ -26,7 +26,11 @@ filesets:
       - lowrisc:dv:sim_sram
       - lowrisc:dv:sw_test_status
       - lowrisc:dv:dv_test_status
+      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_prim_reg_top
       - lowrisc:prim:clock_div
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_generic:all
+      - lowrisc:prim_generic:flash
 
     files:
       - rtl/chip_englishbreakfast_verilator.sv: { file_type: systemVerilogSource }

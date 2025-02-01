@@ -47,3 +47,6 @@ export OBJ_DIR
 readonly BIN_DIR="$BUILD_ROOT/build-bin"
 export BIN_DIR
 export PYTHONPATH="${REPO_TOP}"
+
+# TODO: add this in the private runner instead
+export PATH=$HOME/.local/bin:$PATH

@@ -18,6 +18,7 @@ filesets:
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_test
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_sva
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_cov
+      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_prim_reg_top
     files:
       - tb/tb.sv
     file_type: systemVerilogSource
@@ -35,4 +36,3 @@ targets:
 
   lint:
     <<: *default_target
-    default_tool: vcs

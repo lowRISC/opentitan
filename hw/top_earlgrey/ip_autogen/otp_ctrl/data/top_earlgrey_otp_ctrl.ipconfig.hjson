@@ -1985,6 +1985,8 @@
         }
       ]
     }
+    pwrmgr_vlnv_prefix: top_earlgrey_
+    top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg
     topname: earlgrey
   }
 }

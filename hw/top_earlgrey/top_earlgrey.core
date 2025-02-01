@@ -44,6 +44,7 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_clkmgr
       - lowrisc:opentitan:top_earlgrey_flash_ctrl
       - lowrisc:opentitan:top_earlgrey_otp_ctrl
+      - lowrisc:opentitan:top_earlgrey_otp_ctrl_prim_reg_top
       - lowrisc:opentitan:top_earlgrey_pinmux
       - lowrisc:opentitan:top_earlgrey_pwrmgr
       - lowrisc:opentitan:top_earlgrey_rstmgr

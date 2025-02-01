@@ -39,8 +39,8 @@
 // Memory hierarchies.
 // TODO: Temporarily only reference info type0 of the info partitions in flash. In the future, this
 // needs to be upgraded to support all info types.
-`define MEM_ARRAY_SUB         gen_generic.u_impl_generic.mem
-`define EFLASH_GENERIC_HIER   `EFLASH_HIER.gen_generic.u_impl_generic
+`define MEM_ARRAY_SUB         mem
+`define EFLASH_GENERIC_HIER   `EFLASH_HIER
 `define FLASH_BANK0_HIER      `EFLASH_GENERIC_HIER.gen_prim_flash_banks[0].u_prim_flash_bank
 `define FLASH_BANK1_HIER      `EFLASH_GENERIC_HIER.gen_prim_flash_banks[1].u_prim_flash_bank
 `define FLASH0_DATA_MEM_HIER  `FLASH_BANK0_HIER.u_mem.`MEM_ARRAY_SUB
@@ -56,7 +56,7 @@
 `define RAM_MAIN_MEM_HIER     `RAM_MAIN_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define RAM_RET_MEM_HIER      `RAM_RET_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define ROM_MEM_HIER          `ROM_CTRL_HIER.`ROM_CTRL_INT_PATH
-`define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp.gen_generic.u_impl_generic
+`define OTP_GENERIC_HIER      `OTP_CTRL_HIER.u_otp
 `define OTP_MEM_HIER          `OTP_GENERIC_HIER.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_IMEM_HIER        `OTBN_HIER.u_imem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB
 `define OTBN_DMEM_HIER        `OTBN_HIER.u_dmem.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem.`MEM_ARRAY_SUB

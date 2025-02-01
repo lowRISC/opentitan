@@ -89,7 +89,8 @@ def write_ninja(handle: TextIO,
     # The rule to build the Verilated system
     handle.write('rule fusesoc\n'
                  f'  command = fusesoc --cores-root={projdir_from_destdir} '
-                 'run --target=sim --setup --build lowrisc:ip:otbn_top_sim '
+                 'run --target=sim --setup --build '
+                 '--add-vlnv=lowrisc:prim_generic:all lowrisc:ip:otbn_top_sim '
                  '>fusesoc.log 2>&1\n\n')
     handle.write('tb = build/lowrisc_ip_otbn_top_sim_0.1/'
                  'sim-verilator/Votbn_top_sim\n\n')

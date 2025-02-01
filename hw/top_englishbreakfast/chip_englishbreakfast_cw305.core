@@ -14,6 +14,10 @@ filesets:
       - lowrisc:systems:top_earlgrey_ast
       - lowrisc:systems:top_earlgrey_padring
       - lowrisc:systems:top_earlgrey_scan_role_pkg
+      - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_prim_reg_top
+      - lowrisc:prim:prim_legacy_pkg
+      - lowrisc:prim_xilinx:all
+      - lowrisc:prim_generic:flash
     files:
       - rtl/clkgen_xil7series.sv
       - rtl/usr_access_xil7series.sv

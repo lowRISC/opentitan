@@ -29,7 +29,7 @@
 
 `ifndef PRIM_GENERIC_OTP_CMD_I_PATH
   `define PRIM_GENERIC_OTP_CMD_I_PATH \
-      `PRIM_GENERIC_OTP_PATH.gen_generic.u_impl_generic.cmd_i
+      `PRIM_GENERIC_OTP_PATH.cmd_i
 `endif
 
 interface otp_ctrl_if(input clk_i, input rst_ni);

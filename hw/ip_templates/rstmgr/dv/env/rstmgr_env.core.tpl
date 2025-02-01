@@ -44,6 +44,7 @@ generate:
     parameters:
       name: rstmgr
       ip_hjson: ../../data/rstmgr.hjson
+    position: prepend
 
 targets:
   default:

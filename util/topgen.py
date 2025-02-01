@@ -557,6 +557,10 @@ def generate_otp_ctrl(topcfg: Dict[str, object], cfg_path: Path, out_path: Path,
     log.info("Generating otp_ctrl with ipgen")
     params = {"otp_mmap": get_params_for_otp_ctrl(cfg_path, seed)}
     topname = topcfg["name"]
+    params.update({
+        "pwrmgr_vlnv_prefix": f"top_{topname}_",
+        "top_pkg_vlnv": f"lowrisc:constants:top_{topname}_top_pkg",
+    })
     ipgen_render("otp_ctrl", topname, params, out_path)
 
 

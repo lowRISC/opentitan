@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_earlgrey_otp_ctrl_sim:0.1
 description: "OTP_CTRL DV sim target"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl_sim
 
 filesets:
   files_rtl:
@@ -18,6 +16,8 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_otp_ctrl_test
       - lowrisc:opentitan:top_earlgrey_otp_ctrl_sva
       - lowrisc:opentitan:top_earlgrey_otp_ctrl_cov
+      # TODO: prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
     files:
       - tb.sv
     file_type: systemVerilogSource

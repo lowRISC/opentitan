@@ -9,6 +9,8 @@ filesets:
     depend:
       - lowrisc:opentitan:top_englishbreakfast_pwrmgr_pkg
       - lowrisc:opentitan:top_earlgrey_alert_handler_pkg
+      - lowrisc:systems:top_earlgrey_ast_pkg
+      - lowrisc:systems:top_earlgrey_racl_pkg
       # Manually instantiated
       - lowrisc:ip:rv_core_ibex
       - lowrisc:ip:rv_dm

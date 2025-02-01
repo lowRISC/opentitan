@@ -13,6 +13,8 @@ filesets:
       - lowrisc:opentitan:top_earlgrey_rstmgr_pkg
       - lowrisc:opentitan:top_earlgrey_pinmux_pkg
       - lowrisc:systems:top_earlgrey_ast
+      - lowrisc:prim_generic:all
+      - lowrisc:prim:prim_legacy_pkg
 
 parameters:
   SYNTHESIS:

@@ -1,0 +1,38 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: ${instance_vlnv("lowrisc:ip:otp_ctrl_prim_reg_top:1.0")}
+description: "Generic register top for the OTP wrapper"
+# TODO: Move the macro out of the prim, then remove this virtual VLNV. The
+# virtual VLNV only exists because the prim can't depend directly on the CSR
+# interface bundled with the macro--It's generated alongside the ipgen output
+# here.
+virtual:
+  - lowrisc:ip_interfaces:otp_ctrl_prim_reg_top
+
+filesets:
+  files_rtl:
+    depend:
+      # otp_ctrl_prim_reg_top.sv should depend on generic items for now.
+      # This may change and will require reworking the flow to generate
+      # the otp prim.
+      - ${instance_vlnv("lowrisc:ip:otp_ctrl_top_specific_pkg")}
+      - lowrisc:ip:tlul
+      - lowrisc:prim:subreg
+    files:
+      - rtl/otp_ctrl_prim_reg_top.sv
+    file_type: systemVerilogSource
+
+
+parameters:
+  SYNTHESIS:
+    datatype: bool
+    paramtype: vlogdefine
+
+
+targets:
+  default: &default_target
+    filesets:
+      - files_rtl
+    toplevel: lc_ctrl

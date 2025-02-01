@@ -7,6 +7,7 @@ description: "${module_instance_name.upper()} DV UVM environment"
 filesets:
   files_dv:
     depend:
+      - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - ${instance_vlnv(f"lowrisc:ip:{module_instance_name}_pkg:0.1")}
       - lowrisc:prim:mubi_pkg
@@ -37,7 +38,17 @@ filesets:
       - seq_lib/alert_handler_alert_accum_saturation_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
+generate:
+  ral:
+    generator: ralgen
+    parameters:
+      name: ${module_instance_name}
+      ip_hjson: ../../data/${module_instance_name}.hjson
+    position: prepend
+
 targets:
   default:
     filesets:
       - files_dv
+    generate:
+      - ral

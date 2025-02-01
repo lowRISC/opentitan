@@ -293,7 +293,7 @@ package flash_ctrl_pkg;
                  ecc_en:      MuBi4True,
                  he_en:       MuBi4True, // HW assumes high endurance
                  base:        '0,
-                 size:        NumBanks * PagesPerBank
+                 size:        10'(NumBanks * PagesPerBank)
                 }
      }
   };

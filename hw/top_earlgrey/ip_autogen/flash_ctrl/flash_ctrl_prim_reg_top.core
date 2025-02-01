@@ -11,6 +11,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:opentitan:top_earlgrey_flash_ctrl_pkg
+      - lowrisc:prim:subreg
     files:
       - rtl/flash_ctrl_prim_reg_top.sv
     file_type: systemVerilogSource

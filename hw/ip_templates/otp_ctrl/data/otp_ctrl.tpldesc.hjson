@@ -16,6 +16,18 @@
       default: {}
     }
     {
+      name: "pwrmgr_vlnv_prefix"
+      desc: "Provides the VLNV prefix (for instance_vlnv) for the pwrmgr_pkg used by this otp_ctrl"
+      type: "string"
+      default: ""
+    }
+    {
+      name: "top_pkg_vlnv"
+      desc: "Provides the VLNV for the top_pkg used by this clkmgr"
+      type: "string"
+      default: "lowrisc:constants:top_pkg"
+    }
+    {
       name: "module_instance_name"
       desc: "instance name in case there are multiple otp_ctrl instances. Not yet implemented."
       type: "string"

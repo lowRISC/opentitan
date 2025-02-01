@@ -8,6 +8,7 @@ description: "Reset manager registers"
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:subreg
       - lowrisc:tlul:headers
       - lowrisc:prim:subreg
       - lowrisc:opentitan:top_earlgrey_rstmgr_pkg

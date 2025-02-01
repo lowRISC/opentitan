@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: lowrisc:opentitan:top_darjeeling_otp_ctrl:1.0
 description: "OTP Controller"
-virtual:
-  - lowrisc:ip_interfaces:otp_ctrl
 
 filesets:
   files_rtl:
@@ -25,7 +23,9 @@ filesets:
       - lowrisc:prim:secded
       - lowrisc:prim:edn_req
       - lowrisc:prim:sec_anchor
-      - lowrisc:ip_interfaces:pwrmgr_pkg
+      # TODO: prim_pkg is deprecated
+      - lowrisc:prim:prim_pkg
+      - lowrisc:opentitan:top_darjeeling_pwrmgr_pkg
       - lowrisc:ip:edn_pkg
       - lowrisc:prim:sparse_fsm
       - "fileset_partner  ? (partner:systems:ast_pkg)"

@@ -1987,6 +1987,8 @@
         }
       ]
     }
+    pwrmgr_vlnv_prefix: top_darjeeling_
+    top_pkg_vlnv: lowrisc:constants:top_darjeeling_top_pkg
     topname: darjeeling
   }
 }

@@ -5,10 +5,13 @@ CAPI=2:
 
 name: "lowrisc:prim_generic:flash"
 description: "prim"
+virtual:
+  - lowrisc:prim:flash
+
 filesets:
   files_rtl:
     depend:
-      - lowrisc:ip:tlul
+      - lowrisc:tlul:headers
       - lowrisc:prim:ram_1p
       - "fileset_partner  ? (partner:systems:ast_pkg)"
       - "!fileset_partner ? (lowrisc:systems:ast_pkg)"
@@ -16,7 +19,7 @@ filesets:
       - lowrisc:ip_interfaces:flash_ctrl_prim_reg_top
     files:
       - rtl/prim_generic_flash_bank.sv
-      - rtl/prim_generic_flash.sv
+      - rtl/prim_flash.sv
     file_type: systemVerilogSource
 
   files_verilator_waiver:

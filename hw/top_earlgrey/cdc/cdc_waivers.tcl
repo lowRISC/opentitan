@@ -72,7 +72,7 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                         
 
 # W_GLITCH from unrecognized sync logics
 set_rule_status -rule {W_GLITCH} -status {Waived}          \
-  -expression {(GlitchOutput=~"*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(GlitchOutput=~"*.u_sync_1.q_o*")} \
   -comment {Waive glitch paths that meet at and/or gates at the same clock but synchronization logics are not recognized}
 
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                           \
@@ -90,14 +90,14 @@ set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                         
 
 # Misc RV PLIC signals reconverged
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived}                           \
-  -expression {(ControlSignal =~ "*u_sync_1.gen_generic.u_impl_generic.q_o*") && (ReconSignal=~"*u_rv_plic.u_gateway.ia*")} \
+  -expression {(ControlSignal =~ "*u_sync_1.q_o*") && (ReconSignal=~"*u_rv_plic.u_gateway.ia*")} \
   -comment {Reconverged signals in RV PLIC}
 
 set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_earlgrey.u_xbar_main.u_asf_35.rspfifo.storage[0]*")} -comment {Intended reconvergence in xbar main}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_earlgrey.u_pwrmgr_aon.u_fsm.u_state_regs.u_state_flop.gen_generic.u_impl_generic.q_o*")} -comment {Intended reconvergence in pwrmgr fsm}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.u_xbar_main.u_asf_*.rs*fifo.sync_*ptr.u_sync_1.gen_generic.u_impl_generic.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.*.*sync*.*sync_1.gen_generic.u_impl_generic.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
-set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.*.*cdc*.*sync_1.gen_generic.u_impl_generic.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ReconSignal=~"top_earlgrey.u_pwrmgr_aon.u_fsm.u_state_regs.u_state_flop.q_o*")} -comment {Intended reconvergence in pwrmgr fsm}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.u_xbar_main.u_asf_*.rs*fifo.sync_*ptr.u_sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.*.*sync*.*sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
+set_rule_status -rule {W_RECON_GROUPS} -status {Waived} -expression {(ControlSignal=~"top_earlgrey.*.*cdc*.*sync_1.q_o*")} -comment {reconvergence caused by unrecognized qualification in async fifo}
 
 
 # PADs attribute to multiple IPs
@@ -172,13 +172,13 @@ set_rule_status -rule {W_INTERFACE} -status {Waived} -expression             \
   (ReceivingFlop=~ "top_earlgrey.u_pinmux_aon.mio_out_retreg_q*")} -comment {W_INTERFACE issues from u_reg to pinmux}
 
 set_rule_status -rule {W_CNTL} -status {Waived}                           \
-  -expression {(Signal=~"top_earlgrey.*.gen_generic.u_impl_generic.q_o*") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Signal=~"top_earlgrey.*.q_o*") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.q_o*")} \
   -comment {PAD driving to I2C. PADs are not clock bounded}
 
 set_rule_status -rule {W_CNTL} -status {Waived}                           \
-  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_src_to_dst_req.src_level") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_src_to_dst_req.src_level") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.q_o*")} \
   -comment {PAD driving to I2C. PADs are not clock bounded}
 
 set_rule_status -rule {W_CNTL} -status {Waived}                           \
-  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_arb.*_sync.*.dst_ack_q") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.gen_generic.u_impl_generic.q_o*")} \
+  -expression {(Signal=~"top_earlgrey.*.u_reg.*_cdc.u_arb.*_sync.*.dst_ack_q") && (ReceivingFlop=~"top_earlgrey.*.u_sync_1.q_o*")} \
   -comment {PAD driving to I2C. PADs are not clock bounded}
