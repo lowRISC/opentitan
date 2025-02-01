@@ -42,6 +42,7 @@ py_library(
         "//util/reggen:params",
         "//util/reggen:window",
         requirement("mako"),
+        requirement("importlib_resources"),
     ],
 )
 

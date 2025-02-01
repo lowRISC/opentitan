@@ -79,7 +79,6 @@ all_requirements = [
     "@ot_python_deps_vendored_termcolor//:pkg",
     "@ot_python_deps_vendored_tomli//:pkg",
     "@ot_python_deps_vendored_typer//:pkg",
-    "@ot_python_deps_vendored_types_pkg_resources//:pkg",
     "@ot_python_deps_vendored_types_pytz//:pkg",
     "@ot_python_deps_vendored_types_pyyaml//:pkg",
     "@ot_python_deps_vendored_types_tabulate//:pkg",
@@ -89,6 +88,7 @@ all_requirements = [
     "@ot_python_deps_vendored_uv//:pkg",
     "@ot_python_deps_vendored_wcwidth//:pkg",
     "@ot_python_deps_vendored_yapf//:pkg",
+    "@ot_python_deps_vendored_zipp//:pkg",
 ]
 
 all_whl_requirements_by_package = {
@@ -164,7 +164,6 @@ all_whl_requirements_by_package = {
     "termcolor": "@ot_python_deps_vendored_termcolor//:whl",
     "tomli": "@ot_python_deps_vendored_tomli//:whl",
     "typer": "@ot_python_deps_vendored_typer//:whl",
-    "types_pkg_resources": "@ot_python_deps_vendored_types_pkg_resources//:whl",
     "types_pytz": "@ot_python_deps_vendored_types_pytz//:whl",
     "types_pyyaml": "@ot_python_deps_vendored_types_pyyaml//:whl",
     "types_tabulate": "@ot_python_deps_vendored_types_tabulate//:whl",
@@ -174,6 +173,7 @@ all_whl_requirements_by_package = {
     "uv": "@ot_python_deps_vendored_uv//:whl",
     "wcwidth": "@ot_python_deps_vendored_wcwidth//:whl",
     "yapf": "@ot_python_deps_vendored_yapf//:whl",
+    "zipp": "@ot_python_deps_vendored_zipp//:whl",
 }
 
 all_whl_requirements = all_whl_requirements_by_package.values()
@@ -251,7 +251,6 @@ all_data_requirements = [
     "@ot_python_deps_vendored_termcolor//:data",
     "@ot_python_deps_vendored_tomli//:data",
     "@ot_python_deps_vendored_typer//:data",
-    "@ot_python_deps_vendored_types_pkg_resources//:data",
     "@ot_python_deps_vendored_types_pytz//:data",
     "@ot_python_deps_vendored_types_pyyaml//:data",
     "@ot_python_deps_vendored_types_tabulate//:data",
@@ -261,6 +260,7 @@ all_data_requirements = [
     "@ot_python_deps_vendored_uv//:data",
     "@ot_python_deps_vendored_wcwidth//:data",
     "@ot_python_deps_vendored_yapf//:data",
+    "@ot_python_deps_vendored_zipp//:data",
 ]
 
 _packages = [
@@ -285,7 +285,7 @@ _packages = [
     ("ot_python_deps_vendored_gitpython", "gitpython==3.1.44     --hash=sha256:9e0e10cda9bed1ee64bc9a6de50e7e38a9c9943241cd7f585f6df3ed28011110     --hash=sha256:c87e30b26253bf5418b01b0660f818967f3c503193838337fe5e573331249269"),
     ("ot_python_deps_vendored_hjson", "hjson==3.1.0     --hash=sha256:55af475a27cf83a7969c808399d7bccdec8fb836a07ddbd574587593b9cdcf75     --hash=sha256:65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89"),
     ("ot_python_deps_vendored_idna", "idna==3.10     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9     --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"),
-    ("ot_python_deps_vendored_importlib_resources", "importlib-resources==1.4.0     --hash=sha256:4019b6a9082d8ada9def02bece4a76b131518866790d58fdda0b5f8c603b36c2     --hash=sha256:dd98ceeef3f5ad2ef4cc287b8586da4ebad15877f351e9688987ad663a0a29b8"),
+    ("ot_python_deps_vendored_importlib_resources", "importlib-resources==5.13.0     --hash=sha256:82d5c6cca930697dbbd86c93333bb2c2e72861d4789a11c2662b933e5ad2b528     --hash=sha256:9f7bd0c97b79972a6cce36a366356d16d5e13b09679c11a58f1014bfdf8e64b2"),
     ("ot_python_deps_vendored_iniconfig", "iniconfig==2.0.0     --hash=sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3     --hash=sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"),
     ("ot_python_deps_vendored_isort", "isort==5.10.1     --hash=sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7     --hash=sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"),
     ("ot_python_deps_vendored_jinja2", "jinja2==3.1.5     --hash=sha256:8fefff8dc3034e27bb80d67c671eb8a9bc424c0ef4c0826edbff304cceff43bb     --hash=sha256:aba0f4dc9ed8013c424088f68a5c226f7d6097ed89b246d7749c2ec4175c6adb"),
@@ -336,7 +336,6 @@ _packages = [
     ("ot_python_deps_vendored_termcolor", "termcolor==1.1.0     --hash=sha256:1d6d69ce66211143803fbc56652b41d73b4a400a2891d7bf7a1cdf4c02de613b"),
     ("ot_python_deps_vendored_tomli", "tomli==2.2.1     --hash=sha256:023aa114dd824ade0100497eb2318602af309e5a55595f76b626d6d9f3b7b0a6     --hash=sha256:02abe224de6ae62c19f090f68da4e27b10af2b93213d36cf44e6e1c5abd19fdd     --hash=sha256:286f0ca2ffeeb5b9bd4fcc8d6c330534323ec51b2f52da063b11c502da16f30c     --hash=sha256:2d0f2fdd22b02c6d81637a3c95f8cd77f995846af7414c5c4b8d0545afa1bc4b     --hash=sha256:33580bccab0338d00994d7f16f4c4ec25b776af3ffaac1ed74e0b3fc95e885a8     --hash=sha256:400e720fe168c0f8521520190686ef8ef033fb19fc493da09779e592861b78c6     --hash=sha256:40741994320b232529c802f8bc86da4e1aa9f413db394617b9a256ae0f9a7f77     --hash=sha256:465af0e0875402f1d226519c9904f37254b3045fc5084697cefb9bdde1ff99ff     --hash=sha256:4a8f6e44de52d5e6c657c9fe83b562f5f4256d8ebbfe4ff922c495620a7f6cea     --hash=sha256:4e340144ad7ae1533cb897d406382b4b6fede8890a03738ff1683af800d54192     --hash=sha256:678e4fa69e4575eb77d103de3df8a895e1591b48e740211bd1067378c69e8249     --hash=sha256:6972ca9c9cc9f0acaa56a8ca1ff51e7af152a9f87fb64623e31d5c83700080ee     --hash=sha256:7fc04e92e1d624a4a63c76474610238576942d6b8950a2d7f908a340494e67e4     --hash=sha256:889f80ef92701b9dbb224e49ec87c645ce5df3fa2cc548664eb8a25e03127a98     --hash=sha256:8d57ca8095a641b8237d5b079147646153d22552f1c637fd3ba7f4b0b29167a8     --hash=sha256:8dd28b3e155b80f4d54beb40a441d366adcfe740969820caf156c019fb5c7ec4     --hash=sha256:9316dc65bed1684c9a98ee68759ceaed29d229e985297003e494aa825ebb0281     --hash=sha256:a198f10c4d1b1375d7687bc25294306e551bf1abfa4eace6650070a5c1ae2744     --hash=sha256:a38aa0308e754b0e3c67e344754dff64999ff9b513e691d0e786265c93583c69     --hash=sha256:a92ef1a44547e894e2a17d24e7557a5e85a9e1d0048b0b5e7541f76c5032cb13     --hash=sha256:ac065718db92ca818f8d6141b5f66369833d4a80a9d74435a268c52bdfa73140     --hash=sha256:b82ebccc8c8a36f2094e969560a1b836758481f3dc360ce9a3277c65f374285e     --hash=sha256:c954d2250168d28797dd4e3ac5cf812a406cd5a92674ee4c8f123c889786aa8e     --hash=sha256:cb55c73c5f4408779d0cf3eef9f762b9c9f147a77de7b258bef0a5628adc85cc     --hash=sha256:cd45e1dc79c835ce60f7404ec8119f2eb06d38b1deba146f07ced3bbc44505ff     --hash=sha256:d3f5614314d758649ab2ab3a62d4f2004c825922f9e370b29416484086b264ec     --hash=sha256:d920f33822747519673ee656a4b6ac33e382eca9d331c87770faa3eef562aeb2     --hash=sha256:db2b95f9de79181805df90bedc5a5ab4c165e6ec3fe99f970d0e302f384ad222     --hash=sha256:e59e304978767a54663af13c07b3d1af22ddee3bb2fb0618ca1593e4f593a106     --hash=sha256:e85e99945e688e32d5a35c1ff38ed0b3f41f43fad8df0bdf79f72b2ba7bc5272     --hash=sha256:ece47d672db52ac607a3d9599a9d48dcb2f2f735c6c2d1f34130085bb12b112a     --hash=sha256:f4039b9cbc3048b2416cc57ab3bda989a6fcf9b36cf8937f01a6e731b64f80d7"),
     ("ot_python_deps_vendored_typer", "typer==0.6.1     --hash=sha256:2d5720a5e63f73eaf31edaa15f6ab87f35f0690f8ca233017d7d23d743a91d73     --hash=sha256:54b19e5df18654070a82f8c2aa1da456a4ac16a2a83e6dcd9f170e291c56338e"),
-    ("ot_python_deps_vendored_types_pkg_resources", "types-pkg-resources==0.1.3     --hash=sha256:0cb9972cee992249f93fff1a491bf2dc3ce674e5a1926e27d4f0866f7d9b6d9c     --hash=sha256:834a9b8d3dbea343562fd99d5d3359a726f6bf9d3733bccd2b4f3096fbab9dae"),
     ("ot_python_deps_vendored_types_pytz", "types-pytz==2024.2.0.20241221     --hash=sha256:06d7cde9613e9f7504766a0554a270c369434b50e00975b3a4a0f6eed0f2c1a9     --hash=sha256:8fc03195329c43637ed4f593663df721fef919b60a969066e22606edf0b53ad5"),
     ("ot_python_deps_vendored_types_pyyaml", "types-pyyaml==6.0.11     --hash=sha256:7f7da2fd11e9bc1e5e9eb3ea1be84f4849747017a59fc2eee0ea34ed1147c2e0     --hash=sha256:8f890028123607379c63550179ddaec4517dc751f4c527a52bb61934bf495989"),
     ("ot_python_deps_vendored_types_tabulate", "types-tabulate==0.8.11     --hash=sha256:17a5fa3b5ca453815778fc9865e8ecd0118b07b2b9faff3e2b06fe448174dd5e     --hash=sha256:af811268241e8fb87b63c052c87d1e329898a93191309d5d42111372232b2e0e"),
@@ -346,6 +345,7 @@ _packages = [
     ("ot_python_deps_vendored_uv", "uv==0.4.10     --hash=sha256:0784f75093a75390d8d480cc8a444516e78f08849db9a13c21791a5f651df4a1     --hash=sha256:0f8b9ba4ecfbea343a00e46d509669606e55fe233d800752c4c25650473df358     --hash=sha256:1b6b6c6b8cc0c4e54ab25e3b46e49d1e583e26c194572eb42bfeebf71b39cca2     --hash=sha256:1ff5130b6f3af79c4e47f63db03215aed15e78cb4f1f51682af6f9949c2bcf00     --hash=sha256:2ff29a2f55a697e78d787a41ab41d4b26421d200728289b88b6241d3b486c436     --hash=sha256:30d1f8348a2b18e21a35c97ce42528781f242d0303881fc92fbacdcb653c8bca     --hash=sha256:3be73788db9ceacb94a521cf67ca5cc08bac512aef71145b904ab62a3acabdae     --hash=sha256:444e1cdb36d7ef103e52185f918800527c255dc369c9f90eb1f198dfa3f4d5bc     --hash=sha256:6ba1cc3070e5c63ce0a1421fbed28bd1b3ff520671d7badda11a501504c78394     --hash=sha256:8fa510dfbbde4f8ad5cd2769568c7b0c3e867b74deaf4beabcca79e74e7550cc     --hash=sha256:97a1187e11a9df70d55bc577721ad4a19441cda56e4d69fb2f38d88c7650d2a0     --hash=sha256:99954a94dd6c4bff8a9a963c05bc3988214ea39e7511a52fda35112e1a478447     --hash=sha256:a9dc1f8fca5c4a2f73054d9f56c7397e9fc6ba43baefc503d6f0128d72ea662f     --hash=sha256:b89dfd213359a23797155ff8175e5202ed6b84aadeb20df92132127608d46acf     --hash=sha256:bc87d6c581cfed0979e0f5ee93383d46006c6d4a5e4eb9f43ef13bce61b50cc2     --hash=sha256:bc99e6b45303f0881a8dc199f0b7ea8261dd1779e576e8477a7721ceeeaafcc7     --hash=sha256:e99e3f761875962942e0743b868bd666021d5e14c3df494e820ef8f45fb88578     --hash=sha256:ff9046a8c5e836e892ac7741e672ee016e92e55c659fa8195595df65a1f3accf"),
     ("ot_python_deps_vendored_wcwidth", "wcwidth==0.2.13     --hash=sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859     --hash=sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"),
     ("ot_python_deps_vendored_yapf", "yapf==0.32.0     --hash=sha256:8fea849025584e486fd06d6ba2bed717f396080fd3cc236ba10cb97c4c51cf32     --hash=sha256:a3f5085d37ef7e3e004c4ba9f9b3e40c54ff1901cd111f05145ae313a7c67d1b"),
+    ("ot_python_deps_vendored_zipp", "zipp==3.20.2     --hash=sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350     --hash=sha256:bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29"),
 ]
 _config = {
     "download_only": False,

@@ -217,6 +217,7 @@ py_library(
         ":window",
         requirement("mako"),
         requirement("pyyaml"),
+        requirement("importlib_resources"),
     ],
 )
 
@@ -227,6 +228,7 @@ py_library(
         ":ip_block",
         requirement("mako"),
         requirement("pyyaml"),
+        requirement("importlib_resources"),
     ],
 )
 
@@ -260,6 +262,7 @@ py_library(
         ":reg_base",
         ":register",
         requirement("mako"),
+        requirement("importlib_resources"),
     ],
 )
 
@@ -298,6 +301,7 @@ py_library(
         ":ip_block",
         requirement("hjson"),
         requirement("mako"),
+        requirement("importlib_resources"),
     ],
 )
 
