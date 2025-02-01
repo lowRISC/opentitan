@@ -64,4 +64,6 @@ def fuzzing_repos():
         sha256 = "e6bc219bfac9e1f83b327dd090f728a9f973ee99b9b5d8e5a184a2732ef08623",
         strip_prefix = "rules_fuzzing-0.5.2",
         urls = ["https://github.com/bazelbuild/rules_fuzzing/releases/download/v0.5.2/rules_fuzzing-0.5.2.zip"],
+        patches = [Label("//third_party/google:no-hash-python-packages.patch")],
+        patch_args = ["-p1"],
     )
