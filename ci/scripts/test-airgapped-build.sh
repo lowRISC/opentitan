@@ -8,6 +8,9 @@ set -ex
 # Prefetch bazel airgapped dependencies.
 util/prep-bazel-airgapped-build.sh -f
 
+# Clean out bazel cache so no remnants exist for test.
+"${PWD}/bazel-airgapped/bazel" clean --expunge
+
 # Remove the airgapped network namespace.
 remove_airgapped_netns() {
   sudo ip netns delete airgapped
