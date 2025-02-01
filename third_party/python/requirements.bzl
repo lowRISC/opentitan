@@ -28,7 +28,6 @@ all_requirements = [
     "@ot_python_deps_vendored_gitpython//:pkg",
     "@ot_python_deps_vendored_hjson//:pkg",
     "@ot_python_deps_vendored_idna//:pkg",
-    "@ot_python_deps_vendored_importlib_metadata//:pkg",
     "@ot_python_deps_vendored_importlib_resources//:pkg",
     "@ot_python_deps_vendored_iniconfig//:pkg",
     "@ot_python_deps_vendored_isort//:pkg",
@@ -90,7 +89,6 @@ all_requirements = [
     "@ot_python_deps_vendored_uv//:pkg",
     "@ot_python_deps_vendored_wcwidth//:pkg",
     "@ot_python_deps_vendored_yapf//:pkg",
-    "@ot_python_deps_vendored_zipp//:pkg",
 ]
 
 all_whl_requirements_by_package = {
@@ -115,7 +113,6 @@ all_whl_requirements_by_package = {
     "gitpython": "@ot_python_deps_vendored_gitpython//:whl",
     "hjson": "@ot_python_deps_vendored_hjson//:whl",
     "idna": "@ot_python_deps_vendored_idna//:whl",
-    "importlib_metadata": "@ot_python_deps_vendored_importlib_metadata//:whl",
     "importlib_resources": "@ot_python_deps_vendored_importlib_resources//:whl",
     "iniconfig": "@ot_python_deps_vendored_iniconfig//:whl",
     "isort": "@ot_python_deps_vendored_isort//:whl",
@@ -177,7 +174,6 @@ all_whl_requirements_by_package = {
     "uv": "@ot_python_deps_vendored_uv//:whl",
     "wcwidth": "@ot_python_deps_vendored_wcwidth//:whl",
     "yapf": "@ot_python_deps_vendored_yapf//:whl",
-    "zipp": "@ot_python_deps_vendored_zipp//:whl",
 }
 
 all_whl_requirements = all_whl_requirements_by_package.values()
@@ -204,7 +200,6 @@ all_data_requirements = [
     "@ot_python_deps_vendored_gitpython//:data",
     "@ot_python_deps_vendored_hjson//:data",
     "@ot_python_deps_vendored_idna//:data",
-    "@ot_python_deps_vendored_importlib_metadata//:data",
     "@ot_python_deps_vendored_importlib_resources//:data",
     "@ot_python_deps_vendored_iniconfig//:data",
     "@ot_python_deps_vendored_isort//:data",
@@ -266,7 +261,6 @@ all_data_requirements = [
     "@ot_python_deps_vendored_uv//:data",
     "@ot_python_deps_vendored_wcwidth//:data",
     "@ot_python_deps_vendored_yapf//:data",
-    "@ot_python_deps_vendored_zipp//:data",
 ]
 
 _packages = [
@@ -291,7 +285,6 @@ _packages = [
     ("ot_python_deps_vendored_gitpython", "gitpython==3.1.44     --hash=sha256:9e0e10cda9bed1ee64bc9a6de50e7e38a9c9943241cd7f585f6df3ed28011110     --hash=sha256:c87e30b26253bf5418b01b0660f818967f3c503193838337fe5e573331249269"),
     ("ot_python_deps_vendored_hjson", "hjson==3.1.0     --hash=sha256:55af475a27cf83a7969c808399d7bccdec8fb836a07ddbd574587593b9cdcf75     --hash=sha256:65713cdcf13214fb554eb8b4ef803419733f4f5e551047c9b711098ab7186b89"),
     ("ot_python_deps_vendored_idna", "idna==3.10     --hash=sha256:12f65c9b470abda6dc35cf8e63cc574b1c52b11df2c86030af0ac09b01b13ea9     --hash=sha256:946d195a0d259cbba61165e88e65941f16e9b36ea6ddb97f00452bae8b1287d3"),
-    ("ot_python_deps_vendored_importlib_metadata", "importlib-metadata==6.8.0     --hash=sha256:3ebb78df84a805d7698245025b975d9d67053cd94c79245ba4b3eb694abe68bb     --hash=sha256:dbace7892d8c0c4ac1ad096662232f831d4e64f4c4545bd53016a3e9d4654743"),
     ("ot_python_deps_vendored_importlib_resources", "importlib-resources==1.4.0     --hash=sha256:4019b6a9082d8ada9def02bece4a76b131518866790d58fdda0b5f8c603b36c2     --hash=sha256:dd98ceeef3f5ad2ef4cc287b8586da4ebad15877f351e9688987ad663a0a29b8"),
     ("ot_python_deps_vendored_iniconfig", "iniconfig==2.0.0     --hash=sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3     --hash=sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"),
     ("ot_python_deps_vendored_isort", "isort==5.10.1     --hash=sha256:6f62d78e2f89b4500b080fe3a81690850cd254227f27f75c3a0c491a1f351ba7     --hash=sha256:e8443a5e7a020e9d7f97f1d7d9cd17c88bcb3bc7e218bf9cf5095fe550be2951"),
@@ -353,7 +346,6 @@ _packages = [
     ("ot_python_deps_vendored_uv", "uv==0.4.10     --hash=sha256:0784f75093a75390d8d480cc8a444516e78f08849db9a13c21791a5f651df4a1     --hash=sha256:0f8b9ba4ecfbea343a00e46d509669606e55fe233d800752c4c25650473df358     --hash=sha256:1b6b6c6b8cc0c4e54ab25e3b46e49d1e583e26c194572eb42bfeebf71b39cca2     --hash=sha256:1ff5130b6f3af79c4e47f63db03215aed15e78cb4f1f51682af6f9949c2bcf00     --hash=sha256:2ff29a2f55a697e78d787a41ab41d4b26421d200728289b88b6241d3b486c436     --hash=sha256:30d1f8348a2b18e21a35c97ce42528781f242d0303881fc92fbacdcb653c8bca     --hash=sha256:3be73788db9ceacb94a521cf67ca5cc08bac512aef71145b904ab62a3acabdae     --hash=sha256:444e1cdb36d7ef103e52185f918800527c255dc369c9f90eb1f198dfa3f4d5bc     --hash=sha256:6ba1cc3070e5c63ce0a1421fbed28bd1b3ff520671d7badda11a501504c78394     --hash=sha256:8fa510dfbbde4f8ad5cd2769568c7b0c3e867b74deaf4beabcca79e74e7550cc     --hash=sha256:97a1187e11a9df70d55bc577721ad4a19441cda56e4d69fb2f38d88c7650d2a0     --hash=sha256:99954a94dd6c4bff8a9a963c05bc3988214ea39e7511a52fda35112e1a478447     --hash=sha256:a9dc1f8fca5c4a2f73054d9f56c7397e9fc6ba43baefc503d6f0128d72ea662f     --hash=sha256:b89dfd213359a23797155ff8175e5202ed6b84aadeb20df92132127608d46acf     --hash=sha256:bc87d6c581cfed0979e0f5ee93383d46006c6d4a5e4eb9f43ef13bce61b50cc2     --hash=sha256:bc99e6b45303f0881a8dc199f0b7ea8261dd1779e576e8477a7721ceeeaafcc7     --hash=sha256:e99e3f761875962942e0743b868bd666021d5e14c3df494e820ef8f45fb88578     --hash=sha256:ff9046a8c5e836e892ac7741e672ee016e92e55c659fa8195595df65a1f3accf"),
     ("ot_python_deps_vendored_wcwidth", "wcwidth==0.2.13     --hash=sha256:3da69048e4540d84af32131829ff948f1e022c1c6bdb8d6102117aac784f6859     --hash=sha256:72ea0c06399eb286d978fdedb6923a9eb47e1c486ce63e9b4e64fc18303972b5"),
     ("ot_python_deps_vendored_yapf", "yapf==0.32.0     --hash=sha256:8fea849025584e486fd06d6ba2bed717f396080fd3cc236ba10cb97c4c51cf32     --hash=sha256:a3f5085d37ef7e3e004c4ba9f9b3e40c54ff1901cd111f05145ae313a7c67d1b"),
-    ("ot_python_deps_vendored_zipp", "zipp==3.20.2     --hash=sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350     --hash=sha256:bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29"),
 ]
 _config = {
     "download_only": False,
