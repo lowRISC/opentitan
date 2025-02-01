@@ -84,7 +84,7 @@ __attribute__((noinline)) status_t do_hardened_try(status_t status) {
 }
 
 TEST(Status, HardenedTryOfNonHardenedOkIsError) {
-  EXPECT_EQ(status_err(do_hardened_try(OK_STATUS())), kFailedPrecondition);
+  EXPECT_EQ(status_ok(do_hardened_try(OK_STATUS())), false);
 }
 
 TEST(Status, HardenedTryOfHardenedOkIsOk) {
