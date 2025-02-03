@@ -41,8 +41,8 @@ module tlul_adapter_sram_racl
   parameter bit DataXorAddr       = 0,          // 1: XOR data and address for address protection
   parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
   parameter bit RaclErrorRsp      = EnableRacl, // 1: Return TLUL error on RACL errors
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec = 0, // RACL policy for this SRAM
-                                                                  // adapter
+  parameter int RaclPolicySelNumRanges = 1,     // Number of ranges with a RACL policy
+  parameter top_racl_pkg::racl_range_t RaclPolicySelRanges [RaclPolicySelNumRanges] = '{'0},
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw
@@ -98,12 +98,31 @@ module tlul_adapter_sram_racl
     );
 
     logic req, rd_req, wr_req, racl_read_allowed, racl_write_allowed;
+    logic [RaclPolicySelNumRanges-1:0] range_read_allowed;
+    logic [RaclPolicySelNumRanges-1:0] range_write_allowed;
+
+    for (genvar r = 0; r < RaclPolicySelNumRanges; r++) begin : gen_racl_range_check
+      top_racl_pkg::racl_range_t range;
+      top_racl_pkg::racl_policy_t policy;
+      logic range_match;
+      assign range = RaclPolicySelRanges[r];
+      assign policy = racl_policies_i[range.policy_sel];
+      // Asserts that a valid range is defined
+      `ASSERT(RaclAdapterSramValidRange, range.mask > 0)
+      // Check if the address is within range
+      assign range_match = (tl_i.a_address & ~range.mask) == range.base;
+      // If address matches, lookup permissions for policy defined for this range
+      assign range_read_allowed[r]  = range_match & |(policy.read_perm  & racl_role_vec);
+      assign range_write_allowed[r] = range_match & |(policy.write_perm & racl_role_vec);
+    end
+
+    assign racl_read_allowed  = |range_read_allowed;
+    assign racl_write_allowed = |range_write_allowed;
+
     assign req                = tl_i.a_valid & tl_o.a_ready;
     assign rd_req             = req & (tl_i.a_opcode == tlul_pkg::Get);
     assign wr_req             = req & (tl_i.a_opcode == tlul_pkg::PutFullData |
                                        tl_i.a_opcode == tlul_pkg::PutPartialData);
-    assign racl_read_allowed  = (|(racl_policies_i[RaclPolicySelVec].read_perm  & racl_role_vec));
-    assign racl_write_allowed = (|(racl_policies_i[RaclPolicySelVec].write_perm & racl_role_vec));
     assign racl_error_o       = (rd_req & ~racl_read_allowed) | (wr_req & ~racl_write_allowed);
 
     tlul_request_loopback #(
@@ -173,6 +192,8 @@ module tlul_adapter_sram_racl
   // Not all RACL policies are used, even if RACL is enabled
   logic unused_policy_sel;
   assign unused_policy_sel = ^racl_policies_i;
+
+  `ASSERT(RaclAdapterSramNumRanges, EnableRacl |-> RaclPolicySelNumRanges > 0)
 
   // Ensure that RACL signals are not undefined
   `ASSERT_KNOWN(RaclAdapterSramErrorKnown_A, racl_error_o)
