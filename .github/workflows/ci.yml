@@ -733,3 +733,19 @@ jobs:
       - name: Check for unrunnable tests
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
+
+  qemu_smoketest:
+    name: QEMU smoketest
+    runs-on: ubuntu-22.04-vivado
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Execute QEMU smoketest
+        run: |
+          ./bazelisk.sh test //sw/device/tests:rom_exit_immediately_sim_qemu_base
