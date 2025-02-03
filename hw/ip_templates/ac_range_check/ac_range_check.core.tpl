@@ -4,8 +4,6 @@ CAPI=2:
 # SPDX-License-Identifier: Apache-2.0
 name: ${instance_vlnv(f"lowrisc:ip:{module_instance_name}:0.1")}
 description: "AC Range Check RTL"
-virtual:
-  - lowrisc:ip_interfaces:ac_range_check
 
 filesets:
   files_rtl:
