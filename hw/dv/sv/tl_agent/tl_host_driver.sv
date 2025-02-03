@@ -355,7 +355,7 @@ function void tl_host_driver::invalidate_a_channel();
     cfg.vif.h2d_int.a_address <= '{default:'x};
     cfg.vif.h2d_int.a_mask <= '{default:'x};
     cfg.vif.h2d_int.a_data <= '{default:'x};
-    // The assignment to tl_type must have a cast since the LRM doesn't allow enum assignment of
+    // The assignment to instr_type must have a cast since the LRM doesn't allow enum assignment of
     // values not belonging to the enumeration set.
     cfg.vif.h2d_int.a_user <= '{instr_type:prim_mubi_pkg::mubi4_t'('x), default:'x};
     cfg.vif.h2d_int.a_valid <= 1'b0;
