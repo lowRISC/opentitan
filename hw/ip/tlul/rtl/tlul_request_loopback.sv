@@ -41,6 +41,7 @@ module tlul_request_loopback
     .q_o    ( loopback_request_q )
   );
 
+  logic [$bits(tlul_pkg::tl_d_op_e)-1:0] d_opcode_q;
   prim_flop #(
     .Width($bits(tlul_pkg::tl_d_op_e)),
     .ResetValue({AccessAck})
@@ -48,8 +49,9 @@ module tlul_request_loopback
     .clk_i  ( clk_i                                                  ),
     .rst_ni ( rst_ni                                                 ),
     .d_i    ( (tl_h2d_i.a_opcode == Get) ? AccessAckData : AccessAck ),
-    .q_o    ( tl_razwi_rsp_pre_intg.d_opcode                         )
+    .q_o    ( d_opcode_q                                             )
   );
+  assign tl_razwi_rsp_pre_intg.d_opcode = tlul_pkg::tl_d_op_e'(d_opcode_q);
 
   prim_flop #(
     .Width(top_pkg::TL_SZW)
