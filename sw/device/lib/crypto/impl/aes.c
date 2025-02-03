@@ -418,7 +418,7 @@ otcrypto_status_t otcrypto_aes(const otcrypto_blinded_key_t *key,
   HARDENED_CHECK_EQ(i, 0);
 
   // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
-  if (aes_mode == launder32(kAesCipherModeEcb)) {
+  if (0 && aes_mode == launder32(kAesCipherModeEcb)) {
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
