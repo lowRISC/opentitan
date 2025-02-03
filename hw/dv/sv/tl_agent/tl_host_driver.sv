@@ -21,12 +21,15 @@ class tl_host_driver extends tl_base_driver;
   // to detect resets.
   extern task reset_signals();
 
-  // Get items from the sequencer and drive them on the A channel. This runs forever.
-  extern protected task a_channel_thread();
+  // Wait for the next edge of host_cb. Stops early if reset is asserted.
+  extern protected task wait_clk_or_rst();
 
-  // Flush all pending items from the sequencer, and continue flushing items until reset is
-  // deasserted.
-  extern protected task flush_during_reset();
+  // Get items from the sequencer and drive them on the A channel. This runs forever and runs
+  // synchronised with the TL clock.
+  //
+  // If we go into reset, this will flush all pending items from the sequencer, and continue
+  // flushing items until reset is deasserted.
+  extern protected task a_channel_thread();
 
   // Send a request, req, on the A channel
   extern task send_a_channel_request(tl_seq_item req);
@@ -126,27 +129,52 @@ task tl_host_driver::reset_signals();
   end
 endtask
 
-task tl_host_driver::a_channel_thread();
-  forever begin
-    seq_item_port.try_next_item(req);
-    if (req != null) begin
-      send_a_channel_request(req);
-    end else begin
-      if (reset_asserted) flush_during_reset();
-      if (!reset_asserted) begin
-        `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                          wait(reset_asserted);)
-      end
-    end // req != null
-  end // forever
+task tl_host_driver::wait_clk_or_rst();
+  `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);, wait(reset_asserted);)
 endtask
 
-task tl_host_driver::flush_during_reset();
-  `DV_SPINWAIT_EXIT(forever begin
-                      seq_item_port.get_next_item(req);
-                      send_a_channel_request(req);
-                    end,
-                    wait(!reset_asserted);)
+task tl_host_driver::a_channel_thread();
+  // Each time the body of the main loop of a_channel_thread, we expect either to be synchronised
+  // with the TL clock or to be in reset. Make sure that is true from the start of the task.
+  wait_clk_or_rst();
+
+  forever begin
+    // Grab as many items as we can from seq_item_port and immediately send them on the bus. The
+    // calls to try_next_item will not block, but sending the items on the bus probably will (unless
+    // we enter reset).
+    forever begin
+      seq_item_port.try_next_item(req);
+      if (req == null) break;
+      send_a_channel_request(req);
+    end
+
+    // We just looked and seq_item_port didn't have an item. Wait a clock before we try again, but
+    // stop waiting if we happen to enter reset.
+    wait_clk_or_rst();
+
+    // If we are not in reset, we've just waited the cycle we wanted to wait and we should go back
+    // to the start of the loop and try again.
+    if (!reset_asserted) continue;
+
+    // If we get here, we *are* in reset and we should switch to a different mode where we
+    // continuously flush seq_item_port.
+    forever begin
+      // Wait for the next item, but drop out early if we leave reset
+      `DV_SPINWAIT_EXIT(seq_item_port.get_next_item(req);,
+                        wait(!reset_asserted);)
+      if (!reset_asserted) break;
+
+      // If we get here then we are still in reset and the get_next_item() call yielded an item in
+      // req. Send the A-channel request (which will complete in zero time)
+      send_a_channel_request(req);
+    end
+
+    // At this point, we've just come out of reset. Resynchronise to the TL clock before we go
+    // around the loop again. If we go into reset again before the clock edge, we'll go back to the
+    // top of the loop, but nothing will consume time until we get back to the forever loop we've
+    // just finished.
+    wait_clk_or_rst();
+  end
 endtask
 
 task tl_host_driver::send_a_channel_request(tl_seq_item req);
@@ -307,8 +335,7 @@ task tl_host_driver::d_channel_thread();
     end else if (reset_asserted) begin
       wait(!reset_asserted);
     end
-    `DV_SPINWAIT_EXIT(@(cfg.vif.host_cb);,
-                      wait(reset_asserted);)
+    wait_clk_or_rst();
   end
 endtask
 
