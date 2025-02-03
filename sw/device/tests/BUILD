@@ -6862,6 +6862,7 @@ opentitan_binary(
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
