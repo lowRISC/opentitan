@@ -165,7 +165,7 @@ class MultiRegister(RegBase):
             self.dv_compact = False
 
     def next_offset(self, addrsep: int) -> int:
-        return self.offset + len(self.regs) * addrsep
+        return self.offset + self.count * addrsep
 
     def get_n_bits(self, bittype: List[str] = ["q"]) -> int:
         return sum(reg.get_n_bits(bittype) for reg in self.regs)
