@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 ${gencmd}
+<% import textwrap %>\
 <% racl_role_vec_len = 2 ** racl_config['nr_role_bits'] %>\
 
 package top_racl_pkg;
@@ -164,8 +165,11 @@ package top_racl_pkg;
       % endif
    */
 <% policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}" %>\
-<% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
-  parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
+<% policy_sel_value = ", ".join(map(str, reversed(register_mapping.values())))%>\
+<% policy_sel_value = "\n    ".join(textwrap.wrap(policy_sel_value, 94))%>\
+  parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = '{
+    ${policy_sel_value}
+  };
       % for window_name, policy_idx in window_mapping.items():
   parameter int unsigned ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
       % endfor
