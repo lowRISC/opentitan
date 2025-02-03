@@ -135,6 +135,7 @@ import math
         { bits: "1"
           name: "log_clear"
           resval: 0x0
+          hwqe: "true"
           desc: '''Clears all log information for the first denied access including:
                     - LOG_STATUS
                     - LOG_ADDRESS.

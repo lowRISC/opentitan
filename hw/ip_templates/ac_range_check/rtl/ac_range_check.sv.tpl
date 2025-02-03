@@ -9,7 +9,7 @@ module ${module_instance_name}
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
   parameter bit                   EnableRacl   = 1'b0,
   parameter bit                   RaclErrorRsp = EnableRacl,
-  parameter int unsigned          RaclPolicySelVec[${3 + 5*num_ranges}] = '{${3 + 5*num_ranges}{0}}
+  parameter int unsigned          RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,
@@ -23,6 +23,9 @@ module ${module_instance_name}
   output top_racl_pkg::racl_error_log_t             racl_error_log_o,
   // Access range check interrupts
   output logic                                      intr_deny_cnt_reached_o,
+  // Bus interface
+  input  tlul_pkg::tl_h2d_t                         tl_i,
+  output tlul_pkg::tl_d2h_t                         tl_o,
   // Inter module signals
   input prim_mubi_pkg::mubi8_t                      range_check_overwrite_i,
   // Incoming TLUL interface
@@ -80,12 +83,12 @@ module ${module_instance_name}
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
     prim_alert_sender #(
       .AsyncOn(AlertAsyncOn[i]),
-      .IsFatal(i)
+      .IsFatal(IsFatal[i])
     ) u_prim_alert_sender (
       .clk_i         ( clk_i         ),
       .rst_ni        ( rst_ni        ),
       .alert_test_i  ( alert_test[i] ),
-      .alert_req_i   ( alerts[i]     ),
+      .alert_req_i   ( alert[i]      ),
       .alert_ack_o   (               ),
       .alert_state_o (               ),
       .alert_rx_i    ( alert_rx_i[i] ),
@@ -102,6 +105,7 @@ module ${module_instance_name}
 
   // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
   top_racl_pkg::racl_role_vec_t racl_role_vec;
+  top_racl_pkg::racl_role_t racl_role;
   assign racl_role = top_racl_pkg::tlul_extract_racl_role_bits(ctn_tl_h2d_i.a_user.rsvd);
 
   prim_onehot_enc #(
@@ -112,7 +116,7 @@ module ${module_instance_name}
     .out_o( racl_role_vec )
   );
 
-  for (int i = 0; i < NumRanges; i++) begin : gen_range_checks
+  for (genvar i = 0; i < NumRanges; i++) begin : gen_range_checks
     // Extend base, limit, and mask to 32-bit
     logic [31:0] base_ext, limit_ext;
     logic tor_hit;
@@ -128,8 +132,8 @@ module ${module_instance_name}
                          tor_hit;
 
     // Perform RACL checks - check if the incoming role matches with the configured policy
-    assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q)
-    assign racl_write_hit[i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].write_perm.q)
+    assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q);
+    assign racl_write_hit[i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].write_perm.q);
 
     // Decode the multi-bit access fields for convinient access
     logic perm_read_access, perm_write_access, perm_execute_access;
@@ -149,6 +153,10 @@ module ${module_instance_name}
     assign deny_mask[NumRanges - 1 - i] =
       addr_hit[i] & ~(perm_read_access | perm_write_access | perm_execute_access);
 
+    // TODO(#25456) Use log_enable_mask to mask logging
+    assign log_enable_mask[NumRanges - 1 - i] =
+      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].log_denied_access.q);
+
     // Determine the read, write, and execute mask. Store a hit in their index
     assign read_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
     assign write_mask  [NumRanges - 1 - i] = addr_hit[i] & perm_write_access;
@@ -156,7 +164,7 @@ module ${module_instance_name}
   end
 
   // Fiddle out bits to determine if its an execute request or not
-  assign no_exec_access, exec_access;
+  logic no_exec_access, exec_access;
   assign no_exec_access = prim_mubi_pkg::mubi4_test_false_strict(ctn_tl_h2d_i.a_user.instr_type);
   assign exec_access    = prim_mubi_pkg::mubi4_test_true_strict(ctn_tl_h2d_i.a_user.instr_type);
 
@@ -165,14 +173,14 @@ module ${module_instance_name}
   assign read_access = (ctn_tl_h2d_i.a_opcode == Get) & no_exec_access;
   assign write_access = ((ctn_tl_h2d_i.a_opcode == PutFullData) |
                          (ctn_tl_h2d_i.a_opcode == PutPartialData));
-  assign execute_acess = (ctn_tl_h2d_i.a_opcode == Get) & exec_access;
+  assign execute_access = (ctn_tl_h2d_i.a_opcode == Get) & exec_access;
 
   // Priority comparison. If the deny mask is larger than the read, write, or execute mask, there
   // was an address match with a higher priority for the range to be denied
   logic read_allowed, write_allowed, execute_allowed;
-  assign read_allowed    = read_access   & (read_mask    > deny_mask);
-  assign write_allowed   = write_access  & (write_mask   > deny_mask);
-  assign execute_allowed = execute_acess & (execute_mask > deny_mask);
+  assign read_allowed    = read_access    & (read_mask    > deny_mask);
+  assign write_allowed   = write_access   & (write_mask   > deny_mask);
+  assign execute_allowed = execute_access & (execute_mask > deny_mask);
 
   // The access fails if nothing is allowed and no overwrite is present
   logic range_check_fail;
@@ -201,16 +209,17 @@ module ${module_instance_name}
   //////////////////////////////////////////////////////////////////////////////
 
   logic [DenyCountWidth-1:0] deny_cnt;
-  logic deny_cnt_incr, deny_cnt_clr;
+  logic deny_cnt_incr;
 
   // Only increment the deny counter if logging is enabled
   assign deny_cnt_incr = reg2hw.log_config.log_enable.q & range_check_fail;
   // Determine if we are doing the first log. This one is special, since it also needs to log
   // diagnostics data
+  logic log_first_deny;
   assign log_first_deny = deny_cnt_incr & (deny_cnt == 0);
 
   // Clear log information when clearing the interrupt or when clearing the log manually via the
-  // the log_clear bit.
+  // the writing a 1 to the log_clear bit.
   logic intr_state_cleared, clear_log;
   assign clear_log = intr_state_cleared |
                      (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
@@ -233,8 +242,8 @@ module ${module_instance_name}
   );
 
   // Log count is transparently mirrored. Clearing happens on the counter.
-  assign hw2reg.log_status.deny_count.de = 1'b1;
-  assign hw2reg.log_status.deny_count.d  = deny_cnt;
+  assign hw2reg.log_status.deny_cnt.de = 1'b1;
+  assign hw2reg.log_status.deny_cnt.d  = deny_cnt;
 
   assign hw2reg.log_status.denied_read_access.de = log_first_deny | clear_log;
   assign hw2reg.log_status.denied_read_access.d  = log_first_deny ? read_access : 1'b0;
@@ -275,7 +284,7 @@ module ${module_instance_name}
   // Interrupt Notification Logic
   //////////////////////////////////////////////////////////////////////////////
 
-  logic deny_cnt_threshold_reached_d, deny_threshold_reached_event;
+  logic deny_cnt_threshold_reached_d, deny_cnt_threshold_reached_event;
 
   // Create a threshold event when the deny counter reaches the configured threshold
   assign deny_cnt_threshold_reached_d = deny_cnt > reg2hw.log_config.deny_cnt_threshold.q;
@@ -300,17 +309,23 @@ module ${module_instance_name}
   prim_intr_hw #(
     .Width(1)
   ) u_intr_range_check_deny (
-    .clk_i                  ( clk_i                        ),
-    .rst_ni                 ( rst_ni                       ),
-    .event_intr_i           ( deny_threshold_reached_event ),
-    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q         ),
-    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q           ),
-    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe          ),
-    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q          ),
-    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de         ),
-    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d          ),
-    .intr_o                 ( intr_deny_cnt_reached_o      )
+    .clk_i                  ( clk_i                            ),
+    .rst_ni                 ( rst_ni                           ),
+    .event_intr_i           ( deny_cnt_threshold_reached_event ),
+    .reg2hw_intr_enable_q_i ( reg2hw.intr_enable.q             ),
+    .reg2hw_intr_test_q_i   ( reg2hw.intr_test.q               ),
+    .reg2hw_intr_test_qe_i  ( reg2hw.intr_test.qe              ),
+    .reg2hw_intr_state_q_i  ( reg2hw.intr_state.q              ),
+    .hw2reg_intr_state_de_o ( hw2reg.intr_state.de             ),
+    .hw2reg_intr_state_d_o  ( hw2reg.intr_state.d              ),
+    .intr_o                 ( intr_deny_cnt_reached_o          )
   );
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Unused Signals
+  //////////////////////////////////////////////////////////////////////////////
+  logic unused_signals;
+  assign unused_signals = ^log_enable_mask;
 
   //////////////////////////////////////////////////////////////////////////////
   // Assertions
