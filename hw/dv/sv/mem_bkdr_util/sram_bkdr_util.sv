@@ -87,7 +87,7 @@ class sram_bkdr_util extends mem_bkdr_util;
 
   // Returns the data at the given address after descrambling the address and decrypting the data.
   // It simply ignores the integrity bits.
-  virtual function logic [38:0] sram_encrypt_read32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
+  virtual function logic [31:0] sram_encrypt_read32_integ(logic [bus_params_pkg::BUS_AW-1:0] addr,
                                                           logic [SRAM_KEY_WIDTH-1:0]         key,
                                                           logic [SRAM_BLOCK_WIDTH-1:0]       nonce,
                                                           int extra_addr_bits);
