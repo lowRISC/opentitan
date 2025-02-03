@@ -140,7 +140,6 @@ cc_library(
     hdrs = ["cbor.h"],
     deps = [
         "//sw/device/lib/base:status",
-        "//sw/device/lib/runtime:log",
         "@open-dice//:cbor_reader_writer",
     ],
 )
