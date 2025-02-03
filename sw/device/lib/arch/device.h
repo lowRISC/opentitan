@@ -66,6 +66,11 @@ typedef enum device_type {
    * Silicon.
    */
   kDeviceSilicon = 5,
+  /**
+   * Represents the "QEMU" device, i.e. an emulation of OpenTitan written
+   * independently of the RTL.
+   */
+  kDeviceSimQemu = 6,
 } device_type_t;
 
 /**
