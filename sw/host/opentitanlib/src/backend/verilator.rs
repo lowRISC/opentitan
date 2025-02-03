@@ -13,21 +13,21 @@ use crate::transport::Transport;
 #[derive(Debug, Args)]
 pub struct VerilatorOpts {
     #[arg(long, default_value_t)]
-    verilator_bin: String,
+    pub verilator_bin: String,
 
     #[arg(long, default_value_t)]
-    verilator_rom: String,
+    pub verilator_rom: String,
     #[arg(long, required = false)]
-    verilator_flash: Vec<String>,
+    pub verilator_flash: Vec<String>,
     #[arg(long, default_value_t)]
-    verilator_otp: String,
+    pub verilator_otp: String,
 
     #[arg(long, required = false)]
-    verilator_args: Vec<String>,
+    pub verilator_args: Vec<String>,
 
     /// Verilator startup timeout.
     #[arg(long, value_parser = parse_duration, default_value = "60s")]
-    verilator_timeout: Duration,
+    pub verilator_timeout: Duration,
 }
 
 pub fn create(args: &VerilatorOpts) -> Result<Box<dyn Transport>> {
