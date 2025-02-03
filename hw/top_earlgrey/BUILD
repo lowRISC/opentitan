@@ -15,8 +15,10 @@ load(
     "fpga_cw340",
     "silicon",
     "sim_dv",
+    "sim_qemu",
     "sim_verilator",
 )
+load("//rules/opentitan:qemu.bzl", "qemu_cfg", "qemu_flash", "qemu_otp")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -93,6 +95,29 @@ fpga_cw310(
     base = ":fpga_cw310_test_rom",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = "fpga_cw310_rom_with_fake_keys",
+    manifest = "//sw/device/silicon_creator/rom_ext:manifest",
+    rom = "//sw/device/silicon_creator/rom:mask_rom",
+)
+
+sim_qemu(
+    name = "sim_qemu_base",
+    design = "earlgrey",
+    exec_env = "sim_qemu_base",
+    libs = [
+        "//sw/device/lib/arch:boot_stage_rom_ext",
+        "//sw/device/lib/arch:sim_qemu",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    otp = "//hw/top_earlgrey/data/otp:img_rma",
+    rom_scramble_config = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
+)
+
+sim_qemu(
+    name = "sim_qemu_rom_with_fake_keys",
+    testonly = True,
+    base = ":sim_qemu_base",
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
+    exec_env = "sim_qemu_rom_with_fake_keys",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     rom = "//sw/device/silicon_creator/rom:mask_rom",
 )

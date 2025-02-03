@@ -103,3 +103,16 @@ cc_library(
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     ],
 )
+
+cc_library(
+    name = "sim_qemu",
+    srcs = ["device_sim_qemu.c"],
+    deps = [
+        ":device",
+        "//hw/top:rv_core_ibex_c_regs",
+        "//hw/top:uart_c_regs",
+        "//sw/device/lib/base:macros",
+        "//sw/device/silicon_creator/lib/drivers:ibex",
+        "//sw/device/silicon_creator/lib/drivers:uart",
+    ],
+)
