@@ -10,7 +10,8 @@ module sram_ctrl_regs_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[sram_ctrl_reg_pkg::NumRegsRegs] = '{sram_ctrl_reg_pkg::NumRegsRegs{0}}
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[sram_ctrl_reg_pkg::NumRegsRegs] =
+      '{sram_ctrl_reg_pkg::NumRegsRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

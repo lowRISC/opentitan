@@ -7,10 +7,10 @@
 
 module spi_host_window
 #(
-  parameter bit          EnableRacl             = 1'b0,
-  parameter bit          RaclErrorRsp           = 1'b1,
-  parameter int unsigned RaclPolicySelWinRXDATA = 0,
-  parameter int unsigned RaclPolicySelWinTXDATA = 0
+  parameter bit                             EnableRacl             = 1'b0,
+  parameter bit                             RaclErrorRsp           = 1'b1,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinRXDATA = 0,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinTXDATA = 0
 ) (
   input  clk_i,
   input  rst_ni,

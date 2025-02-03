@@ -41,7 +41,8 @@ module tlul_adapter_sram_racl
   parameter bit DataXorAddr       = 0,          // 1: XOR data and address for address protection
   parameter bit EnableRacl        = 0,          // 1: Enable RACL checks on access
   parameter bit RaclErrorRsp      = EnableRacl, // 1: Return TLUL error on RACL errors
-  parameter int RaclPolicySelVec  = 0,          // RACL policy for this SRAM adapter
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec = 0, // RACL policy for this SRAM
+                                                                  // adapter
   localparam int WidthMult        = SramDw / top_pkg::TL_DW,
   localparam int IntgWidth        = tlul_pkg::DataIntgWidth * WidthMult,
   localparam int DataOutW         = EnableDataIntgPt ? SramDw + IntgWidth : SramDw

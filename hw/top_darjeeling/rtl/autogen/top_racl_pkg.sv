@@ -15,6 +15,12 @@ package top_racl_pkg;
   // Number of RACL policies used
   parameter int unsigned NrRaclPolicies = 3;
 
+  // RACL Policy selector bits
+  parameter int unsigned RaclPolicySelLen = prim_util_pkg::vbits(NrRaclPolicies);
+
+  // RACL Policy selector type
+  typedef logic [RaclPolicySelLen-1:0] racl_policy_sel_t;
+
   // Number of RACL bits transferred
   parameter int unsigned NrRaclBits = 4;
 
@@ -153,11 +159,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX0_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX0_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX0_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX0_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx1
@@ -172,11 +178,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX1_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX1_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX1_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX1_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx2
@@ -191,11 +197,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX2_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX2_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX2_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX2_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx4
@@ -210,11 +216,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX4_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX4_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX4_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX4_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx5
@@ -229,11 +235,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX5_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX5_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX5_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX5_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx_jtag
@@ -248,11 +254,11 @@ package top_racl_pkg;
    *     WDATA: ALL_RD_WR (Idx 0)
    *     RDATA: ALL_RD_WR (Idx 0)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_JTAG_SOC [4] = '{
     0, 0, 0, 0
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_WDATA = 0;
-  parameter int unsigned RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_RDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_WDATA = 0;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_JTAG_SOC_WIN_RDATA = 0;
 
   /**
    * Policy selection vector for mbx_pcie0
@@ -267,11 +273,11 @@ package top_racl_pkg;
    *     WDATA: SOC_ROT (Idx 2)
    *     RDATA: SOC_ROT (Idx 2)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE0_SOC [4] = '{
     2, 2, 2, 2
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_WDATA = 2;
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_RDATA = 2;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_WDATA = 2;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE0_SOC_WIN_RDATA = 2;
 
   /**
    * Policy selection vector for mbx_pcie1
@@ -286,11 +292,11 @@ package top_racl_pkg;
    *     WDATA: SOC_ROT (Idx 2)
    *     RDATA: SOC_ROT (Idx 2)
    */
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC [4] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE1_SOC [4] = '{
     2, 2, 2, 2
   };
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_WDATA = 2;
-  parameter int unsigned RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_RDATA = 2;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_WDATA = 2;
+  parameter racl_policy_sel_t RACL_POLICY_SEL_MBX_PCIE1_SOC_WIN_RDATA = 2;
 
   /**
    * Policy selection vector for ac_range_check
@@ -465,7 +471,7 @@ package top_racl_pkg;
    *     RANGE_RACL_POLICY_SHADOWED_30: SOC_ROT (Idx 2)
    *     RANGE_RACL_POLICY_SHADOWED_31: SOC_ROT (Idx 2)
    */
-  parameter int unsigned RACL_POLICY_SEL_AC_RANGE_CHECK [167] = '{
+  parameter racl_policy_sel_t RACL_POLICY_SEL_AC_RANGE_CHECK [167] = '{
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,
     2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2,

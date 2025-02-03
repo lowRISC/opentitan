@@ -8,17 +8,17 @@ module mbx
   import tlul_pkg::*;
   import mbx_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn           = {NumAlerts{1'b1}},
-  parameter int unsigned CfgSramAddrWidth                = 32,
-  parameter int unsigned CfgSramDataWidth                = 32,
-  parameter int unsigned CfgObjectSizeWidth              = 11,
-  parameter bit          DoeIrqSupport                   = 1'b1,
-  parameter bit          DoeAsyncMsgSupport              = 1'b1,
-  parameter bit          EnableRacl                      = 1'b0,
-  parameter bit          RaclErrorRsp                    = EnableRacl,
-  parameter int unsigned RaclPolicySelVecSoc[NumRegsSoc] = '{NumRegsSoc{0}},
-  parameter int unsigned RaclPolicySelWinSocWdata        = 0,
-  parameter int unsigned RaclPolicySelWinSocRdata        = 0
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn                    = {NumAlerts{1'b1}},
+  parameter int unsigned                    CfgSramAddrWidth                = 32,
+  parameter int unsigned                    CfgSramDataWidth                = 32,
+  parameter int unsigned                    CfgObjectSizeWidth              = 11,
+  parameter bit                             DoeIrqSupport                   = 1'b1,
+  parameter bit                             DoeAsyncMsgSupport              = 1'b1,
+  parameter bit                             EnableRacl                      = 1'b0,
+  parameter bit                             RaclErrorRsp                    = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecSoc[NumRegsSoc] = '{NumRegsSoc{0}},
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinSocWdata        = 0,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinSocRdata        = 0
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,

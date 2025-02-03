@@ -128,7 +128,8 @@ module ${mod_name}${' (' if not racl_support else ''}
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1${"," if dynamic_racl_support else ""}
   % if dynamic_racl_support:
-    parameter int unsigned RaclPolicySelVec[${reg_pkg}::${num_regs}] = '{${reg_pkg}::${num_regs}{0}}
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${reg_pkg}::${num_regs}] =
+      '{${reg_pkg}::${num_regs}{0}}
   % endif
   ) (
 % endif

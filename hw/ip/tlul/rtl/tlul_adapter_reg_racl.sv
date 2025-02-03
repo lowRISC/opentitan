@@ -20,7 +20,8 @@ module tlul_adapter_reg_racl
   parameter  int AccessLatency     = 0,           // 0: same cycle, 1: next cycle
   parameter  bit EnableRacl        = 0,           // 1: Enable RACL checks on access
   parameter  bit RaclErrorRsp      = EnableRacl,  // 1: Return TLUL error on RACL errors
-  parameter  int RaclPolicySelVec  = 0,           // RACL policy for this reg adapter
+  parameter  top_racl_pkg::racl_policy_sel_t RaclPolicySelVec  = 0, // RACL policy for this reg
+                                                                    // adapter
   localparam int RegBw             = RegDw/8
 ) (
   input clk_i,

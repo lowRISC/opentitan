@@ -7,12 +7,12 @@
 module pwm
   import pwm_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
-  parameter bit                   EnableRacl                = 1'b0,
-  parameter bit                   RaclErrorRsp              = EnableRacl,
-  parameter int unsigned          RaclPolicySelVec[NumRegs] = '{NumRegs{0}},
-  parameter int                   PhaseCntDw                = 16,
-  parameter int                   BeatCntDw                 = 27
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             EnableRacl                = 1'b0,
+  parameter bit                             RaclErrorRsp              = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}},
+  parameter int                             PhaseCntDw                = 16,
+  parameter int                             BeatCntDw                 = 27
 ) (
   input                       clk_i,
   input                       rst_ni,

@@ -90,9 +90,9 @@ def main():
    */
 <% policy_sel_name = f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}" %>\
 <% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
-  parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
+  parameter racl_policy_sel_t ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
       % for window_name, policy_idx in window_mapping.items():
-  parameter int unsigned ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
+  parameter racl_policy_sel_t ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
       % endfor
     """
 

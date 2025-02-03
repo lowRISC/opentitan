@@ -15,6 +15,12 @@ package top_racl_pkg;
   // Number of RACL policies used
   parameter int unsigned NrRaclPolicies = 1;
 
+  // RACL Policy selector bits
+  parameter int unsigned RaclPolicySelLen = prim_util_pkg::vbits(NrRaclPolicies);
+
+  // RACL Policy selector type
+  typedef logic [RaclPolicySelLen-1:0] racl_policy_sel_t;
+
   // Number of RACL bits transferred
   parameter int unsigned NrRaclBits = 1;
 

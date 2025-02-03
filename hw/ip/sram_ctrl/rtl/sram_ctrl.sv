@@ -25,13 +25,13 @@ module sram_ctrl
   // Setting this to 3 lowers this to approximately 7 effective rounds.
   parameter int NumPrinceRoundsHalf                        = 3,
   // Random netlist constants
-  parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey     = RndCnstSramKeyDefault,
-  parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce   = RndCnstSramNonceDefault,
-  parameter  lfsr_seed_t                RndCnstLfsrSeed    = RndCnstLfsrSeedDefault,
-  parameter  lfsr_perm_t                RndCnstLfsrPerm    = RndCnstLfsrPermDefault,
-  parameter bit          EnableRacl                        = 1'b0,
-  parameter bit          RaclErrorRsp                      = EnableRacl,
-  parameter int unsigned RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}}
+  parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
+  parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
+  parameter  lfsr_seed_t                RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
+  parameter  lfsr_perm_t                RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
+  parameter bit                         EnableRacl       = 1'b0,
+  parameter bit                         RaclErrorRsp     = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}}
 ) (
   // SRAM Clock
   input  logic                                               clk_i,
