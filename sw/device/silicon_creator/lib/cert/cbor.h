@@ -6,15 +6,13 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_CERT_CBOR_H_
 
 #include "include/dice/cbor_writer.h"
-#include "sw/device/lib/runtime/log.h"
 #include "sw/device/silicon_creator/lib/error.h"
 
-#define CBOR_RETURN_IF_OVERFLOWED(p)    \
-  do {                                  \
-    if (CborOutOverflowed(p)) {         \
-      LOG_ERROR("CborOutOverflowed!!"); \
-      return kErrorCertInvalidSize;     \
-    }                                   \
+#define CBOR_RETURN_IF_OVERFLOWED(p) \
+  do {                               \
+    if (CborOutOverflowed(p)) {      \
+      return kErrorCertInvalidSize;  \
+    }                                \
   } while (0)
 
 #define CBOR_CHECK_OVERFLOWED_AND_RETURN(p) \
