@@ -416,9 +416,13 @@ def _opentitan_test(ctx):
         p = None
 
     executable, runfiles = exec_env.test_dispatch(ctx, exec_env, p)
+    if ctx.attr.test_harness != None:
+        harness_runfiles = ctx.attr.test_harness[DefaultInfo].default_runfiles
+    else:
+        harness_runfiles = ctx.runfiles()
     return DefaultInfo(
         executable = executable,
-        runfiles = ctx.runfiles(files = runfiles),
+        runfiles = ctx.runfiles(files = runfiles).merge_all([harness_runfiles]),
     )
 
 opentitan_test = rv_rule(
@@ -431,6 +435,7 @@ opentitan_test = rv_rule(
         "test_harness": attr.label(
             executable = True,
             cfg = "exec",
+            allow_files = True,
         ),
         "binaries": attr.label_keyed_string_dict(
             allow_files = True,
