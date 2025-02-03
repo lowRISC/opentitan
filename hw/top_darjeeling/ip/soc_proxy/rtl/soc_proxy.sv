@@ -80,7 +80,10 @@ module soc_proxy
 
   assign host_tl_h2d [2] = misc_tl_h2d_i;
   assign misc_tl_d2h_o   = host_tl_d2h[2];
- 
+
+  tlul_pkg::tl_h2d_t muxed_host_tl_h2d;
+  tlul_pkg::tl_d2h_t muxed_host_tl_d2h;
+
   // Add a MUX with a pipeline stage to shorten path through AC ranges
   tlul_socket_m1 #(
     .M         ( TLUL_HOST_CNT         ),
@@ -93,12 +96,20 @@ module soc_proxy
     .DReqDepth ( 4'd4                  ),
     .DRspDepth ( 4'd4                  )
   ) u_ctn_egress_mux (
-    .clk_i  ( clk_i        ),
-    .rst_ni ( rst_ni       ),
-    .tl_h_i ( host_tl_h2d  ),
-    .tl_h_o ( host_tl_d2h  ),
-    .tl_d_o ( ctn_tl_h2d_o ),
-    .tl_d_i ( ctn_tl_d2h_i )
+    .clk_i  ( clk_i             ),
+    .rst_ni ( rst_ni            ),
+    .tl_h_i ( host_tl_h2d       ),
+    .tl_h_o ( host_tl_d2h       ),
+    .tl_d_o ( muxed_host_tl_h2d ),
+    .tl_d_i ( muxed_host_tl_d2h )
+  );
+
+  // Perform the base address translation before exiting to the AC Ranges
+  bat u_bat (
+    .tl_in_h2d_i  ( muxed_host_tl_h2d ),
+    .tl_in_d2h_o  ( muxed_host_tl_d2h ),
+    .tl_out_h2d_o ( ctn_tl_h2d_o      ),
+    .tl_out_d2h_i ( ctn_tl_d2h_i      )
   );
 
   // GPI/O signal feed through.
