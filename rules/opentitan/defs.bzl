@@ -109,6 +109,7 @@ EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
+    "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
 }
 
 # The default set of test environments for Earlgrey.
