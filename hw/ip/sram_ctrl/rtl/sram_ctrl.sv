@@ -31,7 +31,9 @@ module sram_ctrl
   parameter  lfsr_perm_t                RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
   parameter bit                         EnableRacl       = 1'b0,
   parameter bit                         RaclErrorRsp     = EnableRacl,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}}
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}},
+  parameter int unsigned RaclPolicySelRangesRamNum = 1,
+  parameter top_racl_pkg::racl_range_t RaclPolicySelRangesRam[RaclPolicySelRangesRamNum] = '{'0}
 ) (
   // SRAM Clock
   input  logic                                               clk_i,
@@ -90,6 +92,13 @@ module sram_ctrl
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
+  logic racl_error_regs;
+  logic racl_error_ram;
+  top_racl_pkg::racl_error_log_t racl_error_regs_log;
+  top_racl_pkg::racl_error_log_t racl_error_ram_log;
+  // We are combining all racl errors here because only one of them can be set at any time.
+  assign racl_error_o = racl_error_regs | racl_error_ram;
+  assign racl_error_log_o = racl_error_regs_log | racl_error_ram_log;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -137,8 +146,8 @@ module sram_ctrl
     .hw2reg,
     // RACL interface
     .racl_policies_i  ( racl_policies_i    ),
-    .racl_error_o     ( racl_error_o       ),
-    .racl_error_log_o ( racl_error_log_o   ),
+    .racl_error_o     ( racl_error_regs    ),
+    .racl_error_log_o ( racl_error_regs_log),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o       ( bus_integ_error[0] )
    );
@@ -497,7 +506,7 @@ module sram_ctrl
   mubi4_t reg_readback_en;
   assign reg_readback_en = mubi4_t'(reg2hw.readback.q);
 
-  tlul_adapter_sram #(
+  tlul_adapter_sram_racl #(
     .SramAw(AddrWidth),
     .SramDw(DataWidth - tlul_pkg::DataIntgWidth),
     .Outstanding(2),
@@ -507,8 +516,12 @@ module sram_ctrl
     .EnableDataIntgGen(0),
     .EnableDataIntgPt(1), // SEC_CM: MEM.INTEGRITY
     .SecFifoPtr      (1), // SEC_CM: TLUL_FIFO.CTR.REDUN
-    .EnableReadback  (1)  // SEC_CM: MEM.READBACK
-  ) u_tlul_adapter_sram (
+    .EnableReadback  (1), // SEC_CM: MEM.READBACK
+    .EnableRacl(EnableRacl),
+    .RaclErrorRsp(RaclErrorRsp),
+    .RaclPolicySelNumRanges(RaclPolicySelRangesRamNum),
+    .RaclPolicySelRanges(RaclPolicySelRangesRam)
+  ) u_tlul_adapter_sram_racl (
     .clk_i,
     .rst_ni,
     .tl_i                       (ram_tl_in_gated),
@@ -531,7 +544,11 @@ module sram_ctrl
     .readback_en_i              (reg_readback_en),
     .readback_error_o           (readback_error),
     .wr_collision_i             (sram_wr_collision),
-    .write_pending_i            (sram_wpending)
+    .write_pending_i            (sram_wpending),
+    // RACL interface
+    .racl_policies_i            (racl_policies_i),
+    .racl_error_o               (racl_error_ram),
+    .racl_error_log_o           (racl_error_ram_log)
   );
 
   logic key_valid;
@@ -626,22 +643,28 @@ module sram_ctrl
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoWptrCheck_A,
-      u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(RspFifoRptrCheck_A,
-      u_tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoWptrCheck_A,
-      u_tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(SramReqFifoRptrCheck_A,
-      u_tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoWptrCheck_A,
-      u_tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_wptr,
       alert_tx_o[0])
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
-      u_tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
+      u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo.gen_normal_fifo.u_fifo_cnt
+        .gen_secure_ptrs.u_rptr,
       alert_tx_o[0])
 
   // `tlul_gnt` doesn't factor in `sram_gnt` for timing reasons. This assertions checks that

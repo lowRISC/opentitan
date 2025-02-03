@@ -86,6 +86,18 @@ module spi_device
   localparam int unsigned TpmRdFifoWidth  = spi_device_reg_pkg::TpmRdFifoWidth;
 
   // Derived parameters
+  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesEgressbuffer[1] = '{
+    '{base: {top_pkg::TL_AW{1'b0}},
+      mask: {top_pkg::TL_AW{1'b1}},
+      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinEgressbuffer)
+    }
+  };
+  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesIngressbuffer[1] = '{
+    '{base: {top_pkg::TL_AW{1'b0}},
+      mask: {top_pkg::TL_AW{1'b1}},
+      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinIngressbuffer)
+    }
+  };
 
   logic clk_spi_in, clk_spi_in_muxed, clk_spi_in_buf;   // clock for latch SDI
   logic clk_spi_out, clk_spi_out_muxed, clk_spi_out_buf; // clock for driving SDO
@@ -1687,7 +1699,8 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelVec (RaclPolicySelWinEgressbuffer)
+    .RaclPolicySelNumRanges(1),
+    .RaclPolicySelRanges(RaclPolicySelRangesEgressbuffer)
   ) u_tlul2sram_egress (
     .clk_i,
     .rst_ni,
@@ -1725,7 +1738,8 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelVec (RaclPolicySelWinIngressbuffer)
+    .RaclPolicySelNumRanges(1),
+    .RaclPolicySelRanges(RaclPolicySelRangesIngressbuffer)
   ) u_tlul2sram_ingress (
     .clk_i,
     .rst_ni,

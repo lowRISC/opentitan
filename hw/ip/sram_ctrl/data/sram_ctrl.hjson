@@ -29,7 +29,7 @@
 
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "regs", racl_support: true }
-    { protocol: "tlul", direction: "device", name: "ram" },
+    { protocol: "tlul", direction: "device", name: "ram" , racl_support: true }
   ],
 
   ///////////////////////////

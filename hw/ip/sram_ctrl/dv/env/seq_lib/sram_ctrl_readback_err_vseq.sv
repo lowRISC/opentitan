@@ -110,7 +110,8 @@ class sram_ctrl_readback_err_vseq extends sram_ctrl_base_vseq;
     cfg.is_fi_test = 1'b1;
 
     // If we are faulting the sram_we signal, this assertion would trigger. Disable it.
-    $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_sram_byte.gen_integ_handling");
+    $assertoff(0,
+      "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sram_byte.gen_integ_handling");
 
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(num_ops)
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_fi_op)
