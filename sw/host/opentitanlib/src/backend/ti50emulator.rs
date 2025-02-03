@@ -12,13 +12,13 @@ use std::str::FromStr;
 #[derive(Debug, Args)]
 pub struct Ti50EmulatorOpts {
     #[arg(long, default_value = "ti50")]
-    instance_prefix: String,
+    pub instance_prefix: String,
 
     #[arg(long, value_parser = PathBuf::from_str, default_value = "")]
-    executable_directory: PathBuf,
+    pub executable_directory: PathBuf,
 
     #[arg(long, default_value = "")]
-    executable: String,
+    pub executable: String,
 }
 
 pub fn create(args: &Ti50EmulatorOpts) -> Result<Box<dyn Transport>> {

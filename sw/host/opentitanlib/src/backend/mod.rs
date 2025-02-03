@@ -18,13 +18,13 @@ use crate::transport::hyperdebug::{
 use crate::transport::{EmptyTransport, Transport};
 use crate::util::parse_int::ParseInt;
 
-mod chip_whisperer;
+pub mod chip_whisperer;
 mod ftdi;
 mod hyperdebug;
-mod proxy;
-mod ti50emulator;
+pub mod proxy;
+pub mod ti50emulator;
 mod ultradebug;
-mod verilator;
+pub mod verilator;
 
 #[derive(Debug, Args)]
 pub struct BackendOpts {
