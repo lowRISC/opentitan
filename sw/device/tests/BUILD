@@ -7337,3 +7337,28 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
+
+cc_library(
+    name = "rom_exit_immediately_lib",
+    srcs = ["rom_exit_immediately.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+    ],
+)
+
+opentitan_test(
+    name = "rom_exit_immediately",
+    exec_env = {
+        "//hw/top_earlgrey:sim_qemu_base": None,
+    },
+    kind = "rom",
+    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
+    qemu = qemu_params(
+        # This test doesn't print `PASS!`, just check the exit code.
+        test_harness = "//third_party/qemu:qemu-system-riscv32",
+    ),
+    deps = [":rom_exit_immediately_lib"],
+)
