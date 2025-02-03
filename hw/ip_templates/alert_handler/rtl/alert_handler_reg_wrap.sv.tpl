@@ -13,7 +13,7 @@ module ${module_instance_name}_reg_wrap
 <% 
 num_regs = 6 + 4 * n_alerts + 4 * 7 + n_classes * 14
 %>\
-  parameter int unsigned RaclPolicySelVec[${num_regs}] = '{${num_regs}{0}}
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[${num_regs}] = '{${num_regs}{0}}
 ) (
 % else:
 module ${module_instance_name}_reg_wrap import ${module_instance_name}_pkg::*; (

@@ -12,9 +12,9 @@ module ${module_instance_name}
   import prim_esc_pkg::*;
 #(
 % if racl_support:
-  parameter bit          EnableRacl                = 1'b0,
-  parameter bit          RaclErrorRsp              = EnableRacl,
-  parameter int unsigned RaclPolicySelVec[NumRegs] = '{NumRegs{0}},
+  parameter bit          EnableRacl                                   = 1'b0,
+  parameter bit          RaclErrorRsp                                 = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}},
 % endif
   // Compile time random constants, to be overriden by topgen.
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,

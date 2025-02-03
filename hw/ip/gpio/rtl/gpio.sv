@@ -10,13 +10,13 @@ module gpio
   import gpio_pkg::*;
   import gpio_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn              = {NumAlerts{1'b1}},
-  parameter bit                   GpioAsHwStrapsEn          = 1,
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             GpioAsHwStrapsEn          = 1,
   // This parameter instantiates 2-stage synchronizers on all GPIO inputs.
-  parameter bit                   GpioAsyncOn               = 1,
-  parameter bit                   EnableRacl                = 1'b0,
-  parameter bit                   RaclErrorRsp              = 1'b1,
-  parameter int unsigned          RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
+  parameter bit                             GpioAsyncOn               = 1,
+  parameter bit                             EnableRacl                = 1'b0,
+  parameter bit                             RaclErrorRsp              = 1'b1,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
   input clk_i,
   input rst_ni,

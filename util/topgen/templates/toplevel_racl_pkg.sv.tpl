@@ -9,6 +9,12 @@ package top_racl_pkg;
   // Number of RACL policies used
   parameter int unsigned NrRaclPolicies = ${racl_config['nr_policies']};
 
+  // RACL Policy selector bits
+  parameter int unsigned RaclPolicySelLen = prim_util_pkg::vbits(NrRaclPolicies);
+
+  // RACL Policy selector type
+  typedef logic [RaclPolicySelLen-1:0] racl_policy_sel_t;
+
   // Number of RACL bits transferred
   parameter int unsigned NrRaclBits = ${racl_config['nr_role_bits']};
 
@@ -167,11 +173,11 @@ package top_racl_pkg;
 <% policy_sel_name = f"RACL_POLICY_SEL_{m['name'].upper()}{group_suffix}{if_suffix}" %>\
 <% policy_sel_value = ", ".join(map(str, reversed(register_mapping.values())))%>\
 <% policy_sel_value = "\n    ".join(textwrap.wrap(policy_sel_value, 94))%>\
-  parameter int unsigned ${policy_sel_name} [${len(register_mapping)}] = '{
+  parameter racl_policy_sel_t ${policy_sel_name} [${len(register_mapping)}] = '{
     ${policy_sel_value}
   };
       % for window_name, policy_idx in window_mapping.items():
-  parameter int unsigned ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
+  parameter racl_policy_sel_t ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
       % endfor
 
     % endfor

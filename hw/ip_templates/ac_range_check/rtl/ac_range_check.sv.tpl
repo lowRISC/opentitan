@@ -6,10 +6,10 @@ module ${module_instance_name}
   import tlul_pkg::*;
   import ${module_instance_name}_reg_pkg::*;
 #(
-  parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},
-  parameter bit                   EnableRacl   = 1'b0,
-  parameter bit                   RaclErrorRsp = EnableRacl,
-  parameter int unsigned          RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
+  parameter logic [NumAlerts-1:0]           AlertAsyncOn              = {NumAlerts{1'b1}},
+  parameter bit                             EnableRacl                = 1'b0,
+  parameter bit                             RaclErrorRsp              = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[NumRegs] = '{NumRegs{0}}
 ) (
   input  logic                                      clk_i,
   input  logic                                      rst_ni,

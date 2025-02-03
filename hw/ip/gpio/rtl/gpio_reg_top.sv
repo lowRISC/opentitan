@@ -10,7 +10,8 @@ module gpio_reg_top
   # (
     parameter bit          EnableRacl           = 1'b0,
     parameter bit          RaclErrorRsp         = 1'b1,
-    parameter int unsigned RaclPolicySelVec[gpio_reg_pkg::NumRegs] = '{gpio_reg_pkg::NumRegs{0}}
+    parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[gpio_reg_pkg::NumRegs] =
+      '{gpio_reg_pkg::NumRegs{0}}
   ) (
   input clk_i,
   input rst_ni,

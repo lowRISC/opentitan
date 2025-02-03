@@ -12,11 +12,11 @@ module spi_device
 #(
   parameter logic [NumAlerts-1:0] AlertAsyncOn         = {NumAlerts{1'b1}},
   parameter spi_device_pkg::sram_type_e SramType       = spi_device_pkg::DefaultSramType,
-  parameter bit          EnableRacl                    = 1'b0,
-  parameter bit          RaclErrorRsp                  = EnableRacl,
-  parameter int unsigned RaclPolicySelVec[73]          = '{73{0}},
-  parameter int unsigned RaclPolicySelWinEgressbuffer  = 0,
-  parameter int unsigned RaclPolicySelWinIngressbuffer = 0
+  parameter bit                             EnableRacl                    = 1'b0,
+  parameter bit                             RaclErrorRsp                  = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[73]          = '{73{0}},
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinEgressbuffer  = 0,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinIngressbuffer = 0
 ) (
   input clk_i,
   input rst_ni,
