@@ -4176,9 +4176,13 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    exec_env = dicts.omit(
+        dicts.add(
+            EARLGREY_TEST_ENVS,
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        ),
+        # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
+        ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
