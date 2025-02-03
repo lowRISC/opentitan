@@ -26,10 +26,14 @@ static ecdsa_p256_signature_t curr_tbs_signature = {.r = {0}, .s = {0}};
 static uint8_t cdi_0_tbs_buffer[kCdi0MaxTbsSizeBytes];
 static cdi_0_sig_values_t cdi_0_cert_params = {
     .tbs = cdi_0_tbs_buffer,
+    .cert_signature_r = (unsigned char *)curr_tbs_signature.r,
+    .cert_signature_s = (unsigned char *)curr_tbs_signature.s,
 };
 static uint8_t cdi_1_tbs_buffer[kCdi1MaxTbsSizeBytes];
 static cdi_1_sig_values_t cdi_1_cert_params = {
     .tbs = cdi_1_tbs_buffer,
+    .cert_signature_r = (unsigned char *)curr_tbs_signature.r,
+    .cert_signature_s = (unsigned char *)curr_tbs_signature.s,
 };
 
 const dice_cert_format_t kDiceCertFormat = kDiceCertFormatX509TcbInfo;
@@ -150,8 +154,6 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   ASSERT_SIZE_EQ(sizeof(curr_tbs_signature.s),
                  kCdi0ExactCertSignatureSSizeBytes);
 
-  cdi_0_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
-  cdi_0_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
   HARDENED_RETURN_IF_ERROR(
       cdi_0_build_cert(&cdi_0_cert_params, cert, cert_size));
 
@@ -213,8 +215,6 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   ASSERT_SIZE_EQ(sizeof(curr_tbs_signature.s),
                  kCdi0ExactCertSignatureSSizeBytes);
 
-  cdi_1_cert_params.cert_signature_r = (unsigned char *)curr_tbs_signature.r;
-  cdi_1_cert_params.cert_signature_s = (unsigned char *)curr_tbs_signature.s;
   HARDENED_RETURN_IF_ERROR(
       cdi_1_build_cert(&cdi_1_cert_params, cert, cert_size));
 

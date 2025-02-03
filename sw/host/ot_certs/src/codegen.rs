@@ -11,7 +11,7 @@ use indexmap::IndexMap;
 use itertools::Itertools;
 use std::fmt::Write;
 
-use crate::asn1::codegen::{self, VariableCodegenInfo, VariableInfo};
+use crate::asn1::codegen::{self, CodegenOutput, VariableCodegenInfo, VariableInfo};
 use crate::asn1::x509::X509;
 use crate::template::subst::{Subst, SubstValue};
 use crate::template::{
@@ -108,7 +108,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let generate_tbs_fn_name = format!("{}_build_tbs", tmpl.name);
     let generate_tbs_fn_params =
         format!("{tbs_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
-    let (generate_tbs_fn_def, generate_tbs_fn_impl, min_tbs_size, max_tbs_size) = generate_builder(
+    let (generate_tbs_fn_def, generate_tbs_fn_impl) = generate_builder(
         CertificateComponent::Tbs,
         &generate_tbs_fn_name,
         &generate_tbs_fn_params,
@@ -121,7 +121,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     sig_vars.insert(
         tbs_binary_val_name.to_string(),
         VariableType::ByteArray {
-            size: SizeRange::Size(min_tbs_size, max_tbs_size),
+            size: SizeRange::Size(generate_tbs_fn_impl.min_size, generate_tbs_fn_impl.max_size),
             int_size: None,
         },
     );
@@ -139,14 +139,13 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let generate_cert_fn_name = format!("{}_build_cert", tmpl.name);
     let generate_cert_fn_params =
         format!("{sig_value_struct_name} *values, uint8_t *out_buf, size_t *inout_size");
-    let (generate_cert_fn_def, generate_cert_fn_impl, _min_cert_size, max_cert_size) =
-        generate_builder(
-            CertificateComponent::Certificate,
-            &generate_cert_fn_name,
-            &generate_cert_fn_params,
-            &sig_vars,
-            |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
-        )?;
+    let (generate_cert_fn_def, generate_cert_fn_impl) = generate_builder(
+        CertificateComponent::Certificate,
+        &generate_cert_fn_name,
+        &generate_cert_fn_params,
+        &sig_vars,
+        |builder| X509::push_certificate(builder, &tbs_binary_val, &tmpl.certificate.signature),
+    )?;
 
     // Create constants for the variable size range.
     source_h.push_str("enum {\n");
@@ -179,8 +178,8 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     let max_cert_size_const_name = format!("k{}MaxCertSizeBytes", tmpl.name.to_upper_camel_case());
     source_h.push_str("// Maximum possible size of a certificate\n");
     source_h.push_str(&indoc::formatdoc! {"enum {{
-        {max_cert_size_const_name} = {max_cert_size},
-    }};"});
+        {max_cert_size_const_name} = {},
+    }};", generate_cert_fn_impl.max_size});
 
     // Output definition of the functions.
     source_h.push_str("\n\n");
@@ -189,8 +188,8 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
     source_h.push('\n');
 
     // Output the implementation of the functions.
-    source_c.push_str(&generate_tbs_fn_impl);
-    source_c.push_str(&generate_cert_fn_impl);
+    source_c.push_str(&generate_tbs_fn_impl.code);
+    source_c.push_str(&generate_cert_fn_impl.code);
     source_c.push('\n');
 
     writeln!(source_h, "\n#endif /* __{}__ */", preproc_guard_include)?;
@@ -208,9 +207,9 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
             &format!("Verify{idx}"),
             &tbs_vars,
             &sig_vars,
-            min_tbs_size,
-            max_tbs_size,
-            max_cert_size,
+            generate_tbs_fn_impl.min_size,
+            generate_tbs_fn_impl.max_size,
+            generate_cert_fn_impl.max_size,
             tmpl,
         )?;
         source_unittest.push_str(&test_case);
@@ -401,21 +400,17 @@ enum CertificateComponent {
     Tbs,
 }
 
-// Generate a function that generates a TBS/cert. This functions returns three
-// elements: the header definition, the implementation and the maximum size of
-// the produced TBS/cert.
+/// Generate a function that generates a TBS/cert.
+///
+/// This functions returns the header definition, the generated implementation
+/// code and the produced TBS/cert size range.
 fn generate_builder(
     component: CertificateComponent,
     fn_name: &str,
     fn_params_str: &str,
     variables: &IndexMap<String, VariableType>,
     gen: impl FnOnce(&mut codegen::Codegen) -> Result<()>,
-) -> Result<(String, String, usize, usize)> {
-    let mut generate_fn_impl = String::new();
-    writeln!(
-        generate_fn_impl,
-        "rom_error_t {fn_name}({fn_params_str}) {{"
-    )?;
+) -> Result<(String, CodegenOutput)> {
     let get_var_info = |var_name: &str| -> Result<VariableInfo> {
         let var_type = variables
             .get(var_name)
@@ -425,9 +420,7 @@ fn generate_builder(
         Ok(VariableInfo { var_type, codegen })
     };
     let generate_fn_def: String;
-    let implementation: String;
-    let max_size: usize;
-    let min_size: usize;
+    let mut generated_code: CodegenOutput;
     if component == CertificateComponent::Tbs {
         generate_fn_def = indoc::formatdoc! { r#"
         /**
@@ -446,7 +439,7 @@ fn generate_builder(
 
         "#
         };
-        (implementation, min_size, max_size) = codegen::Codegen::generate(
+        generated_code = codegen::Codegen::generate(
             /* buf_name */ "out_buf",
             /* buf_size_name */ "inout_size",
             &get_var_info,
@@ -470,18 +463,25 @@ fn generate_builder(
 
         "#
         };
-        (implementation, min_size, max_size) = codegen::Codegen::generate(
+        generated_code = codegen::Codegen::generate(
             /* buf_name */ "out_buf",
             /* buf_size_name */ "inout_size",
             &get_var_info,
             gen,
         )?;
     }
-    generate_fn_impl.push_str(&implementation);
+
+    let mut generate_fn_impl = String::new();
+    writeln!(
+        generate_fn_impl,
+        "rom_error_t {fn_name}({fn_params_str}) {{"
+    )?;
+    generate_fn_impl.push_str(&generated_code.code);
     generate_fn_impl.push_str("  return kErrorOk;\n");
     generate_fn_impl.push_str("}\n\n");
+    generated_code.code = generate_fn_impl;
 
-    Ok((generate_fn_def, generate_fn_impl, min_size, max_size))
+    Ok((generate_fn_def, generated_code))
 }
 
 // Decide whether a integer should use a special C type instead

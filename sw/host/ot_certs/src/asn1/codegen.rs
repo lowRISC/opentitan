@@ -97,9 +97,19 @@ pub struct Codegen<'a> {
     max_out_size: usize,
 }
 
+/// ASN1 code generator output.
+pub struct CodegenOutput {
+    /// Output code.
+    pub code: String,
+    /// Minimum size of the produced cert/TBS.
+    pub min_size: usize,
+    /// Maximum size of the produced cert/TBS.
+    pub max_size: usize,
+}
+
 impl Codegen<'_> {
     /// Generate code that corresponds to an ASN1 document described by a closure acting on a Builder.
-    /// Returns the generated code and the maximum possible size of the output.
+    /// Returns the generated code and the min/max possible size of the output.
     ///
     /// # Arguments
     ///
@@ -113,7 +123,7 @@ impl Codegen<'_> {
         buf_size_name: &str,
         variable_info: &dyn Fn(&str) -> Result<VariableInfo>,
         gen: impl FnOnce(&mut Codegen) -> Result<()>,
-    ) -> Result<(String, usize, usize)> {
+    ) -> Result<CodegenOutput> {
         let mut builder = Codegen {
             output: CodeOutput::new(),
             variable_info,
@@ -148,7 +158,7 @@ impl Codegen<'_> {
                             output.push_str(&format!(
                                 "
                                     /* Size patch with delta {delta} */
-                                    template_memo_size({patch_offset});
+                                    template_pos_t memo = template_save_pos(&state, {patch_offset});
                                 "
                             ));
                         }
@@ -171,7 +181,9 @@ impl Codegen<'_> {
 
                 // Output the combined const segment.
                 if nbytes > 0 {
-                    output.push_str(&format!("template_push_const(/*nbytes=*/{nbytes});\n"));
+                    output.push_str(&format!(
+                        "template_push_const(&state, /*nbytes=*/{nbytes});\n"
+                    ));
                 }
             } else {
                 /* is_code == true */
@@ -207,16 +219,21 @@ impl Codegen<'_> {
                 }}
 
                 const static uint8_t kTemplateConstBytes[] = {{{const_bytes}}};
+                template_state_t state;
 
-                template_init({buf_name}, kTemplateConstBytes);
+                template_init(&state, {buf_name}, kTemplateConstBytes);
 
                 {output}
 
-                template_finalize({buf_size_name});
+                *{buf_size_name} = template_finalize(&state);
             "
         );
 
-        Ok((output, builder.min_out_size, builder.max_out_size))
+        Ok(CodegenOutput {
+            code: output,
+            min_size: builder.min_out_size,
+            max_size: builder.max_out_size,
+        })
     }
 
     /// Push a chunk to the output stream.
@@ -225,14 +242,14 @@ impl Codegen<'_> {
     }
 
     /// Start a new nested block in the output stream.
-    /// It should be paired with an `dedent()` call.
+    /// It should be paired with an `unindent()` call.
     fn indent(&mut self) {
         self.push_chunk(CodeChunk::OpenBlock, None);
     }
 
     /// Close one level of nested block.
     /// It should be paired with an `indent()` call.
-    fn dedent(&mut self) {
+    fn unindent(&mut self) {
         self.push_chunk(CodeChunk::CloseBlock, None);
     }
 
@@ -370,7 +387,7 @@ impl Builder for Codegen<'_> {
                             builder.push_function_call(
                                 1,
                                 1,
-                                &format!("template_push_asn1_bool({value_expr});\n",),
+                                &format!("template_push_asn1_bool(&state, {value_expr});\n",),
                             );
                             Ok(())
                         })?;
@@ -447,7 +464,9 @@ impl Builder for Codegen<'_> {
                     VariableCodegenInfo::Uint32 { value_expr } => self.push_function_call(
                         min_size,
                         max_size,
-                        &format!("template_asn1_uint32({tag_str}, {msb_tweak}, {value_expr});\n",),
+                        &format!(
+                            "template_asn1_uint32(&state, {tag_str}, {msb_tweak}, {value_expr});\n",
+                        ),
                     ),
                     VariableCodegenInfo::Pointer {
                         ptr_expr,
@@ -458,7 +477,7 @@ impl Builder for Codegen<'_> {
                             min_size,
                             max_size,
                             &format!(
-                                "template_asn1_integer({tag_str}, {msb_tweak}, {ptr_expr}, {size_expr});\n",
+                                "template_asn1_integer(&state, {tag_str}, {msb_tweak}, {ptr_expr}, {size_expr});\n",
                             ),
                         )
                     }
@@ -504,7 +523,7 @@ impl Builder for Codegen<'_> {
 
                         // There is not tag, we are just pushing the data itself.
                         self.push_function_call(min_size, max_size, &format!(
-                            "template_push_bytes({ptr_expr}, {size_expr});\n"
+                            "template_push_bytes(&state, {ptr_expr}, {size_expr});\n"
                         ))
                     }
                     _ => bail!(
@@ -543,7 +562,7 @@ impl Builder for Codegen<'_> {
                         };
                         // There is not tag, we are just pushing the data itself.
                         self.push_function_call(min_size, max_size, &format!(
-                            "template_push_bytes({ptr_expr}, {size_expr});\n"
+                            "template_push_bytes(&state, {ptr_expr}, {size_expr});\n"
                         ))
                     }
                     _ => bail!(
@@ -593,7 +612,7 @@ impl Builder for Codegen<'_> {
                             builder.push_function_call(
                                 min_size,
                                 max_size,
-                                &format!("template_push_bytes({ptr_expr}, {size_expr});\n"),
+                                &format!("template_push_bytes(&state, (const uint8_t*){ptr_expr}, {size_expr});\n"),
                             );
                             Ok(())
                         })?;
@@ -609,7 +628,7 @@ impl Builder for Codegen<'_> {
                                 // The conversion doubles the size.
                                 self.push_tag(Some(name.into()), str_type, |builder| {
                                     builder.push_function_call(2 * min_size, 2 * max_size, &format!(
-                                        "template_push_hex({ptr_expr}, {size_expr});\n"
+                                        "template_push_hex(&state, {ptr_expr}, {size_expr});\n"
                                     ));
                                     Ok(())
                                 })?;
@@ -674,7 +693,7 @@ impl Builder for Codegen<'_> {
                         };
                         self.push_chunk(
                             CodeChunk::Code(format!(
-                                "template_set_bit({byte_offset}, {bit_offset}, {value_expr});\n"
+                                "template_set_bit(&state, {byte_offset}, {bit_offset}, {value_expr});\n"
                             )),
                             Some(name.clone()),
                         );
@@ -714,10 +733,13 @@ impl Builder for Codegen<'_> {
         );
 
         // Allocate placeholders in the output stream.
+        // This placeholder will be replaced by the encoded length later.
         let len_idx = self.output.len();
         self.push_const(None, &[]);
-        let open_idx = self.output.len();
+        // This placeholder will be replaced by the location memo code later.
+        let memo_idx = self.output.len();
         self.push_const(None, &[]);
+
         let content_idx = self.output.len();
 
         // We do not yet know how many bytes the content will use: remember the current
@@ -727,7 +749,7 @@ impl Builder for Codegen<'_> {
         let old_max_size = self.max_out_size;
         self.indent();
         gen(self)?;
-        self.dedent();
+        self.unindent();
         let min_size: usize = self.min_out_size - old_min_size;
         let max_size: usize = self.max_out_size - old_max_size;
 
@@ -759,6 +781,7 @@ impl Builder for Codegen<'_> {
 
             let len_enc = Der::encode_size(max_size);
             self.output[len_idx].code = CodeChunk::ConstBytes(len_enc);
+            // The memo placeholder is left empty / no-op in this branch.
         } else {
             /* var-sized tag */
             self.output[len_idx].comment = Some(format!(
@@ -767,17 +790,17 @@ impl Builder for Codegen<'_> {
 
             self.output[len_idx].code = CodeChunk::ConstBytes(len_enc);
 
-            // Add the open statement.
-            self.output[open_idx] = CodeChunkWithComment {
+            // Add the memo statement.
+            self.output[memo_idx] = CodeChunkWithComment {
                 code: CodeChunk::SizePatchMemo(-2),
                 comment: Some(format!("Start of {tag_name}")),
             };
             self.push_chunk(
-                CodeChunk::Code("template_patch_size_be();\n".to_string()),
+                CodeChunk::Code("template_patch_size_be(&state, memo);\n".to_string()),
                 Some(format!("End of {tag_name}")),
             );
         }
-        self.dedent();
+        self.unindent();
         Ok(())
     }
 }
