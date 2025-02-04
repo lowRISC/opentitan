@@ -16,12 +16,8 @@ import hjson
 from lib.common import vmem_permutation_string, wrapped_docstring
 from lib.OtpMemImg import OtpMemImg
 
-# Get the memory map definition.
-MMAP_DEFINITION_FILE = 'hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson'
 # Life cycle state and ECC poly definitions.
 LC_STATE_DEFINITION_FILE = 'hw/ip/lc_ctrl/data/lc_ctrl_state.hjson'
-# Default image file definition (can be overridden on the command line).
-IMAGE_DEFINITION_FILE = 'hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson'
 # Default output path (can be overridden on the command line). Note that
 # "BITWIDTH" will be replaced with the architecture's bitness.
 MEMORY_MEM_FILE = 'otp-img.BITWIDTH.vmem'
@@ -67,8 +63,6 @@ def main():
     # just the project root by adapting the default paths accordingly.
     proj_root = Path(__file__).parent.joinpath('../../')
     lc_state_def_file = Path(proj_root).joinpath(LC_STATE_DEFINITION_FILE)
-    mmap_def_file = Path(proj_root).joinpath(MMAP_DEFINITION_FILE)
-    img_def_file = Path(proj_root).joinpath(IMAGE_DEFINITION_FILE)
 
     parser = argparse.ArgumentParser(
         prog="gen-otp-img",
@@ -141,18 +135,17 @@ def main():
     parser.add_argument('--mmap-def',
                         type=Path,
                         metavar='<path>',
-                        default=mmap_def_file,
+                        required=True,
                         help='''
-                        OTP memory map file in Hjson format.
+                        Path to OTP memory map file in Hjson format.
                         ''')
     parser.add_argument('--img-cfg',
                         type=Path,
                         metavar='<path>',
-                        default=img_def_file,
+                        required=True,
                         help='''
                         Image configuration file in Hjson format.
-                        Defaults to {}
-                        '''.format(img_def_file))
+                        ''')
     parser.add_argument('--add-cfg',
                         type=Path,
                         metavar='<path>',
