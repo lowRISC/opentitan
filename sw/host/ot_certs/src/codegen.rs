@@ -122,7 +122,7 @@ pub fn generate_cert(from_file: &str, tmpl: &Template) -> Result<Codegen> {
         tbs_binary_val_name.to_string(),
         VariableType::ByteArray {
             size: SizeRange::Size(generate_tbs_fn_impl.min_size, generate_tbs_fn_impl.max_size),
-            int_size: None,
+            tweak_msb: None,
         },
     );
     let tbs_binary_val = Value::Variable(Variable {

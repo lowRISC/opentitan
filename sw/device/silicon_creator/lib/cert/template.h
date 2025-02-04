@@ -18,13 +18,31 @@ extern "C" {
  *
  * The fields in this structure should be considered
  * private and not be read or written directly.
+ *
+ * The following diagram shows the pointers location during encoding.
+ * Takes Cdi0 TBS as as example:
+ *
+ * Template Const Bytes:
+ *   `kTemplateConstBytes[]`  `const_end`     `+ sizeof(kTemplateConstBytes)`
+ *   | Bytes Copied to Output     |         Unconsumed Template Const Bytes |
+ *
+ * `const_end` pointer will start from offset zero, and increase to
+ * `sizeof(kTemplateConstBytes)` at the end of encoding.
+ *
+ * Output Buffer:
+ *   `out_begin`    `out_end`    `+ kCdi0MaxTbsSizeBytes`
+ *   | Used Bytes       |        Remaining Unused Space |
+ *
+ * `out_begin` pointer will not change.
+ * `out_end` pointer starts from `out_begin` to the actual output size.
+ * The actual size is between [kCdi0MinTbsSizeBytes, kCdi0MaxTbsSizeBytes].
  */
 typedef struct template_state {
-  // Points to the remaining const buffer.
+  // Points to the remaining pre-computed const array from codegen.
   const uint8_t *const_end;
-  // Points to the start of the output buffer.
+  // Points to the original start of the output buffer.
   const uint8_t *out_begin;
-  // Points to the remaining output buffer.
+  // Points to the end of bytes already outputted.
   uint8_t *out_end;
 } template_state_t;
 
@@ -57,12 +75,15 @@ static inline uint16_t template_finalize(template_state_t *state) {
 }
 
 /**
- * Set the `bit_offset` bit of previous `byte_offset` byte.
+ * Set the `value` to the `bit_offset` bit of previous `byte_offset` byte.
+ *
+ * This function assume the corresponding bit is zero before calling, which
+ * is ensured by the template code generator.
  *
  * @param state Pointer to the template engine state.
  * @param byte_offset Number of bytes before the last output bytes.
  * @param bit_offset Index of the bit to be set.
- * @param value Value of the bit.
+ * @param value Set the bit to one when true.
  */
 static inline void template_set_bit(template_state_t *state, int byte_offset,
                                     int bit_offset, bool value) {

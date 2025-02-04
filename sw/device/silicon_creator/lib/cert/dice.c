@@ -127,10 +127,13 @@ rom_error_t dice_cdi_0_cert_build(hmac_digest_t *rom_ext_measurement,
   ASSERT_SIZE_EQ(sizeof(cdi_0_pubkey->y),
                  kCdi0ExactOwnerIntermediatePubKeyEcYSizeBytes);
 
+  uint32_t rom_ext_security_version_be =
+      __builtin_bswap32(rom_ext_security_version);
+
   // Generate the TBS certificate.
   cdi_0_tbs_values_t cdi_0_cert_tbs_params = {
       .rom_ext_hash = (unsigned char *)rom_ext_measurement->digest,
-      .rom_ext_security_version = rom_ext_security_version,
+      .rom_ext_security_version = (unsigned char *)&rom_ext_security_version_be,
       .owner_intermediate_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .creator_pub_key_id = (unsigned char *)key_ids->endorsement->digest,
       .owner_intermediate_pub_key_ec_x = (unsigned char *)cdi_0_pubkey->x,
@@ -185,12 +188,15 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   ASSERT_SIZE_EQ(sizeof(cdi_1_pubkey->x), kCdi1ExactOwnerPubKeyEcXSizeBytes);
   ASSERT_SIZE_EQ(sizeof(cdi_1_pubkey->y), kCdi1ExactOwnerPubKeyEcYSizeBytes);
 
+  uint32_t owner_security_version_be =
+      __builtin_bswap32(owner_security_version);
+
   // Generate the TBS certificate.
   cdi_1_tbs_values_t cdi_1_cert_tbs_params = {
       .owner_hash = (unsigned char *)owner_measurement->digest,
       .owner_manifest_hash =
           (unsigned char *)owner_manifest_measurement->digest,
-      .owner_security_version = owner_security_version,
+      .owner_security_version = (unsigned char *)&owner_security_version_be,
       .owner_pub_key_id = (unsigned char *)key_ids->cert->digest,
       .owner_intermediate_pub_key_id =
           (unsigned char *)key_ids->endorsement->digest,

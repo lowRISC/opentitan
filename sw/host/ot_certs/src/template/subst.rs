@@ -227,7 +227,7 @@ impl ConvertValue<Vec<u8>> for SubstValue {
         // array, this avoids duplicating code.
         let val = self.parse(&VariableType::ByteArray {
             size: SizeRange::ExactSize(0),
-            int_size: None,
+            tweak_msb: None,
         })?;
         // The only supported conversion to byte array is from a byte array.
         let SubstValue::ByteArray(bytes) = val else {
@@ -247,7 +247,7 @@ impl ConvertValue<BigUint> for SubstValue {
         // Calling `parse` will ensure that that the returned value is a byte array.
         let val = self.parse(&VariableType::Integer {
             size: SizeRange::ExactSize(0),
-            int_size: None,
+            min_int_size: 0,
         })?;
         match val {
             SubstValue::ByteArray(bytes) => {
@@ -586,7 +586,7 @@ mod tests {
             byte_array
                 .parse(&VariableType::ByteArray {
                     size: SizeRange::ExactSize(0),
-                    int_size: None
+                    tweak_msb: None
                 })
                 .unwrap(),
             byte_array
@@ -595,7 +595,7 @@ mod tests {
             byte_array
                 .parse(&VariableType::ByteArray {
                     size: SizeRange::ExactSize(4),
-                    int_size: None
+                    tweak_msb: None
                 })
                 .unwrap(),
             byte_array
@@ -603,14 +603,14 @@ mod tests {
         assert!(byte_array
             .parse(&VariableType::ByteArray {
                 size: SizeRange::ExactSize(3),
-                int_size: None
+                tweak_msb: None
             })
             .is_err());
         // Size must match exactly.
         assert!(byte_array
             .parse(&VariableType::ByteArray {
                 size: SizeRange::ExactSize(5),
-                int_size: None
+                tweak_msb: None
             })
             .is_err());
 
@@ -621,7 +621,7 @@ mod tests {
             byte_array_str
                 .parse(&VariableType::ByteArray {
                     size: SizeRange::ExactSize(0),
-                    int_size: None
+                    tweak_msb: None
                 })
                 .unwrap(),
             byte_array
@@ -630,7 +630,7 @@ mod tests {
             byte_array_str
                 .parse(&VariableType::ByteArray {
                     size: SizeRange::ExactSize(4),
-                    int_size: None
+                    tweak_msb: None
                 })
                 .unwrap(),
             byte_array
@@ -638,14 +638,14 @@ mod tests {
         assert!(byte_array_str
             .parse(&VariableType::ByteArray {
                 size: SizeRange::ExactSize(3),
-                int_size: None
+                tweak_msb: None
             })
             .is_err());
         // Size must match exactly.
         assert!(byte_array_str
             .parse(&VariableType::ByteArray {
                 size: SizeRange::ExactSize(5),
-                int_size: None
+                tweak_msb: None
             })
             .is_err());
     }
@@ -671,7 +671,7 @@ mod tests {
             assert_eq!(
                 val.parse(&VariableType::Integer {
                     size: SizeRange::ExactSize(0),
-                    int_size: None
+                    min_int_size: 0
                 })
                 .unwrap(),
                 byte_array
@@ -679,7 +679,7 @@ mod tests {
             assert_eq!(
                 val.parse(&VariableType::Integer {
                     size: SizeRange::ExactSize(4),
-                    int_size: None
+                    min_int_size: 0
                 })
                 .unwrap(),
                 byte_array
@@ -688,7 +688,7 @@ mod tests {
             assert_eq!(
                 val.parse(&VariableType::Integer {
                     size: SizeRange::ExactSize(5),
-                    int_size: None
+                    min_int_size: 0
                 })
                 .unwrap(),
                 byte_array
@@ -697,7 +697,7 @@ mod tests {
             assert!(val
                 .parse(&VariableType::Integer {
                     size: SizeRange::ExactSize(3),
-                    int_size: None
+                    min_int_size: 0
                 })
                 .is_err());
         }

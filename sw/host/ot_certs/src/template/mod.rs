@@ -388,35 +388,30 @@ impl SizeRange {
     }
 }
 
-/// IntSizeRange sets the user's guarantee about the integer value
-/// represented by the byte array.
-#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
-#[serde(rename_all = "kebab-case")]
-pub enum IntSizeRange {
-    /// The minimum size in bytes of the encoded integer.
-    MinIntSize(usize),
-    /// Indicate the integer's MSb will always be set.
-    TweakMsb(bool),
-}
-
 /// Declaration of a variable that can be filled into the template.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub enum VariableType {
     /// Raw array of bytes.
+    #[serde(rename_all = "kebab-case")]
     ByteArray {
         #[serde(flatten)]
         size: SizeRange,
-        #[serde(flatten)]
-        int_size: Option<IntSizeRange>,
+
+        /// The MSb will always be set when encoded as an integer.
+        tweak_msb: Option<bool>,
     },
     /// Signed integer: such an integer is represented by an array of
     /// in big-endian.
+    #[serde(rename_all = "kebab-case")]
     Integer {
         #[serde(flatten)]
         size: SizeRange,
-        #[serde(flatten)]
-        int_size: Option<IntSizeRange>,
+
+        /// The minimum size in bytes of the encoded integer without zero prefix.
+        /// This field sets the user's guarantee about the integer value
+        /// represented by the byte array.
+        min_int_size: usize,
     },
     /// UTF-8 encoded String.
     String {
@@ -435,15 +430,11 @@ impl VariableType {
 
     /// Return true if the variable uses msb tweak trick.
     pub fn use_msb_tweak(&self) -> bool {
-        use IntSizeRange::*;
         use VariableType::*;
         matches!(
             self,
             ByteArray {
-                int_size: Some(TweakMsb(_)),
-                ..
-            } | Integer {
-                int_size: Some(TweakMsb(_)),
+                tweak_msb: Some(true),
                 ..
             }
         )
@@ -476,29 +467,21 @@ impl VariableType {
     ///
     /// The result is the closed range [min, max].
     pub fn int_size(&self, extra_bytes: usize) -> (usize, usize) {
-        use IntSizeRange::*;
         use VariableType::*;
         match self {
             ByteArray {
-                int_size: Some(TweakMsb(_)),
+                tweak_msb: Some(true),
                 ..
+            } => {
+                if !self.has_constant_array_size() {
+                    panic!("Tweak MSb of var-sized ByteArray is not supported");
+                }
+                (self.size() + extra_bytes, self.size() + extra_bytes)
             }
-            | Integer {
-                int_size: Some(TweakMsb(_)),
-                ..
-            } => (self.size() + extra_bytes, self.size() + extra_bytes),
-            ByteArray {
-                int_size: Some(MinIntSize(min_int_size)),
-                ..
-            }
-            | Integer {
-                int_size: Some(MinIntSize(min_int_size)),
-                ..
-            } => (*min_int_size, self.size() + extra_bytes),
-            ByteArray { size, .. } | Integer { size, .. } => {
-                let (min_size, max_size) = size.range();
-                (min_size, max_size + extra_bytes)
-            }
+            ByteArray { .. } => panic!(
+                "Encoding ByteArray variable without tweak-msb as an integer is not supported"
+            ),
+            Integer { min_int_size, .. } => (*min_int_size, self.size() + extra_bytes),
             String { .. } => panic!("String variable has no integer size"),
             Boolean => panic!("Boolean variable has no integer size"),
         }
@@ -519,7 +502,6 @@ mod tests {
     /// Test parsing a typical cdi_owner template.
     #[test]
     fn cdi_owner() {
-        use IntSizeRange::*;
         use SizeRange::*;
 
         // Input string for a Hjson template.
@@ -531,12 +513,12 @@ mod tests {
                 owner_pub_key_ec_x: {
                   type: "integer",
                   exact-size: 32,
-                  min-int-size: 24,
+                  min-int-size: 0,
                 },
                 owner_pub_key_ec_y: {
                   type: "integer",
                   exact-size: 32,
-                  min-int-size: 24,
+                  min-int-size: 0,
                 },
                 owner_pub_key_id: {
                   type: "byte-array",
@@ -557,20 +539,24 @@ mod tests {
                   exact-size: 20,
                 },
                 rom_ext_security_version: {
-                  type: "integer",
+                  type: "byte-array",
                   exact-size: 4,
+                  tweak-msb: true,
                 }
                 layer: {
                   type: "integer",
                   exact-size: 4,
+                  min-int-size: 1,
                 }
                 cert_signature_r: {
                   type: "integer",
                   exact-size: 32,
+                  min-int-size: 24,
                 },
                 cert_signature_s: {
                   type: "integer",
                   exact-size: 32,
+                  min-int-size: 24,
                 },
               },
 
@@ -600,7 +586,7 @@ mod tests {
                         type: "dice_tcb_info",
                         vendor: "OpenTitan",
                         model: "ROM_EXT",
-                        svn: { var: "rom_ext_security_version" },
+                        svn: { var: "rom_ext_security_version", convert: "big-endian" },
                         layer: { var: "layer" },
                         version: "ES",
                         fw_ids: [
@@ -633,70 +619,70 @@ mod tests {
                 "owner_pub_key_ec_x".to_string(),
                 VariableType::Integer {
                     size: ExactSize(32),
-                    int_size: Some(MinIntSize(24)),
+                    min_int_size: 0,
                 },
             ),
             (
                 "owner_pub_key_ec_y".to_string(),
                 VariableType::Integer {
                     size: ExactSize(32),
-                    int_size: Some(MinIntSize(24)),
+                    min_int_size: 0,
                 },
             ),
             (
                 "owner_pub_key_id".to_string(),
                 VariableType::ByteArray {
                     size: ExactSize(20),
-                    int_size: Some(TweakMsb(true)),
+                    tweak_msb: Some(true),
                 },
             ),
             (
                 "signing_pub_key_id".to_string(),
                 VariableType::ByteArray {
                     size: ExactSize(20),
-                    int_size: Some(TweakMsb(true)),
+                    tweak_msb: Some(true),
                 },
             ),
             (
                 "rom_ext_hash".to_string(),
                 VariableType::ByteArray {
                     size: ExactSize(20),
-                    int_size: None,
+                    tweak_msb: None,
                 },
             ),
             (
                 "ownership_manifest_hash".to_string(),
                 VariableType::ByteArray {
                     size: ExactSize(20),
-                    int_size: None,
+                    tweak_msb: None,
                 },
             ),
             (
                 "rom_ext_security_version".to_string(),
-                VariableType::Integer {
+                VariableType::ByteArray {
                     size: ExactSize(4),
-                    int_size: None,
+                    tweak_msb: Some(true),
                 },
             ),
             (
                 "layer".to_string(),
                 VariableType::Integer {
                     size: ExactSize(4),
-                    int_size: None,
+                    min_int_size: 1,
                 },
             ),
             (
                 "cert_signature_r".to_string(),
                 VariableType::Integer {
                     size: ExactSize(32),
-                    int_size: None,
+                    min_int_size: 24,
                 },
             ),
             (
                 "cert_signature_s".to_string(),
                 VariableType::Integer {
                     size: ExactSize(32),
-                    int_size: None,
+                    min_int_size: 24,
                 },
             ),
         ]);
@@ -733,7 +719,10 @@ mod tests {
             private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
-                svn: Some(Value::variable("rom_ext_security_version")),
+                svn: Some(Value::convert(
+                    "rom_ext_security_version",
+                    Conversion::BigEndian,
+                )),
                 layer: Some(Value::variable("layer")),
                 version: Some(Value::literal("ES")),
                 fw_ids: Some(Vec::from([

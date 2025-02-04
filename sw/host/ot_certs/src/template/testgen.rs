@@ -90,7 +90,7 @@ impl Template {
 
         if var_type.use_msb_tweak() {
             bytes[0] |= 0x80;
-        } else {
+        } else if matches!(var_type, super::VariableType::Integer { .. }) {
             let (min_int_size, _) = var_type.int_size(0);
             if min_int_size > 0 {
                 bytes[size - min_int_size] |= 0x1;
@@ -133,8 +133,8 @@ impl Template {
         // If any of the coordinates is a variable, create a substitution for it.
         if let Value::Variable(Variable { name, convert }) = &ec_pubkey.public_key.x {
             ensure!(
-                convert.is_none(),
-                "cannot generate a random public key if 'x' a variable with conversion"
+                matches!(convert, None | Some(super::Conversion::BigEndian)),
+                "cannot generate a random public key if 'x' a variable with invalid conversion"
             );
             data.values.insert(
                 name.clone(),
@@ -143,8 +143,8 @@ impl Template {
         }
         if let Value::Variable(Variable { name, convert }) = &ec_pubkey.public_key.y {
             ensure!(
-                convert.is_none(),
-                "cannot generate a random public key if 'y' a variable with conversion"
+                matches!(convert, None | Some(super::Conversion::BigEndian)),
+                "cannot generate a random public key if 'y' a variable with invalid conversion"
             );
             data.values.insert(
                 name.clone(),
