@@ -4154,6 +4154,21 @@
           index: -1
         }
         {
+          name: integrator_id
+          desc: Integrator ID signal used in BAT
+          struct: logic
+          type: uni
+          act: rcv
+          width: 4
+          inst_name: soc_proxy
+          default: ""
+          package: ""
+          external: true
+          top_signame: integrator_id
+          conn_type: false
+          index: -1
+        }
+        {
           name: core_tl
           struct: tl
           package: tlul_pkg
@@ -11926,6 +11941,7 @@
       soc_proxy.soc_lsio_trigger: soc_lsio_trigger
       soc_proxy.soc_gpi_async: soc_gpi_async
       soc_proxy.soc_gpo_async: soc_gpo_async
+      soc_proxy.integrator_id: integrator_id
       spi_device.sck_monitor: sck_monitor
       soc_dbg_ctrl.soc_dbg_policy_bus: soc_dbg_policy_bus
       soc_dbg_ctrl.halt_cpu_boot: debug_halt_cpu_boot
@@ -22518,6 +22534,21 @@
         index: -1
       }
       {
+        name: integrator_id
+        desc: Integrator ID signal used in BAT
+        struct: logic
+        type: uni
+        act: rcv
+        width: 4
+        inst_name: soc_proxy
+        default: ""
+        package: ""
+        external: true
+        top_signame: integrator_id
+        conn_type: false
+        index: -1
+      }
+      {
         name: core_tl
         struct: tl
         package: tlul_pkg
@@ -28871,6 +28902,18 @@
         conn_type: false
         index: -1
         netname: soc_gpo_async
+      }
+      {
+        package: ""
+        struct: logic
+        signame: integrator_id_i
+        width: 4
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: integrator_id
       }
       {
         package: ""

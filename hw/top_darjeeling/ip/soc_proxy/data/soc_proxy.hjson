@@ -300,6 +300,13 @@
       width:   16 // keep equal to `NumSocGpio`
       desc:    "GPO from SoC, async"
     }
+    { struct:  "logic"
+      width:   4
+      type:    "uni"
+      name:    "integrator_id"
+      act:     "rcv"
+      desc:    "Integrator ID signal used in BAT"
+    }
   ]
 
   regwidth: "32"
