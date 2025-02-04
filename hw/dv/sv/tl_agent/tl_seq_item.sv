@@ -82,16 +82,16 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   constraint a_valid_len_c {
-    soft a_valid_len inside {[1:10]};
+    a_valid_len inside {[1:10]};
   }
 
   constraint d_valid_len_c {
-    soft d_valid_len inside {[1:10]};
+    d_valid_len inside {[1:10]};
   }
 
   constraint valid_delay_c {
-    soft a_valid_delay inside {[0:50]};
-    soft d_valid_delay inside {[0:50]};
+    a_valid_delay inside {[0:50]};
+    d_valid_delay inside {[0:50]};
   }
 
   constraint d_opcode_c {
