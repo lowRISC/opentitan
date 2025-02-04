@@ -77,6 +77,7 @@ class tl_monitor extends dv_base_monitor#(
       @(posedge cfg.vif.rst_n);
       cfg.reset_asserted = 1'b0;
       pending_a_req.delete();
+      cfg.a_source_pend_q.delete();
     end
   endtask : reset_thread
 
