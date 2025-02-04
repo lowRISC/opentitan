@@ -16,7 +16,7 @@
   datawidth: "32",
 
   // Enable RACL on Darjeeling based on the following configuration
-  racl_config: 'top_darjeeling/data/racl/racl.hjson'
+  racl_config: 'racl/racl.hjson'
 
   // Power information for the design
   power: {
@@ -901,7 +901,7 @@
         soc:  {soc_mbx: "0x01465000"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx1",
@@ -914,7 +914,7 @@
         soc:  {soc_mbx: "0x01465100"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx2",
@@ -927,7 +927,7 @@
         soc:  {soc_mbx: "0x01465200"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx3",
@@ -950,7 +950,7 @@
         soc:  {soc_mbx: "0x01465400"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx5",
@@ -963,7 +963,7 @@
         soc:  {soc_mbx: "0x01465500"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx6",
@@ -986,7 +986,7 @@
         soc:  {soc_dbg: "0x1000"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/all_rd_wr_mapping.hjson'
+        soc: 'racl/all_rd_wr_mapping.hjson'
       }
     },
     { name: "mbx_pcie0",
@@ -999,7 +999,7 @@
         soc:  {soc_mbx: "0x01460100"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/soc_rot_mapping.hjson'
+        soc: 'racl/soc_rot_mapping.hjson'
       }
     },
     { name: "mbx_pcie1",
@@ -1012,7 +1012,7 @@
         soc:  {soc_mbx: "0x01460200"},
       },
       racl_mappings: {
-        soc: 'top_darjeeling/data/racl/soc_rot_mapping.hjson'
+        soc: 'racl/soc_rot_mapping.hjson'
       }
     },
     { name: "soc_dbg_ctrl",
@@ -1049,7 +1049,7 @@
         num_ranges: 32
       }
       attr: "ipgen",
-      racl_mapping: 'top_darjeeling/data/racl/soc_rot_mapping.hjson'
+      racl_mapping: 'racl/soc_rot_mapping.hjson'
     },
     { name: "rv_core_ibex",
       type: "rv_core_ibex",
