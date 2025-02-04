@@ -23,6 +23,12 @@
   // RAL spec - used to generate the RAL model.
   ral_spec: "{proj_root}/hw/top_earlgrey/data/top_earlgrey.hjson"
 
+  // OTP mmap - used to generate the otp memory map
+  otp_mmap: "{proj_root}/hw/top_earlgrey/data/otp/otp_ctrl_mmap.hjson"
+
+  // OTP image - used to generate otp image, defaults to a DEV image
+  otp_img: "{proj_root}/hw/top_earlgrey/data/otp/otp_ctrl_img_dev.hjson"
+
   // Add additional tops for simulation.
   sim_tops: ["clkmgr_bind",
              "pwrmgr_bind",
@@ -183,7 +189,9 @@
         // Generate LC encoding
         "cd {proj_root} && ./util/design/gen-lc-state-enc.py --seed {seed}",
         // Generate OTP memory map and scrambling constants keys.
-        "cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed}",
+        '''cd {proj_root} && ./util/design/gen-otp-mmap.py --seed {seed} \
+        --topname earlrey
+	''',
         // Use eval_cmd to save build_seed in a file and reuse that file during run phase.
         // Create the build directory first because eval_cmd runs before actual build phase command
         // execution.
@@ -234,6 +242,8 @@
   gen_otp_images_cmd: "{proj_root}/util/design/gen-otp-img.py"
   gen_otp_images_cmd_opts: ["--quiet",
                             "--img-seed {seed}",
+			    "--mmap-def {gen_otp_images_cfg_dir}/otp_ctrl_mmap.hjson",
+
                             // Only provide `--otp-seed` argument if the file to store build_seed
                             // is found. Set this option at the end of the list to avoid `eval_cmd`
                             // take other options as eval_cmd.

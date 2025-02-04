@@ -116,7 +116,7 @@ def main():
                         help='Custom seed for RNG to compute default values.')
 
     parser.add_argument('--topname',
-                        default='earlgrey',
+                        required=True,
                         help='The topname, as in earlgrey of darjeeling.')
     args = parser.parse_args()
 
