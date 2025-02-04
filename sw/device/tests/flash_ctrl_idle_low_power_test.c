@@ -43,8 +43,9 @@ static top_earlgrey_plic_peripheral_t peripheral_serviced;
 static dif_aon_timer_irq_t irq_serviced;
 
 enum {
-  kFlashDataRegion = 0,
-  kRegionBasePageIndex = 256,  // First page in bank 1 (avoids program code.)
+  kFlashDataRegion = 2,  // The ROM_EXT protects itself using regions 0-1.
+  kRegionBasePageIndex =
+      256 + 32,  // First non-ROM_EXT page in bank 1 (avoids program code.)
   kPartitionId = 0,
   kRegionSize = 1,
   kNumWords = 128,
