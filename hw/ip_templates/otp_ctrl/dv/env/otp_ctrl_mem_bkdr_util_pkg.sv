@@ -5,6 +5,9 @@
 // This package has functions that perform mem_bkdr_util accesses to different partitions in OTP.
 // These functions end up performing reads and writes to the underlying simulated otp memory, so
 // the functions must get a handle to the mem_bkdr_util instance for otp_ctrl as an argument.
+//
+// NB: this package is only suitable for top-level environments since it depends on SKU-dependent
+// OTP ctrl fields.
 
 package otp_ctrl_mem_bkdr_util_pkg;
 
@@ -167,13 +170,9 @@ package otp_ctrl_mem_bkdr_util_pkg;
     mem_bkdr_util_h.write64(HwCfg0DigestOffset, digest);
   endfunction
 
-
-  // TODO(#25883): The size of these parameters depends on the top-level. This injected a fact about
-  // the top-level into the mem_bkdr_util class. For now, we're replacing "EnCsrngSwAppReadSize" with
-  // 1 as a short-term hack.
   function automatic void otp_write_hw_cfg1_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [1*8-1:0] en_csrng_sw_app_read,
+      bit [EnCsrngSwAppReadSize*8-1:0] en_csrng_sw_app_read,
       bit [EnSramIfetchSize*8-1:0] en_sram_ifetch,
       bit [EnSramIfetchSize*8-1:0] dis_rv_dm_late_debug
   );
