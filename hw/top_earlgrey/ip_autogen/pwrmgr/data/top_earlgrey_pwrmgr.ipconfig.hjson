@@ -39,23 +39,9 @@
         module: sensor_ctrl_aon
       }
     ]
+    NumRstReqs: 2
     rst_reqs:
     {
-      peripheral:
-      [
-        {
-          name: rst_req
-          width: "1"
-          module: sysrst_ctrl_aon
-          desc: OpenTitan reset request to `rstmgr` (running on AON clock).
-        }
-        {
-          name: aon_timer_rst_req
-          width: "1"
-          module: aon_timer_aon
-          desc: watchdog reset requestt
-        }
-      ]
       int:
       [
         {
@@ -77,8 +63,22 @@
           module: rv_dm
         }
       ]
+      peripheral:
+      [
+        {
+          name: rst_req
+          width: "1"
+          module: sysrst_ctrl_aon
+          desc: OpenTitan reset request to `rstmgr` (running on AON clock).
+        }
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
+        }
+      ]
     }
-    NumRstReqs: 2
     wait_for_external_reset: false
     NumRomInputs: 1
     top_pkg_vlnv: lowrisc:constants:top_earlgrey_top_pkg

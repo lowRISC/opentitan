@@ -336,4 +336,165 @@
   ]
   clock: clk_peri_i
   type: xbar
+  inter_signal_list:
+  [
+    {
+      name: tl_main
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: rsp
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: main_tl_peri
+      index: -1
+    }
+    {
+      name: tl_uart0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart0_tl
+      index: -1
+    }
+    {
+      name: tl_uart1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: uart1_tl
+      index: -1
+    }
+    {
+      name: tl_gpio
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: gpio_tl
+      index: -1
+    }
+    {
+      name: tl_spi_device
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: spi_device_tl
+      index: -1
+    }
+    {
+      name: tl_spi_host0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: spi_host0_tl
+      index: -1
+    }
+    {
+      name: tl_rv_timer
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: rv_timer_tl
+      index: -1
+    }
+    {
+      name: tl_usbdev
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: usbdev_tl
+      index: -1
+    }
+    {
+      name: tl_pwrmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pwrmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_rstmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: rstmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_clkmgr_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: clkmgr_aon_tl
+      index: -1
+    }
+    {
+      name: tl_pinmux_aon
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      top_signame: pinmux_aon_tl
+      index: -1
+    }
+    {
+      name: tl_ast
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: peri
+      width: 1
+      default: ""
+      external: true
+      top_signame: ast_tl
+      conn_type: false
+      index: -1
+    }
+  ]
 }

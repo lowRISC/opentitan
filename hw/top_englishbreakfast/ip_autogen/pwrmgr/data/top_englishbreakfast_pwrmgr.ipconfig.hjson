@@ -24,17 +24,9 @@
         module: aon_timer_aon
       }
     ]
+    NumRstReqs: 1
     rst_reqs:
     {
-      peripheral:
-      [
-        {
-          name: aon_timer_rst_req
-          width: "1"
-          module: aon_timer_aon
-          desc: watchdog reset requestt
-        }
-      ]
       int:
       [
         {
@@ -56,8 +48,16 @@
           module: rv_dm
         }
       ]
+      peripheral:
+      [
+        {
+          name: aon_timer_rst_req
+          width: "1"
+          module: aon_timer_aon
+          desc: watchdog reset requestt
+        }
+      ]
     }
-    NumRstReqs: 1
     wait_for_external_reset: false
     NumRomInputs: 1
     top_pkg_vlnv: lowrisc:constants:top_englishbreakfast_top_pkg
