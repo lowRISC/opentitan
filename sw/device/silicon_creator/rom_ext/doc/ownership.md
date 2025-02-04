@@ -18,7 +18,7 @@ Ownership Transfer allows the owner of the chip to securely root an OpenTitan ch
 - Unlock Key: an ECDSA P-256 public/private key-pair used to authenticate an Unlock Owner command.
   This key is endorsed by the Owner key by virtue of being present in the owner configuration.
 - Ownership State: The state of a chip with respect to ownership transfer.
-  A chip may be in one of the following states: `LockedOwner`, `UnlockedSelf`, `UnlockedAny`, `UnlockedEndorsed`, `LockedNone`.
+  A chip may be in one of the following states: `LockedOwner`, `UnlockedSelf`, `UnlockedAny`, `UnlockedEndorsed`, `Recovery`.
 - Ownership Nonce: A 64-bit random integer used as a validation challenge for all ownership-related boot services requests.
 - Owner Page 0 & 1: The Owner Configuration is stored by the chip in a pair of flash INFO pages.
   Normally the two pages are identical and serve as redundant backups.
@@ -40,12 +40,59 @@ A chip may be in one of the following states:
 - `UnlockedSelf`: The chip is currently owned and is expecting an ownership block update for the same owner (ie: config change or key rotation).
 - `UnlockedAny`: The chip is currently owned but will accept an ownership block for any new owner.
 - `UnlockedEndorsed`: The chip is currently owned but will accept an ownership block only from a new owner endorsed by the current owner.
-- `LockedNone` The chip doesn’t have an owner and is unable to accept a new owner.
-  This is a nearly-fatal error state and requires intervention by *silicon\_creator* to recover the chip.
+- `Recovery` The chip doesn’t have an owner and is unable to accept a new owner.
+  This is a nearly-fatal error state and requires intervention by *sku\_creator* to recover the chip.
 
 When the chip is in one of the `Unlocked` states, the ROM\_EXT will unlock Owner Page 1 allowing firmware to write a new owner configuration into that location.
 
 The ownership state is stored in the `boot_data` record.
+
+```mermaid
+flowchart LR
+subgraph container["<font size=6>Ownership State Transitions</font>"]
+    direction LR
+    start[LockedOwner] --> unlock{BootSvc::OwnershipUnlock}
+    unlock -->|mode: Any| any[UnlockedAny]
+    unlock -->|mode: Endorsed| endorsed[UnlockedEndorsed]
+    unlock -->|mode: Update| self[UnlockedSelf]
+    any --> activate{BootSvc::OwnershipActivate}
+    endorsed --> activate
+    self --> activate
+    activate --> done[LockedOwner]
+    style container fill:none,stroke:black
+end
+```
+
+### Owner Configuration
+
+The owner configuration (sometimes called "owner block") allows an owner to tailor the configuration of the chip to their use case.
+The configuration allows the owner to control the flash configuration, application verification keys, rescue mode configuration and miscellaneous configuration of the chip.
+
+- The flash configuration allows the owner to set access control (read, program, erase) and storage policy (ECC, scrambling, high endurance) of various regions and INFO pages of flash.
+- The owner may add a number of application verification keys that permit code execution.
+  The application key configuration includes an execution domain (e.g. `prod`, `dev` or `test`) and a key diversifier constant allowing the owner to control the derivation of sealing keys by the OpenTitan key manager.
+- The rescue configuration allows the owner to configure the operation of the rescue mode.
+  The configuration allows protecting flash regions from erasure during rescue and designating the allowed set of rescue commands (an owner may want to disable certain rescue commands if they feel those commands represent an attack or denial of service vector in their use case).
+- The miscellaneous configuration contains configuration for features that aren't well categorized into one of the above configurations:
+  - Enable or disable SRAM execution.
+  - Reset the BL0 minimum security version.
+
+#### Update Mode
+
+There are several allowed update modes for the ownership configuration.
+These update modes are motivated by two scenarios:
+
+- The Unlock Key is a very powerful key and owners may want to attenuate the power of the unlock key to mitigate the risk of the key leaking.
+- An owner may want to provide a configuration update for devices in the field that does not require the unlock and activate procedure.
+
+The update mode provides for three types of owner configuration update procedures:
+
+- `Open` mode allows the unlock key to unlock the device into any of the unlocked states.
+- `Self` mode allows the unlock key to unlock the device into only the `UnlockedSelf` state.
+- `NewVersion` mode forbids the unlock key from unlocking the device.
+  Instead, the device may accept an ownership configuration update at any time _if and only if_ the new configuration is signed by the self-same owner _and_ the configuration has a newer `config_version` number.
+
+When the update mode is either `Self` or `NewVersion`, the power of the unlock key is reduced to only allow ownership operations that do not change the owner.
 
 ### Ownership Nonce
 
@@ -57,35 +104,42 @@ Any subsequent ownership-related request must use the new nonce value.
 
 The ownership nonce is stored in the `boot_data` record.
 
-### Next Owner Key
+### Owner Key
 
-The next owner key is the public ECDSA key of the next owner when performing an endorsed ownership transfer operation.
+The Owner key represents the identify of the device owner.
+The Owner key signs the ownership configuration and endorses the other keys contained within the configuration.
 
-The next owner’s public key fingerprint (ie: sha256 of the public key material) is stored in the `boot_data` record.
+The Owner key is considered to be the highest value key among all of the ownership keys and it should have the highest level of protection.
+For example, an owner may choose to store the owner key in an offline HSM and require a multi-party quorum to use the key.
 
 ### Activate Key
 
 The Activate key is used to authenticate the Activate Owner boot services command
-This key is separate from the Next Owner Key to allow owners to have different security policies for the Owner and Activate keys
+This key is separate from the Owner Key to allow owners to have different security policies for the Owner and Activate keys
 For example, this permits the Owner private key to be stored in an offline system and the Activate key to be stored in an online system.
 
-The Activate Owner key is endorsed by the Owner key via the Ownership Block data structure.
+The Activate Owner key is endorsed by the Owner key via the Ownership Configuration data structure.
 
 ### Unlock Key
 
 The Unlock key is used to authenticate the Unlock Ownership boot services command
-This key is separate from the Next Owner Key to allow owners to have different security policies for the Owner and Unlock keys.
+This key is separate from the Owner Key to allow owners to have different security policies for the Owner and Unlock keys.
 
-The Unlock key is endorsed by the Owner key via the Ownership Block data structure.
+The Unlock key is endorsed by the Owner key via the Ownership Configuration data structure.
 
-### Operations
+## Ownership Transfer Operations
 
 The following flows support ownership transfer operations
 Each of the flows assumes the owner currently has `primary_bl0` set to SideA (the flows will also work with the `primary_bl0` set to SideB, but any reference to SideB in the flows would need to be changed to SideA).
 
-#### Locked Update of Owner Configuration
+#### Next Owner Key
 
-A locked update allows an owner to update their Owner Configuration without transferring ownership to a new owner.
+The next owner key is the public ECDSA key of the next owner when performing an endorsed ownership transfer operation.
+The next owner’s public key fingerprint (ie: sha256 of the public key material) is stored in the `boot_data` record.
+
+### Self Update of Owner Configuration
+
+A self update allows an owner to update their Owner Configuration without transferring ownership to a new owner.
 
 1. The owner prepares for the update by staging a signed boot services `OwnershipUnlock` command with the current ownership nonce and the mode set to `UnlockedSelf`.
    - After staging the command, the chip is rebooted.
@@ -158,7 +212,7 @@ subgraph container["<font size=6>Flow: Locked Configuration Update</font>"]
 end
 ```
 
-#### Unlocked Ownership Transfer
+### Unlocked Ownership Transfer
 
 An unlocked ownership transfer allows the current owner to unlock the chip so that it will accept any new owner.
 
@@ -245,7 +299,7 @@ subgraph container["<font size=6>Flow: Unlocked Ownership Transfer</font>"]
 end
 ```
 
-#### Endorsed Ownership Transfer
+### Endorsed Ownership Transfer
 
 An endorsed ownership transfer allows the current owner to transfer ownership to a specific new owner.
 
@@ -329,25 +383,33 @@ subgraph container["<font size=6>Flow: Endorsed Ownership Transfer</font>"]
 end
 ```
 
-### Boot Services Commands
+## Boot Services Commands
 
 All ownership operations are facilitated by boot services commands to the ROM\_EXT.
 The following boot services commands are supported.
 
-#### Ownership Unlock
+### Ownership Unlock
 
 The ownership unlock command prepares the chip for an ownership transfer or a non-transferring owner configuration update.
 The ownership unlock command must include the current ROM\_EXT nonce and a signature with the current owner's unlock key.
 
 ```c
-struct boot_svc_ownership_unlock_request {
-    boot_svc_header_t header;
-    uint32_t unlock_mode;           // One of UnlockedAny, UnlockedEndorsed, UnlockedSelf or Abort.
-    uint32_t reserved[18];          // Reserved for future use.
-    uint64_t nonce;                 // The current ownership nonce.
-    uint32_t next_owner_key[16];    // The public key of the next owner (for endorsed mode).
-    uint32_t signature[16];         // Signature over [unlock_mode..next_owner_key].
-};
+typedef struct boot_svc_ownership_unlock_req {
+  /** Boot services message header.  */
+  boot_svc_header_t header;
+  /** Unlock mode: Any, Endorsed, Update or Abort.  */
+  uint32_t unlock_mode;
+  /** The 64-bit DIN subfield of the full 256-bit device ID.  */
+  uint32_t din[2];
+  /** Reserved for future use.  */
+  uint32_t reserved[8];
+  /** The current ownership nonce.  */
+  nonce_t nonce;
+  /** The public key of the next owner (for endorsed mode).  */
+  owner_key_t next_owner_key;
+  /** Signature over [unlock_mode..next_owner_key] */
+  owner_signature_t signature;
+} boot_svc_ownership_unlock_req_t;
 ```
 See the definition in [boot_svc_ownership_unlock.h](../../lib/boot_svc/boot_svc_ownership_unlock.h).
 
@@ -363,20 +425,29 @@ When the mode is `Abort`, the ROM\_EXT will:
 - Update the ownership state to `LockedOwner`.
 - Copy the owner configuration from owner page 0 to owner page 1.
 
-#### Ownership Activate
+### Ownership Activate
 
 The ownership activate command completes an ownership transfer or update and moves the chip into the `LockedOwner` state.
 The ownership activate command must include the current ROM\_EXT nonce and a signature with the next owner's activate key (or the current owner's activate key in the case of a non-transferring update).
 
 ```c
-struct boot_svc_ownership_activate_request {
-    boot_svc_header_t header;
-    uint32_t primary_bl0_slot;      // Which flash slot contains the new owner's firmware.
-    uint32_t erase_previous;        // Erase the previous owner's flash (hardened_bool_t).
-    uint32_t reserved[33];          // Reserved for future use.
-    uint64_t nonce;                 // The current ownership nonce.
-    uint32_t signature[16];         // Signature over [primary_bl0_slot..nonce].
-};
+typedef struct boot_svc_ownership_activate_req {
+  /** Boot services message header.  */
+  boot_svc_header_t header;
+  /** Which side of the flash is primary after activation.  */
+  uint32_t primary_bl0_slot;
+  /** The 64-bit DIN subfield of the full 256-bit device ID.  */
+  uint32_t din[2];
+  /** Erase previous owner's flash (hardened_bool_t).  */
+  uint32_t erase_previous;
+  /** Reserved for future use.  */
+  uint32_t reserved[31];
+  /** The current ownership nonce.  */
+  nonce_t nonce;
+  /** Signature over [primary_bl0_slot..nonce] */
+  owner_signature_t signature;
+} boot_svc_ownership_activate_req_t;
+
 ```
 See the definition in [boot_svc_ownership_activate.h](../../lib/boot_svc/boot_svc_ownership_activate.h).
 
@@ -417,9 +488,9 @@ struct TLVHeader {
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
-### Structures
+## Data Structures
 
-#### Owner Configuration
+### Owner Configuration
 
 The Owner Configuration struct carries the required owner key materials and validation information and is a container for all of the TLV structs specifying the configuration.
 - The `owner_key` Key is an ECDSA P-256 key used to authenticate the owner configuration and endorse the other keys.
@@ -429,24 +500,44 @@ The Owner Configuration struct carries the required owner key materials and vali
    - During ownership transfer, the `seal` is computed by the chip.
 
 ```c
-struct OwnerConfig {
-    uint32_t tag;                   // Tag: `OWNR`.
-    uint32_t length;                // 2048 bytes.
-    uint32_t version;               // The version of the struct (currently version 0).
-    uint32_t sram_exec_mode;        // SRAM execution configuration (`DisabledLocked`, `Disabled` or `Enabled`).
-    uint32_t ownership_key_alg;     // Ownership key algorithm (ECDSA, SPX or SPXq20).
-    uint32_t reserved[3];           // Reserved for future use.
-    owner_key_t owner_key;          // Owner's public key.
-    owner_key_t activate_key;       // Owner's activate key.
-    owner_key_t unlock_key;         // Owner's unlock key.
-    uint8_t data[1728];             // Data region to hold additional TLV configuration structs.
-    owner_signature_t signature;    // Signature over [tag..data] with owner's private key.
-    uint32_t seal[8];               // A KMAC over the configuration to bind the struct to a chap.
-};
+typedef struct owner_block {
+  /**
+   * Header identifying this struct.
+   * tag: `OWNR`.
+   * length: 2048.
+   */
+  tlv_header_t header;
+  /** Version of the owner struct.  Currently `0`. */
+  uint32_t struct_version;
+  /** SRAM execution configuration (DisabledLocked, Disabled, Enabled). */
+  uint32_t sram_exec_mode;
+  /** Ownership key algorithm (currently, only ECDSA is supported). */
+  uint32_t ownership_key_alg;
+  /** Configuration version (monotonically increasing per owner) */
+  uint32_t config_version;
+  /** Set the minimum security version to this value (UINT32_MAX: no change) */
+  uint32_t min_security_version_bl0;
+  /** Ownership update mode (one of Open, Self, NewVersion) */
+  uint32_t update_mode;
+  /** Reserved space for future use. */
+  uint32_t reserved[24];
+  /** Owner public key. */
+  owner_key_t owner_key;
+  /** Owner's Activate public key. */
+  owner_key_t activate_key;
+  /** Owner's Unlock public key. */
+  owner_key_t unlock_key;
+  /** Data region to hold the other configuration structs. */
+  uint8_t data[1536];
+  /** Signature over [tag..data] with the owner private key. */
+  owner_signature_t signature;
+  /** A sealing value to seal the owner block to a specific chip. */
+  uint32_t seal[8];
+} owner_block_t;
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
-#### Application Keys
+### Application Keys
 
 The Application Keys verify owner firmware payloads during the secure boot process.
 - The `key_algorithm` refers to the key algorithm to be used with this key (ECDSA, SPX or SPXq20).
@@ -461,19 +552,37 @@ The Application Keys verify owner firmware payloads during the secure boot proce
 - The `data` field contains the key material itself.
 
 ```c
-struct OwnerApplicationKey {
-    tlv_header_t header;            // Tag: `APPK`.  Length: 48 + sizeof(key).
-    uint32_t key_algorithm;         // Key algorithm (ECDSA, SPX or SPXq20).
-    uint32_t key_domain;            // Key domain (prod, dev or test).
-    uint32_t key_diversifier[7];    // Key diversifier.
-    uint32_t usage_constraint;      // Usage constraint must match manifest header's constraint.
-    uint32_t data[];                // Key material.
-};
-
+typedef struct owner_application_key {
+  /**
+   * Header identifying this struct.
+   * tag: `APPK`.
+   * length: 48 + sizeof(key).
+   */
+  tlv_header_t header;
+  /** Key algorithm.  One of ECDSA, SPX+ or SPXq20. */
+  uint32_t key_alg;
+  /** Key domain.  Recognized values: PROD, DEV, TEST */
+  uint32_t key_domain;
+  /** Key diversifier.
+   *
+   * This value is concatenated to key_domain to create an 8 word
+   * diversification constant to be programmed into the keymgr.
+   */
+  uint32_t key_diversifier[7];
+  /** Usage constraint must match manifest header's constraint */
+  uint32_t usage_constraint;
+  /** Key material.  Varies by algorithm type. */
+  union {
+    uint32_t id;
+    sigverify_rsa_key_t rsa;
+    sigverify_spx_key_t spx;
+    sigverify_ecdsa_p256_buffer_t ecdsa;
+  } data;
+} owner_application_key_t;
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
-#### EFLASH Configuration
+### EFLASH Configuration
 
 The EFLASH configuration describes the owner's desired flash configuration.
 - The flash region `start` and `size` are expressed in pages.
@@ -481,32 +590,49 @@ The EFLASH configuration describes the owner's desired flash configuration.
   This is to allow configuring the A and B havles differently during an ownership transfer operation.
 
 ```c
-enum Properties {
-  Read =               0x00000001,  // Allow read access to the region.
-  Program =            0x00000002,  // Allow program access to the region.
-  Erase =              0x00000004,  // Allow erase access to the region.
-  Scramble =           0x00000008,  // Turn on data scrambling in the region.
-  Ecc =                0x00000010,  // Turn on ECC error correction in the region.
-  HighEndurance =      0x00000020,  // Turn on High Endurance mode for the region.
-  ProtectWhenPrimary = 0x40000000,  // Protect region when on the primary side (ie: disable program and erase).
-  Lock =               0x80000000,  // Lock the region configuration register for this region.
-};
+typedef struct owner_flash_region {
+  /** The start of the region, in flash pages. */
+  uint16_t start;
+  /** The size of the region, in flash pages. */
+  uint16_t size;
+  /**
+   * The access properties of the flash region.
+   * The 32-bit word is a packed set of multi-bit bools.
+   * +------+---------+----+----+----+-------+---------+------+
+   * | Lock | Protect |    |    |    | Erase | Program | Read |
+   * +------+---------+----+----+----+-------+---------+------+
+   */
+  uint32_t access;
+  /**
+   * The flash properties of the flash region.
+   * The 32-bit word is a packed set of multi-bit bools.
+   * +----+----+----+----+----+----+-----+----------+
+   * |    |    |    |    |    | HE | ECC | Scramble |
+   * +----+----+----+----+----+----+-----+----------+
+   */
+  uint32_t properties;
+} owner_flash_region_t;
 
-struct FlashRegion {
-    uint16_t start;                 // Flash region starting page number.
-    uint16_t size;                  // Size of the region in pages.
-    uint32_t properties;            // Bitmap describing the requested properties.
-};
+typedef struct owner_flash_config {
+  /**
+   * Header identifiying this struct.
+   * tag: `FLSH`.
+   * length: 8 + 12 * length(config).
+   */
+  tlv_header_t header;
+  /**
+   * A list of flash region configurations.
+   * In each `config` item, the `access` and `properties` fields are xor-ed
+   * with the region index in each nibble (ie: index 1 == 0x11111111).
+   */
+  owner_flash_region_t config[];
+} owner_flash_config_t;
 
-struct OwnerFlashConfig {
-    tlv_header_t header;            // Tag: `FLSH`.  Length: 8 + 8 * count(config).
-    struct FlashRegion config[];    // Variable length.
-};
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
 
-#### FLASH_INFO Configuration
+### FLASH\_INFO Configuration
 
 The FLASH-INFO configuration describes the owner's desired configuration for flash info pages.
 
@@ -514,21 +640,49 @@ Info page configurations apply only to pages accessible to the owner.
 Upon ingestion of a new owner configuration, the ROM\_EXT will reject a configuration that attempts to use info pages reserved for `silicon_creator`.
 
 ```c
-struct InfoPage {
-    uint8_t bank;                   // Flash bank.
-    uint8_t page;                   // Page number
-    uint8_t _padding[2];
-    uint32_t properties;            // Bitmap describing the requested properties.
-};
+typedef struct owner_info_page {
+  /** The bank where the info page is located. */
+  uint8_t bank;
+  /** The info page number. */
+  uint8_t page;
+  uint16_t _pad;
+  /**
+   * The access properties of the flash region.
+   * The 32-bit word is a packed set of multi-bit bools.
+   * +------+-----+----+----+----+-------+---------+------+
+   * | Lock |     |    |    |    | Erase | Program | Read |
+   * +------+-----+----+----+----+-------+---------+------+
+   */
+  uint32_t access;
+  /**
+   * The flash properties of the flash region.
+   * The 32-bit word is a packed set of multi-bit bools.
+   * +----+----+----+----+----+----+-----+----------+
+   * |    |    |    |    |    | HE | ECC | Scramble |
+   * +----+----+----+----+----+----+-----+----------+
+   */
+  uint32_t properties;
+} owner_info_page_t;
 
-struct OwnerFlashInfoConfig {
-    tlv_header_t header;            // Tag: `INFO`.  Length: 8 + 8 * count(config).
-    struct FlashInfo config[];      // Variable length.
-};
+typedef struct owner_flash_info_config {
+  /**
+   * Header identifiying this struct.
+   * tag: `INFO`.
+   * length: 8 + 12 * length(config).
+   */
+  tlv_header_t header;
+  /**
+   * A list of flash info page configurations.
+   * In each `config` item, the `access` and `properties` fields are xor-ed
+   * with the region index in each nibble (ie: index 1 == 0x11111111).
+   */
+  owner_info_page_t config[];
+} owner_flash_info_config_t;
+
 ```
 See the definition in [datatypes.h](../../lib/ownership/datatypes.h).
 
-#### Rescue Configuration
+### Rescue Configuration
 
 The rescue configuration describes the owner's desired configuration of the ROM\_EXT rescue protocol.
 - The owner may configure the region of flash to be erased and reprogrammed during firmware rescue.
@@ -537,11 +691,24 @@ The rescue configuration describes the owner's desired configuration of the ROM\
    - Allowed boot services commands determine whether or not a boot services request from the rescue protocol will be accepted or rejected.
 
 ```c
-struct OwnerRescueConfig {
-    tlv_header_t header;            // Tag: `RSCU`.  Length: 16 + sizeof(command_allow).
-    uint32_t rescue_type;           // Currently, only Xmodem is supported.
-    uint16_t region_start;                        // Start page of the rescue region in flash.
-    uint16_t region_size;           // Size of of the rescue region in pages.
-    uint32_t command_allow[];       // List of FourCC tags of allowed rescue modes and boot services commands.
-}
+typedef struct owner_rescue_config {
+  /**
+   * Header identifiying this struct.
+   * tag: `RSCU`.
+   * length: 16 + sizeof(command_allow).
+   */
+  tlv_header_t header;
+  /** The rescue type.  Currently, only `XMDM` is supported. */
+  uint32_t rescue_type;
+  /** The start offset of the rescue region in flash (in pages). */
+  uint16_t start;
+  /** The size of the rescue region in flash (in pages). */
+  uint16_t size;
+  /**
+   * An allowlist of rescue and boot_svc commands that may be invoked by the
+   * rescue protocol.  The commands are identified by their 4-byte tags (tag
+   * identifiers between rescue commands and boot_svc commands are unique).
+   */
+  uint32_t command_allow[];
+} owner_rescue_config_t;
 ```
