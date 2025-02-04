@@ -45,13 +45,14 @@ class aes_base_test extends cip_base_test #(
 
   // Mode distribution //
   // chance of selection ecb_mode
-  // ecb_mode /(ecb_mode + cbc_mode + ctr_mode + cfb_mode + ofb_mode)
-  // with the defaults 10/50 = 1/5 (20%)
+  // ecb_mode /(ecb_mode + cbc_mode + ctr_mode + cfb_mode + ofb_mode + gcm_mode)
+  // with the defaults 10/60 = 1/6 (16.66%)
     cfg.ecb_weight                 = 10;
     cfg.cbc_weight                 = 10;
     cfg.ofb_weight                 = 10;
     cfg.cfb_weight                 = 10;
     cfg.ctr_weight                 = 10;
+    cfg.gcm_weight                 = 10;
 
   // KEYLEN weights
   // change of selecting 128b key

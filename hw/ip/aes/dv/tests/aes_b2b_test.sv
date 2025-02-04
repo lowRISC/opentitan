@@ -26,6 +26,7 @@ class aes_b2b_test extends aes_base_test;
     cfg.ctr_weight               = 10;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
+    cfg.gcm_weight               = 0;
 
     cfg.message_len_min          = 7;   // bytes
     cfg.message_len_max          = 1023; // bytes
