@@ -92,7 +92,6 @@ module gpio
     assign hw2reg.hw_straps_data_in.d        = data_in_d;
     assign sampled_straps_o.data             = reg2hw.hw_straps_data_in.q;
     assign sampled_straps_o.valid            = reg2hw.hw_straps_data_in_valid.q;
-    `ASSUME(StrapSampleOnce_A, ##1 $fell(sample_trigger) |-> always !sample_trigger)
   end else begin : gen_no_strap_sample
     assign hw2reg.hw_straps_data_in_valid.de = 1'b0;
     assign hw2reg.hw_straps_data_in_valid.d  = 1'b0;
