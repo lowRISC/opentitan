@@ -30,23 +30,25 @@ impl Template {
         let mut data = SubstData::new();
         for (var, var_type) in &self.variables {
             let val = match *var_type {
-                super::VariableType::ByteArray { size } => {
-                    let bytes = (0..size).map(|_| rand::random::<u8>()).collect::<Vec<_>>();
-                    SubstValue::ByteArray(bytes)
+                super::VariableType::ByteArray { .. } => {
+                    SubstValue::ByteArray(self.random_bytes(var_type))
                 }
-                super::VariableType::String { size } => {
+                super::VariableType::String { .. } => {
+                    let size = self.random_size(var_type);
                     let s = rand::distributions::Alphanumeric
                         .sample_string(&mut rand::thread_rng(), size);
                     SubstValue::String(s)
                 }
-                super::VariableType::Integer { size } => {
-                    if size == 4 {
+                super::VariableType::Integer { .. } => {
+                    if var_type.size() == 4 {
                         // FIXME the code does not properly distinguish between signed and
                         // unsigned integers so we must generate positive numbers for now.
-                        SubstValue::Int32(rand::random::<u16>() as i32)
+                        let value = self.random_bytes(var_type);
+                        let value = u32::from_be_bytes(value.try_into().unwrap());
+
+                        SubstValue::Uint32(value)
                     } else {
-                        let bytes = (0..size).map(|_| rand::random::<u8>()).collect::<Vec<_>>();
-                        SubstValue::ByteArray(bytes)
+                        SubstValue::ByteArray(self.random_bytes(var_type))
                     }
                 }
                 super::VariableType::Boolean => SubstValue::Boolean(rand::random::<bool>()),
@@ -67,6 +69,34 @@ impl Template {
             data.values.insert(key, val);
         }
         Ok(data)
+    }
+
+    /// Sample a random array size for this variable.
+    fn random_size(&self, var_type: &super::VariableType) -> usize {
+        let (min_size, max_size) = var_type.array_size();
+        if min_size == max_size {
+            min_size
+        } else {
+            Uniform::from(min_size..max_size + 1).sample(&mut rand::thread_rng())
+        }
+    }
+
+    /// Sample a random byte string for this variable.
+    /// The generated values follow the size guarantees specified in the
+    /// hjson template.
+    fn random_bytes(&self, var_type: &super::VariableType) -> Vec<u8> {
+        let size = self.random_size(var_type);
+        let mut bytes = (0..size).map(|_| rand::random::<u8>()).collect::<Vec<_>>();
+
+        if var_type.use_msb_tweak() {
+            bytes[0] |= 0x80;
+        } else if matches!(var_type, super::VariableType::Integer { .. }) {
+            let (min_int_size, _) = var_type.int_size(0);
+            if min_int_size > 0 {
+                bytes[size - min_int_size] |= 0x1;
+            }
+        }
+        bytes
     }
 
     fn random_time(&self) -> SubstValue {
@@ -95,6 +125,7 @@ impl Template {
         let mut ctx = BigNumContext::new()?;
         let mut x = BigNum::new()?;
         let mut y = BigNum::new()?;
+        let nbytes: i32 = ((group.degree() + 7) / 8) as i32;
         privkey
             .public_key()
             .affine_coordinates(&group, &mut x, &mut y, &mut ctx)?;
@@ -102,19 +133,23 @@ impl Template {
         // If any of the coordinates is a variable, create a substitution for it.
         if let Value::Variable(Variable { name, convert }) = &ec_pubkey.public_key.x {
             ensure!(
-                convert.is_none(),
-                "cannot generate a random public key if 'x' a variable with conversion"
+                matches!(convert, None | Some(super::Conversion::BigEndian)),
+                "cannot generate a random public key if 'x' a variable with invalid conversion"
             );
-            data.values
-                .insert(name.clone(), SubstValue::ByteArray(x.to_vec()));
+            data.values.insert(
+                name.clone(),
+                SubstValue::ByteArray(x.to_vec_padded(nbytes)?),
+            );
         }
         if let Value::Variable(Variable { name, convert }) = &ec_pubkey.public_key.y {
             ensure!(
-                convert.is_none(),
-                "cannot generate a random public key if 'y' a variable with conversion"
+                matches!(convert, None | Some(super::Conversion::BigEndian)),
+                "cannot generate a random public key if 'y' a variable with invalid conversion"
             );
-            data.values
-                .insert(name.clone(), SubstValue::ByteArray(y.to_vec()));
+            data.values.insert(
+                name.clone(),
+                SubstValue::ByteArray(y.to_vec_padded(nbytes)?),
+            );
         }
         Ok(data)
     }

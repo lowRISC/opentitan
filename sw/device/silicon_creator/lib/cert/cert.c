@@ -102,8 +102,10 @@ rom_error_t cert_x509_asn1_check_serial_number(const uint8_t *cert_page_buffer,
          &cert_page_buffer[sn_bytes_offset], asn1_integer_length);
 
   // Check the serial number in the certificate matches what was expected.
+  // The first byte is skipped since the MSb might be modified for achieving
+  // fixed-length certificate.
   *matches = kHardenedBoolFalse;
-  for (size_t i = 0; i < kCertX509Asn1SerialNumberSizeInBytes; ++i) {
+  for (size_t i = 1; i < kCertX509Asn1SerialNumberSizeInBytes; ++i) {
     if (launder32(actual_serial_number[i]) != expected_sn_bytes[i]) {
       HARDENED_CHECK_NE(actual_serial_number[i], expected_sn_bytes[i]);
       return kErrorOk;

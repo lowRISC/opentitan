@@ -368,28 +368,124 @@ pub enum HashAlgorithm {
     Sha256,
 }
 
+/// SizeRange sets the user's guarantee of the uint8_t array length it
+/// shall pass to the template engine.
+#[derive(Clone, Copy, Debug, Deserialize, PartialEq, Eq, Serialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum SizeRange {
+    /// The maximum size of the incoming byte array.
+    Size(usize, usize),
+    /// The exact size of the incoming byte array.
+    ExactSize(usize),
+}
+
+impl SizeRange {
+    pub fn range(self) -> (usize, usize) {
+        match self {
+            Self::Size(min_size, max_size) => (min_size, max_size),
+            Self::ExactSize(size) => (size, size),
+        }
+    }
+}
+
 /// Declaration of a variable that can be filled into the template.
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(tag = "type", rename_all = "kebab-case")]
 pub enum VariableType {
     /// Raw array of bytes.
+    #[serde(rename_all = "kebab-case")]
     ByteArray {
-        /// Length in bytes for this variable.
-        size: usize,
+        #[serde(flatten)]
+        size: SizeRange,
+
+        /// The MSb will always be set when encoded as an integer.
+        tweak_msb: Option<bool>,
     },
     /// Signed integer: such an integer is represented by an array of
     /// in big-endian.
+    #[serde(rename_all = "kebab-case")]
     Integer {
-        /// Maximum size in bytes for this variable.
-        size: usize,
+        #[serde(flatten)]
+        size: SizeRange,
+
+        /// The minimum size in bytes of the encoded integer without zero prefix.
+        /// This field sets the user's guarantee about the integer value
+        /// represented by the byte array.
+        min_int_size: usize,
     },
     /// UTF-8 encoded String.
     String {
-        /// Maximum size in bytes for this variable.
-        size: usize,
+        #[serde(flatten)]
+        size: SizeRange,
     },
     /// Boolean variable.
     Boolean,
+}
+
+impl VariableType {
+    /// Return the maximum array size of the variable.
+    pub fn size(&self) -> usize {
+        self.array_size().1
+    }
+
+    /// Return true if the variable uses msb tweak trick.
+    pub fn use_msb_tweak(&self) -> bool {
+        use VariableType::*;
+        matches!(
+            self,
+            ByteArray {
+                tweak_msb: Some(true),
+                ..
+            }
+        )
+    }
+
+    /// Return true if the user guarantees to pass a fixed-length array for
+    /// this variable.
+    pub fn has_constant_array_size(&self) -> bool {
+        let (min_size, max_size) = self.array_size();
+        min_size == max_size
+    }
+
+    /// Return the the user's guarantee on the array size passing for this
+    /// variable.
+    ///
+    /// The result is the closed range [min, max].
+    pub fn array_size(&self) -> (usize, usize) {
+        use VariableType::*;
+        match self {
+            ByteArray { size, .. } | Integer { size, .. } | String { size, .. } => size.range(),
+            Boolean => panic!("Boolean variable has no size"),
+        }
+    }
+
+    /// Return the the user's guarantee on the size of the integer value
+    /// represented by the u8 array.
+    ///
+    /// `extra_bytes` argument specifies the amount of extra bytes that
+    /// will be added when the MSb is set.
+    ///
+    /// The result is the closed range [min, max].
+    pub fn int_size(&self, extra_bytes: usize) -> (usize, usize) {
+        use VariableType::*;
+        match self {
+            ByteArray {
+                tweak_msb: Some(true),
+                ..
+            } => {
+                if !self.has_constant_array_size() {
+                    panic!("Tweak MSb of var-sized ByteArray is not supported");
+                }
+                (self.size() + extra_bytes, self.size() + extra_bytes)
+            }
+            ByteArray { .. } => panic!(
+                "Encoding ByteArray variable without tweak-msb as an integer is not supported"
+            ),
+            Integer { min_int_size, .. } => (*min_int_size, self.size() + extra_bytes),
+            String { .. } => panic!("String variable has no integer size"),
+            Boolean => panic!("Boolean variable has no integer size"),
+        }
+    }
 }
 
 impl Template {
@@ -406,6 +502,8 @@ mod tests {
     /// Test parsing a typical cdi_owner template.
     #[test]
     fn cdi_owner() {
+        use SizeRange::*;
+
         // Input string for a Hjson template.
         let input = indoc! {r#"
             {
@@ -414,43 +512,51 @@ mod tests {
               variables: {
                 owner_pub_key_ec_x: {
                   type: "integer",
-                  size: 32,
+                  exact-size: 32,
+                  min-int-size: 0,
                 },
                 owner_pub_key_ec_y: {
                   type: "integer",
-                  size: 32,
+                  exact-size: 32,
+                  min-int-size: 0,
                 },
                 owner_pub_key_id: {
                   type: "byte-array",
-                  size: 20,
+                  exact-size: 20,
+                  tweak-msb: true
                 },
                 signing_pub_key_id: {
                   type: "byte-array",
-                  size: 20,
+                  exact-size: 20,
+                  tweak-msb: true
                 },
                 rom_ext_hash: {
                   type: "byte-array",
-                  size: 20,
+                  exact-size: 20,
                 },
                 ownership_manifest_hash: {
                   type: "byte-array",
-                  size: 20,
+                  exact-size: 20,
                 },
                 rom_ext_security_version: {
-                  type: "integer",
-                  size: 4,
+                  type: "byte-array",
+                  exact-size: 4,
+                  tweak-msb: true,
                 }
                 layer: {
                   type: "integer",
-                  size: 4,
+                  exact-size: 4,
+                  min-int-size: 1,
                 }
                 cert_signature_r: {
                   type: "integer",
-                  size: 32,
+                  exact-size: 32,
+                  min-int-size: 24,
                 },
                 cert_signature_s: {
                   type: "integer",
-                  size: 32,
+                  exact-size: 32,
+                  min-int-size: 24,
                 },
               },
 
@@ -480,7 +586,7 @@ mod tests {
                         type: "dice_tcb_info",
                         vendor: "OpenTitan",
                         model: "ROM_EXT",
-                        svn: { var: "rom_ext_security_version" },
+                        svn: { var: "rom_ext_security_version", convert: "big-endian" },
                         layer: { var: "layer" },
                         version: "ES",
                         fw_ids: [
@@ -511,40 +617,73 @@ mod tests {
         let variables = IndexMap::from([
             (
                 "owner_pub_key_ec_x".to_string(),
-                VariableType::Integer { size: 32 },
+                VariableType::Integer {
+                    size: ExactSize(32),
+                    min_int_size: 0,
+                },
             ),
             (
                 "owner_pub_key_ec_y".to_string(),
-                VariableType::Integer { size: 32 },
+                VariableType::Integer {
+                    size: ExactSize(32),
+                    min_int_size: 0,
+                },
             ),
             (
                 "owner_pub_key_id".to_string(),
-                VariableType::ByteArray { size: 20 },
+                VariableType::ByteArray {
+                    size: ExactSize(20),
+                    tweak_msb: Some(true),
+                },
             ),
             (
                 "signing_pub_key_id".to_string(),
-                VariableType::ByteArray { size: 20 },
+                VariableType::ByteArray {
+                    size: ExactSize(20),
+                    tweak_msb: Some(true),
+                },
             ),
             (
                 "rom_ext_hash".to_string(),
-                VariableType::ByteArray { size: 20 },
+                VariableType::ByteArray {
+                    size: ExactSize(20),
+                    tweak_msb: None,
+                },
             ),
             (
                 "ownership_manifest_hash".to_string(),
-                VariableType::ByteArray { size: 20 },
+                VariableType::ByteArray {
+                    size: ExactSize(20),
+                    tweak_msb: None,
+                },
             ),
             (
                 "rom_ext_security_version".to_string(),
-                VariableType::Integer { size: 4 },
+                VariableType::ByteArray {
+                    size: ExactSize(4),
+                    tweak_msb: Some(true),
+                },
             ),
-            ("layer".to_string(), VariableType::Integer { size: 4 }),
+            (
+                "layer".to_string(),
+                VariableType::Integer {
+                    size: ExactSize(4),
+                    min_int_size: 1,
+                },
+            ),
             (
                 "cert_signature_r".to_string(),
-                VariableType::Integer { size: 32 },
+                VariableType::Integer {
+                    size: ExactSize(32),
+                    min_int_size: 24,
+                },
             ),
             (
                 "cert_signature_s".to_string(),
-                VariableType::Integer { size: 32 },
+                VariableType::Integer {
+                    size: ExactSize(32),
+                    min_int_size: 24,
+                },
             ),
         ]);
 
@@ -580,7 +719,10 @@ mod tests {
             private_extensions: vec![CertificateExtension::DiceTcbInfo(DiceTcbInfoExtension {
                 vendor: Some(Value::literal("OpenTitan")),
                 model: Some(Value::literal("ROM_EXT")),
-                svn: Some(Value::variable("rom_ext_security_version")),
+                svn: Some(Value::convert(
+                    "rom_ext_security_version",
+                    Conversion::BigEndian,
+                )),
                 layer: Some(Value::variable("layer")),
                 version: Some(Value::literal("ES")),
                 fw_ids: Some(Vec::from([
