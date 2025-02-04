@@ -63,15 +63,6 @@ class tl_seq_item extends uvm_sequence_item;
   rand int unsigned               d_valid_delay;
   rand int unsigned               d_valid_len;
 
-  // Indicates a_source val is overridden.
-  //
-  // a_source is randomized and set in tl_host_base_seq::finish_item() to facilitate late
-  // randomization. If this bit is set, the a_source is assumed to be set to a fixed value instead.
-  // It is possible that this fixed value might match one of the pending reqs in the that has not
-  // yet completed. The driver can then use this bit to add more delays if needed before sending
-  // this request, to avoid protocol violation.
-  bit                             a_source_is_overridden;
-
   // after given valid_len, end the req/rsp if it's not accepted, which allows seq to switch
   // content and test unaccepted item shouldn't be used in design
   bit                             req_abort_after_a_valid_len;
@@ -154,7 +145,6 @@ class tl_seq_item extends uvm_sequence_item;
     `uvm_field_int  (d_error,             UVM_DEFAULT)
     `uvm_field_int  (d_sink,              UVM_DEFAULT)
     `uvm_field_int  (d_user,              UVM_DEFAULT)
-    `uvm_field_int  (a_source_is_overridden, UVM_DEFAULT | UVM_NOPACK)
     `uvm_field_int  (a_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
     `uvm_field_int  (d_valid_delay,       UVM_DEFAULT | UVM_NOPACK)
     `uvm_field_int  (a_valid_len,         UVM_DEFAULT | UVM_NOPACK)
