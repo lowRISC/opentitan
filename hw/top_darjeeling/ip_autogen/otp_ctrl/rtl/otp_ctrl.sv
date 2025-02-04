@@ -893,6 +893,13 @@ end
   // Scrambling Datapath and Arbitration //
   /////////////////////////////////////////
 
+  // This is specialised for different tops that use it but the req/ack protocol is the same in each
+  // case. For one example, see
+  //
+  // https://opentitan.org/book/hw/top_earlgrey/
+  //    ip_autogen/otp_ctrl/doc/interfaces.html#interfaces-to-sram-and-otbn-scramblers
+
+
   // Note: as opposed to the OTP arbitration above, we do not perform cycle-wise arbitration, but
   // transaction-wise arbitration. This is implemented using a RR arbiter that acts as a mutex.
   // I.e., each agent (e.g. the DAI or a partition) can request a lock on the mutex. Once granted,
@@ -901,8 +908,8 @@ end
   // Since this scheme does not have built-in preemtion, it must be ensured that the agents
   // eventually release their locks for this to be fair.
   //
-  // See also https://docs.opentitan.org/hw/ip/otp_ctrl/index.html#otp-controller-overview for
-  // details.
+  // This is documented in ../README.md (generated from hw/ip_templates/otp_ctrl/README.md.tpl) see
+  // that document for details.
   typedef struct packed {
     otp_scrmbl_cmd_e             cmd;
     digest_mode_e                mode;

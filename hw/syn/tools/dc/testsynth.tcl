@@ -33,9 +33,9 @@ lappend search_path "../../../ip/prim/rtl/"
 set SRC {  "../../../ip/prim/rtl/prim_util_pkg.sv"           \
            "../../../ip/prim/rtl/prim_assert.sv"             \
            "../../../ip/prim/rtl/prim_lfsr.sv"               \
-           "../../../ip/otp_ctrl/rtl/otp_ctrl_reg_pkg.sv"    \
-           "../../../ip/otp_ctrl/rtl/otp_ctrl_pkg.sv"        \
-           "../../../ip/otp_ctrl/rtl/otp_ctrl_lfsr_timer.sv" }
+           "../../../top_earlgrey/ip_autogen/otp_ctrl/rtl/otp_ctrl_reg_pkg.sv"    \
+           "../../../top_earlgrey/ip_autogen/otp_ctrl/rtl/otp_ctrl_pkg.sv"        \
+           "../../../top_earlgrey/ip_autogen/otp_ctrl/rtl/otp_ctrl_lfsr_timer.sv" }
 
 # additional defines
 set DEFINE ""
