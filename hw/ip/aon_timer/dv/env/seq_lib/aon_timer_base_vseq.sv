@@ -60,6 +60,7 @@ class aon_timer_base_vseq extends cip_base_vseq #(
   extern virtual task apply_resets_concurrently(int reset_duration_ps = 0);
   extern task wait_for_interrupt(bit intr_state_read = 1);
   extern task write_wkup_reg(input uvm_object ptr, input uvm_reg_data_t value);
+  extern task wait_while_intr_state_busy();
 
 endclass : aon_timer_base_vseq
 
@@ -108,7 +109,8 @@ task aon_timer_base_vseq::aon_timer_shutdown();
   csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
 
   // We need to ensure the prediction has kicked in before we read the intr_state
-  wait (ral.intr_state.is_busy() == 0);
+  wait_while_intr_state_busy();
+
   // Clear the interrupts
   csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
 
@@ -194,7 +196,7 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
       cfg.aon_clk_rst_vif.wait_clks(2);
 
       // We need to ensure the prediction has kicked in before we read the intr_state
-      wait (ral.intr_state.is_busy()==0);
+      wait_while_intr_state_busy();
       csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
     end
 
@@ -231,3 +233,8 @@ task aon_timer_base_vseq::write_wkup_reg(input uvm_object ptr, input uvm_reg_dat
   join
 
 endtask : write_wkup_reg
+
+// Wait for the intr_state regsiter to stop being busy. Exits early on a reset.
+task aon_timer_base_vseq::wait_while_intr_state_busy();
+  while (ral.intr_state.is_busy()) cfg.clk_rst_vif.wait_clks_or_rst(1);
+endtask
