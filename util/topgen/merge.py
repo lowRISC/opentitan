@@ -815,7 +815,13 @@ def amend_resets(top, name_to_block):
 
         # shadowed determination
         if block.has_shadowed_reg():
-            top_resets.mark_reset_shadowed(primary_reset['name'])
+            # External unmanaged resets are don't have a shadowed reset.
+            # Both the primary and and the shadowed reset are served from
+            # the same reset signal. It is assumed that the external reset
+            # is stable and free from glitches. Here, don't mark the reset
+            # as shadowed to avoid generating a second reset signal.
+            if not is_unmanaged_reset(top, primary_reset['name']):
+                top_resets.mark_reset_shadowed(primary_reset['name'])
 
         # domain determination
         for r in block.clocking.items:
