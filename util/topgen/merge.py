@@ -1450,7 +1450,7 @@ def amend_racl(top_cfg: OrderedDict,
         return
 
     # Read the top-level RACL information
-    top_cfg['racl'] = parse_racl_config(top_cfg['racl_config'])
+    top_cfg["racl"] = parse_racl_config(top_cfg["cfg_path"] / top_cfg["racl_config"])
 
     # Generate the RACL mappings for all subscribing IPs
     for m in top_cfg['module']:
@@ -1467,8 +1467,8 @@ def amend_racl(top_cfg: OrderedDict,
                 # once and need no further updates.
                 continue
             parsed_register_mapping, parsed_window_mapping, racl_group, _ = (
-                parse_racl_mapping(top_cfg['racl'], mapping_path, if_name,
-                                   block))
+                parse_racl_mapping(top_cfg["racl"], top_cfg["cfg_path"] / mapping_path,
+                                   if_name, block))
             m['racl_mappings'][if_name] = {
                 'racl_group': racl_group,
                 'register_mapping': parsed_register_mapping,

@@ -1530,8 +1530,13 @@ def main():
         log.info("Generation pass {}".format(pass_idx + 1))
         # Use the same seed for each pass to have stable random constants.
         secure_prng.reseed(topcfg["rnd_cnst_seed"])
+        # Insert the config file path of the HJSON to allow parsing files relative
+        # the config directory
+        cfg_copy["cfg_path"] = Path(args.topcfg).parent
         completecfg, name_to_block, name_to_hjson = _process_top(
             cfg_copy, args, cfg_path, out_path_gen, alias_cfgs)
+        # Delete config path before dumping, not needed
+        del completecfg["cfg_path"]
         dump_path = Path(f"/tmp/top{topname}cfg_{pass_idx}.hjson")
         _dump_cfg(dump_path, completecfg)
         if pass_idx > 0 and filecmp.cmp(

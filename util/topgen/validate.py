@@ -85,6 +85,7 @@ top_added = {
         'l',
         'list of wakeup requests each holding name, width, and module'
     ],
+    'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file']
 }
 
 pinmux_required = {
