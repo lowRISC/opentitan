@@ -18,6 +18,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   aes_seq_item input_item;                    // item containing data and config
   aes_seq_item output_item;                   // item containing resulting output
   aes_seq_item complete_item;                 // merge of input and output items
+  aes_seq_item complete_aad_item;             // aad input items
   aes_seq_item key_item;                      // sequence item holding last sideload valid key
   bit          ok_to_fwd          = 0;        // 0: item is not ready to forward
   bit          reset_rebuilding   = 0;        // reset message rebuilding task
@@ -35,6 +36,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
   mailbox      #(aes_message_item)  msg_fifo;
   // once an operation is started the item is put here to wait for the resulting output
   aes_seq_item                      rcv_item_q[$];
+  aes_seq_item                      rcv_aad_item_q[$];
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
@@ -82,7 +84,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       6'b00_0100:  input_item.mode = AES_CFB;
       6'b00_1000:  input_item.mode = AES_OFB;
       6'b01_0000:  input_item.mode = AES_CTR;
-      6'b10_0000:  input_item.mode = AES_NONE;
+      6'b10_0000:  input_item.mode = AES_GCM;
+      6'b11_1111:  input_item.mode = AES_NONE;
       default:     input_item.mode = AES_NONE;
     endcase
     // sample coverage on ctrl register
@@ -98,6 +101,18 @@ class aes_scoreboard extends cip_base_scoreboard #(
     if (input_item.sideload_en) begin
       exp_clear = 1;
     end
+  endfunction
+
+  function void on_ctrl_gcm_shadowed_write(logic [31:0] wdata);
+    case (get_field_val(ral.ctrl_gcm_shadowed.phase, wdata))
+      GCM_INIT:  input_item.item_type = AES_CFG;
+      GCM_TEXT:  input_item.item_type = AES_DATA;
+      GCM_AAD:   input_item.item_type = AES_GCM_AAD;
+      GCM_TAG:   input_item.item_type = AES_GCM_TAG;
+      default:   input_item.item_type = AES_CFG;
+    endcase
+
+    input_item.data_len = get_field_val(ral.ctrl_gcm_shadowed.num_valid_bytes, wdata);
   endfunction
 
   function void on_key_share_write(string csr_name, logic [31:0] wdata);
@@ -146,7 +161,15 @@ class aes_scoreboard extends cip_base_scoreboard #(
                              get_field_val(ral.trigger.prng_reseed, wdata));
     `uvm_info(`gfn, $sformatf("\nWrite to Trigger register observed: 0x%h", wdata), UVM_MEDIUM)
     if (get_field_val(ral.trigger.start, wdata)) begin
-      ok_to_fwd = input_item.mode != AES_NONE;
+      if (input_item.mode != AES_GCM) begin
+        ok_to_fwd = input_item.mode != AES_NONE;
+      end else begin
+        // In the AES-GCM mode, when we trigger the block, GCM is in the INIT
+        // phase. In this phase, the hash subkey and the encrypted initial counter
+        // block are generated, but no output that we want to read is generated.
+        // Hence, do not forward this item.
+        ok_to_fwd = input_item.item_type != AES_CFG;
+      end
     end
     // clear key, IV, data_in
     if (get_field_val(ral.trigger.key_iv_data_in_clear, wdata)) begin
@@ -200,6 +223,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
       (!uvm_re_match("ctrl_shadowed", csr_name)): begin
         // ignore reg write if busy
         if (cfg.idle_vif) on_ctrl_shadowed_write(wdata);
+      end
+
+      (!uvm_re_match("ctrl_gcm_shadowed", csr_name)): begin
+        // ignore reg write if busy
+        if (cfg.idle_vif) on_ctrl_gcm_shadowed_write(wdata);
       end
 
       (!uvm_re_match("key_share*", csr_name)): begin
@@ -296,7 +324,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
           AES_CBC,
           AES_CFB,
           AES_OFB,
-          AES_CTR: begin
+          AES_CTR,
+          AES_GCM: begin
             `uvm_info(`gfn, $sformatf("\n\t ----| AES Mode: %0s", input_item.mode.name()),
                 UVM_MEDIUM)
             if (input_item.start_item) begin
@@ -335,13 +364,17 @@ class aes_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s \n\t split message: %0b",
                                    input_clone.convert2string(), input_clone.split_item),
                                   UVM_MEDIUM)
-        rcv_item_q.push_front(input_clone);
+        if (input_clone.item_type == AES_GCM_AAD) begin
+          rcv_aad_item_q.push_front(input_clone);
+        end else begin
+          rcv_item_q.push_front(input_clone);
+          // only reset the split here
+          // in the case the reset comes after data input
+          // having it in clean will reset it when the ctrl
+          // is written
+          input_item.split_item = 0;
+        end
         input_item.clean();
-        // only reset the split here
-        // in the case the reset comes after data input
-        // having it in clean will reset it when the ctrl
-        // is written
-        input_item.split_item = 0;
       end
     end
 
@@ -398,6 +431,11 @@ class aes_scoreboard extends cip_base_scoreboard #(
               void'(rcv_item_q.pop_back());
               `uvm_info(`gfn, $sformatf("\n\t ----| removing item from input queue"), UVM_MEDIUM)
             end
+            if (rcv_aad_item_q.size() != 0) begin
+              void'(rcv_aad_item_q.pop_back());
+              `uvm_info(`gfn, $sformatf("\n\t ----| removing aad item from input queue"),
+                        UVM_MEDIUM)
+            end
           end
         end
       endcase // case (csr.get_name())
@@ -407,6 +445,23 @@ class aes_scoreboard extends cip_base_scoreboard #(
         if (rcv_item_q.size() == 0) begin
           output_item                    = new();
         end else begin
+
+          // Before putting the item into the FIFO, check whether we are in AES-GCM
+          // mode. In this mode, we first need to put the AAD blocks into the FIFO
+          // to maintain the correct order.
+          if (rcv_aad_item_q.size() > 0) begin
+            // When in AES_GCM mode, there might be N AAD blocks and Y output
+            // DATA blocks. As the number of blocks do not need to match, pop
+            // all AAD blocks at the very first output DATA block.
+            bit first_aad_item           = 1'b1;
+            while (rcv_aad_item_q.size() > 0) begin
+              complete_aad_item          = rcv_aad_item_q.pop_back();
+              first_aad_item             = 1'b0;
+              `downcast(complete_clone, complete_aad_item.clone());
+              item_fifo.put(complete_clone);
+            end
+            complete_aad_item            = new();
+          end
 
           complete_item                  = rcv_item_q.pop_back();
           complete_item.data_out         = output_item.data_out;
@@ -516,7 +571,17 @@ class aes_scoreboard extends cip_base_scoreboard #(
               end else begin
                 `uvm_info(`gfn, $sformatf("rebuilding %s message, adding data block #%0d",
                     full_item.mode.name(), message.output_msg.size()/16), UVM_MEDIUM)
-                message.add_data_item(full_item);
+                if (full_item.mode == AES_GCM) begin
+                  if (full_item.item_type == AES_GCM_AAD) begin
+                    message.add_aad_item(full_item);
+                  end else if (full_item.item_type == AES_GCM_TAG) begin
+                    message.add_tag_item(full_item);
+                  end else begin
+                    message.add_data_item(full_item);
+                  end
+                end else begin
+                  message.add_data_item(full_item);
+                end
               end
             end
           endcase // case (msg_state)
@@ -580,6 +645,8 @@ class aes_scoreboard extends cip_base_scoreboard #(
       bit operation;
       int crypto_res;
       aes_message_item msg;
+      bit [7:0] in_msg[];
+      bit [7:0] in_aad[];
       msg_fifo.get(msg);
 
       if (msg.aes_mode != AES_NONE && !msg.skip_msg) begin
@@ -588,13 +655,22 @@ class aes_scoreboard extends cip_base_scoreboard #(
         //ref-model     / operation     / cipher mode /    IV   / key_len   / key /data i /data o //
         operation = msg.aes_operation == AES_ENC ? 1'b0 :
                     msg.aes_operation == AES_DEC ? 1'b1 : 1'b0;
-        // TODO: msg.input_msg and '0 are placeholders for the actual AAD and Tag that need to
-        // be replaced when GCM once gets supported.
+
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
                                 msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
-                                msg.input_msg.size(), 0,  msg.input_msg,
-                                msg.input_msg, '0, msg.predicted_msg, tag_out,
-                                crypto_res);
+                                msg.message_length, msg.aad_length, msg.input_msg,
+                                msg.input_aad, msg.output_tag, msg.predicted_msg,
+                                tag_out, crypto_res);
+        if (crypto_res < 0) begin
+          // The underlying c_dpi cyrpto lib returns an error code < 0 if something
+          // is wrong.
+          if (msg.aes_mode == AES_GCM) begin
+            // When doing an AES-GCM decryption, the tag is directly compared and
+            // the c_dpi crypto lib returns -1.
+            `uvm_info(`gfn, "Most likely a tag mismatch happened.",  UVM_LOW)
+          end
+          `uvm_fatal(`gfn, "c_dpi crypto lib returned an error code!\n")
+        end
 
         `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string()),
                   UVM_MEDIUM)
@@ -605,7 +681,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
               i, msg.input_msg[i], msg.output_msg[i], msg.predicted_msg[i], msg.output_cleared[i])};
         end
 
-        for (int n =0 ; n < msg.input_msg.size(); n++) begin
+        for (int n =0 ; n < msg.message_length; n++) begin
           if ((msg.output_msg[n] != msg.predicted_msg[n]) && ~msg.output_cleared[n]) begin
             txt = {"\t TEST FAILED MESSAGES DID NOT MATCH \n ", txt};
 
@@ -614,9 +690,30 @@ class aes_scoreboard extends cip_base_scoreboard #(
             txt = {txt,
                  $sformatf("\n\t ----| FAILED AT BYTE #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
                                   n, msg.output_msg[n], msg.predicted_msg[n])};
-          `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", cfg.good_cnt, txt))
+            `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", cfg.good_cnt, txt))
           end
         end
+
+        // Only check the tag when in AES_GCM mode and we did an AES_ENC operation.
+        // For AES_DEC, the tag check happens directly inside c_dpi_aes_crypt_message()
+        // and we check the error code above.
+        if (msg.aes_mode == AES_GCM && msg.aes_operation == AES_ENC) begin
+          txt = "";
+          tag_out = aes_transpose(tag_out);
+          foreach(tag_out[n]) begin
+            if (tag_out[n] != msg.output_tag[n]) begin
+              txt = {"\t TEST FAILED TAGS DID NOT MATCH \n ", txt};
+
+              txt = {txt,
+                  $sformatf("\n\n\t ----| ACTUAL OUTPUT DID NOT MATCH PREDICTED OUTPUT |----")};
+              txt = {txt,
+                  $sformatf("\n\t ----| FAILED AT WORD #%0d \t ACTUAL: 0x%h \t PREDICTED: 0x%h ",
+                                    n, tag_out[n], msg.output_tag[n])};
+              `uvm_fatal(`gfn, $sformatf(" # %0d  \n\t %s \n", cfg.good_cnt, txt))
+            end
+          end
+        end
+
         `uvm_info(`gfn,
             $sformatf("\n\t ----|   MESSAGE #%0d MATCHED  %s  |-----",
                 cfg.good_cnt, msg.aes_mode.name()), UVM_MEDIUM)
@@ -656,10 +753,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
   virtual task wait_fifo_empty();
     `uvm_info(`gfn, $sformatf("item fifo entries %d", item_fifo.num()), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("rcv_queue entries %d", rcv_item_q.size()), UVM_MEDIUM)
+    `uvm_info(`gfn, $sformatf("rcv_aad_queue entries %d", rcv_aad_item_q.size()), UVM_MEDIUM)
     `uvm_info(`gfn, $sformatf("msg fifo entries %d", msg_fifo.num()), UVM_MEDIUM)
-    wait (rcv_item_q.size() == 0);
-    wait (item_fifo.num()   == 0);
-    wait (msg_fifo.num()    == 0);
+    wait (rcv_item_q.size()     == 0);
+    wait (rcv_aad_item_q.size() == 0);
+    wait (item_fifo.num()       == 0);
+    wait (msg_fifo.num()        == 0);
   endtask
 
 
@@ -669,6 +768,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     super.reset(kind);
     // reset local fifos queues and variables
     rcv_item_q.delete();
+    rcv_aad_item_q.delete();
     while (item_fifo.try_get(seq_item));
     while (msg_fifo.try_get(msg_item));
 
@@ -728,6 +828,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_message_item, msg_fifo)
       `DV_EOT_PRINT_MAILBOX_CONTENTS(aes_seq_item, item_fifo)
       `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_item_q)
+      `DV_EOT_PRINT_Q_CONTENTS(aes_seq_item, rcv_aad_item_q)
       check_message_counters();
     end
   endfunction

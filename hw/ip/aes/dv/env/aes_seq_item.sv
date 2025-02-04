@@ -175,7 +175,7 @@ class aes_seq_item extends uvm_sequence_item;
       , UVM_FULL)
 
     return &data_out_vld;
-  endfunction // data_in_valid
+  endfunction // data_out_valid
 
   // if ret_clean = 0
   // return 1 only of all registers have been written
@@ -250,6 +250,12 @@ class aes_seq_item extends uvm_sequence_item;
       AES_CTR: begin
         `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
                    key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld, &iv_vld), UVM_MEDIUM)
+        return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
+      end
+      AES_GCM: begin
+        `uvm_info(`gfn, $sformatf("return key vld(%b, %b) %b AND iv (%b) &%b",
+                   key_vld[0], key_vld[1], (&key_vld[0] && &key_vld[1]), iv_vld,
+                   &iv_vld), UVM_MEDIUM)
         return ((&key_vld[0] && &key_vld[1]) && &iv_vld);
       end
       default: begin
@@ -347,7 +353,7 @@ class aes_seq_item extends uvm_sequence_item;
     for (int i=0; i <8; i++) begin
       str = {str, $psprintf("%h ",key[1][i])};
     end
-    str = {str,  $sformatf("\n\t ----| Initializaion vector:         \t ")};
+    str = {str,  $sformatf("\n\t ----| Initialization vector:         \t ")};
     for (int i=0; i <4; i++) begin
       str = {str, $sformatf("%h ",iv[i])};
     end

@@ -54,7 +54,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       ral.ctrl_shadowed.prng_reseed_rate.set(PER_8K);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-  
+
       // Put AES-GCM into init phase.
       set_gcm_phase(GCM_INIT, 16);
 
@@ -85,7 +85,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
           aad[n] = {<<8{nist_vectors[i].aad[n]}};
           add_data(aad[n], do_b2b);
         end
-        
+
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the AAD phase with the block size.
         if (num_aad_blocks != 1 && nist_vectors[i].last_aad_block_size != 16) begin
@@ -116,7 +116,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
           csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));
           read_data(cipher_text[n], do_b2b);
         end
-        
+
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
         if (num_ptx_blocks != 1 && nist_vectors[i].last_plain_text_block_size != 16) begin
@@ -160,7 +160,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
       /*****************************************************************************/
       /** AES-GCM-128 Decryption                                                  **/
-      /*****************************************************************************/ 
+      /*****************************************************************************/
       // Wait for dut idle.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       `uvm_info(`gfn, $sformatf(" \n\t ---|setting operation to decrypt"), UVM_MEDIUM)
@@ -170,7 +170,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       ral.ctrl_shadowed.key_len.set(nist_vectors[i].key_len);
       ral.ctrl_shadowed.mode.set(nist_vectors[i].mode);
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(1));
-  
+
       // Put AES-GCM into init phase.
       set_gcm_phase(GCM_INIT, 16);
 
@@ -201,7 +201,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
           aad[n] = {<<8{nist_vectors[i].aad[n]}};
           add_data(aad[n], do_b2b);
         end
-        
+
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the AAD phase with the block size.
         if (num_aad_blocks != 1 && nist_vectors[i].last_aad_block_size != 16) begin
@@ -232,7 +232,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
           csr_spinwait(.ptr(ral.status.output_valid), .exp_data(1'b1));
           read_data(plain_text[n], do_b2b);
         end
-        
+
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
         if (num_ptx_blocks != 1 && nist_vectors[i].last_plain_text_block_size != 16) begin
