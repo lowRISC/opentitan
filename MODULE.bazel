@@ -135,10 +135,16 @@ hooks.repo(
     dummy = "sw/device/silicon_creator/manuf/extensions",
     env = "PROV_EXTS_DIR",
 )
+hooks.repo(
+    name = "rom_hooks",
+    dummy = "sw/device/silicon_creator/rom/hooks",
+    env = "ROM_HOOKS_DIR",
+)
 use_repo(
     hooks,
     "manufacturer_test_hooks",
     "provisioning_exts",
+    "rom_hooks",
     "secure_manufacturer_test_hooks",
 )
 
