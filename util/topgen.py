@@ -586,13 +586,13 @@ def generate_ac_range_check(topcfg: Dict[str, object], out_path: Path) -> None:
 
 # Generate RACL collateral
 def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
-                  out_path: Path) -> None:
+                  hjson_path: Path, out_path: Path) -> None:
     # Not all tops use RACL
     if 'racl_config' not in topcfg:
         return
 
     # Read the top-level RACL information
-    topcfg['racl'] = parse_racl_config(topcfg['racl_config'])
+    topcfg['racl'] = parse_racl_config(hjson_path / topcfg['racl_config'])
 
     # Generate the RACL mappings for all subscribing IPs
     num_subscribing_ips = defaultdict(int)
@@ -600,7 +600,7 @@ def generate_racl(topcfg: Dict[str, object], name_to_block: Dict[str, IpBlock],
         for if_name, mapping_path in m.get('racl_mappings', {}).items():
             parsed_register_mapping, parsed_window_mapping, racl_group, _ = parse_racl_mapping(
                 topcfg['racl'],
-                mapping_path,
+                hjson_path / mapping_path,
                 if_name,
                 name_to_block[m['type']])
             m['racl_mappings'][if_name] = {
@@ -992,7 +992,7 @@ def _process_top(
         generate_rstmgr(completecfg, out_path)
 
     # Generate RACL collateral
-    generate_racl(completecfg, name_to_block, out_path)
+    generate_racl(completecfg, name_to_block, hjson_dir, out_path)
 
     # Generate ac_range_check if there is an instance
     if lib.find_module(completecfg['module'], 'ac_range_check'):
