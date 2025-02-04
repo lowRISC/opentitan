@@ -13,6 +13,7 @@ module tb;
   import top_earlgrey_pkg::*;
   import chip_test_pkg::*;
   import xbar_test_pkg::*;
+  import flash_bkdr_util_pkg::*;
   import mem_bkdr_util_pkg::*;
 
   // macro includes

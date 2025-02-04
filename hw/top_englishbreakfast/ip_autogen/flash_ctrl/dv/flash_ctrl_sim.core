@@ -14,7 +14,7 @@ filesets:
 
   files_dv:
     depend:
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_bkdr_util
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_test
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_sva
       - lowrisc:opentitan:top_englishbreakfast_flash_ctrl_cov

@@ -11,7 +11,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:dv_lib
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:flash_bkdr_util
       - lowrisc:dv:flash_phy_prim_agent
       - ${instance_vlnv("lowrisc:ip:flash_ctrl_pkg")}
       - ${top_pkg_vlnv}
