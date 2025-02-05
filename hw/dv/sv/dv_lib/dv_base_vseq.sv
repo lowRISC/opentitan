@@ -87,6 +87,8 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
   endtask
 
   virtual task apply_reset(string kind = "HARD");
+    reset_seq ini_rst_seq;
+
     if (kind == "HARD") begin
       if (cfg.clk_rst_vifs.size() > 0) begin
         fork
@@ -94,14 +96,25 @@ class dv_base_vseq #(type RAL_T               = dv_base_reg_block,
             foreach (cfg.clk_rst_vifs[i]) begin
               automatic string ral_name = i;
               fork
-                cfg.clk_rst_vifs[ral_name].apply_reset();
+                // TODO MVy: manage multiple reset domains
+                ini_rst_seq = reset_seq::type_id::create("ini_rst_seq");
+                if (!ini_rst_seq.randomize() with {
+                  assert_delay == local::cfg.rst_agt_cfg.ini_assert_delay;
+                  assert_width == local::cfg.rst_agt_cfg.ini_assert_width;
+                }) `uvm_fatal(`gfn, "Failed to randomize transaction !")
+                ini_rst_seq.start(p_sequencer.rst_sqr);
               join_none
             end
             wait fork;
           end : isolation_fork
         join
       end else begin // no ral model and only has default clk_rst_vif
-        cfg.clk_rst_vif.apply_reset();
+        ini_rst_seq = reset_seq::type_id::create("ini_rst_seq");
+        if (!ini_rst_seq.randomize() with {
+          assert_delay == local::cfg.rst_agt_cfg.ini_assert_delay;
+          assert_width == local::cfg.rst_agt_cfg.ini_assert_width;
+        }) `uvm_fatal(`gfn, "Failed to randomize transaction !")
+        ini_rst_seq.start(p_sequencer.rst_sqr);
       end
     end // if (kind == "HARD")
   endtask
