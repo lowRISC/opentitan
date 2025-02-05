@@ -312,6 +312,10 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
   endtask
 
   virtual task check_alert_triggered(string alert_name);
+    // If the alert happens when we are in the middle of ping handshake phases then wait until we
+    // are out of ping.
+    wait(!cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake &&
+         !cfg.m_alert_agent_cfgs[alert_name].under_ping_handshake_ph_2)
     // Add 1 extra negedge edge clock to make sure no race condition.
     repeat(alert_esc_agent_pkg::ALERT_B2B_DELAY + 1 + expected_alert[alert_name].max_delay) begin
       cfg.clk_rst_vif.wait_n_clks(1);
