@@ -17,10 +17,19 @@
 // the mask. The alignment requirement is handled separately.
 `define mask_is_full(a_mask, a_size) ($countones(a_mask) == (1 << a_size))
 
-// mask must be within enabled lanes
-// prevent cases: addr: 0h, size: 1, mask: 'b1100; addr: 0h, size: 0, mask: 'b1000
-`define chk_prot_mask_in_enabled_lanes \
-  ((a_mask >> a_addr[SizeWidth-1:0]) >> (1 << a_size)) == 0
+// The mask must always be LOW for all inactive byte lanes (see TL specification 1.8.1, p26)
+//
+// To evaluate this, notice that (1 << a_size) gives the number of active byte lanes. Exponentiating
+// again gives ((1 << (1 << a_size)) - 1), which is a pattern of bits that are true for the active
+// byte lanes, starting at index zero.
+//
+// Shifting this left by a_addr[SizeWidth-1:0] gives the pattern of bits for the active byte lanes,
+// starting at the correct index.
+//
+// Invert this and then AND with a_mask. Any bits high in the result are inactive byte lanes that
+// are HIGH in the mask.
+`define mask_low_in_inactive_lanes(a_mask, a_addr, a_size) \
+    ((a_mask & ~(((1 << (1 << a_size)) - 1) << a_addr[SizeWidth-1:0])) == 0)
 
 // Address must be aligned to the a_size (2 ** a_size bytes)
 `define chk_prot_addr_size_align \
@@ -108,8 +117,8 @@ class tl_seq_item extends uvm_sequence_item;
     a_opcode == PutFullData -> `mask_is_full(a_mask, a_size);
   }
 
-  constraint mask_in_enabled_lanes_c {
-    `chk_prot_mask_in_enabled_lanes;
+  constraint mask_in_active_lanes_c {
+    `mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
   }
 
   constraint addr_size_align_c {
@@ -230,7 +239,7 @@ class tl_seq_item extends uvm_sequence_item;
   function bit get_exp_d_error();
     return get_error_a_opcode_invalid() || get_error_PutFullData_mask_size_mismatched() ||
            get_error_addr_size_misaligned() ||
-           get_error_mask_not_in_enabled_lanes() || get_error_size_over_max();
+           get_error_mask_not_in_active_lanes() || get_error_size_over_max();
   endfunction
 
   function bit get_error_a_opcode_invalid();
@@ -256,8 +265,8 @@ class tl_seq_item extends uvm_sequence_item;
     return !(`chk_prot_addr_size_align);
   endfunction
 
-  function bit get_error_mask_not_in_enabled_lanes();
-    return !(`chk_prot_mask_in_enabled_lanes);
+  function bit get_error_mask_not_in_active_lanes();
+    return !`mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
   endfunction
 
   function bit get_error_size_over_max();
@@ -268,7 +277,7 @@ class tl_seq_item extends uvm_sequence_item;
     a_opcode_c.constraint_mode(0);
     mask_contiguous_c.constraint_mode(0);
     mask_w_PutFullData_c.constraint_mode(0);
-    mask_in_enabled_lanes_c.constraint_mode(0);
+    mask_in_active_lanes_c.constraint_mode(0);
     addr_size_align_c.constraint_mode(0);
     max_size_c.constraint_mode(0);
   endfunction
@@ -277,16 +286,16 @@ class tl_seq_item extends uvm_sequence_item;
   // at least one constraint_mode needs to be disabled to make sure protocol is violated
   function void randomize_a_chan_with_protocol_error();
     bit cm_a_opcode, cm_mask_w_PutFullData;
-    bit cm_mask_in_enabled_lanes, cm_addr_size_align, cm_max_size;
-    `DV_CHECK_FATAL(std::randomize(cm_a_opcode, cm_mask_w_PutFullData, cm_mask_in_enabled_lanes,
-                                   cm_addr_size_align, cm_max_size) with {
+    bit cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size;
+    `DV_CHECK_FATAL(std::randomize(cm_a_opcode, cm_mask_w_PutFullData,
+                                   cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size) with {
                                    // at least one constraint_mode is off
                                    !(cm_a_opcode && cm_mask_w_PutFullData &&
-                                     cm_mask_in_enabled_lanes && cm_addr_size_align && cm_max_size);
+                                     cm_mask_in_active_lanes && cm_addr_size_align && cm_max_size);
                                    })
     a_opcode_c.constraint_mode(cm_a_opcode);
     mask_w_PutFullData_c.constraint_mode(cm_mask_w_PutFullData);
-    mask_in_enabled_lanes_c.constraint_mode(cm_mask_in_enabled_lanes);
+    mask_in_active_lanes_c.constraint_mode(cm_mask_in_active_lanes);
     addr_size_align_c.constraint_mode(cm_addr_size_align);
     max_size_c.constraint_mode(cm_max_size);
     `DV_CHECK_FATAL(
@@ -294,7 +303,8 @@ class tl_seq_item extends uvm_sequence_item;
         randomize() with {!cm_a_opcode              && !(`a_opcode_is_valid(a_opcode))    ||
                           !cm_mask_w_PutFullData    &&
                             (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size)) ||
-                          !cm_mask_in_enabled_lanes && !(`chk_prot_mask_in_enabled_lanes) ||
+                          !cm_mask_in_active_lanes &&
+                            !(`mask_low_in_inactive_lanes(a_mask, a_addr, a_size))        ||
                           !cm_addr_size_align       && !(`chk_prot_addr_size_align)       ||
                           !cm_max_size              && !(`chk_prot_max_size);})
   endfunction
@@ -351,6 +361,6 @@ endclass
 
 `undef a_opcode_is_valid
 `undef mask_is_full
-`undef chk_prot_mask_in_enabled_lanes
+`undef mask_low_in_inactive_lanes
 `undef chk_prot_addr_size_align
 `undef chk_prot_max_size
