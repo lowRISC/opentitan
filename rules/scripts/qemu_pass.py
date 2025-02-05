@@ -15,7 +15,7 @@ import sys
 
 def main() -> int:
     r = Runfiles.Create()
-    qemu_bin = r.Rlocation("_main~qemu~qemu_opentitan/build/qemu-system-riscv32")
+    qemu_bin = r.Rlocation("qemu_opentitan/build/qemu-system-riscv32")
 
     # Run the process capturing (then echoing) `stdout` and `stderr`.
     proc = subprocess.run(
