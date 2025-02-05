@@ -158,8 +158,8 @@
   "moduleExtensions": {
     "//rules:extensions.bzl%hooks": {
       "general": {
-        "bzlTransitiveDigest": "4jKAP4jsTdJoZuA38C4q/KV6hxks41+r6Bfm6YN+2JA=",
-        "usagesDigest": "efm8dv/MZl0wK8Lk/GoYEpr1qnmqsiHA2uojJeQNjFg=",
+        "bzlTransitiveDigest": "gAwFnwOWpgvO7+fj0/yWOwhGOVWq7B/PHkKm2YIknOo=",
+        "usagesDigest": "+sHCstiY2wAp6iOn6npAJOOUDEs1oprZ+Q+DrivbCdM=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
@@ -169,24 +169,24 @@
         },
         "generatedRepoSpecs": {
           "manufacturer_test_hooks": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
-            "ruleClassName": "local_repository",
+            "bzlFile": "@@//rules:extensions.bzl",
+            "ruleClassName": "copy_from_label",
             "attributes": {
-              "path": "sw/device/tests/closed_source"
+              "src": "@@//:sw/device/tests/closed_source"
             }
           },
           "secure_manufacturer_test_hooks": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
-            "ruleClassName": "local_repository",
+            "bzlFile": "@@//rules:extensions.bzl",
+            "ruleClassName": "copy_from_label",
             "attributes": {
-              "path": "sw/device/tests/closed_source"
+              "src": "@@//:sw/device/tests/closed_source"
             }
           },
           "provisioning_exts": {
-            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
-            "ruleClassName": "local_repository",
+            "bzlFile": "@@//rules:extensions.bzl",
+            "ruleClassName": "copy_from_label",
             "attributes": {
-              "path": "sw/device/silicon_creator/manuf/extensions"
+              "src": "@@//:sw/device/silicon_creator/manuf/extensions"
             }
           }
         },
@@ -901,7 +901,7 @@
     },
     "//third_party/tock:extensions.bzl%tock": {
       "general": {
-        "bzlTransitiveDigest": "0mMNhyXsdhmZnuNkQUp7k2qlfuaKpg4NcGaTIePVzKU=",
+        "bzlTransitiveDigest": "zFRHcqo3QkGflhUdjPxrikkNgKib8Flv/nrtUWnCWBY=",
         "usagesDigest": "E0++DPi4A+g+XGZA7s7iXugGNnQjEYNYZMZAHWrJieQ=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -979,11 +979,6 @@
           }
         },
         "recordedRepoMappingEntries": [
-          [
-            "",
-            "",
-            ""
-          ],
           [
             "",
             "bazel_tools",
