@@ -1118,7 +1118,8 @@ class TopGen:
             else:
                 name = Name.from_snake_case(intr["name"])
                 irq_id = interrupts.add_constant(name, docstring=intr["name"])
-                source_name = source_name_map[intr["module_name"]]
+                source_name_key = 'unknown' if intr['incoming'] else intr['module_name']
+                source_name = source_name_map[source_name_key]
                 plic_mapping.add_entry(irq_id, source_name)
                 self.device_irqs[intr["module_name"]].append(intr["name"])
 
