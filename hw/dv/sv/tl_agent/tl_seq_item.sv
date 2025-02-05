@@ -6,10 +6,9 @@
 // TileLink sequence item
 // ---------------------------------------------
 
-// use macro to write constraint in order to reuse in functions:
-// get_exp_d_error and randomize_a_chan_with_protocol_error
-`define chk_prot_a_opcode \
-  a_opcode inside {Get, PutFullData, PutPartialData}
+// An expression that is true if a_opcode is a valid opcode. Using a macro instead of a function
+// means that this can be used by the constraint solver.
+`define a_opcode_is_valid(a_opcode) (a_opcode inside {Get, PutFullData, PutPartialData})
 
 // For PutFullData message, mask needs to match with size
 `define chk_prot_mask_w_PutFullData \
@@ -99,7 +98,7 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   constraint a_opcode_c {
-    `chk_prot_a_opcode;
+    `a_opcode_is_valid(a_opcode);
   }
 
   // mask must be contiguous, e.g. 'b1001, 'b1010 aren't allowed
@@ -241,7 +240,7 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 
   function bit get_error_a_opcode_invalid();
-    return !(`chk_prot_a_opcode);
+    return !`a_opcode_is_valid(a_opcode);
   endfunction
 
   function automatic logic [DataWidth-1:0] get_written_data();
@@ -306,7 +305,7 @@ class tl_seq_item extends uvm_sequence_item;
     max_size_c.constraint_mode(cm_max_size);
     `DV_CHECK_FATAL(
         // at least one `chk_prot_* is violated
-        randomize() with {!cm_a_opcode              && !(`chk_prot_a_opcode)              ||
+        randomize() with {!cm_a_opcode              && !(`a_opcode_is_valid(a_opcode))    ||
                           !cm_mask_w_PutFullData    && !(`chk_prot_mask_w_PutFullData)    ||
                           !cm_addr_mask_align       && !(`chk_prot_addr_mask_align)       ||
                           !cm_mask_in_enabled_lanes && !(`chk_prot_mask_in_enabled_lanes) ||
@@ -364,7 +363,7 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 endclass
 
-`undef chk_prot_a_opcode
+`undef a_opcode_is_valid
 `undef chk_prot_mask_w_PutFullData
 `undef chk_prot_addr_mask_align
 `undef chk_prot_mask_in_enabled_lanes
