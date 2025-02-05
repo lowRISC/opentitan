@@ -16,7 +16,19 @@ module spi_device
   parameter bit                             RaclErrorRsp                  = EnableRacl,
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVec[73]          = '{73{0}},
   parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinEgressbuffer  = 0,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinIngressbuffer = 0
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelWinIngressbuffer = 0,
+  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesEgressbuffer[1] = '{
+    '{base: {top_pkg::TL_AW{1'b0}},
+      mask: {top_pkg::TL_AW{1'b1}},
+      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinEgressbuffer)
+    }
+  },
+  localparam top_racl_pkg::racl_range_t RaclPolicySelRangesIngressbuffer[1] = '{
+    '{base: {top_pkg::TL_AW{1'b0}},
+      mask: {top_pkg::TL_AW{1'b1}},
+      policy_sel: top_racl_pkg::racl_policy_sel_t'(RaclPolicySelWinIngressbuffer)
+    }
+  }
 ) (
   input clk_i,
   input rst_ni,
@@ -1687,7 +1699,8 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelVec (RaclPolicySelWinEgressbuffer)
+    .RaclPolicySelNumRanges(1),
+    .RaclPolicySelRanges(RaclPolicySelRangesEgressbuffer)
   ) u_tlul2sram_egress (
     .clk_i,
     .rst_ni,
@@ -1725,7 +1738,8 @@ module spi_device
     .ByteAccess       (0),
     .EnableRacl       (EnableRacl),
     .RaclErrorRsp     (RaclErrorRsp),
-    .RaclPolicySelVec (RaclPolicySelWinIngressbuffer)
+    .RaclPolicySelNumRanges(1),
+    .RaclPolicySelRanges(RaclPolicySelRangesIngressbuffer)
   ) u_tlul2sram_ingress (
     .clk_i,
     .rst_ni,

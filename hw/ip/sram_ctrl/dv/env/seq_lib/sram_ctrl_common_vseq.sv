@@ -79,8 +79,8 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     // their counters. This avoids a problem where we generate a spurious request when the FIFO was
     // actually empty and lots of signals in the design become X. This will let the fifos error
     // signal stuck at X. Zeroing the backing memory avoids that problem.
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram.u_reqfifo", 2);
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram.u_sramreqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo", 2);
 
     super.dut_init(reset_kind);
   endtask
@@ -168,13 +168,13 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
       if (is_ptr_in_adapters_fifo(if_proxy.path, touching_req_fifo)) begin
         if (!enable) begin
           `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo");
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo");
+          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo");
         end else begin
-          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_reqfifo");
-          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_sramreqfifo");
-          $asserton(0, "tb.dut.u_tlul_adapter_sram.u_rspfifo");
+          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo");
+          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo");
+          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo");
         end
 
         // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes us to

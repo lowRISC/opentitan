@@ -50,8 +50,8 @@ def main():
         raise SystemExit(
             f'Failed to parse RACL config "{args.racl_config}". Error: {err}')
 
-    parsed_register_mapping, parsed_window_mapping, racl_group, policy_names = parse_racl_mapping(
-        parsed_racl_config, args.mapping, args.if_name, ip_block)
+    register_mapping, window_mapping, range_mapping, racl_group, policy_names\
+        = parse_racl_mapping(parsed_racl_config, args.mapping, args.if_name, ip_block)
 
     template = """\
 <%doc>
@@ -63,12 +63,14 @@ def main():
         hw/top_earlgrey/templates/toplevel.sv.tpl
         hw/top_englishbreakfast/templates/toplevel.sv.tpl
 </%doc>\
+<% import raclgen.lib as raclgen %>\
 <% import math %>\
 <% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
 <% group_suffix = f"_{racl_group.upper()}" if racl_group and racl_group != "Null" else "" %>\
 <% if_suffix = f"_{if_name.upper()}" if if_name else "" %>\
 <% reg_name_len = max( (len(name) for name in register_mapping.keys()), default=0 ) %>\
 <% window_name_len = max( (len(name) for name in window_mapping.keys()), default=0 ) %>\
+<% policy_sel_name = f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}" %>\
   /**
    * Policy selection vector for ${module_name}
    *   TLUL interface name: ${if_name}
@@ -87,20 +89,37 @@ def main():
 (Idx ${f"{policy_idx}".rjust(policy_idx_len)})
         % endfor
       % endif
+      % if len(range_mapping) > 0:
+   *   Range to policy mapping:
+        % for range in range_mapping:
+   *     ${f"0x{range['base']:08x}"} -- ${f"0x{(range['base']+range['size']):08x}"} \
+policy: ${policy_names[range['policy']]} (Idx ${f"{range['policy']}".rjust(policy_idx_len)})
+        % endfor
+      % endif
    */
-<% policy_sel_name = f"RACL_POLICY_SEL_{module_name.upper()}{group_suffix}{if_suffix}" %>\
+      % if len(register_mapping) > 0:
 <% policy_sel_value = "'{" + ", ".join(map(str, reversed(register_mapping.values()))) + "};" %>\
   parameter racl_policy_sel_t ${policy_sel_name} [${len(register_mapping)}] = ${policy_sel_value}
+      % endif
       % for window_name, policy_idx in window_mapping.items():
   parameter racl_policy_sel_t ${policy_sel_name}_WIN_${window_name.upper()} = ${policy_idx};
       % endfor
+      % if len(range_mapping) > 0:
+  parameter racl_policy_sel_t ${policy_sel_name}_NUM_RANGES = ${len(range_mapping)};
+<% value =  ",\\n".join(map(raclgen.format_parameter_range_value, range_mapping)) %>\
+  parameter racl_range_t ${policy_sel_name}_RANGES [${len(range_mapping)}] = '{
+    ${value}
+  };
+      % endif
+
     """
 
     print(
         Template(template).render(m=ip_block,
                                   if_name=args.if_name,
-                                  register_mapping=parsed_register_mapping,
-                                  window_mapping=parsed_window_mapping,
+                                  register_mapping=register_mapping,
+                                  window_mapping=window_mapping,
+                                  range_mapping=range_mapping,
                                   policy_names=policy_names,
                                   module_name=ip_block.name,
                                   racl_group=racl_group).rstrip())

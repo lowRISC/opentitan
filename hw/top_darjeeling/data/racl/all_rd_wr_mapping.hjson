@@ -4,6 +4,11 @@
 
 {
   Null: {
-    "*": "ALL_RD_WR"
+    registers: {
+      "*": "ALL_RD_WR"
+    }
+    windows: {
+      "*": "ALL_RD_WR"
+    }
   }
 }
