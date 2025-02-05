@@ -175,7 +175,7 @@
     }
     { name: "POLICY_ALL_RD_WR_SHADOWED"
       desc: '''
-            Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+            Read and write policy for ALL_RD_WR
             '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -187,21 +187,21 @@
           name: "write_perm"
           resval: 7
           desc: '''
-                Write permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+                Write permission for policy ALL_RD_WR
                 '''
         }
         { bits: "15:0"
           name: "read_perm"
           resval: 7
           desc: '''
-                Read permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+                Read permission for policy ALL_RD_WR
                 '''
         }
       ]
     }
     { name: "POLICY_ROT_PRIVATE_SHADOWED"
       desc: '''
-            Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+            Read and write policy for ROT_PRIVATE
             '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -213,21 +213,21 @@
           name: "write_perm"
           resval: 1
           desc: '''
-                Write permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+                Write permission for policy ROT_PRIVATE
                 '''
         }
         { bits: "15:0"
           name: "read_perm"
           resval: 1
           desc: '''
-                Read permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+                Read permission for policy ROT_PRIVATE
                 '''
         }
       ]
     }
     { name: "POLICY_SOC_ROT_SHADOWED"
       desc: '''
-            Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+            Read and write policy for SOC_ROT
             '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -239,14 +239,14 @@
           name: "write_perm"
           resval: 5
           desc: '''
-                Write permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+                Write permission for policy SOC_ROT
                 '''
         }
         { bits: "15:0"
           name: "read_perm"
           resval: 5
           desc: '''
-                Read permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+                Read permission for policy SOC_ROT
                 '''
         }
       ]
