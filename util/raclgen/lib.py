@@ -5,11 +5,16 @@
 import logging
 import sys
 from collections import OrderedDict
-from typing import Dict, Optional, Tuple, List
+from typing import Dict, Optional, Tuple, List, TextIO
 
 import hjson
 from reggen.ip_block import IpBlock
 from reggen.validate import check_keys
+from reggen.md_helpers import mono, list_item, table, title
+from reggen.multi_register import MultiRegister
+from reggen.register import Register
+from reggen.window import Window
+
 
 # Required fields for the RACL hjson
 racl_required = {
@@ -97,6 +102,10 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config['nr_role_bits'] = racl_config['role_bit_msb'] - racl_config['role_bit_lsb'] + 1
     racl_config['nr_ctn_uid_bits'] = racl_config['ctn_uid_bit_msb'] - \
         racl_config['ctn_uid_bit_lsb'] + 1
+
+    # verify that `roles_id`s matches the ordering of the `roles`
+    for idx, role in enumerate(racl_config['roles'].keys()):
+        assert racl_config['roles'][role]['role_id'] == idx
 
     # Determine the maximum number of policies over all RACL groups for RTL
     # RTL needs to create the vectors based on the largest group
@@ -255,3 +264,101 @@ def parse_racl_mapping(
 
     return parsed_register_mapping, parsed_window_mapping, parsed_range_mapping, racl_group, \
         policy_names
+
+
+def gen_md_header(racl_config: Dict[str, object], output: TextIO = sys.stdout):
+    output.write(title('RACL groups', 2))
+    output.write('\n')
+
+    header = ['Policy Name', 'Index']
+
+    for racl_group in racl_config['policies']:
+        policies_for_racl_group = racl_config['policies'][racl_group]
+        policy_names = [policy['name'] for policy in policies_for_racl_group]
+        rows: List[List[str]] = []
+        for policy_idx, policy_name in enumerate(policy_names):
+            rows.append([policy_name, str(policy_idx)])
+
+        output.write(title(f'RACL group: {racl_group}', 3))
+        output.write(table(header, rows))
+        output.write('\n')
+
+    output.write(title('RACL configuration', 2))
+    output.write('\n')
+
+
+def gen_md(block: IpBlock,
+           racl_config: Dict[str, object],
+           racl_mapping: Dict[str, object],
+           module: Dict[str, object],
+           output: TextIO = sys.stdout):
+
+    if_name = racl_mapping['if_name']
+    if not if_name or if_name == '':
+        if_name = 'null'
+
+    assert block.reg_blocks
+    if len(block.reg_blocks) == 1:
+        assert not if_name or if_name == '' or if_name == 'null'
+        rb = next(iter(block.reg_blocks.values()))
+    else:
+        rb = block.reg_blocks[if_name]
+
+    comp = block.name
+    width = block.regwidth
+    bytew = width // 8
+
+    base_addr = next(iter(module['base_addrs'][if_name].values()))
+    base_addr = int(base_addr, 0)
+    instance_name = module['name']
+    racl_group = racl_mapping['racl_group']
+    policies_for_racl_group = racl_config['policies'][racl_group]
+    role_names = racl_config['roles'].keys()
+
+    heading = f'RACL configuration for `{instance_name}` and interface `{if_name}`'
+    output.write(title(heading, 3))
+
+    output.write('\n')
+    output.write(list_item(f'IP: {comp}'))
+    output.write(list_item(f'Instance base address: {hex(base_addr)}'))
+    output.write(list_item(f'RACL group: {racl_group}'))
+    output.write('\n')
+
+    header = ['Name', 'Offset', 'Address', 'Width', 'Policy'] + list(role_names)
+    rows: List[List[str]] = []
+
+    def add_row(name: str, policy_sel: int, offset: int, base_addr: int, length: int) -> None:
+        policy = policies_for_racl_group[policy_sel]
+        addr = base_addr + offset
+        prefix = f'.{if_name}' if if_name and if_name != 'null' else ''
+        row = [
+            f'{instance_name}{prefix}.{mono(name)}',
+            hex(offset),
+            hex(addr),
+            hex(length),
+            f'{policy_sel} ({policy["name"]})',
+        ]
+        for role in role_names:
+            allowed_rd = 'R' if role in policy['allowed_rd'] else '-'
+            allowed_wr = 'W' if role in policy['allowed_wr'] else '-'
+            row.append(f'{allowed_rd} / {allowed_wr}')
+        rows.append(row)
+
+    for entry in rb.entries:
+        if isinstance(entry, MultiRegister):
+            length = bytew
+            for reg in entry.regs:
+                policy_sel = racl_mapping['register_mapping'][reg.name]
+                add_row(reg.name, policy_sel, reg.offset, base_addr, length)
+        elif isinstance(entry, Window):
+            length = bytew * entry.items
+            policy_sel = racl_mapping['window_mapping'][entry.name]
+            add_row(entry.name, policy_sel, entry.offset, base_addr, length)
+        else:
+            assert isinstance(entry, Register)
+            length = bytew
+            policy_sel = racl_mapping['register_mapping'][entry.name]
+            add_row(entry.name, policy_sel, entry.offset, base_addr, length)
+
+    output.write('')
+    output.write(table(header, rows))
