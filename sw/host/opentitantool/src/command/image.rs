@@ -193,7 +193,7 @@ impl CommandDispatch for ManifestUpdateCommand {
             .unwrap_or(Ok(Default::default()))?;
         let ext = manifest.extension_params.clone();
 
-        update_length = !manifest.has_length() || update_length;
+        update_length = !manifest.has_length() && update_length;
         image.overwrite_manifest(manifest)?;
 
         // Update image with signed manifest extensions.
