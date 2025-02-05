@@ -10,9 +10,12 @@
 // means that this can be used by the constraint solver.
 `define a_opcode_is_valid(a_opcode) (a_opcode inside {Get, PutFullData, PutPartialData})
 
-// For PutFullData message, mask needs to match with size
-`define chk_prot_mask_w_PutFullData \
-  a_opcode != PutFullData || $countones(a_mask) == (1 << a_size)
+// An expression that is true if a_mask is true for every active byte lane. (This is required by the
+// PutFullData operation).
+//
+// Note that the expression actually works by checking there are the right *number* of bits set in
+// the mask. The alignment requirement is handled separately.
+`define mask_is_full(a_mask, a_size) ($countones(a_mask) == (1 << a_size))
 
 // mask must align with addr, same as below
 //   a_addr[1:0] == 1 -> a_mask[0]   == 0;
@@ -107,7 +110,7 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   constraint mask_w_PutFullData_c {
-    `chk_prot_mask_w_PutFullData;
+    a_opcode == PutFullData -> `mask_is_full(a_mask, a_size);
   }
 
   constraint addr_mask_align_c {
@@ -255,7 +258,7 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 
   function bit get_error_PutFullData_mask_size_mismatched();
-    return !(`chk_prot_mask_w_PutFullData);
+    return (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size));
   endfunction
 
   function bit get_error_addr_mask_misaligned();
@@ -306,7 +309,8 @@ class tl_seq_item extends uvm_sequence_item;
     `DV_CHECK_FATAL(
         // at least one `chk_prot_* is violated
         randomize() with {!cm_a_opcode              && !(`a_opcode_is_valid(a_opcode))    ||
-                          !cm_mask_w_PutFullData    && !(`chk_prot_mask_w_PutFullData)    ||
+                          !cm_mask_w_PutFullData    &&
+                            (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size)) ||
                           !cm_addr_mask_align       && !(`chk_prot_addr_mask_align)       ||
                           !cm_mask_in_enabled_lanes && !(`chk_prot_mask_in_enabled_lanes) ||
                           !cm_addr_size_align       && !(`chk_prot_addr_size_align)       ||
@@ -364,7 +368,7 @@ class tl_seq_item extends uvm_sequence_item;
 endclass
 
 `undef a_opcode_is_valid
-`undef chk_prot_mask_w_PutFullData
+`undef mask_is_full
 `undef chk_prot_addr_mask_align
 `undef chk_prot_mask_in_enabled_lanes
 `undef chk_prot_addr_size_align
