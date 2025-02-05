@@ -899,3 +899,16 @@ cc_library(
         "//sw/device/silicon_creator/lib:epmp_state",
     ],
 )
+
+cc_library(
+    name = "rv_timer",
+    srcs = ["rv_timer.c"],
+    hdrs = ["rv_timer.h"],
+    deps = [
+        "//hw/ip/rv_timer/data:rv_timer_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+    ],
+)
