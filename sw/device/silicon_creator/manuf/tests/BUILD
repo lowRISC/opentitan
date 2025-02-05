@@ -275,6 +275,7 @@ opentitan_binary(
     srcs = ["sram_device_info_flash_wr_functest.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_sival": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -371,6 +372,7 @@ opentitan_binary(
     srcs = ["sram_exec_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
