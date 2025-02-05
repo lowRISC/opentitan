@@ -2,17 +2,58 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "ast_regs.h"
 #include "clkmgr_regs.h"
 #include "csrng_regs.h"
 #include "edn_regs.h"
-#include "entropy_src_regs.h"
+#include "sram_ctrl_regs.h"
+
+#if defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 #include "otp_ctrl_regs.h"
 #include "sensor_ctrl_regs.h"
-#include "sram_ctrl_regs.h"
+#include "hw/top_englishbreakfast/sw/autogen/top_englishbreakfast_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_ENGLISHBREAKFAST_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_ENGLISHBREAKFAST_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_ENGLISHBREAKFAST_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_ENGLISHBREAKFAST_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_ENGLISHBREAKFAST_ENTROPY_SRC_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_ENGLISHBREAKFAST_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_ENGLISHBREAKFAST_EDN0_BASE_ADDR
+#define SENSOR_CTRL_BASE_ADDR               TOP_ENGLISHBREAKFAST_SENSOR_CTRL_AON_BASE_ADDR
+
+#elif defined(OPENTITAN_IS_EARLGREY)
+#include "otp_ctrl_regs.h"
+#include "sensor_ctrl_regs.h"
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_EARLGREY_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define ENTROPY_SRC_BASE_ADDR               TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_EARLGREY_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_EARLGREY_EDN0_BASE_ADDR
+#define SENSOR_CTRL_BASE_ADDR               TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
+
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling_memory.h"
+#define OTP_CTRL_CORE_BASE_ADDR             TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR
+#define AST_BASE_ADDR                       TOP_DARJEELING_AST_BASE_ADDR
+#define CLKMGR_AON_BASE_ADDR                TOP_DARJEELING_CLKMGR_AON_BASE_ADDR
+#define SRAM_CTRL_MAIN_REGS_BASE_ADDR       TOP_DARJEELING_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+#define CSRNG_BASE_ADDR                     TOP_DARJEELING_CSRNG_BASE_ADDR
+#define EDN0_BASE_ADDR                      TOP_DARJEELING_EDN0_BASE_ADDR
+#undef SENSOR_CTRL_BASE_ADDR                /* No sensor control */
+#undef ENTROPY_SRC_BASE_ADDR                /* No entropy source */
+
+#else
+#error unsupported top
+#endif
+
+#ifdef ENTROPY_SRC_BASE_ADDR
+#include "entropy_src_regs.h"
+#endif
 
 /**
  * Test ROM interrupt vectors.
@@ -146,24 +187,25 @@ _reset_start:
   .global _start
   .type _start, @function
 _start:
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifdef OPENTITAN_IS_EARLGREY
   // Check if AST initialization should be skipped.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_INIT_EN_OFFSET(a0)
   li   t1, MULTIBIT_ASM_BOOL4_TRUE
   bne  t0, t1, .L_ast_init_skip
 
+
   // Copy the AST configuration from OTP.
-  li   a0, (TOP_EARLGREY_AST_BASE_ADDR)
-  li   a1, (TOP_EARLGREY_AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
-  li   a2, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (AST_BASE_ADDR)
+  li   a1, (AST_BASE_ADDR + AST_REGAL_REG_OFFSET + 4)
+  li   a2, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET + \
             OTP_CTRL_PARAM_CREATOR_SW_CFG_AST_CFG_OFFSET)
   call crt_section_copy
 
   // Wait for AST initialization to complete.
-  li   a0, TOP_EARLGREY_SENSOR_CTRL_AON_BASE_ADDR
+  li   a0, SENSOR_CTRL_BASE_ADDR
 .L_ast_done_loop:
   lw   t0, SENSOR_CTRL_STATUS_REG_OFFSET(a0)
   srli t0, t0, SENSOR_CTRL_STATUS_AST_INIT_DONE_BIT // no-op as bit index is currently 0
@@ -171,16 +213,18 @@ _start:
   beqz t0, .L_ast_done_loop
 
   // Enable jittery clock if enabled in OTP.
-  li   a0, (TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + \
+  li   a0, (OTP_CTRL_CORE_BASE_ADDR + \
             OTP_CTRL_SW_CFG_WINDOW_REG_OFFSET)
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_JITTER_EN_OFFSET(a0)
-  li   a0, TOP_EARLGREY_CLKMGR_AON_BASE_ADDR
+  li   a0, CLKMGR_AON_BASE_ADDR
   sw   t0, CLKMGR_JITTER_ENABLE_REG_OFFSET(a0)
+#endif /* OTP_CTRL_CORE_BASE_ADDR */
 
 .L_ast_init_skip:
+#ifdef ENTROPY_SRC_BASE_ADDR
   // The following sequence enables the minimum level of entropy required to
   // initialize memory scrambling, as well as the entropy distribution network.
-  li a0, TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR
+  li a0, ENTROPY_SRC_BASE_ADDR
   // Note for BOOT_ROM initialization the FIPS_ENABLE bit is set to kMultiBitBool4False
   // to prevent the release of FIPS entropy until all the thresholds are set
   li t0, (MULTIBIT_ASM_BOOL4_FALSE << ENTROPY_SRC_CONF_FIPS_ENABLE_OFFSET) | \
@@ -193,15 +237,16 @@ _start:
 
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << ENTROPY_SRC_MODULE_ENABLE_MODULE_ENABLE_OFFSET)
   sw t0, ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET(a0)
+#endif
 
-  li a0, TOP_EARLGREY_CSRNG_BASE_ADDR
+  li a0, CSRNG_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_SW_APP_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << CSRNG_CTRL_READ_INT_STATE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << CSRNG_CTRL_FIPS_FORCE_ENABLE_OFFSET)
   sw t0, CSRNG_CTRL_REG_OFFSET(a0)
 
-  li a0, TOP_EARLGREY_EDN0_BASE_ADDR
+  li a0, EDN0_BASE_ADDR
   li t0, (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_EDN_ENABLE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_TRUE << EDN_CTRL_BOOT_REQ_MODE_OFFSET) | \
          (MULTIBIT_ASM_BOOL4_FALSE << EDN_CTRL_AUTO_REQ_MODE_OFFSET) | \
@@ -221,14 +266,14 @@ _start:
   csrw pmpcfg0, zero
   csrw pmpcfg1, zero
   csrw pmpcfg2, zero
-#endif
+
   // Scramble and initialize main memory (main SRAM).
   // Memory accesses will stall until initialization is complete.
   // Skip SRAM initialization for DV sim device type, as the testbench handles
   // this to optimize test run times.
   lw    t0, kDeviceType
   beqz  t0, .L_sram_init_skip
-  li    a0, TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  li    a0, SRAM_CTRL_MAIN_REGS_BASE_ADDR
   li    t0, (1 << SRAM_CTRL_CTRL_INIT_BIT)
   sw    t0, SRAM_CTRL_CTRL_REG_OFFSET(a0)
 

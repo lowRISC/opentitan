@@ -14,8 +14,6 @@
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 /**
  * The polynomial co-efficients used in the 32-bit LFSR implementation.
  *

@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -33,7 +34,9 @@ opentitan_binary(
         "//hw/top_earlgrey:fpga_cw340",
         "//hw/top_earlgrey:sim_dv_base",
         "//hw/top_earlgrey:sim_verilator_base",
+        "//hw/top_darjeeling:sim_dv_base",
     ],
+    features = ["use_lld"],
     kind = "rom",
     linker_script = ":linker_script",
     deps = [
@@ -94,9 +97,8 @@ cc_library(
     deps = [
         "//hw/top:flash_ctrl_c_regs",
         "//hw/top:gpio_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
         "//hw/top:spi_device_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/dif:rstmgr_intf",
@@ -116,12 +118,26 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "darjeeling_test_rom_lib",
+    srcs = [
+        "darjeeling_fake_driver_funcs.c",
+    ],
+    deps = [
+        "//sw/device/lib/dif:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
 alias(
     name = "target_test_rom_lib",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_lib",
-        "//conditions:default": ":earl_grey_test_rom_lib",
-    }),
+    actual = opentitan_select_top(
+        {
+            "darjeeling": ":darjeeling_test_rom_lib",
+            "englishbreakfast": ":english_breakfast_test_rom_lib",
+        },
+        ":earl_grey_test_rom_lib",
+    ),
     visibility = ["//visibility:private"],
 )
 
@@ -137,9 +153,8 @@ cc_library(
     tags = ["manual"],
     deps = [
         "//hw/top:flash_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
         "//hw/top:spi_device_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
@@ -156,10 +171,12 @@ cc_library(
 
 alias(
     name = "test_rom_manifest",
-    actual = select({
-        "//sw/device:is_english_breakfast": ":english_breakfast_test_rom_manifest",
-        "//conditions:default": "//sw/device/silicon_creator/lib:manifest",
-    }),
+    actual = opentitan_select_top(
+        {
+            "englishbreakfast": ":english_breakfast_test_rom_manifest",
+        },
+        "//sw/device/silicon_creator/lib:manifest",
+    ),
 )
 
 cc_library(
@@ -168,29 +185,35 @@ cc_library(
         "test_rom.c",
         "test_rom_start.S",
     ],
+    local_defines = opentitan_if_ip(
+        "flash_ctrl",
+        ["HAS_FLASH_CTRL"],
+        [],
+    ) + opentitan_if_ip(
+        "otp_ctrl",
+        ["HAS_OTP_CTRL"],
+        [],
+    ) + opentitan_select_top(
+        {
+            "englishbreakfast": [],
+        },
+        ["HAS_RETENTION_RAM"],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":target_test_rom_lib",
         ":test_rom_manifest",
         "//hw/top:ast_c_regs",
         "//hw/top:clkmgr_c_regs",
-        "//hw/top:csrng_c_regs",
-        "//hw/top:edn_c_regs",
-        "//hw/top:entropy_src_c_regs",
-        "//hw/top:flash_ctrl_c_regs",
-        "//hw/top:otp_ctrl_c_regs",
-        "//hw/top:sensor_ctrl_c_regs",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/crt",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:gpio",
-        "//sw/device/lib/dif:hmac",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/dif:spi_device",
@@ -198,14 +221,45 @@ cc_library(
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/runtime:print",
-        "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing:pinmux_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:status",
         "//sw/device/silicon_creator/lib:chip_info",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:static_critical",
-    ],
+    ] + opentitan_if_ip(
+        "entropy_src",
+        ["//hw/top:entropy_src_c_regs"],
+        [],
+    ) + opentitan_if_ip(
+        "csrng",
+        ["//hw/top:csrng_c_regs"],
+        [],
+    ) + opentitan_if_ip(
+        "edn",
+        ["//hw/top:edn_c_regs"],
+        [],
+    ) + opentitan_if_ip(
+        "flash_ctrl",
+        [
+            "//hw/top:flash_ctrl_c_regs",
+            "//hw/top:dt_flash_ctrl",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+        ],
+        [],
+    ) + opentitan_if_ip(
+        "sensor_ctrl",
+        ["//hw/top:sensor_ctrl_c_regs"],
+        [],
+    ) + opentitan_if_ip(
+        "otp_ctrl",
+        [
+            "//hw/top:otp_ctrl_c_regs",
+            "//hw/top:dt_otp_ctrl",
+        ],
+        [],
+    ),
 )
 
 opentitan_test(

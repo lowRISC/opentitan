@@ -157,8 +157,8 @@ dual_cc_library(
             "@googletest//:gtest",
         ],
         shared = [
+            "//hw/top:dt",
             "//hw/top:flash_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:bitfield",
             "//sw/device/lib/base:hardened",
@@ -194,7 +194,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:hmac_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -253,7 +253,7 @@ dual_cc_library(
     deps = dual_inputs(
         shared = [
             "//hw/top:rv_core_ibex_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
@@ -394,7 +394,7 @@ dual_cc_library(
     deps = dual_inputs(
         device = [
             "//hw/top:lc_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",
@@ -416,7 +416,7 @@ cc_test(
     deps = [
         dual_cc_device_library_of(":lifecycle"),
         "//hw/top:lc_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],
@@ -525,8 +525,9 @@ cc_library(
     srcs = ["retention_sram.c"],
     hdrs = ["retention_sram.h"],
     deps = [
+        "//hw/top:dt",
         "//hw/top:sram_ctrl_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
@@ -712,8 +713,8 @@ cc_library(
     hdrs = ["uart.h"],
     deps = [
         ":ibex",
+        "//hw/top:dt",
         "//hw/top:uart_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
@@ -814,7 +815,7 @@ dual_cc_library(
         device = [
             "//hw/top:flash_ctrl_c_regs",
             "//hw/top:spi_device_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
         ],
         host = [
             "//sw/device/lib/base:global_mock",

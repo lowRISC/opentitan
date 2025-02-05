@@ -27,7 +27,10 @@ cc_library(
 
 ld_library(
     name = "top_darjeeling_memory",
-    defines = ["OPENTITAN_TOP_MEMORY_LD=top_darjeeling_memory.ld"],
+    defines = [
+        "OPENTITAN_TOP_MEMORY_LD=top_darjeeling_memory.ld",
+        "OPENTITAN_IS_DARJEELING",
+    ],
     includes = ["top_darjeeling_memory.ld"],
     target_compatible_with = opentitan_require_top("darjeeling"),
 )

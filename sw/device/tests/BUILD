@@ -3120,7 +3120,6 @@ opentitan_test(
         EARLGREY_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
-            "//hw/top_earlgrey:sim_dv": None,
         },
     ),
     fpga = fpga_params(
@@ -4278,10 +4277,12 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
@@ -6862,6 +6863,7 @@ opentitan_binary(
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
         "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
