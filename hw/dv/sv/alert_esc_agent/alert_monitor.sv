@@ -108,6 +108,7 @@ class alert_monitor extends alert_esc_base_monitor;
                   wait_ack();
                   req.alert_handshake_sta = AlertAckReceived;
                   cfg.under_ping_handshake = 0;
+                  cfg.under_ping_handshake_ph_2 = 1;
                 end
                 begin
                   wait (under_reset || cfg.en_alert_lpg);
@@ -139,6 +140,11 @@ class alert_monitor extends alert_esc_base_monitor;
       end
       ping_p = cfg.vif.monitor_cb.alert_rx_final.ping_p;
       alert_p = cfg.vif.monitor_cb.alert_tx_final.alert_p;
+
+      // Wait for alert_rx_final.ack_p to get deasserted to make sure we are no longer in ping
+      // handshake phase 2.
+      wait_ack_complete();
+      cfg.under_ping_handshake_ph_2 = 0;
     end
   endtask : ping_thread
 
