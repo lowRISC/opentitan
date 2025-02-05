@@ -31,9 +31,10 @@
 `define mask_low_in_inactive_lanes(a_mask, a_addr, a_size) \
     ((a_mask & ~(((1 << (1 << a_size)) - 1) << a_addr[SizeWidth-1:0])) == 0)
 
-// Address must be aligned to the a_size (2 ** a_size bytes)
-`define chk_prot_addr_size_align \
-  (a_addr << (AddrWidth - a_size)) == 0
+// Addresses should be naturally aligned. The operation addresses (1 << a_size) bytes, so the
+// address should be divisible by that. Equivalently, the bottom a_size bits of a_addr should be
+// zero.
+`define addr_aligned_to_size(a_addr, a_size) ((a_addr & ((1 << a_size) - 1)) == 0)
 
 // max size is 2
 `define chk_prot_max_size \
@@ -122,7 +123,7 @@ class tl_seq_item extends uvm_sequence_item;
   }
 
   constraint addr_size_align_c {
-    `chk_prot_addr_size_align;
+    `addr_aligned_to_size(a_addr, a_size);
   }
 
   // size can't be more than 2
@@ -262,7 +263,7 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 
   function bit get_error_addr_size_misaligned();
-    return !(`chk_prot_addr_size_align);
+    return !(`addr_aligned_to_size(a_addr, a_size));
   endfunction
 
   function bit get_error_mask_not_in_active_lanes();
@@ -305,7 +306,7 @@ class tl_seq_item extends uvm_sequence_item;
                             (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size)) ||
                           !cm_mask_in_active_lanes &&
                             !(`mask_low_in_inactive_lanes(a_mask, a_addr, a_size))        ||
-                          !cm_addr_size_align       && !(`chk_prot_addr_size_align)       ||
+                          !cm_addr_size_align       && !(`addr_aligned_to_size(a_addr, a_size)) ||
                           !cm_max_size              && !(`chk_prot_max_size);})
   endfunction
 
@@ -362,5 +363,5 @@ endclass
 `undef a_opcode_is_valid
 `undef mask_is_full
 `undef mask_low_in_inactive_lanes
-`undef chk_prot_addr_size_align
+`undef addr_aligned_to_size
 `undef chk_prot_max_size
