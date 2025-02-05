@@ -246,7 +246,7 @@ def gen_const_register(regout: TextIO, fieldout: TextIO, reg: Register,
     a = access(reg)
     access_type.add(a)
     highest_address.add(reg.offset + block.regwidth // 8)
-    genout(regout, format_comment(first_line(reg.desc)))
+    regout.write(format_comment(first_line(reg.desc)))
     genout(regout, "(0x{:04x} => {} {}: {}<u32, {}::Register>),\n", reg.offset,
            REG_VISIBILITY, reg.name.lower(), a, rname)
 
@@ -255,7 +255,7 @@ def gen_const_window(regout: TextIO, win: Window, block: IpBlock,
                      rnames: Set[str], existing_defines: Set[str],
                      access_type: Set[str], highest_address: Set[int]) -> None:
     possibly_gen_filler(regout, highest_address, win.offset)
-    genout(regout, format_comment('Memory area: ' + first_line(win.desc)))
+    regout.write(format_comment('Memory area: ' + first_line(win.desc)))
     a = access(win)
     access_type.add(a)
     highest_address.add(win.offset + win.items * block.regwidth // 8)
@@ -274,7 +274,7 @@ def gen_rust_module_param(outstr: TextIO, param: LocalParam, module_name: str,
         return
 
     if param.desc is not None:
-        genout(outstr, format_comment(first_line(param.desc)))
+        outstr.write(format_comment(first_line(param.desc)))
     # Heuristic: if the name already has underscores, it's already snake_case,
     # otherwise, assume StudlyCaps and convert it to snake_case.
     param_name = param.name if '_' in param.name else to_snake_case(param.name)
@@ -289,10 +289,10 @@ def gen_const_module_params(outstr: TextIO, module_data: IpBlock,
     for param in module_data.params.get_localparams():
         gen_rust_module_param(outstr, param, module_name, existing_defines)
 
-    genout(outstr, format_comment(first_line("Register width")))
+    outstr.write(format_comment(first_line("Register width")))
     define_name = to_upper_snake_case(module_name + '_PARAM_REG_WIDTH')
     gen_const(outstr, define_name, '', register_width, existing_defines)
-    genout(outstr, '\n')
+    outstr.write('\n')
 
 
 def gen_const_multireg(regout: TextIO, fieldout: TextIO,
