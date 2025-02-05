@@ -25,12 +25,11 @@ except ModuleNotFoundError:
 
 
 def get_tool_requirements_path():
-    '''Return the path to tool_requirements.py, at the top of the repo'''
-    # top_src_dir is the top of the repository
-    top_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__),
-                                                '..'))
+    '''Return the path to tool_requirements.py, in the same dir as this file'''
+    # tool_src_dir is the directory containing this file
+    tool_src_dir = os.path.normpath(os.path.join(os.path.dirname(__file__)))
 
-    return os.path.join(top_src_dir, 'tool_requirements.py')
+    return os.path.join(tool_src_dir, 'tool_requirements.py')
 
 
 class ReqErr(Exception):

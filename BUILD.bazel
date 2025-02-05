@@ -7,15 +7,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "MODULE.bazel",
     "python-requirements.txt",
-    "tool_requirements.py",
 ])
-
-filegroup(
-    name = "cores",
-    srcs = [
-        "check_tool_requirements.core",
-    ],
-)
 
 alias(
     name = "gen_rust_project",
