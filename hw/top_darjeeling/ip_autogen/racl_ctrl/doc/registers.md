@@ -3,13 +3,13 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/top_darjeeling/ip_autogen/racl_ctrl/data/racl_ctrl.hjson -->
 ## Summary
 
-| Name                                                                    | Offset   |   Length | Description                                                                                                                                                     |
-|:------------------------------------------------------------------------|:---------|---------:|:----------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0x0      |        4 | Alert Test Register                                                                                                                                             |
-| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0x4      |        4 | Error logging registers                                                                                                                                         |
-| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x8      |        4 | Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7} |
-| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0xc      |        4 | Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}          |
-| racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}                     |
+| Name                                                                    | Offset   |   Length | Description                           |
+|:------------------------------------------------------------------------|:---------|---------:|:--------------------------------------|
+| racl_ctrl.[`ALERT_TEST`](#alert_test)                                   | 0x0      |        4 | Alert Test Register                   |
+| racl_ctrl.[`ERROR_LOG`](#error_log)                                     | 0x4      |        4 | Error logging registers               |
+| racl_ctrl.[`POLICY_ALL_RD_WR_SHADOWED`](#policy_all_rd_wr_shadowed)     | 0x8      |        4 | Read and write policy for ALL_RD_WR   |
+| racl_ctrl.[`POLICY_ROT_PRIVATE_SHADOWED`](#policy_rot_private_shadowed) | 0xc      |        4 | Read and write policy for ROT_PRIVATE |
+| racl_ctrl.[`POLICY_SOC_ROT_SHADOWED`](#policy_soc_rot_shadowed)         | 0x10     |        4 | Read and write policy for SOC_ROT     |
 
 ## ALERT_TEST
 Alert Test Register
@@ -51,7 +51,7 @@ Error logging registers
 |   0    |  rw1c  |   0x0   | valid       | Indicates a RACL error and the log register contains valid data. Writing a one clears the error log register. |
 
 ## POLICY_ALL_RD_WR_SHADOWED
-Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}
+Read and write policy for ALL_RD_WR
 - Offset: `0x8`
 - Reset default: `0x70007`
 - Reset mask: `0xffffffff`
@@ -62,13 +62,13 @@ Read and write policy for {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', '
 {"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                       |
-|:------:|:------:|:-------:|:-----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x7   | write_perm | Write permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7} |
-|  15:0  |   rw   |   0x7   | read_perm  | Read permission for policy {'name': 'ALL_RD_WR', 'allowed_rd': ['ROT', 'ROLE1', 'SOC'], 'allowed_wr': ['ROT', 'ROLE1', 'SOC'], 'rd_default': 7, 'wr_default': 7}  |
+|  Bits  |  Type  |  Reset  | Name       | Description                           |
+|:------:|:------:|:-------:|:-----------|:--------------------------------------|
+| 31:16  |   rw   |   0x7   | write_perm | Write permission for policy ALL_RD_WR |
+|  15:0  |   rw   |   0x7   | read_perm  | Read permission for policy ALL_RD_WR  |
 
 ## POLICY_ROT_PRIVATE_SHADOWED
-Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}
+Read and write policy for ROT_PRIVATE
 - Offset: `0xc`
 - Reset default: `0x10001`
 - Reset mask: `0xffffffff`
@@ -79,13 +79,13 @@ Read and write policy for {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_
 {"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                              |
-|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x1   | write_perm | Write permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1} |
-|  15:0  |   rw   |   0x1   | read_perm  | Read permission for policy {'name': 'ROT_PRIVATE', 'rot_private': True, 'allowed_rd': ['ROT'], 'allowed_wr': ['ROT'], 'rd_default': 1, 'wr_default': 1}  |
+|  Bits  |  Type  |  Reset  | Name       | Description                             |
+|:------:|:------:|:-------:|:-----------|:----------------------------------------|
+| 31:16  |   rw   |   0x1   | write_perm | Write permission for policy ROT_PRIVATE |
+|  15:0  |   rw   |   0x1   | read_perm  | Read permission for policy ROT_PRIVATE  |
 
 ## POLICY_SOC_ROT_SHADOWED
-Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}
+Read and write policy for SOC_ROT
 - Offset: `0x10`
 - Reset default: `0x50005`
 - Reset mask: `0xffffffff`
@@ -96,10 +96,10 @@ Read and write policy for {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'all
 {"reg": [{"name": "read_perm", "bits": 16, "attr": ["rw"], "rotate": 0}, {"name": "write_perm", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                   |
-|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:16  |   rw   |   0x5   | write_perm | Write permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5} |
-|  15:0  |   rw   |   0x5   | read_perm  | Read permission for policy {'name': 'SOC_ROT', 'allowed_rd': ['ROT', 'SOC'], 'allowed_wr': ['ROT', 'SOC'], 'rd_default': 5, 'wr_default': 5}  |
+|  Bits  |  Type  |  Reset  | Name       | Description                         |
+|:------:|:------:|:-------:|:-----------|:------------------------------------|
+| 31:16  |   rw   |   0x5   | write_perm | Write permission for policy SOC_ROT |
+|  15:0  |   rw   |   0x5   | read_perm  | Read permission for policy SOC_ROT  |
 
 
 <!-- END CMDGEN -->

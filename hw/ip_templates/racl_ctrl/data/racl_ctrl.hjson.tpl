@@ -180,7 +180,7 @@
     % for policy in policies:
     { name: "POLICY_${policy['name'].upper()}${"_SHADOWED" if enable_shadow_reg else ""}"
       desc: '''
-            Read and write policy for ${policy}
+            Read and write policy for ${policy['name']}
             '''
       swaccess: "rw"
       hwaccess: "hro"
@@ -194,14 +194,14 @@
           name: "write_perm"
           resval: ${policy['wr_default']}
           desc: '''
-                Write permission for policy ${policy}
+                Write permission for policy ${policy['name']}
                 '''
         }
         { bits: "15:0"
           name: "read_perm"
           resval: ${policy['rd_default']}
           desc: '''
-                Read permission for policy ${policy}
+                Read permission for policy ${policy['name']}
                 '''
         }
       ]
