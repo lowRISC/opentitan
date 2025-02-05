@@ -7,6 +7,9 @@ module bat (
   input  tlul_pkg::tl_h2d_t tl_in_h2d_i,
   output tlul_pkg::tl_d2h_t tl_in_d2h_o,
 
+  // Integrator bits used for custom BAT
+  input logic [3:0]         integrator_id_i,
+
   // Translated output port
   output tlul_pkg::tl_h2d_t tl_out_h2d_o,
   input  tlul_pkg::tl_d2h_t tl_out_d2h_i
@@ -47,4 +50,8 @@ module bat (
 
   // Feed back the response port
   assign tl_in_d2h_o = tl_out_d2h_i;
+
+  // Integrator ID is unused in the open-source BAT
+  logic unused_signals;
+  assign unused_signals = ^integrator_id_i;
 endmodule
