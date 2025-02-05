@@ -18,7 +18,8 @@ class gpio_stress_all_vseq extends gpio_base_vseq;
                           "gpio_dout_din_regs_random_rw_vseq",
                           "gpio_intr_rand_pgm_vseq",
                           "gpio_rand_intr_trigger_vseq",
-                          "gpio_random_long_reg_writes_reg_reads_vseq"};
+                          "gpio_random_long_reg_writes_reg_reads_vseq",
+                          "gpio_rand_straps_vseq"};
     for (int i = 1; i <= num_trans; i++) begin
       uvm_sequence   seq;
       gpio_base_vseq gpio_vseq;
