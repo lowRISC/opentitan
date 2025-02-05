@@ -36,9 +36,8 @@
 // zero.
 `define addr_aligned_to_size(a_addr, a_size) ((a_addr & ((1 << a_size) - 1)) == 0)
 
-// max size is 2
-`define chk_prot_max_size \
-  a_size <= 2
+// The maximum allowed a_size is 2 (corresponding to a 4-byte / 32-bit operation)
+`define below_max_a_size(a_size) (a_size <= 2)
 
 class tl_seq_item extends uvm_sequence_item;
 
@@ -128,7 +127,7 @@ class tl_seq_item extends uvm_sequence_item;
 
   // size can't be more than 2
   constraint max_size_c {
-    `chk_prot_max_size;
+    `below_max_a_size(a_size);
   }
 
   `uvm_object_utils_begin(tl_seq_item)
@@ -271,7 +270,7 @@ class tl_seq_item extends uvm_sequence_item;
   endfunction
 
   function bit get_error_size_over_max();
-    return !(`chk_prot_max_size);
+    return !`below_max_a_size(a_size);
   endfunction // get_error_size_over_max
 
   function void disable_a_chan_protocol_constraint();
@@ -307,7 +306,7 @@ class tl_seq_item extends uvm_sequence_item;
                           !cm_mask_in_active_lanes &&
                             !(`mask_low_in_inactive_lanes(a_mask, a_addr, a_size))        ||
                           !cm_addr_size_align       && !(`addr_aligned_to_size(a_addr, a_size)) ||
-                          !cm_max_size              && !(`chk_prot_max_size);})
+                          !cm_max_size              && !(`below_max_a_size(a_size));})
   endfunction
 
   // Find whether this seq item is a read or a write.
@@ -364,4 +363,4 @@ endclass
 `undef mask_is_full
 `undef mask_low_in_inactive_lanes
 `undef addr_aligned_to_size
-`undef chk_prot_max_size
+`undef below_max_a_size
