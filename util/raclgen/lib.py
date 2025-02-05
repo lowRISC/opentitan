@@ -74,6 +74,20 @@ def parse_racl_config(config_path: str) -> Dict[str, object]:
     racl_config['nr_policies'] = max(
         len(policies) for policies in racl_config['policies'].values())
 
+    # Checking for racl misconfiguration which could lead to code misgeneration, e.g., logic [-1:0]
+    #
+    # There must be space for at least 1 role and 1 policy
+    assert racl_config['nr_role_bits'] > 0
+    assert racl_config['nr_policies'] > 0
+    # Role selector must fit into nr_role_bits
+    assert len(racl_config['roles']) <= 2 ** racl_config['nr_role_bits']
+    # MSB >= LSB
+    assert racl_config['ctn_uid_bit_msb'] >= racl_config['ctn_uid_bit_lsb']
+    assert racl_config['role_bit_msb'] >= racl_config['role_bit_lsb']
+    # No overlap between role and ctn_uid
+    assert racl_config['role_bit_lsb'] > racl_config['ctn_uid_bit_msb'] or \
+           racl_config['ctn_uid_bit_lsb'] > racl_config['role_bit_msb']
+
     rot_private_policy = None
     for racl_group, policies in racl_config['policies'].items():
         for policy in policies:
