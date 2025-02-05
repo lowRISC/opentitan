@@ -27,6 +27,7 @@ package gpio_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
 
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
+  typedef virtual gpio_straps_if straps_vif;
   typedef class gpio_env_cfg;
   typedef class gpio_env_cov;
   typedef cip_base_virtual_sequencer #(gpio_env_cfg, gpio_env_cov) gpio_virtual_sequencer;
