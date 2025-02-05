@@ -12,6 +12,8 @@ load("//rules:fusesoc.bzl", "fusesoc_build")
 # run with 4 threads.
 load("@bazel_skylib//rules:common_settings.bzl", "string_list_flag")
 
+exports_files(["tool_requirements.py"])
+
 string_list_flag(
     name = "verilator_options",
     build_setting_default = [
@@ -30,6 +32,14 @@ string_list_flag(
         "-j",
         "4",
     ],
+)
+
+filegroup(
+    name = "cores",
+    srcs = [
+        "check_tool_requirements.core",
+    ],
+    visibility = ["//visibility:public"],
 )
 
 filegroup(
@@ -60,7 +70,7 @@ fusesoc_build(
         "//hw/ip:verilator_files",
     ],
     cores = [
-        "//:cores",
+        ":cores",
     ],
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",
@@ -141,10 +151,8 @@ filegroup(
         # dv_macros are needed by Ibex, so include this back in.
         ["dv/sv/dv_utils/**"],
     ) + [
-        "//:tool_requirements.py",
         "//hw/ip:rtl_files",
         "//hw/top_earlgrey:rtl_files",
-        "//util:check_tool_requirements.py",
     ],
     visibility = ["//visibility:public"],
 )

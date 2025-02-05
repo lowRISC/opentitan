@@ -19,7 +19,7 @@
 # use fusesoc to generate files and file list
 #-------------------------------------------------------------------------
 \rm -Rf build syn_out
-fusesoc --cores-root .. run --target=syn \
+fusesoc --cores-root ../hw run --target=syn \
   --setup lowrisc:systems:top_earlgrey > /dev/null 2>&1
 
 # copy all files into directory "syn_out"

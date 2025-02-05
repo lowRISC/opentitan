@@ -31,7 +31,7 @@ fusesoc_build(
         "//hw/ip:verilator_files",
     ],
     cores = [
-        "//:cores",
+        "//hw:cores",
     ],
     data = ["//hw/ip/otbn:rtl_files"],
     make_options = ":make_options",

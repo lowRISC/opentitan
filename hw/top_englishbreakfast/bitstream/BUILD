@@ -13,7 +13,7 @@ fusesoc_build(
         "//hw:rtl_files",
         "//hw/top_englishbreakfast:rtl_files",
     ],
-    cores = ["//:cores"],
+    cores = ["//hw:cores"],
     output_groups = {
         "bitstream": ["synth-vivado/lowrisc_systems_chip_englishbreakfast_cw305_0.1.bit"],
         "mmi": ["synth-vivado/memories.mmi"],

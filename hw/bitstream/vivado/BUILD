@@ -43,7 +43,7 @@ fusesoc_build(
         _CW310_TESTROM,
         _OTP_RMA,
     ],
-    cores = ["//:cores"],
+    cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
@@ -84,7 +84,7 @@ fusesoc_build(
         _CW310_TESTROM,
         _OTP_RMA,
     ],
-    cores = ["//:cores"],
+    cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW310_TESTROM_PATH,
@@ -125,7 +125,7 @@ fusesoc_build(
         _CW340_TESTROM,
         _OTP_RMA,
     ],
-    cores = ["//:cores"],
+    cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
     flags = [
         "--BootRomInitFile=" + _CW340_TESTROM_PATH,

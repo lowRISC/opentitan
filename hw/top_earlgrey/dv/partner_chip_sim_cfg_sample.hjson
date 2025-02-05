@@ -29,7 +29,7 @@
     // packages (with the same VLNV). The latter one wins.
     {
       name: fusesoc_cores_root_dirs
-      value: ["--cores-root {proj_root}",
+      value: ["--cores-root {proj_root}/hw",
               "--cores-root my-custom-path-1",
               "--cores-root my-custom-path-2"]
     }

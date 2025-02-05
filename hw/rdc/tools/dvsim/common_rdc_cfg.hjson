@@ -21,7 +21,7 @@
   // We rely on Fusesoc to generate the file list for us
   sv_flist_gen_cmd:   "fusesoc"
   fusesoc_core_:      "{eval_cmd} echo \"{fusesoc_core}\" | tr ':' '_'"
-  sv_flist_gen_opts:  ["--cores-root {proj_root}",
+  sv_flist_gen_opts:  ["--cores-root {proj_root}/hw",
                        "run"
                        "{sv_flist_gen_flags}",
                        "--target=syn",
