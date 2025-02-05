@@ -373,6 +373,7 @@ TEST_F(OwnerBlockTest, ParseBlock) {
   EXPECT_EQ(config.flash->header.tag, kTlvTagFlashConfig);
   EXPECT_EQ(config.info->header.tag, kTlvTagInfoConfig);
   EXPECT_EQ(config.rescue->header.tag, kTlvTagRescueConfig);
+  EXPECT_EQ(config.isfb->header.tag, kTlvTagIntegrationSpecificFirmwareBinding);
   EXPECT_EQ(keyring.length, 1);
   EXPECT_EQ(keyring.key[0]->header.tag, kTlvTagApplicationKey);
 }
@@ -478,6 +479,87 @@ TEST_F(OwnerBlockTest, ParseBlockDupRescue) {
   EXPECT_EQ(error, kErrorOwnershipDuplicateItem);
 }
 
+TEST_F(OwnerBlockTest, ParseBlockDupIsfb) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+  // Rewrite the RESQ tag as an ISFB tag to test duplicate detection.
+  block.Find(kTlvTagRescueConfig)
+      .Write(kTlvTagIntegrationSpecificFirmwareBinding);
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, kErrorOwnershipDuplicateItem);
+}
+
+const owner_isfb_config_t isfb_config_bad_page = {
+    .header =
+        {
+            .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+            .length = sizeof(owner_isfb_config_t),
+        },
+    .bank = 0,
+    // Invalid page. Page 0 is reserved by the Silicon Creator.
+    .page = 0,
+    .product_words = 4,
+};
+
+const owner_isfb_config_t isfb_config_bad_bank = {
+    .header =
+        {
+            .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+            .length = sizeof(owner_isfb_config_t),
+        },
+    // Invalid bank. Bank 1 is reserved by the Silicon Creator.
+    .bank = 1,
+    .page = 5,
+    .product_words = 4,
+};
+
+const owner_isfb_config_t isfb_config_bad_product_word_count = {
+    .header =
+        {
+            .tag = kTlvTagIntegrationSpecificFirmwareBinding,
+            .length = sizeof(owner_isfb_config_t),
+        },
+    .bank = 0,
+    .page = 5,
+    // Invalid product word count > 256.
+    .product_words = 257,
+};
+
+struct IsfbError {
+  owner_isfb_config_t config;
+  rom_error_t expect;
+};
+
+class OwnerBlockBadIsfbTest : public OwnerBlockTest,
+                              public testing::WithParamInterface<IsfbError> {};
+
+TEST_P(OwnerBlockBadIsfbTest, ParseBlockBadIsfb) {
+  EXPECT_CALL(flash_ctrl_, DataDefaultCfgGet)
+      .WillRepeatedly(Return(default_config));
+  BinaryBlob<owner_block_t> block(basic_owner, sizeof(basic_owner));
+  owner_config_t config;
+  owner_application_keyring_t keyring{};
+  rom_error_t error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, kErrorOk);
+
+  IsfbError param = GetParam();
+
+  // Rewrite the ISFB block to test the error cases.
+  block.Find(kTlvTagIntegrationSpecificFirmwareBinding).Write(param.config);
+  error = owner_block_parse(block.get(), &config, &keyring);
+  EXPECT_EQ(error, param.expect);
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    AllCases, OwnerBlockBadIsfbTest,
+    testing::Values(IsfbError{isfb_config_bad_page, kErrorOwnershipISFBPage},
+                    IsfbError{isfb_config_bad_bank, kErrorOwnershipISFBPage},
+                    IsfbError{isfb_config_bad_product_word_count,
+                              kErrorOwnershipISFBSize}));
+
 struct TagError {
   tlv_tag_t tag;
   rom_error_t expect;
@@ -508,7 +590,9 @@ INSTANTIATE_TEST_SUITE_P(
                     TagError{kTlvTagApplicationKey, kErrorOwnershipAPPKVersion},
                     TagError{kTlvTagFlashConfig, kErrorOwnershipFLSHVersion},
                     TagError{kTlvTagInfoConfig, kErrorOwnershipINFOVersion},
-                    TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion}));
+                    TagError{kTlvTagRescueConfig, kErrorOwnershipRESQVersion},
+                    TagError{kTlvTagIntegrationSpecificFirmwareBinding,
+                             kErrorOwnershipISFBVersion}));
 
 // Flash region is the exact size of the ROM_EXT and has a bad ECC setting.
 const owner_flash_config_t invalid_flash_0 = {
