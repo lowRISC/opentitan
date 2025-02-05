@@ -166,14 +166,19 @@ typedef struct owner_application_key {
   tlv_header_t header;
   /** Key algorithm.  One of ECDSA, SPX+ or SPXq20. */
   uint32_t key_alg;
-  /** Key domain.  Recognized values: PROD, DEV, TEST */
-  uint32_t key_domain;
-  /** Key diversifier.
-   *
-   * This value is concatenated to key_domain to create an 8 word
-   * diversification constant to be programmed into the keymgr.
-   */
-  uint32_t key_diversifier[7];
+  union {
+    struct {
+      /** Key domain.  Recognized values: PROD, DEV, TEST */
+      uint32_t key_domain;
+      /** Key diversifier.
+       *
+       * This value is concatenated to key_domain to create an 8 word
+       * diversification constant to be programmed into the keymgr.
+       */
+      uint32_t key_diversifier[7];
+    };
+    uint32_t raw_diversifier[8];
+  };
   /** Usage constraint must match manifest header's constraint */
   uint32_t usage_constraint;
   /** Key material.  Varies by algorithm type. */

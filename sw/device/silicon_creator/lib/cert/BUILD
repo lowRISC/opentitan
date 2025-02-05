@@ -220,6 +220,7 @@ cc_library(
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
         "//sw/device/silicon_creator/lib/cert:dice",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/drivers:kmac",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",

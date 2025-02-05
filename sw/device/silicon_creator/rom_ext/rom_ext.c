@@ -66,6 +66,9 @@ owner_config_t owner_config;
 // Owner application keys.
 owner_application_keyring_t keyring;
 
+// Verifying key index
+size_t verify_key;
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_irq_error(void) {
   uint32_t mcause;
@@ -192,14 +195,15 @@ OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_verify(const manifest_t *manifest,
                                   const boot_data_t *boot_data) {
   RETURN_IF_ERROR(rom_ext_boot_policy_manifest_check(manifest, boot_data));
-  size_t kindex = 0;
   ownership_key_alg_t key_alg = kOwnershipKeyAlgEcdsaP256;
   RETURN_IF_ERROR(owner_keyring_find_key(
       &keyring, key_alg,
-      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key), &kindex));
+      sigverify_ecdsa_p256_key_id_get(&manifest->ecdsa_public_key),
+      &verify_key));
 
-  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", kindex,
-             keyring.key[kindex]->key_alg, keyring.key[kindex]->key_domain);
+  dbg_printf("app_verify: key=%u alg=%C domain=%C\r\n", verify_key,
+             keyring.key[verify_key]->key_alg,
+             keyring.key[verify_key]->key_domain);
 
   memset(boot_measurements.bl0.data, (int)rnd_uint32(),
          sizeof(boot_measurements.bl0.data));
@@ -228,7 +232,7 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
 
   uint32_t flash_exec = 0;
   return sigverify_ecdsa_p256_verify(&manifest->ecdsa_signature,
-                                     &keyring.key[kindex]->data.ecdsa,
+                                     &keyring.key[verify_key]->data.ecdsa,
                                      &act_digest, &flash_exec);
 }
 
@@ -256,9 +260,31 @@ static uintptr_t owner_vma_get(const manifest_t *manifest, uintptr_t lma_addr) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data,
                                 const manifest_t *manifest) {
+  // Determine which owner block the key came from and measure that block.
+  hmac_digest_t owner_measurement;
+  const owner_application_key_t *key = keyring.key[verify_key];
+  owner_block_measurement(owner_block_key_page(key), &owner_measurement);
+
+  keymgr_binding_value_t sealing_binding;
+  if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
+    HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
+    // If we're in LockedOwner, initialize the sealing binding with the
+    // diversification constant associated with key applicaiton key that
+    // validated the owner firmware payload.
+    static_assert(
+        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
+        "Expect the keymgr binding value to be the same size as an application "
+        "key diversifier");
+    memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
+  } else {
+    // If we're not in LockedOwner state, we don't want to derive any valid
+    // sealing keys, so set the binding constant to a nonsense value.
+    memset(&sealing_binding, 0x55, sizeof(sealing_binding));
+  }
+
   // Generate CDI_1 attestation keys and certificate.
-  HARDENED_RETURN_IF_ERROR(
-      dice_chain_attestation_owner(&boot_measurements.bl0, manifest));
+  HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
+      manifest, &boot_measurements.bl0, &owner_measurement, &sealing_binding));
 
   // Write the DICE certs to flash if they have been updated.
   HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());

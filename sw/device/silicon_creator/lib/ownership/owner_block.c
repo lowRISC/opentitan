@@ -250,6 +250,15 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
   return kErrorOwnershipKeyNotFound;
 }
 
+size_t owner_block_key_page(const owner_application_key_t *key) {
+  // The key pointer must point to a memory address on one of the two owner
+  // pages.
+  HARDENED_CHECK_GT((uintptr_t)key, (uintptr_t)&owner_page[0]);
+  HARDENED_CHECK_LT((uintptr_t)key,
+                    (uintptr_t)&owner_page[ARRAYSIZE(owner_page)]);
+  return (uintptr_t)key < (uintptr_t)&owner_page[1] ? 0 : 1;
+}
+
 hardened_bool_t owner_rescue_command_allowed(
     const owner_rescue_config_t *rescue, uint32_t command) {
   // If no rescue configuration is supplied in the owner config, then all rescue
@@ -265,4 +274,12 @@ hardened_bool_t owner_rescue_command_allowed(
     }
   }
   return allowed;
+}
+
+void owner_block_measurement(size_t page, hmac_digest_t *measurement) {
+  HARDENED_CHECK_LT(page, ARRAYSIZE(owner_page));
+  // Digest of the contents of the owner page, not including the signature or
+  // the seal.
+  size_t len = offsetof(owner_block_t, signature);
+  hmac_sha256(&owner_page[page], len, measurement);
 }
