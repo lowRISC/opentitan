@@ -424,7 +424,10 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 name = Name.from_snake_case(intr["name"])
                 if width > 1:
                     name += Name([str(i)])
-                module_name = Name.from_snake_case(intr["module_name"])
+                if intr["incoming"]:
+                    module_name = Name(["unknown"])
+                else:
+                    module_name = Name.from_snake_case(intr["module_name"])
                 self.inst_from_irq_values[name] = module_name
 
     def _init_dev_type_map(self):
