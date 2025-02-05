@@ -62,7 +62,7 @@ impl Default for OwnerIsfbConfig {
 }
 
 impl OwnerIsfbConfig {
-    const SIZE: usize = 2048;
+    const SIZE: usize = 44;
     pub fn default_header() -> TlvHeader {
         TlvHeader::new(TlvTag::IntegratorSpecificFirmwareBinding, Self::SIZE, "0.0")
     }
@@ -109,7 +109,7 @@ mod test {
     use crate::util::hexdump::{hexdump_parse, hexdump_string};
 
     const OWNER_ISFB_CONF: &str = "\
-00000000: 49 53 46 42 00 08 00 00 01 08 00 00 66 06 00 00  ISFB........f...
+00000000: 49 53 46 42 2c 00 00 00 01 08 00 00 66 06 00 00  ISFB,.......f...
 00000010: 70 72 6f 64 00 00 00 00 00 00 00 00 00 00 00 00  prod............
 00000020: 00 00 00 00 00 00 00 00 80 00 00 00              ............
 ";
@@ -124,7 +124,7 @@ mod test {
     #[test]
     fn test_owner_isfb_config_write() -> Result<()> {
         let isfb = OwnerIsfbConfig {
-            header: TlvHeader::default(),
+            header: OwnerIsfbConfig::default_header(),
             bank: 1,
             page: 8,
             pad: 0,
