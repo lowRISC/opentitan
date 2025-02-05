@@ -13,6 +13,7 @@ load(
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_test",
+    "qemu_params",
     "verilator_params",
 )
 load(
@@ -309,6 +310,9 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
+        timeout = "long",
+    ),
+    qemu = qemu_params(
         timeout = "long",
     ),
     # This test can take > 40 minutes, so mark it manual as it shouldn't run

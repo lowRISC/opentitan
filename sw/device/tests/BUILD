@@ -33,6 +33,7 @@ load(
     "fpga_params",
     "opentitan_binary",
     "opentitan_test",
+    "qemu_params",
     "silicon_params",
     "verilator_params",
 )
@@ -102,6 +103,11 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            "ot-aes.fast-mode": "false",
         },
     ),
     deps = [
@@ -3606,6 +3612,12 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
         },
     ),
+    qemu = qemu_params(
+        globals = {
+            # Test uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
+        },
+    ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
@@ -3654,6 +3666,12 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+        },
+    ),
+    qemu = qemu_params(
+        globals = {
+            # Test uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
         },
     ),
     deps = [
@@ -4176,9 +4194,13 @@ opentitan_test(
 opentitan_test(
     name = "sram_ctrl_execution_test",
     srcs = ["sram_ctrl_execution_test.c"],
-    exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    exec_env = dicts.omit(
+        dicts.add(
+            EARLGREY_TEST_ENVS,
+            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        ),
+        # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
+        ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
     ),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
@@ -5226,6 +5248,12 @@ opentitan_test(
     ),
     fpga = fpga_params(
         timeout = "moderate",
+    ),
+    qemu = qemu_params(
+        globals = {
+            # Test uses rstmgr, keep running on fatal resets:
+            "ot-rstmgr.fatal_reset": 0,
+        },
     ),
     silicon = silicon_params(
         tags = ["broken"],
@@ -7410,4 +7438,29 @@ opentitan_test(
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
+)
+
+cc_library(
+    name = "rom_exit_immediately_lib",
+    srcs = ["rom_exit_immediately.S"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:rv_core_ibex",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+    ],
+)
+
+opentitan_test(
+    name = "rom_exit_immediately",
+    exec_env = {
+        "//hw/top_earlgrey:sim_qemu_base": None,
+    },
+    kind = "rom",
+    linker_script = "//sw/device/lib/testing/test_rom:linker_script",
+    qemu = qemu_params(
+        # This test doesn't print `PASS!`, just check the exit code.
+        test_harness = "//third_party/qemu:qemu-system-riscv32",
+    ),
+    deps = [":rom_exit_immediately_lib"],
 )
