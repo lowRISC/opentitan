@@ -241,7 +241,9 @@ manifest_def! {
     pub struct ManifestSpec {
         signature: ManifestSigverifyBigInt,
         usage_constraints: ManifestUsageConstraintsDef,
-        #[annotate(comment = pub_key_id())]
+        // TODO(cfrantz): Re-examine the `Annotate` trait approach
+        // in serde_annotate.
+        //#[annotate(comment = pub_key_id())]
         pub_key: ManifestSigverifyBigInt,
         address_translation: ManifestSmallInt<u32>,
         identifier: ManifestSmallInt<u32>,
@@ -262,6 +264,11 @@ manifest_def! {
 }
 
 impl ManifestSpec {
+    // TODO(cfrantz): Re-examine the `Annotate` trait approach in serde_annotate.
+    // To avoid min_specialization, I took the approach of managing a raw pointer,
+    // but serde occasionally will hand you a &&T when you were expecting &T.
+    // This leads to a fatal problem when trying to access the data held by T.
+    #[allow(dead_code)]
     fn pub_key_id(&self) -> Option<String> {
         if let Some(key) = &self.pub_key.0 {
             let b = key.to_le_bytes();
