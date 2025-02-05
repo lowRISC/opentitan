@@ -29,16 +29,17 @@ class dv_base_scoreboard #(type RAL_T = dv_base_reg_block,
     join_none
   endtask
 
+  // That's not the role of the SB, better to move it to the monitor
   virtual task monitor_reset();
     forever begin
       if (!cfg.clk_rst_vif.rst_n) begin
-        `uvm_info(`gfn, "reset occurred", UVM_HIGH)
-        cfg.reset_asserted();
+        // `uvm_info(`gfn, "reset occurred", UVM_HIGH)
+        // cfg.reset_asserted();
         @(posedge cfg.clk_rst_vif.rst_n);
         reset();
-        cfg.reset_deasserted();
+        // cfg.reset_deasserted();
         csr_utils_pkg::clear_outstanding_access();
-        `uvm_info(`gfn, "out of reset", UVM_HIGH)
+        // `uvm_info(`gfn, "out of reset", UVM_HIGH)
       end
       else begin
         // wait for a change to rst_n
