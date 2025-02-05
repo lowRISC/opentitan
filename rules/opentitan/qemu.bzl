@@ -348,7 +348,7 @@ def _test_dispatch(ctx, exec_env, firmware):
     }
 
     if firmware.signed_bin != None and firmware.binary != None:
-        qemu_args += ["-drive", "if=mtd,bus=1,file=flash_img.bin,format=raw"]
+        qemu_args += ["-drive", "if=mtd,id=eflash,bus=2,file=flash_img.bin,format=raw"]
         test_script_fmt |= {
             "flash": firmware.default.short_path,
             "mutable_flash": "flash_img.bin",
