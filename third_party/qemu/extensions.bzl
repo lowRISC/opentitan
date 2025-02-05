@@ -5,7 +5,7 @@
 load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive")
 
 def qemu_opentitan_repos():
-    QEMU_VERSION = "v9.1.0-2025-01-28"
+    QEMU_VERSION = "v9.2.0-2025-02-11"
 
     url = "/".join([
         "https://github.com/lowRISC/qemu/releases/download",
@@ -17,7 +17,7 @@ def qemu_opentitan_repos():
         name = "qemu_opentitan",
         url = url,
         build_file = Label(":BUILD.qemu_opentitan.bazel"),
-        sha256 = "530bb7568f17ba3f9ba1245388c2625259d180188c8c5c9e15634b942ebeb108",
+        sha256 = "85091287ee67dee337968071b7d10d39d44bb582c90991eae3d61f11a13ccf29",
     )
 
 qemu = module_extension(
