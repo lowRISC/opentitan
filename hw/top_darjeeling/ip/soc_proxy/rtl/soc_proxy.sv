@@ -111,7 +111,7 @@ module soc_proxy
   bat u_bat (
     .tl_in_h2d_i     ( muxed_host_tl_h2d ),
     .tl_in_d2h_o     ( muxed_host_tl_d2h ),
-    .integrator_id_i ( integrator_id_i   )
+    .integrator_id_i ( integrator_id_i   ),
     .tl_out_h2d_o    ( ctn_tl_h2d_o      ),
     .tl_out_d2h_i    ( ctn_tl_d2h_i      )
   );
