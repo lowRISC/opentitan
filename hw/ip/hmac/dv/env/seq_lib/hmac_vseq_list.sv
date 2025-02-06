@@ -15,3 +15,4 @@
 `include "hmac_error_vseq.sv"
 `include "hmac_wipe_secret_vseq.sv"
 `include "hmac_stress_all_vseq.sv"
+`include "hmac_directed_vseq.sv"
