@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
 use byteorder::{LittleEndian, ReadBytesExt};
-use num_enum::FromPrimitive;
 use serde::Serialize;
 use serde_annotate::Annotate;
 use std::convert::TryFrom;
@@ -336,7 +335,7 @@ impl InternalJedecParams {
 
 /// `BlockEraseSize` represents whether or not the device can perform
 /// a 4KiB erase.
-#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, strum::FromRepr, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum BlockEraseSize {
     Reserved0 = 0,
@@ -347,9 +346,15 @@ pub enum BlockEraseSize {
     Invalid,
 }
 
+impl From<u32> for BlockEraseSize {
+    fn from(val: u32) -> Self {
+        Self::from_repr(val).unwrap_or(Self::Invalid)
+    }
+}
+
 /// `WriteGranularity` represents whether or not the device has an internal
 /// buffer for program operations.
-#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, strum::FromRepr, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum WriteGranularity {
     Granularity1Byte = 0,
@@ -358,9 +363,15 @@ pub enum WriteGranularity {
     Invalid,
 }
 
+impl From<u32> for WriteGranularity {
+    fn from(val: u32) -> Self {
+        Self::from_repr(val).unwrap_or(Self::Invalid)
+    }
+}
+
 /// `SupportedAddressModes` represents which addressing modes are valid for
 /// the device.
-#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+#[derive(Default, Debug, Eq, PartialEq, strum::FromRepr, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum SupportedAddressModes {
     Mode3b = 0,
@@ -371,7 +382,13 @@ pub enum SupportedAddressModes {
     Invalid,
 }
 
-#[derive(Default, Debug, Eq, PartialEq, FromPrimitive, Clone, Copy, Serialize)]
+impl From<u32> for SupportedAddressModes {
+    fn from(val: u32) -> Self {
+        Self::from_repr(val).unwrap_or(Self::Invalid)
+    }
+}
+
+#[derive(Default, Debug, Eq, PartialEq, strum::FromRepr, Clone, Copy, Serialize)]
 #[repr(u32)]
 pub enum MaxSpeed {
     Reserved0 = 0,
@@ -391,6 +408,12 @@ pub enum MaxSpeed {
     NotCharacterized,
     #[default]
     NotSupported,
+}
+
+impl From<u32> for MaxSpeed {
+    fn from(val: u32) -> Self {
+        Self::from_repr(val).unwrap_or(Self::NotSupported)
+    }
 }
 
 /// `FastReadParam` represents the parameters for the different styles of fast read.
