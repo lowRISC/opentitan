@@ -485,6 +485,7 @@ class IpHelper:
 
     def _init_reg_blocks(self):
         reg_blocks = []
+        self._reg_block_map = {}
         for rb in self.ip.reg_blocks.keys():
             if rb is None:
                 reg_blocks.append(self.UNNAMED_REG_BLOCK_NAME)
@@ -660,12 +661,13 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
         # Base address map.
         base_addr_map = OrderedDict()
         for (rb, addr) in m["base_addrs"].items():
-            if self._addr_space not in addr:
-                continue
             if rb == "null":
                 rb = self.UNNAMED_REG_BLOCK_NAME
             rb = Name.from_snake_case(rb)
-            base_addr_map[rb] = addr[self._addr_space]
+            # It is possible that this module is not accessible in this
+            # address space. In this case, return a dummy value.
+            # FIXME Maybe find a better way of doing this.
+            base_addr_map[rb] = addr.get(self._addr_space, "0xffffffff")
         inst_desc[self.BASE_ADDR_FIELD_NAME] = base_addr_map
         # Clock map.
         if self.has_clocks():
