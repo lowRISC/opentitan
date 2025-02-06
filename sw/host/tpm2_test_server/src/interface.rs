@@ -2,17 +2,17 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{anyhow, Result};
-use mio::net::TcpStream;
-use num_enum::TryFromPrimitive;
-use opentitanlib::tpm::Driver;
 use std::io::{Read, Write};
 use std::net::Shutdown;
+
+use anyhow::{anyhow, Context, Result};
+use mio::net::TcpStream;
+use opentitanlib::tpm::Driver;
 
 pub(crate) const CMD_SIZE: usize = std::mem::size_of::<TcpTpmCommands>();
 const SERVER_VERSION: u32 = 1;
 
-#[derive(TryFromPrimitive, Debug)]
+#[derive(strum::FromRepr, Debug)]
 #[repr(u32)]
 pub(crate) enum TcpTpmCommands {
     SignalPowerOn = 1,
@@ -73,7 +73,8 @@ pub(crate) fn serve_command(stream: &mut TcpStream, tpm: &dyn Driver) -> Result<
         return Ok(true);
     }
     let cmd_u32 = u32::from_be_bytes(data);
-    let cmd = TcpTpmCommands::try_from_primitive(cmd_u32)?;
+    let cmd = TcpTpmCommands::from_repr(cmd_u32)
+        .with_context(|| format!("invalid TCP TMP command value {cmd_u32:#010x}"))?;
     if matches!(cmd, TcpTpmCommands::SessionEnd) {
         stream.shutdown(Shutdown::Both)?;
         Ok(true)
