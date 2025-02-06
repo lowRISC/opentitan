@@ -92,17 +92,11 @@ status_t ast_program_config(bool verbose) {
 
   // Read AST calibration values from flash.
   LOG_INFO("Reading AST data");
-  dif_flash_ctrl_device_info_t device_info = dif_flash_ctrl_get_device_info();
-  uint32_t byte_address =
-      (kFlashInfoFieldAstCalibrationData.page * device_info.bytes_per_page) +
-      kFlashInfoFieldAstCalibrationData.byte_offset;
-  uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
   TRY(flash_ctrl_testutils_wait_for_init(&flash_state));
-  TRY(flash_ctrl_testutils_read(&flash_state, byte_address,
-                                kFlashInfoFieldAstCalibrationData.partition,
-                                ast_data, kDifFlashCtrlPartitionTypeInfo,
-                                kFlashInfoAstCalibrationDataSizeIn32BitWords,
-                                /*delay=*/0));
+  uint32_t ast_data[kFlashInfoAstCalibrationDataSizeIn32BitWords];
+  TRY(manuf_flash_info_field_read(
+      &flash_state, kFlashInfoFieldAstCalibrationData, ast_data,
+      kFlashInfoAstCalibrationDataSizeIn32BitWords));
 
   // Program AST CSRs.
   LOG_INFO("Programming %u AST words",

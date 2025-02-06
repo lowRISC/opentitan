@@ -2,7 +2,6 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//third_party/python:requirements.bzl", "requirement")
 load("@rules_python//python:defs.bzl", "py_test")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
@@ -13,6 +12,7 @@ load(
     "orchestrator_cw340_test_settings_transition",
     "orchestrator_hyper310_test_settings_transition",
 )
+load("//third_party/python:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
 
