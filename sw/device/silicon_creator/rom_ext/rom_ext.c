@@ -357,16 +357,23 @@ static rom_error_t rom_ext_verify(const manifest_t *manifest,
   } else if ((key_alg & kOwnershipKeyAlgCategoryMask) ==
              kOwnershipKeyAlgCategoryHybrid) {
     // Hybrid signatures check both ECDSA and SPX+ signatures.
-    // TODO: as a future optimization, start the ECDSA verify operation on
-    // OTBN and compute the SPX+ verify in parallel on Ibex.
-    HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_verify(
+    // Start the ECDSA verify.
+    HARDENED_RETURN_IF_ERROR(sigverify_ecdsa_p256_start(
         &manifest->ecdsa_signature, &keyring.key[verify_key]->data.hybrid.ecdsa,
-        &act_digest, &flash_exec));
-    return rom_ext_spx_verify(
+        &act_digest));
+    // While ECDSA verify is running in OTBN, compute the SPX verify on Ibex.
+    rom_error_t spx = rom_ext_spx_verify(
         &ext_spx_signature->signature,
         &keyring.key[verify_key]->data.hybrid.spx, key_alg,
         &usage_constraints_from_hw, sizeof(usage_constraints_from_hw), NULL, 0,
         digest_region.start, digest_region.length, act_digest);
+    // ECDSA should be finished.  Poll for completeion and get the result.
+    rom_error_t ecdsa =
+        sigverify_ecdsa_p256_finish(&manifest->ecdsa_signature, &flash_exec);
+    HARDENED_RETURN_IF_ERROR(spx);
+    HARDENED_RETURN_IF_ERROR(ecdsa);
+    // Both values should be kErrorOk.  Mix them and return the result.
+    return (rom_error_t)((spx + ecdsa) >> 1);
   } else {
     // TODO: consider whether an SPX+-only verify is sufficent.
     return kErrorOwnershipInvalidAlgorithm;
