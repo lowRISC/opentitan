@@ -6930,6 +6930,9 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+        },
     ),
     fpga = fpga_params(
         test_cmd = " ".join([
@@ -6949,7 +6952,8 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
+        "//hw/top:dt_api",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:pinmux",

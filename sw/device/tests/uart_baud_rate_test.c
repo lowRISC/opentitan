@@ -4,6 +4,9 @@
 
 #include <stdint.h>
 
+#include "dt/dt_api.h"
+#include "dt/dt_pinmux.h"
+#include "dt/dt_uart.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_pinmux.h"
@@ -18,16 +21,11 @@
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static const uint8_t kSendData[] = "UART baud test!";
-static const uint32_t kBaseAddrs[4] = {
-    TOP_EARLGREY_UART0_BASE_ADDR,
-    TOP_EARLGREY_UART1_BASE_ADDR,
-    TOP_EARLGREY_UART2_BASE_ADDR,
-    TOP_EARLGREY_UART3_BASE_ADDR,
-};
-static const uint32_t kBauds[11] = {
-    4800, 9600, 19200, 38400, 57600, 115200, 230400, 128000, 256000, 1000000,
-    // This baud rate will only work on silicon, the FPGA cannot go fast enough:
-    1500000};
+static const uint32_t kBauds[11] = {4800, 9600, 19200, 38400, 57600, 115200,
+                                    230400, 128000, 256000,
+                                    // These baud rates will only work on
+                                    // silicon, the FPGA cannot go fast enough:
+                                    1000000, 1500000};
 
 enum {
   kTestTimeoutMillis = 500000,
@@ -58,7 +56,7 @@ static status_t test_uart_baud(void) {
   TRY(dif_uart_configure(&uart,
                          (dif_uart_config_t){
                              .baudrate = (uint32_t)baud_rate,
-                             .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                             .clk_freq_hz = dt_clock_frequency(kDtClockIo),
                              .parity_enable = kDifToggleDisabled,
                              .parity = kDifUartParityEven,
                              .tx_enable = kDifToggleEnabled,
@@ -92,28 +90,26 @@ static status_t test_uart_baud(void) {
 bool test_main(void) {
   OTTF_WAIT_FOR(uart_idx != 0xff, kTestTimeoutMillis);
 
-  mmio_region_t base_addr;
+  CHECK(kDtUart0 <= uart_idx && uart_idx < kDtUartCount,
+        "uart_idx %d out of range", uart_idx);
+  CHECK_DIF_OK(dif_uart_init_from_dt((dt_uart_t)uart_idx, &uart));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
 
-  base_addr = mmio_region_from_addr(kBaseAddrs[uart_idx]);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart));
-
+  // When UART0 is tested, switch OTTF console to UART1.
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(dt_uart_primary_reg_block(kDtUart1));
   }
 
   CHECK_STATUS_OK(
       uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
 
-  size_t baud_count = ARRAYSIZE(kBauds);
-
   // We only want to run the highest bauds (1MBd and 1.5MBd) on chips going
   // at the real speed (24MHz). FPGAs clocking slower cannot test these.
-  if (kClockFreqPeripheralHz < 24 * 1000 * 1000) {
+  size_t baud_count = ARRAYSIZE(kBauds);
+  if (dt_clock_frequency(kDtClockIo) < 24 * 1000 * 1000) {
     baud_count -= 2;
   }
 
