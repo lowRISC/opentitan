@@ -345,6 +345,7 @@ ownership_transfer_test(
         binaries = {
             ":flash_regions": "flash_regions",
         },
+        changes_otp = True,
         test_cmd = """
             --clear-bitstream
             --bootstrap={firmware}
