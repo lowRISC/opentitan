@@ -50,6 +50,6 @@ jobs:
               event_type: 'cross-repo-ci',
               client_payload: {
                 ...payload,
-                target: `${context.repo.owner}/opentitan-realintent-ci/main/ascentlint-ci.yml`,
+                target: `${context.repo.owner}/opentitan-realintent-ci/darjeeling-dev/opentitan-ascentlint-ci.yml`,
               }
             });
