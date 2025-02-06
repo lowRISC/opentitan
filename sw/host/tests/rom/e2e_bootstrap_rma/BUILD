@@ -17,7 +17,6 @@ rust_binary(
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
-        "@crate_index//:num_enum",
         "@crate_index//:regex",
     ],
 )
@@ -33,7 +32,6 @@ rust_test(
         "@crate_index//:clap",
         "@crate_index//:humantime",
         "@crate_index//:log",
-        "@crate_index//:num_enum",
         "@crate_index//:regex",
     ],
 )
