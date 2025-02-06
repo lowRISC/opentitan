@@ -28,11 +28,14 @@ package aes_model_dpi_pkg;
     input  bit  [3:0][31:0] iv_i,
     input  bit        [2:0] key_len_i, // 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
     input  bit  [7:0][31:0] key_i,
+    input  int              data_len_i,
+    input  int              aad_len_i,
     input  bit        [7:0] data_i[],
     input  bit        [7:0] aad_i[],
     input  bit  [3:0][31:0] tag_i,
     output bit        [7:0] data_o[],
-    output bit  [3:0][31:0] tag_o
+    output bit  [3:0][31:0] tag_o,
+    output int              crypto_res
   );
 
   import "DPI-C" context function void c_dpi_aes_sub_bytes(

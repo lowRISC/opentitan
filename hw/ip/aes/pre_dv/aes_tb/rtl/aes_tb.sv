@@ -56,7 +56,8 @@ module aes_tb
   logic error;
   logic c_dpi_data_error;
   logic c_dpi_tag_error;
-  assign error = bus_error | c_dpi_data_error | c_dpi_tag_error;
+  logic c_dpi_error;
+  assign error = bus_error | c_dpi_data_error | c_dpi_tag_error | c_dpi_error;
 
   logic test_passed_q;
   logic test_done_q;
@@ -281,6 +282,7 @@ module aes_tb
                      data_cntr_q == 1 ? 32'h0000_00ff : '0;
 
   logic [31:0] c_dpi_data, c_dpi_tag;
+  int          c_dpi_crypto_res;
   aes_tb_c_dpi #(
     .ADLength   ( `AD_LENGTH   ),
     .DataLength ( `DATA_LENGTH )
@@ -292,12 +294,16 @@ module aes_tb
      .c_dpi_rotate_data_i ( check_data          ),
      .c_dpi_rotate_tag_i  ( check_tag           ),
      .c_dpi_data_o        ( c_dpi_data          ),
-     .c_dpi_tag_o         ( c_dpi_tag           )
+     .c_dpi_tag_o         ( c_dpi_tag           ),
+     .c_dpi_crypto_res_o  ( c_dpi_crypto_res    )
   );
 
   assign c_dpi_data_error = check_data &&
                             (c_dpi_data & data_mask) != (bus_rdata & data_mask) ? 1'b1 : 1'b0;
   assign c_dpi_tag_error  = check_tag && (c_dpi_tag != bus_rdata) ? 1'b1 : 1'b0;
+
+  // The C DPI model returned an error.
+  assign c_dpi_error      = c_dpi_crypto_res < 0;
 
   // We do not care about alerts in this testbench. Set them to constant values.
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
