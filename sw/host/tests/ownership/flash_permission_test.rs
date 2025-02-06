@@ -318,14 +318,14 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
             // Slot A protected, Slot B writable.
             FlashRegion("data", 2, 32, 192, "RD-xx-xx-SC-EC-xx", locked),
             FlashRegion("data", 3, 224, 32, "RD-WR-ER-xx-xx-HE", locked),
-            FlashRegion("data", 4, 288, 192,"RD-WR-ER-SC-EC-xx", locked),
+            FlashRegion("data", 4, 288, 192, "RD-WR-ER-SC-EC-xx", locked),
             FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", locked),
         ],
         BootSlot::SlotB => [
             // Slot A writable, Slot B protected.
             FlashRegion("data", 2, 32, 192, "RD-WR-ER-SC-EC-xx", locked),
             FlashRegion("data", 3, 224, 32, "RD-WR-ER-xx-xx-HE", locked),
-            FlashRegion("data", 4, 288, 192,"RD-xx-xx-SC-EC-xx", locked),
+            FlashRegion("data", 4, 288, 192, "RD-xx-xx-SC-EC-xx", locked),
             FlashRegion("data", 5, 480, 32, "RD-WR-ER-xx-xx-HE", locked),
         ],
         _ => return Err(anyhow!("Unknown boot slot {}", data.bl0_slot)),
@@ -341,26 +341,11 @@ fn flash_permission_test(opts: &Opts, transport: &TransportWrapper) -> Result<()
         FlashRegion("data", 1, 256, 32, romext_region[1], "LK")
     );
     // Flash Slot A:
-    assert_eq!(
-        region[2],
-        app_region[0],
-    );
-    assert_eq!(
-        region[3],
-        app_region[1],
-
-    );
+    assert_eq!(region[2], app_region[0]);
+    assert_eq!(region[3], app_region[1]);
     // Flash Slot B:
-    assert_eq!(
-        region[4],
-        app_region[2],
-
-    );
-    assert_eq!(
-        region[5],
-        app_region[3],
-
-    );
+    assert_eq!(region[4], app_region[2]);
+    assert_eq!(region[5], app_region[3]);
     // The last two regions are unused, and therefore, should be left unlocked.
     assert_eq!(
         region[6],
