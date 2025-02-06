@@ -400,11 +400,25 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kIbexAesGcmSleepCycles * 2);
   // Encrypt all-zero block.
-  aes_manual_trigger();
+  if (trigger.triggers[0]) {
+    // In the FPGA mode, the AES automatically raises the trigger signal. For
+    // the other mode, the pentest_call_and_sleep function manually raises the
+    // trigger pin.
+    if (fpga_mode) {
+      pentest_set_trigger_high();
+    }
+    pentest_call_and_sleep(aes_manual_trigger, kIbexAesGcmSleepCycles,
+                           !fpga_mode, false);
+    if (fpga_mode) {
+      pentest_set_trigger_low();
+    }
+  } else {
+    aes_manual_trigger();
+  }
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
                                 kIbexAesGcmSleepCycles * 2);
   // Encrypt initial counter block.
-  if (trigger.triggers[0]) {
+  if (trigger.triggers[1]) {
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
@@ -434,7 +448,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                   kIbexAesGcmSleepCycles * 2);
     TRY(dif_aes_load_data(&aes, aad[it]));
-    if (trigger.triggers[1] && trigger.block == it) {
+    if (trigger.triggers[2] && trigger.block == it) {
       // In the FPGA mode, the AES automatically raises the trigger signal. For
       // the other mode, the pentest_call_and_sleep function manually raises the
       // trigger pin.
@@ -462,7 +476,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                 kIbexAesGcmSleepCycles * 2);
   TRY(dif_aes_load_data(&aes, aad[aad_num_blocks - 1]));
-  if (trigger.triggers[1] && trigger.block == aad_num_blocks - 1) {
+  if (trigger.triggers[2] && trigger.block == aad_num_blocks - 1) {
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
@@ -492,7 +506,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                   kIbexAesGcmSleepCycles * 2);
     TRY(dif_aes_load_data(&aes, ptx[it]));
-    if (trigger.triggers[2] && trigger.block == it) {
+    if (trigger.triggers[3] && trigger.block == it) {
       // In the FPGA mode, the AES automatically raises the trigger signal. For
       // the other mode, the pentest_call_and_sleep function manually raises the
       // trigger pin.
@@ -519,7 +533,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
   AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusInputReady, true,
                                 kIbexAesGcmSleepCycles * 2);
   TRY(dif_aes_load_data(&aes, ptx[ptx_num_blocks - 1]));
-  if (trigger.triggers[2] && trigger.block == ptx_num_blocks - 1) {
+  if (trigger.triggers[3] && trigger.block == ptx_num_blocks - 1) {
     // In the FPGA mode, the AES automatically raises the trigger signal. For
     // the other mode, the pentest_call_and_sleep function manually raises the
     // trigger pin.
@@ -587,10 +601,11 @@ status_t handle_aes_sca_gcm_fvsr_batch(ujson_t *uj) {
     return OUT_OF_RANGE();
   }
   // Get the trigger configuration.
-  // uj_triggers.triggers[0] = True/False - process initial counter block.
-  // uj_triggers.triggers[1] = True/False - process AAD blocks.
-  // uj_triggers.triggers[2] = True/False - process PTX blocks.
-  // uj_triggers.triggers[3] = True/False - process TAG block.
+  // uj_triggers.triggers[0] = True/False - process all-zero block.
+  // uj_triggers.triggers[1] = True/False - process initial counter block.
+  // uj_triggers.triggers[2] = True/False - process AAD blocks.
+  // uj_triggers.triggers[3] = True/False - process PTX blocks.
+  // uj_triggers.triggers[4] = True/False - process TAG block.
   // uj_triggers.block = int - which AAD or PTX block is captured?
   TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
   // Get fixed IV and fixed KEY.
@@ -717,10 +732,11 @@ status_t handle_aes_sca_gcm_single_encrypt(ujson_t *uj) {
   aes_sca_block_t uj_aad[kMaxGcmBlocks];
   aes_sca_block_t uj_ptx[kMaxGcmBlocks];
   // Get the trigger configuration.
-  // uj_triggers.triggers[0] = True/False - process initial counter block.
-  // uj_triggers.triggers[1] = True/False - process AAD blocks.
-  // uj_triggers.triggers[2] = True/False - process PTX blocks.
-  // uj_triggers.triggers[3] = True/False - process TAG block.
+  // uj_triggers.triggers[0] = True/False - process all-zero block.
+  // uj_triggers.triggers[1] = True/False - process initial counter block.
+  // uj_triggers.triggers[2] = True/False - process AAD blocks.
+  // uj_triggers.triggers[3] = True/False - process PTX blocks.
+  // uj_triggers.triggers[4] = True/False - process TAG block.
   // uj_triggers.block = int - which AAD or PTX block is captured?
   TRY(ujson_deserialize_aes_sca_gcm_triggers_t(uj, &uj_triggers));
   // Get IV and KEY.
