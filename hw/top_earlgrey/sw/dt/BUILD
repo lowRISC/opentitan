@@ -10,6 +10,7 @@ TARGETS = [
     "fpga_cw310",
     "fpga_cw340",
     "sim_dv",
+    "sim_qemu",
     "sim_verilator",
     "silicon",
 ]
