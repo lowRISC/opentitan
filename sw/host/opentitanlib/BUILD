@@ -321,7 +321,6 @@ rust_library(
         "@crate_index//:mio-signals",
         "@crate_index//:num-bigint-dig",
         "@crate_index//:num-traits",
-        "@crate_index//:num_enum",
         "@crate_index//:object",
         "@crate_index//:once_cell",
         "@crate_index//:p256",
