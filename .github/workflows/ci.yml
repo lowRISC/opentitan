@@ -734,6 +734,31 @@ jobs:
         run: ./ci/scripts/check-unrunnable-tests.sh
         continue-on-error: true
 
+  dj_sw_build_test:
+    name: Build and test Darjeeling software
+    runs-on: ubuntu-22.04-vivado
+    timeout-minutes: 120
+    needs: quick_lint
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required for bitstream cache to work.
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+      - name: Check Bazel build graph
+        run: |
+          # Test the graph with both an empty and filled bitstream cache.
+          ./ci/scripts/test-empty-bitstream-cache.sh
+          ./bazelisk.sh build --nobuild --//hw/top=darjeeling //...
+      - name: Build software targets
+        run: |
+          # Compile some selected targets
+          ./bazelisk.sh build                                \
+            --build_tests_only=false                         \
+            //sw/device/tests:uart_smoketest_sim_dv
+
   qemu_smoketest:
     name: QEMU smoketest
     runs-on: ubuntu-22.04-vivado
