@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_select_top")
+load("//hw/top:defs.bzl", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
 load(
     "//rules/opentitan:defs.bzl",
     "OPENTITAN_CPU",
@@ -300,6 +300,7 @@ output_groups(
         "sim_verilator_rom",
         "sim_verilator_mapfile",
     ],
+    target_compatible_with = opentitan_require_top("earlgrey"),
 )
 
 pkg_files(
