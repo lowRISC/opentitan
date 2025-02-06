@@ -123,11 +123,12 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
 void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
                              const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                              const svBitVecVal *key_len_i,
-                             const svBitVecVal *key_i,
+                             const svBitVecVal *key_i, const int data_len_i,
+                             const int aad_len_i,
                              const svOpenArrayHandle data_i,
                              const svOpenArrayHandle aad_i,
                              const svBitVecVal *tag_i, svOpenArrayHandle data_o,
-                             svBitVecVal *tag_o) {
+                             svBitVecVal *tag_o, int *crypto_res) {
   // Mask out unused bits as their value is undetermined.
   const unsigned char impl = impl_i & impl_mask;
   const unsigned char op = op_i & op_mask;
@@ -198,10 +199,7 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
     memset(tag_in, 0, tag_len);
   }
 
-  // Get message length.
-  int data_len = svSize(data_i, 1);
-
-  int pad_len = (16 - (data_len % 16)) % 16;
+  int pad_len = (16 - (data_len_i % 16)) % 16;
 
   // An incomplete last message block is only allowed in GCM mode.
   if (((mode == kCryptoAesEcb) || (mode == kCryptoAesCbc) ||
@@ -214,20 +212,19 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
     return;
   }
 
-  // Get AAD length.
-  int aad_len = svSize(aad_i, 1);
-
   // Get input data from simulator.
   unsigned char *ref_in = aes_data_unpacked_get(data_i);
   unsigned char *aad_in = aes_data_unpacked_get(aad_i);
 
   // Allocate output buffers.
   unsigned char *ref_out =
-      (unsigned char *)malloc((data_len + pad_len) * sizeof(unsigned char));
+      (unsigned char *)malloc((data_len_i + pad_len) * sizeof(unsigned char));
   assert(ref_out);
   unsigned char *tag_out =
       (unsigned char *)malloc(tag_len * sizeof(unsigned char));
   assert(tag_out);
+  int *crypto_result = (int *)malloc(sizeof(int));
+  crypto_result[0] = 0;
 
   if (impl == 0) {
     // The C model is currently not supported.
@@ -235,13 +232,17 @@ void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
         "ERROR: c_dpi_aes_crypt_message() currently supports OpenSSL/BoringSSL "
         "only\n");
   } else {  // OpenSSL/BoringSSL
+    int res;
     if (!op) {
-      crypto_encrypt(ref_out, iv, ref_in, data_len, key, key_len, mode, aad_in,
-                     aad_len, tag_out, tag_len);
+      crypto_result[0] =
+          crypto_encrypt(ref_out, iv, ref_in, data_len_i, key, key_len, mode,
+                         aad_in, aad_len_i, tag_out, tag_len);
     } else {
-      crypto_decrypt(ref_out, iv, ref_in, data_len, key, key_len, mode, aad_in,
-                     aad_len, tag_in, tag_len);
+      crypto_result[0] =
+          crypto_decrypt(ref_out, iv, ref_in, data_len_i, key, key_len, mode,
+                         aad_in, aad_len_i, tag_in, tag_len);
     }
+    memcpy(crypto_res, crypto_result, sizeof(int));
   }
 
   // Write output data back to simulator, free ref_out & tag_out.

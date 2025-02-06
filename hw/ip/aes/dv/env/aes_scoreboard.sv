@@ -578,6 +578,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
     bit [3:0][31:0] tag_out;
     forever begin
       bit operation;
+      int crypto_res;
       aes_message_item msg;
       msg_fifo.get(msg);
 
@@ -591,7 +592,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
         // be replaced when GCM once gets supported.
         c_dpi_aes_crypt_message(cfg.ref_model, operation, msg.aes_mode, msg.aes_iv,
                                 msg.aes_keylen, msg.aes_key[0] ^ msg.aes_key[1],
-                                msg.input_msg, msg.input_msg, '0, msg.predicted_msg, tag_out);
+                                msg.input_msg.size(), 0,  msg.input_msg,
+                                msg.input_msg, '0, msg.predicted_msg, tag_out,
+                                crypto_res);
 
         `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string()),
                   UVM_MEDIUM)

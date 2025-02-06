@@ -50,24 +50,30 @@ void c_dpi_aes_crypt_block(const unsigned char impl_i, const unsigned char op_i,
  *                                6'b00_0100 = CFB, 6'b00_1000 = OFB,
  *                                6'b01_0000 = CTR, 6'b10_0000 = GCM,
  *                                6'b11_1111 = NONE
- * @param  iv_i      Initialization vector: 1D array of words (2D packed array
- *                   in SV)
- * @param  key_len_i Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
- * @param  key_i     Full input key, 1D array of words (2D packed array in SV)
- * @param  data_i    Input data, 1D byte array (open array in SV)
- * @param  aad_i     Input AAD, 1D byte array (open array in SV)
- * @param  tag_i     Input auth. tag, 1D array of words (2D packed array in SV)
- * @param  data_o    Output data, 1D byte array (open array in SV)
- * @param  tag_o     Output auth. tag, 1D array of words (2D packed array in SV)
+ * @param  iv_i         Initialization vector: 1D array of words (2D packed
+ * array in SV)
+ * @param  key_len_i    Key length: 3'b001 = 128b, 3'b010 = 192b, 3'b100 = 256b
+ * @param  key_i        Full input key, 1D array of words (2D packed array in
+ * SV)
+ * @param  data_len_i   Number of data bytes.
+ * @param  aad_len_i    Number of AAD bytes.
+ * @param  data_i       Input data, 1D byte array (open array in SV)
+ * @param  aad_i        Input AAD, 1D byte array (open array in SV)
+ * @param  tag_i        Input auth. tag, 1D array of words (2D packed array in
+ * SV)
+ * @param  data_o       Output data, 1D byte array (open array in SV)
+ * @param  tag_o        Output auth. tag, 1D array of words (2D packed array in
+ * SV)
+ * @param  crypto_res   Return code of the underlying crypto implementation.
  */
 void c_dpi_aes_crypt_message(unsigned char impl_i, unsigned char op_i,
                              const svBitVecVal *mode_i, const svBitVecVal *iv_i,
                              const svBitVecVal *key_len_i,
-                             const svBitVecVal *key_i,
-                             const svOpenArrayHandle data_i,
+                             const svBitVecVal *key_i, const int data_len,
+                             const int aad_len, const svOpenArrayHandle data_i,
                              const svOpenArrayHandle aad_i,
                              const svBitVecVal *tag_i, svOpenArrayHandle data_o,
-                             svBitVecVal *tag_o);
+                             svBitVecVal *tag_o, int *crypto_res);
 
 /**
  * Perform sub bytes operation for forward/inverse cipher operation.
