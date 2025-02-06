@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/runtime/print.h"
+#include "sw/device/lib/testing/flash_ctrl_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -26,11 +27,13 @@
 #include "sw/device/silicon_creator/lib/drivers/ibex.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/manuf/base/flash_info_permissions.h"
+#include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize.h"
 #include "sw/device/silicon_creator/manuf/lib/individualize_sw_cfg.h"
 #include "sw/device/silicon_creator/manuf/lib/otp_fields.h"
 
 #include "hw/top/alert_handler_regs.h"  // Generated.
+#include "hw/top/ast_regs.h"            // Generated.
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG(.console.type = kOttfConsoleSpiDevice,
@@ -211,6 +214,53 @@ status_t otp_ctrl_testutils_dai_write_post_error_check_hook(
 }
 
 /**
+ * Patch AST config if patch exists in flash info page 0.
+ */
+static status_t patch_ast_config_value(void) {
+  uint32_t byte_address = 0;
+  TRY(flash_ctrl_testutils_info_region_setup_properties(
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr.page,
+      kFlashInfoFieldAstIndividPatchAddr.bank,
+      kFlashInfoFieldAstIndividPatchAddr.partition, kFlashInfoPage0Permissions,
+      &byte_address));
+
+  // Read patch address and value from flash info 0.
+  uint32_t ast_patch_addr_offset;
+  uint32_t ast_patch_value;
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchAddr,
+      &ast_patch_addr_offset,
+      kFlashInfoFieldAstIndividPatchAddrSizeIn32BitWords));
+  TRY(manuf_flash_info_field_read(
+      &flash_ctrl_state, kFlashInfoFieldAstIndividPatchVal, &ast_patch_value,
+      kFlashInfoFieldAstIndividPatchValSizeIn32BitWords));
+  LOG_INFO("AST patch address offset = 0x%08x", ast_patch_addr_offset);
+  LOG_INFO("AST patch address value  = 0x%08x", ast_patch_value);
+
+  // Check the address is within range before programming.
+  // Check the value is non-zero and not all ones before programming.
+  if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
+    TRY_CHECK(ast_patch_addr_offset > AST_REGAL_REG_OFFSET);
+    TRY_CHECK(ast_patch_value != 0 && ast_patch_value != UINT32_MAX);
+  }
+
+  // Write patch value.
+  abs_mmio_write32(
+      TOP_EARLGREY_AST_BASE_ADDR + ast_patch_addr_offset * sizeof(uint32_t),
+      ast_patch_value);
+
+  // Read back AST calibration values loaded into CSRs.
+  LOG_INFO("AST Calibration Values (in CSRs):");
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+    LOG_INFO(
+        "Word %d = 0x%08x", i,
+        abs_mmio_read32(TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t)));
+  }
+
+  return OK_STATUS();
+}
+
+/**
  * Provision OTP {CreatorSw,OwnerSw,Hw}Cfg and RotCreatorAuth{Codesign,State}
  * partitions.
  *
@@ -237,17 +287,13 @@ static status_t provision(ujson_t *uj) {
     LOG_INFO("External clock enabled.");
   }
 
+  // Patch AST config if requested.
+  if (in_data.patch_ast) {
+    TRY(patch_ast_config_value());
+  }
+
   // Enable GPIO indicators during OTP writes.
   TRY(configure_gpio_indicators());
-
-  // Turn off OTP runtime checks.
-  TRY(dif_otp_ctrl_configure(
-      &otp_ctrl,
-      (dif_otp_ctrl_config_t){
-          .check_timeout = 0,            // Disable the check timeout mechanism.
-          .integrity_period_mask = 0,    // Disable integrity checks.
-          .consistency_period_mask = 0,  // Disable consistency checks.
-      }));
 
   // Perform OTP writes.
   LOG_INFO("Writing HW_CFG* OTP partitions ...");
