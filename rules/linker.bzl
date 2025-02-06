@@ -106,7 +106,7 @@ def _ld_library_impl(ctx):
                 compilation_context = cc_common.create_compilation_context(
                     defines = depset(ctx.attr.defines),
                     headers = depset(ctx.files.includes),
-                    includes = depset([f.path for f in ctx.files.includes]),
+                    includes = depset([f.dirname for f in ctx.files.includes]),
                 ),
             )],
         ),
