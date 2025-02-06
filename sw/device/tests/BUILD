@@ -6794,10 +6794,11 @@ opentitan_test(
     # in CI/nightlies.
     verilator = verilator_params(tags = ["manual"]),
     deps = [
+        "//hw/top:dt",
+        "//hw/top:dt_api",
         "//hw/top:clkmgr_c_regs",
         "//hw/top:lc_ctrl_c_regs",
         "//hw/top:pinmux_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:clkmgr",
         "//sw/device/lib/dif:lc_ctrl",
