@@ -40,6 +40,30 @@ rom_error_t sigverify_ecdsa_p256_verify(const ecdsa_p256_signature_t *signature,
                                         uint32_t *flash_exec);
 
 /**
+ * Starts an ECDSA-P256 signature verification.
+ *
+ * @param signature The signature to verify, little endian.
+ * @param key The public key to use for verification, little endian.
+ * @param act_digest The actual digest of the signed message.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sigverify_ecdsa_p256_start(const ecdsa_p256_signature_t *signature,
+                                       const ecdsa_p256_public_key_t *key,
+                                       const hmac_digest_t *act_digest);
+
+/**
+ * Finishes an ECDSA-P256 signature verification.
+ *
+ * @param signature The signature to verify, little endian.
+ * @param[out] flash_exec The partial value to write to the flash_ctrl EXEC
+ * register.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sigverify_ecdsa_p256_finish(const ecdsa_p256_signature_t *signature,
+                                        uint32_t *flash_exec);
+/**
  * Transforms `kSigverifyEcdsaSuccess` into `kErrorOk`.
  *
  * Callers should transform the result to a suitable error value if it is not
