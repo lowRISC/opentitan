@@ -106,6 +106,7 @@ sim_qemu(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_qemu",
+        "//hw/top_earlgrey/sw/dt:sim_qemu",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
@@ -131,6 +132,7 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/dt:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest",
@@ -184,6 +186,7 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/dt:fpga_cw310",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest",
@@ -230,6 +233,7 @@ fpga_cw310(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw310",
+        "//hw/top_earlgrey/sw/dt:fpga_cw310",
     ],
     otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -337,6 +341,7 @@ fpga_cw340(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw340",
+        "//hw/top_earlgrey/sw/dt:fpga_cw340",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest",
@@ -383,6 +388,7 @@ fpga_cw340(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:fpga_cw340",
+        "//hw/top_earlgrey/sw/dt:fpga_cw340",
     ],
     otp = "//hw/top_earlgrey/data/otp/sival_skus:otp_img_prod_manuf_personalized",
     rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_slot_a",
@@ -444,6 +450,7 @@ silicon(
     libs = [
         "//sw/device/lib/arch:boot_stage_owner",
         "//sw/device/lib/arch:silicon",
+        "//hw/top_earlgrey/sw/dt:silicon",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
     manifest = "//sw/device/silicon_owner:manifest",
@@ -542,7 +549,7 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
-        "//hw/top_earlgrey/sw/dt:sim_verilator",
+        "//hw/top_earlgrey/sw/dt:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
