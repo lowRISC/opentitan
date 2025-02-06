@@ -4282,6 +4282,7 @@ opentitan_test(
     ),
     deps = [
         "//hw/top:dt",
+        "//hw/top:dt_api",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:uart",
