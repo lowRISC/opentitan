@@ -63,7 +63,6 @@ module hmac
   logic [31:0] msg_fifo_wdata;
   logic [31:0] msg_fifo_wmask;
   logic [31:0] msg_fifo_rdata;
-  logic        msg_fifo_rvalid;
   logic [1:0]  msg_fifo_rerror;
   logic [31:0] msg_fifo_wdata_endian;
   logic [31:0] msg_fifo_wmask_endian;
@@ -514,7 +513,6 @@ module hmac
   // Instances //
   ///////////////
 
-  assign msg_fifo_rvalid = msg_fifo_req & ~msg_fifo_we;
   assign msg_fifo_rdata  = '1;  // Return all F
   assign msg_fifo_rerror = '1;  // Return error for read access
   assign msg_fifo_gnt    = msg_fifo_req & ~hmac_fifo_wsel & packer_ready;
@@ -601,7 +599,7 @@ module hmac
     .intg_error_o               (               ),
     .user_rsvd_o                (               ),
     .rdata_i                    (msg_fifo_rdata ),
-    .rvalid_i                   (msg_fifo_rvalid),
+    .rvalid_i                   (1'b0           ),
     .rerror_i                   (msg_fifo_rerror),
     .compound_txn_in_progress_o (),
     .readback_en_i              (prim_mubi_pkg::MuBi4False),
