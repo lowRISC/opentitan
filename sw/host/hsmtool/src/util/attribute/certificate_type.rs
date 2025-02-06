@@ -6,7 +6,6 @@
 // Do not edit.'
 
 use cryptoki_sys::*;
-use num_enum::{FromPrimitive, IntoPrimitive};
 use std::convert::TryFrom;
 
 use crate::util::attribute::{AttrData, AttributeError};
@@ -18,23 +17,48 @@ use crate::util::attribute::{AttrData, AttributeError};
     PartialEq,
     Eq,
     Hash,
-    IntoPrimitive,
-    FromPrimitive,
     serde::Serialize,
     serde::Deserialize,
+    strum::Display,
+    strum::EnumString,
+    strum::EnumIter,
+    strum::FromRepr,
 )]
 #[repr(u64)]
 pub enum CertificateType {
     #[serde(rename = "CKC_X_509")]
+    #[strum(serialize = "CKC_X_509", serialize = "X509", serialize = "x_509")]
     X509 = CKC_X_509,
     #[serde(rename = "CKC_X_509_ATTR_CERT")]
+    #[strum(
+        serialize = "CKC_X_509_ATTR_CERT",
+        serialize = "X509AttrCert",
+        serialize = "x_509_attr_cert"
+    )]
     X509AttrCert = CKC_X_509_ATTR_CERT,
     #[serde(rename = "CKC_WTLS")]
+    #[strum(serialize = "CKC_WTLS", serialize = "Wtls", serialize = "wtls")]
     Wtls = CKC_WTLS,
     #[serde(rename = "CKC_VENDOR_DEFINED")]
+    #[strum(
+        serialize = "CKC_VENDOR_DEFINED",
+        serialize = "VendorDefined",
+        serialize = "vendor_defined"
+    )]
     VendorDefined = CKC_VENDOR_DEFINED,
-    #[num_enum(catch_all)]
-    UnknownCertificateType(u64) = u64::MAX,
+    UnknownCertificateType = u64::MAX,
+}
+
+impl From<u64> for CertificateType {
+    fn from(val: u64) -> Self {
+        CertificateType::from_repr(val).unwrap_or(CertificateType::UnknownCertificateType)
+    }
+}
+
+impl From<CertificateType> for u64 {
+    fn from(val: CertificateType) -> u64 {
+        val as u64
+    }
 }
 
 impl From<cryptoki::object::CertificateType> for CertificateType {

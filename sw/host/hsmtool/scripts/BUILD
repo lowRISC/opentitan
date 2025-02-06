@@ -38,7 +38,7 @@ genrule(
     cmd = """
         $(execpath :pkcs11_consts) \
             --binding $(locations :binding_srcs) \
-            --serde --conv_data CKO cryptoki::object::ObjectClass \
+            --serde --strum --conv_data CKO cryptoki::object::ObjectClass \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
     tags = ["manual"],
@@ -55,7 +55,7 @@ genrule(
     cmd = """
         $(execpath :pkcs11_consts) \
             --binding $(locations :binding_srcs) \
-            --serde --conv_data CKK cryptoki::object::KeyType \
+            --serde --strum --conv_data CKK cryptoki::object::KeyType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
     tags = ["manual"],
@@ -72,7 +72,7 @@ genrule(
     cmd = """
         $(execpath :pkcs11_consts) \
             --binding $(locations :binding_srcs) \
-            --serde --conv_data CKC cryptoki::object::CertificateType \
+            --serde --strum --conv_data CKC cryptoki::object::CertificateType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
     tags = ["manual"],
@@ -89,7 +89,7 @@ genrule(
     cmd = """
         $(execpath :pkcs11_consts) \
             --binding $(locations :binding_srcs) \
-            --serde --conv_data CKM cryptoki::mechanism::MechanismType \
+            --serde --strum --conv_data CKM cryptoki::mechanism::MechanismType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
     tags = ["manual"],
