@@ -247,6 +247,16 @@ def opentitan_binary(name, exec_env, **kwargs):
         topname = ev_map[ev]
         select_map[topname] = select_map.get(topname, []) + [ev]
 
+    kwargs["target_compatible_with"] = \
+        kwargs.get("target_compatible_with", []) + \
+        opentitan_select_top(
+            {
+                top: []
+                for top in select_map.keys()
+            },
+            ["@platforms//:incompatible"],
+        )
+
     _opentitan_binary(
         name = name,
         exec_env = opentitan_select_top(select_map, []),
