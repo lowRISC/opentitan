@@ -160,6 +160,7 @@ opentitan_test(
         deps = [
             ":flash_info_permissions",
             "//hw/top_earlgrey:alert_handler_c_regs",
+            "//hw/top_earlgrey/ip/ast/data:ast_c_regs",
             "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/arch:device",
             "//sw/device/lib/base:abs_mmio",
