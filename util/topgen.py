@@ -1741,8 +1741,8 @@ def main():
                 render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
                                 path / "data" / "autogen" / "BUILD",
                                 gencmd=gencmd_bzl)
-                # "data_defs.tpl" -> "data/autogen/defs.bzl"
-                render_template(TOPGEN_TEMPLATE_PATH / "data_defs.tpl",
+                # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
+                render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
                                 path / "data" / "autogen" / "defs.bzl",
                                 gencmd=gencmd_bzl)
 
