@@ -22,6 +22,7 @@ from ipgen import (IpBlockRenderer, IpConfig, IpDescriptionOnlyRenderer,
 from design.lib.OtpMemMap import OtpMemMap
 from mako import exceptions
 from mako.template import Template
+from mako.lookup import TemplateLookup
 from raclgen.lib import DEFAULT_RACL_CONFIG
 from reggen import access, gen_rtl, gen_sec_cm_testplan, window
 from reggen.countermeasure import CounterMeasure
@@ -137,7 +138,7 @@ def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
 
 def generate_top(top: Dict[str, object], name_to_block: Dict[str, IpBlock],
                  tpl_filename: str, **kwargs: Dict[str, object]) -> None:
-    top_tpl = Template(filename=tpl_filename)
+    top_tpl = Template(filename=tpl_filename, lookup=TemplateLookup([TOPGEN_TEMPLATE_PATH, "/"]))
 
     try:
         return top_tpl.render(top=top, name_to_block=name_to_block, **kwargs)
