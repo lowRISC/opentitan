@@ -247,14 +247,33 @@ rom_error_t sc_otbn_dmem_read(size_t num_words, const sc_otbn_addr_t src,
                               uint32_t *dest);
 
 /**
- * Start the execution of the application loaded into OTBN.
+ * Execute the application loaded into OTBN.
  *
- * This function blocks until OTBN is idle.
+ * This function blocks until OTBN is idle and waits for the OTBN application to
+ * finish.
  *
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_otbn_execute(void);
+
+/**
+ * Start execution of the application loaded into OTBN.
+ *
+ * This function blocks until OTBN is idle and then starts the OTBN application.
+ *
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_otbn_execute_start(void);
+
+/**
+ * Wait for the OTBN application to finish execution.
+ *
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_otbn_execute_finish(void);
 
 /**
  * Blocks until OTBN is idle.

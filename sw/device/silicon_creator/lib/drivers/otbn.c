@@ -26,6 +26,7 @@ enum {
    * Highest index of OTBN error bits.
    */
   kOtbnErrBitsLast = OTBN_ERR_BITS_FATAL_SOFTWARE_BIT,
+  kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
 };
 
 /**
@@ -134,19 +135,19 @@ rom_error_t sc_otbn_dmem_read(size_t num_words, sc_otbn_addr_t src,
  * @param error Error to return if operation fails.
  * @return Result of the operation.
  */
+static void sc_otbn_cmd_start(sc_otbn_cmd_t cmd) {
+  abs_mmio_write32(otbn_base() + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
+  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, cmd);
+}
+
 OT_WARN_UNUSED_RESULT
-static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
+static rom_error_t sc_otbn_cmd_finish(rom_error_t error) {
   enum {
-    kIntrStateDone = (1 << OTBN_INTR_COMMON_DONE_BIT),
     // Use a bit index that doesn't overlap with error bits.
     kResDoneBit = 31,
   };
   static_assert((UINT32_C(1) << kResDoneBit) > kOtbnErrBitsLast,
                 "kResDoneBit must not overlap with OTBN error bits");
-
-  abs_mmio_write32(otbn_base() + OTBN_INTR_STATE_REG_OFFSET, kIntrStateDone);
-  abs_mmio_write32(otbn_base() + OTBN_CMD_REG_OFFSET, cmd);
-
   rom_error_t res = kErrorOk ^ (UINT32_C(1) << kResDoneBit);
   uint32_t reg = 0;
   do {
@@ -177,7 +178,12 @@ static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
   return error;
 }
 
-rom_error_t sc_otbn_execute(void) {
+static rom_error_t sc_otbn_cmd_run(sc_otbn_cmd_t cmd, rom_error_t error) {
+  sc_otbn_cmd_start(cmd);
+  return sc_otbn_cmd_finish(error);
+}
+
+rom_error_t sc_otbn_execute_start(void) {
   // If OTBN is busy, wait for it to be done.
   HARDENED_RETURN_IF_ERROR(sc_otbn_busy_wait_for_done());
 
@@ -187,7 +193,17 @@ rom_error_t sc_otbn_execute(void) {
   sec_mmio_write32(otbn_base() + OTBN_CTRL_REG_OFFSET,
                    1 << OTBN_CTRL_SOFTWARE_ERRS_FATAL_BIT);
 
-  return sc_otbn_cmd_run(kScOtbnCmdExecute, kErrorOtbnExecutionFailed);
+  sc_otbn_cmd_start(kScOtbnCmdExecute);
+  return kErrorOk;
+}
+
+rom_error_t sc_otbn_execute_finish(void) {
+  return sc_otbn_cmd_finish(kErrorOtbnExecutionFailed);
+}
+
+rom_error_t sc_otbn_execute(void) {
+  HARDENED_RETURN_IF_ERROR(sc_otbn_execute_start());
+  return sc_otbn_execute_finish();
 }
 
 uint32_t sc_otbn_instruction_count_get(void) {
