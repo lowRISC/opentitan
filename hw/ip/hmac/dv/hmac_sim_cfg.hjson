@@ -148,6 +148,12 @@
       name: hmac_stress_all_with_rand_reset
       reseed: 10
     }
+
+    {
+      name: hmac_directed
+      uvm_test_seq: hmac_directed_vseq
+      reseed: 1
+    }
   ]
 
   // List of regressions.
