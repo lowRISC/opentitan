@@ -159,12 +159,13 @@
     "//rules:extensions.bzl%hooks": {
       "general": {
         "bzlTransitiveDigest": "4jKAP4jsTdJoZuA38C4q/KV6hxks41+r6Bfm6YN+2JA=",
-        "usagesDigest": "efm8dv/MZl0wK8Lk/GoYEpr1qnmqsiHA2uojJeQNjFg=",
+        "usagesDigest": "wlGAntyaIimWEdZszWst1m3m1CWlAljwEdvGQDPURHc=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {
           "MANUFACTURER_HOOKS_DIR": null,
           "PROV_EXTS_DIR": null,
+          "ROM_HOOKS_DIR": null,
           "SECURE_MANUFACTURER_HOOKS_DIR": null
         },
         "generatedRepoSpecs": {
@@ -187,6 +188,13 @@
             "ruleClassName": "local_repository",
             "attributes": {
               "path": "sw/device/silicon_creator/manuf/extensions"
+            }
+          },
+          "rom_hooks": {
+            "bzlFile": "@@bazel_tools//tools/build_defs/repo:local.bzl",
+            "ruleClassName": "local_repository",
+            "attributes": {
+              "path": "sw/device/silicon_creator/rom/hooks"
             }
           }
         },
