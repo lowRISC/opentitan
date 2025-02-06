@@ -6,7 +6,6 @@
 // Do not edit.'
 
 use cryptoki_sys::*;
-use num_enum::{FromPrimitive, IntoPrimitive};
 use std::convert::TryFrom;
 
 use crate::util::attribute::{AttrData, AttributeError};
@@ -18,855 +17,2816 @@ use crate::util::attribute::{AttrData, AttributeError};
     PartialEq,
     Eq,
     Hash,
-    IntoPrimitive,
-    FromPrimitive,
     serde::Serialize,
     serde::Deserialize,
+    strum::Display,
+    strum::EnumString,
+    strum::EnumIter,
+    strum::FromRepr,
 )]
 #[repr(u64)]
 pub enum MechanismType {
     #[serde(rename = "CKM_RSA_PKCS_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS_KEY_PAIR_GEN",
+        serialize = "RsaPkcsKeyPairGen",
+        serialize = "rsa_pkcs_key_pair_gen"
+    )]
     RsaPkcsKeyPairGen = CKM_RSA_PKCS_KEY_PAIR_GEN,
     #[serde(rename = "CKM_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS",
+        serialize = "RsaPkcs",
+        serialize = "rsa_pkcs"
+    )]
     RsaPkcs = CKM_RSA_PKCS,
     #[serde(rename = "CKM_RSA_9796")]
+    #[strum(
+        serialize = "CKM_RSA_9796",
+        serialize = "Rsa9796",
+        serialize = "rsa_9796"
+    )]
     Rsa9796 = CKM_RSA_9796,
     #[serde(rename = "CKM_RSA_X_509")]
+    #[strum(
+        serialize = "CKM_RSA_X_509",
+        serialize = "RsaX509",
+        serialize = "rsa_x_509"
+    )]
     RsaX509 = CKM_RSA_X_509,
     #[serde(rename = "CKM_MD2_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_MD2_RSA_PKCS",
+        serialize = "Md2RsaPkcs",
+        serialize = "md2_rsa_pkcs"
+    )]
     Md2RsaPkcs = CKM_MD2_RSA_PKCS,
     #[serde(rename = "CKM_MD5_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_MD5_RSA_PKCS",
+        serialize = "Md5RsaPkcs",
+        serialize = "md5_rsa_pkcs"
+    )]
     Md5RsaPkcs = CKM_MD5_RSA_PKCS,
     #[serde(rename = "CKM_SHA1_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA1_RSA_PKCS",
+        serialize = "Sha1RsaPkcs",
+        serialize = "sha1_rsa_pkcs"
+    )]
     Sha1RsaPkcs = CKM_SHA1_RSA_PKCS,
     #[serde(rename = "CKM_RIPEMD128_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_RIPEMD128_RSA_PKCS",
+        serialize = "Ripemd128RsaPkcs",
+        serialize = "ripemd128_rsa_pkcs"
+    )]
     Ripemd128RsaPkcs = CKM_RIPEMD128_RSA_PKCS,
     #[serde(rename = "CKM_RIPEMD160_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_RIPEMD160_RSA_PKCS",
+        serialize = "Ripemd160RsaPkcs",
+        serialize = "ripemd160_rsa_pkcs"
+    )]
     Ripemd160RsaPkcs = CKM_RIPEMD160_RSA_PKCS,
     #[serde(rename = "CKM_RSA_PKCS_OAEP")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS_OAEP",
+        serialize = "RsaPkcsOaep",
+        serialize = "rsa_pkcs_oaep"
+    )]
     RsaPkcsOaep = CKM_RSA_PKCS_OAEP,
     #[serde(rename = "CKM_RSA_X9_31_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_RSA_X9_31_KEY_PAIR_GEN",
+        serialize = "RsaX931KeyPairGen",
+        serialize = "rsa_x9_31_key_pair_gen"
+    )]
     RsaX931KeyPairGen = CKM_RSA_X9_31_KEY_PAIR_GEN,
     #[serde(rename = "CKM_RSA_X9_31")]
+    #[strum(
+        serialize = "CKM_RSA_X9_31",
+        serialize = "RsaX931",
+        serialize = "rsa_x9_31"
+    )]
     RsaX931 = CKM_RSA_X9_31,
     #[serde(rename = "CKM_SHA1_RSA_X9_31")]
+    #[strum(
+        serialize = "CKM_SHA1_RSA_X9_31",
+        serialize = "Sha1RsaX931",
+        serialize = "sha1_rsa_x9_31"
+    )]
     Sha1RsaX931 = CKM_SHA1_RSA_X9_31,
     #[serde(rename = "CKM_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS_PSS",
+        serialize = "RsaPkcsPss",
+        serialize = "rsa_pkcs_pss"
+    )]
     RsaPkcsPss = CKM_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA1_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA1_RSA_PKCS_PSS",
+        serialize = "Sha1RsaPkcsPss",
+        serialize = "sha1_rsa_pkcs_pss"
+    )]
     Sha1RsaPkcsPss = CKM_SHA1_RSA_PKCS_PSS,
     #[serde(rename = "CKM_DSA_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_DSA_KEY_PAIR_GEN",
+        serialize = "DsaKeyPairGen",
+        serialize = "dsa_key_pair_gen"
+    )]
     DsaKeyPairGen = CKM_DSA_KEY_PAIR_GEN,
     #[serde(rename = "CKM_DSA")]
+    #[strum(serialize = "CKM_DSA", serialize = "Dsa", serialize = "dsa")]
     Dsa = CKM_DSA,
     #[serde(rename = "CKM_DSA_SHA1")]
+    #[strum(
+        serialize = "CKM_DSA_SHA1",
+        serialize = "DsaSha1",
+        serialize = "dsa_sha1"
+    )]
     DsaSha1 = CKM_DSA_SHA1,
     #[serde(rename = "CKM_DSA_SHA224")]
+    #[strum(
+        serialize = "CKM_DSA_SHA224",
+        serialize = "DsaSha224",
+        serialize = "dsa_sha224"
+    )]
     DsaSha224 = CKM_DSA_SHA224,
     #[serde(rename = "CKM_DSA_SHA256")]
+    #[strum(
+        serialize = "CKM_DSA_SHA256",
+        serialize = "DsaSha256",
+        serialize = "dsa_sha256"
+    )]
     DsaSha256 = CKM_DSA_SHA256,
     #[serde(rename = "CKM_DSA_SHA384")]
+    #[strum(
+        serialize = "CKM_DSA_SHA384",
+        serialize = "DsaSha384",
+        serialize = "dsa_sha384"
+    )]
     DsaSha384 = CKM_DSA_SHA384,
     #[serde(rename = "CKM_DSA_SHA512")]
+    #[strum(
+        serialize = "CKM_DSA_SHA512",
+        serialize = "DsaSha512",
+        serialize = "dsa_sha512"
+    )]
     DsaSha512 = CKM_DSA_SHA512,
     #[serde(rename = "CKM_DSA_SHA3_224")]
+    #[strum(
+        serialize = "CKM_DSA_SHA3_224",
+        serialize = "DsaSha3224",
+        serialize = "dsa_sha3_224"
+    )]
     DsaSha3224 = CKM_DSA_SHA3_224,
     #[serde(rename = "CKM_DSA_SHA3_256")]
+    #[strum(
+        serialize = "CKM_DSA_SHA3_256",
+        serialize = "DsaSha3256",
+        serialize = "dsa_sha3_256"
+    )]
     DsaSha3256 = CKM_DSA_SHA3_256,
     #[serde(rename = "CKM_DSA_SHA3_384")]
+    #[strum(
+        serialize = "CKM_DSA_SHA3_384",
+        serialize = "DsaSha3384",
+        serialize = "dsa_sha3_384"
+    )]
     DsaSha3384 = CKM_DSA_SHA3_384,
     #[serde(rename = "CKM_DSA_SHA3_512")]
+    #[strum(
+        serialize = "CKM_DSA_SHA3_512",
+        serialize = "DsaSha3512",
+        serialize = "dsa_sha3_512"
+    )]
     DsaSha3512 = CKM_DSA_SHA3_512,
     #[serde(rename = "CKM_DH_PKCS_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_DH_PKCS_KEY_PAIR_GEN",
+        serialize = "DhPkcsKeyPairGen",
+        serialize = "dh_pkcs_key_pair_gen"
+    )]
     DhPkcsKeyPairGen = CKM_DH_PKCS_KEY_PAIR_GEN,
     #[serde(rename = "CKM_DH_PKCS_DERIVE")]
+    #[strum(
+        serialize = "CKM_DH_PKCS_DERIVE",
+        serialize = "DhPkcsDerive",
+        serialize = "dh_pkcs_derive"
+    )]
     DhPkcsDerive = CKM_DH_PKCS_DERIVE,
     #[serde(rename = "CKM_X9_42_DH_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_X9_42_DH_KEY_PAIR_GEN",
+        serialize = "X942DhKeyPairGen",
+        serialize = "x9_42_dh_key_pair_gen"
+    )]
     X942DhKeyPairGen = CKM_X9_42_DH_KEY_PAIR_GEN,
     #[serde(rename = "CKM_X9_42_DH_DERIVE")]
+    #[strum(
+        serialize = "CKM_X9_42_DH_DERIVE",
+        serialize = "X942DhDerive",
+        serialize = "x9_42_dh_derive"
+    )]
     X942DhDerive = CKM_X9_42_DH_DERIVE,
     #[serde(rename = "CKM_X9_42_DH_HYBRID_DERIVE")]
+    #[strum(
+        serialize = "CKM_X9_42_DH_HYBRID_DERIVE",
+        serialize = "X942DhHybridDerive",
+        serialize = "x9_42_dh_hybrid_derive"
+    )]
     X942DhHybridDerive = CKM_X9_42_DH_HYBRID_DERIVE,
     #[serde(rename = "CKM_X9_42_MQV_DERIVE")]
+    #[strum(
+        serialize = "CKM_X9_42_MQV_DERIVE",
+        serialize = "X942MqvDerive",
+        serialize = "x9_42_mqv_derive"
+    )]
     X942MqvDerive = CKM_X9_42_MQV_DERIVE,
     #[serde(rename = "CKM_SHA256_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA256_RSA_PKCS",
+        serialize = "Sha256RsaPkcs",
+        serialize = "sha256_rsa_pkcs"
+    )]
     Sha256RsaPkcs = CKM_SHA256_RSA_PKCS,
     #[serde(rename = "CKM_SHA384_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA384_RSA_PKCS",
+        serialize = "Sha384RsaPkcs",
+        serialize = "sha384_rsa_pkcs"
+    )]
     Sha384RsaPkcs = CKM_SHA384_RSA_PKCS,
     #[serde(rename = "CKM_SHA512_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA512_RSA_PKCS",
+        serialize = "Sha512RsaPkcs",
+        serialize = "sha512_rsa_pkcs"
+    )]
     Sha512RsaPkcs = CKM_SHA512_RSA_PKCS,
     #[serde(rename = "CKM_SHA256_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA256_RSA_PKCS_PSS",
+        serialize = "Sha256RsaPkcsPss",
+        serialize = "sha256_rsa_pkcs_pss"
+    )]
     Sha256RsaPkcsPss = CKM_SHA256_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA384_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA384_RSA_PKCS_PSS",
+        serialize = "Sha384RsaPkcsPss",
+        serialize = "sha384_rsa_pkcs_pss"
+    )]
     Sha384RsaPkcsPss = CKM_SHA384_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA512_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA512_RSA_PKCS_PSS",
+        serialize = "Sha512RsaPkcsPss",
+        serialize = "sha512_rsa_pkcs_pss"
+    )]
     Sha512RsaPkcsPss = CKM_SHA512_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA224_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA224_RSA_PKCS",
+        serialize = "Sha224RsaPkcs",
+        serialize = "sha224_rsa_pkcs"
+    )]
     Sha224RsaPkcs = CKM_SHA224_RSA_PKCS,
     #[serde(rename = "CKM_SHA224_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA224_RSA_PKCS_PSS",
+        serialize = "Sha224RsaPkcsPss",
+        serialize = "sha224_rsa_pkcs_pss"
+    )]
     Sha224RsaPkcsPss = CKM_SHA224_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA512_224")]
+    #[strum(
+        serialize = "CKM_SHA512_224",
+        serialize = "Sha512224",
+        serialize = "sha512_224"
+    )]
     Sha512224 = CKM_SHA512_224,
     #[serde(rename = "CKM_SHA512_224_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA512_224_HMAC",
+        serialize = "Sha512224Hmac",
+        serialize = "sha512_224_hmac"
+    )]
     Sha512224Hmac = CKM_SHA512_224_HMAC,
     #[serde(rename = "CKM_SHA512_224_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA512_224_HMAC_GENERAL",
+        serialize = "Sha512224HmacGeneral",
+        serialize = "sha512_224_hmac_general"
+    )]
     Sha512224HmacGeneral = CKM_SHA512_224_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA512_224_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA512_224_KEY_DERIVATION",
+        serialize = "Sha512224KeyDerivation",
+        serialize = "sha512_224_key_derivation"
+    )]
     Sha512224KeyDerivation = CKM_SHA512_224_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA512_256")]
+    #[strum(
+        serialize = "CKM_SHA512_256",
+        serialize = "Sha512256",
+        serialize = "sha512_256"
+    )]
     Sha512256 = CKM_SHA512_256,
     #[serde(rename = "CKM_SHA512_256_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA512_256_HMAC",
+        serialize = "Sha512256Hmac",
+        serialize = "sha512_256_hmac"
+    )]
     Sha512256Hmac = CKM_SHA512_256_HMAC,
     #[serde(rename = "CKM_SHA512_256_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA512_256_HMAC_GENERAL",
+        serialize = "Sha512256HmacGeneral",
+        serialize = "sha512_256_hmac_general"
+    )]
     Sha512256HmacGeneral = CKM_SHA512_256_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA512_256_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA512_256_KEY_DERIVATION",
+        serialize = "Sha512256KeyDerivation",
+        serialize = "sha512_256_key_derivation"
+    )]
     Sha512256KeyDerivation = CKM_SHA512_256_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA512_T")]
+    #[strum(
+        serialize = "CKM_SHA512_T",
+        serialize = "Sha512T",
+        serialize = "sha512_t"
+    )]
     Sha512T = CKM_SHA512_T,
     #[serde(rename = "CKM_SHA512_T_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA512_T_HMAC",
+        serialize = "Sha512THmac",
+        serialize = "sha512_t_hmac"
+    )]
     Sha512THmac = CKM_SHA512_T_HMAC,
     #[serde(rename = "CKM_SHA512_T_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA512_T_HMAC_GENERAL",
+        serialize = "Sha512THmacGeneral",
+        serialize = "sha512_t_hmac_general"
+    )]
     Sha512THmacGeneral = CKM_SHA512_T_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA512_T_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA512_T_KEY_DERIVATION",
+        serialize = "Sha512TKeyDerivation",
+        serialize = "sha512_t_key_derivation"
+    )]
     Sha512TKeyDerivation = CKM_SHA512_T_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA3_256_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA3_256_RSA_PKCS",
+        serialize = "Sha3256RsaPkcs",
+        serialize = "sha3_256_rsa_pkcs"
+    )]
     Sha3256RsaPkcs = CKM_SHA3_256_RSA_PKCS,
     #[serde(rename = "CKM_SHA3_384_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA3_384_RSA_PKCS",
+        serialize = "Sha3384RsaPkcs",
+        serialize = "sha3_384_rsa_pkcs"
+    )]
     Sha3384RsaPkcs = CKM_SHA3_384_RSA_PKCS,
     #[serde(rename = "CKM_SHA3_512_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA3_512_RSA_PKCS",
+        serialize = "Sha3512RsaPkcs",
+        serialize = "sha3_512_rsa_pkcs"
+    )]
     Sha3512RsaPkcs = CKM_SHA3_512_RSA_PKCS,
     #[serde(rename = "CKM_SHA3_256_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA3_256_RSA_PKCS_PSS",
+        serialize = "Sha3256RsaPkcsPss",
+        serialize = "sha3_256_rsa_pkcs_pss"
+    )]
     Sha3256RsaPkcsPss = CKM_SHA3_256_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA3_384_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA3_384_RSA_PKCS_PSS",
+        serialize = "Sha3384RsaPkcsPss",
+        serialize = "sha3_384_rsa_pkcs_pss"
+    )]
     Sha3384RsaPkcsPss = CKM_SHA3_384_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA3_512_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA3_512_RSA_PKCS_PSS",
+        serialize = "Sha3512RsaPkcsPss",
+        serialize = "sha3_512_rsa_pkcs_pss"
+    )]
     Sha3512RsaPkcsPss = CKM_SHA3_512_RSA_PKCS_PSS,
     #[serde(rename = "CKM_SHA3_224_RSA_PKCS")]
+    #[strum(
+        serialize = "CKM_SHA3_224_RSA_PKCS",
+        serialize = "Sha3224RsaPkcs",
+        serialize = "sha3_224_rsa_pkcs"
+    )]
     Sha3224RsaPkcs = CKM_SHA3_224_RSA_PKCS,
     #[serde(rename = "CKM_SHA3_224_RSA_PKCS_PSS")]
+    #[strum(
+        serialize = "CKM_SHA3_224_RSA_PKCS_PSS",
+        serialize = "Sha3224RsaPkcsPss",
+        serialize = "sha3_224_rsa_pkcs_pss"
+    )]
     Sha3224RsaPkcsPss = CKM_SHA3_224_RSA_PKCS_PSS,
     #[serde(rename = "CKM_RC2_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_RC2_KEY_GEN",
+        serialize = "Rc2KeyGen",
+        serialize = "rc2_key_gen"
+    )]
     Rc2KeyGen = CKM_RC2_KEY_GEN,
     #[serde(rename = "CKM_RC2_ECB")]
+    #[strum(serialize = "CKM_RC2_ECB", serialize = "Rc2Ecb", serialize = "rc2_ecb")]
     Rc2Ecb = CKM_RC2_ECB,
     #[serde(rename = "CKM_RC2_CBC")]
+    #[strum(serialize = "CKM_RC2_CBC", serialize = "Rc2Cbc", serialize = "rc2_cbc")]
     Rc2Cbc = CKM_RC2_CBC,
     #[serde(rename = "CKM_RC2_MAC")]
+    #[strum(serialize = "CKM_RC2_MAC", serialize = "Rc2Mac", serialize = "rc2_mac")]
     Rc2Mac = CKM_RC2_MAC,
     #[serde(rename = "CKM_RC2_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_RC2_MAC_GENERAL",
+        serialize = "Rc2MacGeneral",
+        serialize = "rc2_mac_general"
+    )]
     Rc2MacGeneral = CKM_RC2_MAC_GENERAL,
     #[serde(rename = "CKM_RC2_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_RC2_CBC_PAD",
+        serialize = "Rc2CbcPad",
+        serialize = "rc2_cbc_pad"
+    )]
     Rc2CbcPad = CKM_RC2_CBC_PAD,
     #[serde(rename = "CKM_RC4_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_RC4_KEY_GEN",
+        serialize = "Rc4KeyGen",
+        serialize = "rc4_key_gen"
+    )]
     Rc4KeyGen = CKM_RC4_KEY_GEN,
     #[serde(rename = "CKM_RC4")]
+    #[strum(serialize = "CKM_RC4", serialize = "Rc4", serialize = "rc4")]
     Rc4 = CKM_RC4,
     #[serde(rename = "CKM_DES_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_DES_KEY_GEN",
+        serialize = "DesKeyGen",
+        serialize = "des_key_gen"
+    )]
     DesKeyGen = CKM_DES_KEY_GEN,
     #[serde(rename = "CKM_DES_ECB")]
+    #[strum(serialize = "CKM_DES_ECB", serialize = "DesEcb", serialize = "des_ecb")]
     DesEcb = CKM_DES_ECB,
     #[serde(rename = "CKM_DES_CBC")]
+    #[strum(serialize = "CKM_DES_CBC", serialize = "DesCbc", serialize = "des_cbc")]
     DesCbc = CKM_DES_CBC,
     #[serde(rename = "CKM_DES_MAC")]
+    #[strum(serialize = "CKM_DES_MAC", serialize = "DesMac", serialize = "des_mac")]
     DesMac = CKM_DES_MAC,
     #[serde(rename = "CKM_DES_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_DES_MAC_GENERAL",
+        serialize = "DesMacGeneral",
+        serialize = "des_mac_general"
+    )]
     DesMacGeneral = CKM_DES_MAC_GENERAL,
     #[serde(rename = "CKM_DES_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_DES_CBC_PAD",
+        serialize = "DesCbcPad",
+        serialize = "des_cbc_pad"
+    )]
     DesCbcPad = CKM_DES_CBC_PAD,
     #[serde(rename = "CKM_DES2_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_DES2_KEY_GEN",
+        serialize = "Des2KeyGen",
+        serialize = "des2_key_gen"
+    )]
     Des2KeyGen = CKM_DES2_KEY_GEN,
     #[serde(rename = "CKM_DES3_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_DES3_KEY_GEN",
+        serialize = "Des3KeyGen",
+        serialize = "des3_key_gen"
+    )]
     Des3KeyGen = CKM_DES3_KEY_GEN,
     #[serde(rename = "CKM_DES3_ECB")]
+    #[strum(
+        serialize = "CKM_DES3_ECB",
+        serialize = "Des3Ecb",
+        serialize = "des3_ecb"
+    )]
     Des3Ecb = CKM_DES3_ECB,
     #[serde(rename = "CKM_DES3_CBC")]
+    #[strum(
+        serialize = "CKM_DES3_CBC",
+        serialize = "Des3Cbc",
+        serialize = "des3_cbc"
+    )]
     Des3Cbc = CKM_DES3_CBC,
     #[serde(rename = "CKM_DES3_MAC")]
+    #[strum(
+        serialize = "CKM_DES3_MAC",
+        serialize = "Des3Mac",
+        serialize = "des3_mac"
+    )]
     Des3Mac = CKM_DES3_MAC,
     #[serde(rename = "CKM_DES3_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_DES3_MAC_GENERAL",
+        serialize = "Des3MacGeneral",
+        serialize = "des3_mac_general"
+    )]
     Des3MacGeneral = CKM_DES3_MAC_GENERAL,
     #[serde(rename = "CKM_DES3_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_DES3_CBC_PAD",
+        serialize = "Des3CbcPad",
+        serialize = "des3_cbc_pad"
+    )]
     Des3CbcPad = CKM_DES3_CBC_PAD,
     #[serde(rename = "CKM_DES3_CMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_DES3_CMAC_GENERAL",
+        serialize = "Des3CmacGeneral",
+        serialize = "des3_cmac_general"
+    )]
     Des3CmacGeneral = CKM_DES3_CMAC_GENERAL,
     #[serde(rename = "CKM_DES3_CMAC")]
+    #[strum(
+        serialize = "CKM_DES3_CMAC",
+        serialize = "Des3Cmac",
+        serialize = "des3_cmac"
+    )]
     Des3Cmac = CKM_DES3_CMAC,
     #[serde(rename = "CKM_CDMF_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CDMF_KEY_GEN",
+        serialize = "CdmfKeyGen",
+        serialize = "cdmf_key_gen"
+    )]
     CdmfKeyGen = CKM_CDMF_KEY_GEN,
     #[serde(rename = "CKM_CDMF_ECB")]
+    #[strum(
+        serialize = "CKM_CDMF_ECB",
+        serialize = "CdmfEcb",
+        serialize = "cdmf_ecb"
+    )]
     CdmfEcb = CKM_CDMF_ECB,
     #[serde(rename = "CKM_CDMF_CBC")]
+    #[strum(
+        serialize = "CKM_CDMF_CBC",
+        serialize = "CdmfCbc",
+        serialize = "cdmf_cbc"
+    )]
     CdmfCbc = CKM_CDMF_CBC,
     #[serde(rename = "CKM_CDMF_MAC")]
+    #[strum(
+        serialize = "CKM_CDMF_MAC",
+        serialize = "CdmfMac",
+        serialize = "cdmf_mac"
+    )]
     CdmfMac = CKM_CDMF_MAC,
     #[serde(rename = "CKM_CDMF_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_CDMF_MAC_GENERAL",
+        serialize = "CdmfMacGeneral",
+        serialize = "cdmf_mac_general"
+    )]
     CdmfMacGeneral = CKM_CDMF_MAC_GENERAL,
     #[serde(rename = "CKM_CDMF_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_CDMF_CBC_PAD",
+        serialize = "CdmfCbcPad",
+        serialize = "cdmf_cbc_pad"
+    )]
     CdmfCbcPad = CKM_CDMF_CBC_PAD,
     #[serde(rename = "CKM_DES_OFB64")]
+    #[strum(
+        serialize = "CKM_DES_OFB64",
+        serialize = "DesOfb64",
+        serialize = "des_ofb64"
+    )]
     DesOfb64 = CKM_DES_OFB64,
     #[serde(rename = "CKM_DES_OFB8")]
+    #[strum(
+        serialize = "CKM_DES_OFB8",
+        serialize = "DesOfb8",
+        serialize = "des_ofb8"
+    )]
     DesOfb8 = CKM_DES_OFB8,
     #[serde(rename = "CKM_DES_CFB64")]
+    #[strum(
+        serialize = "CKM_DES_CFB64",
+        serialize = "DesCfb64",
+        serialize = "des_cfb64"
+    )]
     DesCfb64 = CKM_DES_CFB64,
     #[serde(rename = "CKM_DES_CFB8")]
+    #[strum(
+        serialize = "CKM_DES_CFB8",
+        serialize = "DesCfb8",
+        serialize = "des_cfb8"
+    )]
     DesCfb8 = CKM_DES_CFB8,
     #[serde(rename = "CKM_MD2")]
+    #[strum(serialize = "CKM_MD2", serialize = "Md2", serialize = "md2")]
     Md2 = CKM_MD2,
     #[serde(rename = "CKM_MD2_HMAC")]
+    #[strum(
+        serialize = "CKM_MD2_HMAC",
+        serialize = "Md2Hmac",
+        serialize = "md2_hmac"
+    )]
     Md2Hmac = CKM_MD2_HMAC,
     #[serde(rename = "CKM_MD2_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_MD2_HMAC_GENERAL",
+        serialize = "Md2HmacGeneral",
+        serialize = "md2_hmac_general"
+    )]
     Md2HmacGeneral = CKM_MD2_HMAC_GENERAL,
     #[serde(rename = "CKM_MD5")]
+    #[strum(serialize = "CKM_MD5", serialize = "Md5", serialize = "md5")]
     Md5 = CKM_MD5,
     #[serde(rename = "CKM_MD5_HMAC")]
+    #[strum(
+        serialize = "CKM_MD5_HMAC",
+        serialize = "Md5Hmac",
+        serialize = "md5_hmac"
+    )]
     Md5Hmac = CKM_MD5_HMAC,
     #[serde(rename = "CKM_MD5_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_MD5_HMAC_GENERAL",
+        serialize = "Md5HmacGeneral",
+        serialize = "md5_hmac_general"
+    )]
     Md5HmacGeneral = CKM_MD5_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA_1")]
+    #[strum(serialize = "CKM_SHA_1", serialize = "Sha1", serialize = "sha_1")]
     Sha1 = CKM_SHA_1,
     #[serde(rename = "CKM_SHA_1_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA_1_HMAC",
+        serialize = "Sha1Hmac",
+        serialize = "sha_1_hmac"
+    )]
     Sha1Hmac = CKM_SHA_1_HMAC,
     #[serde(rename = "CKM_SHA_1_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA_1_HMAC_GENERAL",
+        serialize = "Sha1HmacGeneral",
+        serialize = "sha_1_hmac_general"
+    )]
     Sha1HmacGeneral = CKM_SHA_1_HMAC_GENERAL,
     #[serde(rename = "CKM_RIPEMD128")]
+    #[strum(
+        serialize = "CKM_RIPEMD128",
+        serialize = "Ripemd128",
+        serialize = "ripemd128"
+    )]
     Ripemd128 = CKM_RIPEMD128,
     #[serde(rename = "CKM_RIPEMD128_HMAC")]
+    #[strum(
+        serialize = "CKM_RIPEMD128_HMAC",
+        serialize = "Ripemd128Hmac",
+        serialize = "ripemd128_hmac"
+    )]
     Ripemd128Hmac = CKM_RIPEMD128_HMAC,
     #[serde(rename = "CKM_RIPEMD128_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_RIPEMD128_HMAC_GENERAL",
+        serialize = "Ripemd128HmacGeneral",
+        serialize = "ripemd128_hmac_general"
+    )]
     Ripemd128HmacGeneral = CKM_RIPEMD128_HMAC_GENERAL,
     #[serde(rename = "CKM_RIPEMD160")]
+    #[strum(
+        serialize = "CKM_RIPEMD160",
+        serialize = "Ripemd160",
+        serialize = "ripemd160"
+    )]
     Ripemd160 = CKM_RIPEMD160,
     #[serde(rename = "CKM_RIPEMD160_HMAC")]
+    #[strum(
+        serialize = "CKM_RIPEMD160_HMAC",
+        serialize = "Ripemd160Hmac",
+        serialize = "ripemd160_hmac"
+    )]
     Ripemd160Hmac = CKM_RIPEMD160_HMAC,
     #[serde(rename = "CKM_RIPEMD160_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_RIPEMD160_HMAC_GENERAL",
+        serialize = "Ripemd160HmacGeneral",
+        serialize = "ripemd160_hmac_general"
+    )]
     Ripemd160HmacGeneral = CKM_RIPEMD160_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA256")]
+    #[strum(serialize = "CKM_SHA256", serialize = "Sha256", serialize = "sha256")]
     Sha256 = CKM_SHA256,
     #[serde(rename = "CKM_SHA256_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA256_HMAC",
+        serialize = "Sha256Hmac",
+        serialize = "sha256_hmac"
+    )]
     Sha256Hmac = CKM_SHA256_HMAC,
     #[serde(rename = "CKM_SHA256_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA256_HMAC_GENERAL",
+        serialize = "Sha256HmacGeneral",
+        serialize = "sha256_hmac_general"
+    )]
     Sha256HmacGeneral = CKM_SHA256_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA224")]
+    #[strum(serialize = "CKM_SHA224", serialize = "Sha224", serialize = "sha224")]
     Sha224 = CKM_SHA224,
     #[serde(rename = "CKM_SHA224_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA224_HMAC",
+        serialize = "Sha224Hmac",
+        serialize = "sha224_hmac"
+    )]
     Sha224Hmac = CKM_SHA224_HMAC,
     #[serde(rename = "CKM_SHA224_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA224_HMAC_GENERAL",
+        serialize = "Sha224HmacGeneral",
+        serialize = "sha224_hmac_general"
+    )]
     Sha224HmacGeneral = CKM_SHA224_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA384")]
+    #[strum(serialize = "CKM_SHA384", serialize = "Sha384", serialize = "sha384")]
     Sha384 = CKM_SHA384,
     #[serde(rename = "CKM_SHA384_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA384_HMAC",
+        serialize = "Sha384Hmac",
+        serialize = "sha384_hmac"
+    )]
     Sha384Hmac = CKM_SHA384_HMAC,
     #[serde(rename = "CKM_SHA384_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA384_HMAC_GENERAL",
+        serialize = "Sha384HmacGeneral",
+        serialize = "sha384_hmac_general"
+    )]
     Sha384HmacGeneral = CKM_SHA384_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA512")]
+    #[strum(serialize = "CKM_SHA512", serialize = "Sha512", serialize = "sha512")]
     Sha512 = CKM_SHA512,
     #[serde(rename = "CKM_SHA512_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA512_HMAC",
+        serialize = "Sha512Hmac",
+        serialize = "sha512_hmac"
+    )]
     Sha512Hmac = CKM_SHA512_HMAC,
     #[serde(rename = "CKM_SHA512_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA512_HMAC_GENERAL",
+        serialize = "Sha512HmacGeneral",
+        serialize = "sha512_hmac_general"
+    )]
     Sha512HmacGeneral = CKM_SHA512_HMAC_GENERAL,
     #[serde(rename = "CKM_SECURID_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SECURID_KEY_GEN",
+        serialize = "SecuridKeyGen",
+        serialize = "securid_key_gen"
+    )]
     SecuridKeyGen = CKM_SECURID_KEY_GEN,
     #[serde(rename = "CKM_SECURID")]
+    #[strum(
+        serialize = "CKM_SECURID",
+        serialize = "Securid",
+        serialize = "securid"
+    )]
     Securid = CKM_SECURID,
     #[serde(rename = "CKM_HOTP_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_HOTP_KEY_GEN",
+        serialize = "HotpKeyGen",
+        serialize = "hotp_key_gen"
+    )]
     HotpKeyGen = CKM_HOTP_KEY_GEN,
     #[serde(rename = "CKM_HOTP")]
+    #[strum(serialize = "CKM_HOTP", serialize = "Hotp", serialize = "hotp")]
     Hotp = CKM_HOTP,
     #[serde(rename = "CKM_ACTI")]
+    #[strum(serialize = "CKM_ACTI", serialize = "Acti", serialize = "acti")]
     Acti = CKM_ACTI,
     #[serde(rename = "CKM_ACTI_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_ACTI_KEY_GEN",
+        serialize = "ActiKeyGen",
+        serialize = "acti_key_gen"
+    )]
     ActiKeyGen = CKM_ACTI_KEY_GEN,
     #[serde(rename = "CKM_SHA3_256")]
+    #[strum(
+        serialize = "CKM_SHA3_256",
+        serialize = "Sha3256",
+        serialize = "sha3_256"
+    )]
     Sha3256 = CKM_SHA3_256,
     #[serde(rename = "CKM_SHA3_256_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA3_256_HMAC",
+        serialize = "Sha3256Hmac",
+        serialize = "sha3_256_hmac"
+    )]
     Sha3256Hmac = CKM_SHA3_256_HMAC,
     #[serde(rename = "CKM_SHA3_256_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA3_256_HMAC_GENERAL",
+        serialize = "Sha3256HmacGeneral",
+        serialize = "sha3_256_hmac_general"
+    )]
     Sha3256HmacGeneral = CKM_SHA3_256_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA3_256_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA3_256_KEY_GEN",
+        serialize = "Sha3256KeyGen",
+        serialize = "sha3_256_key_gen"
+    )]
     Sha3256KeyGen = CKM_SHA3_256_KEY_GEN,
     #[serde(rename = "CKM_SHA3_224")]
+    #[strum(
+        serialize = "CKM_SHA3_224",
+        serialize = "Sha3224",
+        serialize = "sha3_224"
+    )]
     Sha3224 = CKM_SHA3_224,
     #[serde(rename = "CKM_SHA3_224_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA3_224_HMAC",
+        serialize = "Sha3224Hmac",
+        serialize = "sha3_224_hmac"
+    )]
     Sha3224Hmac = CKM_SHA3_224_HMAC,
     #[serde(rename = "CKM_SHA3_224_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA3_224_HMAC_GENERAL",
+        serialize = "Sha3224HmacGeneral",
+        serialize = "sha3_224_hmac_general"
+    )]
     Sha3224HmacGeneral = CKM_SHA3_224_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA3_224_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA3_224_KEY_GEN",
+        serialize = "Sha3224KeyGen",
+        serialize = "sha3_224_key_gen"
+    )]
     Sha3224KeyGen = CKM_SHA3_224_KEY_GEN,
     #[serde(rename = "CKM_SHA3_384")]
+    #[strum(
+        serialize = "CKM_SHA3_384",
+        serialize = "Sha3384",
+        serialize = "sha3_384"
+    )]
     Sha3384 = CKM_SHA3_384,
     #[serde(rename = "CKM_SHA3_384_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA3_384_HMAC",
+        serialize = "Sha3384Hmac",
+        serialize = "sha3_384_hmac"
+    )]
     Sha3384Hmac = CKM_SHA3_384_HMAC,
     #[serde(rename = "CKM_SHA3_384_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA3_384_HMAC_GENERAL",
+        serialize = "Sha3384HmacGeneral",
+        serialize = "sha3_384_hmac_general"
+    )]
     Sha3384HmacGeneral = CKM_SHA3_384_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA3_384_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA3_384_KEY_GEN",
+        serialize = "Sha3384KeyGen",
+        serialize = "sha3_384_key_gen"
+    )]
     Sha3384KeyGen = CKM_SHA3_384_KEY_GEN,
     #[serde(rename = "CKM_SHA3_512")]
+    #[strum(
+        serialize = "CKM_SHA3_512",
+        serialize = "Sha3512",
+        serialize = "sha3_512"
+    )]
     Sha3512 = CKM_SHA3_512,
     #[serde(rename = "CKM_SHA3_512_HMAC")]
+    #[strum(
+        serialize = "CKM_SHA3_512_HMAC",
+        serialize = "Sha3512Hmac",
+        serialize = "sha3_512_hmac"
+    )]
     Sha3512Hmac = CKM_SHA3_512_HMAC,
     #[serde(rename = "CKM_SHA3_512_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SHA3_512_HMAC_GENERAL",
+        serialize = "Sha3512HmacGeneral",
+        serialize = "sha3_512_hmac_general"
+    )]
     Sha3512HmacGeneral = CKM_SHA3_512_HMAC_GENERAL,
     #[serde(rename = "CKM_SHA3_512_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA3_512_KEY_GEN",
+        serialize = "Sha3512KeyGen",
+        serialize = "sha3_512_key_gen"
+    )]
     Sha3512KeyGen = CKM_SHA3_512_KEY_GEN,
     #[serde(rename = "CKM_CAST_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CAST_KEY_GEN",
+        serialize = "CastKeyGen",
+        serialize = "cast_key_gen"
+    )]
     CastKeyGen = CKM_CAST_KEY_GEN,
     #[serde(rename = "CKM_CAST_ECB")]
+    #[strum(
+        serialize = "CKM_CAST_ECB",
+        serialize = "CastEcb",
+        serialize = "cast_ecb"
+    )]
     CastEcb = CKM_CAST_ECB,
     #[serde(rename = "CKM_CAST_CBC")]
+    #[strum(
+        serialize = "CKM_CAST_CBC",
+        serialize = "CastCbc",
+        serialize = "cast_cbc"
+    )]
     CastCbc = CKM_CAST_CBC,
     #[serde(rename = "CKM_CAST_MAC")]
+    #[strum(
+        serialize = "CKM_CAST_MAC",
+        serialize = "CastMac",
+        serialize = "cast_mac"
+    )]
     CastMac = CKM_CAST_MAC,
     #[serde(rename = "CKM_CAST_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_CAST_MAC_GENERAL",
+        serialize = "CastMacGeneral",
+        serialize = "cast_mac_general"
+    )]
     CastMacGeneral = CKM_CAST_MAC_GENERAL,
     #[serde(rename = "CKM_CAST_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_CAST_CBC_PAD",
+        serialize = "CastCbcPad",
+        serialize = "cast_cbc_pad"
+    )]
     CastCbcPad = CKM_CAST_CBC_PAD,
     #[serde(rename = "CKM_CAST3_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CAST3_KEY_GEN",
+        serialize = "Cast3KeyGen",
+        serialize = "cast3_key_gen"
+    )]
     Cast3KeyGen = CKM_CAST3_KEY_GEN,
     #[serde(rename = "CKM_CAST3_ECB")]
+    #[strum(
+        serialize = "CKM_CAST3_ECB",
+        serialize = "Cast3Ecb",
+        serialize = "cast3_ecb"
+    )]
     Cast3Ecb = CKM_CAST3_ECB,
     #[serde(rename = "CKM_CAST3_CBC")]
+    #[strum(
+        serialize = "CKM_CAST3_CBC",
+        serialize = "Cast3Cbc",
+        serialize = "cast3_cbc"
+    )]
     Cast3Cbc = CKM_CAST3_CBC,
     #[serde(rename = "CKM_CAST3_MAC")]
+    #[strum(
+        serialize = "CKM_CAST3_MAC",
+        serialize = "Cast3Mac",
+        serialize = "cast3_mac"
+    )]
     Cast3Mac = CKM_CAST3_MAC,
     #[serde(rename = "CKM_CAST3_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_CAST3_MAC_GENERAL",
+        serialize = "Cast3MacGeneral",
+        serialize = "cast3_mac_general"
+    )]
     Cast3MacGeneral = CKM_CAST3_MAC_GENERAL,
     #[serde(rename = "CKM_CAST3_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_CAST3_CBC_PAD",
+        serialize = "Cast3CbcPad",
+        serialize = "cast3_cbc_pad"
+    )]
     Cast3CbcPad = CKM_CAST3_CBC_PAD,
     #[serde(rename = "CKM_CAST128_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CAST128_KEY_GEN",
+        serialize = "Cast128KeyGen",
+        serialize = "cast128_key_gen"
+    )]
     Cast128KeyGen = CKM_CAST128_KEY_GEN,
     #[serde(rename = "CKM_CAST128_ECB")]
+    #[strum(
+        serialize = "CKM_CAST128_ECB",
+        serialize = "Cast128Ecb",
+        serialize = "cast128_ecb"
+    )]
     Cast128Ecb = CKM_CAST128_ECB,
     #[serde(rename = "CKM_CAST128_MAC")]
+    #[strum(
+        serialize = "CKM_CAST128_MAC",
+        serialize = "Cast128Mac",
+        serialize = "cast128_mac"
+    )]
     Cast128Mac = CKM_CAST128_MAC,
     #[serde(rename = "CKM_CAST128_CBC")]
+    #[strum(
+        serialize = "CKM_CAST128_CBC",
+        serialize = "Cast128Cbc",
+        serialize = "cast128_cbc"
+    )]
     Cast128Cbc = CKM_CAST128_CBC,
     #[serde(rename = "CKM_CAST128_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_CAST128_MAC_GENERAL",
+        serialize = "Cast128MacGeneral",
+        serialize = "cast128_mac_general"
+    )]
     Cast128MacGeneral = CKM_CAST128_MAC_GENERAL,
     #[serde(rename = "CKM_CAST128_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_CAST128_CBC_PAD",
+        serialize = "Cast128CbcPad",
+        serialize = "cast128_cbc_pad"
+    )]
     Cast128CbcPad = CKM_CAST128_CBC_PAD,
     #[serde(rename = "CKM_RC5_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_RC5_KEY_GEN",
+        serialize = "Rc5KeyGen",
+        serialize = "rc5_key_gen"
+    )]
     Rc5KeyGen = CKM_RC5_KEY_GEN,
     #[serde(rename = "CKM_RC5_ECB")]
+    #[strum(serialize = "CKM_RC5_ECB", serialize = "Rc5Ecb", serialize = "rc5_ecb")]
     Rc5Ecb = CKM_RC5_ECB,
     #[serde(rename = "CKM_RC5_CBC")]
+    #[strum(serialize = "CKM_RC5_CBC", serialize = "Rc5Cbc", serialize = "rc5_cbc")]
     Rc5Cbc = CKM_RC5_CBC,
     #[serde(rename = "CKM_RC5_MAC")]
+    #[strum(serialize = "CKM_RC5_MAC", serialize = "Rc5Mac", serialize = "rc5_mac")]
     Rc5Mac = CKM_RC5_MAC,
     #[serde(rename = "CKM_RC5_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_RC5_MAC_GENERAL",
+        serialize = "Rc5MacGeneral",
+        serialize = "rc5_mac_general"
+    )]
     Rc5MacGeneral = CKM_RC5_MAC_GENERAL,
     #[serde(rename = "CKM_RC5_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_RC5_CBC_PAD",
+        serialize = "Rc5CbcPad",
+        serialize = "rc5_cbc_pad"
+    )]
     Rc5CbcPad = CKM_RC5_CBC_PAD,
     #[serde(rename = "CKM_IDEA_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_IDEA_KEY_GEN",
+        serialize = "IdeaKeyGen",
+        serialize = "idea_key_gen"
+    )]
     IdeaKeyGen = CKM_IDEA_KEY_GEN,
     #[serde(rename = "CKM_IDEA_ECB")]
+    #[strum(
+        serialize = "CKM_IDEA_ECB",
+        serialize = "IdeaEcb",
+        serialize = "idea_ecb"
+    )]
     IdeaEcb = CKM_IDEA_ECB,
     #[serde(rename = "CKM_IDEA_CBC")]
+    #[strum(
+        serialize = "CKM_IDEA_CBC",
+        serialize = "IdeaCbc",
+        serialize = "idea_cbc"
+    )]
     IdeaCbc = CKM_IDEA_CBC,
     #[serde(rename = "CKM_IDEA_MAC")]
+    #[strum(
+        serialize = "CKM_IDEA_MAC",
+        serialize = "IdeaMac",
+        serialize = "idea_mac"
+    )]
     IdeaMac = CKM_IDEA_MAC,
     #[serde(rename = "CKM_IDEA_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_IDEA_MAC_GENERAL",
+        serialize = "IdeaMacGeneral",
+        serialize = "idea_mac_general"
+    )]
     IdeaMacGeneral = CKM_IDEA_MAC_GENERAL,
     #[serde(rename = "CKM_IDEA_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_IDEA_CBC_PAD",
+        serialize = "IdeaCbcPad",
+        serialize = "idea_cbc_pad"
+    )]
     IdeaCbcPad = CKM_IDEA_CBC_PAD,
     #[serde(rename = "CKM_GENERIC_SECRET_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_GENERIC_SECRET_KEY_GEN",
+        serialize = "GenericSecretKeyGen",
+        serialize = "generic_secret_key_gen"
+    )]
     GenericSecretKeyGen = CKM_GENERIC_SECRET_KEY_GEN,
     #[serde(rename = "CKM_CONCATENATE_BASE_AND_KEY")]
+    #[strum(
+        serialize = "CKM_CONCATENATE_BASE_AND_KEY",
+        serialize = "ConcatenateBaseAndKey",
+        serialize = "concatenate_base_and_key"
+    )]
     ConcatenateBaseAndKey = CKM_CONCATENATE_BASE_AND_KEY,
     #[serde(rename = "CKM_CONCATENATE_BASE_AND_DATA")]
+    #[strum(
+        serialize = "CKM_CONCATENATE_BASE_AND_DATA",
+        serialize = "ConcatenateBaseAndData",
+        serialize = "concatenate_base_and_data"
+    )]
     ConcatenateBaseAndData = CKM_CONCATENATE_BASE_AND_DATA,
     #[serde(rename = "CKM_CONCATENATE_DATA_AND_BASE")]
+    #[strum(
+        serialize = "CKM_CONCATENATE_DATA_AND_BASE",
+        serialize = "ConcatenateDataAndBase",
+        serialize = "concatenate_data_and_base"
+    )]
     ConcatenateDataAndBase = CKM_CONCATENATE_DATA_AND_BASE,
     #[serde(rename = "CKM_XOR_BASE_AND_DATA")]
+    #[strum(
+        serialize = "CKM_XOR_BASE_AND_DATA",
+        serialize = "XorBaseAndData",
+        serialize = "xor_base_and_data"
+    )]
     XorBaseAndData = CKM_XOR_BASE_AND_DATA,
     #[serde(rename = "CKM_EXTRACT_KEY_FROM_KEY")]
+    #[strum(
+        serialize = "CKM_EXTRACT_KEY_FROM_KEY",
+        serialize = "ExtractKeyFromKey",
+        serialize = "extract_key_from_key"
+    )]
     ExtractKeyFromKey = CKM_EXTRACT_KEY_FROM_KEY,
     #[serde(rename = "CKM_SSL3_PRE_MASTER_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SSL3_PRE_MASTER_KEY_GEN",
+        serialize = "Ssl3PreMasterKeyGen",
+        serialize = "ssl3_pre_master_key_gen"
+    )]
     Ssl3PreMasterKeyGen = CKM_SSL3_PRE_MASTER_KEY_GEN,
     #[serde(rename = "CKM_SSL3_MASTER_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SSL3_MASTER_KEY_DERIVE",
+        serialize = "Ssl3MasterKeyDerive",
+        serialize = "ssl3_master_key_derive"
+    )]
     Ssl3MasterKeyDerive = CKM_SSL3_MASTER_KEY_DERIVE,
     #[serde(rename = "CKM_SSL3_KEY_AND_MAC_DERIVE")]
+    #[strum(
+        serialize = "CKM_SSL3_KEY_AND_MAC_DERIVE",
+        serialize = "Ssl3KeyAndMacDerive",
+        serialize = "ssl3_key_and_mac_derive"
+    )]
     Ssl3KeyAndMacDerive = CKM_SSL3_KEY_AND_MAC_DERIVE,
     #[serde(rename = "CKM_SSL3_MASTER_KEY_DERIVE_DH")]
+    #[strum(
+        serialize = "CKM_SSL3_MASTER_KEY_DERIVE_DH",
+        serialize = "Ssl3MasterKeyDeriveDh",
+        serialize = "ssl3_master_key_derive_dh"
+    )]
     Ssl3MasterKeyDeriveDh = CKM_SSL3_MASTER_KEY_DERIVE_DH,
     #[serde(rename = "CKM_TLS_PRE_MASTER_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_TLS_PRE_MASTER_KEY_GEN",
+        serialize = "TlsPreMasterKeyGen",
+        serialize = "tls_pre_master_key_gen"
+    )]
     TlsPreMasterKeyGen = CKM_TLS_PRE_MASTER_KEY_GEN,
     #[serde(rename = "CKM_TLS_MASTER_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_TLS_MASTER_KEY_DERIVE",
+        serialize = "TlsMasterKeyDerive",
+        serialize = "tls_master_key_derive"
+    )]
     TlsMasterKeyDerive = CKM_TLS_MASTER_KEY_DERIVE,
     #[serde(rename = "CKM_TLS_KEY_AND_MAC_DERIVE")]
+    #[strum(
+        serialize = "CKM_TLS_KEY_AND_MAC_DERIVE",
+        serialize = "TlsKeyAndMacDerive",
+        serialize = "tls_key_and_mac_derive"
+    )]
     TlsKeyAndMacDerive = CKM_TLS_KEY_AND_MAC_DERIVE,
     #[serde(rename = "CKM_TLS_MASTER_KEY_DERIVE_DH")]
+    #[strum(
+        serialize = "CKM_TLS_MASTER_KEY_DERIVE_DH",
+        serialize = "TlsMasterKeyDeriveDh",
+        serialize = "tls_master_key_derive_dh"
+    )]
     TlsMasterKeyDeriveDh = CKM_TLS_MASTER_KEY_DERIVE_DH,
     #[serde(rename = "CKM_TLS_PRF")]
+    #[strum(serialize = "CKM_TLS_PRF", serialize = "TlsPrf", serialize = "tls_prf")]
     TlsPrf = CKM_TLS_PRF,
     #[serde(rename = "CKM_SSL3_MD5_MAC")]
+    #[strum(
+        serialize = "CKM_SSL3_MD5_MAC",
+        serialize = "Ssl3Md5Mac",
+        serialize = "ssl3_md5_mac"
+    )]
     Ssl3Md5Mac = CKM_SSL3_MD5_MAC,
     #[serde(rename = "CKM_SSL3_SHA1_MAC")]
+    #[strum(
+        serialize = "CKM_SSL3_SHA1_MAC",
+        serialize = "Ssl3Sha1Mac",
+        serialize = "ssl3_sha1_mac"
+    )]
     Ssl3Sha1Mac = CKM_SSL3_SHA1_MAC,
     #[serde(rename = "CKM_MD5_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_MD5_KEY_DERIVATION",
+        serialize = "Md5KeyDerivation",
+        serialize = "md5_key_derivation"
+    )]
     Md5KeyDerivation = CKM_MD5_KEY_DERIVATION,
     #[serde(rename = "CKM_MD2_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_MD2_KEY_DERIVATION",
+        serialize = "Md2KeyDerivation",
+        serialize = "md2_key_derivation"
+    )]
     Md2KeyDerivation = CKM_MD2_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA1_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA1_KEY_DERIVATION",
+        serialize = "Sha1KeyDerivation",
+        serialize = "sha1_key_derivation"
+    )]
     Sha1KeyDerivation = CKM_SHA1_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA256_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA256_KEY_DERIVATION",
+        serialize = "Sha256KeyDerivation",
+        serialize = "sha256_key_derivation"
+    )]
     Sha256KeyDerivation = CKM_SHA256_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA384_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA384_KEY_DERIVATION",
+        serialize = "Sha384KeyDerivation",
+        serialize = "sha384_key_derivation"
+    )]
     Sha384KeyDerivation = CKM_SHA384_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA512_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA512_KEY_DERIVATION",
+        serialize = "Sha512KeyDerivation",
+        serialize = "sha512_key_derivation"
+    )]
     Sha512KeyDerivation = CKM_SHA512_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA224_KEY_DERIVATION")]
+    #[strum(
+        serialize = "CKM_SHA224_KEY_DERIVATION",
+        serialize = "Sha224KeyDerivation",
+        serialize = "sha224_key_derivation"
+    )]
     Sha224KeyDerivation = CKM_SHA224_KEY_DERIVATION,
     #[serde(rename = "CKM_SHA3_256_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHA3_256_KEY_DERIVE",
+        serialize = "Sha3256KeyDerive",
+        serialize = "sha3_256_key_derive"
+    )]
     Sha3256KeyDerive = CKM_SHA3_256_KEY_DERIVE,
     #[serde(rename = "CKM_SHA3_224_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHA3_224_KEY_DERIVE",
+        serialize = "Sha3224KeyDerive",
+        serialize = "sha3_224_key_derive"
+    )]
     Sha3224KeyDerive = CKM_SHA3_224_KEY_DERIVE,
     #[serde(rename = "CKM_SHA3_384_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHA3_384_KEY_DERIVE",
+        serialize = "Sha3384KeyDerive",
+        serialize = "sha3_384_key_derive"
+    )]
     Sha3384KeyDerive = CKM_SHA3_384_KEY_DERIVE,
     #[serde(rename = "CKM_SHA3_512_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHA3_512_KEY_DERIVE",
+        serialize = "Sha3512KeyDerive",
+        serialize = "sha3_512_key_derive"
+    )]
     Sha3512KeyDerive = CKM_SHA3_512_KEY_DERIVE,
     #[serde(rename = "CKM_SHAKE_128_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHAKE_128_KEY_DERIVE",
+        serialize = "Shake128KeyDerive",
+        serialize = "shake_128_key_derive"
+    )]
     Shake128KeyDerive = CKM_SHAKE_128_KEY_DERIVE,
     #[serde(rename = "CKM_SHAKE_256_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_SHAKE_256_KEY_DERIVE",
+        serialize = "Shake256KeyDerive",
+        serialize = "shake_256_key_derive"
+    )]
     Shake256KeyDerive = CKM_SHAKE_256_KEY_DERIVE,
     #[serde(rename = "CKM_PBE_MD2_DES_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_MD2_DES_CBC",
+        serialize = "PbeMd2DesCbc",
+        serialize = "pbe_md2_des_cbc"
+    )]
     PbeMd2DesCbc = CKM_PBE_MD2_DES_CBC,
     #[serde(rename = "CKM_PBE_MD5_DES_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_MD5_DES_CBC",
+        serialize = "PbeMd5DesCbc",
+        serialize = "pbe_md5_des_cbc"
+    )]
     PbeMd5DesCbc = CKM_PBE_MD5_DES_CBC,
     #[serde(rename = "CKM_PBE_MD5_CAST_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_MD5_CAST_CBC",
+        serialize = "PbeMd5CastCbc",
+        serialize = "pbe_md5_cast_cbc"
+    )]
     PbeMd5CastCbc = CKM_PBE_MD5_CAST_CBC,
     #[serde(rename = "CKM_PBE_MD5_CAST3_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_MD5_CAST3_CBC",
+        serialize = "PbeMd5Cast3Cbc",
+        serialize = "pbe_md5_cast3_cbc"
+    )]
     PbeMd5Cast3Cbc = CKM_PBE_MD5_CAST3_CBC,
     #[serde(rename = "CKM_PBE_MD5_CAST128_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_MD5_CAST128_CBC",
+        serialize = "PbeMd5Cast128Cbc",
+        serialize = "pbe_md5_cast128_cbc"
+    )]
     PbeMd5Cast128Cbc = CKM_PBE_MD5_CAST128_CBC,
     #[serde(rename = "CKM_PBE_SHA1_CAST128_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_CAST128_CBC",
+        serialize = "PbeSha1Cast128Cbc",
+        serialize = "pbe_sha1_cast128_cbc"
+    )]
     PbeSha1Cast128Cbc = CKM_PBE_SHA1_CAST128_CBC,
     #[serde(rename = "CKM_PBE_SHA1_RC4_128")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_RC4_128",
+        serialize = "PbeSha1Rc4128",
+        serialize = "pbe_sha1_rc4_128"
+    )]
     PbeSha1Rc4128 = CKM_PBE_SHA1_RC4_128,
     #[serde(rename = "CKM_PBE_SHA1_RC4_40")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_RC4_40",
+        serialize = "PbeSha1Rc440",
+        serialize = "pbe_sha1_rc4_40"
+    )]
     PbeSha1Rc440 = CKM_PBE_SHA1_RC4_40,
     #[serde(rename = "CKM_PBE_SHA1_DES3_EDE_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_DES3_EDE_CBC",
+        serialize = "PbeSha1Des3EdeCbc",
+        serialize = "pbe_sha1_des3_ede_cbc"
+    )]
     PbeSha1Des3EdeCbc = CKM_PBE_SHA1_DES3_EDE_CBC,
     #[serde(rename = "CKM_PBE_SHA1_DES2_EDE_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_DES2_EDE_CBC",
+        serialize = "PbeSha1Des2EdeCbc",
+        serialize = "pbe_sha1_des2_ede_cbc"
+    )]
     PbeSha1Des2EdeCbc = CKM_PBE_SHA1_DES2_EDE_CBC,
     #[serde(rename = "CKM_PBE_SHA1_RC2_128_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_RC2_128_CBC",
+        serialize = "PbeSha1Rc2128Cbc",
+        serialize = "pbe_sha1_rc2_128_cbc"
+    )]
     PbeSha1Rc2128Cbc = CKM_PBE_SHA1_RC2_128_CBC,
     #[serde(rename = "CKM_PBE_SHA1_RC2_40_CBC")]
+    #[strum(
+        serialize = "CKM_PBE_SHA1_RC2_40_CBC",
+        serialize = "PbeSha1Rc240Cbc",
+        serialize = "pbe_sha1_rc2_40_cbc"
+    )]
     PbeSha1Rc240Cbc = CKM_PBE_SHA1_RC2_40_CBC,
     #[serde(rename = "CKM_PKCS5_PBKD2")]
+    #[strum(
+        serialize = "CKM_PKCS5_PBKD2",
+        serialize = "Pkcs5Pbkd2",
+        serialize = "pkcs5_pbkd2"
+    )]
     Pkcs5Pbkd2 = CKM_PKCS5_PBKD2,
     #[serde(rename = "CKM_PBA_SHA1_WITH_SHA1_HMAC")]
+    #[strum(
+        serialize = "CKM_PBA_SHA1_WITH_SHA1_HMAC",
+        serialize = "PbaSha1WithSha1Hmac",
+        serialize = "pba_sha1_with_sha1_hmac"
+    )]
     PbaSha1WithSha1Hmac = CKM_PBA_SHA1_WITH_SHA1_HMAC,
     #[serde(rename = "CKM_WTLS_PRE_MASTER_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_WTLS_PRE_MASTER_KEY_GEN",
+        serialize = "WtlsPreMasterKeyGen",
+        serialize = "wtls_pre_master_key_gen"
+    )]
     WtlsPreMasterKeyGen = CKM_WTLS_PRE_MASTER_KEY_GEN,
     #[serde(rename = "CKM_WTLS_MASTER_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_WTLS_MASTER_KEY_DERIVE",
+        serialize = "WtlsMasterKeyDerive",
+        serialize = "wtls_master_key_derive"
+    )]
     WtlsMasterKeyDerive = CKM_WTLS_MASTER_KEY_DERIVE,
     #[serde(rename = "CKM_WTLS_MASTER_KEY_DERIVE_DH_ECC")]
+    #[strum(
+        serialize = "CKM_WTLS_MASTER_KEY_DERIVE_DH_ECC",
+        serialize = "WtlsMasterKeyDeriveDhEcc",
+        serialize = "wtls_master_key_derive_dh_ecc"
+    )]
     WtlsMasterKeyDeriveDhEcc = CKM_WTLS_MASTER_KEY_DERIVE_DH_ECC,
     #[serde(rename = "CKM_WTLS_PRF")]
+    #[strum(
+        serialize = "CKM_WTLS_PRF",
+        serialize = "WtlsPrf",
+        serialize = "wtls_prf"
+    )]
     WtlsPrf = CKM_WTLS_PRF,
     #[serde(rename = "CKM_WTLS_SERVER_KEY_AND_MAC_DERIVE")]
+    #[strum(
+        serialize = "CKM_WTLS_SERVER_KEY_AND_MAC_DERIVE",
+        serialize = "WtlsServerKeyAndMacDerive",
+        serialize = "wtls_server_key_and_mac_derive"
+    )]
     WtlsServerKeyAndMacDerive = CKM_WTLS_SERVER_KEY_AND_MAC_DERIVE,
     #[serde(rename = "CKM_WTLS_CLIENT_KEY_AND_MAC_DERIVE")]
+    #[strum(
+        serialize = "CKM_WTLS_CLIENT_KEY_AND_MAC_DERIVE",
+        serialize = "WtlsClientKeyAndMacDerive",
+        serialize = "wtls_client_key_and_mac_derive"
+    )]
     WtlsClientKeyAndMacDerive = CKM_WTLS_CLIENT_KEY_AND_MAC_DERIVE,
     #[serde(rename = "CKM_TLS10_MAC_SERVER")]
+    #[strum(
+        serialize = "CKM_TLS10_MAC_SERVER",
+        serialize = "Tls10MacServer",
+        serialize = "tls10_mac_server"
+    )]
     Tls10MacServer = CKM_TLS10_MAC_SERVER,
     #[serde(rename = "CKM_TLS10_MAC_CLIENT")]
+    #[strum(
+        serialize = "CKM_TLS10_MAC_CLIENT",
+        serialize = "Tls10MacClient",
+        serialize = "tls10_mac_client"
+    )]
     Tls10MacClient = CKM_TLS10_MAC_CLIENT,
     #[serde(rename = "CKM_TLS12_MAC")]
+    #[strum(
+        serialize = "CKM_TLS12_MAC",
+        serialize = "Tls12Mac",
+        serialize = "tls12_mac"
+    )]
     Tls12Mac = CKM_TLS12_MAC,
     #[serde(rename = "CKM_TLS12_KDF")]
+    #[strum(
+        serialize = "CKM_TLS12_KDF",
+        serialize = "Tls12Kdf",
+        serialize = "tls12_kdf"
+    )]
     Tls12Kdf = CKM_TLS12_KDF,
     #[serde(rename = "CKM_TLS12_MASTER_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_TLS12_MASTER_KEY_DERIVE",
+        serialize = "Tls12MasterKeyDerive",
+        serialize = "tls12_master_key_derive"
+    )]
     Tls12MasterKeyDerive = CKM_TLS12_MASTER_KEY_DERIVE,
     #[serde(rename = "CKM_TLS12_KEY_AND_MAC_DERIVE")]
+    #[strum(
+        serialize = "CKM_TLS12_KEY_AND_MAC_DERIVE",
+        serialize = "Tls12KeyAndMacDerive",
+        serialize = "tls12_key_and_mac_derive"
+    )]
     Tls12KeyAndMacDerive = CKM_TLS12_KEY_AND_MAC_DERIVE,
     #[serde(rename = "CKM_TLS12_MASTER_KEY_DERIVE_DH")]
+    #[strum(
+        serialize = "CKM_TLS12_MASTER_KEY_DERIVE_DH",
+        serialize = "Tls12MasterKeyDeriveDh",
+        serialize = "tls12_master_key_derive_dh"
+    )]
     Tls12MasterKeyDeriveDh = CKM_TLS12_MASTER_KEY_DERIVE_DH,
     #[serde(rename = "CKM_TLS12_KEY_SAFE_DERIVE")]
+    #[strum(
+        serialize = "CKM_TLS12_KEY_SAFE_DERIVE",
+        serialize = "Tls12KeySafeDerive",
+        serialize = "tls12_key_safe_derive"
+    )]
     Tls12KeySafeDerive = CKM_TLS12_KEY_SAFE_DERIVE,
     #[serde(rename = "CKM_TLS_MAC")]
+    #[strum(serialize = "CKM_TLS_MAC", serialize = "TlsMac", serialize = "tls_mac")]
     TlsMac = CKM_TLS_MAC,
     #[serde(rename = "CKM_TLS_KDF")]
+    #[strum(serialize = "CKM_TLS_KDF", serialize = "TlsKdf", serialize = "tls_kdf")]
     TlsKdf = CKM_TLS_KDF,
     #[serde(rename = "CKM_KEY_WRAP_LYNKS")]
+    #[strum(
+        serialize = "CKM_KEY_WRAP_LYNKS",
+        serialize = "KeyWrapLynks",
+        serialize = "key_wrap_lynks"
+    )]
     KeyWrapLynks = CKM_KEY_WRAP_LYNKS,
     #[serde(rename = "CKM_KEY_WRAP_SET_OAEP")]
+    #[strum(
+        serialize = "CKM_KEY_WRAP_SET_OAEP",
+        serialize = "KeyWrapSetOaep",
+        serialize = "key_wrap_set_oaep"
+    )]
     KeyWrapSetOaep = CKM_KEY_WRAP_SET_OAEP,
     #[serde(rename = "CKM_CMS_SIG")]
+    #[strum(serialize = "CKM_CMS_SIG", serialize = "CmsSig", serialize = "cms_sig")]
     CmsSig = CKM_CMS_SIG,
     #[serde(rename = "CKM_KIP_DERIVE")]
+    #[strum(
+        serialize = "CKM_KIP_DERIVE",
+        serialize = "KipDerive",
+        serialize = "kip_derive"
+    )]
     KipDerive = CKM_KIP_DERIVE,
     #[serde(rename = "CKM_KIP_WRAP")]
+    #[strum(
+        serialize = "CKM_KIP_WRAP",
+        serialize = "KipWrap",
+        serialize = "kip_wrap"
+    )]
     KipWrap = CKM_KIP_WRAP,
     #[serde(rename = "CKM_KIP_MAC")]
+    #[strum(serialize = "CKM_KIP_MAC", serialize = "KipMac", serialize = "kip_mac")]
     KipMac = CKM_KIP_MAC,
     #[serde(rename = "CKM_CAMELLIA_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_KEY_GEN",
+        serialize = "CamelliaKeyGen",
+        serialize = "camellia_key_gen"
+    )]
     CamelliaKeyGen = CKM_CAMELLIA_KEY_GEN,
     #[serde(rename = "CKM_CAMELLIA_ECB")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_ECB",
+        serialize = "CamelliaEcb",
+        serialize = "camellia_ecb"
+    )]
     CamelliaEcb = CKM_CAMELLIA_ECB,
     #[serde(rename = "CKM_CAMELLIA_CBC")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_CBC",
+        serialize = "CamelliaCbc",
+        serialize = "camellia_cbc"
+    )]
     CamelliaCbc = CKM_CAMELLIA_CBC,
     #[serde(rename = "CKM_CAMELLIA_MAC")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_MAC",
+        serialize = "CamelliaMac",
+        serialize = "camellia_mac"
+    )]
     CamelliaMac = CKM_CAMELLIA_MAC,
     #[serde(rename = "CKM_CAMELLIA_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_MAC_GENERAL",
+        serialize = "CamelliaMacGeneral",
+        serialize = "camellia_mac_general"
+    )]
     CamelliaMacGeneral = CKM_CAMELLIA_MAC_GENERAL,
     #[serde(rename = "CKM_CAMELLIA_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_CBC_PAD",
+        serialize = "CamelliaCbcPad",
+        serialize = "camellia_cbc_pad"
+    )]
     CamelliaCbcPad = CKM_CAMELLIA_CBC_PAD,
     #[serde(rename = "CKM_CAMELLIA_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_ECB_ENCRYPT_DATA",
+        serialize = "CamelliaEcbEncryptData",
+        serialize = "camellia_ecb_encrypt_data"
+    )]
     CamelliaEcbEncryptData = CKM_CAMELLIA_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_CAMELLIA_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_CBC_ENCRYPT_DATA",
+        serialize = "CamelliaCbcEncryptData",
+        serialize = "camellia_cbc_encrypt_data"
+    )]
     CamelliaCbcEncryptData = CKM_CAMELLIA_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_CAMELLIA_CTR")]
+    #[strum(
+        serialize = "CKM_CAMELLIA_CTR",
+        serialize = "CamelliaCtr",
+        serialize = "camellia_ctr"
+    )]
     CamelliaCtr = CKM_CAMELLIA_CTR,
     #[serde(rename = "CKM_ARIA_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_ARIA_KEY_GEN",
+        serialize = "AriaKeyGen",
+        serialize = "aria_key_gen"
+    )]
     AriaKeyGen = CKM_ARIA_KEY_GEN,
     #[serde(rename = "CKM_ARIA_ECB")]
+    #[strum(
+        serialize = "CKM_ARIA_ECB",
+        serialize = "AriaEcb",
+        serialize = "aria_ecb"
+    )]
     AriaEcb = CKM_ARIA_ECB,
     #[serde(rename = "CKM_ARIA_CBC")]
+    #[strum(
+        serialize = "CKM_ARIA_CBC",
+        serialize = "AriaCbc",
+        serialize = "aria_cbc"
+    )]
     AriaCbc = CKM_ARIA_CBC,
     #[serde(rename = "CKM_ARIA_MAC")]
+    #[strum(
+        serialize = "CKM_ARIA_MAC",
+        serialize = "AriaMac",
+        serialize = "aria_mac"
+    )]
     AriaMac = CKM_ARIA_MAC,
     #[serde(rename = "CKM_ARIA_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_ARIA_MAC_GENERAL",
+        serialize = "AriaMacGeneral",
+        serialize = "aria_mac_general"
+    )]
     AriaMacGeneral = CKM_ARIA_MAC_GENERAL,
     #[serde(rename = "CKM_ARIA_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_ARIA_CBC_PAD",
+        serialize = "AriaCbcPad",
+        serialize = "aria_cbc_pad"
+    )]
     AriaCbcPad = CKM_ARIA_CBC_PAD,
     #[serde(rename = "CKM_ARIA_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_ARIA_ECB_ENCRYPT_DATA",
+        serialize = "AriaEcbEncryptData",
+        serialize = "aria_ecb_encrypt_data"
+    )]
     AriaEcbEncryptData = CKM_ARIA_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_ARIA_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_ARIA_CBC_ENCRYPT_DATA",
+        serialize = "AriaCbcEncryptData",
+        serialize = "aria_cbc_encrypt_data"
+    )]
     AriaCbcEncryptData = CKM_ARIA_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_SEED_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SEED_KEY_GEN",
+        serialize = "SeedKeyGen",
+        serialize = "seed_key_gen"
+    )]
     SeedKeyGen = CKM_SEED_KEY_GEN,
     #[serde(rename = "CKM_SEED_ECB")]
+    #[strum(
+        serialize = "CKM_SEED_ECB",
+        serialize = "SeedEcb",
+        serialize = "seed_ecb"
+    )]
     SeedEcb = CKM_SEED_ECB,
     #[serde(rename = "CKM_SEED_CBC")]
+    #[strum(
+        serialize = "CKM_SEED_CBC",
+        serialize = "SeedCbc",
+        serialize = "seed_cbc"
+    )]
     SeedCbc = CKM_SEED_CBC,
     #[serde(rename = "CKM_SEED_MAC")]
+    #[strum(
+        serialize = "CKM_SEED_MAC",
+        serialize = "SeedMac",
+        serialize = "seed_mac"
+    )]
     SeedMac = CKM_SEED_MAC,
     #[serde(rename = "CKM_SEED_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_SEED_MAC_GENERAL",
+        serialize = "SeedMacGeneral",
+        serialize = "seed_mac_general"
+    )]
     SeedMacGeneral = CKM_SEED_MAC_GENERAL,
     #[serde(rename = "CKM_SEED_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_SEED_CBC_PAD",
+        serialize = "SeedCbcPad",
+        serialize = "seed_cbc_pad"
+    )]
     SeedCbcPad = CKM_SEED_CBC_PAD,
     #[serde(rename = "CKM_SEED_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_SEED_ECB_ENCRYPT_DATA",
+        serialize = "SeedEcbEncryptData",
+        serialize = "seed_ecb_encrypt_data"
+    )]
     SeedEcbEncryptData = CKM_SEED_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_SEED_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_SEED_CBC_ENCRYPT_DATA",
+        serialize = "SeedCbcEncryptData",
+        serialize = "seed_cbc_encrypt_data"
+    )]
     SeedCbcEncryptData = CKM_SEED_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_SKIPJACK_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_KEY_GEN",
+        serialize = "SkipjackKeyGen",
+        serialize = "skipjack_key_gen"
+    )]
     SkipjackKeyGen = CKM_SKIPJACK_KEY_GEN,
     #[serde(rename = "CKM_SKIPJACK_ECB64")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_ECB64",
+        serialize = "SkipjackEcb64",
+        serialize = "skipjack_ecb64"
+    )]
     SkipjackEcb64 = CKM_SKIPJACK_ECB64,
     #[serde(rename = "CKM_SKIPJACK_CBC64")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_CBC64",
+        serialize = "SkipjackCbc64",
+        serialize = "skipjack_cbc64"
+    )]
     SkipjackCbc64 = CKM_SKIPJACK_CBC64,
     #[serde(rename = "CKM_SKIPJACK_OFB64")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_OFB64",
+        serialize = "SkipjackOfb64",
+        serialize = "skipjack_ofb64"
+    )]
     SkipjackOfb64 = CKM_SKIPJACK_OFB64,
     #[serde(rename = "CKM_SKIPJACK_CFB64")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_CFB64",
+        serialize = "SkipjackCfb64",
+        serialize = "skipjack_cfb64"
+    )]
     SkipjackCfb64 = CKM_SKIPJACK_CFB64,
     #[serde(rename = "CKM_SKIPJACK_CFB32")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_CFB32",
+        serialize = "SkipjackCfb32",
+        serialize = "skipjack_cfb32"
+    )]
     SkipjackCfb32 = CKM_SKIPJACK_CFB32,
     #[serde(rename = "CKM_SKIPJACK_CFB16")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_CFB16",
+        serialize = "SkipjackCfb16",
+        serialize = "skipjack_cfb16"
+    )]
     SkipjackCfb16 = CKM_SKIPJACK_CFB16,
     #[serde(rename = "CKM_SKIPJACK_CFB8")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_CFB8",
+        serialize = "SkipjackCfb8",
+        serialize = "skipjack_cfb8"
+    )]
     SkipjackCfb8 = CKM_SKIPJACK_CFB8,
     #[serde(rename = "CKM_SKIPJACK_WRAP")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_WRAP",
+        serialize = "SkipjackWrap",
+        serialize = "skipjack_wrap"
+    )]
     SkipjackWrap = CKM_SKIPJACK_WRAP,
     #[serde(rename = "CKM_SKIPJACK_PRIVATE_WRAP")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_PRIVATE_WRAP",
+        serialize = "SkipjackPrivateWrap",
+        serialize = "skipjack_private_wrap"
+    )]
     SkipjackPrivateWrap = CKM_SKIPJACK_PRIVATE_WRAP,
     #[serde(rename = "CKM_SKIPJACK_RELAYX")]
+    #[strum(
+        serialize = "CKM_SKIPJACK_RELAYX",
+        serialize = "SkipjackRelayx",
+        serialize = "skipjack_relayx"
+    )]
     SkipjackRelayx = CKM_SKIPJACK_RELAYX,
     #[serde(rename = "CKM_KEA_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_KEA_KEY_PAIR_GEN",
+        serialize = "KeaKeyPairGen",
+        serialize = "kea_key_pair_gen"
+    )]
     KeaKeyPairGen = CKM_KEA_KEY_PAIR_GEN,
     #[serde(rename = "CKM_KEA_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_KEA_KEY_DERIVE",
+        serialize = "KeaKeyDerive",
+        serialize = "kea_key_derive"
+    )]
     KeaKeyDerive = CKM_KEA_KEY_DERIVE,
     #[serde(rename = "CKM_KEA_DERIVE")]
+    #[strum(
+        serialize = "CKM_KEA_DERIVE",
+        serialize = "KeaDerive",
+        serialize = "kea_derive"
+    )]
     KeaDerive = CKM_KEA_DERIVE,
     #[serde(rename = "CKM_FORTEZZA_TIMESTAMP")]
+    #[strum(
+        serialize = "CKM_FORTEZZA_TIMESTAMP",
+        serialize = "FortezzaTimestamp",
+        serialize = "fortezza_timestamp"
+    )]
     FortezzaTimestamp = CKM_FORTEZZA_TIMESTAMP,
     #[serde(rename = "CKM_BATON_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BATON_KEY_GEN",
+        serialize = "BatonKeyGen",
+        serialize = "baton_key_gen"
+    )]
     BatonKeyGen = CKM_BATON_KEY_GEN,
     #[serde(rename = "CKM_BATON_ECB128")]
+    #[strum(
+        serialize = "CKM_BATON_ECB128",
+        serialize = "BatonEcb128",
+        serialize = "baton_ecb128"
+    )]
     BatonEcb128 = CKM_BATON_ECB128,
     #[serde(rename = "CKM_BATON_ECB96")]
+    #[strum(
+        serialize = "CKM_BATON_ECB96",
+        serialize = "BatonEcb96",
+        serialize = "baton_ecb96"
+    )]
     BatonEcb96 = CKM_BATON_ECB96,
     #[serde(rename = "CKM_BATON_CBC128")]
+    #[strum(
+        serialize = "CKM_BATON_CBC128",
+        serialize = "BatonCbc128",
+        serialize = "baton_cbc128"
+    )]
     BatonCbc128 = CKM_BATON_CBC128,
     #[serde(rename = "CKM_BATON_COUNTER")]
+    #[strum(
+        serialize = "CKM_BATON_COUNTER",
+        serialize = "BatonCounter",
+        serialize = "baton_counter"
+    )]
     BatonCounter = CKM_BATON_COUNTER,
     #[serde(rename = "CKM_BATON_SHUFFLE")]
+    #[strum(
+        serialize = "CKM_BATON_SHUFFLE",
+        serialize = "BatonShuffle",
+        serialize = "baton_shuffle"
+    )]
     BatonShuffle = CKM_BATON_SHUFFLE,
     #[serde(rename = "CKM_BATON_WRAP")]
+    #[strum(
+        serialize = "CKM_BATON_WRAP",
+        serialize = "BatonWrap",
+        serialize = "baton_wrap"
+    )]
     BatonWrap = CKM_BATON_WRAP,
     #[serde(rename = "CKM_EC_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_EC_KEY_PAIR_GEN",
+        serialize = "EcKeyPairGen",
+        serialize = "ec_key_pair_gen"
+    )]
     EcKeyPairGen = CKM_EC_KEY_PAIR_GEN,
     #[serde(rename = "CKM_ECDSA")]
+    #[strum(serialize = "CKM_ECDSA", serialize = "Ecdsa", serialize = "ecdsa")]
     Ecdsa = CKM_ECDSA,
     #[serde(rename = "CKM_ECDSA_SHA1")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA1",
+        serialize = "EcdsaSha1",
+        serialize = "ecdsa_sha1"
+    )]
     EcdsaSha1 = CKM_ECDSA_SHA1,
     #[serde(rename = "CKM_ECDSA_SHA224")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA224",
+        serialize = "EcdsaSha224",
+        serialize = "ecdsa_sha224"
+    )]
     EcdsaSha224 = CKM_ECDSA_SHA224,
     #[serde(rename = "CKM_ECDSA_SHA256")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA256",
+        serialize = "EcdsaSha256",
+        serialize = "ecdsa_sha256"
+    )]
     EcdsaSha256 = CKM_ECDSA_SHA256,
     #[serde(rename = "CKM_ECDSA_SHA384")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA384",
+        serialize = "EcdsaSha384",
+        serialize = "ecdsa_sha384"
+    )]
     EcdsaSha384 = CKM_ECDSA_SHA384,
     #[serde(rename = "CKM_ECDSA_SHA512")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA512",
+        serialize = "EcdsaSha512",
+        serialize = "ecdsa_sha512"
+    )]
     EcdsaSha512 = CKM_ECDSA_SHA512,
     #[serde(rename = "CKM_EC_KEY_PAIR_GEN_W_EXTRA_BITS")]
+    #[strum(
+        serialize = "CKM_EC_KEY_PAIR_GEN_W_EXTRA_BITS",
+        serialize = "EcKeyPairGenWExtraBits",
+        serialize = "ec_key_pair_gen_w_extra_bits"
+    )]
     EcKeyPairGenWExtraBits = CKM_EC_KEY_PAIR_GEN_W_EXTRA_BITS,
     #[serde(rename = "CKM_ECDH1_DERIVE")]
+    #[strum(
+        serialize = "CKM_ECDH1_DERIVE",
+        serialize = "Ecdh1Derive",
+        serialize = "ecdh1_derive"
+    )]
     Ecdh1Derive = CKM_ECDH1_DERIVE,
     #[serde(rename = "CKM_ECDH1_COFACTOR_DERIVE")]
+    #[strum(
+        serialize = "CKM_ECDH1_COFACTOR_DERIVE",
+        serialize = "Ecdh1CofactorDerive",
+        serialize = "ecdh1_cofactor_derive"
+    )]
     Ecdh1CofactorDerive = CKM_ECDH1_COFACTOR_DERIVE,
     #[serde(rename = "CKM_ECMQV_DERIVE")]
+    #[strum(
+        serialize = "CKM_ECMQV_DERIVE",
+        serialize = "EcmqvDerive",
+        serialize = "ecmqv_derive"
+    )]
     EcmqvDerive = CKM_ECMQV_DERIVE,
     #[serde(rename = "CKM_ECDH_AES_KEY_WRAP")]
+    #[strum(
+        serialize = "CKM_ECDH_AES_KEY_WRAP",
+        serialize = "EcdhAesKeyWrap",
+        serialize = "ecdh_aes_key_wrap"
+    )]
     EcdhAesKeyWrap = CKM_ECDH_AES_KEY_WRAP,
     #[serde(rename = "CKM_RSA_AES_KEY_WRAP")]
+    #[strum(
+        serialize = "CKM_RSA_AES_KEY_WRAP",
+        serialize = "RsaAesKeyWrap",
+        serialize = "rsa_aes_key_wrap"
+    )]
     RsaAesKeyWrap = CKM_RSA_AES_KEY_WRAP,
     #[serde(rename = "CKM_JUNIPER_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_JUNIPER_KEY_GEN",
+        serialize = "JuniperKeyGen",
+        serialize = "juniper_key_gen"
+    )]
     JuniperKeyGen = CKM_JUNIPER_KEY_GEN,
     #[serde(rename = "CKM_JUNIPER_ECB128")]
+    #[strum(
+        serialize = "CKM_JUNIPER_ECB128",
+        serialize = "JuniperEcb128",
+        serialize = "juniper_ecb128"
+    )]
     JuniperEcb128 = CKM_JUNIPER_ECB128,
     #[serde(rename = "CKM_JUNIPER_CBC128")]
+    #[strum(
+        serialize = "CKM_JUNIPER_CBC128",
+        serialize = "JuniperCbc128",
+        serialize = "juniper_cbc128"
+    )]
     JuniperCbc128 = CKM_JUNIPER_CBC128,
     #[serde(rename = "CKM_JUNIPER_COUNTER")]
+    #[strum(
+        serialize = "CKM_JUNIPER_COUNTER",
+        serialize = "JuniperCounter",
+        serialize = "juniper_counter"
+    )]
     JuniperCounter = CKM_JUNIPER_COUNTER,
     #[serde(rename = "CKM_JUNIPER_SHUFFLE")]
+    #[strum(
+        serialize = "CKM_JUNIPER_SHUFFLE",
+        serialize = "JuniperShuffle",
+        serialize = "juniper_shuffle"
+    )]
     JuniperShuffle = CKM_JUNIPER_SHUFFLE,
     #[serde(rename = "CKM_JUNIPER_WRAP")]
+    #[strum(
+        serialize = "CKM_JUNIPER_WRAP",
+        serialize = "JuniperWrap",
+        serialize = "juniper_wrap"
+    )]
     JuniperWrap = CKM_JUNIPER_WRAP,
     #[serde(rename = "CKM_FASTHASH")]
+    #[strum(
+        serialize = "CKM_FASTHASH",
+        serialize = "Fasthash",
+        serialize = "fasthash"
+    )]
     Fasthash = CKM_FASTHASH,
     #[serde(rename = "CKM_AES_XTS")]
+    #[strum(serialize = "CKM_AES_XTS", serialize = "AesXts", serialize = "aes_xts")]
     AesXts = CKM_AES_XTS,
     #[serde(rename = "CKM_AES_XTS_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_AES_XTS_KEY_GEN",
+        serialize = "AesXtsKeyGen",
+        serialize = "aes_xts_key_gen"
+    )]
     AesXtsKeyGen = CKM_AES_XTS_KEY_GEN,
     #[serde(rename = "CKM_AES_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_AES_KEY_GEN",
+        serialize = "AesKeyGen",
+        serialize = "aes_key_gen"
+    )]
     AesKeyGen = CKM_AES_KEY_GEN,
     #[serde(rename = "CKM_AES_ECB")]
+    #[strum(serialize = "CKM_AES_ECB", serialize = "AesEcb", serialize = "aes_ecb")]
     AesEcb = CKM_AES_ECB,
     #[serde(rename = "CKM_AES_CBC")]
+    #[strum(serialize = "CKM_AES_CBC", serialize = "AesCbc", serialize = "aes_cbc")]
     AesCbc = CKM_AES_CBC,
     #[serde(rename = "CKM_AES_MAC")]
+    #[strum(serialize = "CKM_AES_MAC", serialize = "AesMac", serialize = "aes_mac")]
     AesMac = CKM_AES_MAC,
     #[serde(rename = "CKM_AES_MAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_AES_MAC_GENERAL",
+        serialize = "AesMacGeneral",
+        serialize = "aes_mac_general"
+    )]
     AesMacGeneral = CKM_AES_MAC_GENERAL,
     #[serde(rename = "CKM_AES_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_AES_CBC_PAD",
+        serialize = "AesCbcPad",
+        serialize = "aes_cbc_pad"
+    )]
     AesCbcPad = CKM_AES_CBC_PAD,
     #[serde(rename = "CKM_AES_CTR")]
+    #[strum(serialize = "CKM_AES_CTR", serialize = "AesCtr", serialize = "aes_ctr")]
     AesCtr = CKM_AES_CTR,
     #[serde(rename = "CKM_AES_GCM")]
+    #[strum(serialize = "CKM_AES_GCM", serialize = "AesGcm", serialize = "aes_gcm")]
     AesGcm = CKM_AES_GCM,
     #[serde(rename = "CKM_AES_CCM")]
+    #[strum(serialize = "CKM_AES_CCM", serialize = "AesCcm", serialize = "aes_ccm")]
     AesCcm = CKM_AES_CCM,
     #[serde(rename = "CKM_AES_CTS")]
+    #[strum(serialize = "CKM_AES_CTS", serialize = "AesCts", serialize = "aes_cts")]
     AesCts = CKM_AES_CTS,
     #[serde(rename = "CKM_AES_CMAC")]
+    #[strum(
+        serialize = "CKM_AES_CMAC",
+        serialize = "AesCmac",
+        serialize = "aes_cmac"
+    )]
     AesCmac = CKM_AES_CMAC,
     #[serde(rename = "CKM_AES_CMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_AES_CMAC_GENERAL",
+        serialize = "AesCmacGeneral",
+        serialize = "aes_cmac_general"
+    )]
     AesCmacGeneral = CKM_AES_CMAC_GENERAL,
     #[serde(rename = "CKM_AES_XCBC_MAC")]
+    #[strum(
+        serialize = "CKM_AES_XCBC_MAC",
+        serialize = "AesXcbcMac",
+        serialize = "aes_xcbc_mac"
+    )]
     AesXcbcMac = CKM_AES_XCBC_MAC,
     #[serde(rename = "CKM_AES_XCBC_MAC_96")]
+    #[strum(
+        serialize = "CKM_AES_XCBC_MAC_96",
+        serialize = "AesXcbcMac96",
+        serialize = "aes_xcbc_mac_96"
+    )]
     AesXcbcMac96 = CKM_AES_XCBC_MAC_96,
     #[serde(rename = "CKM_AES_GMAC")]
+    #[strum(
+        serialize = "CKM_AES_GMAC",
+        serialize = "AesGmac",
+        serialize = "aes_gmac"
+    )]
     AesGmac = CKM_AES_GMAC,
     #[serde(rename = "CKM_BLOWFISH_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BLOWFISH_KEY_GEN",
+        serialize = "BlowfishKeyGen",
+        serialize = "blowfish_key_gen"
+    )]
     BlowfishKeyGen = CKM_BLOWFISH_KEY_GEN,
     #[serde(rename = "CKM_BLOWFISH_CBC")]
+    #[strum(
+        serialize = "CKM_BLOWFISH_CBC",
+        serialize = "BlowfishCbc",
+        serialize = "blowfish_cbc"
+    )]
     BlowfishCbc = CKM_BLOWFISH_CBC,
     #[serde(rename = "CKM_TWOFISH_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_TWOFISH_KEY_GEN",
+        serialize = "TwofishKeyGen",
+        serialize = "twofish_key_gen"
+    )]
     TwofishKeyGen = CKM_TWOFISH_KEY_GEN,
     #[serde(rename = "CKM_TWOFISH_CBC")]
+    #[strum(
+        serialize = "CKM_TWOFISH_CBC",
+        serialize = "TwofishCbc",
+        serialize = "twofish_cbc"
+    )]
     TwofishCbc = CKM_TWOFISH_CBC,
     #[serde(rename = "CKM_BLOWFISH_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_BLOWFISH_CBC_PAD",
+        serialize = "BlowfishCbcPad",
+        serialize = "blowfish_cbc_pad"
+    )]
     BlowfishCbcPad = CKM_BLOWFISH_CBC_PAD,
     #[serde(rename = "CKM_TWOFISH_CBC_PAD")]
+    #[strum(
+        serialize = "CKM_TWOFISH_CBC_PAD",
+        serialize = "TwofishCbcPad",
+        serialize = "twofish_cbc_pad"
+    )]
     TwofishCbcPad = CKM_TWOFISH_CBC_PAD,
     #[serde(rename = "CKM_DES_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_DES_ECB_ENCRYPT_DATA",
+        serialize = "DesEcbEncryptData",
+        serialize = "des_ecb_encrypt_data"
+    )]
     DesEcbEncryptData = CKM_DES_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_DES_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_DES_CBC_ENCRYPT_DATA",
+        serialize = "DesCbcEncryptData",
+        serialize = "des_cbc_encrypt_data"
+    )]
     DesCbcEncryptData = CKM_DES_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_DES3_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_DES3_ECB_ENCRYPT_DATA",
+        serialize = "Des3EcbEncryptData",
+        serialize = "des3_ecb_encrypt_data"
+    )]
     Des3EcbEncryptData = CKM_DES3_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_DES3_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_DES3_CBC_ENCRYPT_DATA",
+        serialize = "Des3CbcEncryptData",
+        serialize = "des3_cbc_encrypt_data"
+    )]
     Des3CbcEncryptData = CKM_DES3_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_AES_ECB_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_AES_ECB_ENCRYPT_DATA",
+        serialize = "AesEcbEncryptData",
+        serialize = "aes_ecb_encrypt_data"
+    )]
     AesEcbEncryptData = CKM_AES_ECB_ENCRYPT_DATA,
     #[serde(rename = "CKM_AES_CBC_ENCRYPT_DATA")]
+    #[strum(
+        serialize = "CKM_AES_CBC_ENCRYPT_DATA",
+        serialize = "AesCbcEncryptData",
+        serialize = "aes_cbc_encrypt_data"
+    )]
     AesCbcEncryptData = CKM_AES_CBC_ENCRYPT_DATA,
     #[serde(rename = "CKM_GOSTR3410_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_GOSTR3410_KEY_PAIR_GEN",
+        serialize = "Gostr3410KeyPairGen",
+        serialize = "gostr3410_key_pair_gen"
+    )]
     Gostr3410KeyPairGen = CKM_GOSTR3410_KEY_PAIR_GEN,
     #[serde(rename = "CKM_GOSTR3410")]
+    #[strum(
+        serialize = "CKM_GOSTR3410",
+        serialize = "Gostr3410",
+        serialize = "gostr3410"
+    )]
     Gostr3410 = CKM_GOSTR3410,
     #[serde(rename = "CKM_GOSTR3410_WITH_GOSTR3411")]
+    #[strum(
+        serialize = "CKM_GOSTR3410_WITH_GOSTR3411",
+        serialize = "Gostr3410WithGostr3411",
+        serialize = "gostr3410_with_gostr3411"
+    )]
     Gostr3410WithGostr3411 = CKM_GOSTR3410_WITH_GOSTR3411,
     #[serde(rename = "CKM_GOSTR3410_KEY_WRAP")]
+    #[strum(
+        serialize = "CKM_GOSTR3410_KEY_WRAP",
+        serialize = "Gostr3410KeyWrap",
+        serialize = "gostr3410_key_wrap"
+    )]
     Gostr3410KeyWrap = CKM_GOSTR3410_KEY_WRAP,
     #[serde(rename = "CKM_GOSTR3410_DERIVE")]
+    #[strum(
+        serialize = "CKM_GOSTR3410_DERIVE",
+        serialize = "Gostr3410Derive",
+        serialize = "gostr3410_derive"
+    )]
     Gostr3410Derive = CKM_GOSTR3410_DERIVE,
     #[serde(rename = "CKM_GOSTR3411")]
+    #[strum(
+        serialize = "CKM_GOSTR3411",
+        serialize = "Gostr3411",
+        serialize = "gostr3411"
+    )]
     Gostr3411 = CKM_GOSTR3411,
     #[serde(rename = "CKM_GOSTR3411_HMAC")]
+    #[strum(
+        serialize = "CKM_GOSTR3411_HMAC",
+        serialize = "Gostr3411Hmac",
+        serialize = "gostr3411_hmac"
+    )]
     Gostr3411Hmac = CKM_GOSTR3411_HMAC,
     #[serde(rename = "CKM_GOST28147_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_GOST28147_KEY_GEN",
+        serialize = "Gost28147KeyGen",
+        serialize = "gost28147_key_gen"
+    )]
     Gost28147KeyGen = CKM_GOST28147_KEY_GEN,
     #[serde(rename = "CKM_GOST28147_ECB")]
+    #[strum(
+        serialize = "CKM_GOST28147_ECB",
+        serialize = "Gost28147Ecb",
+        serialize = "gost28147_ecb"
+    )]
     Gost28147Ecb = CKM_GOST28147_ECB,
     #[serde(rename = "CKM_GOST28147")]
+    #[strum(
+        serialize = "CKM_GOST28147",
+        serialize = "Gost28147",
+        serialize = "gost28147"
+    )]
     Gost28147 = CKM_GOST28147,
     #[serde(rename = "CKM_GOST28147_MAC")]
+    #[strum(
+        serialize = "CKM_GOST28147_MAC",
+        serialize = "Gost28147Mac",
+        serialize = "gost28147_mac"
+    )]
     Gost28147Mac = CKM_GOST28147_MAC,
     #[serde(rename = "CKM_GOST28147_KEY_WRAP")]
+    #[strum(
+        serialize = "CKM_GOST28147_KEY_WRAP",
+        serialize = "Gost28147KeyWrap",
+        serialize = "gost28147_key_wrap"
+    )]
     Gost28147KeyWrap = CKM_GOST28147_KEY_WRAP,
     #[serde(rename = "CKM_CHACHA20_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_CHACHA20_KEY_GEN",
+        serialize = "Chacha20KeyGen",
+        serialize = "chacha20_key_gen"
+    )]
     Chacha20KeyGen = CKM_CHACHA20_KEY_GEN,
     #[serde(rename = "CKM_CHACHA20")]
+    #[strum(
+        serialize = "CKM_CHACHA20",
+        serialize = "Chacha20",
+        serialize = "chacha20"
+    )]
     Chacha20 = CKM_CHACHA20,
     #[serde(rename = "CKM_POLY1305_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_POLY1305_KEY_GEN",
+        serialize = "Poly1305KeyGen",
+        serialize = "poly1305_key_gen"
+    )]
     Poly1305KeyGen = CKM_POLY1305_KEY_GEN,
     #[serde(rename = "CKM_POLY1305")]
+    #[strum(
+        serialize = "CKM_POLY1305",
+        serialize = "Poly1305",
+        serialize = "poly1305"
+    )]
     Poly1305 = CKM_POLY1305,
     #[serde(rename = "CKM_DSA_PARAMETER_GEN")]
+    #[strum(
+        serialize = "CKM_DSA_PARAMETER_GEN",
+        serialize = "DsaParameterGen",
+        serialize = "dsa_parameter_gen"
+    )]
     DsaParameterGen = CKM_DSA_PARAMETER_GEN,
     #[serde(rename = "CKM_DH_PKCS_PARAMETER_GEN")]
+    #[strum(
+        serialize = "CKM_DH_PKCS_PARAMETER_GEN",
+        serialize = "DhPkcsParameterGen",
+        serialize = "dh_pkcs_parameter_gen"
+    )]
     DhPkcsParameterGen = CKM_DH_PKCS_PARAMETER_GEN,
     #[serde(rename = "CKM_X9_42_DH_PARAMETER_GEN")]
+    #[strum(
+        serialize = "CKM_X9_42_DH_PARAMETER_GEN",
+        serialize = "X942DhParameterGen",
+        serialize = "x9_42_dh_parameter_gen"
+    )]
     X942DhParameterGen = CKM_X9_42_DH_PARAMETER_GEN,
     #[serde(rename = "CKM_DSA_PROBABILISTIC_PARAMETER_GEN")]
+    #[strum(
+        serialize = "CKM_DSA_PROBABILISTIC_PARAMETER_GEN",
+        serialize = "DsaProbabilisticParameterGen",
+        serialize = "dsa_probabilistic_parameter_gen"
+    )]
     DsaProbabilisticParameterGen = CKM_DSA_PROBABILISTIC_PARAMETER_GEN,
     #[serde(rename = "CKM_DSA_SHAWE_TAYLOR_PARAMETER_GEN")]
+    #[strum(
+        serialize = "CKM_DSA_SHAWE_TAYLOR_PARAMETER_GEN",
+        serialize = "DsaShaweTaylorParameterGen",
+        serialize = "dsa_shawe_taylor_parameter_gen"
+    )]
     DsaShaweTaylorParameterGen = CKM_DSA_SHAWE_TAYLOR_PARAMETER_GEN,
     #[serde(rename = "CKM_DSA_FIPS_G_GEN")]
+    #[strum(
+        serialize = "CKM_DSA_FIPS_G_GEN",
+        serialize = "DsaFipsGGen",
+        serialize = "dsa_fips_g_gen"
+    )]
     DsaFipsGGen = CKM_DSA_FIPS_G_GEN,
     #[serde(rename = "CKM_AES_OFB")]
+    #[strum(serialize = "CKM_AES_OFB", serialize = "AesOfb", serialize = "aes_ofb")]
     AesOfb = CKM_AES_OFB,
     #[serde(rename = "CKM_AES_CFB64")]
+    #[strum(
+        serialize = "CKM_AES_CFB64",
+        serialize = "AesCfb64",
+        serialize = "aes_cfb64"
+    )]
     AesCfb64 = CKM_AES_CFB64,
     #[serde(rename = "CKM_AES_CFB8")]
+    #[strum(
+        serialize = "CKM_AES_CFB8",
+        serialize = "AesCfb8",
+        serialize = "aes_cfb8"
+    )]
     AesCfb8 = CKM_AES_CFB8,
     #[serde(rename = "CKM_AES_CFB128")]
+    #[strum(
+        serialize = "CKM_AES_CFB128",
+        serialize = "AesCfb128",
+        serialize = "aes_cfb128"
+    )]
     AesCfb128 = CKM_AES_CFB128,
     #[serde(rename = "CKM_AES_CFB1")]
+    #[strum(
+        serialize = "CKM_AES_CFB1",
+        serialize = "AesCfb1",
+        serialize = "aes_cfb1"
+    )]
     AesCfb1 = CKM_AES_CFB1,
     #[serde(rename = "CKM_AES_KEY_WRAP")]
+    #[strum(
+        serialize = "CKM_AES_KEY_WRAP",
+        serialize = "AesKeyWrap",
+        serialize = "aes_key_wrap"
+    )]
     AesKeyWrap = CKM_AES_KEY_WRAP,
     #[serde(rename = "CKM_AES_KEY_WRAP_PAD")]
+    #[strum(
+        serialize = "CKM_AES_KEY_WRAP_PAD",
+        serialize = "AesKeyWrapPad",
+        serialize = "aes_key_wrap_pad"
+    )]
     AesKeyWrapPad = CKM_AES_KEY_WRAP_PAD,
     #[serde(rename = "CKM_AES_KEY_WRAP_KWP")]
+    #[strum(
+        serialize = "CKM_AES_KEY_WRAP_KWP",
+        serialize = "AesKeyWrapKwp",
+        serialize = "aes_key_wrap_kwp"
+    )]
     AesKeyWrapKwp = CKM_AES_KEY_WRAP_KWP,
     #[serde(rename = "CKM_RSA_PKCS_TPM_1_1")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS_TPM_1_1",
+        serialize = "RsaPkcsTpm1_1",
+        serialize = "rsa_pkcs_tpm_1_1"
+    )]
     RsaPkcsTpm1_1 = CKM_RSA_PKCS_TPM_1_1,
     #[serde(rename = "CKM_RSA_PKCS_OAEP_TPM_1_1")]
+    #[strum(
+        serialize = "CKM_RSA_PKCS_OAEP_TPM_1_1",
+        serialize = "RsaPkcsOaepTpm1_1",
+        serialize = "rsa_pkcs_oaep_tpm_1_1"
+    )]
     RsaPkcsOaepTpm1_1 = CKM_RSA_PKCS_OAEP_TPM_1_1,
     #[serde(rename = "CKM_SHA_1_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA_1_KEY_GEN",
+        serialize = "Sha1KeyGen",
+        serialize = "sha_1_key_gen"
+    )]
     Sha1KeyGen = CKM_SHA_1_KEY_GEN,
     #[serde(rename = "CKM_SHA224_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA224_KEY_GEN",
+        serialize = "Sha224KeyGen",
+        serialize = "sha224_key_gen"
+    )]
     Sha224KeyGen = CKM_SHA224_KEY_GEN,
     #[serde(rename = "CKM_SHA256_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA256_KEY_GEN",
+        serialize = "Sha256KeyGen",
+        serialize = "sha256_key_gen"
+    )]
     Sha256KeyGen = CKM_SHA256_KEY_GEN,
     #[serde(rename = "CKM_SHA384_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA384_KEY_GEN",
+        serialize = "Sha384KeyGen",
+        serialize = "sha384_key_gen"
+    )]
     Sha384KeyGen = CKM_SHA384_KEY_GEN,
     #[serde(rename = "CKM_SHA512_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA512_KEY_GEN",
+        serialize = "Sha512KeyGen",
+        serialize = "sha512_key_gen"
+    )]
     Sha512KeyGen = CKM_SHA512_KEY_GEN,
     #[serde(rename = "CKM_SHA512_224_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA512_224_KEY_GEN",
+        serialize = "Sha512224KeyGen",
+        serialize = "sha512_224_key_gen"
+    )]
     Sha512224KeyGen = CKM_SHA512_224_KEY_GEN,
     #[serde(rename = "CKM_SHA512_256_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA512_256_KEY_GEN",
+        serialize = "Sha512256KeyGen",
+        serialize = "sha512_256_key_gen"
+    )]
     Sha512256KeyGen = CKM_SHA512_256_KEY_GEN,
     #[serde(rename = "CKM_SHA512_T_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SHA512_T_KEY_GEN",
+        serialize = "Sha512TKeyGen",
+        serialize = "sha512_t_key_gen"
+    )]
     Sha512TKeyGen = CKM_SHA512_T_KEY_GEN,
     #[serde(rename = "CKM_NULL")]
+    #[strum(serialize = "CKM_NULL", serialize = "Null", serialize = "null")]
     Null = CKM_NULL,
     #[serde(rename = "CKM_BLAKE2B_160")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_160",
+        serialize = "Blake2b160",
+        serialize = "blake2b_160"
+    )]
     Blake2b160 = CKM_BLAKE2B_160,
     #[serde(rename = "CKM_BLAKE2B_160_HMAC")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_160_HMAC",
+        serialize = "Blake2b160Hmac",
+        serialize = "blake2b_160_hmac"
+    )]
     Blake2b160Hmac = CKM_BLAKE2B_160_HMAC,
     #[serde(rename = "CKM_BLAKE2B_160_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_160_HMAC_GENERAL",
+        serialize = "Blake2b160HmacGeneral",
+        serialize = "blake2b_160_hmac_general"
+    )]
     Blake2b160HmacGeneral = CKM_BLAKE2B_160_HMAC_GENERAL,
     #[serde(rename = "CKM_BLAKE2B_160_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_160_KEY_DERIVE",
+        serialize = "Blake2b160KeyDerive",
+        serialize = "blake2b_160_key_derive"
+    )]
     Blake2b160KeyDerive = CKM_BLAKE2B_160_KEY_DERIVE,
     #[serde(rename = "CKM_BLAKE2B_160_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_160_KEY_GEN",
+        serialize = "Blake2b160KeyGen",
+        serialize = "blake2b_160_key_gen"
+    )]
     Blake2b160KeyGen = CKM_BLAKE2B_160_KEY_GEN,
     #[serde(rename = "CKM_BLAKE2B_256")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_256",
+        serialize = "Blake2b256",
+        serialize = "blake2b_256"
+    )]
     Blake2b256 = CKM_BLAKE2B_256,
     #[serde(rename = "CKM_BLAKE2B_256_HMAC")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_256_HMAC",
+        serialize = "Blake2b256Hmac",
+        serialize = "blake2b_256_hmac"
+    )]
     Blake2b256Hmac = CKM_BLAKE2B_256_HMAC,
     #[serde(rename = "CKM_BLAKE2B_256_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_256_HMAC_GENERAL",
+        serialize = "Blake2b256HmacGeneral",
+        serialize = "blake2b_256_hmac_general"
+    )]
     Blake2b256HmacGeneral = CKM_BLAKE2B_256_HMAC_GENERAL,
     #[serde(rename = "CKM_BLAKE2B_256_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_256_KEY_DERIVE",
+        serialize = "Blake2b256KeyDerive",
+        serialize = "blake2b_256_key_derive"
+    )]
     Blake2b256KeyDerive = CKM_BLAKE2B_256_KEY_DERIVE,
     #[serde(rename = "CKM_BLAKE2B_256_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_256_KEY_GEN",
+        serialize = "Blake2b256KeyGen",
+        serialize = "blake2b_256_key_gen"
+    )]
     Blake2b256KeyGen = CKM_BLAKE2B_256_KEY_GEN,
     #[serde(rename = "CKM_BLAKE2B_384")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_384",
+        serialize = "Blake2b384",
+        serialize = "blake2b_384"
+    )]
     Blake2b384 = CKM_BLAKE2B_384,
     #[serde(rename = "CKM_BLAKE2B_384_HMAC")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_384_HMAC",
+        serialize = "Blake2b384Hmac",
+        serialize = "blake2b_384_hmac"
+    )]
     Blake2b384Hmac = CKM_BLAKE2B_384_HMAC,
     #[serde(rename = "CKM_BLAKE2B_384_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_384_HMAC_GENERAL",
+        serialize = "Blake2b384HmacGeneral",
+        serialize = "blake2b_384_hmac_general"
+    )]
     Blake2b384HmacGeneral = CKM_BLAKE2B_384_HMAC_GENERAL,
     #[serde(rename = "CKM_BLAKE2B_384_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_384_KEY_DERIVE",
+        serialize = "Blake2b384KeyDerive",
+        serialize = "blake2b_384_key_derive"
+    )]
     Blake2b384KeyDerive = CKM_BLAKE2B_384_KEY_DERIVE,
     #[serde(rename = "CKM_BLAKE2B_384_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_384_KEY_GEN",
+        serialize = "Blake2b384KeyGen",
+        serialize = "blake2b_384_key_gen"
+    )]
     Blake2b384KeyGen = CKM_BLAKE2B_384_KEY_GEN,
     #[serde(rename = "CKM_BLAKE2B_512")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_512",
+        serialize = "Blake2b512",
+        serialize = "blake2b_512"
+    )]
     Blake2b512 = CKM_BLAKE2B_512,
     #[serde(rename = "CKM_BLAKE2B_512_HMAC")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_512_HMAC",
+        serialize = "Blake2b512Hmac",
+        serialize = "blake2b_512_hmac"
+    )]
     Blake2b512Hmac = CKM_BLAKE2B_512_HMAC,
     #[serde(rename = "CKM_BLAKE2B_512_HMAC_GENERAL")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_512_HMAC_GENERAL",
+        serialize = "Blake2b512HmacGeneral",
+        serialize = "blake2b_512_hmac_general"
+    )]
     Blake2b512HmacGeneral = CKM_BLAKE2B_512_HMAC_GENERAL,
     #[serde(rename = "CKM_BLAKE2B_512_KEY_DERIVE")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_512_KEY_DERIVE",
+        serialize = "Blake2b512KeyDerive",
+        serialize = "blake2b_512_key_derive"
+    )]
     Blake2b512KeyDerive = CKM_BLAKE2B_512_KEY_DERIVE,
     #[serde(rename = "CKM_BLAKE2B_512_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_BLAKE2B_512_KEY_GEN",
+        serialize = "Blake2b512KeyGen",
+        serialize = "blake2b_512_key_gen"
+    )]
     Blake2b512KeyGen = CKM_BLAKE2B_512_KEY_GEN,
     #[serde(rename = "CKM_SALSA20")]
+    #[strum(
+        serialize = "CKM_SALSA20",
+        serialize = "Salsa20",
+        serialize = "salsa20"
+    )]
     Salsa20 = CKM_SALSA20,
     #[serde(rename = "CKM_CHACHA20_POLY1305")]
+    #[strum(
+        serialize = "CKM_CHACHA20_POLY1305",
+        serialize = "Chacha20Poly1305",
+        serialize = "chacha20_poly1305"
+    )]
     Chacha20Poly1305 = CKM_CHACHA20_POLY1305,
     #[serde(rename = "CKM_SALSA20_POLY1305")]
+    #[strum(
+        serialize = "CKM_SALSA20_POLY1305",
+        serialize = "Salsa20Poly1305",
+        serialize = "salsa20_poly1305"
+    )]
     Salsa20Poly1305 = CKM_SALSA20_POLY1305,
     #[serde(rename = "CKM_X3DH_INITIALIZE")]
+    #[strum(
+        serialize = "CKM_X3DH_INITIALIZE",
+        serialize = "X3dhInitialize",
+        serialize = "x3dh_initialize"
+    )]
     X3dhInitialize = CKM_X3DH_INITIALIZE,
     #[serde(rename = "CKM_X3DH_RESPOND")]
+    #[strum(
+        serialize = "CKM_X3DH_RESPOND",
+        serialize = "X3dhRespond",
+        serialize = "x3dh_respond"
+    )]
     X3dhRespond = CKM_X3DH_RESPOND,
     #[serde(rename = "CKM_X2RATCHET_INITIALIZE")]
+    #[strum(
+        serialize = "CKM_X2RATCHET_INITIALIZE",
+        serialize = "X2ratchetInitialize",
+        serialize = "x2ratchet_initialize"
+    )]
     X2ratchetInitialize = CKM_X2RATCHET_INITIALIZE,
     #[serde(rename = "CKM_X2RATCHET_RESPOND")]
+    #[strum(
+        serialize = "CKM_X2RATCHET_RESPOND",
+        serialize = "X2ratchetRespond",
+        serialize = "x2ratchet_respond"
+    )]
     X2ratchetRespond = CKM_X2RATCHET_RESPOND,
     #[serde(rename = "CKM_X2RATCHET_ENCRYPT")]
+    #[strum(
+        serialize = "CKM_X2RATCHET_ENCRYPT",
+        serialize = "X2ratchetEncrypt",
+        serialize = "x2ratchet_encrypt"
+    )]
     X2ratchetEncrypt = CKM_X2RATCHET_ENCRYPT,
     #[serde(rename = "CKM_X2RATCHET_DECRYPT")]
+    #[strum(
+        serialize = "CKM_X2RATCHET_DECRYPT",
+        serialize = "X2ratchetDecrypt",
+        serialize = "x2ratchet_decrypt"
+    )]
     X2ratchetDecrypt = CKM_X2RATCHET_DECRYPT,
     #[serde(rename = "CKM_XEDDSA")]
+    #[strum(serialize = "CKM_XEDDSA", serialize = "Xeddsa", serialize = "xeddsa")]
     Xeddsa = CKM_XEDDSA,
     #[serde(rename = "CKM_HKDF_DERIVE")]
+    #[strum(
+        serialize = "CKM_HKDF_DERIVE",
+        serialize = "HkdfDerive",
+        serialize = "hkdf_derive"
+    )]
     HkdfDerive = CKM_HKDF_DERIVE,
     #[serde(rename = "CKM_HKDF_DATA")]
+    #[strum(
+        serialize = "CKM_HKDF_DATA",
+        serialize = "HkdfData",
+        serialize = "hkdf_data"
+    )]
     HkdfData = CKM_HKDF_DATA,
     #[serde(rename = "CKM_HKDF_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_HKDF_KEY_GEN",
+        serialize = "HkdfKeyGen",
+        serialize = "hkdf_key_gen"
+    )]
     HkdfKeyGen = CKM_HKDF_KEY_GEN,
     #[serde(rename = "CKM_SALSA20_KEY_GEN")]
+    #[strum(
+        serialize = "CKM_SALSA20_KEY_GEN",
+        serialize = "Salsa20KeyGen",
+        serialize = "salsa20_key_gen"
+    )]
     Salsa20KeyGen = CKM_SALSA20_KEY_GEN,
     #[serde(rename = "CKM_ECDSA_SHA3_224")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA3_224",
+        serialize = "EcdsaSha3224",
+        serialize = "ecdsa_sha3_224"
+    )]
     EcdsaSha3224 = CKM_ECDSA_SHA3_224,
     #[serde(rename = "CKM_ECDSA_SHA3_256")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA3_256",
+        serialize = "EcdsaSha3256",
+        serialize = "ecdsa_sha3_256"
+    )]
     EcdsaSha3256 = CKM_ECDSA_SHA3_256,
     #[serde(rename = "CKM_ECDSA_SHA3_384")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA3_384",
+        serialize = "EcdsaSha3384",
+        serialize = "ecdsa_sha3_384"
+    )]
     EcdsaSha3384 = CKM_ECDSA_SHA3_384,
     #[serde(rename = "CKM_ECDSA_SHA3_512")]
+    #[strum(
+        serialize = "CKM_ECDSA_SHA3_512",
+        serialize = "EcdsaSha3512",
+        serialize = "ecdsa_sha3_512"
+    )]
     EcdsaSha3512 = CKM_ECDSA_SHA3_512,
     #[serde(rename = "CKM_EC_EDWARDS_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_EC_EDWARDS_KEY_PAIR_GEN",
+        serialize = "EcEdwardsKeyPairGen",
+        serialize = "ec_edwards_key_pair_gen"
+    )]
     EcEdwardsKeyPairGen = CKM_EC_EDWARDS_KEY_PAIR_GEN,
     #[serde(rename = "CKM_EC_MONTGOMERY_KEY_PAIR_GEN")]
+    #[strum(
+        serialize = "CKM_EC_MONTGOMERY_KEY_PAIR_GEN",
+        serialize = "EcMontgomeryKeyPairGen",
+        serialize = "ec_montgomery_key_pair_gen"
+    )]
     EcMontgomeryKeyPairGen = CKM_EC_MONTGOMERY_KEY_PAIR_GEN,
     #[serde(rename = "CKM_EDDSA")]
+    #[strum(serialize = "CKM_EDDSA", serialize = "Eddsa", serialize = "eddsa")]
     Eddsa = CKM_EDDSA,
     #[serde(rename = "CKM_SP800_108_COUNTER_KDF")]
+    #[strum(
+        serialize = "CKM_SP800_108_COUNTER_KDF",
+        serialize = "Sp800108CounterKdf",
+        serialize = "sp800_108_counter_kdf"
+    )]
     Sp800108CounterKdf = CKM_SP800_108_COUNTER_KDF,
     #[serde(rename = "CKM_SP800_108_FEEDBACK_KDF")]
+    #[strum(
+        serialize = "CKM_SP800_108_FEEDBACK_KDF",
+        serialize = "Sp800108FeedbackKdf",
+        serialize = "sp800_108_feedback_kdf"
+    )]
     Sp800108FeedbackKdf = CKM_SP800_108_FEEDBACK_KDF,
     #[serde(rename = "CKM_SP800_108_DOUBLE_PIPELINE_KDF")]
+    #[strum(
+        serialize = "CKM_SP800_108_DOUBLE_PIPELINE_KDF",
+        serialize = "Sp800108DoublePipelineKdf",
+        serialize = "sp800_108_double_pipeline_kdf"
+    )]
     Sp800108DoublePipelineKdf = CKM_SP800_108_DOUBLE_PIPELINE_KDF,
     #[serde(rename = "CKM_VENDOR_DEFINED")]
+    #[strum(
+        serialize = "CKM_VENDOR_DEFINED",
+        serialize = "VendorDefined",
+        serialize = "vendor_defined"
+    )]
     VendorDefined = CKM_VENDOR_DEFINED,
-    #[num_enum(catch_all)]
-    UnknownMechanismType(u64) = u64::MAX,
+    UnknownMechanismType = u64::MAX,
+}
+
+impl From<u64> for MechanismType {
+    fn from(val: u64) -> Self {
+        MechanismType::from_repr(val).unwrap_or(MechanismType::UnknownMechanismType)
+    }
+}
+
+impl From<MechanismType> for u64 {
+    fn from(val: MechanismType) -> u64 {
+        val as u64
+    }
 }
 
 impl From<cryptoki::mechanism::MechanismType> for MechanismType {

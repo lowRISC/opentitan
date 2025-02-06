@@ -6,7 +6,6 @@
 // Do not edit.'
 
 use cryptoki_sys::*;
-use num_enum::{FromPrimitive, IntoPrimitive};
 use std::convert::TryFrom;
 
 #[derive(
@@ -16,13 +15,12 @@ use std::convert::TryFrom;
     PartialEq,
     Eq,
     Hash,
-    IntoPrimitive,
-    FromPrimitive,
     serde::Serialize,
     serde::Deserialize,
     strum::Display,
     strum::EnumString,
     strum::EnumIter,
+    strum::FromRepr,
 )]
 #[repr(u64)]
 pub enum AttributeType {
@@ -817,8 +815,19 @@ pub enum AttributeType {
         serialize = "auth_pin_flags"
     )]
     AuthPinFlags = CKA_AUTH_PIN_FLAGS,
-    #[num_enum(catch_all)]
-    UnknownAttributeType(u64) = u64::MAX,
+    UnknownAttributeType = u64::MAX,
+}
+
+impl From<u64> for AttributeType {
+    fn from(val: u64) -> Self {
+        AttributeType::from_repr(val).unwrap_or(AttributeType::UnknownAttributeType)
+    }
+}
+
+impl From<AttributeType> for u64 {
+    fn from(val: AttributeType) -> u64 {
+        val as u64
+    }
 }
 
 impl From<cryptoki::object::AttributeType> for AttributeType {

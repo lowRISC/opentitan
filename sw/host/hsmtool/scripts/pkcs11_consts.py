@@ -21,7 +21,7 @@ parser.add_argument('--serde',
 parser.add_argument('--strum',
                     default=False,
                     action=argparse.BooleanOptionalAction,
-                    help='Derive string conversions with strum')
+                    help='Derive string and u64 conversions with strum')
 parser.add_argument('--conv_data',
                     default=False,
                     action=argparse.BooleanOptionalAction,
@@ -162,14 +162,13 @@ class EnumGen(object):
         enumerators = map(lambda name: self.to_studlycaps(name[prefix:]),
                           names)
         traits = [
-            'Clone', 'Copy', 'Debug', 'PartialEq', 'Eq', 'Hash',
-            'IntoPrimitive', 'FromPrimitive'
+            'Clone', 'Copy', 'Debug', 'PartialEq', 'Eq', 'Hash'
         ]
         if self.serde:
             traits.extend(['serde::Serialize', 'serde::Deserialize'])
         if self.strum:
             traits.extend(
-                ['strum::Display', 'strum::EnumString', 'strum::EnumIter'])
+                ['strum::Display', 'strum::EnumString', 'strum::EnumIter', 'strum::FromRepr'])
         self.emit(f'#[derive({", ".join(traits)})]')
         self.emit('#[repr(u64)]')
         self.emit(f'pub enum {typename} {{')
@@ -182,8 +181,7 @@ class EnumGen(object):
                     f'    #[strum(serialize="{val}", serialize="{en}", serialize="{snake_case}")]'
                 )
             self.emit(f'    {en} = {val},')
-        self.emit('    #[num_enum(catch_all)]')
-        self.emit(f'    Unknown{typename}(u64) = u64::MAX,')
+        self.emit(f'    Unknown{typename} = u64::MAX,')
         self.emit('}')
 
     def emit_conversions(self, reprtype):
@@ -193,6 +191,22 @@ class EnumGen(object):
             reprtype: str; The low-level PKCS#11 representation type.
         """
         typename = self.ki_type.split('::')[-1]
+        if self.strum:
+            self.emit(f"""
+impl From<u64> for {typename} {{
+    fn from(val: u64) -> Self {{
+        {typename}::from_repr(val)
+            .unwrap_or({typename}::Unknown{typename})
+    }}
+}}
+
+impl From<{typename}> for u64 {{
+    fn from(val: {typename}) -> u64 {{
+        val as u64
+    }}
+}}
+""")
+
         self.emit(f"""
 impl From<{self.ki_type}> for {typename} {{
     fn from(val: {self.ki_type}) -> Self {{
@@ -236,7 +250,6 @@ impl From<{typename}> for AttrData {{
 
         self.emit('use std::convert::TryFrom;')
         self.emit('use cryptoki_sys::*;')
-        self.emit('use num_enum::{IntoPrimitive, FromPrimitive};')
         self.emit()
         if self.conv_data:
             self.emit(
