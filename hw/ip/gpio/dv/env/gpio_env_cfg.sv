@@ -13,11 +13,16 @@ class gpio_env_cfg extends cip_base_env_cfg #(
   rand bit pulldown_en;
   // gpio virtual interface
   gpio_vif gpio_vif;
+  // gpio strats virtual interface
+  straps_vif straps_vif_inst;
 
   constraint pullup_pulldown_en_c {pullup_en ^ pulldown_en;}
 
   `uvm_object_utils(gpio_env_cfg)
-  `uvm_object_new
+
+  function new (string name = "gpio_env_cfg");
+    super.new (name);
+  endfunction
 
   virtual function void initialize(bit [TL_AW-1:0] csr_base_addr = '1);
     list_of_alerts = gpio_env_pkg::LIST_OF_ALERTS;
@@ -27,6 +32,6 @@ class gpio_env_cfg extends cip_base_env_cfg #(
 
     // only support 1 outstanding TL item
     m_tl_agent_cfg.max_outstanding_req = 1;
-  endfunction : initialize
 
+  endfunction : initialize
 endclass

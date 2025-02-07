@@ -31,6 +31,8 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   //  (i) indicate that write to INTR_STATE register just happened, and
   // (ii) store information of which all interupt bits were cleared
   bit [TL_DW-1:0] cleared_intr_bits;
+  // Flag to indicate that the strap was triggered
+  bit first_strap_triggered;
 
   // mask are WO, store the values in scb
   uvm_reg_data_t masked_out_lower_mask;
@@ -38,13 +40,18 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
 
   string common_seq_type;
 
+  uvm_analysis_imp #(gpio_seq_item, gpio_scoreboard) sb_exp;
+
   `uvm_component_utils(gpio_scoreboard)
 
-  `uvm_component_new
+  function new (string name, uvm_component parent = null);
+    super.new (name, parent);
+  endfunction
 
   // Function: build_phase
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
+    sb_exp = new("sb_exp", this);
   endfunction
 
   // Task: run_phase
@@ -56,6 +63,28 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       monitor_gpio_interrupt_pins();
     join_none
   endtask
+
+  // Task: write function to get the gpio_seq_item from the straps monitor 
+  // and call the checker function.
+  virtual function void write(gpio_seq_item item);
+      check_straps_data(item);
+  endfunction : write
+
+  // Task: check_straps_data
+  // Check the sampled straps data
+  virtual function void check_straps_data(gpio_seq_item item);
+    // Check the sampled straps data
+    `uvm_info(`gfn, "Checking the sampled straps data", UVM_HIGH)
+    if (!first_strap_triggered) begin
+      // Checker: Compare actual values of gpio pins with straps register.
+      // Check the register hw_straps_data_in against gpio_i pins
+      `DV_CHECK_CASE_EQ(gpio_i_driven, item.sampled_straps_o.data)
+      // Check the register hw_straps_data_in_valid
+      `DV_CHECK_CASE_EQ(1, item.sampled_straps_o.valid)
+      // Turn-off the checker after the first strap trigger.
+      first_strap_triggered = 1;
+    end
+  endfunction : check_straps_data
 
   // Task : process_tl_access
   // process monitored tl transaction
@@ -242,7 +271,19 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
   // Task : monitor_gpio_i
   // monitor gpio input pins interface
   virtual task monitor_gpio_i();
-    logic [NUM_GPIOS-1:0] prev_gpio_i = cfg.gpio_vif.pins;
+
+    logic [NUM_GPIOS-1:0] prev_gpio_i;
+
+    if(cfg == null) begin
+      `uvm_error(`gfn, "cfg is not set")
+      return;
+    end
+    if(cfg.gpio_vif == null) begin
+      `uvm_error(`gfn, "cfg.gpio_vif is not set")
+      return;
+    end
+
+    prev_gpio_i = cfg.gpio_vif.pins;
 
     forever begin : monitor_pins_if
       @(cfg.gpio_vif.pins or cfg.under_reset);
@@ -359,6 +400,17 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
       end
     end
   endtask : monitor_gpio_interrupt_pins
+
+  virtual task update_gpio_straps_regs();
+    // Update data_in ral register value based on result of input
+    `DV_CHECK_FATAL(
+    ral.hw_straps_data_in.predict(.value(gpio_i_driven),
+                                  .kind(UVM_PREDICT_DIRECT)));
+    // Update data_in valid register value based on result of input
+    `DV_CHECK_FATAL(
+    ral.hw_straps_data_in_valid.predict(.value('b1),
+                                        .kind(UVM_PREDICT_DIRECT)));
+  endtask : update_gpio_straps_regs
 
   // Function: actual_gpio_i_activity
   function bit actual_gpio_i_activity();
@@ -561,6 +613,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
           ((|gpio_i_driven === 1'b1) && (actual_gpio_i_activity() == 1))) begin
         `DV_CHECK_CASE_EQ(pred_val_gpio_pins, cfg.gpio_vif.pins)
       end
+
     end
 
   endfunction : gpio_predict_and_compare
@@ -804,6 +857,7 @@ class gpio_scoreboard extends cip_base_scoreboard #(.CFG_T (gpio_env_cfg),
     last_intr_update_except_clearing = '0;
     last_intr_test_event = '0;
     cleared_intr_bits = '0;
+    first_strap_triggered = 0;
   endfunction
 
   // Function: check_phase

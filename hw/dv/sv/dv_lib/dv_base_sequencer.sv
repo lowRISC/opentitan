@@ -24,8 +24,13 @@ class dv_base_sequencer #(type ITEM_T     = uvm_sequence_item,
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    if (cfg.has_req_fifo) req_analysis_fifo = new("req_analysis_fifo", this);
-    if (cfg.has_rsp_fifo) rsp_analysis_fifo = new("rsp_analysis_fifo", this);
+
+    if (cfg == null) begin
+      `uvm_fatal("dv_base_sequencer", "cfg handle is null. Ensure it's properly assigned before build_phase.")
+    end else begin
+      if (cfg.has_req_fifo) req_analysis_fifo = new("req_analysis_fifo", this);
+      if (cfg.has_rsp_fifo) rsp_analysis_fifo = new("rsp_analysis_fifo", this);
+    end
   endfunction : build_phase
 
 endclass
