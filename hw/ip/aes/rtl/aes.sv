@@ -303,6 +303,18 @@ module aes
         alert_tx_o[1])
   end
 
+  if (AESGCMEnable && SecMasking) begin : gen_ghash_onehot_sva
+    for (genvar s = 0; s < 2; s++) begin : gen_ghash_onehot_add_in_sva
+      `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashAadOnehotCheck_A,
+          u_aes_core.gen_ghash.u_aes_ghash.gen_masked_add.gen_add_in_muxes[s].
+              u_prim_onehot_check_add_in_sel,
+          alert_tx_o[1])
+    end
+    `ASSERT_PRIM_ONEHOT_ERROR_TRIGGER_ALERT(GhashMultOnehotCheck_A,
+        u_aes_core.gen_ghash.u_aes_ghash.gen_gf_mult1_mux.u_prim_onehot_check_gf_mult1_in_sel,
+        alert_tx_o[1])
+  end
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[1])
 endmodule
