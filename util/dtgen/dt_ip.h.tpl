@@ -142,6 +142,7 @@ dt_${device_name}_irq_t dt_${device_name}_irq_from_plic_id(
     dt_plic_irq_id_t irq);
 
 %endif
+
 % if helper.has_periph_io():
 /**
  * Get the peripheral I/O description of an instance.
@@ -154,4 +155,18 @@ dt_periph_io_t dt_${device_name}_periph_io(
     dt_${device_name}_t dt,
     dt_${device_name}_periph_io_t sig);
 % endif
+
+% if helper.has_clocks():
+/**
+ * Get the clock signal connected to a clock port of an instance.
+ *
+ * @param dt Instance of ${device_name}.
+ * @param sig Clock port.
+ * @return Clock signal.
+ */
+dt_clock_t dt_${device_name}_clock(
+    dt_${device_name}_t dt,
+    dt_${device_name}_clock_t clk);
+% endif
+
 #endif  // ${include_guard}
