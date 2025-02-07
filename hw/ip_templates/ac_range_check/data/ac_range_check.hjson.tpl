@@ -355,6 +355,8 @@ import math
         regwen: "RANGE_REGWEN"
         regwen_multi: true
         shadowed: "true",
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
         fields: [
           { name: "write_perm"
             desc: "Write permission policy bitmap."
