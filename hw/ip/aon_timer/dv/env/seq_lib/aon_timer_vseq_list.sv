@@ -8,3 +8,7 @@
 `include "aon_timer_jump_vseq.sv"
 `include "aon_timer_common_vseq.sv"
 `include "aon_timer_stress_all_vseq.sv"
+`include "aon_timer_custom_intr_vseq.sv"
+`include "aon_timer_smoke_max_thold_vseq.sv"
+`include "aon_timer_smoke_min_thold_vseq.sv"
+`include "aon_timer_wkup_count_cdc_hi_vseq.sv"

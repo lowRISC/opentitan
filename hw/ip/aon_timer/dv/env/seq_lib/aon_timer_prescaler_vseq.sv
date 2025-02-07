@@ -40,19 +40,15 @@ endtask : body
 
 task aon_timer_prescaler_vseq::prescaler_configure();
 
-  // Write random value to the prescaler
-  csr_utils_pkg::csr_wr(ral.wkup_ctrl.prescaler, prescaler);
   `uvm_info(`gfn,
             $sformatf("\n\t Writing random prescaler value of %d to WKUP CTRL", prescaler),
             UVM_HIGH)
-
+  // Write random value to the prescaler
+  csr_utils_pkg::csr_wr(ral.wkup_ctrl.prescaler, prescaler);
   csr_utils_pkg::csr_spinwait(.ptr(ral.wkup_ctrl.prescaler), .exp_data(prescaler), .backdoor(1));
   `uvm_info(`gfn, "Written values (wkup_prescaler) has propagated through the CDC", UVM_DEBUG)
-
-
   `uvm_info(`gfn, "Enabling AON Timer (WKUP ONLY). Writing 1 to WKUP_CTRL", UVM_HIGH)
   csr_utils_pkg::csr_wr(ral.wkup_ctrl.enable, 1'b1);
   csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
-
   `uvm_info(`gfn, "\n\t Waiting for AON Timer to finish (interrupt)", UVM_HIGH)
 endtask : prescaler_configure
