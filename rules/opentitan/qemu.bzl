@@ -184,6 +184,11 @@ def gen_flash(ctx, **kwargs):
             firmware_bin.path,
             "-X",
             firmware_elf.path,
+            # Skip `flashgen`'s ELF/binary mtime checks - it will fail if the
+            # binary is older than the ELF which usually suggests that the
+            # binary has not been regenerated, however Bazel often messes with
+            # mtimes causing false negatives.
+            "--ignore-time",
             out.path,
         ],
         mnemonic = "FlashGen",
