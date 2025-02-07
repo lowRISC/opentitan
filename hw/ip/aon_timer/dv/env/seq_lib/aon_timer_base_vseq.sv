@@ -63,6 +63,12 @@ class aon_timer_base_vseq extends cip_base_vseq #(
 
 endclass : aon_timer_base_vseq
 
+// The aim of this constraint is to generate wkup and wdogs interrupts easily. In order to
+// do that, this constraints starts by stablishing the threshold and a gap between the count and the
+// threshold.
+// If the threshold is 0, the count is forced to be 0.
+// Otherwise, the count will be randomised in the range [threshold-gap:threshold].
+// For the WDOG counter every run aims to get the count to target either the bite or bark threshold.
 constraint aon_timer_base_vseq::thold_count_c {
   solve wkup_count_gap, wkup_thold before wkup_count;
   solve aim_bite, wdog_count_gap, wdog_bark_thold, wdog_bite_thold before wdog_count;
@@ -102,7 +108,6 @@ task aon_timer_base_vseq::aon_timer_shutdown();
   write_wkup_reg(ral.wkup_ctrl.enable, 1'b0);
   `uvm_info(`gfn, "write_reg wdog_ctr.enable", UVM_DEBUG);
   csr_utils_pkg::csr_wr(ral.wdog_ctrl.enable, 1'b0);
-
   `uvm_info(`gfn, "Clearing interrupts, count registers and wakeup request.", UVM_HIGH)
   // Clear wake-up request if we have any
   csr_utils_pkg::csr_wr(ral.wkup_cause, 1'b0);
@@ -194,7 +199,8 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
       cfg.aon_clk_rst_vif.wait_clks(2);
 
       // We need to ensure the prediction has kicked in before we read the intr_state
-      wait (ral.intr_state.is_busy()==0);
+      wait (ral.intr_state.is_busy() == 0);
+      if (cfg.under_reset) return;
       csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
     end
 

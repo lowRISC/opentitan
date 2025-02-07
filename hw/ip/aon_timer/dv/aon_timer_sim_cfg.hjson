@@ -67,6 +67,26 @@
       name: aon_timer_jump
       uvm_test_seq: aon_timer_jump_vseq
     }
+    {
+      name: aon_timer_custom_intr
+      uvm_test_seq: aon_timer_custom_intr_vseq
+      reseed: 10
+    }
+    {
+      name: aon_timer_smoke_max_thold
+      uvm_test_seq: aon_timer_smoke_max_thold_vseq
+      reseed: 5
+    }
+    {
+      name: aon_timer_smoke_min_thold
+      uvm_test_seq: aon_timer_smoke_min_thold_vseq
+      reseed: 5
+    }
+    {
+      name: aon_timer_wkup_count_cdc_hi
+      uvm_test_seq: aon_timer_wkup_count_cdc_hi_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
