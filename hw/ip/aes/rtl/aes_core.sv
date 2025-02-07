@@ -73,6 +73,8 @@ module aes_core
   logic                                       ctrl_reg_err_storage;
   logic                                       ctrl_gcm_qe;
   logic                                       ctrl_gcm_we;
+  logic                                       ctrl_gcm_phase;
+  logic                                       gcm_init_done;
   gcm_phase_e                                 gcm_phase_q;
   logic                                 [4:0] num_valid_bytes_q;
   logic                                       ctrl_gcm_reg_err_update;
@@ -688,6 +690,8 @@ module aes_core
     .rst_shadowed_ni    ( rst_shadowed_ni          ),
     .qe_o               ( ctrl_gcm_qe              ),
     .we_i               ( ctrl_gcm_we              ),
+    .phase_o            ( ctrl_gcm_phase           ),
+    .init_done_i        ( gcm_init_done            ),
     .first_block_i      ( ghash_first_block        ),
     .gcm_phase_o        ( gcm_phase_q              ),
     .num_valid_bytes_o  ( num_valid_bytes_q        ),
@@ -723,6 +727,8 @@ module aes_core
     .key_touch_forces_reseed_i ( key_touch_forces_reseed                ),
     .ctrl_gcm_qe_i             ( ctrl_gcm_qe                            ),
     .ctrl_gcm_we_o             ( ctrl_gcm_we                            ),
+    .ctrl_gcm_phase_i          ( ctrl_gcm_phase                         ),
+    .gcm_init_done_o           ( gcm_init_done                          ),
     .gcm_phase_i               ( gcm_phase_q                            ),
     .start_i                   ( reg2hw.trigger.start.q                 ),
     .key_iv_data_in_clear_i    ( reg2hw.trigger.key_iv_data_in_clear.q  ),

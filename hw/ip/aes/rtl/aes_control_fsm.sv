@@ -33,6 +33,8 @@ module aes_control_fsm
   input  logic                                    key_touch_forces_reseed_i,
   input  logic                                    ctrl_gcm_qe_i,
   output logic                                    ctrl_gcm_we_o,
+  input  logic                                    ctrl_gcm_phase_i,
+  output logic                                    gcm_init_done_o,
   input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
@@ -185,6 +187,8 @@ module aes_control_fsm
   logic                     input_ready;
   logic                     input_ready_we;
 
+  logic                     ctrl_gcm_we_q;
+  logic                     gcm_clear;
   logic                     gcm_init, gcm_restore, gcm_aad, gcm_txt, gcm_save, gcm_tag;
   logic                     start_common_gcm, start_ghash;
   logic                     start_gcm_init, start_gcm_hsk, start_gcm_s;
@@ -278,9 +282,9 @@ module aes_control_fsm
 
   // For the initial GCM phase, we need key and IV but then encrypt two blocks. The input data
   // is not required. Requires operating the AES cipher core and thus factors into the regular
-  // start signal.
-  assign start_gcm_hsk  = gcm_init & ~hash_subkey_ready_q & iv_ready & ctr_ready_i;
-  assign start_gcm_s    = gcm_init & ~s_ready_q           & iv_ready & ctr_ready_i;
+  // start signal. Delay GCM initialization while clearing GCM-related status tracking.
+  assign start_gcm_hsk  = gcm_init & ~gcm_clear & ~hash_subkey_ready_q & iv_ready & ctr_ready_i;
+  assign start_gcm_s    = gcm_init & ~gcm_clear & ~s_ready_q           & iv_ready & ctr_ready_i;
   assign start_gcm_init = (start_gcm_hsk | start_gcm_s) & start_common_gcm;
 
   // For the restore phase of GCM, we need key, IV and input data. If set to start manually, we
@@ -456,9 +460,16 @@ module aes_control_fsm
           ctrl_we_o      = !ctrl_err_storage_i ? ctrl_qe_i     : 1'b0;
           ctrl_gcm_we_o  = !ctrl_err_storage_i ? ctrl_gcm_qe_i : 1'b0;
 
-          // Control register updates clear all register status trackers.
+          // Control register updates clear all register status trackers. As GCM initialization
+          // advances the IV, we have to clear the IV status tracking when re-initializing GCM.
           key_init_clear = ctrl_we_o;
-          iv_clear       = ctrl_we_o;
+          iv_clear       = ctrl_we_o | (gcm_init & gcm_clear);
+
+          // Also clear GCM-specific status tracking.
+          if (ctrl_we_o | gcm_clear) begin
+            hash_subkey_ready_d = 1'b0;
+            s_ready_d           = 1'b0;
+          end
         end
 
         if (prng_reseed_i) begin
@@ -1051,6 +1062,29 @@ module aes_control_fsm
   assign output_lost    = ctrl_we_o     ? 1'b0 :
                           output_lost_i ? 1'b1 : output_valid_q & ~data_out_read;
   assign output_lost_we = ctrl_we_o | data_out_we_o;
+
+  /////////////////////////
+  // GCM Status Tracking //
+  /////////////////////////
+
+  // Clear GCM-specific status tracking if the GCM phase is set to GCM_INIT after a second write to
+  // the shadowed GCM control register
+  assign gcm_clear = (gcm_phase_i == GCM_INIT) & ctrl_gcm_we_q & ~ctrl_gcm_phase_i;
+
+  if (AESGCMEnable) begin : gen_reg_ctrl_gcm_we
+    always_ff @(posedge clk_i or negedge rst_ni) begin : reg_ctrl_gcm_we
+      if (!rst_ni) begin
+        ctrl_gcm_we_q <= 1'b0;
+      end else begin
+        ctrl_gcm_we_q <= ctrl_gcm_we_o;
+      end
+    end
+  end else begin : gen_no_reg_ctrl_gcm_we
+    assign ctrl_gcm_we_q = 1'b1;
+  end
+
+  // Signal when the GCM initialization is done.
+  assign gcm_init_done_o = hash_subkey_ready_q & s_ready_q;
 
   // Should fatal alerts clear the status and trigger register?
   assign clear_on_fatal = ClearStatusOnFatalAlert ? alert_fatal_i : 1'b0;

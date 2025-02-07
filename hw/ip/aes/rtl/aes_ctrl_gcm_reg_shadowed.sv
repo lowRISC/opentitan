@@ -25,6 +25,8 @@ module aes_ctrl_gcm_reg_shadowed
   // Main control
   output logic       qe_o, // software wants to write
   input  logic       we_i, // hardware grants software write
+  output logic       phase_o,
+  input  logic       init_done_i,
   input  logic       first_block_i,
   output gcm_phase_e gcm_phase_o,
   output logic [4:0] num_valid_bytes_o,
@@ -39,10 +41,12 @@ module aes_ctrl_gcm_reg_shadowed
 );
 
   // Signals
-  logic          err_update_gcm_phase;
-  logic          err_update_num_valid_bytes;
-  logic          err_storage_gcm_phase;
-  logic          err_storage_num_valid_bytes;
+  logic phase_gcm_phase;
+  logic phase_num_valid_bytes;
+  logic err_update_gcm_phase;
+  logic err_update_num_valid_bytes;
+  logic err_storage_gcm_phase;
+  logic err_storage_num_valid_bytes;
 
   // Get and forward write enable. Writes are only allowed if the module is idle.
   assign qe_o = reg2hw_ctrl_gcm_i.phase.qe & reg2hw_ctrl_gcm_i.num_valid_bytes.qe;
@@ -69,10 +73,11 @@ module aes_ctrl_gcm_reg_shadowed
       // Only a subset of next phase transitions are allowed.
       unique case (gcm_phase_o)
         GCM_INIT: begin
-          gcm_phase = gcm_phase == GCM_RESTORE ||
-                      gcm_phase == GCM_AAD     ||
-                      gcm_phase == GCM_TEXT    ||
-                      gcm_phase == GCM_TAG     ? gcm_phase : gcm_phase_o;
+          gcm_phase = init_done_i &&
+              (gcm_phase == GCM_RESTORE ||
+               gcm_phase == GCM_AAD     ||
+               gcm_phase == GCM_TEXT    ||
+               gcm_phase == GCM_TAG)    ? gcm_phase : gcm_phase_o;
         end
 
         GCM_RESTORE: begin
@@ -135,7 +140,7 @@ module aes_ctrl_gcm_reg_shadowed
       .q          (hw2reg_ctrl_gcm_o.phase.d),
       .qs         (),
       .ds         (),
-      .phase      (),
+      .phase      (phase_gcm_phase),
       .err_update (err_update_gcm_phase),
       .err_storage(err_storage_gcm_phase)
     );
@@ -157,7 +162,7 @@ module aes_ctrl_gcm_reg_shadowed
       .q          (hw2reg_ctrl_gcm_o.num_valid_bytes.d),
       .qs         (),
       .ds         (),
-      .phase      (),
+      .phase      (phase_num_valid_bytes),
       .err_update (err_update_num_valid_bytes),
       .err_storage(err_storage_num_valid_bytes)
     );
@@ -169,7 +174,11 @@ module aes_ctrl_gcm_reg_shadowed
                                reg2hw_ctrl_gcm_i.num_valid_bytes.re,
                                reg2hw_ctrl_gcm_i.num_valid_bytes.q};
     logic unused_we;
+    logic unused_init_done;
+    logic unused_first_block;
     assign unused_we = we_i;
+    assign unused_init_done = init_done_i;
+    assign unused_first_block = first_block_i;
 
     logic unused_clk;
     logic unused_rst;
@@ -181,6 +190,8 @@ module aes_ctrl_gcm_reg_shadowed
     // Tie off control signals.
     assign hw2reg_ctrl_gcm_o.phase.d           = {GCM_INIT};
     assign hw2reg_ctrl_gcm_o.num_valid_bytes.d = 5'd16;
+    assign phase_gcm_phase                     = 1'b1;
+    assign phase_num_valid_bytes               = 1'b1;
 
     // Tie off error signals.
     assign err_update_gcm_phase        = 1'b0;
@@ -188,6 +199,9 @@ module aes_ctrl_gcm_reg_shadowed
     assign err_storage_gcm_phase       = 1'b0;
     assign err_storage_num_valid_bytes = 1'b0;
   end
+
+  // Collect phase signals.
+  assign phase_o = phase_gcm_phase | phase_num_valid_bytes;
 
   // Collect alerts.
   assign err_update_o = err_update_gcm_phase | err_update_num_valid_bytes;
