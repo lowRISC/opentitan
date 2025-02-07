@@ -128,8 +128,8 @@ module ac_range_check
                        (ctn_tl_h2d_i.a_address < limit_ext);
 
     // Request hits an enabled range and comparison logic
-    assign addr_hit[i] = prim_mubi_pkg::mubi4_test_true_loose(reg2hw.range_perm[i].enable.q) &
-                         tor_hit;
+    assign addr_hit[i] = prim_mubi_pkg::mubi4_test_true_loose(
+                           prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].enable.q)) & tor_hit;
 
     // Perform RACL checks - check if the incoming role matches with the configured policy
     assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q);
@@ -137,15 +137,15 @@ module ac_range_check
 
     // Decode the multi-bit access fields for convinient access
     logic perm_read_access, perm_write_access, perm_execute_access;
-    assign perm_read_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].read_access.q) &
-      racl_read_hit[i];
-    assign perm_write_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].write_access.q) &
-      racl_write_hit[i];
-    assign perm_execute_access =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].execute_access.q) &
-      racl_read_hit[i];
+    assign perm_read_access = prim_mubi_pkg::mubi4_test_true_strict(
+                                prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].read_access.q)) &
+                                racl_read_hit[i];
+    assign perm_write_access = prim_mubi_pkg::mubi4_test_true_strict(
+                                 prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].write_access.q)) &
+                                 racl_write_hit[i];
+    assign perm_execute_access = prim_mubi_pkg::mubi4_test_true_strict(
+                                   prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].execute_access.q)) &
+                                   racl_read_hit[i];
 
     // Access is denied if no read_, write_, or execute access is set in the permission mask
     // The permission masks need to be reversed to allow for the right priority order.
@@ -154,8 +154,8 @@ module ac_range_check
       addr_hit[i] & ~(perm_read_access | perm_write_access | perm_execute_access);
 
     // TODO(#25456) Use log_enable_mask to mask logging
-    assign log_enable_mask[NumRanges - 1 - i] =
-      prim_mubi_pkg::mubi4_test_true_strict(reg2hw.range_perm[i].log_denied_access.q);
+    assign log_enable_mask[NumRanges - 1 - i] = prim_mubi_pkg::mubi4_test_true_strict(
+      prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].log_denied_access.q));
 
     // Determine the read, write, and execute mask. Store a hit in their index
     assign read_mask   [NumRanges - 1 - i] = addr_hit[i] & perm_read_access;
@@ -163,10 +163,12 @@ module ac_range_check
     assign execute_mask[NumRanges - 1 - i] = addr_hit[i] & perm_execute_access;
   end
 
-  // Fiddle out bits to determine if its an execute request or not
+  // Fiddle out bits to determine if it's an execute request or not
   logic no_exec_access, exec_access;
-  assign no_exec_access = prim_mubi_pkg::mubi4_test_false_strict(ctn_tl_h2d_i.a_user.instr_type);
-  assign exec_access    = prim_mubi_pkg::mubi4_test_true_strict(ctn_tl_h2d_i.a_user.instr_type);
+  assign no_exec_access = prim_mubi_pkg::mubi4_test_false_strict(
+                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
+  assign exec_access    = prim_mubi_pkg::mubi4_test_true_strict(
+                            prim_mubi_pkg::mubi4_t'(ctn_tl_h2d_i.a_user.instr_type));
 
   // Fiddle out what access we are performing
   logic read_access, write_access, execute_access;
@@ -343,5 +345,8 @@ module ac_range_check
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,
                                                  alert_tx_o[0])
+  // Deny Counter error
+  `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(DenyCountCheck_A, u_deny_count,
+                                         alert_tx_o[1])
 
 endmodule
