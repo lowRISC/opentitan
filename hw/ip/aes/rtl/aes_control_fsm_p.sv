@@ -34,6 +34,8 @@ module aes_control_fsm_p
   input  logic                                    key_touch_forces_reseed_i,
   input  logic                                    ctrl_gcm_qe_i,
   output logic                                    ctrl_gcm_we_o,
+  input  logic                                    ctrl_gcm_phase_i,
+  output logic                                    gcm_init_done_o,
   input  gcm_phase_e                              gcm_phase_i,
   input  logic                                    start_i,
   input  logic                                    key_iv_data_in_clear_i,
@@ -143,6 +145,7 @@ module aes_control_fsm_p
     manual_operation_i,
     key_touch_forces_reseed_i,
     ctrl_gcm_qe_i,
+    ctrl_gcm_phase_i,
     gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
@@ -186,6 +189,7 @@ module aes_control_fsm_p
     manual_operation_i,
     key_touch_forces_reseed_i,
     ctrl_gcm_qe_i,
+    ctrl_gcm_phase_i,
     gcm_phase_i,
     start_i,
     key_iv_data_in_clear_i,
@@ -236,6 +240,7 @@ module aes_control_fsm_p
   logic                                    manual_operation;
   logic                                    key_touch_forces_reseed;
   logic                                    ctrl_gcm_qe;
+  logic                                    ctrl_gcm_phase;
   gcm_phase_e                              gcm_phase;
   logic             [$bits(gcm_phase)-1:0] gcm_phase_raw;
   logic                                    start;
@@ -276,6 +281,7 @@ module aes_control_fsm_p
           manual_operation,
           key_touch_forces_reseed,
           ctrl_gcm_qe,
+          ctrl_gcm_phase,
           gcm_phase_raw,
           start,
           key_iv_data_in_clear,
@@ -310,6 +316,7 @@ module aes_control_fsm_p
   // Intermediate output signals
   logic                                    ctrl_we;
   logic                                    ctrl_gcm_we;
+  logic                                    gcm_init_done;
   logic                                    alert;
   logic                                    data_in_we;
   data_out_sel_e                           data_out_sel;
@@ -377,6 +384,8 @@ module aes_control_fsm_p
     .key_touch_forces_reseed_i ( key_touch_forces_reseed       ),
     .ctrl_gcm_qe_i             ( ctrl_gcm_qe                   ),
     .ctrl_gcm_we_o             ( ctrl_gcm_we                   ),
+    .ctrl_gcm_phase_i          ( ctrl_gcm_phase                ),
+    .gcm_init_done_o           ( gcm_init_done                 ),
     .gcm_phase_i               ( gcm_phase                     ),
     .start_i                   ( start                         ),
     .key_iv_data_in_clear_i    ( key_iv_data_in_clear          ),
@@ -466,6 +475,7 @@ module aes_control_fsm_p
   localparam int NumOutBufBits = $bits({
     ctrl_we_o,
     ctrl_gcm_we_o,
+    gcm_init_done_o,
     alert_o,
     data_in_we_o,
     data_out_sel_o,
@@ -515,6 +525,7 @@ module aes_control_fsm_p
   assign out = {
     ctrl_we,
     ctrl_gcm_we,
+    gcm_init_done,
     alert,
     data_in_we,
     data_out_sel,
@@ -570,6 +581,7 @@ module aes_control_fsm_p
 
   assign {ctrl_we_o,
           ctrl_gcm_we_o,
+          gcm_init_done_o,
           alert_o,
           data_in_we_o,
           data_out_sel_o,
