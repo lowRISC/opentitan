@@ -613,7 +613,7 @@ module aes_core
       .alert_o             ( ghash_alert            ),
 
       .data_in_prev_i      ( data_in_prev_q         ),
-      .data_out_i          ( data_out_d             ),
+      .data_out_i          ( data_out               ),
       .cipher_state_done_i ( state_done             ),
       .ghash_state_done_o  ( ghash_state_out        )
     );
