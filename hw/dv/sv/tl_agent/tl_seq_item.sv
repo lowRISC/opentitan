@@ -41,6 +41,7 @@
 
 class tl_seq_item extends uvm_sequence_item;
 
+  // This block of variables is the fields that are sent on the A side of the transaction
   rand bit [AddrWidth - 1   : 0] a_addr;
   rand bit [DataWidth - 1   : 0] a_data;
   rand bit [MaskWidth - 1   : 0] a_mask;
@@ -50,6 +51,7 @@ class tl_seq_item extends uvm_sequence_item;
   rand bit [OpcodeWidth - 1 : 0] a_opcode;
   rand bit [AUserWidth - 1 : 0]  a_user;
 
+  // This block of variables is the fields that are sent on the D side of the transaction
   rand bit [2:0]                 d_param;
   rand bit [DataWidth - 1   : 0] d_data;
   rand bit [SourceWidth - 1 : 0] d_source;
@@ -59,76 +61,88 @@ class tl_seq_item extends uvm_sequence_item;
   rand bit [DUserWidth - 1 : 0]  d_user;
   rand bit                       d_sink;
 
-  // host mode delays
+  // When this item is sent by a host-mode driver, this gives the number of cycles that the driver
+  // will wait before asserting a_valid (the VALID signal for a message on the A channel).
   rand int unsigned               a_valid_delay;
+
+  // A TileLink message is sent by asserting the VALID signal and waiting for the receiver to assert
+  // READY. On the A channel, the signals are a_valid and a_ready. When the driver is configured to
+  // abort early (either by req_abort_after_a_valid_len or cfg.allow_a_valid_drop_wo_a_ready), this
+  // variable gives the number of cycles that it will assert a_valid before (if a_ready has been low
+  // throughout) aborting the message by dropping a_valid again.
   rand int unsigned               a_valid_len;
 
-  // device mode delays
+  // When this item is sent by a device-mode driver, this gives the number of cycles that the driver
+  // will wait before asserting d_valid (the VALID signal for a message on the D channel).
   rand int unsigned               d_valid_delay;
+
+  // A TileLink message is sent by asserting the VALID signal and waiting for the receiver to assert
+  // READY. On the D channel, the signals are d_valid and d_ready. When the driver is configured to
+  // abort early (either by rsp_abort_after_d_valid_len or cfg.allow_d_valid_drop_wo_d_ready), this
+  // variable gives the number of cycles that it will assert d_valid before (if d_ready has been low
+  // throughout) aborting the message by dropping d_valid again.
   rand int unsigned               d_valid_len;
 
-  // after given valid_len, end the req/rsp if it's not accepted, which allows seq to switch
-  // content and test unaccepted item shouldn't be used in design
+  // If this flag is true, a host-mode driver will abort sending a message on the A channel after
+  // waiting a_valid_len cycles for a_ready to be asserted by the other end.
   bit                             req_abort_after_a_valid_len;
+
+  // If this flag is true, a host-mode driver will abort sending a message on the D channel after
+  // waiting d_valid_len cycles for a_ready to be asserted by the other end.
   bit                             rsp_abort_after_d_valid_len;
-  // True if the item is completed, not aborted
+
+  // This signal is filled in by a host-mode driver after it stops sending the item on the A
+  // channel. It is set to true if the message was accepted and to false if the request was aborted
+  // (either because of timeout or because a reset was asserted).
   bit                             req_completed;
+
+  // This signal is filled in by a device-mode driver after it stops sending the item on the D
+  // channel. It is set to true if the message was accepted and to false if the request was aborted
+  // (either because of timeout or because a reset was asserted).
   bit                             rsp_completed;
 
-  // param is reserved for future use, must be zero
-  constraint param_c {
-    a_param == 0;
-    d_param == 0;
-  }
+  // The a_param and d_param message fields are reserved in the spec for future use. Force them to
+  // be zero in items that we generate.
+  extern constraint param_c;
 
-  constraint no_d_error_c {
-    soft d_error == 0;
-  }
+  // Constrain d_error to be false (so the message on the D channel does not report an error). This
+  // is a soft constraint, and is overridden in e.g. tl_device_seq, which can inject a nonzero
+  // number of error responses.
+  extern constraint no_d_error_c;
 
-  constraint a_valid_len_c {
-    a_valid_len inside {[1:10]};
-  }
+  // A bound on the time to wait before dropping a_valid if there is no a_ready response.
+  extern constraint a_valid_len_c;
 
-  constraint d_valid_len_c {
-    d_valid_len inside {[1:10]};
-  }
+  // A bound on the time to wait before dropping d_valid if there is no d_ready response.
+  extern constraint d_valid_len_c;
 
-  constraint valid_delay_c {
-    a_valid_delay inside {[0:50]};
-    d_valid_delay inside {[0:50]};
-  }
+  // A bound on the time to wait before dropping asserting a_valid / d_valid on the A / D channels,
+  // respectively.
+  extern constraint valid_delay_c;
 
-  constraint d_opcode_c {
-    d_opcode inside {AccessAckData, AccessAck};
-  }
+  // Constrain d_opcode to be a valid one for the D channel.
+  extern constraint d_opcode_c;
 
-  constraint a_opcode_c {
-    `a_opcode_is_valid(a_opcode);
-  }
+  // Constrain a_opcode to be a valid one for the A channel.
+  extern constraint a_opcode_c;
 
   // Constrain the mask to be contiguous. Technically, this avoids generating some PutPartialData
   // messages that we should probably allow (e.g. a mask of 4'b1001). As a result, that behaviour
   // won't be tested by randomised testing.
-  constraint mask_contiguous_c {
-    $countones(a_mask ^ {a_mask[MaskWidth-2:0], 1'b0}) <= 2;
-  }
+  extern constraint mask_contiguous_c;
 
-  constraint mask_w_PutFullData_c {
-    a_opcode == PutFullData -> `mask_is_full(a_mask, a_size);
-  }
+  // Require that the mask is high for all active byte lanes for a PutFullData message.
+  extern constraint mask_w_PutFullData_c;
 
-  constraint mask_in_active_lanes_c {
-    `mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
-  }
+  // Require that the mask is only high in active lanes.
+  extern constraint mask_in_active_lanes_c;
 
-  constraint addr_size_align_c {
-    `addr_aligned_to_size(a_addr, a_size);
-  }
+  // Require that a_addr is naturally aligned for an operation touching (1 << a_size) bytes.
+  extern constraint addr_size_align_c;
 
-  // size can't be more than 2
-  constraint max_size_c {
-    `below_max_a_size(a_size);
-  }
+  // Require that a_size is at most 2 (this constrains messages to be at most 32 bits, so disallows
+  // multi-beat messages).
+  extern constraint max_size_c;
 
   `uvm_object_utils_begin(tl_seq_item)
     `uvm_field_int  (a_addr,              UVM_DEFAULT)
@@ -157,184 +171,59 @@ class tl_seq_item extends uvm_sequence_item;
     `uvm_field_int  (rsp_completed,       UVM_DEFAULT | UVM_NOPACK)
   `uvm_object_utils_end
 
-  function new (string name = "");
-    super.new(name);
-  endfunction : new
+  extern function new (string name = "");
+  extern function string convert2string();
+  extern function bit do_compare(uvm_object rhs, uvm_comparer comparer);
 
-  virtual function string convert2string();
-    string str;
-    string a_opcode_name, d_opcode_name;
-    tl_a_op_e a_op_e;
-    tl_d_op_e d_op_e;
-    if ($cast(a_op_e, a_opcode)) a_opcode_name = a_op_e.name();
-    else                         a_opcode_name = $sformatf("Invalid, value: %0d", a_opcode);
-    if ($cast(d_op_e, d_opcode)) d_opcode_name = d_op_e.name();
-    else                         d_opcode_name = $sformatf("Invalid, value: %0d", d_opcode);
+  // Set rand_mode(0) for all fields relating to the A channel. This is used when re-randomising an
+  // item that has already been populated with data from that channel.
+  extern function void disable_a_chan_randomization();
 
-    str = {$sformatf("a_addr = 0x%0h ", a_addr),
-           $sformatf("a_data = 0x%0h ", a_data),
-           $sformatf("a_mask = 0x%0h ", a_mask),
-           $sformatf("a_size = 0x%0h ", a_size),
-           $sformatf("a_param = 0x%0h ", a_param),
-           $sformatf("a_source = 0x%0h ", a_source),
-           $sformatf("a_opcode = %0s ", a_opcode_name),
-           $sformatf("a_user = 0x%0h ", a_user),
-           $sformatf("d_data = 0x%0h ", d_data),
-           $sformatf("d_size = 0x%0h ", d_size),
-           $sformatf("d_param = 0x%0h ", d_param),
-           $sformatf("d_source = 0x%0h ", d_source),
-           $sformatf("d_opcode = %0s ", d_opcode_name),
-           $sformatf("d_error = %0b ", d_error),
-           $sformatf("d_user = %0b ", d_user),
-           $sformatf("d_sink = %0b ", d_sink),
-           $sformatf("req_abort_after_a_valid_len = %0b ", req_abort_after_a_valid_len),
-           $sformatf("rsp_abort_after_d_valid_len = %0b ", rsp_abort_after_d_valid_len),
-           $sformatf("req_completed = %0b ", req_completed),
-           $sformatf("rsp_completed = %0b ", rsp_completed)};
-    return str;
-  endfunction
+  // The expected value of d_error based on the fields from the A channel item
+  extern function bit get_exp_d_error();
 
-  // Note: the do_compare() method should only be coded for those properties which can be compared
-  // that's the reason why the following fields are not part it:
-  // req_abort_after_a_valid_len, rsp_abort_after_d_valid_len, req_completed, rsp_completed
-  function bit do_compare(uvm_object rhs, uvm_comparer comparer);
-    tl_seq_item rhs_;
-    // If the cast fails, comparison has also failed
-    // A check for null is not needed because that is done in the compare() function which
-    // calls do_compare()
-    if (!$cast(rhs_, rhs)) begin
-      return 0;
-    end
+  // Return true if a_opcode is not a valid opcode for the A channel.
+  extern function bit get_error_a_opcode_invalid();
 
-    return (super.do_compare(rhs, comparer)                                    &&
-            (a_addr                      == rhs_.a_addr                      ) &&
-            (a_data                      == rhs_.a_data                      ) &&
-            (a_mask                      == rhs_.a_mask                      ) &&
-            (a_size                      == rhs_.a_size                      ) &&
-            (a_param                     == rhs_.a_param                     ) &&
-            (a_source                    == rhs_.a_source                    ) &&
-            (a_opcode                    == rhs_.a_opcode                    ) &&
-            (a_user                      == rhs_.a_user                      ) &&
-            (d_data                      == rhs_.d_data                      ) &&
-            (d_size                      == rhs_.d_size                      ) &&
-            (d_param                     == rhs_.d_param                     ) &&
-            (d_source                    == rhs_.d_source                    ) &&
-            (d_opcode                    == rhs_.d_opcode                    ) &&
-            (d_error                     == rhs_.d_error                     ) &&
-            (d_user                      == rhs_.d_user                      ) &&
-            (d_sink                      == rhs_.d_sink                      ));
-  endfunction : do_compare
+  // Return the data that is being written by this transaction on the A channel. This is the
+  // contents of a_data, but masked by zeroing the bytes where a_mask is false.
+  extern function automatic logic [DataWidth-1:0] get_written_data();
 
-  function void disable_a_chan_randomization();
-    a_addr.rand_mode(0);
-    a_data.rand_mode(0);
-    a_mask.rand_mode(0);
-    a_size.rand_mode(0);
-    a_param.rand_mode(0);
-    a_source.rand_mode(0);
-    a_opcode.rand_mode(0);
-  endfunction
+  // Return true if the A channel for this item is a PutFullData message and the a_mask field is not
+  // high for all the active byte lanes.
+  extern function bit get_error_PutFullData_mask_size_mismatched();
 
-  // calculate d_error based on values of a_chan
-  function bit get_exp_d_error();
-    return get_error_a_opcode_invalid() || get_error_PutFullData_mask_size_mismatched() ||
-           get_error_addr_size_misaligned() ||
-           get_error_mask_not_in_active_lanes() || get_error_size_over_max();
-  endfunction
+  // Return true if the A channel message for this item has an a_addr that is not naturally aligned
+  // for the operation size implied by a_size.
+  extern function bit get_error_addr_size_misaligned();
 
-  function bit get_error_a_opcode_invalid();
-    return !`a_opcode_is_valid(a_opcode);
-  endfunction
+  // Return true if the A channel message for this item has bits in a_mask that are high in lanes
+  // that are inactive (based on a_addr and a_size).
+  extern function bit get_error_mask_not_in_active_lanes();
 
-  function automatic logic [DataWidth-1:0] get_written_data();
-    logic [DataWidth-1:0] masked_data = 'x;
-    `DV_CHECK(is_write(), "get_written_data() may only be called on a write")
-    for (int i = 0; i < MaskWidth; i++) begin
-      if (a_mask[i] == 1'b1) begin
-        masked_data[8*i +: 8] = a_data[8*i +: 8];
-      end
-    end
-    return masked_data;
-  endfunction
+  // Return true if the A channel message for this item gives an a_size larger than the biggest
+  // allowed by OpenTitan tilelink (32 bits, so 4 bytes, so a_size of 2)
+  extern function bit get_error_size_over_max();
 
-  function bit get_error_PutFullData_mask_size_mismatched();
-    return (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size));
-  endfunction
+  // Disable the constraints that apply to the A channel fields. This can be used to generate
+  // sequence items that will (almost certainly) cause protocol errors.
+  extern function void disable_a_chan_protocol_constraint();
 
-  function bit get_error_addr_size_misaligned();
-    return !(`addr_aligned_to_size(a_addr, a_size));
-  endfunction
+  // Randomise the A channel fields, ensuring that at least one constraint is disabled and the
+  // protocol is violated.
+  extern function void randomize_a_chan_with_protocol_error();
 
-  function bit get_error_mask_not_in_active_lanes();
-    return !`mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
-  endfunction
+  // Return true if this sequence item is a write (as opposed to a read).
+  extern function bit is_write();
 
-  function bit get_error_size_over_max();
-    return !`below_max_a_size(a_size);
-  endfunction // get_error_size_over_max
+  // Return true if d_opcode is appropriate with a response for the A channel message detailed in
+  // the a_* fields. If throw_error is true then this generates a uvm_error if the opcode is not
+  // appropriate.
+  extern function bit check_opcodes(bit throw_error);
 
-  function void disable_a_chan_protocol_constraint();
-    a_opcode_c.constraint_mode(0);
-    mask_contiguous_c.constraint_mode(0);
-    mask_w_PutFullData_c.constraint_mode(0);
-    mask_in_active_lanes_c.constraint_mode(0);
-    addr_size_align_c.constraint_mode(0);
-    max_size_c.constraint_mode(0);
-  endfunction
-
-  // randomly disable constraint_mode for a chan
-  // at least one constraint_mode needs to be disabled to make sure protocol is violated
-  function void randomize_a_chan_with_protocol_error();
-    bit cm_a_opcode, cm_mask_w_PutFullData;
-    bit cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size;
-    `DV_CHECK_FATAL(std::randomize(cm_a_opcode, cm_mask_w_PutFullData,
-                                   cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size) with {
-                                   // at least one constraint_mode is off
-                                   !(cm_a_opcode && cm_mask_w_PutFullData &&
-                                     cm_mask_in_active_lanes && cm_addr_size_align && cm_max_size);
-                                   })
-    a_opcode_c.constraint_mode(cm_a_opcode);
-    mask_w_PutFullData_c.constraint_mode(cm_mask_w_PutFullData);
-    mask_in_active_lanes_c.constraint_mode(cm_mask_in_active_lanes);
-    addr_size_align_c.constraint_mode(cm_addr_size_align);
-    max_size_c.constraint_mode(cm_max_size);
-    `DV_CHECK_FATAL(
-        // at least one `chk_prot_* is violated
-        randomize() with {!cm_a_opcode              && !(`a_opcode_is_valid(a_opcode))    ||
-                          !cm_mask_w_PutFullData    &&
-                            (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size)) ||
-                          !cm_mask_in_active_lanes &&
-                            !(`mask_low_in_inactive_lanes(a_mask, a_addr, a_size))        ||
-                          !cm_addr_size_align       && !(`addr_aligned_to_size(a_addr, a_size)) ||
-                          !cm_max_size              && !(`below_max_a_size(a_size));})
-  endfunction
-
-  // Find whether this seq item is a read or a write.
-  virtual function bit is_write();
-    return (a_opcode inside {PutFullData, PutPartialData});
-  endfunction
-
-  // Check if d_opcode is appropriate for the given a_opcode. This check assumes that the
-  // response packet has been appended with the corresponding request.
-  virtual function bit check_opcodes(bit throw_error = 1'b1);
-    // for read, return AccessAckData; for write or error opcode, return AccessAck
-    tl_d_op_e exp_d_opcode = a_opcode == Get ? tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
-    check_opcodes = (d_opcode == int'(exp_d_opcode));
-    if (!check_opcodes && throw_error) begin
-      `uvm_error(`gfn, $sformatf("d_opcode: %0d & exp_d_opcode: %0d mismatch",
-                                  d_opcode, exp_d_opcode))
-    end
-  endfunction
-
-  // Check if packet parameters are ok.
-  virtual function bit is_ok(bit throw_error = 1'b1);
-    is_ok = 1'b1;
-    is_ok &= check_opcodes(throw_error);
-    // addr and data channels should have the same source
-    is_ok &= (a_source == d_source);
-    if (!is_ok && throw_error)
-      `uvm_error(`gfn, $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch", a_source, d_source))
-  endfunction
+  // Return true if the fields of the D channel message are appropriate as a response to the A
+  // channel message. If throw_error is true (the default) then this generates a uvm_error if not.
+  extern function bit is_ok(bit throw_error = 1'b1);
 
   // Compute and check the integrity of the a_channel payload.
   //
@@ -345,19 +234,256 @@ class tl_seq_item extends uvm_sequence_item;
   //
   // Returns 1 if the integrity of a_channel is maintained, 0 otherwise. This base
   // class implementation vacuously returns 1.
-  virtual function bit is_a_chan_intg_ok(bit en_cmd_intg_chk = 1,
-                                         bit en_data_intg_chk = 1,
-                                         bit throw_error = 1'b1);
-    return 1;
-  endfunction
+  extern virtual function bit is_a_chan_intg_ok(bit throw_error = 1'b1);
 
   // d_channel version of the function above
-  virtual function bit is_d_chan_intg_ok(bit en_rsp_intg_chk = 1,
-                                         bit en_data_intg_chk = 1,
-                                         bit throw_error = 1'b1);
-    return 1;
-  endfunction
+  extern virtual function bit is_d_chan_intg_ok(bit en_rsp_intg_chk = 1,
+                                                bit en_data_intg_chk = 1,
+                                                bit throw_error = 1'b1);
 endclass
+
+constraint tl_seq_item::param_c {
+  a_param == 0;
+  d_param == 0;
+}
+
+constraint tl_seq_item::no_d_error_c {
+  soft d_error == 0;
+}
+
+constraint tl_seq_item::a_valid_len_c {
+  a_valid_len inside {[1:10]};
+}
+
+constraint tl_seq_item::d_valid_len_c {
+  d_valid_len inside {[1:10]};
+}
+
+constraint tl_seq_item::valid_delay_c {
+  a_valid_delay inside {[0:50]};
+  d_valid_delay inside {[0:50]};
+}
+
+constraint tl_seq_item::d_opcode_c {
+  d_opcode inside {AccessAckData, AccessAck};
+}
+
+constraint tl_seq_item::a_opcode_c {
+  `a_opcode_is_valid(a_opcode);
+}
+
+constraint tl_seq_item::mask_contiguous_c {
+  $countones(a_mask ^ {a_mask[MaskWidth-2:0], 1'b0}) <= 2;
+}
+
+constraint tl_seq_item::mask_w_PutFullData_c {
+  a_opcode == PutFullData -> `mask_is_full(a_mask, a_size);
+}
+
+constraint tl_seq_item::mask_in_active_lanes_c {
+  `mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
+}
+
+constraint tl_seq_item::addr_size_align_c {
+  `addr_aligned_to_size(a_addr, a_size);
+}
+
+constraint tl_seq_item::max_size_c {
+  `below_max_a_size(a_size);
+}
+
+function tl_seq_item::new (string name = "");
+  super.new(name);
+endfunction
+
+function string tl_seq_item::convert2string();
+  string str;
+  string a_opcode_name, d_opcode_name;
+  tl_a_op_e a_op_e;
+  tl_d_op_e d_op_e;
+  if ($cast(a_op_e, a_opcode)) a_opcode_name = a_op_e.name();
+  else                         a_opcode_name = $sformatf("Invalid, value: %0d", a_opcode);
+  if ($cast(d_op_e, d_opcode)) d_opcode_name = d_op_e.name();
+  else                         d_opcode_name = $sformatf("Invalid, value: %0d", d_opcode);
+
+  str = {$sformatf("a_addr = 0x%0h ", a_addr),
+         $sformatf("a_data = 0x%0h ", a_data),
+         $sformatf("a_mask = 0x%0h ", a_mask),
+         $sformatf("a_size = 0x%0h ", a_size),
+         $sformatf("a_param = 0x%0h ", a_param),
+         $sformatf("a_source = 0x%0h ", a_source),
+         $sformatf("a_opcode = %0s ", a_opcode_name),
+         $sformatf("a_user = 0x%0h ", a_user),
+         $sformatf("d_data = 0x%0h ", d_data),
+         $sformatf("d_size = 0x%0h ", d_size),
+         $sformatf("d_param = 0x%0h ", d_param),
+         $sformatf("d_source = 0x%0h ", d_source),
+         $sformatf("d_opcode = %0s ", d_opcode_name),
+         $sformatf("d_error = %0b ", d_error),
+         $sformatf("d_user = %0b ", d_user),
+         $sformatf("d_sink = %0b ", d_sink),
+         $sformatf("req_abort_after_a_valid_len = %0b ", req_abort_after_a_valid_len),
+         $sformatf("rsp_abort_after_d_valid_len = %0b ", rsp_abort_after_d_valid_len),
+         $sformatf("req_completed = %0b ", req_completed),
+         $sformatf("rsp_completed = %0b ", rsp_completed)};
+  return str;
+endfunction
+
+function void tl_seq_item::disable_a_chan_randomization();
+  a_addr.rand_mode(0);
+  a_data.rand_mode(0);
+  a_mask.rand_mode(0);
+  a_size.rand_mode(0);
+  a_param.rand_mode(0);
+  a_source.rand_mode(0);
+  a_opcode.rand_mode(0);
+endfunction
+
+function bit tl_seq_item::get_exp_d_error();
+  return get_error_a_opcode_invalid() || get_error_PutFullData_mask_size_mismatched() ||
+         get_error_addr_size_misaligned() ||
+         get_error_mask_not_in_active_lanes() || get_error_size_over_max();
+endfunction
+
+function bit tl_seq_item::get_error_a_opcode_invalid();
+  return !`a_opcode_is_valid(a_opcode);
+endfunction
+
+function automatic logic [DataWidth-1:0] tl_seq_item::get_written_data();
+  logic [DataWidth-1:0] masked_data = 'x;
+  `DV_CHECK(is_write(), "get_written_data() may only be called on a write")
+  for (int i = 0; i < MaskWidth; i++) begin
+    if (a_mask[i] == 1'b1) begin
+      masked_data[8*i +: 8] = a_data[8*i +: 8];
+    end
+  end
+  return masked_data;
+endfunction
+
+function bit tl_seq_item::get_error_PutFullData_mask_size_mismatched();
+  return (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size));
+endfunction
+
+function bit tl_seq_item::get_error_addr_size_misaligned();
+  return !(`addr_aligned_to_size(a_addr, a_size));
+endfunction
+
+function bit tl_seq_item::get_error_mask_not_in_active_lanes();
+  return !`mask_low_in_inactive_lanes(a_mask, a_addr, a_size);
+endfunction
+
+function bit tl_seq_item::get_error_size_over_max();
+  return !`below_max_a_size(a_size);
+endfunction // get_error_size_over_max
+
+// Note: the do_compare() method should only be coded for those properties which can be compared
+// that's the reason why the following fields are not part it:
+// req_abort_after_a_valid_len, rsp_abort_after_d_valid_len, req_completed, rsp_completed
+function bit tl_seq_item::do_compare(uvm_object rhs, uvm_comparer comparer);
+  tl_seq_item rhs_;
+  // If the cast fails, comparison has also failed
+  // A check for null is not needed because that is done in the compare() function which
+  // calls do_compare()
+  if (!$cast(rhs_, rhs)) begin
+    return 0;
+  end
+
+  return (super.do_compare(rhs, comparer)                                    &&
+          (a_addr                      == rhs_.a_addr                      ) &&
+          (a_data                      == rhs_.a_data                      ) &&
+          (a_mask                      == rhs_.a_mask                      ) &&
+          (a_size                      == rhs_.a_size                      ) &&
+          (a_param                     == rhs_.a_param                     ) &&
+          (a_source                    == rhs_.a_source                    ) &&
+          (a_opcode                    == rhs_.a_opcode                    ) &&
+          (a_user                      == rhs_.a_user                      ) &&
+          (d_data                      == rhs_.d_data                      ) &&
+          (d_size                      == rhs_.d_size                      ) &&
+          (d_param                     == rhs_.d_param                     ) &&
+          (d_source                    == rhs_.d_source                    ) &&
+          (d_opcode                    == rhs_.d_opcode                    ) &&
+          (d_error                     == rhs_.d_error                     ) &&
+          (d_user                      == rhs_.d_user                      ) &&
+          (d_sink                      == rhs_.d_sink                      ));
+endfunction
+
+function void tl_seq_item::disable_a_chan_protocol_constraint();
+  a_opcode_c.constraint_mode(0);
+  mask_contiguous_c.constraint_mode(0);
+  mask_w_PutFullData_c.constraint_mode(0);
+  mask_in_active_lanes_c.constraint_mode(0);
+  addr_size_align_c.constraint_mode(0);
+  max_size_c.constraint_mode(0);
+endfunction
+
+function void tl_seq_item::randomize_a_chan_with_protocol_error();
+  bit cm_a_opcode, cm_mask_w_PutFullData;
+  bit cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size;
+
+  // Randomly pick some constraint mode (enabled or disabled) for the various constraints, disabling
+  // at least one of them.
+  `DV_CHECK_FATAL(std::randomize(cm_a_opcode, cm_mask_w_PutFullData,
+                                 cm_mask_in_active_lanes, cm_addr_size_align, cm_max_size) with {
+                                   !(&{cm_a_opcode, cm_mask_w_PutFullData,
+                                       cm_mask_in_active_lanes, cm_addr_size_align && cm_max_size});
+                                 })
+
+  // Apply the selected modes to the constraints that might be disabled
+  a_opcode_c.constraint_mode(cm_a_opcode);
+  mask_w_PutFullData_c.constraint_mode(cm_mask_w_PutFullData);
+  mask_in_active_lanes_c.constraint_mode(cm_mask_in_active_lanes);
+  addr_size_align_c.constraint_mode(cm_addr_size_align);
+  max_size_c.constraint_mode(cm_max_size);
+
+  // Now randomise this object, ensuring that at least constraint we just disabled is actually being
+  // violated.
+  `DV_CHECK_FATAL(randomize() with {
+                    (!cm_a_opcode && !`a_opcode_is_valid(a_opcode)) ||
+                    (!cm_mask_w_PutFullData &&
+                     (a_opcode == PutFullData) && !(`mask_is_full(a_mask, a_size))) ||
+                    (!cm_mask_in_active_lanes &&
+                     !(`mask_low_in_inactive_lanes(a_mask, a_addr, a_size))) ||
+                    (!cm_addr_size_align && !`addr_aligned_to_size(a_addr, a_size)) ||
+                    (!cm_max_size && !`below_max_a_size(a_size));
+                  })
+endfunction
+
+function bit tl_seq_item::is_write();
+  return (a_opcode inside {PutFullData, PutPartialData});
+endfunction
+
+function bit tl_seq_item::check_opcodes(bit throw_error);
+  // for read, return AccessAckData; for write or error opcode, return AccessAck
+  tl_d_op_e exp_d_opcode = a_opcode == Get ? tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
+  check_opcodes = (d_opcode == int'(exp_d_opcode));
+  if (!check_opcodes && throw_error) begin
+    `uvm_error(`gfn, $sformatf("d_opcode: %0d & exp_d_opcode: %0d mismatch",
+                                d_opcode, exp_d_opcode))
+  end
+endfunction
+
+function bit tl_seq_item::is_ok(bit throw_error = 1'b1);
+  is_ok = 1'b1;
+  is_ok &= check_opcodes(throw_error);
+  // addr and data channels should have the same source
+  is_ok &= (a_source == d_source);
+  if (!is_ok && throw_error)
+    `uvm_error(`gfn, $sformatf("a_source: 0x%0h & d_source: 0x%0h mismatch", a_source, d_source))
+endfunction
+
+function bit tl_seq_item::is_a_chan_intg_ok(bit throw_error = 1'b1);
+  return 1;
+endfunction
+
+function bit tl_seq_item::is_d_chan_intg_ok(bit en_rsp_intg_chk = 1,
+                                            bit en_data_intg_chk = 1,
+                                            bit throw_error = 1'b1);
+  return 1;
+endfunction
+
+
+
+
 
 `undef a_opcode_is_valid
 `undef mask_is_full
