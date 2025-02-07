@@ -47,6 +47,8 @@ function void aon_timer_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
   // set num_interrupts & num_alerts
   num_interrupts = ral.intr_state.get_n_used_bits();
   set_intr_state_has_prediction();
+  // Allow mid-TL-US accesses
+  can_reset_with_csr_accesses = 1;
 endfunction : initialize
 
 function bit aon_timer_env_cfg::hdl_read_bit(string path);
