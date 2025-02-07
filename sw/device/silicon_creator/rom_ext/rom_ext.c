@@ -875,7 +875,7 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (launder32(dice_chain.cert_valid) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
-    dbg_printf("warning: CDI_1 certificate not valid. updating\r\n");
+    dbg_printf("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
