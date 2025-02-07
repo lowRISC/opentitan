@@ -180,8 +180,13 @@ static rom_error_t dice_chain_load_cert_obj(const char *name,
 
   RETURN_IF_ERROR(err);
 
-  // Check if this cert is what we are looking for.
-  if (name == NULL || memcmp(dice_chain.cert_obj.name, name, name_size) != 0) {
+  // Check if this cert is what we are looking for. The name and type (X.509 vs
+  // CWT) should match.
+  const perso_tlv_object_type_t kExpectedCertType =
+      kDiceCertFormat == kDiceCertFormatX509TcbInfo ? kPersoObjectTypeX509Cert
+                                                    : kPersoObjectTypeCwtCert;
+  if (name == NULL || memcmp(dice_chain.cert_obj.name, name, name_size) != 0 ||
+      kExpectedCertType != dice_chain.cert_obj.obj_type) {
     // Name unmatched, keep the cert_obj but mark it as invalid.
     dice_chain.cert_valid = kHardenedBoolFalse;
     return kErrorOk;
