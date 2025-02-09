@@ -65,7 +65,6 @@ module prim_arbiter_ppc #(
     assign idx_o    = '0;
 
   end else begin : gen_normal_case
-
     logic [N-1:0] masked_req;
     logic [N-1:0] ppc_out;
     logic [N-1:0] arb_req;
@@ -75,20 +74,15 @@ module prim_arbiter_ppc #(
     assign masked_req = mask & req_i;
     assign arb_req = (|masked_req) ? masked_req : req_i;
 
-    // PPC
-    //   Even below code looks O(n) but DC optimizes it to O(log(N))
-    //   Using Parallel Prefix Computation
-    always_comb begin
-      ppc_out[0] = arb_req[0];
-      for (int i = 1 ; i < N ; i++) begin
-        ppc_out[i] = ppc_out[i-1] | arb_req[i];
-      end
-    end
-
-    // Grant Generation: Leading-One detector
-    assign winner = ppc_out ^ {ppc_out[N-2:0], 1'b0};
-    assign gnt_o    = (ready_i) ? winner : '0;
-
+    prim_leading_one_ppc #(
+      .N ( N )
+    ) u_leading_one (
+      .in_i          ( arb_req ),
+      .leading_one_o ( winner  ),
+      .ppc_out_o     ( ppc_out ),
+      .idx_o         ( idx_o   )
+    );
+    assign gnt_o   = (ready_i) ? winner : '0;
     assign valid_o = |req_i;
     // Mask Generation
     assign mask_next = {ppc_out[N-2:0], 1'b0};
@@ -118,15 +112,6 @@ module prim_arbiter_ppc #(
       // The following signal is used to avoid possible lint errors.
       logic [DW-1:0] unused_data [N];
       assign unused_data = data_i;
-    end
-
-    always_comb begin
-      idx_o = '0;
-      for (int unsigned i = 0 ; i < N ; i++) begin
-        if (winner[i]) begin
-          idx_o = i[IdxW-1:0];
-        end
-      end
     end
   end
 
