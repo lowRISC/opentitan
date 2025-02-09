@@ -384,6 +384,14 @@ module soc_dbg_ctrl
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
+  `ASSERT_KNOWN(CoreTlDValidKnownO_A, core_tl_o.d_valid)
+  `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_o.a_ready)
+  `ASSERT_KNOWN(JtagTlDValidKnownO_A, jtag_tl_o.d_valid)
+  `ASSERT_KNOWN(JtagTlAReadyKnownO_A, jtag_tl_o.a_ready)
+
+  `ASSERT_KNOWN(SocDbgPolicyBusKnown_A, soc_dbg_policy_bus_o)
+  `ASSERT_KNOWN(ContinueBootKnown_A, continue_cpu_boot_o)
+
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_core_reg, alert_tx_o[0])
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(JtagRegWeOnehotCheck_A, u_jtag_reg, alert_tx_o[0])
