@@ -191,6 +191,20 @@ module ac_range_check
   assign write_allowed   = write_access   & (write_mask   > deny_mask);
   assign execute_allowed = execute_access & (execute_mask > deny_mask);
 
+  // Based on the deny mask, we compute the leading bit in the mask. The index of the leading
+  // bit determines the index of the range that denied the request.
+
+  localparam int unsigned NumRangesWidth = prim_util_pkg::vbits(NumRanges);
+  logic [NumRangesWidth-1:0] deny_index;
+  prim_leading_one_ppc #(
+    .N ( NumRanges )
+  ) u_leading_one (
+    .in_i          ( deny_mask  ),
+    .leading_one_o (            ),
+    .ppc_out_o     (            ),
+    .idx_o         ( deny_index )
+  );
+
   // The access fails if nothing is allowed and no overwrite is present
   logic range_check_fail;
   assign range_check_fail =
@@ -283,9 +297,8 @@ module ac_range_check
       log_first_deny ? top_racl_pkg::tlul_extract_ctn_uid_bits(ctn_tl_h2d_i.a_user.rsvd)
                      : '0;
 
-  // TODO(#25456): Need to determine the index that caused the denial
   assign hw2reg.log_status.deny_range_index.de = log_first_deny | clear_log;
-  assign hw2reg.log_status.deny_range_index.d  = log_first_deny ? 0 : 0;
+  assign hw2reg.log_status.deny_range_index.d  = log_first_deny ? deny_index : 0;
 
   assign hw2reg.log_address.de = log_first_deny | clear_log;
   assign hw2reg.log_address.d  = log_first_deny ? ctn_tl_h2d_i.a_address : '0;
