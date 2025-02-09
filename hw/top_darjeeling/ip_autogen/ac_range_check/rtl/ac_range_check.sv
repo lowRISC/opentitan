@@ -333,9 +333,15 @@ module ac_range_check
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(DenyCntIrqKnown_A, intr_deny_cnt_reached_o)
 
   `ASSERT_KNOWN(TlDValidKnownO_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlAReadyKnownO_A, tl_o.a_ready)
+
+  `ASSERT_KNOWN(TlCtnDValidKnownO_A, ctn_tl_d2h_o.d_valid)
+  `ASSERT_KNOWN(TlCtnAReadyKnownO_A, ctn_tl_d2h_o.a_ready)
+  `ASSERT_KNOWN(TlCtnFilteredAValidKnownO_A, ctn_filtered_tl_h2d_o.a_valid)
+  `ASSERT_KNOWN(TlCtnFilteredDReadyKnownO_A, ctn_filtered_tl_h2d_o.d_ready)
 
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
   `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
