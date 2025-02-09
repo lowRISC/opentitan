@@ -1525,6 +1525,19 @@ module dma
 
   // All outputs should be known value after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(IntrDmaDoneKnown_A, intr_dma_done_o)
+  `ASSERT_KNOWN(IntrDmaChunkDoneKnown_A, intr_dma_chunk_done_o)
+  `ASSERT_KNOWN(IntrDmaErrorKnown_A, intr_dma_error_o)
+
+  `ASSERT_KNOWN(TlDValidKnownO_A, tl_d_o.d_valid)
+  `ASSERT_KNOWN(TlAReadyKnownO_A, tl_d_o.a_ready)
+
+  `ASSERT_KNOWN(CtnTlAValidKnownO_A, ctn_tl_h2d_o.a_valid)
+  `ASSERT_KNOWN(CtnTlDReadyKnownO_A, ctn_tl_h2d_o.d_ready)
+  `ASSERT_KNOWN(HostTlAValidKnownO_A, host_tl_h_o.a_valid)
+  `ASSERT_KNOWN(HostTlDReadyKnownO_A, host_tl_h_o.d_ready)
+
+  `ASSERT_KNOWN(SysValidKnownO_A, sys_o.vld_vec)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_dma_reg, alert_tx_o[0])
