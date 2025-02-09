@@ -373,6 +373,8 @@ module mbx
   `ASSERT_KNOWN(CoreTlAReadyKnownO_A, core_tl_d_o.a_ready)
   `ASSERT_KNOWN(SocTlDValidKnownO_A, soc_tl_d_o.d_valid)
   `ASSERT_KNOWN(SocTlAReadyKnownO_A, soc_tl_d_o.a_ready)
+  `ASSERT_KNOWN(SramTlAValidKnownO_A, sram_tl_h_o.a_valid)
+  `ASSERT_KNOWN(SramTlDReadyKnownO_A, sram_tl_h_o.d_ready)
   `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
   `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
 endmodule
