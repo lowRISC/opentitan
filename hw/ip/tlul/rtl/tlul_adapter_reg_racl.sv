@@ -92,9 +92,13 @@ module tlul_adapter_reg_racl
     );
 
     // Collect RACL error information
-    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
-    assign racl_error_log_o.racl_role   = racl_role;
-    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    //
+    // Drive these signals only when receiving a request to avoid triggering the assertion which
+    // checks all bits of racl_error_log_o are non-X.
+    assign racl_error_log_o.read_access = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::Get);
+    assign racl_error_log_o.racl_role   = tl_i.a_valid ? racl_role : '0;
+    assign racl_error_log_o.ctn_uid     = tl_i.a_valid ?
+      top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd) : '0;
   end else begin : gen_no_racl_role_logic
     // Pass through and default assignments
     assign tl_h2d_filtered  = tl_i;

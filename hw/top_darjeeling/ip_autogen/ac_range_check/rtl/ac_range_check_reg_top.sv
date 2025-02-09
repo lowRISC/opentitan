@@ -12088,14 +12088,18 @@ module ac_range_check_reg_top
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
-  // A valid address hit, access, but failed the RACL check
+  // A valid address hit, access, but failed the RACL check.
+  //
+  // Drive these signals only when receiving a request to avoid triggering the assertion which
+  // checks all bits of racl_error_log_o are non-X.
   assign racl_error_o = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
                                      (reg_we & ~|racl_addr_hit_write));
-  assign racl_error_log_o.racl_role  = racl_role;
+  assign racl_error_log_o.racl_role  = tl_i.a_valid ? racl_role : '0;
 
   if (EnableRacl) begin : gen_racl_log
-    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
-    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+    assign racl_error_log_o.ctn_uid     = tl_i.a_valid ?
+      top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd) : '0;
+    assign racl_error_log_o.read_access = tl_i.a_valid & (tl_i.a_opcode == tlul_pkg::Get);
   end else begin : gen_no_racl_log
     assign racl_error_log_o.ctn_uid     = '0;
     assign racl_error_log_o.read_access = 1'b0;
