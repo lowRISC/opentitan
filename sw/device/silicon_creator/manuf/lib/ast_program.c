@@ -101,7 +101,10 @@ status_t ast_program_config(bool verbose) {
   // Program AST CSRs.
   LOG_INFO("Programming %u AST words",
            kFlashInfoAstCalibrationDataSizeIn32BitWords);
-  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords; ++i) {
+  // Don't write the last 3 words of AST config to CSRs on SRAM program boot;
+  // they will get copied to OTP later and written by the ROM on boot.
+  for (size_t i = 0; i < kFlashInfoAstCalibrationDataSizeIn32BitWords - 3;
+       ++i) {
     uint32_t addr = TOP_EARLGREY_AST_BASE_ADDR + i * sizeof(uint32_t);
     uint32_t data = ast_data[i];
     LOG_INFO("\tAddress = 0x%08x, Data = 0x%08x", addr, data);

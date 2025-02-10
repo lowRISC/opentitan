@@ -188,7 +188,7 @@ static status_t patch_ast_config_value(void) {
   // Check the address is within range before programming.
   // Check the value is non-zero and not all ones before programming.
   if (kDeviceType == kDeviceSilicon || kDeviceType == kDeviceSimDV) {
-    TRY_CHECK(ast_patch_addr_offset > AST_REGAL_REG_OFFSET);
+    TRY_CHECK(ast_patch_addr_offset <= AST_REGAL_REG_OFFSET);
     TRY_CHECK(ast_patch_value != 0 && ast_patch_value != UINT32_MAX);
   }
 
