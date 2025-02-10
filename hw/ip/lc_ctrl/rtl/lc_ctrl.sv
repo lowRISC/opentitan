@@ -335,11 +335,20 @@ module lc_ctrl
 
   logic lc_idle_d, lc_done_d;
 
-  // Assign hardware revision output
-  assign hw_rev_o = '{silicon_creator_id: SiliconCreatorId,
-                      product_id:         ProductId,
-                      revision_id:        RevisionId,
-                      reserved:           '0};
+  // Assign the hardware revision constant and feed it through an anchor buffer. This ensures the
+  // individual bits remain visible in the netlist, thereby enabling metal fixes to be reflected
+  // in the hardware revision.
+  lc_hw_rev_t hw_rev;
+  assign hw_rev = '{silicon_creator_id: SiliconCreatorId,
+                    product_id:         ProductId,
+                    revision_id:        RevisionId,
+                    reserved:           '0};
+  prim_sec_anchor_buf #(
+    .Width($bits(lc_hw_rev_t))
+  ) u_hw_rev_anchor_buf (
+    .in_i(hw_rev),
+    .out_o(hw_rev_o)
+  );
 
   // OTP Vendor control bits
   logic ext_clock_switched;
