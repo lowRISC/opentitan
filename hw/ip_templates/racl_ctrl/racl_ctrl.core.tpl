@@ -11,6 +11,7 @@ filesets:
       - lowrisc:ip:tlul
       - lowrisc:prim:mubi
       - lowrisc:prim:all
+      - lowrisc:prim:arbiter
       - lowrisc:systems:top_racl_pkg
     files:
       - rtl/${module_instance_name}_reg_pkg.sv
