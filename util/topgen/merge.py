@@ -1040,18 +1040,19 @@ def amend_interrupt(top: OrderedDict,
             qual["desc"] = f"{m} {sig_name} interrupt"
             qual["intr_type"] = signal.intr_type
             qual["default_val"] = signal.default_val
-            qual['incoming'] = False
+            qual["incoming"] = False
             interrupts.append(qual)
-
-    top["interrupt"] = interrupts
 
     for irqs in top['incoming_interrupt'].values():
         for irq in irqs:
             # Qualify name with module name
-            irq['name'] = f"{irq['module_name']}_{irq['name']}"
-            irq['incoming'] = True
-            irq['width'] = 1
-            top["interrupt"].append(irq)
+            irq["name"] = f"{irq['module_name']}_{irq['name']}"
+            irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
+            irq["incoming"] = True
+            irq["width"] = 1
+            interrupts.append(irq)
+
+    top["interrupt"] = interrupts
 
 
 def get_alert_modules(top: OrderedDict,
