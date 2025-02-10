@@ -23,6 +23,22 @@
 | gpio.[`CTRL_EN_INPUT_FILTER`](#ctrl_en_input_filter)       | 0x3c     |        4 | filter enable for GPIO input bits.                            |
 | gpio.[`HW_STRAPS_DATA_IN_VALID`](#hw_straps_data_in_valid) | 0x40     |        4 | Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.   |
 | gpio.[`HW_STRAPS_DATA_IN`](#hw_straps_data_in)             | 0x44     |        4 | GPIO Input data sampled as straps during cold boot read value |
+| gpio.[`INP_PRD_CNT_CTRL_0`](#inp_prd_cnt_ctrl)             | 0x48     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_1`](#inp_prd_cnt_ctrl)             | 0x4c     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_2`](#inp_prd_cnt_ctrl)             | 0x50     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_3`](#inp_prd_cnt_ctrl)             | 0x54     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_4`](#inp_prd_cnt_ctrl)             | 0x58     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_5`](#inp_prd_cnt_ctrl)             | 0x5c     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_6`](#inp_prd_cnt_ctrl)             | 0x60     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_CTRL_7`](#inp_prd_cnt_ctrl)             | 0x64     |        4 | Control register of one input period counter.                 |
+| gpio.[`INP_PRD_CNT_VAL_0`](#inp_prd_cnt_val)               | 0x68     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_1`](#inp_prd_cnt_val)               | 0x6c     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_2`](#inp_prd_cnt_val)               | 0x70     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_3`](#inp_prd_cnt_val)               | 0x74     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_4`](#inp_prd_cnt_val)               | 0x78     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_5`](#inp_prd_cnt_val)               | 0x7c     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_6`](#inp_prd_cnt_val)               | 0x80     |        4 | Output value of one input period counter.                     |
+| gpio.[`INP_PRD_CNT_VAL_7`](#inp_prd_cnt_val)               | 0x84     |        4 | Output value of one input period counter.                     |
 
 ## INTR_STATE
 Interrupt State Register
@@ -372,6 +388,111 @@ GPIO Input data sampled as straps during cold boot read value
 |  Bits  |  Type  |  Reset  | Name              | Description   |
 |:------:|:------:|:-------:|:------------------|:--------------|
 |  31:0  |   ro   |   0x0   | HW_STRAPS_DATA_IN |               |
+
+## INP_PRD_CNT_CTRL
+Control register of one input period counter.
+- Reset default: `0x4`
+- Reset mask: `0xffff07`
+
+### Instances
+
+| Name               | Offset   |
+|:-------------------|:---------|
+| INP_PRD_CNT_CTRL_0 | 0x48     |
+| INP_PRD_CNT_CTRL_1 | 0x4c     |
+| INP_PRD_CNT_CTRL_2 | 0x50     |
+| INP_PRD_CNT_CTRL_3 | 0x54     |
+| INP_PRD_CNT_CTRL_4 | 0x58     |
+| INP_PRD_CNT_CTRL_5 | 0x5c     |
+| INP_PRD_CNT_CTRL_6 | 0x60     |
+| INP_PRD_CNT_CTRL_7 | 0x64     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "continuous_mode", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "polarity", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "input_select", "bits": 8, "attr": ["rw"], "rotate": 0}, {"name": "prescaler", "bits": 8, "attr": ["rw"], "rotate": 0}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                                  |
+|:------:|:------:|:-------:|:------------------------------------------------------|
+| 31:24  |        |         | Reserved                                              |
+| 23:16  |   rw   |   0x0   | [prescaler](#inp_prd_cnt_ctrl--prescaler)             |
+|  15:8  |   rw   |   0x0   | [input_select](#inp_prd_cnt_ctrl--input_select)       |
+|  7:3   |        |         | Reserved                                              |
+|   2    |   rw   |   0x1   | [polarity](#inp_prd_cnt_ctrl--polarity)               |
+|   1    |   rw   |   0x0   | [continuous_mode](#inp_prd_cnt_ctrl--continuous_mode) |
+|   0    |   rw   |   0x0   | [enable](#inp_prd_cnt_ctrl--enable)                   |
+
+### INP_PRD_CNT_CTRL . prescaler
+Prescaler for the sampling clock of this input period counter.
+   For a value of 0, it samples at every edge of `clk_i`.
+   For a value of 1, it samples at every second edge of `clk_i`.
+   And so on.
+
+   This may only be changed while the `enable` bit is `0`.
+
+### INP_PRD_CNT_CTRL . input_select
+Index of the input that this period counter should sample.
+   The value must be smaller than the number of inputs minus one.
+
+   This may only be changed while the `enable` bit is `0`.
+
+### INP_PRD_CNT_CTRL . polarity
+Polarity of this input period counter.
+   If 0, it is sensitive to falling edges of the input.
+   If 1, it is sensitive to rising edges of the input.
+
+   This bit may only be changed while the `enable` bit is `0`.
+
+### INP_PRD_CNT_CTRL . continuous_mode
+Continuously count the input period.
+   When one measurement is completed (see description of `enable` bit) and this bit is set, the internal counter is reset to zero and immediately begins counting the clock cycles until the subsequent sensitive edge of the input.
+   The current result in [`INP_PRD_CNT_VAL`](#inp_prd_cnt_val)[i] and the `enable` bit are not cleared.
+
+   This bit may only be changed while the `enable` bit is `0`.
+
+### INP_PRD_CNT_CTRL . enable
+Enable this input period counter.
+   After enabling, this counter waits for the next sensitive edge (see `polarity` bit) of the input to start counting.
+   After that, it counts the number of clock cycles until the next sensitive edge.
+   Once that has happened, it stores the result in [`INP_PRD_CNT_VAL`](#inp_prd_cnt_val)[i], which completes one measurement.
+   Then, if the `continuous_mode` bit of this register is not set, the counter clears the `enable` bit and returns to idle (see description of the `continuous_mode` bit for what happens if that bit is set).
+
+## INP_PRD_CNT_VAL
+Output value of one input period counter.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+
+### Instances
+
+| Name              | Offset   |
+|:------------------|:---------|
+| INP_PRD_CNT_VAL_0 | 0x68     |
+| INP_PRD_CNT_VAL_1 | 0x6c     |
+| INP_PRD_CNT_VAL_2 | 0x70     |
+| INP_PRD_CNT_VAL_3 | 0x74     |
+| INP_PRD_CNT_VAL_4 | 0x78     |
+| INP_PRD_CNT_VAL_5 | 0x7c     |
+| INP_PRD_CNT_VAL_6 | 0x80     |
+| INP_PRD_CNT_VAL_7 | 0x84     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "value", "bits": 32, "attr": ["rc"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                             |
+|:------:|:------:|:-------:|:---------------------------------|
+|  31:0  |   rc   |   0x0   | [value](#inp_prd_cnt_val--value) |
+
+### INP_PRD_CNT_VAL . value
+Number of clock cycles in one complete period.
+   If this contains the value 0, no complete period has been measured since the last time this register got cleared.
+   The minimum number of clock cycles in one complete period is 2: in the first clock cycle after the sensitive edge, the input inverts (causing a non-sensitive edge), and in the second clock cycle the input inverts again (causing a sensitive edge).
+   This register gets cleared after every read from SW.
 
 
 <!-- END CMDGEN -->

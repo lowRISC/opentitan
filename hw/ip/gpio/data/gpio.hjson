@@ -29,8 +29,8 @@
     {
       version:            "1.2.0",
       life_stage:         "L1",
-      design_stage:       "D3",
-      verification_stage: "V2S",
+      design_stage:       "D2",
+      verification_stage: "V1",
       dif_stage:          "S2",
       notes:              ""
     }
@@ -86,6 +86,12 @@
                   Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
                   Values outside that range would likely require significant RTL changes.
                '''
+      local:   "true",
+    }
+    { name:    "NumInpPeriodCounters",
+      type:    "int",
+      default: "8",
+      desc:    "Number of input period counters.",
       local:   "true",
     }
   ]
@@ -443,5 +449,86 @@
         }
       ],
     },
+    { multireg:
+      { name: "INP_PRD_CNT_CTRL",
+        cname: "INP_PRD_CNT_CTRL",
+        desc: "Control register of one input period counter.",
+        count: "NumInpPeriodCounters"
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "enable",
+            resval: "0",
+            desc: '''Enable this input period counter.
+                     After enabling, this counter waits for the next sensitive edge (see `polarity` bit) of the input to start counting.
+                     After that, it counts the number of clock cycles until the next sensitive edge.
+                     Once that has happened, it stores the result in !!INP_PRD_CNT_VAL[i], which completes one measurement.
+                     Then, if the `continuous_mode` bit of this register is not set, the counter clears the `enable` bit and returns to idle (see description of the `continuous_mode` bit for what happens if that bit is set).
+                  '''
+          },
+          { bits: "1",
+            name: "continuous_mode",
+            resval: "0",
+            desc: '''Continuously count the input period.
+                     When one measurement is completed (see description of `enable` bit) and this bit is set, the internal counter is reset to zero and immediately begins counting the clock cycles until the subsequent sensitive edge of the input.
+                     The current result in !!INP_PRD_CNT_VAL[i] and the `enable` bit are not cleared.
+
+                     This bit may only be changed while the `enable` bit is `0`.
+                  '''
+          },
+          { bits: "2",
+            name: "polarity",
+            resval: "1",
+            desc: '''Polarity of this input period counter.
+                     If 0, it is sensitive to falling edges of the input.
+                     If 1, it is sensitive to rising edges of the input.
+
+                     This bit may only be changed while the `enable` bit is `0`.
+                  '''
+          },
+          { bits: "15:8",
+            name: "input_select",
+            resval: "0",
+            desc: '''Index of the input that this period counter should sample.
+                     The value must be smaller than the number of inputs minus one.
+
+                     This may only be changed while the `enable` bit is `0`.
+                  '''
+          },
+          { bits: "23:16",
+            name: "prescaler",
+            resval: "0",
+            desc: '''Prescaler for the sampling clock of this input period counter.
+                     For a value of 0, it samples at every edge of `clk_i`.
+                     For a value of 1, it samples at every second edge of `clk_i`.
+                     And so on.
+
+                     This may only be changed while the `enable` bit is `0`.
+                  '''
+          }
+        ]
+      },
+    },
+    { multireg:
+      { name: "INP_PRD_CNT_VAL",
+        cname: "INP_PRD_CNT_VAL",
+        desc: "Output value of one input period counter.",
+        count: "NumInpPeriodCounters",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "31:0",
+            name: "value",
+            resval: "0",
+            desc: '''Number of clock cycles in one complete period.
+                     If this contains the value 0, no complete period has been measured since the last time this register got cleared.
+                     The minimum number of clock cycles in one complete period is 2: in the first clock cycle after the sensitive edge, the input inverts (causing a non-sensitive edge), and in the second clock cycle the input inverts again (causing a sensitive edge).
+                     This register gets cleared after every read from SW.
+                  '''
+          }
+        ]
+      },
+    }
   ],
 }
