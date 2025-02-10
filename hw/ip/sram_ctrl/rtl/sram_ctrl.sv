@@ -52,8 +52,7 @@ module sram_ctrl
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0]          alert_tx_o,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t                     racl_policies_i,
-  output logic                                               racl_error_o,
-  output top_racl_pkg::racl_error_log_t                      racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t                      racl_error_o,
   // Life-cycle escalation input (scraps the scrambling keys)
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t                                lc_escalate_en_i,
@@ -92,13 +91,10 @@ module sram_ctrl
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
-  logic racl_error_regs;
-  logic racl_error_ram;
-  top_racl_pkg::racl_error_log_t racl_error_regs_log;
-  top_racl_pkg::racl_error_log_t racl_error_ram_log;
+  top_racl_pkg::racl_error_log_t racl_error_regs;
+  top_racl_pkg::racl_error_log_t racl_error_ram;
   // We are combining all racl errors here because only one of them can be set at any time.
   assign racl_error_o = racl_error_regs | racl_error_ram;
-  assign racl_error_log_o = racl_error_regs_log | racl_error_ram_log;
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -147,7 +143,6 @@ module sram_ctrl
     // RACL interface
     .racl_policies_i  ( racl_policies_i    ),
     .racl_error_o     ( racl_error_regs    ),
-    .racl_error_log_o ( racl_error_regs_log),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o       ( bus_integ_error[0] )
    );
@@ -547,8 +542,7 @@ module sram_ctrl
     .write_pending_i            (sram_wpending),
     // RACL interface
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error_ram),
-    .racl_error_log_o           (racl_error_ram_log)
+    .racl_error_o               (racl_error_ram)
   );
 
   logic key_valid;
@@ -628,8 +622,7 @@ module sram_ctrl
   `ASSERT_KNOWN_IF(RamTlOutPayLoadKnown_A, ram_tl_o, ram_tl_o.d_valid)
   `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
   `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,

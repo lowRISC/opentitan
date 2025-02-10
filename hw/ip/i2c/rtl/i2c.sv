@@ -30,8 +30,7 @@ module i2c
 
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // Generic IO
   input                     cio_scl_i,
@@ -79,7 +78,6 @@ module i2c
     .hw2reg,
     .racl_policies_i,
     .racl_error_o,
-    .racl_error_log_o,
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o(alerts[0])
   );
@@ -176,8 +174,7 @@ module i2c
   `ASSERT_KNOWN(IntrUnexpStopKnownO_A, intr_unexp_stop_o)
   `ASSERT_KNOWN(IntrHostTimeoutKnownO_A, intr_host_timeout_o)
   `ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
