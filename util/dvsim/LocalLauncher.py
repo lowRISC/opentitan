@@ -11,19 +11,16 @@ from Launcher import ErrorMessage, Launcher, LauncherError
 
 
 class LocalLauncher(Launcher):
-    """
-    Implementation of Launcher to launch jobs in the user's local workstation.
-    """
+    """Implementation of Launcher to launch jobs in the user's local workstation."""
 
     def __init__(self, deploy):
-        '''Initialize common class members.'''
-
+        """Initialize common class members."""
         super().__init__(deploy)
 
         # Popen object when launching the job.
         self.process = None
 
-    def _do_launch(self):
+    def _do_launch(self) -> None:
         # Update the shell's env vars with self.exports. Values in exports must
         # replace the values in the shell's env vars if the keys match.
         exports = os.environ.copy()
@@ -34,17 +31,19 @@ class LocalLauncher(Launcher):
         # level to the next. Here, self.cmd is a call to Make but it's
         # logically a top-level invocation: we don't want to pollute the flow's
         # Makefile with Make variables from any wrapper that called dvsim.
-        if 'MAKEFLAGS' in exports:
-            del exports['MAKEFLAGS']
+        if "MAKEFLAGS" in exports:
+            del exports["MAKEFLAGS"]
 
         self._dump_env_vars(exports)
 
         if not self.deploy.sim_cfg.interactive:
             try:
-                f = open(self.deploy.get_log_path(),
-                         "w",
-                         encoding="UTF-8",
-                         errors="surrogateescape")
+                f = open(
+                    self.deploy.get_log_path(),
+                    "w",
+                    encoding="UTF-8",
+                    errors="surrogateescape",
+                )
                 f.write("[Executing]:\n{}\n\n".format(self.deploy.cmd))
                 f.flush()
                 timeout_mins = self.deploy.get_timeout_mins()
@@ -52,32 +51,37 @@ class LocalLauncher(Launcher):
                     self.timeout_secs = timeout_mins * 60
                 else:
                     self.timeout_secs = None
-                self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
-                                                bufsize=4096,
-                                                universal_newlines=True,
-                                                stdout=f,
-                                                stderr=f,
-                                                env=exports)
+                self.process = subprocess.Popen(
+                    shlex.split(self.deploy.cmd),
+                    bufsize=4096,
+                    universal_newlines=True,
+                    stdout=f,
+                    stderr=f,
+                    env=exports,
+                )
             except subprocess.SubprocessError as e:
-                raise LauncherError('IO Error: {}\nSee {}'.format(
-                    e, self.deploy.get_log_path()))
+                raise LauncherError(
+                    "IO Error: {}\nSee {}".format(e, self.deploy.get_log_path())
+                )
             finally:
                 self._close_process()
         else:
             # Interactive: Set RUN_INTERACTIVE to 1
-            exports['RUN_INTERACTIVE'] = "1"
+            exports["RUN_INTERACTIVE"] = "1"
 
             # Interactive. stdin / stdout are transparent
             # no timeout and blocking op as user controls the flow
             print("Interactive mode is not supported yet.")
-            print("Cmd : {}".format(self.deploy.cmd))
-            self.process = subprocess.Popen(shlex.split(self.deploy.cmd),
-                                            stdin=None,
-                                            stdout=None,
-                                            stderr=subprocess.STDOUT,
-                                            # string mode
-                                            universal_newlines=True,
-                                            env=exports)
+            print(f"Cmd : {self.deploy.cmd}")
+            self.process = subprocess.Popen(
+                shlex.split(self.deploy.cmd),
+                stdin=None,
+                stdout=None,
+                stderr=subprocess.STDOUT,
+                # string mode
+                universal_newlines=True,
+                env=exports,
+            )
 
             # Wait until the process exit
             self.process.wait()
@@ -85,7 +89,7 @@ class LocalLauncher(Launcher):
         self._link_odir("D")
 
     def poll(self):
-        '''Check status of the running process
+        """Check status of the running process
 
         This returns 'D', 'P', 'F', or 'K'. If 'D', the job is still running.
         If 'P', the job finished successfully. If 'F', the job finished with
@@ -93,25 +97,32 @@ class LocalLauncher(Launcher):
 
         This function must only be called after running self.dispatch_cmd() and
         must not be called again once it has returned 'P' or 'F'.
-        '''
+        """
 
         assert self.process is not None
         elapsed_time = datetime.datetime.now() - self.start_time
         self.job_runtime_secs = elapsed_time.total_seconds()
         if self.process.poll() is None:
-            if (self.timeout_secs and (self.job_runtime_secs > self.timeout_secs) and
-                    not (self.deploy.gui)):
+            if (
+                self.timeout_secs and
+                (self.job_runtime_secs > self.timeout_secs) and not
+                (self.deploy.gui)
+            ):
                 self._kill()
-                timeout_message = 'Job timed out after {} minutes'.format(
-                    self.deploy.get_timeout_mins())
+                timeout_message = (
+                    f"Job timed out after {self.deploy.get_timeout_mins()} minutes"
+                )
                 self._post_finish(
-                    'K',
-                    ErrorMessage(line_number=None,
-                                 message=timeout_message,
-                                 context=[timeout_message]))
-                return 'K'
+                    "K",
+                    ErrorMessage(
+                        line_number=None,
+                        message=timeout_message,
+                        context=[timeout_message],
+                    ),
+                )
+                return "K"
 
-            return 'D'
+            return "D"
 
         self.exit_code = self.process.returncode
         status, err_msg = self._check_status()
@@ -119,11 +130,11 @@ class LocalLauncher(Launcher):
         return self.status
 
     def _kill(self):
-        '''Kill the running process.
+        """Kill the running process.
 
         Try to kill the running process. Send SIGTERM first, wait a bit,
         and then send SIGKILL if it didn't work.
-        '''
+        """
         assert self.process is not None
         self.process.terminate()
         try:
@@ -132,16 +143,16 @@ class LocalLauncher(Launcher):
             self.process.kill()
 
     def kill(self):
-        '''Kill the running process.
+        """Kill the running process.
 
         This must be called between dispatching and reaping the process (the
         same window as poll()).
 
-        '''
+        """
         self._kill()
         self._post_finish(
-            'K',
-            ErrorMessage(line_number=None, message='Job killed!', context=[]))
+            "K", ErrorMessage(line_number=None, message="Job killed!", context=[])
+        )
 
     def _post_finish(self, status, err_msg):
         self._close_process()
@@ -149,7 +160,7 @@ class LocalLauncher(Launcher):
         super()._post_finish(status, err_msg)
 
     def _close_process(self):
-        '''Close the file descriptors associated with the process.'''
+        """Close the file descriptors associated with the process."""
 
         assert self.process
         if self.process.stdout:

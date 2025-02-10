@@ -12,15 +12,16 @@ from Timer import Timer
 from utils import VERBOSE
 
 
-# Sum of lenghts of all lists in the given dict.
+# Sum of lengths of all lists in the given dict.
 def sum_dict_lists(d):
-    '''Given a dict whose key values are lists, return sum of lengths of
-    thoese lists.'''
+    """Given a dict whose key values are lists, return sum of lengths of
+    these lists.
+    """
     return sum([len(d[k]) for k in d])
 
 
 def get_next_item(arr, index):
-    '''Perpetually get an item from a list.
+    """Perpetually get an item from a list.
 
     Returns the next item on the list by advancing the index by 1. If the index
     is already the last item on the list, it loops back to the start, thus
@@ -31,7 +32,7 @@ def get_next_item(arr, index):
 
     Returns (item, index) if successful.
     Raises IndexError if arr is empty.
-    '''
+    """
     index += 1
     try:
         item = arr[index]
@@ -46,7 +47,7 @@ def get_next_item(arr, index):
 
 
 class Scheduler:
-    '''An object that runs one or more Deploy items'''
+    """An object that runs one or more Deploy items"""
 
     def __init__(self, items, launcher_cls, interactive):
         self.items = items
@@ -63,8 +64,8 @@ class Scheduler:
         # Print status periodically using an external status printer.
         self.status_printer = get_status_printer(interactive)
         self.status_printer.print_header(
-            msg="Q: queued, D: dispatched, P: passed, F: failed, K: killed, "
-            "T: total")
+            msg="Q: queued, D: dispatched, P: passed, F: failed, K: killed, T: total",
+        )
 
         # Sets of items, split up by their current state. The sets are
         # disjoint and their union equals the keys of self.item_to_status.
@@ -97,9 +98,11 @@ class Scheduler:
 
             # Stuff for printing the status.
             width = len(str(self._total[target]))
-            field_fmt = '{{:0{}d}}'.format(width)
-            self.msg_fmt = 'Q: {0}, D: {0}, P: {0}, F: {0}, K: {0}, T: {0}'.format(
-                field_fmt)
+            field_fmt = f"{{:0{width}d}}"
+            self.msg_fmt = (
+                f"Q: {field_fmt}, D: {field_fmt}, P: {field_fmt}, "
+                f"F: {field_fmt}, K: {field_fmt}, T: {field_fmt}"
+            )
             msg = self.msg_fmt.format(0, 0, 0, 0, 0, self._total[target])
             self.status_printer.init_target(target=target, msg=msg)
 
@@ -118,12 +121,11 @@ class Scheduler:
         self.launcher_cls = launcher_cls
 
     def run(self):
-        '''Run all scheduled jobs and return the results.
+        """Run all scheduled jobs and return the results.
 
         Returns the results (status) of all items dispatched for all
         targets and cfgs.
-        '''
-
+        """
         timer = Timer()
 
         # Catch one SIGINT and tell the runner to quit. On a second, die.
@@ -131,12 +133,16 @@ class Scheduler:
         old_handler = None
 
         def on_signal(signal_received, frame):
-            log.info("Received signal %s. Exiting gracefully.",
-                     signal_received)
+            log.info(
+                "Received signal %s. Exiting gracefully.",
+                signal_received,
+            )
 
             if signal_received == SIGINT:
-                log.info('Send another to force immediate quit (but you may '
-                         'need to manually kill child processes)')
+                log.info(
+                    "Send another to force immediate quit (but you may "
+                    "need to manually kill child processes)",
+                )
 
                 # Restore old handler to catch a second SIGINT
                 assert old_handler is not None
@@ -181,11 +187,10 @@ class Scheduler:
         return self.item_to_status
 
     def add_to_scheduled(self, items):
-        '''Add items to the list of _scheduled.
+        """Add items to the list of _scheduled.
 
         'items' is a list of Deploy objects.
-        '''
-
+        """
         for item in items:
             target_dict = self._scheduled.setdefault(item.target, {})
             cfg_list = target_dict.setdefault(item.sim_cfg, [])
@@ -193,11 +198,11 @@ class Scheduler:
                 cfg_list.append(item)
 
     def _remove_from_scheduled(self, item):
-        '''Removes the item from _scheduled[target][cfg] list.
+        """Removes the item from _scheduled[target][cfg] list.
 
         When all items in _scheduled[target][cfg] are finally removed, the cfg
         key is deleted.
-        '''
+        """
         target_dict = self._scheduled[item.target]
         cfg_list = target_dict.get(item.sim_cfg)
         if cfg_list is not None:
@@ -209,12 +214,11 @@ class Scheduler:
                 del target_dict[item.sim_cfg]
 
     def _get_next_target(self, curr_target):
-        '''Returns the target that succeeds the current one.
+        """Returns the target that succeeds the current one.
 
         curr_target is the target of the job that just completed (example -
         build). If it is None, then the first target in _scheduled is returned.
-        '''
-
+        """
         if curr_target is None:
             return next(iter(self._scheduled))
 
@@ -234,25 +238,24 @@ class Scheduler:
         return target
 
     def _enqueue_successors(self, item=None):
-        '''Move an item's successors from _scheduled to _queued.
+        """Move an item's successors from _scheduled to _queued.
 
         'item' is the recently run job that has completed. If None, then we
         move all available items in all available cfgs in _scheduled's first
         target. If 'item' is specified, then we find its successors and move
         them to _queued.
-        '''
-
+        """
         for next_item in self._get_successors(item):
             assert next_item not in self.item_to_status
             assert next_item not in self._queued[next_item.target]
-            self.item_to_status[next_item] = 'Q'
+            self.item_to_status[next_item] = "Q"
             self._queued[next_item.target].append(next_item)
             self._remove_from_scheduled(next_item)
 
     def _cancel_successors(self, item):
-        '''Cancel an item's successors recursively by moving them from
-        _scheduled or _queued to _killed.'''
-
+        """Cancel an item's successors recursively by moving them from
+        _scheduled or _queued to _killed.
+        """
         items = self._get_successors(item)
         while items:
             next_item = items.pop()
@@ -260,7 +263,7 @@ class Scheduler:
             items.extend(self._get_successors(next_item))
 
     def _get_successors(self, item=None):
-        '''Find immediate successors of an item.
+        """Find immediate successors of an item.
 
         'item' is a job that has completed. We choose the target that follows
         the 'item''s current target and find the list of successors whose
@@ -270,8 +273,7 @@ class Scheduler:
 
         Returns the list of item's successors, or an empty list if there are
         none.
-        '''
-
+        """
         if item is None:
             target = self._get_next_target(None)
             cfgs = set(self._scheduled[target])
@@ -301,8 +303,7 @@ class Scheduler:
         return successors
 
     def _ok_to_enqueue(self, item):
-        '''Returns true if ALL dependencies of item are complete.'''
-
+        """Returns true if ALL dependencies of item are complete."""
         for dep in item.dependencies:
             # Ignore dependencies that were not scheduled to run.
             if dep not in self.items:
@@ -319,12 +320,12 @@ class Scheduler:
         return True
 
     def _ok_to_run(self, item):
-        '''Returns true if the required dependencies have passed.
+        """Returns true if the required dependencies have passed.
 
         The item's needs_all_dependencies_passing setting is used to figure
         out whether we can run this item or not, based on its dependent jobs'
         statuses.
-        '''
+        """
         # 'item' can run only if its dependencies have passed (their results
         # should already show up in the item to status map).
         for dep in item.dependencies:
@@ -333,25 +334,25 @@ class Scheduler:
                 continue
 
             dep_status = self.item_to_status[dep]
-            assert dep_status in ['P', 'F', 'K']
+            assert dep_status in ["P", "F", "K"]
 
             if item.needs_all_dependencies_passing:
-                if dep_status in ['F', 'K']:
+                if dep_status in ["F", "K"]:
                     return False
-            else:
-                if dep_status in ['P']:
-                    return True
+            elif dep_status in ["P"]:
+                return True
 
         return item.needs_all_dependencies_passing
 
     def _poll(self, hms):
-        '''Check for running items that have finished
+        """Check for running items that have finished
 
         Returns True if something changed.
-        '''
-
-        max_poll = min(self.launcher_cls.max_poll,
-                       sum_dict_lists(self._running))
+        """
+        max_poll = min(
+            self.launcher_cls.max_poll,
+            sum_dict_lists(self._running),
+        )
 
         # If there are no jobs running, we are likely done (possibly because
         # of a SIGINT). Since poll() was called anyway, signal that something
@@ -362,32 +363,43 @@ class Scheduler:
         changed = False
         while max_poll:
             target, self.last_target_polled_idx = get_next_item(
-                self._targets, self.last_target_polled_idx)
+                self._targets,
+                self.last_target_polled_idx,
+            )
 
             while self._running[target] and max_poll:
                 max_poll -= 1
                 item, self.last_item_polled_idx[target] = get_next_item(
-                    self._running[target], self.last_item_polled_idx[target])
+                    self._running[target],
+                    self.last_item_polled_idx[target],
+                )
                 status = item.launcher.poll()
                 level = VERBOSE
 
-                assert status in ['D', 'P', 'F', 'K']
-                if status == 'D':
+                assert status in ["D", "P", "F", "K"]
+                if status == "D":
                     continue
-                elif status == 'P':
+                elif status == "P":
                     self._passed[target].add(item)
-                elif status == 'F':
+                elif status == "F":
                     self._failed[target].add(item)
                     level = log.ERROR
                 else:
+                    # Killed or Error dispatching
                     self._killed[target].add(item)
                     level = log.ERROR
 
                 self._running[target].pop(self.last_item_polled_idx[target])
                 self.last_item_polled_idx[target] -= 1
                 self.item_to_status[item] = status
-                log.log(level, "[%s]: [%s]: [status] [%s: %s]", hms, target,
-                        item.full_name, status)
+                log.log(
+                    level,
+                    "[%s]: [%s]: [status] [%s: %s]",
+                    hms,
+                    target,
+                    item.full_name,
+                    status,
+                )
 
                 # Enqueue item's successors regardless of its status.
                 #
@@ -402,8 +414,7 @@ class Scheduler:
         return changed
 
     def _dispatch(self, hms):
-        '''Dispatch some queued items if possible.'''
-
+        """Dispatch some queued items if possible."""
         slots = self.launcher_cls.max_parallel - sum_dict_lists(self._running)
         if slots <= 0:
             return
@@ -412,8 +423,9 @@ class Scheduler:
         # weights.
         sum_weight = 0
         slots_filled = 0
-        total_weight = sum(self._queued[t][0].weight for t in self._queued
-                           if self._queued[t])
+        total_weight = sum(
+            self._queued[t][0].weight for t in self._queued if self._queued[t]
+        )
 
         for target in self._scheduled:
             if not self._queued[target]:
@@ -439,8 +451,7 @@ class Scheduler:
             # targets that are earlier in the list such that in the end, all
             # slots are fully consumed.
             sum_weight += self._queued[target][0].weight
-            target_slots = round(
-                (slots * sum_weight) / total_weight) - slots_filled
+            target_slots = round((slots * sum_weight) / total_weight) - slots_filled
             if target_slots <= 0:
                 continue
             slots_filled += target_slots
@@ -459,21 +470,26 @@ class Scheduler:
             if not to_dispatch:
                 continue
 
-            log.log(VERBOSE, "[%s]: [%s]: [dispatch]:\n%s", hms, target,
-                    ", ".join(item.full_name for item in to_dispatch))
+            log.log(
+                VERBOSE,
+                "[%s]: [%s]: [dispatch]:\n%s",
+                hms,
+                target,
+                ", ".join(item.full_name for item in to_dispatch),
+            )
 
             for item in to_dispatch:
-                self._running[target].append(item)
-                self.item_to_status[item] = 'D'
                 try:
                     item.launcher.launch()
                 except LauncherError as err:
-                    log.error('{}'.format(err))
+                    log.exception(err.msg)
                     self._kill_item(item)
 
-    def _kill(self):
-        '''Kill any running items and cancel any that are waiting'''
+                self._running[target].append(item)
+                self.item_to_status[item] = "D"
 
+    def _kill(self):
+        """Kill any running items and cancel any that are waiting"""
         # Cancel any waiting items. We take a copy of self._queued to avoid
         # iterating over the set as we modify it.
         for target in self._queued:
@@ -487,50 +503,54 @@ class Scheduler:
                 self._kill_item(item)
 
     def _check_if_done(self, hms):
-        '''Check if we are done executing all jobs.
+        """Check if we are done executing all jobs.
 
         Also, prints the status of currently running jobs.
-        '''
-
+        """
         done = True
         for target in self._scheduled:
-            done_cnt = sum([
-                len(self._passed[target]),
-                len(self._failed[target]),
-                len(self._killed[target])
-            ])
+            done_cnt = sum(
+                [
+                    len(self._passed[target]),
+                    len(self._failed[target]),
+                    len(self._killed[target]),
+                ],
+            )
             done = done and (done_cnt == self._total[target])
 
             # Skip if a target has not even begun executing.
-            if not (self._queued[target] or self._running[target] or
-                    done_cnt > 0):
+            if not (self._queued[target] or self._running[target] or done_cnt > 0):
                 continue
 
             perc = done_cnt / self._total[target] * 100
 
             running = ", ".join(
-                [f"{item.full_name}" for item in self._running[target]])
-            msg = self.msg_fmt.format(len(self._queued[target]),
-                                      len(self._running[target]),
-                                      len(self._passed[target]),
-                                      len(self._failed[target]),
-                                      len(self._killed[target]),
-                                      self._total[target])
-            self.status_printer.update_target(target=target,
-                                              msg=msg,
-                                              hms=hms,
-                                              perc=perc,
-                                              running=running)
+                [f"{item.full_name}" for item in self._running[target]],
+            )
+            msg = self.msg_fmt.format(
+                len(self._queued[target]),
+                len(self._running[target]),
+                len(self._passed[target]),
+                len(self._failed[target]),
+                len(self._killed[target]),
+                self._total[target],
+            )
+            self.status_printer.update_target(
+                target=target,
+                msg=msg,
+                hms=hms,
+                perc=perc,
+                running=running,
+            )
         return done
 
     def _cancel_item(self, item, cancel_successors=True):
-        '''Cancel an item and optionally all of its successors.
+        """Cancel an item and optionally all of its successors.
 
         Supplied item may be in _scheduled list or the _queued list. From
         either, we move it straight to _killed.
-        '''
-
-        self.item_to_status[item] = 'K'
+        """
+        self.item_to_status[item] = "K"
         self._killed[item.target].add(item)
         if item in self._queued[item.target]:
             self._queued[item.target].remove(item)
@@ -541,10 +561,9 @@ class Scheduler:
             self._cancel_successors(item)
 
     def _kill_item(self, item):
-        '''Kill a running item and cancel all of its successors.'''
-
+        """Kill a running item and cancel all of its successors."""
         item.launcher.kill()
-        self.item_to_status[item] = 'K'
+        self.item_to_status[item] = "K"
         self._killed[item.target].add(item)
         self._running[item.target].remove(item)
         self._cancel_successors(item)
