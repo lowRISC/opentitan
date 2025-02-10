@@ -108,9 +108,9 @@ module racl_ctrl import racl_ctrl_reg_pkg::*; #(
 
   // Broadcast all policies via policy vector
   assign racl_policies_o = {
-    policy_all_rd_wr,
+    policy_soc_rot,
     policy_rot_private,
-    policy_soc_rot
+    policy_all_rd_wr
   };
 
   //////////////////////////////////////////////////////////////////////////////////////////////////
