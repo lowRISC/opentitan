@@ -306,6 +306,9 @@
         GpioAsHwStrapsEn: "1",
         GpioAsyncOn: "1"
       },
+      ipgen_param: {
+        num_inp_period_counters: 8
+      }
       attr: "ipgen"
     },
     { name: "spi_device",

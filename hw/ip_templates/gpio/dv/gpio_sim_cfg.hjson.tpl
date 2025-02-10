@@ -80,6 +80,13 @@
       run_opts: ["+no_pullup_pulldown=1"]
     }
 
+% if num_inp_period_counters > 0:
+    {
+      name: gpio_inp_prd_cnt
+      uvm_test_seq: gpio_inp_prd_cnt_vseq
+    }
+
+% endif
     {
       name: gpio_random_dout_din
       uvm_test_seq: gpio_random_dout_din_vseq

@@ -19,6 +19,9 @@ filesets:
       - seq_lib/${module_instance_name}_base_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_common_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_smoke_vseq.sv: {is_include_file: true}
+% if num_inp_period_counters > 0:
+      - seq_lib/${module_instance_name}_inp_prd_cnt_vseq.sv: {is_include_file: true}
+% endif
       - seq_lib/${module_instance_name}_rand_intr_trigger_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_random_dout_din_vseq.sv: {is_include_file: true}
       - seq_lib/${module_instance_name}_dout_din_regs_random_rw_vseq.sv: {is_include_file: true}

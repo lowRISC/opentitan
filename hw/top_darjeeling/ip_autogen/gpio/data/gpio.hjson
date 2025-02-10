@@ -29,9 +29,9 @@
     {
       version:            "1.2.0",
       life_stage:         "L1",
-      design_stage:       "D3",
-      verification_stage: "V2S",
-      dif_stage:          "S2",
+      design_stage:       "D2",
+      verification_stage: "V1",
+      dif_stage:          "S1",
       notes:              ""
     }
   ]
@@ -86,6 +86,12 @@
                   Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
                   Values outside that range would likely require significant RTL changes.
                '''
+      local:   "true",
+    },
+    { name:    "NumInpPeriodCounters",
+      type:    "int",
+      default: "8",
+      desc:    "Number of input period counters.",
       local:   "true",
     },
   ]
@@ -443,5 +449,100 @@
         }
       ],
     },
+    { multireg:
+      { name: "INP_PRD_CNT_CTRL",
+        cname: "INP_PRD_CNT_CTRL",
+        desc: "Control register of one input period counter.",
+        count: "8"
+        swaccess: "rw",
+        hwaccess: "hrw",
+        fields: [
+          { bits: "0",
+            name: "enable",
+            resval: "0",
+            desc: '''Enable this input period counter.
+                  After enabling, this counter waits for the next relevant edge (see `polarity` field) of the input to start counting.
+                  After that, it counts clock cycles until the next relevant edge.
+                  On that edge, the measurement is complete and the count is stored in the !!INP_PRD_CNT_VAL register of this input period counter.
+                  Then, if the `continuous_mode` field of this register is not set, the counter clears the `enable` field and returns to idle (see description of the `continuous_mode` field for what happens if that field is set).
+                  '''
+          },
+          { bits: "1",
+            name: "continuous_mode",
+            resval: "0",
+            desc: '''Continuously count the input period.
+                  When one measurement is completed (see description of `enable` field) and this field is set, all of the following apply:
+                  - the wait for a relevant edge will immediately restart, with an internal counter of zero (while !!INP_PRD_CNT_VAL keeps the value of the completed measurement);
+                  - the `enable` field is not cleared.
+
+                  This field may only be changed while the `enable` field is zero.
+                  '''
+          },
+          { bits: "2",
+            name: "polarity",
+            resval: "1",
+            desc: '''Polarity of this input period counter.
+                  If 0, *falling* edges of the input are relevant.
+                  If 1, *rising* edges of the input are relevant.
+
+                  This field may only be changed while the `enable` field is zero.
+                  '''
+          },
+          { bits: "15:8",
+            name: "input_select",
+            resval: "0",
+            desc: '''Index (starting at 0) of the input that this period counter should operate on.
+                  The value must be smaller than the number of inputs (N), as only the `ceil(log2(N))` least significant bits of this field are considered.
+
+                  This may only be changed while the `enable` field is zero.
+                  '''
+          },
+          { bits: "23:16",
+            name: "prescaler",
+            resval: "0",
+            desc: '''Prescaler for this input period counter.
+                  The basic idea is that the value returned in !!INP_PRD_CNT_VAL can be multiplied by the value of this register plus one to obtain the number of `clk_i` cycles between two relevant edges.
+
+                  For example, assume the input pattern `00100100`:
+                  - For `prescaler = 0`, !!INP_PRD_CNT_VAL = 2
+                  - For `prescaler = 1`, !!INP_PRD_CNT_VAL = 1
+
+                  Note that, regardless of the prescaler, the input is sampled at every positive edge of `clk_i`.
+                  The detection of relevant edges is thus not affected by the prescaler.
+
+                  This may only be changed while the `enable` field is zero.
+                  '''
+          }
+        ]
+      },
+    },
+    { multireg:
+      { name: "INP_PRD_CNT_VAL",
+        cname: "INP_PRD_CNT_VAL",
+        desc: "Output value of one input period counter.",
+        count: "8",
+        swaccess: "rc",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "31:0",
+            name: "value",
+            resval: "0",
+            desc: '''Number of clock cycles in one complete period.
+                  If this contains the value 0, no complete period has been measured since the last time this register got cleared.
+                  The minimum number of clock cycles in one complete period is 1, which is returned when the input inverts for one clock cycle and then inverts again.
+
+                  Expected values for some example patterns:
+                  - `01010101` -> 1
+                  - `00100100` -> 2
+                  - `00010001` -> 3
+
+                  The counter saturates at the maximum value.
+
+                  This register gets cleared after every read from SW.
+                  '''
+          }
+        ]
+      },
+    }
   ],
 }

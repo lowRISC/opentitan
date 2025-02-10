@@ -216,6 +216,12 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
       end // if (write)
     end else begin // if (channel == DataChannel)
       if (write == 0) begin
+% for cnt_idx in range(num_inp_period_counters):
+        if (csr.get_name() == "inp_prd_cnt_val_${cnt_idx}") begin
+          // TODO(#26544): Check values read from all input period counters.
+          do_read_check = 1'b0;
+        end
+% endfor
         // If do_read_check, is set, then check mirrored_value against item.d_data
         if (do_read_check) begin
           // Checker-2: Check if reg read data matches expected value or not
@@ -526,6 +532,11 @@ class ${module_instance_name}_scoreboard extends cip_base_scoreboard #(.CFG_T ($
         end
         "ctrl_en_input_filter": begin
         end
+% for cnt_idx in range(num_inp_period_counters):
+        "inp_prd_cnt_ctrl_${cnt_idx}": begin
+          // TODO(#26544): Model input period counters in scoreboard.
+        end
+% endfor
         default: begin
           `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", csr.get_full_name()))
         end

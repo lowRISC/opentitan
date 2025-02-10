@@ -81,6 +81,11 @@
     }
 
     {
+      name: gpio_inp_prd_cnt
+      uvm_test_seq: gpio_inp_prd_cnt_vseq
+    }
+
+    {
       name: gpio_random_dout_din
       uvm_test_seq: gpio_random_dout_din_vseq
     }

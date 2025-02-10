@@ -1,12 +1,3 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-{
-  instance_name: top_earlgrey_gpio
-  param_values:
-  {
-    num_inp_period_counters: 0
-    module_instance_name: gpio
-    topname: earlgrey
-  }
-}

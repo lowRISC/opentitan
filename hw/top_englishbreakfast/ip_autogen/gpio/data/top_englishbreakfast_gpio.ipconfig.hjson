@@ -5,6 +5,7 @@
   instance_name: top_englishbreakfast_gpio
   param_values:
   {
+    num_inp_period_counters: 0
     module_instance_name: gpio
     topname: englishbreakfast
   }

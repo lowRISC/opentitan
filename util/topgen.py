@@ -761,6 +761,9 @@ def _get_gpio_params(top: ConfigT) -> ParamsT:
 
     gpio = lib.find_module(top["module"], "gpio")
     params = {
+        # TODO(#26553): Remove the following code once topgen automatically
+        # incorporates template parameters.
+        "num_inp_period_counters": gpio.get("ipgen_param", {}).get("num_inp_period_counters", 0),
         "module_instance_name": gpio["type"]
     }
     return params

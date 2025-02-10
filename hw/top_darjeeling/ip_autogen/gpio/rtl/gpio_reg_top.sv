@@ -31,7 +31,7 @@ module gpio_reg_top
 
   import gpio_reg_pkg::* ;
 
-  localparam int AW = 7;
+  localparam int AW = 8;
   localparam int DW = 32;
   localparam int DBW = DW/8;                    // Byte Width
 
@@ -62,9 +62,9 @@ module gpio_reg_top
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [17:0] reg_we_check;
+  logic [33:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(18)
+    .OneHotWidth(34)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -190,6 +190,118 @@ module gpio_reg_top
   logic [31:0] ctrl_en_input_filter_wd;
   logic hw_straps_data_in_valid_qs;
   logic [31:0] hw_straps_data_in_qs;
+  logic inp_prd_cnt_ctrl_0_we;
+  logic inp_prd_cnt_ctrl_0_enable_0_qs;
+  logic inp_prd_cnt_ctrl_0_enable_0_wd;
+  logic inp_prd_cnt_ctrl_0_continuous_mode_0_qs;
+  logic inp_prd_cnt_ctrl_0_continuous_mode_0_wd;
+  logic inp_prd_cnt_ctrl_0_polarity_0_qs;
+  logic inp_prd_cnt_ctrl_0_polarity_0_wd;
+  logic [7:0] inp_prd_cnt_ctrl_0_input_select_0_qs;
+  logic [7:0] inp_prd_cnt_ctrl_0_input_select_0_wd;
+  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_0_qs;
+  logic [7:0] inp_prd_cnt_ctrl_0_prescaler_0_wd;
+  logic inp_prd_cnt_ctrl_1_we;
+  logic inp_prd_cnt_ctrl_1_enable_1_qs;
+  logic inp_prd_cnt_ctrl_1_enable_1_wd;
+  logic inp_prd_cnt_ctrl_1_continuous_mode_1_qs;
+  logic inp_prd_cnt_ctrl_1_continuous_mode_1_wd;
+  logic inp_prd_cnt_ctrl_1_polarity_1_qs;
+  logic inp_prd_cnt_ctrl_1_polarity_1_wd;
+  logic [7:0] inp_prd_cnt_ctrl_1_input_select_1_qs;
+  logic [7:0] inp_prd_cnt_ctrl_1_input_select_1_wd;
+  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_1_qs;
+  logic [7:0] inp_prd_cnt_ctrl_1_prescaler_1_wd;
+  logic inp_prd_cnt_ctrl_2_we;
+  logic inp_prd_cnt_ctrl_2_enable_2_qs;
+  logic inp_prd_cnt_ctrl_2_enable_2_wd;
+  logic inp_prd_cnt_ctrl_2_continuous_mode_2_qs;
+  logic inp_prd_cnt_ctrl_2_continuous_mode_2_wd;
+  logic inp_prd_cnt_ctrl_2_polarity_2_qs;
+  logic inp_prd_cnt_ctrl_2_polarity_2_wd;
+  logic [7:0] inp_prd_cnt_ctrl_2_input_select_2_qs;
+  logic [7:0] inp_prd_cnt_ctrl_2_input_select_2_wd;
+  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_2_qs;
+  logic [7:0] inp_prd_cnt_ctrl_2_prescaler_2_wd;
+  logic inp_prd_cnt_ctrl_3_we;
+  logic inp_prd_cnt_ctrl_3_enable_3_qs;
+  logic inp_prd_cnt_ctrl_3_enable_3_wd;
+  logic inp_prd_cnt_ctrl_3_continuous_mode_3_qs;
+  logic inp_prd_cnt_ctrl_3_continuous_mode_3_wd;
+  logic inp_prd_cnt_ctrl_3_polarity_3_qs;
+  logic inp_prd_cnt_ctrl_3_polarity_3_wd;
+  logic [7:0] inp_prd_cnt_ctrl_3_input_select_3_qs;
+  logic [7:0] inp_prd_cnt_ctrl_3_input_select_3_wd;
+  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_3_qs;
+  logic [7:0] inp_prd_cnt_ctrl_3_prescaler_3_wd;
+  logic inp_prd_cnt_ctrl_4_we;
+  logic inp_prd_cnt_ctrl_4_enable_4_qs;
+  logic inp_prd_cnt_ctrl_4_enable_4_wd;
+  logic inp_prd_cnt_ctrl_4_continuous_mode_4_qs;
+  logic inp_prd_cnt_ctrl_4_continuous_mode_4_wd;
+  logic inp_prd_cnt_ctrl_4_polarity_4_qs;
+  logic inp_prd_cnt_ctrl_4_polarity_4_wd;
+  logic [7:0] inp_prd_cnt_ctrl_4_input_select_4_qs;
+  logic [7:0] inp_prd_cnt_ctrl_4_input_select_4_wd;
+  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_4_qs;
+  logic [7:0] inp_prd_cnt_ctrl_4_prescaler_4_wd;
+  logic inp_prd_cnt_ctrl_5_we;
+  logic inp_prd_cnt_ctrl_5_enable_5_qs;
+  logic inp_prd_cnt_ctrl_5_enable_5_wd;
+  logic inp_prd_cnt_ctrl_5_continuous_mode_5_qs;
+  logic inp_prd_cnt_ctrl_5_continuous_mode_5_wd;
+  logic inp_prd_cnt_ctrl_5_polarity_5_qs;
+  logic inp_prd_cnt_ctrl_5_polarity_5_wd;
+  logic [7:0] inp_prd_cnt_ctrl_5_input_select_5_qs;
+  logic [7:0] inp_prd_cnt_ctrl_5_input_select_5_wd;
+  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_5_qs;
+  logic [7:0] inp_prd_cnt_ctrl_5_prescaler_5_wd;
+  logic inp_prd_cnt_ctrl_6_we;
+  logic inp_prd_cnt_ctrl_6_enable_6_qs;
+  logic inp_prd_cnt_ctrl_6_enable_6_wd;
+  logic inp_prd_cnt_ctrl_6_continuous_mode_6_qs;
+  logic inp_prd_cnt_ctrl_6_continuous_mode_6_wd;
+  logic inp_prd_cnt_ctrl_6_polarity_6_qs;
+  logic inp_prd_cnt_ctrl_6_polarity_6_wd;
+  logic [7:0] inp_prd_cnt_ctrl_6_input_select_6_qs;
+  logic [7:0] inp_prd_cnt_ctrl_6_input_select_6_wd;
+  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_6_qs;
+  logic [7:0] inp_prd_cnt_ctrl_6_prescaler_6_wd;
+  logic inp_prd_cnt_ctrl_7_we;
+  logic inp_prd_cnt_ctrl_7_enable_7_qs;
+  logic inp_prd_cnt_ctrl_7_enable_7_wd;
+  logic inp_prd_cnt_ctrl_7_continuous_mode_7_qs;
+  logic inp_prd_cnt_ctrl_7_continuous_mode_7_wd;
+  logic inp_prd_cnt_ctrl_7_polarity_7_qs;
+  logic inp_prd_cnt_ctrl_7_polarity_7_wd;
+  logic [7:0] inp_prd_cnt_ctrl_7_input_select_7_qs;
+  logic [7:0] inp_prd_cnt_ctrl_7_input_select_7_wd;
+  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_7_qs;
+  logic [7:0] inp_prd_cnt_ctrl_7_prescaler_7_wd;
+  logic inp_prd_cnt_val_0_re;
+  logic [31:0] inp_prd_cnt_val_0_qs;
+  logic [31:0] inp_prd_cnt_val_0_wd;
+  logic inp_prd_cnt_val_1_re;
+  logic [31:0] inp_prd_cnt_val_1_qs;
+  logic [31:0] inp_prd_cnt_val_1_wd;
+  logic inp_prd_cnt_val_2_re;
+  logic [31:0] inp_prd_cnt_val_2_qs;
+  logic [31:0] inp_prd_cnt_val_2_wd;
+  logic inp_prd_cnt_val_3_re;
+  logic [31:0] inp_prd_cnt_val_3_qs;
+  logic [31:0] inp_prd_cnt_val_3_wd;
+  logic inp_prd_cnt_val_4_re;
+  logic [31:0] inp_prd_cnt_val_4_qs;
+  logic [31:0] inp_prd_cnt_val_4_wd;
+  logic inp_prd_cnt_val_5_re;
+  logic [31:0] inp_prd_cnt_val_5_qs;
+  logic [31:0] inp_prd_cnt_val_5_wd;
+  logic inp_prd_cnt_val_6_re;
+  logic [31:0] inp_prd_cnt_val_6_qs;
+  logic [31:0] inp_prd_cnt_val_6_wd;
+  logic inp_prd_cnt_val_7_re;
+  logic [31:0] inp_prd_cnt_val_7_qs;
+  logic [31:0] inp_prd_cnt_val_7_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -700,13 +812,1349 @@ module gpio_reg_top
   );
 
 
+  // Subregister 0 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_0]: V(False)
+  //   F[enable_0]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_0_enable_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
 
-  logic [17:0] addr_hit;
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_0_we),
+    .wd     (inp_prd_cnt_ctrl_0_enable_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[0].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[0].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[0].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_0_enable_0_qs)
+  );
+
+  //   F[continuous_mode_0]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_0_continuous_mode_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_0_we),
+    .wd     (inp_prd_cnt_ctrl_0_continuous_mode_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[0].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[0].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[0].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_0_continuous_mode_0_qs)
+  );
+
+  //   F[polarity_0]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_0_polarity_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_0_we),
+    .wd     (inp_prd_cnt_ctrl_0_polarity_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[0].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[0].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[0].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_0_polarity_0_qs)
+  );
+
+  //   F[input_select_0]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_0_input_select_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_0_we),
+    .wd     (inp_prd_cnt_ctrl_0_input_select_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[0].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[0].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[0].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_0_input_select_0_qs)
+  );
+
+  //   F[prescaler_0]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_0_prescaler_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_0_we),
+    .wd     (inp_prd_cnt_ctrl_0_prescaler_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[0].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[0].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[0].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_0_prescaler_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_1]: V(False)
+  //   F[enable_1]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_1_enable_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_1_we),
+    .wd     (inp_prd_cnt_ctrl_1_enable_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[1].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[1].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[1].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_1_enable_1_qs)
+  );
+
+  //   F[continuous_mode_1]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_1_continuous_mode_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_1_we),
+    .wd     (inp_prd_cnt_ctrl_1_continuous_mode_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[1].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[1].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[1].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_1_continuous_mode_1_qs)
+  );
+
+  //   F[polarity_1]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_1_polarity_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_1_we),
+    .wd     (inp_prd_cnt_ctrl_1_polarity_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[1].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[1].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[1].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_1_polarity_1_qs)
+  );
+
+  //   F[input_select_1]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_1_input_select_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_1_we),
+    .wd     (inp_prd_cnt_ctrl_1_input_select_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[1].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[1].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[1].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_1_input_select_1_qs)
+  );
+
+  //   F[prescaler_1]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_1_prescaler_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_1_we),
+    .wd     (inp_prd_cnt_ctrl_1_prescaler_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[1].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[1].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[1].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_1_prescaler_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_2]: V(False)
+  //   F[enable_2]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_2_enable_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_2_we),
+    .wd     (inp_prd_cnt_ctrl_2_enable_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[2].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[2].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[2].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_2_enable_2_qs)
+  );
+
+  //   F[continuous_mode_2]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_2_continuous_mode_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_2_we),
+    .wd     (inp_prd_cnt_ctrl_2_continuous_mode_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[2].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[2].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[2].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_2_continuous_mode_2_qs)
+  );
+
+  //   F[polarity_2]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_2_polarity_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_2_we),
+    .wd     (inp_prd_cnt_ctrl_2_polarity_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[2].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[2].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[2].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_2_polarity_2_qs)
+  );
+
+  //   F[input_select_2]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_2_input_select_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_2_we),
+    .wd     (inp_prd_cnt_ctrl_2_input_select_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[2].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[2].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[2].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_2_input_select_2_qs)
+  );
+
+  //   F[prescaler_2]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_2_prescaler_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_2_we),
+    .wd     (inp_prd_cnt_ctrl_2_prescaler_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[2].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[2].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[2].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_2_prescaler_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_3]: V(False)
+  //   F[enable_3]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_3_enable_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_3_we),
+    .wd     (inp_prd_cnt_ctrl_3_enable_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[3].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[3].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[3].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_3_enable_3_qs)
+  );
+
+  //   F[continuous_mode_3]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_3_continuous_mode_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_3_we),
+    .wd     (inp_prd_cnt_ctrl_3_continuous_mode_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[3].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[3].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[3].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_3_continuous_mode_3_qs)
+  );
+
+  //   F[polarity_3]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_3_polarity_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_3_we),
+    .wd     (inp_prd_cnt_ctrl_3_polarity_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[3].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[3].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[3].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_3_polarity_3_qs)
+  );
+
+  //   F[input_select_3]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_3_input_select_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_3_we),
+    .wd     (inp_prd_cnt_ctrl_3_input_select_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[3].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[3].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[3].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_3_input_select_3_qs)
+  );
+
+  //   F[prescaler_3]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_3_prescaler_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_3_we),
+    .wd     (inp_prd_cnt_ctrl_3_prescaler_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[3].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[3].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[3].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_3_prescaler_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_4]: V(False)
+  //   F[enable_4]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_4_enable_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_4_we),
+    .wd     (inp_prd_cnt_ctrl_4_enable_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[4].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[4].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[4].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_4_enable_4_qs)
+  );
+
+  //   F[continuous_mode_4]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_4_continuous_mode_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_4_we),
+    .wd     (inp_prd_cnt_ctrl_4_continuous_mode_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[4].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[4].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[4].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_4_continuous_mode_4_qs)
+  );
+
+  //   F[polarity_4]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_4_polarity_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_4_we),
+    .wd     (inp_prd_cnt_ctrl_4_polarity_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[4].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[4].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[4].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_4_polarity_4_qs)
+  );
+
+  //   F[input_select_4]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_4_input_select_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_4_we),
+    .wd     (inp_prd_cnt_ctrl_4_input_select_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[4].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[4].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[4].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_4_input_select_4_qs)
+  );
+
+  //   F[prescaler_4]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_4_prescaler_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_4_we),
+    .wd     (inp_prd_cnt_ctrl_4_prescaler_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[4].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[4].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[4].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_4_prescaler_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_5]: V(False)
+  //   F[enable_5]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_5_enable_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_5_we),
+    .wd     (inp_prd_cnt_ctrl_5_enable_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[5].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[5].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[5].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_5_enable_5_qs)
+  );
+
+  //   F[continuous_mode_5]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_5_continuous_mode_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_5_we),
+    .wd     (inp_prd_cnt_ctrl_5_continuous_mode_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[5].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[5].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[5].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_5_continuous_mode_5_qs)
+  );
+
+  //   F[polarity_5]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_5_polarity_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_5_we),
+    .wd     (inp_prd_cnt_ctrl_5_polarity_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[5].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[5].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[5].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_5_polarity_5_qs)
+  );
+
+  //   F[input_select_5]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_5_input_select_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_5_we),
+    .wd     (inp_prd_cnt_ctrl_5_input_select_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[5].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[5].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[5].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_5_input_select_5_qs)
+  );
+
+  //   F[prescaler_5]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_5_prescaler_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_5_we),
+    .wd     (inp_prd_cnt_ctrl_5_prescaler_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[5].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[5].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[5].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_5_prescaler_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_6]: V(False)
+  //   F[enable_6]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_6_enable_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_6_we),
+    .wd     (inp_prd_cnt_ctrl_6_enable_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[6].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[6].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[6].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_6_enable_6_qs)
+  );
+
+  //   F[continuous_mode_6]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_6_continuous_mode_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_6_we),
+    .wd     (inp_prd_cnt_ctrl_6_continuous_mode_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[6].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[6].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[6].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_6_continuous_mode_6_qs)
+  );
+
+  //   F[polarity_6]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_6_polarity_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_6_we),
+    .wd     (inp_prd_cnt_ctrl_6_polarity_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[6].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[6].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[6].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_6_polarity_6_qs)
+  );
+
+  //   F[input_select_6]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_6_input_select_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_6_we),
+    .wd     (inp_prd_cnt_ctrl_6_input_select_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[6].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[6].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[6].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_6_input_select_6_qs)
+  );
+
+  //   F[prescaler_6]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_6_prescaler_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_6_we),
+    .wd     (inp_prd_cnt_ctrl_6_prescaler_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[6].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[6].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[6].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_6_prescaler_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg inp_prd_cnt_ctrl
+  // R[inp_prd_cnt_ctrl_7]: V(False)
+  //   F[enable_7]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_7_enable_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_7_we),
+    .wd     (inp_prd_cnt_ctrl_7_enable_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[7].enable.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[7].enable.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[7].enable.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_7_enable_7_qs)
+  );
+
+  //   F[continuous_mode_7]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_7_continuous_mode_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_7_we),
+    .wd     (inp_prd_cnt_ctrl_7_continuous_mode_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[7].continuous_mode.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[7].continuous_mode.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[7].continuous_mode.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_7_continuous_mode_7_qs)
+  );
+
+  //   F[polarity_7]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_7_polarity_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_7_we),
+    .wd     (inp_prd_cnt_ctrl_7_polarity_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[7].polarity.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[7].polarity.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[7].polarity.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_7_polarity_7_qs)
+  );
+
+  //   F[input_select_7]: 15:8
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_7_input_select_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_7_we),
+    .wd     (inp_prd_cnt_ctrl_7_input_select_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[7].input_select.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[7].input_select.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[7].input_select.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_7_input_select_7_qs)
+  );
+
+  //   F[prescaler_7]: 23:16
+  prim_subreg #(
+    .DW      (8),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (8'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_ctrl_7_prescaler_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_ctrl_7_we),
+    .wd     (inp_prd_cnt_ctrl_7_prescaler_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_ctrl[7].prescaler.de),
+    .d      (hw2reg.inp_prd_cnt_ctrl[7].prescaler.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.inp_prd_cnt_ctrl[7].prescaler.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_ctrl_7_prescaler_7_qs)
+  );
+
+
+  // Subregister 0 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_0]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_0_re),
+    .wd     (inp_prd_cnt_val_0_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[0].de),
+    .d      (hw2reg.inp_prd_cnt_val[0].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_1]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_1_re),
+    .wd     (inp_prd_cnt_val_1_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[1].de),
+    .d      (hw2reg.inp_prd_cnt_val[1].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_2]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_2_re),
+    .wd     (inp_prd_cnt_val_2_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[2].de),
+    .d      (hw2reg.inp_prd_cnt_val[2].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_3]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_3_re),
+    .wd     (inp_prd_cnt_val_3_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[3].de),
+    .d      (hw2reg.inp_prd_cnt_val[3].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_4]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_4_re),
+    .wd     (inp_prd_cnt_val_4_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[4].de),
+    .d      (hw2reg.inp_prd_cnt_val[4].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_5]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_5_re),
+    .wd     (inp_prd_cnt_val_5_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[5].de),
+    .d      (hw2reg.inp_prd_cnt_val[5].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_6]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_6_re),
+    .wd     (inp_prd_cnt_val_6_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[6].de),
+    .d      (hw2reg.inp_prd_cnt_val[6].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg inp_prd_cnt_val
+  // R[inp_prd_cnt_val_7]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_inp_prd_cnt_val_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+
+    // from register interface
+    .we     (inp_prd_cnt_val_7_re),
+    .wd     (inp_prd_cnt_val_7_wd),
+
+    // from internal hardware
+    .de     (hw2reg.inp_prd_cnt_val[7].de),
+    .d      (hw2reg.inp_prd_cnt_val[7].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (inp_prd_cnt_val_7_qs)
+  );
+
+
+
+  logic [33:0] addr_hit;
   top_racl_pkg::racl_role_vec_t racl_role_vec;
   top_racl_pkg::racl_role_t racl_role;
 
-  logic [17:0] racl_addr_hit_read;
-  logic [17:0] racl_addr_hit_write;
+  logic [33:0] racl_addr_hit_read;
+  logic [33:0] racl_addr_hit_write;
 
   if (EnableRacl) begin : gen_racl_role_logic
     // Retrieve RACL role from user bits and one-hot encode that for the comparison bitmap
@@ -746,9 +2194,25 @@ module gpio_reg_top
     addr_hit[15] = (reg_addr == GPIO_CTRL_EN_INPUT_FILTER_OFFSET);
     addr_hit[16] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_VALID_OFFSET);
     addr_hit[17] = (reg_addr == GPIO_HW_STRAPS_DATA_IN_OFFSET);
+    addr_hit[18] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_0_OFFSET);
+    addr_hit[19] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_1_OFFSET);
+    addr_hit[20] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_2_OFFSET);
+    addr_hit[21] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_3_OFFSET);
+    addr_hit[22] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_4_OFFSET);
+    addr_hit[23] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_5_OFFSET);
+    addr_hit[24] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_6_OFFSET);
+    addr_hit[25] = (reg_addr == GPIO_INP_PRD_CNT_CTRL_7_OFFSET);
+    addr_hit[26] = (reg_addr == GPIO_INP_PRD_CNT_VAL_0_OFFSET);
+    addr_hit[27] = (reg_addr == GPIO_INP_PRD_CNT_VAL_1_OFFSET);
+    addr_hit[28] = (reg_addr == GPIO_INP_PRD_CNT_VAL_2_OFFSET);
+    addr_hit[29] = (reg_addr == GPIO_INP_PRD_CNT_VAL_3_OFFSET);
+    addr_hit[30] = (reg_addr == GPIO_INP_PRD_CNT_VAL_4_OFFSET);
+    addr_hit[31] = (reg_addr == GPIO_INP_PRD_CNT_VAL_5_OFFSET);
+    addr_hit[32] = (reg_addr == GPIO_INP_PRD_CNT_VAL_6_OFFSET);
+    addr_hit[33] = (reg_addr == GPIO_INP_PRD_CNT_VAL_7_OFFSET);
 
     if (EnableRacl) begin : gen_racl_hit
-      for (int unsigned slice_idx = 0; slice_idx < 18; slice_idx++) begin
+      for (int unsigned slice_idx = 0; slice_idx < 34; slice_idx++) begin
         racl_addr_hit_read[slice_idx] =
             addr_hit[slice_idx] & (|(racl_policies_i[RaclPolicySelVec[slice_idx]].read_perm
                                       & racl_role_vec));
@@ -798,7 +2262,23 @@ module gpio_reg_top
                (racl_addr_hit_write[14] & (|(GPIO_PERMIT[14] & ~reg_be))) |
                (racl_addr_hit_write[15] & (|(GPIO_PERMIT[15] & ~reg_be))) |
                (racl_addr_hit_write[16] & (|(GPIO_PERMIT[16] & ~reg_be))) |
-               (racl_addr_hit_write[17] & (|(GPIO_PERMIT[17] & ~reg_be)))));
+               (racl_addr_hit_write[17] & (|(GPIO_PERMIT[17] & ~reg_be))) |
+               (racl_addr_hit_write[18] & (|(GPIO_PERMIT[18] & ~reg_be))) |
+               (racl_addr_hit_write[19] & (|(GPIO_PERMIT[19] & ~reg_be))) |
+               (racl_addr_hit_write[20] & (|(GPIO_PERMIT[20] & ~reg_be))) |
+               (racl_addr_hit_write[21] & (|(GPIO_PERMIT[21] & ~reg_be))) |
+               (racl_addr_hit_write[22] & (|(GPIO_PERMIT[22] & ~reg_be))) |
+               (racl_addr_hit_write[23] & (|(GPIO_PERMIT[23] & ~reg_be))) |
+               (racl_addr_hit_write[24] & (|(GPIO_PERMIT[24] & ~reg_be))) |
+               (racl_addr_hit_write[25] & (|(GPIO_PERMIT[25] & ~reg_be))) |
+               (racl_addr_hit_write[26] & (|(GPIO_PERMIT[26] & ~reg_be))) |
+               (racl_addr_hit_write[27] & (|(GPIO_PERMIT[27] & ~reg_be))) |
+               (racl_addr_hit_write[28] & (|(GPIO_PERMIT[28] & ~reg_be))) |
+               (racl_addr_hit_write[29] & (|(GPIO_PERMIT[29] & ~reg_be))) |
+               (racl_addr_hit_write[30] & (|(GPIO_PERMIT[30] & ~reg_be))) |
+               (racl_addr_hit_write[31] & (|(GPIO_PERMIT[31] & ~reg_be))) |
+               (racl_addr_hit_write[32] & (|(GPIO_PERMIT[32] & ~reg_be))) |
+               (racl_addr_hit_write[33] & (|(GPIO_PERMIT[33] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -861,6 +2341,118 @@ module gpio_reg_top
   assign ctrl_en_input_filter_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign ctrl_en_input_filter_wd = reg_wdata[31:0];
+  assign inp_prd_cnt_ctrl_0_we = racl_addr_hit_write[18] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_0_enable_0_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_0_continuous_mode_0_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_0_polarity_0_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_0_input_select_0_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_0_prescaler_0_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_1_we = racl_addr_hit_write[19] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_1_enable_1_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_1_continuous_mode_1_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_1_polarity_1_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_1_input_select_1_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_1_prescaler_1_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_2_we = racl_addr_hit_write[20] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_2_enable_2_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_2_continuous_mode_2_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_2_polarity_2_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_2_input_select_2_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_2_prescaler_2_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_3_we = racl_addr_hit_write[21] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_3_enable_3_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_3_continuous_mode_3_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_3_polarity_3_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_3_input_select_3_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_3_prescaler_3_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_4_we = racl_addr_hit_write[22] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_4_enable_4_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_4_continuous_mode_4_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_4_polarity_4_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_4_input_select_4_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_4_prescaler_4_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_5_we = racl_addr_hit_write[23] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_5_enable_5_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_5_continuous_mode_5_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_5_polarity_5_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_5_input_select_5_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_5_prescaler_5_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_6_we = racl_addr_hit_write[24] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_6_enable_6_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_6_continuous_mode_6_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_6_polarity_6_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_6_input_select_6_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_6_prescaler_6_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_ctrl_7_we = racl_addr_hit_write[25] & reg_we & !reg_error;
+
+  assign inp_prd_cnt_ctrl_7_enable_7_wd = reg_wdata[0];
+
+  assign inp_prd_cnt_ctrl_7_continuous_mode_7_wd = reg_wdata[1];
+
+  assign inp_prd_cnt_ctrl_7_polarity_7_wd = reg_wdata[2];
+
+  assign inp_prd_cnt_ctrl_7_input_select_7_wd = reg_wdata[15:8];
+
+  assign inp_prd_cnt_ctrl_7_prescaler_7_wd = reg_wdata[23:16];
+  assign inp_prd_cnt_val_0_re = racl_addr_hit_read[26] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_0_wd = '1;
+  assign inp_prd_cnt_val_1_re = racl_addr_hit_read[27] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_1_wd = '1;
+  assign inp_prd_cnt_val_2_re = racl_addr_hit_read[28] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_2_wd = '1;
+  assign inp_prd_cnt_val_3_re = racl_addr_hit_read[29] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_3_wd = '1;
+  assign inp_prd_cnt_val_4_re = racl_addr_hit_read[30] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_4_wd = '1;
+  assign inp_prd_cnt_val_5_re = racl_addr_hit_read[31] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_5_wd = '1;
+  assign inp_prd_cnt_val_6_re = racl_addr_hit_read[32] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_6_wd = '1;
+  assign inp_prd_cnt_val_7_re = racl_addr_hit_read[33] & reg_re & !reg_error;
+
+  assign inp_prd_cnt_val_7_wd = '1;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -883,6 +2475,22 @@ module gpio_reg_top
     reg_we_check[15] = ctrl_en_input_filter_we;
     reg_we_check[16] = 1'b0;
     reg_we_check[17] = 1'b0;
+    reg_we_check[18] = inp_prd_cnt_ctrl_0_we;
+    reg_we_check[19] = inp_prd_cnt_ctrl_1_we;
+    reg_we_check[20] = inp_prd_cnt_ctrl_2_we;
+    reg_we_check[21] = inp_prd_cnt_ctrl_3_we;
+    reg_we_check[22] = inp_prd_cnt_ctrl_4_we;
+    reg_we_check[23] = inp_prd_cnt_ctrl_5_we;
+    reg_we_check[24] = inp_prd_cnt_ctrl_6_we;
+    reg_we_check[25] = inp_prd_cnt_ctrl_7_we;
+    reg_we_check[26] = 1'b0;
+    reg_we_check[27] = 1'b0;
+    reg_we_check[28] = 1'b0;
+    reg_we_check[29] = 1'b0;
+    reg_we_check[30] = 1'b0;
+    reg_we_check[31] = 1'b0;
+    reg_we_check[32] = 1'b0;
+    reg_we_check[33] = 1'b0;
   end
 
   // Read data return
@@ -963,6 +2571,102 @@ module gpio_reg_top
 
       racl_addr_hit_read[17]: begin
         reg_rdata_next[31:0] = hw_straps_data_in_qs;
+      end
+
+      racl_addr_hit_read[18]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_0_enable_0_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_0_continuous_mode_0_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_0_polarity_0_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_0_input_select_0_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_0_prescaler_0_qs;
+      end
+
+      racl_addr_hit_read[19]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_1_enable_1_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_1_continuous_mode_1_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_1_polarity_1_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_1_input_select_1_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_1_prescaler_1_qs;
+      end
+
+      racl_addr_hit_read[20]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_2_enable_2_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_2_continuous_mode_2_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_2_polarity_2_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_2_input_select_2_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_2_prescaler_2_qs;
+      end
+
+      racl_addr_hit_read[21]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_3_enable_3_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_3_continuous_mode_3_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_3_polarity_3_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_3_input_select_3_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_3_prescaler_3_qs;
+      end
+
+      racl_addr_hit_read[22]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_4_enable_4_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_4_continuous_mode_4_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_4_polarity_4_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_4_input_select_4_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_4_prescaler_4_qs;
+      end
+
+      racl_addr_hit_read[23]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_5_enable_5_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_5_continuous_mode_5_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_5_polarity_5_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_5_input_select_5_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_5_prescaler_5_qs;
+      end
+
+      racl_addr_hit_read[24]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_6_enable_6_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_6_continuous_mode_6_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_6_polarity_6_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_6_input_select_6_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_6_prescaler_6_qs;
+      end
+
+      racl_addr_hit_read[25]: begin
+        reg_rdata_next[0] = inp_prd_cnt_ctrl_7_enable_7_qs;
+        reg_rdata_next[1] = inp_prd_cnt_ctrl_7_continuous_mode_7_qs;
+        reg_rdata_next[2] = inp_prd_cnt_ctrl_7_polarity_7_qs;
+        reg_rdata_next[15:8] = inp_prd_cnt_ctrl_7_input_select_7_qs;
+        reg_rdata_next[23:16] = inp_prd_cnt_ctrl_7_prescaler_7_qs;
+      end
+
+      racl_addr_hit_read[26]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_0_qs;
+      end
+
+      racl_addr_hit_read[27]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_1_qs;
+      end
+
+      racl_addr_hit_read[28]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_2_qs;
+      end
+
+      racl_addr_hit_read[29]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_3_qs;
+      end
+
+      racl_addr_hit_read[30]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_4_qs;
+      end
+
+      racl_addr_hit_read[31]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_5_qs;
+      end
+
+      racl_addr_hit_read[32]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_6_qs;
+      end
+
+      racl_addr_hit_read[33]: begin
+        reg_rdata_next[31:0] = inp_prd_cnt_val_7_qs;
       end
 
       default: begin

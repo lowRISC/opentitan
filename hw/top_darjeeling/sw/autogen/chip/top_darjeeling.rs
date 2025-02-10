@@ -47,7 +47,7 @@ pub const GPIO_BASE_ADDR: usize = 0x30000000;
 /// memory-mapped registers associated with this peripheral should have an
 /// address between #GPIO_BASE_ADDR and
 /// `GPIO_BASE_ADDR + GPIO_SIZE_BYTES`.
-pub const GPIO_SIZE_BYTES: usize = 0x80;
+pub const GPIO_SIZE_BYTES: usize = 0x100;
 
 /// Peripheral base address for spi_device in top darjeeling.
 ///
