@@ -17,6 +17,7 @@ class hmac_test_vectors_sha_vseq extends hmac_base_vseq;
   // Constraints
   extern constraint hmac_disabled_c;
   extern constraint num_trans_c;
+  extern constraint wr_mask_c;
 
   // Standard SV/UVM methods
   extern function new(string name="");
@@ -36,13 +37,20 @@ constraint hmac_test_vectors_sha_vseq::num_trans_c {
   soft num_trans == 30;
 }
 
+// Always send data with full width to maximize the throughput and speed up the test
+constraint hmac_test_vectors_sha_vseq::wr_mask_c {
+  soft $countones(wr_mask) == TL_DBW;
+}
+
 function hmac_test_vectors_sha_vseq::new(string name="");
   super.new(name);
 endfunction : new
 
 task hmac_test_vectors_sha_vseq::pre_start();
-  cfg.save_and_restore_pct  = 0;    // Should not be triggered for this test
-  do_hmac_init              = 1'b0;
+  cfg.m_tl_agent_cfg.a_valid_delay_max = 1;   // Reduce the delays to speed up the test
+  cfg.m_tl_agent_cfg.d_ready_delay_max = 1;
+  cfg.save_and_restore_pct             = 0;   // Should not be triggered for this test
+  do_hmac_init                         = 0;
   // grab SHA-2 digest size from the command-line argument
   void'($value$plusargs("sha2_digest_size=%s", digest_size_arg));
   // When the command line argument is not defined then randomize the digest_size with valid data
