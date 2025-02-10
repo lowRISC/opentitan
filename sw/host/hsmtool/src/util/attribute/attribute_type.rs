@@ -42,6 +42,13 @@ pub enum AttributeType {
     #[serde(rename = "CKA_LABEL")]
     #[strum(serialize = "CKA_LABEL", serialize = "Label", serialize = "label")]
     Label = CKA_LABEL,
+    #[serde(rename = "CKA_UNIQUE_ID")]
+    #[strum(
+        serialize = "CKA_UNIQUE_ID",
+        serialize = "UniqueId",
+        serialize = "unique_id"
+    )]
+    UniqueId = CKA_UNIQUE_ID,
     #[serde(rename = "CKA_APPLICATION")]
     #[strum(
         serialize = "CKA_APPLICATION",
@@ -395,20 +402,6 @@ pub enum AttributeType {
         serialize = "ec_point"
     )]
     EcPoint = CKA_EC_POINT,
-    #[serde(rename = "CKA_SECONDARY_AUTH")]
-    #[strum(
-        serialize = "CKA_SECONDARY_AUTH",
-        serialize = "SecondaryAuth",
-        serialize = "secondary_auth"
-    )]
-    SecondaryAuth = CKA_SECONDARY_AUTH,
-    #[serde(rename = "CKA_AUTH_PIN_FLAGS")]
-    #[strum(
-        serialize = "CKA_AUTH_PIN_FLAGS",
-        serialize = "AuthPinFlags",
-        serialize = "auth_pin_flags"
-    )]
-    AuthPinFlags = CKA_AUTH_PIN_FLAGS,
     #[serde(rename = "CKA_ALWAYS_AUTHENTICATE")]
     #[strum(
         serialize = "CKA_ALWAYS_AUTHENTICATE",
@@ -479,6 +472,20 @@ pub enum AttributeType {
         serialize = "otp_pin_requirement"
     )]
     OtpPinRequirement = CKA_OTP_PIN_REQUIREMENT,
+    #[serde(rename = "CKA_OTP_COUNTER")]
+    #[strum(
+        serialize = "CKA_OTP_COUNTER",
+        serialize = "OtpCounter",
+        serialize = "otp_counter"
+    )]
+    OtpCounter = CKA_OTP_COUNTER,
+    #[serde(rename = "CKA_OTP_TIME")]
+    #[strum(
+        serialize = "CKA_OTP_TIME",
+        serialize = "OtpTime",
+        serialize = "otp_time"
+    )]
+    OtpTime = CKA_OTP_TIME,
     #[serde(rename = "CKA_OTP_USER_IDENTIFIER")]
     #[strum(
         serialize = "CKA_OTP_USER_IDENTIFIER",
@@ -507,20 +514,6 @@ pub enum AttributeType {
         serialize = "otp_service_logo_type"
     )]
     OtpServiceLogoType = CKA_OTP_SERVICE_LOGO_TYPE,
-    #[serde(rename = "CKA_OTP_COUNTER")]
-    #[strum(
-        serialize = "CKA_OTP_COUNTER",
-        serialize = "OtpCounter",
-        serialize = "otp_counter"
-    )]
-    OtpCounter = CKA_OTP_COUNTER,
-    #[serde(rename = "CKA_OTP_TIME")]
-    #[strum(
-        serialize = "CKA_OTP_TIME",
-        serialize = "OtpTime",
-        serialize = "otp_time"
-    )]
-    OtpTime = CKA_OTP_TIME,
     #[serde(rename = "CKA_GOSTR3410_PARAMS")]
     #[strum(
         serialize = "CKA_GOSTR3410_PARAMS",
@@ -649,6 +642,139 @@ pub enum AttributeType {
         serialize = "supported_cms_attributes"
     )]
     SupportedCmsAttributes = CKA_SUPPORTED_CMS_ATTRIBUTES,
+    #[serde(rename = "CKA_PROFILE_ID")]
+    #[strum(
+        serialize = "CKA_PROFILE_ID",
+        serialize = "ProfileId",
+        serialize = "profile_id"
+    )]
+    ProfileId = CKA_PROFILE_ID,
+    #[serde(rename = "CKA_X2RATCHET_BAG")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_BAG",
+        serialize = "X2ratchetBag",
+        serialize = "x2ratchet_bag"
+    )]
+    X2ratchetBag = CKA_X2RATCHET_BAG,
+    #[serde(rename = "CKA_X2RATCHET_BAGSIZE")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_BAGSIZE",
+        serialize = "X2ratchetBagsize",
+        serialize = "x2ratchet_bagsize"
+    )]
+    X2ratchetBagsize = CKA_X2RATCHET_BAGSIZE,
+    #[serde(rename = "CKA_X2RATCHET_BOBS1STMSG")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_BOBS1STMSG",
+        serialize = "X2ratchetBobs1stmsg",
+        serialize = "x2ratchet_bobs1stmsg"
+    )]
+    X2ratchetBobs1stmsg = CKA_X2RATCHET_BOBS1STMSG,
+    #[serde(rename = "CKA_X2RATCHET_CKR")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_CKR",
+        serialize = "X2ratchetCkr",
+        serialize = "x2ratchet_ckr"
+    )]
+    X2ratchetCkr = CKA_X2RATCHET_CKR,
+    #[serde(rename = "CKA_X2RATCHET_CKS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_CKS",
+        serialize = "X2ratchetCks",
+        serialize = "x2ratchet_cks"
+    )]
+    X2ratchetCks = CKA_X2RATCHET_CKS,
+    #[serde(rename = "CKA_X2RATCHET_DHP")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_DHP",
+        serialize = "X2ratchetDhp",
+        serialize = "x2ratchet_dhp"
+    )]
+    X2ratchetDhp = CKA_X2RATCHET_DHP,
+    #[serde(rename = "CKA_X2RATCHET_DHR")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_DHR",
+        serialize = "X2ratchetDhr",
+        serialize = "x2ratchet_dhr"
+    )]
+    X2ratchetDhr = CKA_X2RATCHET_DHR,
+    #[serde(rename = "CKA_X2RATCHET_DHS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_DHS",
+        serialize = "X2ratchetDhs",
+        serialize = "x2ratchet_dhs"
+    )]
+    X2ratchetDhs = CKA_X2RATCHET_DHS,
+    #[serde(rename = "CKA_X2RATCHET_HKR")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_HKR",
+        serialize = "X2ratchetHkr",
+        serialize = "x2ratchet_hkr"
+    )]
+    X2ratchetHkr = CKA_X2RATCHET_HKR,
+    #[serde(rename = "CKA_X2RATCHET_HKS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_HKS",
+        serialize = "X2ratchetHks",
+        serialize = "x2ratchet_hks"
+    )]
+    X2ratchetHks = CKA_X2RATCHET_HKS,
+    #[serde(rename = "CKA_X2RATCHET_ISALICE")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_ISALICE",
+        serialize = "X2ratchetIsalice",
+        serialize = "x2ratchet_isalice"
+    )]
+    X2ratchetIsalice = CKA_X2RATCHET_ISALICE,
+    #[serde(rename = "CKA_X2RATCHET_NHKR")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_NHKR",
+        serialize = "X2ratchetNhkr",
+        serialize = "x2ratchet_nhkr"
+    )]
+    X2ratchetNhkr = CKA_X2RATCHET_NHKR,
+    #[serde(rename = "CKA_X2RATCHET_NHKS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_NHKS",
+        serialize = "X2ratchetNhks",
+        serialize = "x2ratchet_nhks"
+    )]
+    X2ratchetNhks = CKA_X2RATCHET_NHKS,
+    #[serde(rename = "CKA_X2RATCHET_NR")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_NR",
+        serialize = "X2ratchetNr",
+        serialize = "x2ratchet_nr"
+    )]
+    X2ratchetNr = CKA_X2RATCHET_NR,
+    #[serde(rename = "CKA_X2RATCHET_NS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_NS",
+        serialize = "X2ratchetNs",
+        serialize = "x2ratchet_ns"
+    )]
+    X2ratchetNs = CKA_X2RATCHET_NS,
+    #[serde(rename = "CKA_X2RATCHET_PNS")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_PNS",
+        serialize = "X2ratchetPns",
+        serialize = "x2ratchet_pns"
+    )]
+    X2ratchetPns = CKA_X2RATCHET_PNS,
+    #[serde(rename = "CKA_X2RATCHET_RK")]
+    #[strum(
+        serialize = "CKA_X2RATCHET_RK",
+        serialize = "X2ratchetRk",
+        serialize = "x2ratchet_rk"
+    )]
+    X2ratchetRk = CKA_X2RATCHET_RK,
+    #[serde(rename = "CKA_VENDOR_DEFINED")]
+    #[strum(
+        serialize = "CKA_VENDOR_DEFINED",
+        serialize = "VendorDefined",
+        serialize = "vendor_defined"
+    )]
+    VendorDefined = CKA_VENDOR_DEFINED,
     #[serde(rename = "CKA_WRAP_TEMPLATE")]
     #[strum(
         serialize = "CKA_WRAP_TEMPLATE",
@@ -677,6 +803,20 @@ pub enum AttributeType {
         serialize = "allowed_mechanisms"
     )]
     AllowedMechanisms = CKA_ALLOWED_MECHANISMS,
+    #[serde(rename = "CKA_SECONDARY_AUTH")]
+    #[strum(
+        serialize = "CKA_SECONDARY_AUTH",
+        serialize = "SecondaryAuth",
+        serialize = "secondary_auth"
+    )]
+    SecondaryAuth = CKA_SECONDARY_AUTH,
+    #[serde(rename = "CKA_AUTH_PIN_FLAGS")]
+    #[strum(
+        serialize = "CKA_AUTH_PIN_FLAGS",
+        serialize = "AuthPinFlags",
+        serialize = "auth_pin_flags"
+    )]
+    AuthPinFlags = CKA_AUTH_PIN_FLAGS,
     #[num_enum(catch_all)]
     UnknownAttributeType(u64) = u64::MAX,
 }
