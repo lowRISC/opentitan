@@ -6,6 +6,86 @@ load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_doc", "rust_library", "r
 
 package(default_visibility = ["//visibility:public"])
 
+alias(
+    name = "binding_srcs",
+    actual = "@crate_index//:cryptoki-sys-binding-srcs",
+)
+
+py_binary(
+    name = "pkcs11_consts",
+    srcs = ["scripts/pkcs11_consts.py"],
+)
+
+genrule(
+    name = "object_class",
+    srcs = [":binding_srcs"],
+    outs = ["object_class.rs"],
+    cmd = """
+        $(execpath :pkcs11_consts) \
+            --binding $(locations :binding_srcs) \
+            --serde --strum --conv_data CKO cryptoki::object::ObjectClass > $@
+    """,
+    tools = [
+        ":pkcs11_consts",
+    ],
+)
+
+genrule(
+    name = "key_type",
+    srcs = [":binding_srcs"],
+    outs = ["key_type.rs"],
+    cmd = """
+        $(execpath :pkcs11_consts) \
+            --binding $(locations :binding_srcs) \
+            --serde --strum --conv_data CKK cryptoki::object::KeyType > $@
+    """,
+    tools = [
+        ":pkcs11_consts",
+    ],
+)
+
+genrule(
+    name = "certificate_type",
+    srcs = [":binding_srcs"],
+    outs = ["certificate_type.rs"],
+    cmd = """
+        $(execpath :pkcs11_consts) \
+            --binding $(locations :binding_srcs) \
+            --serde --strum --conv_data CKC cryptoki::object::CertificateType > $@
+    """,
+    tools = [
+        ":pkcs11_consts",
+    ],
+)
+
+genrule(
+    name = "mechanism_type",
+    srcs = [":binding_srcs"],
+    outs = ["mechanism_type.rs"],
+    cmd = """
+        $(execpath :pkcs11_consts) \
+            --binding $(locations :binding_srcs) \
+            --serde --strum --conv_data CKM cryptoki::mechanism::MechanismType > $@
+    """,
+    tools = [
+        ":pkcs11_consts",
+    ],
+)
+
+genrule(
+    name = "attribute_type",
+    srcs = [":binding_srcs"],
+    outs = ["attribute_type.rs"],
+    cmd = """
+        $(execpath :pkcs11_consts) \
+            --binding $(locations :binding_srcs) \
+            --serde --strum CKA cryptoki::object::AttributeType > $@
+    """,
+    tools = [
+        ":pkcs11_consts",
+    ],
+)
+
 rust_library(
     name = "hsmlib",
     srcs = [
@@ -46,15 +126,10 @@ rust_library(
         "src/profile.rs",
         "src/spxef/mod.rs",
         "src/util/attribute/attr.rs",
-        "src/util/attribute/attribute_type.rs",
-        "src/util/attribute/certificate_type.rs",
         "src/util/attribute/data.rs",
         "src/util/attribute/date.rs",
         "src/util/attribute/error.rs",
-        "src/util/attribute/key_type.rs",
-        "src/util/attribute/mechanism_type.rs",
         "src/util/attribute/mod.rs",
-        "src/util/attribute/object_class.rs",
         "src/util/ef.rs",
         "src/util/escape.rs",
         "src/util/helper.rs",
@@ -64,7 +139,21 @@ rust_library(
         "src/util/mod.rs",
         "src/util/signing.rs",
     ],
+    compile_data = [
+        ":attribute_type",
+        ":certificate_type",
+        ":key_type",
+        ":mechanism_type",
+        ":object_class",
+    ],
     crate_name = "hsmtool",
+    rustc_env = {
+        "ATTRIBUTE_TYPE": "$(location :attribute_type)",
+        "CERTIFICATE_TYPE": "$(location :certificate_type)",
+        "KEY_TYPE": "$(location :key_type)",
+        "MECHANISM_TYPE": "$(location :mechanism_type)",
+        "OBJECT_CLASS": "$(location :object_class)",
+    },
     deps = [
         "//sw/host/hsmtool/acorn",
         "//sw/host/sphincsplus",
