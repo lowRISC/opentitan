@@ -240,21 +240,21 @@ Review        | [SEC_CM_DV_REVIEWED][]                  | Done        | Waived t
 
  Type         | Item                              | Resolution  | Note/Collaterals
 --------------|-----------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Not started |
-Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Not started |
-Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | Not started |
-Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Not started |
-Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Not started |
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Not started |
-Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | Not started |
-Coverage      | [FPV_COI_COVERAGE_AT_100][]       | Not started |
-Code Quality  | [ALL_TODOS_RESOLVED][]            | Not started |
-Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Not started |
-Code Quality  | [TB_LINT_COMPLETE][]              | Not started |
-Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | Not started |
-Issues        | [NO_ISSUES_PENDING][]             | Not started |
-Review        | Reviewer(s)                       | Not started |
-Review        | Signoff date                      | Not started |
+Documentation | [DESIGN_DELTAS_CAPTURED_V3][]     | Done        |
+Tests         | [X_PROP_ANALYSIS_COMPLETED][]     | Done        | xprop.log file says: "instrumentation success rate:  100%"
+Tests         | [FPV_ASSERTIONS_PROVEN_AT_V3][]   | N/A         |
+Regression    | [SIM_NIGHTLY_REGRESSION_AT_V3][]  | Done        | Documented in issue #25215
+Coverage      | [SIM_CODE_COVERAGE_AT_100][]      | Done        | Documented in issue #25216
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_AT_100][]| Done        | Documented in issue #25217
+Coverage      | [FPV_CODE_COVERAGE_AT_100][]      | N/A         |
+Coverage      | [FPV_COI_COVERAGE_AT_100][]       | N/A         |
+Code Quality  | [ALL_TODOS_RESOLVED][]            | Done        | Remaining TODOs have a linked issue and are not required for verification completion
+Code Quality  | [NO_TOOL_WARNINGS_THROWN][]       | Done        |
+Code Quality  | [TB_LINT_COMPLETE][]              | Done        | CI VeribleLint do not report any error/warning and no waiver file has been used
+Integration   | [PRE_VERIFIED_SUB_MODULES_V3][]   | N/A         |
+Issues        | [NO_ISSUES_PENDING][]             | Done        | Documented in issue #22671; none of the remaining open issues are required for verification completion
+Review        | Reviewer(s)                       | Done        | mvelay@ rswarbrick@
+Review        | Signoff date                      | 2025-04-03  |
 
 [DESIGN_DELTAS_CAPTURED_V3]:     ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v3
 [X_PROP_ANALYSIS_COMPLETED]:     ../../../../doc/project_governance/checklist/README.md#x_prop_analysis_completed
