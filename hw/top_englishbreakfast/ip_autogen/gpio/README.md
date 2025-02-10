@@ -51,5 +51,4 @@ generation is evaluated. Note that if the filter is enabled and the pin
 is set to output then there will be a corresponding delay in a change
 in output value being reflected in the input register.
 
-See the Design Details section for more details on output, input, and
-interrupt control.
+See the Design Details section for more details on the features.

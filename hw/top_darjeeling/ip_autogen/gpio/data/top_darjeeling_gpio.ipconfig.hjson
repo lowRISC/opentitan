@@ -5,6 +5,7 @@
   instance_name: top_darjeeling_gpio
   param_values:
   {
+    num_inp_period_counters: 8
     module_instance_name: gpio
     topname: darjeeling
   }

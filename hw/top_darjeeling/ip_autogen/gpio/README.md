@@ -20,6 +20,7 @@ level system.
 - Configurable interrupt per GPIO for detecting rising edge, falling edge,
   or active low/high input
 - Two ways to update GPIO output: direct-write and masked (thread-safe) update
+- 8 input period counters
 
 ## Description
 
@@ -51,5 +52,12 @@ generation is evaluated. Note that if the filter is enabled and the pin
 is set to output then there will be a corresponding delay in a change
 in output value being reflected in the input register.
 
-See the Design Details section for more details on output, input, and
-interrupt control.
+Each of the input period counters can count the number of clock cycles in one
+period (i.e., from one rising or falling edge to the same edge in the same
+direction) of an input signal. Each input signal can be assigned to any of the
+counters. The counter can operate in one-shot (i.e., just measure one period) or
+continuous (i.e., keep measuring periods) mode. The polarity (i.e., whether a
+rising or a falling edge counts as begin and end of a period) is configurable.
+A prescaler on the sampling clock extends the range of the period counter.
+
+See the Design Details section for more details on the features.

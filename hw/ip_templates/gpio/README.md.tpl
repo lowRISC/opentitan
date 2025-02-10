@@ -14,14 +14,17 @@ functionality](../../../../doc/contributing/hw/comportability/README.md)
 See that document for integration overview within the broader top
 level system.
 
-## Features
+<%text>## Features</%text>
 
 - 32 GPIO ports
 - Configurable interrupt per GPIO for detecting rising edge, falling edge,
   or active low/high input
 - Two ways to update GPIO output: direct-write and masked (thread-safe) update
+% if num_inp_period_counters > 0:
+- ${num_inp_period_counters} input period counters
+% endif
 
-## Description
+<%text>## Description</%text>
 
 The GPIO block allows software to communicate through general purpose I/O
 pins in a flexible manner. Each of 32 independent bits can be written
@@ -51,5 +54,14 @@ generation is evaluated. Note that if the filter is enabled and the pin
 is set to output then there will be a corresponding delay in a change
 in output value being reflected in the input register.
 
-See the Design Details section for more details on output, input, and
-interrupt control.
+% if num_inp_period_counters > 0:
+Each of the input period counters can count the number of clock cycles in one
+period (i.e., from one rising or falling edge to the same edge in the same
+direction) of an input signal. Each input signal can be assigned to any of the
+counters. The counter can operate in one-shot (i.e., just measure one period) or
+continuous (i.e., keep measuring periods) mode. The polarity (i.e., whether a
+rising or a falling edge counts as begin and end of a period) is configurable.
+A prescaler on the sampling clock extends the range of the period counter.
+
+% endif
+See the Design Details section for more details on the features.

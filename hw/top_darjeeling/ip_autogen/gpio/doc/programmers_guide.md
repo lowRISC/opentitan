@@ -118,6 +118,23 @@ printf("0b%b", *GPIO_INTR_STATE);       // 0b00001100
 
 ```
 
+## Input Period Counters
+
+Each of the 8 input period counters can be configured, enabled and disabled, and
+read out independently.
+The programming flow is as follows:
+1. Configure the counter using the `INP_PRD_CNT_CTRL` bits except `enable`.
+2. Enable the counter by setting the `enable` bit to `1`.
+3. Read the measured period from `INP_PRD_CNT_VAL`. If you read `0`, no complete
+   period has happened yet. If you read a non-zero value, that's the number of
+   clock cycles (prescaled if configured) from one relevant edge of the input
+   to the next. After your read, the `INP_PRD_CNT_VAL` register will be cleared
+   to zero, so you can read it again and determine based on the returned value
+   whether a new complete period has been measured or not.
+4. If continuous mode is not enabled, the counter will disable itself after one
+   complete input period. Otherwise, disable it as needed by setting the
+   `enable` bit of `INP_PRD_CNT_CTRL` to `0`.
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../../sw/device/lib/dif/dif_gpio.h)

@@ -1,6 +1,6 @@
 # Theory of Operation
 
-## Block Diagram
+<%text>## Block Diagram</%text>
 
 ![GPIO Block Diagram](../doc/gpio_blockdiagram.svg)
 
@@ -9,9 +9,9 @@ managed by hardware outside of the auto-generated register file.
 For reference, it also shows the assumed connections to pads in
 the top level netlist.
 
-## Design Details
+<%text>## Design Details</%text>
 
-### GPIO Output logic
+<%text>### GPIO Output logic</%text>
 
 ![GPIO Output Diagram](../doc/gpio_output.svg)
 
@@ -48,7 +48,7 @@ For GPIO outputs that are not used (either not wired to a pin output or
 not selected for pin multiplexing), the output values are disconnected
 and have no effect on the GPIO input, regardless of output enable values.
 
-### GPIO Input
+<%text>### GPIO Input</%text>
 
 The [`DATA_IN`](registers.md#data_in) register returns the contents as seen on the
 peripheral input, typically from the pads connected to those inputs.  In the
@@ -72,7 +72,7 @@ effect of the peripheral's driven output (so will only differ from DATA_OUT if
 the output driver is unable to switch the pin or during the delay imposed
 if the noise filter is enabled).
 
-#### GPIO Inputs as HW Straps
+<%text>#### GPIO Inputs as HW Straps</%text>
 
 The GPIO controller provides an optional feature to sample GPIO input values as hardware configuration straps.
 After each reset, on the first cycle when the `strap_en_i` signal is asserted, the GPIO detects its transition from low to high.
@@ -82,7 +82,7 @@ Sampling occurs exclusively at this time, and any subsequent changes to the GPIO
 This mechanism samples all 32 bits of the GPIO input data, regardless of the GPIO output enable status, providing a reliable snapshot of the input values for firmware access.
 
 
-### Interrupts
+<%text>### Interrupts</%text>
 
 The GPIO module provides 32 interrupt signals to the main processor.
 Each interrupt can be independently enabled, tested, and configured.
@@ -107,3 +107,30 @@ assistance to indicate which edge caused the output interrupt.
 **Note #2:** All inputs are sent through optional noise filtering before being sent into interrupt detection.
 **Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
+% if num_inp_period_counters > 0:
+
+<%text>### Input Period Counters</%text>
+
+The GPIO module provides ${num_inp_period_counters} (number configurable through a template parameter) input period counters.
+Each of those is independent of the others, and each can be independently configured, enabled and disabled, and read out.
+A user guide to the counters is provided in the [register documentation](registers.md) and in the [programmer's guide](programmers_guide.md).
+The following is a description of the internal mechanics of each of the input period counters.
+
+The selected input is sampled on every positive edge of `clk_i`.
+
+The relevant edge is detected based on the polarity: if the polarity is high, a rising edge is detected if the currently sampled input is low and the new sampled input is high; vice-versa if the polarity is low.
+
+A prescaler counter increments when the input period counter is enabled until the configured prescaler value is reached, then the prescaler counter resets to 0.
+For a configured prescaler of 0, the prescaler counter will reach the value in every cycle; for a configured prescaler of 1, the prescaler will reach the value in every second cycle, and so on.
+When the prescaler reaches the configured value and the input period counter is enabled, that's an internal event.
+
+A simple FSM controls the actual period counter.
+When the input period counter is disabled, the FSM clears to the *disabled* state.
+When the input period counter is enabled, the FSM goes into the *pre opening edge* state.
+In the *pre opening edge* state, the FSM waits for a relevant edge that starts the period counting (the "opening" edge).
+When that edge occurs, the counter starts incrementing and the FSM goes into the *pre closing edge* state.
+In the *pre closing edge* state, the counter keeps incrementing on every prescaler event until the next relevant edge.
+When the next relevant edge is detected, the counter value is propagated to the SW-visible register and the counter gets cleared to zero.
+If continuous mode is not enabled, the `enable` bit in the control register is cleared and the FSM goes back to the *disabled* state.
+Otherwise, the FSM stays in the *pre closing edge* state and repeats the actions described for that state.
+% endif

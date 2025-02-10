@@ -15,5 +15,11 @@
       type: "string"
       default: "gpio"
     }
+    {
+      name: "num_inp_period_counters"
+      desc: "number of input period counters"
+      type: "int"
+      default: 0
+    }
   ]
 }

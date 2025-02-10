@@ -25,6 +25,8 @@ package gpio_env_pkg;
   // No. of alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
+  // No. of input period counters
+  parameter uint NUM_INP_PRD_CNT = 0;
 
   typedef virtual pins_if #(NUM_GPIOS) gpio_vif;
   typedef virtual gpio_straps_if straps_vif;
