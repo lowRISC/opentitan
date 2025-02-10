@@ -16,12 +16,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
-|:---------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
-| racl_policies  | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error     | logic                         | uni     | req   |       1 | RACL error indication signal. If 1, the error log contains valid information.                                                        |
-| racl_error_log | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
-| tl             | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
+| Port Name     | Package::Struct               | Type    | Act   |   Width | Description                                                                                                                          |
+|:--------------|:------------------------------|:--------|:------|--------:|:-------------------------------------------------------------------------------------------------------------------------------------|
+| racl_policies | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
+| racl_error    | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| tl            | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Security Alerts
 

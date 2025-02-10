@@ -62,6 +62,7 @@ package top_racl_pkg;
 
   // RACL information logged in case of a denial
   typedef struct packed {
+    logic       valid;
     racl_role_t racl_role;
     ctn_uid_t   ctn_uid;
     // 0: Write access, 1: Read access

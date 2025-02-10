@@ -16,15 +16,14 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name      | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                              |
-|:---------------|:--------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------|
-| ram_cfg        | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |                                                                                                                                          |
-| ram_cfg_rsp    | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |                                                                                                                                          |
-| lsio_trigger   | logic                           | uni     | req   |       1 | Self-clearing status trigger for the DMA. Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour. |
-| racl_policies  | top_racl_pkg::racl_policy_vec   | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register.     |
-| racl_error     | logic                           | uni     | req   |       1 | RACL error indication signal. If 1, the error log contains valid information.                                                            |
-| racl_error_log | top_racl_pkg::racl_error_log    | uni     | req   |       1 | RACL error log information of this module.                                                                                               |
-| tl             | tlul_pkg::tl                    | req_rsp | rsp   |       1 |                                                                                                                                          |
+| Port Name     | Package::Struct                 | Type    | Act   |   Width | Description                                                                                                                              |
+|:--------------|:--------------------------------|:--------|:------|--------:|:-----------------------------------------------------------------------------------------------------------------------------------------|
+| ram_cfg       | prim_ram_1p_pkg::ram_1p_cfg     | uni     | rcv   |       1 |                                                                                                                                          |
+| ram_cfg_rsp   | prim_ram_1p_pkg::ram_1p_cfg_rsp | uni     | req   |       1 |                                                                                                                                          |
+| lsio_trigger  | logic                           | uni     | req   |       1 | Self-clearing status trigger for the DMA. Set when RX TX FIFO is past their configured watermark matching watermark interrupt behaviour. |
+| racl_policies | top_racl_pkg::racl_policy_vec   | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register.     |
+| racl_error    | top_racl_pkg::racl_error_log    | uni     | req   |       1 | RACL error log information of this module.                                                                                               |
+| tl            | tlul_pkg::tl                    | req_rsp | rsp   |       1 |                                                                                                                                          |
 
 ## Interrupts
 

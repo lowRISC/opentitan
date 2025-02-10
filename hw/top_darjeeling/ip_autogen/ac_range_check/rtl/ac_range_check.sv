@@ -19,8 +19,7 @@ module ac_range_check
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t            racl_policies_i,
-  output logic                                      racl_error_o,
-  output top_racl_pkg::racl_error_log_t             racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t             racl_error_o,
   // Access range check interrupts
   output logic                                      intr_deny_cnt_reached_o,
   // Bus interface
@@ -57,7 +56,6 @@ module ac_range_check
     .hw2reg                 ( hw2reg               ),
     .racl_policies_i        ( racl_policies_i      ),
     .racl_error_o           ( racl_error_o         ),
-    .racl_error_log_o       ( racl_error_log_o     ),
     .shadowed_storage_err_o ( shadowed_storage_err ),
     .shadowed_update_err_o  ( shadowed_update_err  ),
     .intg_err_o             ( reg_intg_error       )
