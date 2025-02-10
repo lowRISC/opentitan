@@ -107,3 +107,28 @@ assistance to indicate which edge caused the output interrupt.
 **Note #2:** All inputs are sent through optional noise filtering before being sent into interrupt detection.
 **Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
+
+### Input Period Counters
+
+The GPIO module provides 8 input period counters.
+Each of those is independent of the others, and each can be independently configured, enabled and disabled, and read out.
+A user guide to the counters is provided in the [register documentation](registers.md) and in the [programmer's guide](programmers_guide.md).
+The following is a description of the internal mechanics of each of the input period counters.
+
+A prescaler counter increments when the input period counter is enabled until the configured prescaler value is reached.
+For a configured prescaler of 0, the prescaler counter will reach the value in every cycle; for a configured prescaler of 1, the prescaler will reach the value in every second cycle, and so on.
+When the prescaler reaches the configured value and the input period counter is enabled, that's an internal event.
+
+A flop samples the selected input on every prescaler event.
+
+The sensitive edge is detected based on the polarity: if the polarity is high, a rising edge is detected if the current sampled input is low and the new sampled input is high; vice-versa if the polarity is low.
+
+A simple FSM controls the actual period counter.
+When the input period counter is disabled, the FSM clears to the *disabled* state.
+When the input period counter is enabled, the FSM goes into the *pre opening edge* state.
+In the *pre opening edge* state, the FSM waits for a sensitive edge that starts the period counting (the "opening" edge).
+When that edge occurs, the counter starts incrementing and the FSM goes into the *pre closing edge* state.
+In the *pre closing edge* state, the counter keeps incrementing on every prescaler event until the next sensitive edge.
+When the next sensitive edge is detected, the counter value is propagated to the SW-visible register and the counter gets cleared to zero.
+If continuous mode is enabled, the `enable` bit in the control register is cleared and the FSM goes back to the *disabled* state.
+Otherwise, the FSM stays in the *pre closing edge* state and repeats the actions described for that state.

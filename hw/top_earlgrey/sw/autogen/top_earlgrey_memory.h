@@ -150,7 +150,7 @@
  * address between #TOP_EARLGREY_GPIO_BASE_ADDR and
  * `TOP_EARLGREY_GPIO_BASE_ADDR + TOP_EARLGREY_GPIO_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x80
+#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x100
 /**
  * Peripheral base address for spi_device in top earlgrey.
  *

@@ -119,7 +119,7 @@
  * address between #TOP_DARJEELING_GPIO_BASE_ADDR and
  * `TOP_DARJEELING_GPIO_BASE_ADDR + TOP_DARJEELING_GPIO_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_GPIO_SIZE_BYTES 0x80
+#define TOP_DARJEELING_GPIO_SIZE_BYTES 0x100
 /**
  * Peripheral base address for spi_device in top darjeeling.
  *
