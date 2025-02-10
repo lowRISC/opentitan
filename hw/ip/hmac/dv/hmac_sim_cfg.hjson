@@ -107,14 +107,14 @@
       name: hmac_test_sha384_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
       run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_384"]
-      reseed: 50
+      reseed: 60
     }
 
     {
       name: hmac_test_sha512_vectors
       uvm_test_seq: hmac_test_vectors_sha_vseq
       run_opts: ["+is_nist_test=1 +test_vectors_dir={build_dir}/src/lowrisc_dv_test_vectors_0 +test_timeout_ns=750_000_000 +sha2_digest_size=SHA2_512"]
-      reseed: 50
+      reseed: 60
     }
 
     {
