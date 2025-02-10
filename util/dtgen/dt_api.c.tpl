@@ -69,7 +69,7 @@ dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad) {
   return (dt_pinmux_mio_out_t)dt_pad[pad].mio_out_or_direct_pad;
 }
 
-dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad) {
+dt_pinmux_muxed_pad_t dt_pad_mio_pad_index(dt_pad_t pad) {
   if(${invalid_pad_check}) {
     return (dt_pinmux_muxed_pad_t)0;
   }
@@ -84,7 +84,7 @@ dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad) {
   return (dt_pinmux_insel_t)dt_pad[pad].insel;
 }
 
-dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad) {
+dt_pinmux_direct_pad_t dt_pad_dio_pad_index(dt_pad_t pad) {
   if(${invalid_pad_check}) {
     return (dt_pinmux_direct_pad_t)0;
   }
@@ -96,7 +96,7 @@ const dt_periph_io_t kDtPeriphIoConstantHighZ = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
     .periph_input_or_direct_pad = 0,
-    .outsel = kDtPinmuxOutselConstantHighZ,
+    .outsel_or_dt_pad = kDtPinmuxOutselConstantHighZ,
   }
 };
 
@@ -105,7 +105,7 @@ const dt_periph_io_t kDtPeriphIoConstantZero = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
     .periph_input_or_direct_pad = 0,
-    .outsel = kDtPinmuxOutselConstantZero,
+    .outsel_or_dt_pad = kDtPinmuxOutselConstantZero,
   }
 };
 
@@ -114,6 +114,6 @@ const dt_periph_io_t kDtPeriphIoConstantOne = {
   .__internal = {
     .type = kDtPeriphIoTypeMio,
     .periph_input_or_direct_pad = 0,
-    .outsel = kDtPinmuxOutselConstantOne,
+    .outsel_or_dt_pad = kDtPinmuxOutselConstantOne,
   }
 };
