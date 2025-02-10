@@ -36,14 +36,25 @@
 //! structure and `AttributeMap` and `AttrData` fill that role.
 
 mod attr;
-mod attribute_type;
-mod certificate_type;
 mod data;
 mod date;
 mod error;
-mod key_type;
-mod mechanism_type;
-mod object_class;
+
+mod attribute_type {
+    include!(env!("ATTRIBUTE_TYPE"));
+}
+mod certificate_type {
+    include!(env!("CERTIFICATE_TYPE"));
+}
+mod key_type {
+    include!(env!("KEY_TYPE"));
+}
+mod mechanism_type {
+    include!(env!("MECHANISM_TYPE"));
+}
+mod object_class {
+    include!(env!("OBJECT_CLASS"));
+}
 
 pub use attr::AttributeMap;
 pub use data::{AttrData, Redacted};
