@@ -345,8 +345,7 @@ module ac_range_check
   `ASSERT_KNOWN(TlCtnFilteredAValidKnownO_A, ctn_filtered_tl_h2d_o.a_valid)
   `ASSERT_KNOWN(TlCtnFilteredDReadyKnownO_A, ctn_filtered_tl_h2d_o.d_ready)
 
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_ac_range_check_reg,

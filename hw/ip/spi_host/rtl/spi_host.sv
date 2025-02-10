@@ -32,8 +32,7 @@ module spi_host
 
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // SPI Interface
   output logic             cio_sck_o,
@@ -61,13 +60,10 @@ module spi_host
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
-  logic racl_error_regs;
-  logic racl_error_window;
-  top_racl_pkg::racl_error_log_t racl_error_regs_log;
-  top_racl_pkg::racl_error_log_t racl_error_window_log;
+  top_racl_pkg::racl_error_log_t racl_error_regs;
+  top_racl_pkg::racl_error_log_t racl_error_window;
   // We are combining all racl errors here because only one of them can be set at any time.
   assign racl_error_o = racl_error_regs | racl_error_window;
-  assign racl_error_log_o = racl_error_regs_log | racl_error_window_log;
 
   tlul_pkg::tl_h2d_t fifo_win_h2d [2];
   tlul_pkg::tl_d2h_t fifo_win_d2h [2];
@@ -90,8 +86,7 @@ module spi_host
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o       ( alerts[0]              ),
     .racl_policies_i  ( racl_policies_i        ),
-    .racl_error_o     ( racl_error_regs        ),
-    .racl_error_log_o ( racl_error_regs_log    )
+    .racl_error_o     ( racl_error_regs        )
   );
 
   // Alerts
@@ -336,8 +331,7 @@ module spi_host
     .rx_data_i        ( rx_data                     ),
     .rx_ready_o       ( rx_ready                    ),
     .racl_policies_i  ( racl_policies_i             ),
-    .racl_error_o     ( racl_error_window           ),
-    .racl_error_log_o ( racl_error_window_log       )
+    .racl_error_o     ( racl_error_window           )
   );
 
   logic [31:0] core_tx_data;
@@ -636,8 +630,7 @@ module spi_host
   `ASSERT_KNOWN(IntrSpiEventKnownO_A, intr_spi_event_o)
   `ASSERT_KNOWN(IntrErrorKnownO_A, intr_error_o)
   `ASSERT_KNOWN(LsioTriggerKnown_A, lsio_trigger_o)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
 
   // passthrough_o.s is passed through to spi_device, it may contain unknown data,

@@ -61,28 +61,21 @@ module mbx_sysif
   input  logic [CfgSramDataWidth-1:0]    read_data_i,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o
+  output top_racl_pkg::racl_error_log_t  racl_error_o
 );
   import mbx_reg_pkg::*;
 
   mbx_soc_reg2hw_t reg2hw;
   mbx_soc_hw2reg_t hw2reg;
 
-  logic racl_error_regs_soc;
-  logic racl_error_win_soc_wdata;
-  logic racl_error_win_soc_rdata;
-  top_racl_pkg::racl_error_log_t racl_error_regs_soc_log;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_wdata_log;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_rdata_log;
+  top_racl_pkg::racl_error_log_t racl_error_regs_soc;
+  top_racl_pkg::racl_error_log_t racl_error_win_soc_wdata;
+  top_racl_pkg::racl_error_log_t racl_error_win_soc_rdata;
 
   // We are combining all racl errors here because only one of them can be set at any time.
   assign racl_error_o = racl_error_regs_soc      |
                         racl_error_win_soc_wdata |
                         racl_error_win_soc_rdata;
-  assign racl_error_log_o = racl_error_regs_soc_log      |
-                            racl_error_win_soc_wdata_log |
-                            racl_error_win_soc_rdata_log;
 
   // Interface for the custom register interface with bus blocking support
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
@@ -94,18 +87,17 @@ module mbx_sysif
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVecSoc)
   ) u_soc_regs (
-    .clk_i            ( clk_i      ),
-    .rst_ni           ( rst_ni     ),
-    .tl_i             ( tl_sys_i   ),
-    .tl_o             ( tl_sys_o   ),
-    .tl_win_o         ( tl_win_h2d ),
-    .tl_win_i         ( tl_win_d2h ),
-    .reg2hw           ( reg2hw     ),
-    .hw2reg           ( hw2reg     ),
-    .racl_policies_i  ( racl_policies_i ),
+    .clk_i            ( clk_i               ),
+    .rst_ni           ( rst_ni              ),
+    .tl_i             ( tl_sys_i            ),
+    .tl_o             ( tl_sys_o            ),
+    .tl_win_o         ( tl_win_h2d          ),
+    .tl_win_i         ( tl_win_d2h          ),
+    .reg2hw           ( reg2hw              ),
+    .hw2reg           ( hw2reg              ),
+    .racl_policies_i  ( racl_policies_i     ),
     .racl_error_o     ( racl_error_regs_soc ),
-    .racl_error_log_o ( racl_error_regs_soc_log ),
-    .intg_err_o       ( intg_err_o )
+    .intg_err_o       ( intg_err_o          )
   );
 
   // Straps for the external capability header registers
@@ -243,7 +235,6 @@ module mbx_sysif
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
     .racl_error_o     ( racl_error_win_soc_wdata     ),
-    .racl_error_log_o ( racl_error_win_soc_wdata_log ),
     .we_o             ( reg_wdata_we                 ),
     // No Reading of the write register. Always reads zero
     .re_o             (                              ),
@@ -275,7 +266,6 @@ module mbx_sysif
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
     .racl_error_o     ( racl_error_win_soc_rdata     ),
-    .racl_error_log_o ( racl_error_win_soc_rdata_log ),
     // No writing to the read register
     .we_o             ( read_data_write_valid_o      ),
     .re_o             ( read_data_read_valid_o       ),
