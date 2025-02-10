@@ -2424,13 +2424,43 @@ opentitan_test(
     ],
 )
 
+# TODO(lowrisc/opentitan#26250): it would be good if execution environments
+# could provide a mechanism for obtaining their hashfiles, rather than us
+# hardcoding all these hashfile mappings here.
 _KMAC_APP_ROM_LIST = [
-    ("//sw/device/lib/testing/test_rom:test_rom_sim_verilator_hashfile", "sim_verilator"),
-    ("//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_hashfile", "fpga_cw310_test_rom"),
-    ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile", "fpga_cw310_rom_with_fake_keys"),
-    ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile", "fpga_cw310_sival"),
-    ("//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile", "fpga_cw340_sival"),
-    ("//sw/device/lib/testing/test_rom:test_rom_sim_dv_hashfile", "sim_dv"),
+    (
+        "//sw/device/lib/testing/test_rom:test_rom_sim_verilator_hashfile",
+        "sim_verilator",
+        ["//hw/top_earlgrey"],
+    ),
+    (
+        "//sw/device/lib/testing/test_rom:test_rom_fpga_cw310_hashfile",
+        "fpga_cw310_test_rom",
+        ["//hw/top_earlgrey"],
+    ),
+    (
+        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
+        "fpga_cw310_rom_with_fake_keys",
+        ["//hw/top_earlgrey"],
+    ),
+    (
+        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw310_hashfile",
+        "fpga_cw310_sival",
+        ["//hw/top_earlgrey"],
+    ),
+    (
+        "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile",
+        "fpga_cw340_sival",
+        ["//hw/top_earlgrey"],
+    ),
+    (
+        "//sw/device/lib/testing/test_rom:test_rom_sim_dv_hashfile",
+        "sim_dv",
+        [
+            "//hw/top_earlgrey",
+            "//hw/top_darjeeling",
+        ],
+    ),
 ]
 
 [
@@ -2441,24 +2471,25 @@ _KMAC_APP_ROM_LIST = [
             hashfile,
         ],
         exec_env = {
-            "//hw/top_earlgrey:{}".format(exec_env): None,
+            "{}:{}".format(top, exec_env): None
+            for top in tops
         },
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top:dt",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:rom_ctrl",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for (hashfile, exec_env) in _KMAC_APP_ROM_LIST
+    for (hashfile, exec_env, tops) in _KMAC_APP_ROM_LIST
 ]
 
 test_suite(
     name = "kmac_app_rom_test",
     tests = [
         "kmac_app_rom_test_{}".format(exec_env)
-        for (_, exec_env) in _KMAC_APP_ROM_LIST
+        for (_, exec_env, _) in _KMAC_APP_ROM_LIST
     ],
 )
 

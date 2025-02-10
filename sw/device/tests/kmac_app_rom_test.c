@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_rom_ctrl.h"  // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rom_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
@@ -9,11 +10,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 extern const uint32_t kRomImageHash[ROM_CTRL_DIGEST_MULTIREG_COUNT];
 
 static dif_rom_ctrl_t rom_ctrl;
+static dt_rom_ctrl_t kRomCtrlDt = (dt_rom_ctrl_t)0;
+static_assert(kDtRomCtrlCount >= 1,
+              "This test requires at least one rom_ctrl instance");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -22,9 +24,7 @@ bool test_main(void) {
   dif_rom_ctrl_digest_t expected_digest;
 
   // initialize rom_ctrl
-  mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
+  CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrlDt, &rom_ctrl));
 
   // get computed and expected digests and check that they match
   CHECK_DIF_OK(dif_rom_ctrl_get_digest(&rom_ctrl, &computed_digest));
