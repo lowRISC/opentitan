@@ -112,11 +112,25 @@ cc_test(
 )
 
 cc_library(
-    name = "dice",
-    srcs = ["dice.c"],
+    name = "dice_api",
     hdrs = ["dice.h"],
     deps = [
         ":cert",
+        "//sw/device/silicon_creator/lib:attestation",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:keymgr",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+        "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
+    ],
+)
+
+cc_library(
+    name = "dice",
+    srcs = ["dice.c"],
+    deps = [
+        ":cert",
+        ":dice_api",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:check",
@@ -159,11 +173,11 @@ cc_library(
 cc_library(
     name = "dice_cwt",
     srcs = ["dice_cwt.c"],
-    hdrs = ["dice.h"],
     deps = [
         ":cbor",
         ":cert",
         ":cwt_template",
+        ":dice_api",
         "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//sw/device/lib/base:status",
         "//sw/device/silicon_creator/lib:attestation",
@@ -213,12 +227,13 @@ cc_library(
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:keymgr_binding",
         "//sw/device/silicon_creator/lib:manifest",
+        "//sw/device/silicon_creator/lib:otbn_boot_services",
         "//sw/device/silicon_creator/lib/base:boot_measurements",
         "//sw/device/silicon_creator/lib/base:sec_mmio",
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:dice",
+        "//sw/device/silicon_creator/lib/cert:dice_api",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:hmac",
         "//sw/device/silicon_creator/lib/drivers:keymgr",
