@@ -64,6 +64,7 @@ filesets:
       - "!fileset_partner ? (lowrisc:systems:top_darjeeling_ast_pkg)"
     files:
       - rtl/autogen/top_darjeeling_rnd_cnst_pkg.sv
+      - rtl/autogen/top_darjeeling_racl_pkg.sv
       - rtl/autogen/top_darjeeling.sv
     file_type: systemVerilogSource
 
