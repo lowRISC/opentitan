@@ -229,15 +229,17 @@ rom_error_t dice_chain_attestation_creator(
 /**
  * Check the CDI_1 certificate and regenerate if invalid.
  *
- * @param boot_data Pointer to the boot_data struct with ownership info.
- * @param owner_measurement Pointer to the measurements to attest.
  * @param owner_manifest Pointer to the owner SW manifest to be boot.
+ * @param bl0_measurement Pointer to the measurement of the owner firmware.
+ * @param owner_measurement Pointer to the measurement of the owner config.
+ * @param sealing_binding Pointer to the owner's sealing diversification
+ *        constant.
  * @return errors encountered during the operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_chain_attestation_owner(
-    const boot_data_t *boot_data, keymgr_binding_value_t *owner_measurement,
-    const manifest_t *owner_manifest);
+    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding);
 
 /**
  * Write back the certificate chain to flash if changed.
@@ -824,46 +826,28 @@ rom_error_t dice_chain_attestation_creator(
 }
 
 rom_error_t dice_chain_attestation_owner(
-    const boot_data_t *boot_data, keymgr_binding_value_t *owner_measurement,
-    const manifest_t *owner_manifest) {
+    const manifest_t *owner_manifest, keymgr_binding_value_t *bl0_measurement,
+    hmac_digest_t *owner_measurement, keymgr_binding_value_t *sealing_binding) {
   // Generate CDI_1 attestation keys and (potentially) update certificate.
   SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                            kScKeymgrSecMmioOwnerIntMaxVerSet);
-
   static_assert(
       sizeof(hmac_digest_t) == sizeof(keymgr_binding_value_t),
       "Expect the keymgr binding value to be the same size as a sha256 digest");
-  // Get the verification key that verified the owner code.
-  const owner_application_key_t *key = keyring.key[verify_key];
-  hmac_digest_t ownership_block_measurement;
+
+  // Aggregate the owner firmware (BL0) measurement and the ownership
+  // measurement into a single attestation measurment.  The attestation
+  // measurement is used to initialize the keymgr.
   hmac_digest_t attest_measurement;
-  // Determine which owner block the key came from and measure that block.
-  // Combine the measurement with the BL0 measurement.
-  owner_block_measurement(owner_block_key_page(key),
-                          &ownership_block_measurement);
-  hmac_sha256_init();
-  hmac_sha256_update(owner_measurement, sizeof(keymgr_binding_value_t));
-  hmac_sha256_update(&ownership_block_measurement,
-                     sizeof(ownership_block_measurement));
+  hmac_sha256_configure(false);
+  hmac_sha256_start();
+  hmac_sha256_update(bl0_measurement, sizeof(*bl0_measurement));
+  hmac_sha256_update(owner_measurement, sizeof(*owner_measurement));
   hmac_sha256_process();
   hmac_sha256_final(&attest_measurement);
 
-  // If we're not in LockedOwner state, we don't want to derive any valid
-  // sealing keys, so set the binding constant to a nonsense value.
-  keymgr_binding_value_t sealing_binding = {
-      .data = {0x55555555, 0x55555555, 0x55555555, 0x55555555, 0x55555555,
-               0x55555555, 0x55555555, 0x55555555}};
-
-  if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
-    HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
-    static_assert(
-        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
-        "Expect the keymgr binding value to be the same size as an application "
-        "key diversifier");
-    memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
-  }
   HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_advance(
-      /*sealing_binding=*/&sealing_binding,
+      /*sealing_binding=*/sealing_binding,
       /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
       owner_manifest->max_key_version));
   HARDENED_RETURN_IF_ERROR(otbn_boot_cert_ecc_p256_keygen(
@@ -884,7 +868,7 @@ rom_error_t dice_chain_attestation_owner(
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
-        (hmac_digest_t *)owner_measurement->data, &ownership_block_measurement,
+        (hmac_digest_t *)bl0_measurement, owner_measurement,
         owner_manifest->security_version, &dice_chain.key_ids,
         &dice_chain.subject_pubkey, dice_chain.scratch_cert,
         &updated_cert_size));
@@ -902,7 +886,6 @@ rom_error_t dice_chain_attestation_owner(
   }
   dice_chain.endorsement_pubkey_id = dice_chain.subject_pubkey_id;
 
-  // TODO: elimiate this call when we've fully programmed keymgr and lock it.
   sc_keymgr_sw_binding_unlock_wait();
 
   return kErrorOk;
@@ -931,9 +914,31 @@ rom_error_t dice_chain_flush_flash(void) {
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
                                 const manifest_t *manifest) {
+  // Determine which owner block the key came from and measure that block.
+  hmac_digest_t owner_measurement;
+  const owner_application_key_t *key = keyring.key[verify_key];
+  owner_block_measurement(owner_block_key_page(key), &owner_measurement);
+
+  keymgr_binding_value_t sealing_binding;
+  if (boot_data->ownership_state == kOwnershipStateLockedOwner) {
+    HARDENED_CHECK_EQ(boot_data->ownership_state, kOwnershipStateLockedOwner);
+    // If we're in LockedOwner, initialize the sealing binding with the
+    // diversification constant associated with key applicaiton key that
+    // validated the owner firmware payload.
+    static_assert(
+        sizeof(key->raw_diversifier) == sizeof(keymgr_binding_value_t),
+        "Expect the keymgr binding value to be the same size as an application "
+        "key diversifier");
+    memcpy(&sealing_binding, key->raw_diversifier, sizeof(sealing_binding));
+  } else {
+    // If we're not in LockedOwner state, we don't want to derive any valid
+    // sealing keys, so set the binding constant to a nonsense value.
+    memset(&sealing_binding, 0x55, sizeof(sealing_binding));
+  }
+
   // Generate CDI_1 attestation keys and certificate.
   HARDENED_RETURN_IF_ERROR(dice_chain_attestation_owner(
-      boot_data, &boot_measurements.bl0, manifest));
+      manifest, &boot_measurements.bl0, &owner_measurement, &sealing_binding));
 
   // Write the DICE certs to flash if they have been updated.
   HARDENED_RETURN_IF_ERROR(dice_chain_flush_flash());
