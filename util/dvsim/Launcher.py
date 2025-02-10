@@ -9,12 +9,18 @@ import os
 import re
 import sys
 from pathlib import Path
+from typing import Union
 
 from utils import VERBOSE, clean_odirs, mk_symlink, rm_path
 
 
 class LauncherError(Exception):
     def __init__(self, msg) -> None:
+        self.msg = msg
+
+
+class LauncherBusy(Exception):
+    def __init__(self, msg):
         self.msg = msg
 
 
@@ -219,7 +225,7 @@ class Launcher:
         self._pre_launch()
         self._do_launch()
 
-    def poll(self) -> None:
+    def poll(self) -> Union[str, None]:
         """Poll the launched job for completion.
 
         Invokes _check_status() and _post_finish() when the job completes.
@@ -285,10 +291,11 @@ class Launcher:
                 if chk_failed and _find_patterns(self.deploy.fail_patterns, line):
                     # If failed, then nothing else to do. Just return.
                     # Provide some extra lines for context.
+                    end = cnt + 5
                     return "F", ErrorMessage(
                         line_number=cnt + 1,
                         message=line.strip(),
-                        context=lines[cnt : cnt + 5],
+                        context=lines[cnt:end],
                     )
 
                 if chk_passed:

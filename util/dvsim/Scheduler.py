@@ -6,7 +6,7 @@ import logging as log
 import threading
 from signal import SIGINT, SIGTERM, signal
 
-from Launcher import LauncherError
+from Launcher import LauncherBusy, LauncherError
 from StatusPrinter import get_status_printer
 from Timer import Timer
 from utils import VERBOSE
@@ -376,10 +376,11 @@ class Scheduler:
                 status = item.launcher.poll()
                 level = VERBOSE
 
-                assert status in ["D", "P", "F", "K"]
+                assert status in ["D", "P", "F", "E", "K"]
                 if status == "D":
                     continue
-                elif status == "P":
+
+                if status == "P":
                     self._passed[target].add(item)
                 elif status == "F":
                     self._failed[target].add(item)
@@ -481,9 +482,24 @@ class Scheduler:
             for item in to_dispatch:
                 try:
                     item.launcher.launch()
+
                 except LauncherError as err:
                     log.exception(err.msg)
                     self._kill_item(item)
+
+                except LauncherBusy as err:
+                    log.error("Launcher busy: %s", err)
+
+                    self._queued[target].push(item)
+
+                    log.log(
+                        VERBOSE,
+                        "[%s]: [%s]: [reqeued]: %s",
+                        hms,
+                        target,
+                        item.full_name,
+                    )
+                    continue
 
                 self._running[target].append(item)
                 self.item_to_status[item] = "D"
