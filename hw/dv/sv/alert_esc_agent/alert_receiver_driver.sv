@@ -176,7 +176,6 @@ endtask : rsp_alert
 task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
                                              int unsigned ack_delay,
                                              int unsigned ack_stable);
-  bit          have_sent_ping = 1'b0;
 
   if (!cfg.use_seq_item_ping_delay) begin
     ping_delay = $urandom_range(cfg.ping_delay_max, cfg.ping_delay_min);
@@ -187,15 +186,19 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
   // This driver is used for IP (instantiate prim_alert_sender) to finish alert handshake.
   // The current use-case does not test ping fail and differential signal fail scenarios.
   // These scenarios are check in prim_alert direct sequences.
+
+  // Wait ping_delay cycles before we actually send the ping
+  repeat (ping_delay) @(cfg.vif.receiver_cb);
+  // Now send the ping (which the alert sender should respond to)
+  set_ping();
+
+  // If there is an alert happened before ping then wait till we are out of that alert.
+  while (cfg.vif.receiver_cb.alert_tx.alert_p) @(cfg.vif.receiver_cb);
+
   fork
     begin : isolation_fork
       fork
         begin : ping_timeout
-          // Wait ping_delay cycles before we actually send the ping
-          repeat (ping_delay) @(cfg.vif.receiver_cb);
-          // Now send the ping (which the alert sender should respond to)
-          set_ping();
-          have_sent_ping = 1'b1;
           // Finally, hold the driver for handshake_timeout_cycle cycles to give the alert
           // sender time to respond to the ping.
           repeat (cfg.handshake_timeout_cycle) @(cfg.vif.receiver_cb);
@@ -207,9 +210,7 @@ task alert_receiver_driver::drive_alert_ping(int unsigned ping_delay,
           // we haven't sent the ping yet, immediately finish handling the sequence item
           // instead. Another item will be driven through rsp_alert to respond to the alert
           // properly.
-          if (have_sent_ping) begin
-            set_ack_pins(ack_delay, ack_stable);
-          end
+          set_ack_pins(ack_delay, ack_stable);
         end
       join_any
       disable fork;

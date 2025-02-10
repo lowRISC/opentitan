@@ -82,6 +82,10 @@ class alert_monitor extends alert_esc_base_monitor;
     forever @(cfg.vif.monitor_cb) begin
       if (ping_p != cfg.vif.monitor_cb.alert_rx_final.ping_p) begin
         if (!cfg.en_alert_lpg) begin
+          // In case there is an alert happened before ping.
+          // TODO: could use "wait_alert()" but right now scb needs to be cycle accurate to
+          // predict esc_cnt.
+          if (alert_p != 0) wait_alert_complete();
           cfg.under_ping_handshake = 1;
           req = alert_esc_seq_item::type_id::create("req");
           req.alert_esc_type = AlertEscPingTrans;
@@ -99,11 +103,7 @@ class alert_monitor extends alert_esc_base_monitor;
                   req.ping_timeout = 1'b1;
                 end
                 begin : wait_ping_handshake
-                  // In case there is an alert happened before ping.
-                  if (alert_p != 0) wait_alert_complete();
-                  // TODO: could use "wait_alert()" but right now scb needs to be cycle accurate to
-                  // predict esc_cnt.
-                  while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb);
+                  while (cfg.vif.alert_tx_final.alert_p !== 1'b1) @(cfg.vif.monitor_cb)
                   req.alert_handshake_sta = AlertReceived;
                   wait_ack();
                   req.alert_handshake_sta = AlertAckReceived;
