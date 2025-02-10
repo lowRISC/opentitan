@@ -1665,8 +1665,13 @@ def main():
                         gencmd=gencmd_sv)
 
         racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
-        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+        render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
                         out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
+                        gencmd=gencmd_sv,
+                        topcfg=completecfg,
+                        racl_config=racl_config)
+        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+                        out_path / 'rtl' / 'autogen' / f'top_{topname}_racl_pkg.sv',
                         gencmd=gencmd_sv,
                         topcfg=completecfg,
                         racl_config=racl_config)
