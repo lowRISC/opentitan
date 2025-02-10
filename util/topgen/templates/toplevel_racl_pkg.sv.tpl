@@ -103,27 +103,6 @@ package top_racl_pkg;
   % endfor
 
 % endif
-% for racl_group, policies in racl_config['policies'].items():
-<% prefix = "" if len(racl_config['policies'].keys()) == 1 else f"{racl_group.upper()}_" %>\
-  /**
-   * Policies for group ${racl_group}
-   */
-
-  % for policy in policies:
-  /*
-   * Policy ${policy['name']} allowed READ roles:
-   *   ${', '.join(policy['allowed_wr'])}
-   */
-  parameter racl_role_vec_t RACL_POLICY_${prefix}${policy['name'].upper()}_RD_DEFAULT = ${racl_role_vec_len}'h${f"{policy['rd_default']:x}"};
-
-  /**
-   * Policy ${policy['name']} allowed WRITE roles:
-   *   ${', '.join(policy['allowed_wr'])}
-   */
-  parameter racl_role_vec_t RACL_POLICY_${prefix}${policy['name'].upper()}_WR_DEFAULT = ${racl_role_vec_len}'h${f"{policy['wr_default']:x}"};
-
-  % endfor
-% endfor
 
 <%doc>
   Note: The RACL parameters must be generated identically across multiple files.
@@ -137,12 +116,12 @@ package top_racl_pkg;
 <% import raclgen.lib as raclgen %>\
 <% import math %>\
 % if 'racl' in topcfg:
-<% policy_names = [policy['name'] for policy in topcfg['racl']['policies'][racl_group]] %>\
-<% policy_name_len = max( (len(name) for name in policy_names) ) %>\
-<% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
   /**
    * RACL groups:
 % for racl_group in topcfg['racl']['policies']:
+<% policy_names = [policy['name'] for policy in topcfg['racl']['policies'][racl_group]] %>\
+<% policy_name_len = max( (len(name) for name in policy_names) ) %>\
+<% policy_idx_len = math.ceil(math.log10(max(1,len(policy_names)+1))) %>\
    *   ${racl_group}
   % for policy_idx, policy_name in enumerate(policy_names):
    *     ${f"{policy_name}".ljust(policy_name_len)} (Idx ${f"{policy_idx}".rjust(policy_idx_len)})

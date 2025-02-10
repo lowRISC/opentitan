@@ -104,46 +104,6 @@ package top_racl_pkg;
   parameter racl_role_t RACL_ROLE_ROLE1 = 4'h1;
   parameter racl_role_t RACL_ROLE_SOC   = 4'h2;
 
-  /**
-   * Policies for group Null
-   */
-
-  /*
-   * Policy ALL_RD_WR allowed READ roles:
-   *   ROT, ROLE1, SOC
-   */
-  parameter racl_role_vec_t RACL_POLICY_ALL_RD_WR_RD_DEFAULT = 16'h7;
-
-  /**
-   * Policy ALL_RD_WR allowed WRITE roles:
-   *   ROT, ROLE1, SOC
-   */
-  parameter racl_role_vec_t RACL_POLICY_ALL_RD_WR_WR_DEFAULT = 16'h7;
-
-  /*
-   * Policy ROT_PRIVATE allowed READ roles:
-   *   ROT
-   */
-  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_RD_DEFAULT = 16'h1;
-
-  /**
-   * Policy ROT_PRIVATE allowed WRITE roles:
-   *   ROT
-   */
-  parameter racl_role_vec_t RACL_POLICY_ROT_PRIVATE_WR_DEFAULT = 16'h1;
-
-  /*
-   * Policy SOC_ROT allowed READ roles:
-   *   ROT, SOC
-   */
-  parameter racl_role_vec_t RACL_POLICY_SOC_ROT_RD_DEFAULT = 16'h5;
-
-  /**
-   * Policy SOC_ROT allowed WRITE roles:
-   *   ROT, SOC
-   */
-  parameter racl_role_vec_t RACL_POLICY_SOC_ROT_WR_DEFAULT = 16'h5;
-
 
   /**
    * RACL groups:
