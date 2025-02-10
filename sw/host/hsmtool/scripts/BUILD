@@ -37,7 +37,7 @@ genrule(
     outs = ["object_class.rs"],
     cmd = """
         $(execpath :pkcs11_consts) \
-            --binding $(rootpaths :binding_srcs) \
+            --binding $(locations :binding_srcs) \
             --serde --conv_data CKO cryptoki::object::ObjectClass \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
@@ -54,7 +54,7 @@ genrule(
     outs = ["key_type.rs"],
     cmd = """
         $(execpath :pkcs11_consts) \
-            --binding $(rootpaths :binding_srcs) \
+            --binding $(locations :binding_srcs) \
             --serde --conv_data CKK cryptoki::object::KeyType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
@@ -71,7 +71,7 @@ genrule(
     outs = ["certificate_type.rs"],
     cmd = """
         $(execpath :pkcs11_consts) \
-            --binding $(rootpaths :binding_srcs) \
+            --binding $(locations :binding_srcs) \
             --serde --conv_data CKC cryptoki::object::CertificateType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
@@ -88,7 +88,7 @@ genrule(
     outs = ["mechanism_type.rs"],
     cmd = """
         $(execpath :pkcs11_consts) \
-            --binding $(rootpaths :binding_srcs) \
+            --binding $(locations :binding_srcs) \
             --serde --conv_data CKM cryptoki::mechanism::MechanismType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
@@ -105,7 +105,7 @@ genrule(
     outs = ["attribute_type.rs"],
     cmd = """
         $(execpath :pkcs11_consts) \
-            --binding $(rootpaths :binding_srcs) \
+            --binding $(locations :binding_srcs) \
             --serde --strum CKA cryptoki::object::AttributeType \
             | $(location @rules_rust//rust/toolchain:current_rustfmt_files) > $@
     """,
