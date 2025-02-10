@@ -19,6 +19,7 @@ bool operator==(boot_svc_header_t lhs, boot_svc_header_t rhs) {
 namespace boot_svc_header_unittest {
 namespace {
 using ::testing::_;
+using ::testing::AtMost;
 using ::testing::ElementsAreArray;
 using ::testing::SetArgPointee;
 
@@ -153,6 +154,7 @@ TEST_P(BootSvcHeaderCheckTest, Check) {
   EXPECT_CALL(hmac_,
               sha256(&GetParam().msg.header.identifier,
                      GetParam().msg.header.length - sizeof(hmac_digest_t), _))
+      .Times(AtMost(1))
       .WillOnce(SetArgPointee<2>(hmac_digest_t{}));
 
   EXPECT_EQ(boot_svc_header_check(&GetParam().msg.header),
