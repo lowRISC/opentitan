@@ -33,6 +33,8 @@ use_repo(pip, "ot_python_deps")
 # List of dependencies that need to used during the loading phase
 # by repository rules.
 REPO_RULES_PIP_DEPS = [
+    # Direct dependencies:
+    "hjson",  # In hw/top/generate_top_desc.py
 ]
 
 # Ask bazel to use all repositories created by rules_python so we

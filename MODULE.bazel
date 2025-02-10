@@ -148,3 +148,16 @@ use_repo(
 register_toolchains("//rules/opentitan:localtools")
 
 register_toolchains("//toolchain:cc_toolchain_opentitan")
+
+# Registration of tops.
+ot_top = use_extension("//hw/top:extensions.bzl", "top")
+ot_top.register(
+    top_cfg = "//hw/top_earlgrey/data/autogen:top_earlgrey.gen.hjson",
+)
+ot_top.register(
+    top_cfg = "//hw/top_darjeeling/data/autogen:top_darjeeling.gen.hjson",
+)
+ot_top.register(
+    top_cfg = "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.gen.hjson",
+)
+use_repo(ot_top, ot_tops_desc = "tops_desc")
