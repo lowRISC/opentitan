@@ -1746,10 +1746,6 @@ def main():
                 render_template(TOPGEN_TEMPLATE_PATH / "data_BUILD.tpl",
                                 path / "data" / "autogen" / "BUILD",
                                 gencmd=gencmd_bzl)
-                # "data_defs.bzl.tpl" -> "data/autogen/defs.bzl"
-                render_template(TOPGEN_TEMPLATE_PATH / "data_defs.bzl.tpl",
-                                path / "data" / "autogen" / "defs.bzl",
-                                gencmd=gencmd_bzl)
 
         for idx, path in enumerate(out_paths):
             cformat_dir = path / "sw" / "autogen"
