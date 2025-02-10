@@ -84,6 +84,11 @@ ${helper.clock_enum.render()}
 uint32_t dt_clock_frequency(dt_clock_t clk);
 
 /**
+ * List of pads names.
+ */
+${helper.pad_enum.render()}
+
+/**
  * Pinmux types.
  *
  * These types are aliases to top-level types for backward compatibility
@@ -169,7 +174,7 @@ static inline dt_periph_io_dir_t dt_periph_io_dir(dt_periph_io_t periph_io) {
 /**
  * Return the peripheral input for an MIO peripheral I/O.
  *
- * This is the index of the MIO_PERIPH_INSEL register that controls this peripheral I/O.
+ * This is the index of the `MIO_PERIPH_INSEL` pinmux register that controls this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
  * @return The peripheral input number of the MIO that this peripheral I/O is connected to.
@@ -184,7 +189,7 @@ static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_
 /**
  * Return the outsel for an MIO peripheral I/O.
  *
- * This is the value to put in the `MIO_OUTSEL` registers to connect a pad to this peripheral I/O.
+ * This is the value to put in the `MIO_OUTSEL` pinmux registers to connect a pad to this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeMio`.
  * @return The outsel of the MIO that this peripheral I/O is connected to.
@@ -193,13 +198,13 @@ static inline dt_pinmux_peripheral_in_t dt_periph_io_mio_periph_input(dt_periph_
  * outputs (`kDtPeriphIoDirOut`). For any other peripheral I/O, the return value is unspecified.
  */
 static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_io) {
-  return (dt_pinmux_outsel_t)periph_io.__internal.outsel;
+  return (dt_pinmux_outsel_t)periph_io.__internal.outsel_or_dt_pad;
 }
 
 /**
  * Return the direct pad number of a DIO peripheral I/O.
  *
- * This is the index of the various `DIO_PAD_*` registers that control this peripheral I/O.
+ * This is the index of the various `DIO_PAD_*` pinmux registers that control this peripheral I/O.
  *
  * @param dev A peripheral I/O of type `kDtPeriphIoTypeDio`.
  * @return The direct pad number of the DIO that this peripheral I/O is connected to.
@@ -207,14 +212,22 @@ static inline dt_pinmux_outsel_t dt_periph_io_mio_outsel(dt_periph_io_t periph_i
  * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other peripheral I/O type, the return value is unspecified.
  */
-static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_io) {
+static inline dt_pinmux_direct_pad_t dt_periph_io_dio_pad_index(dt_periph_io_t periph_io) {
   return (dt_pinmux_direct_pad_t)periph_io.__internal.periph_input_or_direct_pad;
 }
 
 /**
- * List of pads names.
+ * Return the pad of a DIO peripheral I/O.
+ *
+ * @param dev A peripheral I/O of type `kDtPeriphIoTypeDio`.
+ * @return The pad to which this peripheral I/O is connected to.
+ *
+ * NOTE This function only makes sense for peripheral I/Os of type `kDtPeriphIoTypeDio` which are
+ * either outputs or inouts. For any other peripheral I/O type, the return value is unspecified.
  */
-${helper.pad_enum.render()}
+static inline dt_pad_t dt_periph_io_dio_pad(dt_periph_io_t periph_io) {
+  return (dt_pad_t)periph_io.__internal.outsel_or_dt_pad;
+}
 
 /** Type of a pad. */
 typedef enum dt_pad_type {
@@ -260,7 +273,7 @@ dt_pinmux_mio_out_t dt_pad_mio_out(dt_pad_t pad);
  * NOTE This function only makes sense for pads of type `kDtPadTypeMio`.
  * For any other pad, the return value is unspecified.
  */
-dt_pinmux_muxed_pad_t dt_pad_mio_pad(dt_pad_t pad);
+dt_pinmux_muxed_pad_t dt_pad_mio_pad_index(dt_pad_t pad);
 
 /**
  * Return the insel for an MIO pad.
@@ -286,6 +299,6 @@ dt_pinmux_insel_t dt_pad_mio_insel(dt_pad_t pad);
  * NOTE This function only makes sense for pads of type `kDtPeriphIoTypeDio` which are
  * either outputs or inouts. For any other pad type, the return value is unspecified.
  */
-dt_pinmux_direct_pad_t dt_pad_dio_pad(dt_pad_t pad);
+dt_pinmux_direct_pad_t dt_pad_dio_pad_index(dt_pad_t pad);
 
 #endif  // ${include_guard}

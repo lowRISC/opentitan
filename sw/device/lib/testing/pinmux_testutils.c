@@ -69,9 +69,9 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp};
 
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad(kPadUart0Rx),
-                                            kDifPinmuxPadKindMio, in_attr,
-                                            &out_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad_index(kPadUart0Rx),
+                                   kDifPinmuxPadKindMio, in_attr, &out_attr));
   };
 
 #ifdef HAS_UART1
