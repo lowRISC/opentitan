@@ -28,8 +28,7 @@ module mbx_soc_reg_top
 
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -174,7 +173,7 @@ module mbx_soc_reg_top
     .busy_i  (reg_busy),
     .rdata_i (reg_rdata),
     // Translate RACL error to TLUL error if enabled
-    .error_i (reg_error | (RaclErrorRsp & racl_error_o))
+    .error_i (reg_error | (RaclErrorRsp & racl_error_o.valid))
   );
 
   // cdc oversampling signals
@@ -520,16 +519,16 @@ module mbx_soc_reg_top
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
   // A valid address hit, access, but failed the RACL check
-  assign racl_error_o = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
-                                     (reg_we & ~|racl_addr_hit_write));
-  assign racl_error_log_o.racl_role  = racl_role;
+  assign racl_error_o.valid = |addr_hit & ((reg_re & ~|racl_addr_hit_read) |
+                                           (reg_we & ~|racl_addr_hit_write));
+  assign racl_error_o.racl_role  = racl_role;
 
   if (EnableRacl) begin : gen_racl_log
-    assign racl_error_log_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
-    assign racl_error_log_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
+    assign racl_error_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);
+    assign racl_error_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
   end else begin : gen_no_racl_log
-    assign racl_error_log_o.ctn_uid     = '0;
-    assign racl_error_log_o.read_access = 1'b0;
+    assign racl_error_o.ctn_uid     = '0;
+    assign racl_error_o.read_access = 1'b0;
   end
 
   // Check sub-word write is permitted

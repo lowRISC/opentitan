@@ -20,8 +20,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | strap_en       | logic                         | uni     | rcv   |       1 | This signal is pulsed high by the power manager after reset in order to sample the HW straps.                                        |
 | sampled_straps | gpio_pkg::gpio_straps         | uni     | req   |       1 | This vector contains the sampled strap values.                                                                                       |
 | racl_policies  | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error     | logic                         | uni     | req   |       1 | RACL error indication signal. If 1, the error log contains valid information.                                                        |
-| racl_error_log | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| racl_error     | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
 | tl             | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Interrupts
