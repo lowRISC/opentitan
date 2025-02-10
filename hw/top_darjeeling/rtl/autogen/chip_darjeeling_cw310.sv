@@ -1319,12 +1319,27 @@ module chip_darjeeling_cw310 #(
     .tl_d2h_i   (dmi_d2h)
   );
 
+  // TODO: Resolve this and wire it up.
+  tlul_pkg::tl_h2d_t ctn_misc_tl_h2d_i;
+  assign ctn_misc_tl_h2d_i = tlul_pkg::TL_H2D_DEFAULT;
+  tlul_pkg::tl_d2h_t ctn_misc_tl_d2h_o;
+
+  // TODO: Over/ride/ all access range checks for now.
+  prim_mubi_pkg::mubi8_t ac_range_check_overwrite_i;
+  assign ac_range_check_overwrite_i = prim_mubi_pkg::MuBi8True;
+
+  // TODO: External RACL error input.
+  top_racl_pkg::racl_error_log_t ext_racl_error;
+  assign ext_racl_error = '0;
+
   ////////////////
   // CTN M-to-1 //
   ////////////////
 
   tlul_pkg::tl_h2d_t ctn_tl_h2d[2];
   tlul_pkg::tl_d2h_t ctn_tl_d2h[2];
+  //TODO: Resolve this and wire it up.
+  assign ctn_tl_h2d[1] = tlul_pkg::TL_H2D_DEFAULT;
 
   tlul_pkg::tl_h2d_t ctn_sm1_to_s1n_tl_h2d;
   tlul_pkg::tl_d2h_t ctn_sm1_to_s1n_tl_d2h;
@@ -1373,8 +1388,11 @@ module chip_darjeeling_cw310 #(
     // Default steering to generate error response if address is not within the range
     ctn_dev_sel_s1n = 1'b1;
     // Steering to CTN SRAM.
-    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) ==
-        TOP_DARJEELING_RAM_CTN_BASE_ADDR) begin
+    //
+    // TODO: Presently the software is being built to execute at the start of the window, so map
+    // the RAM there; it's supposed to be at an offset of 256MiB.
+    if ((ctn_sm1_to_s1n_tl_h2d.a_address & ~(TOP_DARJEELING_RAM_CTN_SIZE_BYTES-1)) == 0) begin
+    //  (TOP_DARJEELING_RAM_CTN_BASE_ADDR - TOP_DARJEELING_CTN_BASE_ADDR)) begin
       ctn_dev_sel_s1n = 1'd0;
     end
   end
@@ -1560,14 +1578,14 @@ assign unused_signals = ^{pwrmgr_boot_status.clk_status,
     .otp_cfg_rsp_o                ( otp_cfg_rsp                ),
     .ctn_tl_h2d_o                 ( ctn_tl_h2d[0]              ),
     .ctn_tl_d2h_i                 ( ctn_tl_d2h[0]              ),
+    .ac_range_check_overwrite_i   ( ac_range_check_overwrite_i ),
+    .racl_error_i                 ( ext_racl_error             ),
     .soc_gpi_async_o              (                            ),
     .soc_gpo_async_i              ( '0                         ),
     .soc_dbg_policy_bus_o         ( soc_dbg_policy_bus         ),
     .debug_halt_cpu_boot_i        ( '0                         ),
     .dma_sys_req_o                (                            ),
     .dma_sys_rsp_i                ( '0                         ),
-    .dma_ctn_tl_h2d_o             ( ctn_tl_h2d[1]              ),
-    .dma_ctn_tl_d2h_i             ( ctn_tl_d2h[1]              ),
     .entropy_src_hw_if_req_o      ( entropy_src_hw_if_req      ),
     .entropy_src_hw_if_rsp_i      ( entropy_src_hw_if_rsp      ),
     .calib_rdy_i                  ( ast_init_done              ),
