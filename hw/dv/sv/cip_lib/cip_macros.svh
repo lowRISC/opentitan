@@ -6,13 +6,16 @@
 `define __CIP_MACROS_SVH__
 
 // Declare array of alert interface, using parameter NUM_ALERTS and LIST_OF_ALERTS, and connect to
-// arrays of wires (alert_tx and alert_rx). User need to manually connect these wires to DUT
+// arrays of wires (alert_tx and alert_rx). User need to manually connect these wires to DUT.
 // Also set each alert_if to uvm_config_db to use in env.
+// When NUM_ALERTS is zero still instantiate one interface to avoid zero size
+// array warnings.
 `ifndef DV_ALERT_IF_CONNECT
 `define DV_ALERT_IF_CONNECT(CLK_ = clk, RST_N_ = rst_n) \
-  alert_esc_if alert_if[NUM_ALERTS](.clk(CLK_), .rst_n(RST_N_)); \
-  prim_alert_pkg::alert_rx_t [NUM_ALERTS-1:0] alert_rx; \
-  prim_alert_pkg::alert_tx_t [NUM_ALERTS-1:0] alert_tx; \
+  localparam uint dv_alert_if_connect_param = (NUM_ALERTS == 0) ? 1 : NUM_ALERTS; \
+  alert_esc_if alert_if[dv_alert_if_connect_param](.clk(CLK_), .rst_n(RST_N_)); \
+  prim_alert_pkg::alert_rx_t [dv_alert_if_connect_param-1:0] alert_rx; \
+  prim_alert_pkg::alert_tx_t [dv_alert_if_connect_param-1:0] alert_tx; \
   for (genvar k = 0; k < NUM_ALERTS; k++) begin : connect_alerts_pins \
     assign alert_rx[k] = alert_if[k].alert_rx; \
     assign alert_if[k].alert_tx = alert_tx[k]; \
