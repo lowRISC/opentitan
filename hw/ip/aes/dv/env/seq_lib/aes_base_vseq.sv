@@ -615,7 +615,6 @@ class aes_base_vseq extends cip_base_vseq #(
             // the GCM, so do not read.
             read_output = data_item.item_type == AES_GCM_AAD ? 0 : ~new_msg;
           end
-          `uvm_info(`gfn, $sformatf("new message is %d",new_msg), UVM_LOW)
           config_and_transmit(cfg_item, data_item, new_msg, first_data_block,
                               first_aad_block, manual_operation, sideload_en,
                               read_output, rst_set);
