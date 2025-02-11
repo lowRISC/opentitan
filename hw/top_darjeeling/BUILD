@@ -28,6 +28,7 @@ sim_dv(
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
+        "//hw/top_darjeeling/sw/dt:sim_dv",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
     rom_scramble_config = "//hw/top_darjeeling/data/autogen:top_darjeeling.gen.hjson",
