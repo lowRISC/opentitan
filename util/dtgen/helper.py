@@ -490,11 +490,12 @@ class IpHelper:
     FIRST_IRQ_FIELD_NAME = Name(["first", "irq"])
     FIRST_ALERT_FIELD_NAME = Name(["first", "alert"])
 
-    def __init__(self, top_helper: TopHelper, ip: IpBlock, default_node: str,
+    def __init__(self, top_helper: TopHelper, ip: IpBlock, ipconfig, default_node: str,
                  enum_type, array_mapping_type):
         self.top_helper = top_helper
         self.top = top_helper.top
         self.ip = ip
+        self.ipconfig = ipconfig
         self.default_node = default_node
         self.ip_name = Name.from_snake_case(self.ip.name)
 
