@@ -7,11 +7,18 @@
 class hmac_stress_all_vseq extends hmac_base_vseq;
   `uvm_object_utils(hmac_stress_all_vseq)
 
+  // Constraints
+  extern constraint num_trans_c;
+
   // Standard SV/UVM methods
   extern function new(string name="");
   extern task body();
 endclass : hmac_stress_all_vseq
 
+
+constraint hmac_stress_all_vseq::num_trans_c {
+  num_trans inside {[1:10]};
+}
 
 function hmac_stress_all_vseq::new(string name="");
   super.new(name);
