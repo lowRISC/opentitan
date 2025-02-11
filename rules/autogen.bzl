@@ -225,6 +225,10 @@ def _opentitan_top_dt_gen(ctx):
             hjson = opentitan_top_get_ip_attr(top, ipname, "hjson")
             inputs.append(hjson)
             ips.extend(["-i", hjson.path])
+            ipconfig = opentitan_top_get_ip_attr(top, ipname, "ipconfig", required = False)
+            if ipconfig:
+                inputs.append(ipconfig)
+                ips.extend(["--ipconfig", ipconfig.path])
 
     arguments = [
         "--topgencfg",

@@ -53,6 +53,13 @@ def main():
         help="IP hjson file, can be specified multiple times"
     )
     parser.add_argument(
+        "--ipconfig",
+        type=Path,
+        action='append',
+        default = [],
+        help="IP config hjson file, can be specified multiple times"
+    )
+    parser.add_argument(
         "--outdir",
         "-o",
         type=Path,
@@ -84,6 +91,10 @@ def main():
     for ip_path in args.ip:
         ip = IpBlock.from_path(ip_path, [])
         name_to_block[ip.name.lower()] = ip
+    name_to_ipconfig = {}
+    for ipcfg_path in args.ipconfig:
+        ipcfg = hjson.loads(ipcfg_path.read_text(), use_decimal=True)
+        name_to_ipconfig[ipcfg["instance_name"]] = ipcfg
 
     with open(args.topgencfg) as handle:
         topcfg = hjson.load(handle, use_decimal=True)
@@ -115,7 +126,7 @@ def main():
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
 
-            helper = IpHelper(top_helper, ip, default_node, CEnum, CArrayMapping)
+            helper = IpHelper(top_helper, ip, ipconfig, default_node, CEnum, CArrayMapping)
 
             render_template(
                 TOPGEN_TEMPLATE_PATH / "dt_ip.h.tpl",
