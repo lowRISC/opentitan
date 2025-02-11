@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_api.h"       // Generated
+#include "dt/dt_rv_timer.h"  // Generated
 #include "sw/device/lib/dif/dif_rv_timer.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -10,9 +12,10 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_rv_timer_t timer;
+static dt_rv_timer_t kRvTimerDt = (dt_rv_timer_t)0;
+static_assert(kDtRvTimerCount >= 1,
+              "This test requires at least one RV Timer instance");
 
 // Flag for checking whether the interrupt handler was called. When the handler
 // is entered, this value *must* be set to false, to catch false positives.
@@ -23,7 +26,7 @@ static volatile bool irq_fired = true;
 
 // NOTE: PLIC targets need not line up with hart ids; in the future, we should
 // generate hart ID constants elsewhere.
-static const uint32_t kHart = (uint32_t)kTopEarlgreyPlicTargetIbex0;
+static const uint32_t kHart = 0;
 static const uint32_t kComparator = 0;
 
 static const uint64_t kTickFreqHz = 1000 * 1000;  // 1 MHz.
@@ -33,13 +36,13 @@ static void test_handler(void) {
 
   bool irq_flag;
   CHECK_DIF_OK(dif_rv_timer_irq_is_pending(
-      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, &irq_flag));
+      &timer, kDtRvTimerIrqTimerExpiredHart0Timer0, &irq_flag));
   CHECK(irq_flag, "Entered IRQ handler but the expected IRQ flag wasn't set!");
 
   CHECK_DIF_OK(
       dif_rv_timer_counter_set_enabled(&timer, kHart, kDifToggleDisabled));
   CHECK_DIF_OK(dif_rv_timer_irq_acknowledge(
-      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0));
+      &timer, kDtRvTimerIrqTimerExpiredHart0Timer0));
 
   irq_fired = true;
 }
@@ -57,16 +60,16 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_timer_ctrl(true);
 
-  CHECK_DIF_OK(dif_rv_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_TIMER_BASE_ADDR), &timer));
+  CHECK_DIF_OK(dif_rv_timer_init_from_dt(kRvTimerDt, &timer));
   CHECK_DIF_OK(dif_rv_timer_reset(&timer));
 
   dif_rv_timer_tick_params_t tick_params;
-  CHECK_DIF_OK(dif_rv_timer_approximate_tick_params(kClockFreqPeripheralHz,
-                                                    kTickFreqHz, &tick_params));
+  CHECK_DIF_OK(dif_rv_timer_approximate_tick_params(
+      dt_clock_frequency(dt_rv_timer_clock(kRvTimerDt, kDtRvTimerClockClk)),
+      kTickFreqHz, &tick_params));
   CHECK_DIF_OK(dif_rv_timer_set_tick_params(&timer, kHart, tick_params));
   CHECK_DIF_OK(dif_rv_timer_irq_set_enabled(
-      &timer, kDifRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
+      &timer, kDtRvTimerIrqTimerExpiredHart0Timer0, kDifToggleEnabled));
 
   uint64_t current_time;
   // Logs over UART incur a large runtime overhead. To accommodate that, the
