@@ -96,7 +96,7 @@ static rom_error_t load_attestation_keygen_seed(uint32_t additional_seed_idx,
       // If we encountered a read error, this means the attestation seed page
       // has not been provisioned yet. In this case, we erase the page and
       // continue, which will simply result in generating an invalid identity.
-      dbg_printf(
+      dbg_puts(
           "Warning: Attestation key seed flash info page not provisioned. "
           "Erasing page to format.\r\n");
       HARDENED_RETURN_IF_ERROR(flash_ctrl_info_erase(
