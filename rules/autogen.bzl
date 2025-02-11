@@ -219,6 +219,7 @@ def _opentitan_top_dt_gen(ctx):
     top = ctx.attr.top[OpenTitanTopInfo]
 
     inputs = [top.hjson]
+    tools = []
     ips = []
     for ipname in top.ip_map:
         if ctx.attr.gen_top or ipname in ctx.attr.gen_ips:
@@ -229,6 +230,14 @@ def _opentitan_top_dt_gen(ctx):
             if ipconfig:
                 inputs.append(ipconfig)
                 ips.extend(["--ipconfig", ipconfig.path])
+            extension = opentitan_top_get_ip_attr(top, ipname, "extension", required = False, output = "target")
+            if extension:
+                ext_files = extension[DefaultInfo].files.to_list()
+                if len(ext_files) > 1:
+                    fail("opentitan_top_dt_gen was given {} as an extension but it contains more one file: {}"
+                        .format(extension, ext_files))
+                tools.append(extension[DefaultInfo].default_runfiles.files)
+                ips.extend(["--extension", ext_files[0].path])
 
     arguments = [
         "--topgencfg",
@@ -248,6 +257,7 @@ def _opentitan_top_dt_gen(ctx):
         inputs = inputs,
         arguments = arguments,
         executable = ctx.executable._dttool,
+        tools = tools,
     )
 
     return [
