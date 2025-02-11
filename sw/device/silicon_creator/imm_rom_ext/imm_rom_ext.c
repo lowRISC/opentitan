@@ -38,7 +38,7 @@ static rom_error_t imm_rom_ext_start(void) {
   pinmux_init_uart0_tx();
   uart_init(kUartNCOValue);
 
-  dbg_printf("IMM_ROM_EXT:0.1\r\n");
+  dbg_puts("IMM_ROM_EXT:0.1\r\n");
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
