@@ -75,6 +75,11 @@ uint32_t pinmux_read_straps(void);
  */
 bool pinmux_read_gpio(uint32_t gpio);
 
+/**
+ * Initialize IOC7 as the USB sense pin.
+ */
+void pinmux_init_usb(void);
+
 #ifdef __cplusplus
 }
 #endif
