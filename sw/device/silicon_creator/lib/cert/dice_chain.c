@@ -307,7 +307,7 @@ rom_error_t dice_chain_attestation_silicon(void) {
 
     // CAUTION: This error message should match the one in
     //   //sw/host/provisioning/ft_lib/src/lib.rs
-    dbg_printf("error: UDS certificate not valid\r\n");
+    dbg_puts("error: UDS certificate not valid\r\n");
   } else {
     // Cert is valid, move to the next one.
     dice_chain_next_cert_obj();
@@ -346,7 +346,7 @@ rom_error_t dice_chain_attestation_creator(
   // Check if the current CDI_0 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_printf("warning: CDI_0 certificate not valid; updating\r\n");
+    dbg_puts("warning: CDI_0 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(
@@ -410,7 +410,7 @@ rom_error_t dice_chain_attestation_owner(
   // Check if the current CDI_0 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_printf("warning: CDI_1 certificate not valid; updating\r\n");
+    dbg_puts("warning: CDI_1 certificate not valid; updating\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(dice_cdi_1_cert_build(
@@ -447,9 +447,9 @@ rom_error_t dice_chain_flush_flash(void) {
     RETURN_IF_ERROR(flash_ctrl_info_write(
         dice_chain.info_page,
         /*offset=*/0,
-        /*word_count=*/kFlashPageSize / sizeof(uint32_t), dice_chain.data));
-    dbg_printf("info: flushed dice cert page %d\r\n",
-               dice_chain.info_page->base_addr);
+        /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
+        dice_chain.data));
+    dbg_puts("info: flushed dice cert page\r\n");
     dice_chain.data_dirty = kHardenedBoolFalse;
   }
   return kErrorOk;
