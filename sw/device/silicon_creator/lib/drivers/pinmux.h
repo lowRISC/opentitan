@@ -47,6 +47,10 @@ void pinmux_init_uart0_tx(void);
  */
 uint32_t pinmux_read_straps(void);
 
+/**
+ * Initialize IOC7 as the USB sense pin.
+ */
+void pinmux_init_usb(void);
 #ifdef __cplusplus
 }
 #endif
