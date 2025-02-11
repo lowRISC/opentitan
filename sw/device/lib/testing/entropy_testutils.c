@@ -14,14 +14,10 @@
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'y')
 
-static status_t setup_entropy_src(const dif_entropy_src_t *entropy_src) {
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
-  return OK_STATUS();
-}
-
-dif_entropy_src_config_t entropy_testutils_config_default(void) {
-  return (dif_entropy_src_config_t){
+status_t entropy_testutils_entropy_src_init(void) {
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+  dif_entropy_src_config_t config = {
       .fips_enable = true,
       .fips_flag = true,
       .rng_fips = true,
@@ -31,11 +27,12 @@ dif_entropy_src_config_t entropy_testutils_config_default(void) {
       .health_test_window_size = 0x0200,
       .alert_threshold = 2,
   };
+  CHECK_DIF_OK(
+      dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
+  return OK_STATUS();
 }
 
 status_t entropy_testutils_auto_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -46,7 +43,7 @@ status_t entropy_testutils_auto_mode_init(void) {
   TRY(entropy_testutils_stop_all());
 
   // re-enable entropy src and csrng
-  setup_entropy_src(&entropy_src);
+  TRY(entropy_testutils_entropy_src_init());
   TRY(dif_csrng_configure(&csrng));
 
   // Re-enable EDN0 in auto mode.
@@ -139,8 +136,6 @@ status_t entropy_testutils_auto_mode_init(void) {
 }
 
 status_t entropy_testutils_boot_mode_init(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
   const dif_csrng_t csrng = {
       .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
   const dif_edn_t edn0 = {
@@ -150,7 +145,7 @@ status_t entropy_testutils_boot_mode_init(void) {
 
   TRY(entropy_testutils_stop_all());
 
-  setup_entropy_src(&entropy_src);
+  TRY(entropy_testutils_entropy_src_init());
   TRY(dif_csrng_configure(&csrng));
   TRY(dif_edn_set_boot_mode(&edn0));
   TRY(dif_edn_set_boot_mode(&edn1));

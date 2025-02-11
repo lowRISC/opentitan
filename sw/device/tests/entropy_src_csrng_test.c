@@ -162,8 +162,7 @@ static void csrng_generate_output_check(void) {
 static void test_csrng_sw_entropy_req_interrupt(
     const dif_csrng_seed_material_t *seed_material) {
   CHECK_STATUS_OK(entropy_testutils_stop_all());
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  CHECK_STATUS_OK(entropy_testutils_entropy_src_init());
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
 
@@ -239,8 +238,7 @@ static void edn_configure(const dif_edn_t *edn, irq_flag_id_t irq_flag_id,
 static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_DIF_OK(dif_csrng_clear_recoverable_alerts(&csrng));
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  CHECK_STATUS_OK(entropy_testutils_entropy_src_init());
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   edn_configure(&edn0, kTestIrqFlagIdEdn0CmdDone, seed_material);

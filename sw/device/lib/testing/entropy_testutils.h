@@ -11,17 +11,17 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 
 /**
- * Returns default entropy source configuration.
+ * Initializes the entropy source with default configuration.
  */
-dif_entropy_src_config_t entropy_testutils_config_default(void);
+OT_WARN_UNUSED_RESULT
+status_t entropy_testutils_entropy_src_init(void);
 
 /**
  * Initializes the entropy complex in auto-request mode.
  *
- * Initializes the CSRNG, EDN0, and EDN1 in automatic request mode, with EDN1
- * providing highest-quality entropy and EDN0 providing lower-quality entropy.
- * The entropy source must have been initialized separately before calling this
- * function.
+ * Initializes entropy_src, CSRNG, EDN0, and EDN1 in automatic request mode,
+ * with EDN1 providing highest-quality entropy and EDN0 providing lower-quality
+ * entropy.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_auto_mode_init(void);

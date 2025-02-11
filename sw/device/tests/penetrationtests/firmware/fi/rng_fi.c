@@ -286,8 +286,7 @@ status_t handle_rng_fi_edn_bias(ujson_t *uj) {
   // Disable the entropy complex.
   TRY(entropy_testutils_stop_all());
   // Enable ENTROPY_SRC in FIPS mode.
-  TRY(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  TRY(entropy_testutils_entropy_src_init());
   // Enable CSRNG.
   TRY(dif_csrng_configure(&csrng));
   // Enable EDN1 in auto request mode.

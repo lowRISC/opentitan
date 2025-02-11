@@ -432,8 +432,7 @@ void set_edn_auto_mode(void) {
   };
   CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
       &entropy_src, fw_override_config, kDifToggleEnabled));
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  CHECK_STATUS_OK(entropy_testutils_entropy_src_init());
 
   // Enable CSRNG
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
