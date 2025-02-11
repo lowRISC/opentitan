@@ -2103,15 +2103,15 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
-        "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
