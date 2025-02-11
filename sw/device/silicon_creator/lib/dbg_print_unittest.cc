@@ -83,6 +83,17 @@ TEST(LogTest, PrintfString) {
   EXPECT_EQ(*uart_buf, "ABC");
 }
 
+TEST(LogTest, PutsString) {
+  uart_buf->clear();
+  dbg_puts("Hello, %s!");
+  // It should NOT be formatted.
+  EXPECT_EQ(*uart_buf, "Hello, %s!");
+
+  uart_buf->clear();
+  dbg_puts("OpenTitan");
+  EXPECT_EQ(*uart_buf, "OpenTitan");
+}
+
 TEST(LogTest, PrintfMix) {
   uart_buf->clear();
   dbg_printf("%s%x", "OpenTitan", 0x0000000a);
