@@ -8,7 +8,7 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifdef OPENTITAN_IS_EARLGREY
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
@@ -39,7 +39,7 @@ enum {
   kAesTestutilsTimeout = (10 * 1000 * 1000),
 };
 
-#if !OT_IS_ENGLISH_BREAKFAST
+#ifdef OPENTITAN_IS_EARLGREY
 /**
  * Constants for switching AES masking off.
  */
