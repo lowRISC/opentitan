@@ -126,6 +126,9 @@ def main():
                     logging.warning(f"IP {ipname} has more than one register block node " +
                                     f"but no default was specified, will use {default_node}")
 
+            # The instance name is 'top_{topname}_{ipname}'.
+            ipconfig = name_to_ipconfig.get('top_{}_{}'.format(topcfg["name"], ipname), None)
+
             helper = IpHelper(top_helper, ip, ipconfig, default_node, CEnum, CArrayMapping)
 
             render_template(
