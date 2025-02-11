@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules:stamp.bzl", "stamp_attr", "stamping_enabled")
-load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo")
+load("//rules/opentitan:hw.bzl", "OpenTitanTopInfo", "opentitan_top_get_ip_attr")
 
 """Autogeneration rules for OpenTitan.
 
@@ -15,9 +15,7 @@ from hjson register descriptions.
 def _opentitan_ip_c_header_impl(ctx):
     header = ctx.actions.declare_file("{}_regs.h".format(ctx.attr.ip))
     top = ctx.attr.top[OpenTitanTopInfo]
-    if ctx.attr.ip not in top.ip_hjson:
-        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
-    hjson = top.ip_hjson[ctx.attr.ip]
+    hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     arguments = [
         "-D",
@@ -81,9 +79,7 @@ opentitan_ip_c_header = rule(
 def _opentitan_ip_rust_header_impl(ctx):
     tock = ctx.actions.declare_file("{}.rs".format(ctx.attr.ip))
     top = ctx.attr.top[OpenTitanTopInfo]
-    if ctx.attr.ip not in top.ip_hjson:
-        fail("Cannot generate headers: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
-    hjson = top.ip_hjson[ctx.attr.ip]
+    hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     stamp_args = []
     stamp_files = []
@@ -128,11 +124,7 @@ def _opentitan_autogen_dif_gen(ctx):
     outputs = []
     outdir = "{}/{}".format(ctx.bin_dir.path, ctx.label.package)
     top = ctx.attr.top[OpenTitanTopInfo]
-
-    # Fail if the requested IP is not in the top
-    if ctx.attr.ip not in top.ip_hjson:
-        fail("Cannot generate DIF: top {} does not contain IP {}".format(top.name, ctx.attr.ip))
-    ip_hjson = top.ip_hjson[ctx.attr.ip]
+    ip_hjson = opentitan_top_get_ip_attr(top, ctx.attr.ip, "hjson")
 
     groups = {}
     for group, files in ctx.attr.output_groups.items():
@@ -228,8 +220,9 @@ def _opentitan_top_dt_gen(ctx):
 
     inputs = [top.hjson]
     ips = []
-    for (ipname, hjson) in top.ip_hjson.items():
+    for ipname in top.ip_map:
         if ctx.attr.gen_top or ipname in ctx.attr.gen_ips:
+            hjson = opentitan_top_get_ip_attr(top, ipname, "hjson")
             inputs.append(hjson)
             ips.extend(["-i", hjson.path])
 
@@ -241,7 +234,7 @@ def _opentitan_top_dt_gen(ctx):
     ]
     arguments.append("--gen-top" if ctx.attr.gen_top else "--gen-ip")
     for ipname in ctx.attr.gen_ips:
-        if ipname not in top.ip_hjson:
+        if ipname not in top.ip_map:
             fail("Cannot generate IP headers: top {} does not contain IP {}".format(top.name, ipname))
 
     arguments.extend(ips)
@@ -373,11 +366,10 @@ def _opentitan_autogen_testutils_gen(ctx):
         "--clang-format",
         ctx.executable._clang_format.path,
     ]
-    for ip in top.ip_hjson.values():
-        if ip == None:
-            continue
-        inputs.append(ip)
-        arguments.extend(["-i", ip.path])
+    for ip in top.ip_map.keys():
+        ip_hjson = opentitan_top_get_ip_attr(top, ip, "hjson")
+        inputs.append(ip_hjson)
+        arguments.extend(["-i", ip_hjson.path])
 
     # Generate files
     ctx.actions.run(
