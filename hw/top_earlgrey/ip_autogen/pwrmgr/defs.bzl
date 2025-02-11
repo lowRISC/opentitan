@@ -6,4 +6,5 @@ load("//rules/opentitan:hw.bzl", "opentitan_ip")
 PWRMGR = opentitan_ip(
     name = "pwrmgr",
     hjson = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/pwrmgr.hjson",
+    ipconfig = "//hw/top_earlgrey/ip_autogen/pwrmgr:data/top_earlgrey_pwrmgr.ipconfig.hjson",
 )
