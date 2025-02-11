@@ -13,6 +13,12 @@ package(default_visibility = ["//visibility:public"])
         ip = ip,
         target_compatible_with = opentitan_require_ip(ip),
         top = "//hw/top:top_desc",
+        deps = [
+            "//hw/top:dt_{}".format(ip),
+            "//hw/top:{}_c_regs".format(ip),
+            "//sw/device/lib/base:mmio",
+            "//sw/device/lib/dif:base",
+        ],
     )
     for ip in ALL_IP_NAMES
 ]
