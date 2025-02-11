@@ -7925,3 +7925,54 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:status",
     ],
 )
+
+opentitan_test(
+    name = "sigverify_parallel_test",
+    srcs = [
+        # This file was generated with:
+        # dd if=/dev/random of=data.bin bs=64k count=1
+        # ./util/sh/scripts/bin2c.sh -i data.bin -o sigverify_parallel_data.h -n sigverify_parallel_data
+        "sigverify_parallel_data.h",
+        # The digest file was generated with:
+        # sha256sum data.bin | awk '{print toupper($1)}' | basenc -d --base16 >data.digest
+        # ./util/sh/scripts/bin2c.sh -i data.digest -o sigverify_parallel_digest.h -n sigverify_parallel_digest
+        "sigverify_parallel_digest.h",
+        # The ECDSA signature was generated with:
+        # opentitantool ecdsa sign \
+        #         sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_ecdsa_p256.der \
+        #         --input data.digest --output data.ecdsa_sig
+        # ./util/sh/scripts/bin2c.sh -i data.ecdsa_sig -o sigverify_parallel_ecdsa.h -n sigverify_parallel_ecdsa
+        "sigverify_parallel_ecdsa.h",
+        # The SPX signature was generated with:
+        # opentitantool spx sign \
+        #        data.digest sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.pem \
+        #        --output data.spx_sig --domain PrehashedSha256
+        # ./util/sh/scripts/bin2c.sh -i data.spx_sig -o sigverify_parallel_spx.h -n sigverify_parallel_spx
+        "sigverify_parallel_spx.h",
+        "sigverify_parallel_test.c",
+    ],
+    # This test requires the ROM to have loaded the OTBN boot services program.
+    # Since the verilator and sim_dv environments use the test_rom, we exclude
+    # them from this test.
+    exec_env = dicts.add(
+        {
+            "//hw/top_earlgrey:fpga_cw310_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw310_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        },
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:dbg_print",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/base:util",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:rv_timer",
+        "//sw/device/silicon_creator/lib/ownership:datatypes",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:includes",
+        "//sw/device/silicon_creator/lib/sigverify",
+    ],
+)
