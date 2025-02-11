@@ -201,6 +201,11 @@ void pinmux_init(void) {
   configure_output(kOutputUart0);
 }
 
+void pinmux_init_usb(void) {
+  pinmux_configure_input(kTopEarlgreyPinmuxPeripheralInUsbdevSense,
+                         kTopEarlgreyPinmuxInselConstantOne);
+}
+
 uint32_t pinmux_read_straps(void) {
   uint32_t value = 0;
   value |= read_strap_pin(kInputSwStrap0);
