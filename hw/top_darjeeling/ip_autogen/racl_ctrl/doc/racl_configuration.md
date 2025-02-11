@@ -5,11 +5,11 @@
 
 ### RACL group: Null
 
-| Policy Name   |   Index |
-|:--------------|--------:|
-| ALL_RD_WR     |       0 |
-| ROT_PRIVATE   |       1 |
-| SOC_ROT       |       2 |
+| Policy Name   |   Index | Description                                                       |
+|:--------------|--------:|:------------------------------------------------------------------|
+| ALL_RD_WR     |       0 | Standard policies allowing all roles to access a register         |
+| ROT_PRIVATE   |       1 | Standard policies allowing only the ROT role to access a register |
+| SOC_ROT       |       2 | Custom policy                                                     |
 
 
 ## RACL configuration

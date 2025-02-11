@@ -17370,6 +17370,7 @@
       [
         {
           name: ALL_RD_WR
+          desc: Standard policies allowing all roles to access a register
           allowed_rd:
           [
             ROT
@@ -17388,6 +17389,7 @@
         {
           name: ROT_PRIVATE
           rot_private: true
+          desc: Standard policies allowing only the ROT role to access a register
           allowed_rd:
           [
             ROT
@@ -17401,6 +17403,7 @@
         }
         {
           name: SOC_ROT
+          desc: Custom policy
           allowed_rd:
           [
             ROT
