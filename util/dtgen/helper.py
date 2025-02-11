@@ -135,6 +135,8 @@ class StructType(BaseType):
         return "StructType{{name={}, {}}}".format(self.name, self.fields.keys())
 
     def add_field(self, name: Name, field_type: BaseType, docstring: str = ""):
+        assert name not in self.fields, \
+            f"cannot add field {name} to struct since it already exists"
         self.fields[name] = (field_type, docstring)
 
     def has_field(self, name: Name) -> bool:
