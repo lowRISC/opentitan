@@ -7,7 +7,6 @@
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
@@ -26,7 +25,6 @@
 #define PLAIN_TEXT_BYTES (4 * 4)
 #define TIMEOUT_AES (72 * (PLAIN_TEXT_BYTES / 16) * 20)
 
-static dif_entropy_src_t entropy_src;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
@@ -36,8 +34,6 @@ OTTF_DEFINE_TEST_CONFIG();
 
 // Initializes the peripherals used in this test.
 static void init_peripherals(void) {
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(dif_csrng_init(
       mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR), &csrng));
   CHECK_DIF_OK(
@@ -69,8 +65,7 @@ static void entropy_config(void) {
   // Disable the entropy complex.
   CHECK_STATUS_OK(entropy_testutils_stop_all());
   // Enable ENTROPY_SRC in FIPS mode.
-  CHECK_DIF_OK(dif_entropy_src_configure(
-      &entropy_src, entropy_testutils_config_default(), kDifToggleEnabled));
+  CHECK_STATUS_OK(entropy_testutils_entropy_src_init());
   // Enable CSRNG.
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
   // Enable EDN1 in auto request mode. This does not generate entropy for AES.
