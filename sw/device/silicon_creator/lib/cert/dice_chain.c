@@ -295,7 +295,7 @@ rom_error_t dice_chain_attestation_silicon(void) {
     //
     // In both cases, we do nothing, and boot normally, later attestation
     // attempts will fail in a detectable manner.
-    dbg_printf("Warning: UDS certificate not valid.\r\n");
+    dbg_puts("Warning: UDS certificate not valid.\r\n");
   } else {
     // Cert is valid, move to the next one.
     dice_chain_next_cert_obj();
@@ -334,7 +334,7 @@ rom_error_t dice_chain_attestation_creator(
   // Check if the current CDI_0 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_0", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_printf("CDI_0 certificate not valid. Updating it ...\r\n");
+    dbg_puts("CDI_0 certificate not valid. Updating it ...\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     HARDENED_RETURN_IF_ERROR(
@@ -398,7 +398,7 @@ rom_error_t dice_chain_attestation_owner(
   // Check if the current CDI_0 cert is valid.
   RETURN_IF_ERROR(dice_chain_load_cert_obj("CDI_1", /*name_size=*/6));
   if (dice_chain.cert_valid == kHardenedBoolFalse) {
-    dbg_printf("CDI_1 certificate not valid. Updating it ...\r\n");
+    dbg_puts("CDI_1 certificate not valid. Updating it ...\r\n");
     // Update the cert page buffer.
     size_t updated_cert_size = kScratchCertSizeBytes;
     // TODO(#19596): add owner configuration block measurement to CDI_1 cert.
@@ -438,8 +438,7 @@ rom_error_t dice_chain_flush_flash(void) {
         /*offset=*/0,
         /*word_count=*/FLASH_CTRL_PARAM_BYTES_PER_PAGE / sizeof(uint32_t),
         dice_chain.data));
-    dbg_printf("Flushed dice cert page %d\r\n",
-               dice_chain.info_page->base_addr);
+    dbg_puts("Flushed dice cert page\r\n");
     dice_chain.data_dirty = kHardenedBoolFalse;
   }
   return kErrorOk;

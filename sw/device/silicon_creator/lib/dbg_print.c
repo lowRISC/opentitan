@@ -33,6 +33,12 @@ static void print_integer(unsigned value, bool is_signed) {
   }
 }
 
+void dbg_puts(const char *str) {
+  while (*str) {
+    uart_putchar(*str++);
+  }
+}
+
 void dbg_printf(const char *format, ...) {
   va_list args;
   va_start(args, format);
