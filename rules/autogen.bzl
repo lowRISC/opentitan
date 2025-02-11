@@ -185,7 +185,7 @@ opentitan_autogen_dif_gen = rule(
 )
 
 # See opentitan_autogen_dif_gen for documentation of parameters.
-def opentitan_autogen_dif(name, top, ip, target_compatible_with = []):
+def opentitan_autogen_dif(name, top, ip, deps = [], target_compatible_with = []):
     opentitan_autogen_dif_gen(
         name = "{}_gen".format(name),
         top = top,
@@ -204,6 +204,13 @@ def opentitan_autogen_dif(name, top, ip, target_compatible_with = []):
             srcs = [":{}_gen".format(name)],
             output_group = grp,
         )
+
+    native.cc_library(
+        name = name,
+        srcs = [":{}_src".format(name)],
+        hdrs = [":{}_hdr".format(name)],
+        deps = deps,
+    )
 
 def _opentitan_top_dt_gen(ctx):
     outputs = []
