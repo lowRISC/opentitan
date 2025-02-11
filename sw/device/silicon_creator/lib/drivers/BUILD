@@ -14,10 +14,12 @@ load(
 )
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "EARLGREY_TEST_ENVS",
     "fpga_params",
     "opentitan_test",
     "qemu_params",
+    "silicon_params",
     "verilator_params",
 )
 
@@ -921,5 +923,60 @@ cc_library(
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+    ],
+)
+
+cc_library(
+    name = "usb",
+    srcs = [
+        "stdusb.c",
+        "usb.c",
+    ],
+    hdrs = [
+        "stdusb.h",
+        "usb.h",
+    ],
+    deps = [
+        "//hw/ip/usbdev/data:usbdev_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+    ],
+)
+
+opentitan_test(
+    name = "usb_functest",
+    srcs = ["usb_functest.c"],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap={firmware}
+        """,
+        test_harness = "//sw/host/tests/chip/usb:silicon_creator_harness",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap={firmware}
+            --vbus-sense-en=VBUS_SENSE_EN
+            --vbus-sense=VBUS_SENSE
+        """,
+        test_harness = "//sw/host/tests/chip/usb:silicon_creator_harness",
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+        tags = ["broken"],
+    ),
+    deps = [
+        ":hmac",
+        ":pinmux",
+        ":rnd",
+        ":usb",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
