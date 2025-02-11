@@ -11,8 +11,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #define TIMEOUT (1000 * 1000)
 
 OTTF_DEFINE_TEST_CONFIG();
@@ -41,8 +39,7 @@ bool test_main(void) {
   dif_aes_t aes;
 
   // Initialise AES.
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   return status_ok(execute_test(&aes));

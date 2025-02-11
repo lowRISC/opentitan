@@ -48,7 +48,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",

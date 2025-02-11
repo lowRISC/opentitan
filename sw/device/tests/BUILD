@@ -164,6 +164,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     # Use this test to ensure that all execution environments are tested in CI.
@@ -171,10 +172,12 @@ opentitan_test(
         "//hw/top_earlgrey:fpga_cw310_sival",
         "//hw/top_earlgrey:fpga_cw310_sival_rom_ext",
         "//hw/top_earlgrey:fpga_hyper310_rom_ext",
+        # Ensure that top_earlgrey and top_darjeeling has same tags.
+        "//hw/top_darjeeling:sim_dv",
     ],
     deps = [
         "//hw/ip/aes:model",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",
