@@ -93,6 +93,14 @@ static const pinmux_input_t kInputSwStrap2 = {
 };
 
 /**
+ * USB dev sense pin.
+ */
+static const pinmux_input_t kInputUsbdevSense = {
+    .periph = kTopEarlgreyPinmuxPeripheralInUsbdevSense,
+    .insel = kTopEarlgreyPinmuxInselConstantOne,
+};
+
+/**
  * Sets the input pad for the specified peripheral input.
  *
  * @param input A peripheral input and MIO pad to link it to.
@@ -194,6 +202,11 @@ void pinmux_init(void) {
   enable_pull(kInputUart0.pad, /*enable=*/true, /*up=*/true);
   configure_input(kInputUart0);
   configure_output(kOutputUart0);
+}
+
+void pinmux_init_usb(void) {
+  // TODO: This might need to depend on sku-specific configuration.
+  configure_input(kInputUsbdevSense);
 }
 
 uint32_t pinmux_read_straps(void) {

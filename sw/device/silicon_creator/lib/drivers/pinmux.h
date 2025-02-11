@@ -47,6 +47,13 @@ void pinmux_init_uart0_tx(void);
  */
 uint32_t pinmux_read_straps(void);
 
+/**
+ * Initialize the USB sense pin.
+ *
+ * This connects the UsbdevSense input to InselConstantOne.
+ */
+void pinmux_init_usb(void);
+
 #ifdef __cplusplus
 }
 #endif
