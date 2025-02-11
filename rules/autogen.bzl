@@ -354,6 +354,96 @@ def opentitan_top_dt_api(name, top, deps = None):
         includes = ["."],
     )
 
+def _opentitan_autogen_testutils_gen(ctx):
+    outputs = []
+    top = ctx.attr.top[OpenTitanTopInfo]
+    groups = {}
+    for group, files in ctx.attr.output_groups.items():
+        deps = []
+        for file in files:
+            deps.append(ctx.actions.declare_file(file))
+        outputs.extend(deps)
+        groups[group] = depset(deps)
+    inputs = [top.hjson]
+    arguments = [
+        "--topcfg",
+        top.hjson.path,
+        "--outdir",
+        outputs[0].dirname,
+        "--clang-format",
+        ctx.executable._clang_format.path,
+    ]
+    for ip in top.ip_hjson.values():
+        if ip == None:
+            continue
+        inputs.append(ip)
+        arguments.extend(["-i", ip.path])
+
+    # Generate files
+    ctx.actions.run(
+        outputs = outputs,
+        inputs = inputs,
+        arguments = arguments,
+        executable = ctx.executable._autogen_testutils,
+        tools = [ctx.executable._clang_format],
+    )
+
+    return [
+        DefaultInfo(files = depset(outputs)),
+        OutputGroupInfo(**groups),
+    ]
+
+opentitan_autogen_testutils_gen = rule(
+    implementation = _opentitan_autogen_testutils_gen,
+    doc = "Generate the testutils file for a top",
+    attrs = {
+        "top": attr.label(mandatory = True, providers = [OpenTitanTopInfo], doc = "Opentitan top description"),
+        "output_groups": attr.string_list_dict(
+            allow_empty = True,
+            doc = """
+                Mappings from output group names to lists of paths contained in
+                that group.
+            """,
+        ),
+        "_autogen_testutils": attr.label(
+            default = "//util:gen_testutils",
+            executable = True,
+            cfg = "exec",
+        ),
+        "_clang_format": attr.label(
+            default = "@lowrisc_rv32imcb_toolchain//:bin/clang-format",
+            allow_single_file = True,
+            cfg = "host",
+            executable = True,
+            doc = "The clang-format executable",
+        ),
+    },
+)
+
+# See opentitan_autogen_testutils_gen for documentation of parameters.
+def opentitan_autogen_isr_testutils(name, top, deps = [], target_compatible_with = []):
+    opentitan_autogen_testutils_gen(
+        name = "{}_gen".format(name),
+        top = top,
+        output_groups = {
+            "hdr": ["isr_testutils.h"],
+            "src": ["isr_testutils.c"],
+        },
+    )
+    for grp in ["hdr", "src"]:
+        native.filegroup(
+            name = "{}_{}".format(name, grp),
+            srcs = [":{}_gen".format(name)],
+            output_group = grp,
+        )
+    native.cc_library(
+        name = name,
+        srcs = [":{}_src".format(name)],
+        hdrs = [":{}_hdr".format(name)],
+        deps = deps,
+        target_compatible_with = target_compatible_with,
+    )
+
 def _chip_info_src(ctx):
     stamp_args = []
     stamp_files = []
