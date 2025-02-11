@@ -18,19 +18,19 @@
   }
   policies: {
     Null: [
-      // Standard policies allowing all roles to access a register
       { name: "ALL_RD_WR"
+        desc: "Standard policies allowing all roles to access a register"
         allowed_rd: [ "ROT", "ROLE1", "SOC" ]
         allowed_wr: [ "ROT", "ROLE1", "SOC" ]
       }
-      // Standard policies allowing only the ROT role to access a register
       { name: "ROT_PRIVATE"
         rot_private: true
+        desc: "Standard policies allowing only the ROT role to access a register"
         allowed_rd: [ "ROT" ]
         allowed_wr: [ "ROT" ]
       }
-      // Custom policy
       { name: "SOC_ROT"
+        desc: "Custom policy"
         allowed_rd: [ "ROT", "SOC" ]
         allowed_wr: [ "ROT", "SOC" ]
       }

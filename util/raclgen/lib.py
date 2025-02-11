@@ -270,14 +270,13 @@ def gen_md_header(racl_config: Dict[str, object], output: TextIO = sys.stdout):
     output.write(title('RACL groups', 2))
     output.write('\n')
 
-    header = ['Policy Name', 'Index']
+    header = ['Policy Name', 'Index', 'Description']
 
     for racl_group in racl_config['policies']:
         policies_for_racl_group = racl_config['policies'][racl_group]
-        policy_names = [policy['name'] for policy in policies_for_racl_group]
         rows: List[List[str]] = []
-        for policy_idx, policy_name in enumerate(policy_names):
-            rows.append([policy_name, str(policy_idx)])
+        for policy_idx, policy in enumerate(policies_for_racl_group):
+            rows.append([policy['name'], str(policy_idx), policy.get('desc', '')])
 
         output.write(title(f'RACL group: {racl_group}', 3))
         output.write(table(header, rows))
