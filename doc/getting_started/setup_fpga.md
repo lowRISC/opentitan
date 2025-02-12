@@ -223,7 +223,8 @@ Below we describe how to:
 1. Move jumper JP6 to select `5V_USB_C`.
 1. Move jumper JP4 to select `3.3V` mode (_this will be changed before connecting to CW340_).
 1. Use a USB-C cable to connect your PC with the `USB1` power and data connector near the blue and black push buttons.
-1. Using a jumper wire, connect pins 5 and 7 on bank CN11, and hit the black `RESET` push button to put the device in DFU mode (the red and blue LEDs whould be solid to indicate you have entered DFU mode).
+1. Using a jumper wire, connect pins 5 and 7 on bank CN11, and hit the black `RESET` push button to put the device in DFU mode.
+1. Remove the jumper wire, the red and blue LEDs should both remain on, indicating the board is in DFU mode.
 1. Flash the firmware by running `cd $REPO_TOP && ./bazelisk.sh run //sw/host/opentitantool -- --interface=hyperdebug_dfu transport update-firmware`.
 
 Note: after flashing the HyperDebug firmware for the first time, it can be updated (*without* needing to put the board into DFU mode) by running the same command used above to flash the firmware for the first time.
