@@ -214,7 +214,9 @@ def _exec_env_to_top_map(exec_env):
 
     ev_map = {}
     for env in exec_env:
-        (pkg, target) = env.split(":")
+        # The top hjson's file is using a canonical label string, so we need to do the same
+        # for the exec_env label.
+        (pkg, target) = str(Label(env)).split(":")
 
         # Remove @ if starting with @//
         if pkg.startswith("@//"):
