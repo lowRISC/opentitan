@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_rv_core_ibex.h"  // Generated
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
@@ -13,8 +14,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_macros.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/epmp_state.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #define TEST_STR "Hello there, WHaT 1S Y0Ur N@ME?"
 #define EXPECTED_RESULT_MAKE_LOWER_CASE "hello there, what 1s y0ur n@me?"
@@ -300,9 +299,10 @@ void check_dbus_map(dif_rv_core_ibex_t *ibex_core) {
 bool test_main(void) {
   // Get ibex core handle.
   dif_rv_core_ibex_t ibex_core;
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
-      &ibex_core));
+  dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
+  static_assert(kDtRvCoreIbexCount >= 1,
+                "This test requires at least one Ibex core");
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kRvCoreIbexDt, &ibex_core));
 
   check_ibus_map(&ibex_core);
   check_dbus_map(&ibex_core);
