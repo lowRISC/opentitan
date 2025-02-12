@@ -1029,7 +1029,7 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
     end
 
-    if (cfg_item.mode == AES_GCM) begin
+    if (cfg_item.mode == AES_GCM && !status.alert_fatal_fault) begin
       set_gcm_phase(GCM_INIT, 16, 1);
     end
 
@@ -1043,7 +1043,7 @@ class aes_base_vseq extends cip_base_vseq #(
     write_iv(cfg_item.iv, is_blocking);
     if (cfg_item.mode == AES_GCM) begin
       int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
-      if (new_msg == 0) begin
+      if (new_msg == 0 && !status.alert_fatal_fault) begin
         if (data_item.item_type == AES_GCM_AAD) begin
           set_gcm_phase(GCM_AAD, valid_bytes, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
