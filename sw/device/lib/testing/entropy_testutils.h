@@ -10,7 +10,10 @@
 #include "sw/device/lib/dif/dif_edn.h"
 
 /**
- * Initializes the entropy source with default configuration.
+ * Initializes the top-specific entropy source with default configuration.
+ *
+ * On Earlgrey, it initializes the entropy_src.
+ * On Darjeeling, this is a no-op.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_entropy_src_init(void);
@@ -18,9 +21,9 @@ status_t entropy_testutils_entropy_src_init(void);
 /**
  * Initializes the entropy complex in auto-request mode.
  *
- * Initializes entropy_src, CSRNG, EDN0, and EDN1 in automatic request mode,
- * with EDN1 providing highest-quality entropy and EDN0 providing lower-quality
- * entropy.
+ * Initializes the entropy source, CSRNG, EDN0, and EDN1 in automatic request
+ * mode, with EDN1 providing highest-quality entropy and EDN0 providing
+ * lower-quality entropy.
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_auto_mode_init(void);
@@ -28,7 +31,7 @@ status_t entropy_testutils_auto_mode_init(void);
 /**
  * Initializes the entropy complex to serve random bits to EDN0 and EDN1.
  *
- * Initializes entropy_src, csrng, EDN0 and EDN1 with default boot time
+ * Initializes the entropy source, csrng, EDN0 and EDN1 with default boot time
  * configuration to enable entropy distribution for testing purposes.
  */
 OT_WARN_UNUSED_RESULT

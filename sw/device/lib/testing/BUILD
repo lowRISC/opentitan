@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -114,17 +115,23 @@ cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],
+    local_defines = opentitan_if_ip(
+        "entropy_src",
+        ["HAS_ENTROPY_SRC"],
+        [],
+    ),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         "//hw/top:edn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:csrng",
         "//sw/device/lib/dif:csrng_shared",
         "//sw/device/lib/dif:edn",
-        "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
-    ],
+    ] + opentitan_if_ip(
+        "entropy_src",
+        ["//sw/device/lib/dif:entropy_src"],
+        [],
+    ),
 )
 
 cc_library(

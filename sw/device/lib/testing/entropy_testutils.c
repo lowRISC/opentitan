@@ -3,18 +3,19 @@
 // SPDX-License-Identifier: Apache-2.0
 #include "sw/device/lib/testing/entropy_testutils.h"
 
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_csrng_shared.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#ifdef HAS_ENTROPY_SRC
+#include "sw/device/lib/dif/dif_entropy_src.h"
+#endif
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'y')
 
 status_t entropy_testutils_entropy_src_init(void) {
+#ifdef HAS_ENTROPY_SRC
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   dif_entropy_src_config_t config = {
@@ -29,16 +30,17 @@ status_t entropy_testutils_entropy_src_init(void) {
   };
   CHECK_DIF_OK(
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
+#endif
   return OK_STATUS();
 }
 
 status_t entropy_testutils_auto_mode_init(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_csrng_t csrng;
+  dif_edn_t edn0;
+  dif_edn_t edn1;
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
 
   TRY(entropy_testutils_stop_all());
 
@@ -136,12 +138,12 @@ status_t entropy_testutils_auto_mode_init(void) {
 }
 
 status_t entropy_testutils_boot_mode_init(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_csrng_t csrng;
+  dif_edn_t edn0;
+  dif_edn_t edn1;
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
 
   TRY(entropy_testutils_stop_all());
 
@@ -155,12 +157,12 @@ status_t entropy_testutils_boot_mode_init(void) {
 }
 
 status_t entropy_testutils_stop_csrng_edn(void) {
-  const dif_csrng_t csrng = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR)};
-  const dif_edn_t edn0 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR)};
-  const dif_edn_t edn1 = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR)};
+  dif_csrng_t csrng;
+  dif_edn_t edn0;
+  dif_edn_t edn1;
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kDtCsrng, &csrng));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn0, &edn0));
+  CHECK_DIF_OK(dif_edn_init_from_dt(kDtEdn1, &edn1));
 
   TRY(dif_edn_stop(&edn0));
   TRY(dif_edn_stop(&edn1));
@@ -169,11 +171,14 @@ status_t entropy_testutils_stop_csrng_edn(void) {
 }
 
 status_t entropy_testutils_stop_all(void) {
-  const dif_entropy_src_t entropy_src = {
-      .base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR)};
-
   CHECK_STATUS_OK(entropy_testutils_stop_csrng_edn());
+
+#ifdef HAS_ENTROPY_SRC
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   TRY(dif_entropy_src_stop(&entropy_src));
+#endif
+
   return OK_STATUS();
 }
 
@@ -182,6 +187,8 @@ status_t entropy_testutils_error_check(const dif_csrng_t *csrng,
                                        const dif_edn_t *edn1) {
   uint32_t err_code;
   bool found_error = false;
+
+#ifdef HAS_ENTROPY_SRC
   dif_entropy_src_t entropy_src;
   CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
   TRY(dif_entropy_src_get_errors(&entropy_src, &err_code));
@@ -189,6 +196,7 @@ status_t entropy_testutils_error_check(const dif_csrng_t *csrng,
     found_error = true;
     LOG_ERROR("entropy_src status. err: 0x%x", err_code);
   }
+#endif
 
   dif_csrng_cmd_status_t status;
   TRY(dif_csrng_get_cmd_interface_status(csrng, &status));
