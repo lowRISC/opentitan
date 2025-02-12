@@ -94,6 +94,16 @@ OT_WARN_UNUSED_RESULT
 lifecycle_state_t lifecycle_state_get(void);
 
 /**
+ * Check if the device is in prod state.
+ *
+ * Warning: This function also returns false when LCS is invalid.
+ *
+ * @return `kHardenedBoolTrue` if the device is in prod state.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t lifecycle_is_prod(void);
+
+/**
  * Get the unprocessed life cycle state value read from the hardware.
  *
  * This function directly returns the `uint32_t` value read from the hardware.
