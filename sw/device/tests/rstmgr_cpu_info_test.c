@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_pwrmgr.h"        // Generated
+#include "dt/dt_rstmgr.h"        // Generated
+#include "dt/dt_rv_core_ibex.h"  // Generated
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/mmio.h"
@@ -15,8 +18,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_isrs.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -32,7 +33,7 @@ OTTF_DEFINE_TEST_CONFIG();
  *    the expected values for this single fault. The watch dog is then set up
  *    and another illegal memory access is performed. Only this time
  *    the exception handler performs another illegal read.
- *    Causing the ibex to be haulted by the alert handler.
+ *    Causing the ibex to be halted by the alert handler.
  *    The watch dog will eventually trigger a reset.
  *
  * 3. After the watchdog reset, the CPU info dump is checked against
@@ -182,16 +183,15 @@ bool test_main(void) {
   dif_aon_timer_t aon_timer;
   dif_pwrmgr_t pwrmgr;
   dif_rv_core_ibex_t ibex;
+  dt_rv_core_ibex_t ibex_dt = (dt_rv_core_ibex_t)0;
+  static_assert(kDtRvCoreIbexCount >= 1,
+                "This test requires at least 1 Ibex core.");
 
   // Initialize Handles.
-  CHECK_DIF_OK(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_RSTMGR_AON_BASE_ADDR), &rstmgr));
-  CHECK_DIF_OK(dif_aon_timer_init(
-      mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_AON_BASE_ADDR), &aon_timer));
-  CHECK_DIF_OK(dif_pwrmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_PWRMGR_AON_BASE_ADDR), &pwrmgr));
-  CHECK_DIF_OK(dif_rv_core_ibex_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR), &ibex));
+  CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
+  CHECK_DIF_OK(dif_aon_timer_init_from_dt(kDtAonTimerAon, &aon_timer));
+  CHECK_DIF_OK(dif_pwrmgr_init_from_dt(kDtPwrmgrAon, &pwrmgr));
+  CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(ibex_dt, &ibex));
 
   switch (rstmgr_testutils_reason_get()) {
     case kDifRstmgrResetInfoPor:  // The first power-up.
