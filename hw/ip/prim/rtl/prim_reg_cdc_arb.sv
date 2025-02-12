@@ -110,7 +110,6 @@ module prim_reg_cdc_arb #(
       end
     end
 
-    logic busy;
     logic dst_req_q, dst_req;
     always_ff @(posedge clk_dst_i or negedge rst_dst_ni) begin
       if (!rst_dst_ni) begin
@@ -121,7 +120,7 @@ module prim_reg_cdc_arb #(
         // dst_lat_d is safe to used here because dst_req_q, if set,
         // always has priority over other hardware based events.
         dst_req_q <= '0;
-      end else if (dst_req_i && busy) begin
+      end else if (dst_req_i && !idle_q) begin
         // if destination request arrives when a handshake event
         // is already ongoing, hold on to request and send later
         dst_req_q <= 1'b1;
@@ -129,7 +128,7 @@ module prim_reg_cdc_arb #(
     end
 
     // dst_req_q will be 0 when dst_req_i is set, this assertion checks the conditional branch
-    // (dst_req_i && !dst_req_q && busy) can be simplified to avoid conditional coverage
+    // (dst_req_i && !dst_req_q && !idle_q) can be simplified to avoid conditional coverage
     // holes
     `ASSERT(Not_Dst_req_q_while_dst_req_i_A, dst_req_i |-> !dst_req_q,
             clk_dst_i, !rst_dst_ni)
@@ -172,7 +171,7 @@ module prim_reg_cdc_arb #(
 
     // if a destination update is received when the system is idle and there is no
     // software side request, hw update must be selected.
-    `ASSERT(DstUpdateReqCheck_A, ##1 dst_update & !dst_req & !busy |=> id_q == SelHwReq,
+    `ASSERT(DstUpdateReqCheck_A, ##1 dst_update & !dst_req & idle_q |=> id_q == SelHwReq,
       clk_dst_i, !rst_dst_ni)
 
     // if hw select was chosen, then it must be the case there was a destination update
@@ -185,7 +184,7 @@ module prim_reg_cdc_arb #(
 
     // send out prim_subreg request only when proceeding
     // with software request
-    assign dst_req_o = ~busy & dst_req;
+    assign dst_req_o = idle_q & dst_req;
 
     logic dst_hold_req;
     always_comb begin
@@ -197,11 +196,7 @@ module prim_reg_cdc_arb #(
       dst_lat_q = '0;
       dst_lat_d = '0;
 
-      busy = 1'b1;
-
       if (idle_q) begin
-        busy = 1'b0;
-
         if (dst_req) begin
           // there's a software issued request for change
           idle_d = 1'b0;
@@ -258,7 +253,7 @@ module prim_reg_cdc_arb #(
           async_flag <= '0;
         end else if (src_update_o) begin
           async_flag <= '0;
-        end else if (dst_update && !dst_req_o && !busy) begin
+        end else if (dst_update && !dst_req_o && idle_q) begin
           async_flag <= 1'b1;
         end
       end
