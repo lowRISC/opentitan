@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_lc_ctrl.h"   // Generated
+#include "dt/dt_rom_ctrl.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
@@ -11,10 +13,13 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_lc_ctrl_t lc;
+static dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+static_assert(kDtLcCtrlCount >= 1, "This test needs a lifecycle controller");
 static dif_rom_ctrl_t rom_ctrl;
+static dt_rom_ctrl_t kRomCtrlDt = (dt_rom_ctrl_t)0;
+static_assert(kDtRomCtrlCount >= 1,
+              "This test requires at least one rom_ctrl instance");
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -27,12 +32,8 @@ OTTF_DEFINE_TEST_CONFIG();
 // not expect a successful boot with the failed integrity check.
 
 bool test_main(void) {
-  mmio_region_t lc_reg =
-      mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
-  mmio_region_t rom_ctrl_reg =
-      mmio_region_from_addr(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_rom_ctrl_init(rom_ctrl_reg, &rom_ctrl));
+  CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
+  CHECK_DIF_OK(dif_rom_ctrl_init_from_dt(kRomCtrlDt, &rom_ctrl));
 
   // Check that the LC_STATE is not PROD as the boot is not
   // expected to be successful in that state.

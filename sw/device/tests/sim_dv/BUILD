@@ -474,9 +474,12 @@ opentitan_test(
 opentitan_test(
     name = "rom_ctrl_integrity_check_test",
     srcs = ["rom_ctrl_integrity_check_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:lc_ctrl",
