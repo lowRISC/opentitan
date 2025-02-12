@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 import re
 import logging as log
-from collections import OrderedDict
 from enum import Enum
 from typing import Dict, List
 
@@ -505,21 +504,8 @@ class Flash:
 # Also check to make sure there are not multiple definitions of ip/xbar.hjson for each
 # top level definition
 # If it does, return a dictionary of instance names to index in ip/xbarobjs
-def check_target(top, objs, tgtobj):
+def check_target(top, name_to_block, tgtobj):
     error = 0
-    idxs = OrderedDict()
-
-    # Collect up counts of object names. We support entries of objs that are
-    # either dicts (for top-levels) or IpBlock objects.
-    name_indices = {}
-    for idx, obj in enumerate(objs):
-        if isinstance(obj, IpBlock):
-            name = obj.name.lower()
-        else:
-            name = obj['name'].lower()
-
-        log.info("%d Order is %s" % (idx, name))
-        name_indices.setdefault(name, []).append(idx)
 
     tgt_type = tgtobj.target_type.value
     inst_key = tgtobj.key
@@ -528,18 +514,11 @@ def check_target(top, objs, tgtobj):
         cfg_name = cfg['name'].lower()
         log.info("Checking target %s %s" % (tgt_type, cfg_name))
 
-        indices = name_indices.get(cfg[inst_key], [])
-        if not indices:
-            log.error("Could not find %s.hjson" % cfg_name)
+        if cfg[inst_key] not in name_to_block:
+            log.error(f"Could not find ip_block for {cfg_name}")
             error += 1
-        elif len(indices) > 1:
-            log.error("Duplicate %s.hjson" % cfg_name)
-            error += 1
-        else:
-            idxs[cfg_name] = indices[0]
 
-    log.info("Current state %s" % idxs)
-    return error, idxs
+    return error
 
 
 def check_pad(top: Dict,
@@ -842,7 +821,7 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
+def check_clocks_resets(top, ip_name_to_block, xbar_name_to_block):
 
     error = 0
 
@@ -863,11 +842,11 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
-        ipcfg_name = ipcfg['name'].lower()
+        ipcfg_name = ipcfg['type']
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ipobjs[ip_idxs[ipcfg_name]], reset_nets,
+        error += validate_reset(ipcfg, ip_name_to_block[ipcfg_name], reset_nets,
                                 unmanaged_reset_nets)
-        error += validate_clock(ipcfg, ipobjs[ip_idxs[ipcfg_name]], clock_srcs,
+        error += validate_clock(ipcfg, ip_name_to_block[ipcfg_name], clock_srcs,
                                 unmanaged_clock_srcs)
 
         if error:
@@ -878,9 +857,9 @@ def check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs):
     for xbarcfg in top['xbar']:
         xbarcfg_name = xbarcfg['name'].lower()
         log.info("Checking clock/resets for xbar %s" % xbarcfg_name)
-        error += validate_reset(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
+        error += validate_reset(xbarcfg, xbar_name_to_block[xbarcfg_name],
                                 reset_nets, unmanaged_reset_nets, "xbar")
-        error += validate_clock(xbarcfg, xbarobjs[xbar_idxs[xbarcfg_name]],
+        error += validate_clock(xbarcfg, xbar_name_to_block[xbarcfg_name],
                                 clock_srcs, unmanaged_clock_srcs, "xbar")
 
         if error:
@@ -1151,7 +1130,7 @@ def check_modules(top, prefix):
     return error
 
 
-def validate_top(top, ipobjs, xbarobjs):
+def validate_top(top, ip_name_to_block, xbar_name_to_block):
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
 
@@ -1165,12 +1144,10 @@ def validate_top(top, ipobjs, xbarobjs):
     error += check_modules(top, component)
 
     # MODULE  check
-    err, ip_idxs = check_target(top, ipobjs, Target(TargetType.MODULE))
-    error += err
+    error += check_target(top, ip_name_to_block, Target(TargetType.MODULE))
 
     # XBAR check
-    err, xbar_idxs = check_target(top, xbarobjs, Target(TargetType.XBAR))
-    error += err
+    error += check_target(top, xbar_name_to_block, Target(TargetType.XBAR))
 
     # MEMORY check
     check_flash(top)
@@ -1183,7 +1160,7 @@ def validate_top(top, ipobjs, xbarobjs):
     error += check_wakeups(top, component)
 
     # Clock / Reset check
-    error += check_clocks_resets(top, ipobjs, ip_idxs, xbarobjs, xbar_idxs)
+    error += check_clocks_resets(top, ip_name_to_block, xbar_name_to_block)
 
     # RV_PLIC check
 

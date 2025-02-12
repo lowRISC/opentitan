@@ -427,7 +427,7 @@ def is_xbarcfg(xbar_obj):
     return False
 
 
-def get_hjsonobj_xbars(xbar_path):
+def get_hjsonobj_xbars(xbar_path) -> Dict[str, object]:
     """ Search crossbars Hjson files from given path.
 
     Search every Hjson in the directory and check Hjson type.
@@ -436,7 +436,7 @@ def get_hjsonobj_xbars(xbar_path):
     """
     paths = xbar_path.glob('*.hjson')
     xbar_objs = [load_cfg(p) for p in paths]
-    xbar_objs = [x for x in xbar_objs if is_xbarcfg(x)]
+    xbar_objs = {x['name']: x for x in xbar_objs if is_xbarcfg(x)}
 
     return xbar_objs
 

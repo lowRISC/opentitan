@@ -1152,11 +1152,9 @@ def _process_top(
     hjson_dir = Path(args.topcfg).parent
     xbar_objs = get_hjsonobj_xbars(hjson_dir)
 
-    log.info("Detected crossbars: " +
-             ", ".join([x["name"] for x in xbar_objs]))
+    log.info("Detected crossbars: " + ", ".join(k for k in xbar_objs.keys()))
 
-    ip_objs: List[IpBlock] = [b for b in name_to_block.values()]
-    topcfg, error = validate_top(topcfg, ip_objs, xbar_objs)
+    topcfg, error = validate_top(topcfg, name_to_block, xbar_objs)
     if error != 0:
         raise SystemExit("Error occured while validating top.hjson")
 
