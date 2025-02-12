@@ -417,6 +417,7 @@ cc_test(
         dual_cc_device_library_of(":lifecycle"),
         "//hw/top:lc_ctrl_c_regs",
         "//hw/top:top_lib",
+        "//sw/device/lib/base:hardened",
         "//sw/device/silicon_creator/testing:rom_test",
         "@googletest//:gtest_main",
     ],

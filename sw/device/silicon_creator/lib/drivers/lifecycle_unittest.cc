@@ -7,6 +7,7 @@
 #include <array>
 
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/testing/rom_test.h"
@@ -80,6 +81,10 @@ struct ValidStateTestCase {
    * Value returned by software.
    */
   lifecycle_state_t sw_state;
+  /**
+   * Whether the state is prod / prod_end.
+   */
+  hardened_bool_t is_prod;
 };
 
 class LifecycleValidStates
@@ -91,54 +96,71 @@ TEST_P(LifecycleValidStates, ValidState) {
   EXPECT_EQ(lifecycle_state_get(), GetParam().sw_state);
 }
 
+TEST_P(LifecycleValidStates, LifecycleIsProd) {
+  EXPECT_SEC_READ32(base_ + LC_CTRL_LC_STATE_REG_OFFSET, GetParam().hw_state);
+  EXPECT_EQ(lifecycle_is_prod(), GetParam().is_prod);
+}
+
 constexpr std::array<ValidStateTestCase, 12> kValidStateTestCases{{
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED0,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED1,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED2,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED3,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED4,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED5,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED6,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_TEST_UNLOCKED7,
         .sw_state = kLcStateTest,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_DEV,
         .sw_state = kLcStateDev,
+        .is_prod = kHardenedBoolFalse,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_PROD,
         .sw_state = kLcStateProd,
+        .is_prod = kHardenedBoolTrue,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_PROD_END,
         .sw_state = kLcStateProdEnd,
+        .is_prod = kHardenedBoolTrue,
     },
     {
         .hw_state = LC_CTRL_LC_STATE_STATE_VALUE_RMA,
         .sw_state = kLcStateRma,
+        .is_prod = kHardenedBoolFalse,
     },
 }};
 

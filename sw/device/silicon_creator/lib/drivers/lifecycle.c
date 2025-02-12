@@ -65,6 +65,24 @@ lifecycle_state_t lifecycle_state_get(void) {
   }
 }
 
+hardened_bool_t lifecycle_is_prod(void) {
+  uint32_t raw_state = lifecycle_raw_state_get();
+
+  if (launder32(raw_state) == LC_CTRL_LC_STATE_STATE_VALUE_PROD) {
+    HARDENED_CHECK_EQ(raw_state, LC_CTRL_LC_STATE_STATE_VALUE_PROD);
+    return kHardenedBoolTrue;
+  }
+  HARDENED_CHECK_NE(raw_state, LC_CTRL_LC_STATE_STATE_VALUE_PROD);
+
+  if (launder32(raw_state) == LC_CTRL_LC_STATE_STATE_VALUE_PROD_END) {
+    HARDENED_CHECK_EQ(raw_state, LC_CTRL_LC_STATE_STATE_VALUE_PROD_END);
+    return kHardenedBoolTrue;
+  }
+  HARDENED_CHECK_NE(raw_state, LC_CTRL_LC_STATE_STATE_VALUE_PROD_END);
+
+  return kHardenedBoolFalse;
+}
+
 uint32_t lifecycle_raw_state_get(void) {
   uint32_t value = bitfield_field32_read(
       sec_mmio_read32(lc_ctrl_base() + LC_CTRL_LC_STATE_REG_OFFSET),
