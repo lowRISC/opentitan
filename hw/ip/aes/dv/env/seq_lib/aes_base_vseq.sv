@@ -887,7 +887,7 @@ class aes_base_vseq extends cip_base_vseq #(
           `uvm_info(`gfn,
                   $sformatf("\n\t ----| Saw expected Fatal alert - trying to recover \n\t ----| %s",
                               status2string(status)), UVM_MEDIUM)
-          try_recover(cfg_item, data_item, manual_operation, sideload_en);
+          try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
           csr_rd(.ptr(ral.status), .value(status), .blocking(1));
           if ( !status.alert_fatal_fault) begin
             `uvm_fatal(`gfn, $sformatf("\n\t Was able to clear FATAL ALERT without reset \n\t %s",
@@ -918,7 +918,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end else if (!read_output) begin
             done = 1; // get more data
           end else begin
-            try_recover(cfg_item, data_item, manual_operation, sideload_en);
+            try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
           end
         end else if (status.idle && !status.input_ready) begin
           // state 1 //
@@ -932,7 +932,7 @@ class aes_base_vseq extends cip_base_vseq #(
           end else begin
             // if data is not ready the DUT is missing
             // KEY and IV - or the configuration
-            try_recover(cfg_item, data_item, manual_operation, sideload_en);
+            try_recover(cfg_item, data_item, manual_operation, sideload_en, new_msg);
             txt = {txt, $sformatf("\n\t ----| status state 1 ")};
           end
         end else if (status.output_valid) begin
@@ -990,14 +990,14 @@ class aes_base_vseq extends cip_base_vseq #(
     aes_seq_item        cfg_item,         // sequence item with configuration
     aes_seq_item        data_item,        // sequence item with data to process
     bit                 manual_operation,
-    bit                 sideload_en
+    bit                 sideload_en,
+    bit                 new_msg
     );
     // if data is not ready the DUT is missing
     // KEY and IV - or the configuration
     ctrl_reg_t            ctrl;
     status_t              status;         // the current AES status
     bit                   is_blocking = ~cfg_item.do_b2b;
-
     csr_rd(.ptr(ral.ctrl_shadowed), .value(ctrl), .blocking(1));
     ral.ctrl_shadowed.operation.set(cfg_item.operation);
     ral.ctrl_shadowed.mode.set(cfg_item.mode);
@@ -1028,6 +1028,10 @@ class aes_base_vseq extends cip_base_vseq #(
       csr_update(.csr(ral.ctrl_shadowed), .en_shadow_wr(1'b1), .blocking(is_blocking));
     end
 
+    if (cfg_item.mode == AES_GCM) begin
+      set_gcm_phase(GCM_INIT, 16);
+    end
+
     write_key(cfg_item.key, is_blocking);
     // wait for reseed but check for fatal
     // if fatal idle will never come
@@ -1036,8 +1040,25 @@ class aes_base_vseq extends cip_base_vseq #(
       if (cfg.reseed_en) csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
     end
     write_iv(cfg_item.iv, is_blocking);
-    add_data(data_item.data_in, cfg_item.do_b2b);
+    if (cfg_item.mode == AES_GCM) begin
+      int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
+      if (new_msg == 0) begin
+        if (data_item.item_type == AES_GCM_AAD) begin
+          set_gcm_phase(GCM_AAD, valid_bytes);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+        end else if (data_item.item_type == AES_DATA) begin
+          set_gcm_phase(GCM_TEXT, valid_bytes);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+        end else if (data_item.item_type == AES_GCM_TAG) begin
+          set_gcm_phase(GCM_TAG, 16);
+          add_data(data_item.data_in, cfg_item.do_b2b);
+        end
+      end
+    end else begin
+      add_data(data_item.data_in, cfg_item.do_b2b);
+    end
     if (manual_operation) trigger();
+    if (cfg_item.mode == AES_GCM && manual_operation) trigger();
   endtask // try_recover
 
 

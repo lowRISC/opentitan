@@ -128,6 +128,7 @@ class aes_message_item extends uvm_sequence_item;
   bit                  output_cleared[];
 
   bit [3:0][31:0]      output_tag;
+  bit                  output_tag_vld = 0;
 
   ///////////////////////////////////////
   // Constraints                       //
@@ -292,6 +293,7 @@ class aes_message_item extends uvm_sequence_item;
 
   function void add_tag_item(aes_seq_item item);
     output_tag = item.data_out;
+    output_tag_vld = 1;
   endfunction // add_aad_item
 
   function void add_start_msg_item(aes_seq_item item);
@@ -470,6 +472,7 @@ class aes_message_item extends uvm_sequence_item;
     input_msg        = rhs_.input_msg;
     input_aad        = rhs_.input_aad;
     output_tag       = rhs_.output_tag;
+    output_tag_vld   = rhs_.output_tag_vld;
     output_msg       = rhs_.output_msg;
     output_cleared   = rhs_.output_cleared;
     predicted_msg    = rhs_.predicted_msg;
