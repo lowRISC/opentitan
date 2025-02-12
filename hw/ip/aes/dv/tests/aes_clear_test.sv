@@ -18,17 +18,19 @@ class aes_clear_test extends aes_base_test;
 
     cfg.error_types              = 0;
     cfg.num_messages_min         = 1;
-    cfg.num_messages_max         = 5;
+    cfg.num_messages_max         = 6;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;
     cfg.ctr_weight               = 10;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
-    cfg.gcm_weight               = 0;
+    cfg.gcm_weight               = 10;
 
     cfg.message_len_min          = 17;
     cfg.message_len_max          = 317;
+    cfg.aad_len_min              = 17;
+    cfg.aad_len_max              = 317;
     cfg.manual_operation_pct     = 30;
     cfg.use_key_mask             = 0;
 
