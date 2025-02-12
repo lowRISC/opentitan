@@ -5,6 +5,7 @@
   instance_name: top_earlgrey_alert_handler
   param_values:
   {
+    module_instance_name: alert_handler
     n_alerts: 65
     esc_cnt_dw: 32
     accu_cnt_dw: 16
