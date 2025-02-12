@@ -22,6 +22,7 @@ FIRMWARE_DEPS_FI = [
     "//sw/device/lib/base:csr",
     "//sw/device/lib/base:status",
     "//sw/device/lib/crypto/drivers:entropy",
+    "//sw/device/lib/testing:entropy_src_testutils",
     "//sw/device/lib/testing/test_framework:check",
     "//sw/device/lib/testing/test_framework:ottf_main",
     "//sw/device/lib/testing/test_framework:ujson_ottf",

@@ -100,6 +100,17 @@ cc_library(
 )
 
 cc_library(
+    name = "entropy_src_testutils",
+    srcs = ["entropy_src_testutils.c"],
+    hdrs = ["entropy_src_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//sw/device/lib/dif:entropy_src",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "entropy_testutils",
     srcs = ["entropy_testutils.c"],
     hdrs = ["entropy_testutils.h"],

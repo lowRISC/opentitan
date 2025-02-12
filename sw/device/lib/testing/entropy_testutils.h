@@ -8,7 +8,6 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
 
 /**
  * Initializes the entropy source with default configuration.
@@ -36,40 +35,6 @@ OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_boot_mode_init(void);
 
 /**
- * Initializes the entropy_src in firmware override mode.
- *
- * CSRNG and EDN instances are not initialized by calling this function compared
- * to the other test init functions.
- *
- * @param entropy_src Entropy source handle.
- * @param buffer_threshold Firmware override buffer threshold.
- * @param firmware_override_enable Set to true to output entropy data to
- * registers instead of the CSRNG block.
- * @param bypass_conditioner Set to true to bypass the entropy_src conditioner.
- */
-OT_WARN_UNUSED_RESULT
-status_t entropy_testutils_fw_override_enable(dif_entropy_src_t *entropy_src,
-                                              uint8_t buffer_threshold,
-                                              bool firmware_override_enable,
-                                              bool bypass_conditioner);
-
-/**
- * Drain the `entropy_src` FW override mode observe FIFO.
- */
-OT_WARN_UNUSED_RESULT
-status_t entropy_testutils_drain_observe_fifo(dif_entropy_src_t *entropy_src);
-
-/**
- * Waits for the entropy_src to reach a certain state.
- *
- * @param entropy_src Entropy source handle.
- * @param state Entropy source target FSM state.
- */
-OT_WARN_UNUSED_RESULT
-status_t entropy_testutils_wait_for_state(const dif_entropy_src_t *entropy_src,
-                                          dif_entropy_src_main_fsm_t state);
-
-/**
  * Stops EDN instances and CSRNG.
  *
  * Stops EDN instances before stopping CSRNG.
@@ -84,12 +49,6 @@ status_t entropy_testutils_stop_csrng_edn(void);
  */
 OT_WARN_UNUSED_RESULT
 status_t entropy_testutils_stop_all(void);
-
-/**
- * Disables all entropy source health tests.
- */
-OT_WARN_UNUSED_RESULT
-status_t entropy_testutils_disable_health_tests(dif_entropy_src_t *entropy_src);
 
 /**
  * Throws test assertion if there are any errors detected in any of the entropy
