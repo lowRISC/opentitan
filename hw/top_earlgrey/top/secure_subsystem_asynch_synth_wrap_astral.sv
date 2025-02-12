@@ -24,7 +24,7 @@ module security_island
    import secure_subsystem_synth_astral_pkg::*;
    import top_earlgrey_pkg::*;
 #(
-   parameter int unsigned HartIdOffs            = 4,
+   parameter int unsigned HartIdOffs            = 0,
    parameter int unsigned AxiOutAddrWidth       = SynthAxiAddrWidth,
    parameter int unsigned AxiOutDataWidth       = SynthAxiDataWidth,
    parameter int unsigned AxiOutUserWidth       = SynthAxiUserWidth,
