@@ -97,6 +97,13 @@
       tests: ["aes_nist_vectors"]
     }
     {
+      name: nist_test_vectors_gcm
+      desc: '''
+            Verify that the DUT handles the NIST GCM test vectors correctly.'''
+      stage: V2
+      tests: ["aes_nist_vectors_gcm"]
+    }
+    {
       name: reset_recovery
       desc: '''
             Pull reset at random times, make sure DUT recover/resets correctly and there is no residual data left in the registers.'''
