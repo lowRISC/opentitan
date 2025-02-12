@@ -56,6 +56,7 @@ interface aes_cov_if
        bins cfb     = { AES_CFB };
        bins ofb     = { AES_OFB };
        bins ctr     = { AES_CTR };
+       bins gcm     = { AES_GCM };
        bins none    = { AES_NONE };
        bins illegal = { [0:$] } with ($countones(item) != 1);
       }
