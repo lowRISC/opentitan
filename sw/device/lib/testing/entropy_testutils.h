@@ -99,15 +99,13 @@ status_t entropy_testutils_disable_health_tests(dif_entropy_src_t *entropy_src);
  * respective DIF error enum mapping, which may be different to the bit mapping
  * in the error registers.
  *
- * @param entropy_src Entropy source handle.
  * @param csrng CSRNG handle.
  * @param edn0 EDN0 handle.
  * @param edn1 EDN1 handle.
  * @return The result of the operation wrapped on a status_t.
  */
 OT_WARN_UNUSED_RESULT
-status_t entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
-                                       const dif_csrng_t *csrng,
+status_t entropy_testutils_error_check(const dif_csrng_t *csrng,
                                        const dif_edn_t *edn0,
                                        const dif_edn_t *edn1);
 

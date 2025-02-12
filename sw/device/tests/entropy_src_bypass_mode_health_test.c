@@ -175,7 +175,7 @@ status_t enable_edns_boot_mode(void) {
 
 status_t entropy_testutils_error_check_b4_proceeding(void) {
   LOG_INFO("Debugging error checks b4 proceeding...");
-  return entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1);
+  return entropy_testutils_error_check(&csrng, &edn0, &edn1);
 }
 
 status_t test_and_verify_aes_operation(void) {

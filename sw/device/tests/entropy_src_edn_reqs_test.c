@@ -243,8 +243,7 @@ status_t execute_test(void) {
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
                                   /*timeout_usec=*/100000);
     CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
-    CHECK_STATUS_OK(
-        entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+    CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
   }
 
   return OK_STATUS();
