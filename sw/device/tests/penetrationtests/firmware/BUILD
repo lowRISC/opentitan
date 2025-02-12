@@ -3,13 +3,25 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load(
+    "@bazel_skylib//lib:dicts.bzl",
+    "dicts",
+)
+load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
+    "EARLGREY_TEST_ENVS",
+    "fpga_params",
     "opentitan_binary",
     "opentitan_test",
     "silicon_params",
 )
 
 package(default_visibility = ["//visibility:public"])
+
+PENTEST_EXEC_ENVS = dicts.add(
+    EARLGREY_TEST_ENVS,
+    EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+)
 
 FIRMWARE_DEPS_FPGA = [
     "//sw/device/tests/penetrationtests/firmware/fi:ibex_fi",
@@ -87,14 +99,12 @@ FIRMWARE_DEPS_SCA = [
 opentitan_test(
     name = "chip_pen_test_fi",
     srcs = [":firmware_fi.c"],
-    exec_env = {
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:sim_dv": None,
-    },
-    silicon_owner = silicon_params(
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
         tags = [
-            "broken",
             "manual",
+            "skip_in_ci",
         ],
     ),
     deps = FIRMWARE_DEPS_FI,
@@ -103,14 +113,12 @@ opentitan_test(
 opentitan_test(
     name = "chip_pen_test_sca",
     srcs = [":firmware_sca.c"],
-    exec_env = {
-        "//hw/top_earlgrey:silicon_owner_sival_rom_ext": "silicon_owner",
-        "//hw/top_earlgrey:sim_dv": None,
-    },
-    silicon_owner = silicon_params(
+    exec_env = PENTEST_EXEC_ENVS,
+    fpga = fpga_params(tags = ["skip_in_ci"]),
+    silicon = silicon_params(
         tags = [
-            "broken",
             "manual",
+            "skip_in_ci",
         ],
     ),
     deps = FIRMWARE_DEPS_SCA,
