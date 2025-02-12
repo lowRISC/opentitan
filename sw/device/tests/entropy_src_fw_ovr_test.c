@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -63,9 +64,9 @@ static void entropy_data_flush(dif_entropy_src_t *entropy_src) {
 void test_firmware_override(dif_entropy_src_t *entropy) {
   CHECK_STATUS_OK(entropy_testutils_stop_all());
   CHECK_STATUS_OK(
-      entropy_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
-                                           /*route_to_firmware=*/true,
-                                           /*bypass_conditioner=*/false));
+      entropy_src_testutils_fw_override_enable(entropy, kEntropyFifoBufferSize,
+                                               /*route_to_firmware=*/true,
+                                               /*bypass_conditioner=*/false));
   entropy_data_flush(entropy);
 
   // Read data from the observation FIFO and write it back into the

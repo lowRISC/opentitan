@@ -8,6 +8,7 @@
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/edn_testutils.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -102,7 +103,7 @@ static status_t entropy_config(
   // Disable the entropy complex.
   TRY(entropy_testutils_stop_all());
   // Disable all health tests.
-  TRY(entropy_testutils_disable_health_tests(&entropy_src));
+  TRY(entropy_src_testutils_disable_health_tests(&entropy_src));
 
   // Enable FW override.
   TRY(dif_entropy_src_fw_override_configure(
@@ -161,7 +162,7 @@ status_t firmware_override_observe(
         ENTROPY_SRC_RECOV_ALERT_STS_POSTHT_ENTROPY_DROP_ALERT_BIT));
     // Drain FIFO to make sure we get contiguous samples.
     LOG_INFO("drain observe FIFO overflow...");
-    TRY(entropy_testutils_drain_observe_fifo(&entropy_src));
+    TRY(entropy_src_testutils_drain_observe_fifo(&entropy_src));
     // Collect.
     ibex_timeout_t tmo = ibex_timeout_init(timeout_usec);
     while (words_to_read > 0 && !ibex_timeout_check(&tmo)) {

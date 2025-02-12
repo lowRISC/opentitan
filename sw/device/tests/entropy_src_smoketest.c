@@ -7,6 +7,7 @@
 #include "sw/device/lib/dif/dif_base.h"
 #include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -42,7 +43,7 @@ bool test_main(void) {
       dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
 
   // ensure health tests are actually running
-  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+  CHECK_STATUS_OK(entropy_src_testutils_wait_for_state(
       &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   uint32_t entropy_data;

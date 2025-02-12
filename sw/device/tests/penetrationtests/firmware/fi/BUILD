@@ -126,6 +126,7 @@ cc_library(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:csrng_testutils",
         "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ujson_ottf",

@@ -12,6 +12,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/csrng_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/rv_core_ibex_testutils.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
@@ -174,7 +175,7 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   // Re-enable entropy src.
   TRY(dif_entropy_src_configure(&entropy_src, config, kDifToggleEnabled));
   // ensure health tests are actually running
-  TRY(entropy_testutils_wait_for_state(
+  TRY(entropy_src_testutils_wait_for_state(
       &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   entropy_data_flush(&entropy_src);
@@ -226,12 +227,13 @@ status_t handle_rng_fi_firmware_override(ujson_t *uj) {
 
   if (disable_health_check) {
     // Disable all health tests.
-    TRY(entropy_testutils_disable_health_tests(&entropy_src));
+    TRY(entropy_src_testutils_disable_health_tests(&entropy_src));
   }
 
-  TRY(entropy_testutils_fw_override_enable(&entropy_src, kEntropyFifoBufferSize,
-                                           /*route_to_firmware=*/true,
-                                           /*bypass_conditioner=*/true));
+  TRY(entropy_src_testutils_fw_override_enable(&entropy_src,
+                                               kEntropyFifoBufferSize,
+                                               /*route_to_firmware=*/true,
+                                               /*bypass_conditioner=*/true));
 
   entropy_data_flush(&entropy_src);
 
@@ -521,7 +523,7 @@ status_t handle_rng_fi_csrng_bias_fw_override(ujson_t *uj, bool static_seed) {
   }
 
   CHECK_STATUS_OK(entropy_testutils_stop_all());
-  CHECK_STATUS_OK(entropy_testutils_fw_override_enable(
+  CHECK_STATUS_OK(entropy_src_testutils_fw_override_enable(
       &entropy_src, kCsrngBiasFWFifoBufferSize,
       /*route_to_firmware=*/false,
       /*bypass_conditioner=*/false));

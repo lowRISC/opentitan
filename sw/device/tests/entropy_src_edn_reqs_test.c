@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -262,7 +263,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   // ensure health tests are actually running
-  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+  CHECK_STATUS_OK(entropy_src_testutils_wait_for_state(
       &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   return status_ok(execute_test());
