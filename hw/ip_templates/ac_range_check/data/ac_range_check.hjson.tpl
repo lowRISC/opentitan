@@ -7,7 +7,7 @@ import math
 %>\
 # AC Range Check register template
 {
-  name:               "ac_range_check"
+  name:               "${module_instance_name}"
   human_name:         "Access Control Range Check"
   one_line_desc:      "Access Control Range Check."
   one_paragraph_desc: '''

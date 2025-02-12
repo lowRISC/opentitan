@@ -81,6 +81,7 @@ def _ipgen_render_prelude(
                    if params else template_name)
     top_name = f"top_{topname}"
     instance_name = f"{top_name}_{module_name}"
+
     ip_template = IpTemplate.from_template_path(IP_TEMPLATES_PATH /
                                                 template_name)
 
@@ -111,7 +112,7 @@ def ipgen_hjson_render(template_name: str, topname: str,
         log.error(e.verbose_str())
         sys.exit(1)
     return IpBlock.from_text(
-        ip_desc, [], f'ipgen description from {ip_template.template_path}')
+        ip_desc, [], f"ipgen description from {ip_template.template_path}")
 
 
 def ipgen_render(template_name: str, topname: str, params: Dict[str, object],
@@ -287,8 +288,10 @@ def _get_alert_handler_params(top: Dict[str, object]) -> Dict[str, object]:
                         lpg_idx_format.format(lpg_prev_offset +
                                               int(alert["lpg_idx"])))
             lpg_prev_offset += max(alert['lpg_idx'] for alert in alerts) + 1
+    module = lib.find_module(top["module"], "alert_handler")
 
     return {
+        "module_instance_name": module["type"],
         "n_alerts": n_alerts,
         "esc_cnt_dw": esc_cnt_dw,
         "accu_cnt_dw": accu_cnt_dw,
@@ -332,7 +335,7 @@ def generate_outgoing_alerts(top: Dict[str, object], out_path: Path) -> None:
 def _get_rv_plic_params(top: Dict[str, object]) -> Dict[str, object]:
     """Gets parameters for plic ipgen from top config."""
     # Get the PLIC instance
-    plic = lib.find_module(top["module"], "rv_plic")
+    module = lib.find_module(top["module"], "rv_plic")
 
     # Count number of interrupts
     # Interrupt source 0 is tied to 0 to conform RISC-V PLIC spec.
@@ -341,7 +344,7 @@ def _get_rv_plic_params(top: Dict[str, object]) -> Dict[str, object]:
         [int(x["width"]) if "width" in x else 1 for x in top["interrupt"]]) + 1
     num_cores = int(top["num_cores"], 0) if "num_cores" in top else 1
     return {
-        "module_instance_name": plic["type"],
+        "module_instance_name": module["type"],
         "src": num_srcs,
         "target": num_cores,
         "prio": 3,
@@ -1000,12 +1003,13 @@ def create_generic_ip_blocks(topcfg: Dict[str, object],
     return ip_attrs
 
 
-def create_ipgen_ip_block(topname: str, name: str, params: Dict[str, object],
+def create_ipgen_ip_block(topname: str, template_name: str, module_name: str,
+                          params: Dict[str, object],
                           alias_cfgs: Dict[str, Dict[str, object]]) -> IpBlock:
-    ip_block = ipgen_hjson_render(name, topname, params)
-    if name in alias_cfgs:
-        ip_block = ip_block.alias_from_raw(False, alias_cfgs[name],
-                                           f"alias file for {name}")
+    ip_block = ipgen_hjson_render(template_name, topname, params)
+    if module_name in alias_cfgs:
+        ip_block = ip_block.alias_from_raw(False, alias_cfgs[module_name],
+                                           f"alias file for {module_name}")
     return ip_block
 
 
@@ -1040,18 +1044,19 @@ def create_ipgen_blocks(
     the total number of alerts and interrupts is set correctly.
     """
 
-    def insert_ip_attrs(name: str, params: Dict[str, object]):
-        log.info(f"Ipgen for {name}")
-        hjson_path = out_path / "ip_autogen" / name / "data" / f"{name}.hjson"
-        ip_block = create_ipgen_ip_block(topname, name, params, alias_cfgs)
-        name_to_block[name] = ip_block
-        ip_attrs[name] = IpAttrs(hjson_path=hjson_path,
-                                 ip_block=ip_block,
-                                 top_only=False,
-                                 instances=ipgen_instances[name])
-
-    def ip_exists(ip_type: str) -> bool:
-        return ip_type in ipgen_instances
+    def insert_ip_attrs(module: Dict[str, object], params: Dict[str, object]):
+        template_name = module["template_type"]
+        module_name = module["type"]
+        log.info(f"Ipgen for {module_name} from template {template_name}")
+        hjson_path = out_path / "ip_autogen" / module_name / "data" / f"{module_name}.hjson"
+        ip_block = create_ipgen_ip_block(topname, template_name, module_name,
+                                         params, alias_cfgs)
+        name_to_block[module_name] = ip_block
+        ip_attrs[module_name] = IpAttrs(
+            hjson_path=hjson_path,
+            ip_block=ip_block,
+            top_only=False,
+            instances=ipgen_instances[template_name])
 
     topname = topcfg["name"]
     ip_attrs = {}
@@ -1070,24 +1075,24 @@ def create_ipgen_blocks(
     if "racl_config" in topcfg:
         amend_racl(topcfg, name_to_block, allow_missing_blocks=True)
         assert "racl_ctrl" in ipgen_instances
-        insert_ip_attrs(ipgen_instances["racl_ctrl"][0]["type"],
+        insert_ip_attrs(ipgen_instances["racl_ctrl"][0],
                         _get_racl_params(topcfg))
     if "clkmgr" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["clkmgr"][0]["type"],
+        insert_ip_attrs(ipgen_instances["clkmgr"][0],
                         _get_clkmgr_params(topcfg))
     if "flash_ctrl" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["flash_ctrl"][0]["type"],
+        insert_ip_attrs(ipgen_instances["flash_ctrl"][0],
                         _get_flash_ctrl_params(topcfg))
     if "otp_ctrl" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["otp_ctrl"][0]["type"],
+        insert_ip_attrs(ipgen_instances["otp_ctrl"][0],
                         _get_otp_ctrl_params(cfg_path))
     if "ac_range_check" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["ac_range_check"][0]["type"],
+        insert_ip_attrs(ipgen_instances["ac_range_check"][0],
                         _get_ac_range_check_params(topcfg))
     # Pinmux depends on flash_ctrl and otp_ctrl
     if "pinmux" in ipgen_instances:
         amend_pinmux_io(topcfg, name_to_block)
-        insert_ip_attrs(ipgen_instances["pinmux"][0]["type"],
+        insert_ip_attrs(ipgen_instances["pinmux"][0],
                         _get_pinmux_params(topcfg))
 
     # Pwrmgr depends on pinmux
@@ -1095,22 +1100,22 @@ def create_ipgen_blocks(
     amend_wkup(topcfg, name_to_block, allow_missing_blocks=True)
     amend_reset_request(topcfg, name_to_block, allow_missing_blocks=True)
     if "pwrmgr" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["pwrmgr"][0]["type"],
+        insert_ip_attrs(ipgen_instances["pwrmgr"][0],
                         _get_pwrmgr_params(topcfg))
     # Add rstmgr after necessary amends
     amend_resets(topcfg, name_to_block, allow_missing_blocks=True)
     if "rstmgr" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["rstmgr"][0]["type"],
+        insert_ip_attrs(ipgen_instances["rstmgr"][0],
                         _get_rstmgr_params(topcfg))
     # Add alert_handler
     amend_alert(topcfg, name_to_block, allow_missing_blocks=True)
     if "alert_handler" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["alert_handler"][0]["type"],
+        insert_ip_attrs(ipgen_instances["alert_handler"][0],
                         _get_alert_handler_params(topcfg))
     # Add rv_plic
     amend_interrupt(topcfg, name_to_block, allow_missing_blocks=True)
     if "rv_plic" in ipgen_instances:
-        insert_ip_attrs(ipgen_instances["rv_plic"][0]["type"],
+        insert_ip_attrs(ipgen_instances["rv_plic"][0],
                         _get_rv_plic_params(topcfg))
     return ip_attrs
 
@@ -1164,10 +1169,11 @@ def _process_top(
     # alert_handler ip_block was created.
     alert_handlers = find_modules(topcfg["module"], "alert_handler", True)
     for alert_handler in alert_handlers:
-        name = alert_handler["type"]
+        template_name = alert_handler["template_type"]
+        module_name = alert_handler["type"]
         params = _get_alert_handler_params(topcfg)
-        name_to_block[name] = create_ipgen_ip_block(topcfg["name"], name,
-                                                    params, alias_cfgs)
+        name_to_block[module_name] = create_ipgen_ip_block(
+            topcfg["name"], template_name, module_name, params, alias_cfgs)
     return completecfg, name_to_block, name_to_hjson
 
 
@@ -1239,7 +1245,8 @@ def generate_full_ipgens(args: argparse.Namespace, topcfg: Dict[str, object],
     generate_modules("rstmgr", generate_rstmgr, single_instance=True)
 
     # Generate ac_range_check
-    generate_modules("ac_range_check", generate_ac_range_check,
+    generate_modules("ac_range_check",
+                     generate_ac_range_check,
                      single_instance=True)
 
     # Generate RACL collateral
