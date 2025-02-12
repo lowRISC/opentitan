@@ -13,6 +13,7 @@ load(
     "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
+    "opentitan_binary",
     "opentitan_test",
     "silicon_params",
     "verilator_params",
@@ -28,6 +29,24 @@ package(default_visibility = ["//visibility:public"])
 CRYPTOTEST_EXEC_ENVS = dicts.add(
     EARLGREY_TEST_ENVS,
     EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+)
+
+cc_library(
+    name = "otcrypto_interface",
+    srcs = ["otcrypto_interface.c"],
+    hdrs = ["otcrypto_interface.h"],
+    deps = [
+        "//sw/device/lib/crypto:crypto_exported_for_test",
+    ],
+)
+
+cc_binary(
+    name = "otcrypto_export_size",
+    srcs = ["otcrypto_export_size.c"],
+    deps = [
+        ":otcrypto_interface",
+        "//sw/device/lib/arch:silicon",
+    ],
 )
 
 opentitan_test(
