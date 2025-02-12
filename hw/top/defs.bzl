@@ -66,7 +66,7 @@ def opentitan_select_top(values, default):
       name = "my_alias",
       actual = opentitan_select_top({
         "earlgrey": "//something:earlgrey",
-        ["english_breakfast", "darjeeling"]: "//something:else",
+        ("englishbreakfast", "darjeeling"): "//something:else",
       }, "//something:error")
     )
     """
