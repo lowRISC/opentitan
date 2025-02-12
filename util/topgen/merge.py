@@ -1505,7 +1505,7 @@ def merge_top(topcfg: OrderedDict,
         amend_pinmux_io(topcfg, name_to_block)
 
     # Combine xbar into topcfg
-    for xbar in xbarobjs:
+    for xbar in xbarobjs.values():
         amend_xbar(topcfg, name_to_block, xbar)
 
     # 2nd phase of xbar (gathering the devices address range)
