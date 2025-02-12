@@ -17,17 +17,19 @@ class aes_sideload_test extends aes_base_test;
     super.configure_env();
     cfg.error_types              = 0;     // no errors in sideload test
     cfg.num_messages_min         = 1;
-    cfg.num_messages_max         = 5;
+    cfg.num_messages_max         = 6;
     // message related knobs
     cfg.ecb_weight               = 10;
     cfg.cbc_weight               = 10;
     cfg.ctr_weight               = 10;
     cfg.ofb_weight               = 10;
     cfg.cfb_weight               = 10;
-    cfg.gcm_weight               = 0;
+    cfg.gcm_weight               = 10;
 
     cfg.message_len_min          = 16;    // one block (16bytes=128bits)
     cfg.message_len_max          = 128;   //
+    cfg.aad_len_min              = 16;    // one block (16bytes=128bits)
+    cfg.aad_len_max              = 128;   //
     cfg.manual_operation_pct     = 50;    // only non sideload messages
     cfg.use_key_mask             = 0;
 

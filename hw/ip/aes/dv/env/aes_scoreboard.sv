@@ -665,11 +665,14 @@ class aes_scoreboard extends cip_base_scoreboard #(
           // The underlying c_dpi cyrpto lib returns an error code < 0 if something
           // is wrong.
           if (msg.aes_mode == AES_GCM) begin
-            // When doing an AES-GCM decryption, the tag is directly compared and
-            // the c_dpi crypto lib returns -1.
-            `uvm_info(`gfn, "Most likely a tag mismatch happened.",  UVM_LOW)
+            if (msg.output_tag_vld) begin
+              // When doing an AES-GCM decryption, the tag is directly compared and
+              // the c_dpi crypto lib returns -1.
+              `uvm_fatal(`gfn, "c_dpi crypto lib tag mismatch detected!\n")
+            end
+          end else begin
+            `uvm_fatal(`gfn, "c_dpi crypto lib returned an error code!\n")
           end
-          `uvm_fatal(`gfn, "c_dpi crypto lib returned an error code!\n")
         end
 
         `uvm_info(`gfn, $sformatf("\n\t ----| printing MESSAGE %s", msg.convert2string()),
@@ -701,7 +704,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
           txt = "";
           tag_out = aes_transpose(tag_out);
           foreach(tag_out[n]) begin
-            if (tag_out[n] != msg.output_tag[n]) begin
+            if ((tag_out[n] != msg.output_tag[n]) && msg.output_tag_vld) begin
               txt = {"\t TEST FAILED TAGS DID NOT MATCH \n ", txt};
 
               txt = {txt,
