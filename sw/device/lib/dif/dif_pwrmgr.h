@@ -93,8 +93,14 @@ typedef enum dif_pwrmgr_wakeup_request_source {
   kDifPwrmgrWakeupRequestSourceTwo = (1u << 1),
   kDifPwrmgrWakeupRequestSourceThree = (1u << 2),
   kDifPwrmgrWakeupRequestSourceFour = (1u << 3),
+#if defined(OPENTITAN_IS_EARLGREY)
   kDifPwrmgrWakeupRequestSourceFive = (1u << 4),
   kDifPwrmgrWakeupRequestSourceSix = (1u << 5),
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling only has four wakeup request sources
+#else
+#error "dif_pwrmgr does not support this top"
+#endif
 } dif_pwrmgr_wakeup_request_source_t;
 
 /**
