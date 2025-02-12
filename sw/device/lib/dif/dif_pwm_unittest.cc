@@ -231,7 +231,7 @@ TEST_F(ConfigChannelTest, HeartbeatModeSuccess) {
                  {{PWM_PWM_PARAM_0_PHASE_DELAY_0_OFFSET,
                    channel_config_.phase_delay * phase_cntr_ticks_per_beat_},
                   {PWM_PWM_PARAM_0_HTBT_EN_0_BIT, 1},
-                  {PWM_PWM_PARAM_0_BLINK_EN_0_BIT, 0}});
+                  {PWM_PWM_PARAM_0_BLINK_EN_0_BIT, 1}});
   EXPECT_WRITE32(
       PWM_BLINK_PARAM_0_REG_OFFSET,
       {{PWM_BLINK_PARAM_0_Y_0_OFFSET,
