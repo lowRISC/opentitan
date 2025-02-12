@@ -48,7 +48,7 @@
 
               Checking:
               - If RANGE_REGWEN was cleared to MuBi4::False, the reconfigured register values
-                The original configuration should remain in the registers. If RANGE_REGWEN was not 
+                The original configuration should remain in the registers. If RANGE_REGWEN was not
                 cleared, the reconfigured values should have replaced the original ones.
               '''
         stage: V2
