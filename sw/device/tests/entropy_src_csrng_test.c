@@ -6,7 +6,6 @@
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_csrng.h"
 #include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/runtime/irq.h"
 #include "sw/device/lib/runtime/log.h"
@@ -25,7 +24,6 @@
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
-static dif_entropy_src_t entropy_src;
 static dif_otbn_t otbn;
 static dif_rv_plic_t plic;
 
@@ -70,8 +68,6 @@ static void init_peripherals(void) {
       dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN0_BASE_ADDR), &edn0));
   CHECK_DIF_OK(
       dif_edn_init(mmio_region_from_addr(TOP_EARLGREY_EDN1_BASE_ADDR), &edn1));
-  CHECK_DIF_OK(dif_entropy_src_init(
-      mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(
       dif_otbn_init(mmio_region_from_addr(TOP_EARLGREY_OTBN_BASE_ADDR), &otbn));
   CHECK_DIF_OK(dif_rv_plic_init(
@@ -268,8 +264,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   CHECK_DIF_OK(dif_edn_generate_start(&edn1, kEdnBlockSizeBits / 32));
   edn_ready_wait(&edn0);
   edn_ready_wait(&edn1);
-  CHECK_STATUS_OK(
-      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+  CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
 
   LOG_INFO("OTBN:START");
   otbn_randomness_test_start(&otbn, /*iters=*/0);
@@ -315,8 +310,7 @@ static void test_edn_cmd_done(const dif_edn_seed_material_t *seed_material) {
   irq_block_wait(kTestIrqFlagIdEdn1CmdDone);
 
   CHECK_STATUS_OK(csrng_testutils_recoverable_alerts_check(&csrng));
-  CHECK_STATUS_OK(
-      entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+  CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
 }
 
 void ottf_external_isr(uint32_t *exc_info) {

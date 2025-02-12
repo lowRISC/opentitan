@@ -247,13 +247,14 @@ status_t entropy_testutils_disable_health_tests(
   return OK_STATUS();
 }
 
-status_t entropy_testutils_error_check(const dif_entropy_src_t *entropy_src,
-                                       const dif_csrng_t *csrng,
+status_t entropy_testutils_error_check(const dif_csrng_t *csrng,
                                        const dif_edn_t *edn0,
                                        const dif_edn_t *edn1) {
   uint32_t err_code;
   bool found_error = false;
-  TRY(dif_entropy_src_get_errors(entropy_src, &err_code));
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+  TRY(dif_entropy_src_get_errors(&entropy_src, &err_code));
   if (err_code) {
     found_error = true;
     LOG_ERROR("entropy_src status. err: 0x%x", err_code);

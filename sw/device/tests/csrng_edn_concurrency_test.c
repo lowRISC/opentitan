@@ -465,8 +465,7 @@ static void main_task(void *task_parameters) {
         break;
       }
       CHECK_STATUS_OK((csrng_testutils_recoverable_alerts_check(&csrng)));
-      CHECK_STATUS_OK(
-          entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+      CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
       execution_state_update(kTestStateSetup);
     }
     // The rest of this code block is executed when
