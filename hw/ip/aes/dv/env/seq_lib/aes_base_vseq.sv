@@ -202,8 +202,10 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask
 
-  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes);
-    csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+  virtual task set_gcm_phase(gcm_phase_e phase, int num_bytes, bit wait_idle);
+    if (wait_idle) begin
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+    end
     ral.ctrl_gcm_shadowed.phase.set(phase);
     ral.ctrl_gcm_shadowed.num_valid_bytes.set(num_bytes);
     csr_update(.csr(ral.ctrl_gcm_shadowed), .en_shadow_wr(1'b1), .blocking(1));
@@ -440,7 +442,7 @@ class aes_base_vseq extends cip_base_vseq #(
                             "key_share1_4", "key_share1_5", "key_share1_6", "key_share1_7",
                             "iv_0", "iv_1", "iv_2", "iv_3"};
       // if GCM mode, put AES into GCM_INIT before configuring the IP.
-      set_gcm_phase(GCM_INIT, 16);
+      set_gcm_phase(GCM_INIT, 16, 0);
     end
 
     if (|item.clear_reg) begin
@@ -782,17 +784,17 @@ class aes_base_vseq extends cip_base_vseq #(
             // Configure AAD phase as this is either the first AAD block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
-            set_gcm_phase(GCM_AAD, valid_bytes);
+            set_gcm_phase(GCM_AAD, valid_bytes, 0);
           end
         end else if (data_item.item_type == AES_DATA) begin
           if (new_data || data_item.data_len[3:0] != 4'd0) begin
             // Configure TEXT phase as this is either the first plaintext block or a
             // partial block.
             valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
-            set_gcm_phase(GCM_TEXT, valid_bytes);
+            set_gcm_phase(GCM_TEXT, valid_bytes, 0);
           end
         end else if (data_item.item_type == AES_GCM_TAG) begin
-          set_gcm_phase(GCM_TAG, 16);
+          set_gcm_phase(GCM_TAG, 16, 0);
         end
       end
       add_data(data_item.data_in, cfg_item.do_b2b);
@@ -1015,7 +1017,6 @@ class aes_base_vseq extends cip_base_vseq #(
       wait(key_rdy);
     end
 
-
     // check for fatal
     csr_rd(.ptr(ral.status), .value(status), .blocking(1));
     if (!status.alert_fatal_fault) begin
@@ -1029,7 +1030,7 @@ class aes_base_vseq extends cip_base_vseq #(
     end
 
     if (cfg_item.mode == AES_GCM) begin
-      set_gcm_phase(GCM_INIT, 16);
+      set_gcm_phase(GCM_INIT, 16, 1);
     end
 
     write_key(cfg_item.key, is_blocking);
@@ -1044,13 +1045,13 @@ class aes_base_vseq extends cip_base_vseq #(
       int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
       if (new_msg == 0) begin
         if (data_item.item_type == AES_GCM_AAD) begin
-          set_gcm_phase(GCM_AAD, valid_bytes);
+          set_gcm_phase(GCM_AAD, valid_bytes, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
         end else if (data_item.item_type == AES_DATA) begin
-          set_gcm_phase(GCM_TEXT, valid_bytes);
+          set_gcm_phase(GCM_TEXT, valid_bytes, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
         end else if (data_item.item_type == AES_GCM_TAG) begin
-          set_gcm_phase(GCM_TAG, 16);
+          set_gcm_phase(GCM_TAG, 16, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
         end
       end
