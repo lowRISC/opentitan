@@ -117,7 +117,7 @@ module ${module_instance_name}
   );
 
   for (genvar i = 0; i < NumRanges; i++) begin : gen_range_checks
-    // Extend base, limit, and mask to 32-bit
+    // Extend base, limit, and mask to 32 bits
     logic [31:0] base_ext, limit_ext;
     logic tor_hit;
 
@@ -135,7 +135,7 @@ module ${module_instance_name}
     assign racl_read_hit [i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].read_perm.q);
     assign racl_write_hit[i] = |(racl_role_vec & reg2hw.range_racl_policy_shadowed[i].write_perm.q);
 
-    // Decode the multi-bit access fields for convinient access
+    // Decode the multi-bit access fields for convenient access
     logic perm_read_access, perm_write_access, perm_execute_access;
     assign perm_read_access = prim_mubi_pkg::mubi4_test_true_strict(
                                 prim_mubi_pkg::mubi4_t'(reg2hw.range_perm[i].read_access.q)) &
@@ -221,7 +221,7 @@ module ${module_instance_name}
   assign log_first_deny = deny_cnt_incr & (deny_cnt == 0);
 
   // Clear log information when clearing the interrupt or when clearing the log manually via the
-  // the writing a 1 to the log_clear bit.
+  // writing of a 1 to the log_clear bit.
   logic intr_state_cleared, clear_log;
   assign clear_log = intr_state_cleared |
                      (reg2hw.log_config.log_clear.qe & reg2hw.log_config.log_clear.q);
@@ -333,7 +333,7 @@ module ${module_instance_name}
   // Assertions
   //////////////////////////////////////////////////////////////////////////////
 
-  // All outputs should be known value after reset
+  // All outputs should have known values after reset
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(DenyCntIrqKnown_A, intr_deny_cnt_reached_o)
 
