@@ -12,7 +12,6 @@
 #include "ecc_p256.h"
 #include "ecc_p384.h"
 #include "ed25519.h"
-#include "hash.h"
 #include "hkdf.h"
 #include "hmac.h"
 #include "kdf_ctr.h"
@@ -20,6 +19,8 @@
 #include "kmac.h"
 #include "kmac_kdf.h"
 #include "rsa.h"
+#include "sha2.h"
+#include "sha3.h"
 #include "x25519.h"
 
 /**
