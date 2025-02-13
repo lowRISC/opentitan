@@ -73,6 +73,15 @@ ${helper.clock_enum.render()}
 ${helper.periph_io_enum.render()}
 
 % endif
+% if helper.has_wakeups():
+/**
+ * List of wakeups.
+ *
+ * Wakeups are guaranteed to be numbered consecutively from 0.
+ */
+${helper.wakeup_enum.render()}
+
+% endif
 
 /**
  * Get the ${device_name} instance from an instance ID
