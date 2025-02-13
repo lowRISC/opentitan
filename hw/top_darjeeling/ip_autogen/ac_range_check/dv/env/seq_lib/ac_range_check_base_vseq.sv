@@ -13,21 +13,26 @@ class ac_range_check_base_vseq extends cip_base_vseq #(
   // Various knobs to enable certain routines
   bit do_ac_range_check_init = 1'b1;
 
-  `uvm_object_new
+  // Standard SV/UVM methods
+  extern function new(string name="");
 
-  virtual task dut_init(string reset_kind = "HARD");
-    super.dut_init();
-    if (do_ac_range_check_init) ac_range_check_init();
-  endtask
-
-  virtual task dut_shutdown();
-    // Check for pending ac_range_check operations and wait for them to complete
-    // TODO MVy: probably useless, TBC
-  endtask
-
-  // Setup basic ac_range_check features
-  virtual task ac_range_check_init();
-    `uvm_error(`gfn, "FIXME")
-  endtask
-
+  // Class specific methods
+  extern task dut_init(string reset_kind = "HARD");
+  extern task ac_range_check_init();
 endclass : ac_range_check_base_vseq
+
+
+function ac_range_check_base_vseq::new(string name="");
+  super.new(name);
+endfunction : new
+
+task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
+  super.dut_init();
+  if (do_ac_range_check_init) begin
+    ac_range_check_init();
+  end
+endtask : dut_init
+
+task ac_range_check_base_vseq::ac_range_check_init();
+  `uvm_error(`gfn, "FIXME")
+endtask : ac_range_check_init
