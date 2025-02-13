@@ -36,5 +36,4 @@ package ac_range_check_env_pkg;
   `include "ac_range_check_scoreboard.sv"
   `include "ac_range_check_env.sv"
   `include "ac_range_check_vseq_list.sv"
-
-endpackage
+endpackage : ac_range_check_env_pkg

@@ -4,7 +4,7 @@
 
 class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_reg_block));
 
-  // Ext component cfgs
+  // External component config objects
   rand tl_agent_cfg tl_csr_agent_cfg;
   rand tl_agent_cfg tl_unfilt_agent_cfg;
   rand tl_agent_cfg tl_filt_agent_cfg;
@@ -15,25 +15,33 @@ class ac_range_check_env_cfg extends cip_base_env_cfg #(.RAL_T(ac_range_check_re
     `uvm_field_object(tl_filt_agent_cfg, UVM_DEFAULT)
   `uvm_object_utils_end
 
-  `uvm_object_new
+  // Standard SV/UVM methods
+  extern function new(string name="");
 
-  virtual function void initialize(bit [31:0] csr_base_addr = '1);
-    list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
-    super.initialize(csr_base_addr);
-    // Create tl_csr agent config obj
-    tl_csr_agent_cfg = tl_agent_cfg::type_id::create("tl_csr_agent_cfg");
-    // Create tl_unfilt agent config obj
-    tl_unfilt_agent_cfg = tl_agent_cfg::type_id::create("tl_unfilt_agent_cfg");
-    // Create tl_filt agent config obj
-    tl_filt_agent_cfg = tl_agent_cfg::type_id::create("tl_filt_agent_cfg");
+  // Class specific methods
+  extern function void initialize(bit [31:0] csr_base_addr = '1);
+endclass : ac_range_check_env_cfg
 
-    // Set num_interrupts
-    begin
-      uvm_reg rg = ral.get_reg_by_name("intr_state");
-      if (rg != null) begin
-        num_interrupts = ral.intr_state.get_n_used_bits();
-      end
+
+function ac_range_check_env_cfg::new(string name="");
+  super.new(name);
+endfunction : new
+
+function void ac_range_check_env_cfg::initialize(bit [31:0] csr_base_addr = '1);
+  list_of_alerts = ac_range_check_env_pkg::LIST_OF_ALERTS;
+  super.initialize(csr_base_addr);
+  // Create tl_csr agent config obj
+  tl_csr_agent_cfg = tl_agent_cfg::type_id::create("tl_csr_agent_cfg");
+  // Create tl_unfilt agent config obj
+  tl_unfilt_agent_cfg = tl_agent_cfg::type_id::create("tl_unfilt_agent_cfg");
+  // Create tl_filt agent config obj
+  tl_filt_agent_cfg = tl_agent_cfg::type_id::create("tl_filt_agent_cfg");
+
+  // Set num_interrupts
+  begin
+    uvm_reg rg = ral.get_reg_by_name("intr_state");
+    if (rg != null) begin
+      num_interrupts = ral.intr_state.get_n_used_bits();
     end
-  endfunction
-
-endclass
+  end
+endfunction : initialize
