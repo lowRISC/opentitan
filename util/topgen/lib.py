@@ -1180,18 +1180,17 @@ class TopGen:
             self._top_name, Name(["alert", "for", "peripheral"]),
             sources.short_name if isinstance(sources, RustEnum) else sources.name)
 
+        external_source = sources.add_constant(Name(["external"]),
+                                               docstring="External Peripheral")
+
         # When we generate the `alerts` enum, the only info we have about the
         # source is the module name. We'll use `source_name_map` to map a short
         # module name to the full name object used for the enum constant.
-        source_name_map = {}
+        source_name_map = {
+            'external': external_source
+        }
 
-        # Uniquify the incoming alert module list
-        incoming_module_names = []
-        for alert_group, incoming_alerts in self.top['incoming_alert'].items():
-            incoming_module_names.extend({f"incoming_{alert_group}_{alert['module_name']}"
-                                          for alert in incoming_alerts})
-
-        for name in self.top["alert_module"] + incoming_module_names:
+        for name in self.top["alert_module"]:
             source_name = sources.add_constant(Name.from_snake_case(name),
                                                docstring=name)
             source_name_map[name] = source_name
@@ -1212,7 +1211,8 @@ class TopGen:
                         alert_module = f'{name_prefix}_{alert_module}'
 
                     alert_id = alerts.add_constant(name, docstring=name.as_snake_case())
-                    source_name = source_name_map[alert_module]
+                    source_name_key = 'external' if name_prefix else alert_module
+                    source_name = source_name_map[source_name_key]
                     alert_mapping.add_entry(alert_id, source_name)
                     self.device_alerts[alert_module].append(name.as_snake_case() + str(i))
             else:
@@ -1222,7 +1222,8 @@ class TopGen:
                     alert_module = f'{name_prefix}_{alert_module}'
 
                 alert_id = alerts.add_constant(name, docstring=name.as_snake_case())
-                source_name = source_name_map[alert_module]
+                source_name_key = 'external' if name_prefix else alert_module
+                source_name = source_name_map[source_name_key]
                 alert_mapping.add_entry(alert_id, source_name)
                 self.device_alerts[alert_module].append(name.as_snake_case())
 

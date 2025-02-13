@@ -1857,88 +1857,90 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 186] = [
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum AlertPeripheral {
+    /// External Peripheral
+    External = 0,
     /// uart0
-    Uart0 = 0,
+    Uart0 = 1,
     /// uart1
-    Uart1 = 1,
+    Uart1 = 2,
     /// uart2
-    Uart2 = 2,
+    Uart2 = 3,
     /// uart3
-    Uart3 = 3,
+    Uart3 = 4,
     /// gpio
-    Gpio = 4,
+    Gpio = 5,
     /// spi_device
-    SpiDevice = 5,
+    SpiDevice = 6,
     /// i2c0
-    I2c0 = 6,
+    I2c0 = 7,
     /// i2c1
-    I2c1 = 7,
+    I2c1 = 8,
     /// i2c2
-    I2c2 = 8,
+    I2c2 = 9,
     /// pattgen
-    Pattgen = 9,
+    Pattgen = 10,
     /// rv_timer
-    RvTimer = 10,
+    RvTimer = 11,
     /// otp_ctrl
-    OtpCtrl = 11,
+    OtpCtrl = 12,
     /// lc_ctrl
-    LcCtrl = 12,
+    LcCtrl = 13,
     /// spi_host0
-    SpiHost0 = 13,
+    SpiHost0 = 14,
     /// spi_host1
-    SpiHost1 = 14,
+    SpiHost1 = 15,
     /// usbdev
-    Usbdev = 15,
+    Usbdev = 16,
     /// pwrmgr_aon
-    PwrmgrAon = 16,
+    PwrmgrAon = 17,
     /// rstmgr_aon
-    RstmgrAon = 17,
+    RstmgrAon = 18,
     /// clkmgr_aon
-    ClkmgrAon = 18,
+    ClkmgrAon = 19,
     /// sysrst_ctrl_aon
-    SysrstCtrlAon = 19,
+    SysrstCtrlAon = 20,
     /// adc_ctrl_aon
-    AdcCtrlAon = 20,
+    AdcCtrlAon = 21,
     /// pwm_aon
-    PwmAon = 21,
+    PwmAon = 22,
     /// pinmux_aon
-    PinmuxAon = 22,
+    PinmuxAon = 23,
     /// aon_timer_aon
-    AonTimerAon = 23,
+    AonTimerAon = 24,
     /// sensor_ctrl_aon
-    SensorCtrlAon = 24,
+    SensorCtrlAon = 25,
     /// sram_ctrl_ret_aon
-    SramCtrlRetAon = 25,
+    SramCtrlRetAon = 26,
     /// flash_ctrl
-    FlashCtrl = 26,
+    FlashCtrl = 27,
     /// rv_dm
-    RvDm = 27,
+    RvDm = 28,
     /// rv_plic
-    RvPlic = 28,
+    RvPlic = 29,
     /// aes
-    Aes = 29,
+    Aes = 30,
     /// hmac
-    Hmac = 30,
+    Hmac = 31,
     /// kmac
-    Kmac = 31,
+    Kmac = 32,
     /// otbn
-    Otbn = 32,
+    Otbn = 33,
     /// keymgr
-    Keymgr = 33,
+    Keymgr = 34,
     /// csrng
-    Csrng = 34,
+    Csrng = 35,
     /// entropy_src
-    EntropySrc = 35,
+    EntropySrc = 36,
     /// edn0
-    Edn0 = 36,
+    Edn0 = 37,
     /// edn1
-    Edn1 = 37,
+    Edn1 = 38,
     /// sram_ctrl_main
-    SramCtrlMain = 38,
+    SramCtrlMain = 39,
     /// rom_ctrl
-    RomCtrl = 39,
+    RomCtrl = 40,
     /// rv_core_ibex
-    RvCoreIbex = 40,
+    RvCoreIbex = 41,
 }
 
 /// Alert Handler Alert Source.
