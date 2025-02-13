@@ -41,30 +41,6 @@ enum {
 };
 
 /**
- * Save an AES-GCM context.
- *
- * @param internal_ctx Internal context object to save.
- * @param[out] api_ctx Resulting API-facing context object.
- */
-static inline void gcm_context_save(aes_gcm_context_t *internal_ctx,
-                                    otcrypto_aes_gcm_context_t *api_ctx) {
-  hardened_memcpy(api_ctx->data, (uint32_t *)internal_ctx,
-                  kAesGcmContextNumWords);
-}
-
-/**
- * Restore an AES-GCM context.
- *
- * @param api_ctx API-facing context object to restore from.
- * @param[out] internal_ctx Resulting internal context object.
- */
-static inline void gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
-                                       aes_gcm_context_t *internal_ctx) {
-  hardened_memcpy((uint32_t *)internal_ctx, api_ctx->data,
-                  kAesGcmContextNumWords);
-}
-
-/**
  * Construct the underlying AES key for AES-GCM.
  *
  * Also performs integrity, mode, and null-pointer checks on the key.
@@ -205,28 +181,6 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   return keymgr_generate_key_aes(diversification);
 }
 
-/**
- * Clear the sideload slot if the AES key was sideloaded.
- *
- * It is important to clear the sideload slot before returning to the caller so
- * that other applications can't access the key in between operations.
- *
- * If the key is not a sideloaded key, this function does nothing.
- *
- * @param key Key that was possibly loaded.
- * @return OK or errror.
- */
-static status_t clear_key_if_sideloaded(const aes_key_t key) {
-  if (launder32(key.sideload) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
-    return OTCRYPTO_OK;
-  } else if (launder32(key.sideload) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
-  return keymgr_sideload_clear_aes();
-}
-
 otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
                                            otcrypto_const_byte_buf_t plaintext,
                                            otcrypto_const_word32_buf_t iv,
@@ -267,8 +221,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(const otcrypto_blinded_key_t *key,
                                plaintext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, ciphertext.data));
 
-  HARDENED_TRY(clear_key_if_sideloaded(aes_key));
-  return OTCRYPTO_OK;
+  // Clear the key in case it was sideloaded.
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt(
@@ -309,8 +263,8 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
                                ciphertext.data, aad.len, aad.data, auth_tag.len,
                                auth_tag.data, plaintext.data, success));
 
-  HARDENED_TRY(clear_key_if_sideloaded(aes_key));
-  return OTCRYPTO_OK;
+  // Clear the key in case it was sideloaded.
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
@@ -329,10 +283,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   aes_gcm_context_t internal_ctx;
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
-  // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  // Save the context and clear the key in case it was sideloaded.
+  hardened_memcpy(ctx->data, (uint32_t *)&internal_ctx, kAesGcmContextNumWords);
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
@@ -351,10 +304,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   aes_gcm_context_t internal_ctx;
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv.len, iv.data, &internal_ctx));
 
-  // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  // Save the context and clear the key in case it was sideloaded.
+  hardened_memcpy(ctx->data, (uint32_t *)&internal_ctx, kAesGcmContextNumWords);
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
@@ -369,17 +321,14 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(otcrypto_aes_gcm_context_t *ctx,
   }
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+  HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // Call the internal update operation.
-  HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad.len, aad.data));
+  HARDENED_TRY(aes_gcm_update_aad(internal_ctx, aad.len, aad.data));
 
-  // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  // Clear the key in case it was sideloaded.
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
@@ -397,13 +346,12 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   }
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+  HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // The output buffer must be long enough to hold all full blocks that will
   // exist after `input` is added.
-  size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
+  size_t partial_block_len = internal_ctx->input_len % kAesBlockNumBytes;
   if (input.len > UINT32_MAX - partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -416,12 +364,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
 
   // Call the internal update operation.
   HARDENED_TRY(aes_gcm_update_encrypted_data(
-      &internal_ctx, input.len, input.data, output_bytes_written, output.data));
+      internal_ctx, input.len, input.data, output_bytes_written, output.data));
 
-  // Save the context and clear the key if needed.
-  gcm_context_save(&internal_ctx, ctx);
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  // Clear the key in case it was sideloaded.
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
@@ -441,26 +387,24 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+  HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
-  size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
+  size_t partial_block_len = internal_ctx->input_len % kAesBlockNumBytes;
   if (ciphertext.len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_encrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
+  HARDENED_TRY(aes_gcm_encrypt_final(internal_ctx, auth_tag.len, auth_tag.data,
                                      ciphertext_bytes_written,
                                      ciphertext.data));
 
-  // Clear the context and the key if needed.
+  // Clear the context and the key in case it was sideloaded.
   hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  return keymgr_sideload_clear_aes();
 }
 
 otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
@@ -481,24 +425,22 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag.len, tag_len));
 
   // Restore the AES-GCM context object and load the key if needed.
-  aes_gcm_context_t internal_ctx;
-  gcm_context_restore(ctx, &internal_ctx);
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  aes_gcm_context_t *internal_ctx = (aes_gcm_context_t *)ctx->data;
+  HARDENED_TRY(load_key_if_sideloaded(internal_ctx->key));
 
   // If the partial block is nonempty, the output must be at least as long as
   // the partial block.
-  size_t partial_block_len = internal_ctx.input_len % kAesBlockNumBytes;
+  size_t partial_block_len = internal_ctx->input_len % kAesBlockNumBytes;
   if (plaintext.len < partial_block_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Call the internal final operation.
-  HARDENED_TRY(aes_gcm_decrypt_final(&internal_ctx, auth_tag.len, auth_tag.data,
+  HARDENED_TRY(aes_gcm_decrypt_final(internal_ctx, auth_tag.len, auth_tag.data,
                                      plaintext_bytes_written, plaintext.data,
                                      success));
 
-  // Clear the context and the key if needed.
+  // Clear the context and the key in case it was sideloaded.
   hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
-  HARDENED_TRY(clear_key_if_sideloaded(internal_ctx.key));
-  return OTCRYPTO_OK;
+  return keymgr_sideload_clear_aes();
 }
