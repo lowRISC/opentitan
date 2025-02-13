@@ -221,6 +221,8 @@ class TopHelper:
     DT_PAD_MIO_OUT_DIO_FIELD_NAME = Name.from_snake_case("mio_out_or_direct_pad")
     DT_PAD_INSEL_FIELD_NAME = Name(["insel"])
 
+    KNOWN_PORT_TYPES = ["input", "output", "inout", "`INOUT_AO"]
+
     def __init__(self, topcfg, enum_type, array_mapping_type):
         self.top = topcfg
         self._top_name = Name(["top"]) + Name.from_snake_case(topcfg["name"])
@@ -382,10 +384,12 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 pad_type = Name.from_snake_case("mio")
                 pad_mio_out_or_direct_pad = "0"
                 pad_insel = "0"
-                if pad["port_type"] in ["input", "inout"]:
+                assert pad["port_type"] in self.KNOWN_PORT_TYPES, \
+                    "unexpected pad port type '{}'".format(pad["port_type"])
+                if pad["port_type"] in ["input", "inout", "`INOUT_AO"]:
                     pad_mio_out_or_direct_pad = \
                         Name.from_snake_case(f"top_{topname}_pinmux_mio_out_{padname}").as_c_enum()
-                if pad["port_type"] in ["output", "inout"]:
+                if pad["port_type"] in ["output", "inout", "`INOUT_AO"]:
                     pad_insel = \
                         Name.from_snake_case(f"top_{topname}_pinmux_insel_{padname}").as_c_enum()
             elif pad["connection"] == "direct":
