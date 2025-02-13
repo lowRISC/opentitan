@@ -364,7 +364,7 @@ class aes_scoreboard extends cip_base_scoreboard #(
         `uvm_info(`gfn, $sformatf("\n\t AES INPUT ITEM RECEIVED - \n %s \n\t split message: %0b",
                                    input_clone.convert2string(), input_clone.split_item),
                                   UVM_MEDIUM)
-        if (input_clone.item_type == AES_GCM_AAD) begin
+        if (input_clone.mode == AES_GCM && input_clone.item_type == AES_GCM_AAD) begin
           rcv_aad_item_q.push_front(input_clone);
         end else begin
           rcv_item_q.push_front(input_clone);
