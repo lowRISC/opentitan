@@ -24,12 +24,11 @@ package tl_${xbar.name}_pkg;
   lname = uname.ljust(name_len)
 %>\
     ## Address
-    % if device.xbar == False:
+    % if len(device.addr_ranges[asid]) == 1 and not device.xbar:
   ## TODO: Add support for xbars with multiple ASIDs.
   ## localparam logic [31:0] ADDR_SPACE_${aname}__${lname} = 32'h ${"%08x" % device.addr_ranges[asid][0][0]};
   localparam logic [31:0] ADDR_SPACE_${lname} = 32'h ${"%08x" % device.addr_ranges[asid][0][0]};
     % else:
-    ## Xbar device
   ## TODO: Add support for xbars with multiple ASIDs.
   ## localparam logic [${len(device.addr_ranges[asid])-1}:0][31:0] ADDR_SPACE_${aname}__${lname} = {
   localparam logic [${len(device.addr_ranges[asid])-1}:0][31:0] ADDR_SPACE_${lname} = {
@@ -48,10 +47,9 @@ package tl_${xbar.name}_pkg;
   asid = list(device.addr_spaces)[0]
 %>\
   ## Mask
-  % if device.xbar == False:
+  % if len(device.addr_ranges[asid]) == 1 and not device.xbar:
   localparam logic [31:0] ADDR_MASK_${lname} = 32'h ${"%08x" % (device.addr_ranges[asid][0][1] - device.addr_ranges[asid][0][0])};
   % else:
-  ## Xbar
   localparam logic [${len(device.addr_ranges[asid])-1}:0][31:0] ADDR_MASK_${lname} = {
     % for addr in list(reversed(device.addr_ranges[asid])):
     32'h ${"%08x" % (addr[1] - addr[0])}${"," if not loop.last else ""}
