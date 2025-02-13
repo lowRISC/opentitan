@@ -1,0 +1,10 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# waiver file for prim_racl_error_arb
+
+waive -rules {HIER_BRANCH_NOT_READ} -location {prim_racl_error_arb.sv} -regexp {Net '(clk_i|rst_ni)' in module 'prim_racl_error_arb'.*} \
+      -comment "clk_ and rst_ni are only used for assertions in the underlying arbiter."
+waive -rules {HIER_BRANCH_NOT_READ} -location {prim_racl_error_arb.sv} -regexp {Connected net '(clk_i|rst_ni)' at prim_racl_error_arb.sv.*} \
+      -comment "clk_ and rst_ni are only used for assertions in the underlying arbiter."

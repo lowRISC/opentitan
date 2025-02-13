@@ -138,53 +138,34 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   localparam int unsigned NumAllIps = NumSubscribingIps + NumExternalSubscribingIps + 1;
 
   // Concatenate the two incoming RACL error vectors for common handling
-  logic [NumAllIps-1:0] combined_racl_error_valid;
-  racl_error_log_t      combined_racl_error[NumAllIps];
+  racl_error_log_t combined_racl_error[NumAllIps];
 
   // Combine the internal and external RACL log to a single valid vector (for assertion) and a
   // combined error vector for common handling in the logging logic.
   always_comb begin
     for (int unsigned i = 0; i < NumSubscribingIps; i++) begin
-      combined_racl_error_valid[i] = racl_error_i[i].valid;
-      combined_racl_error[i]       = racl_error_i[i];
+      combined_racl_error[i] = racl_error_i[i];
     end
 
     for (int unsigned i = NumSubscribingIps;
          i < NumSubscribingIps + NumExternalSubscribingIps; i++) begin
-      combined_racl_error_valid[i] = racl_error_external_i[i - NumSubscribingIps].valid;
-      combined_racl_error[i]       = racl_error_external_i[i - NumSubscribingIps];
+      combined_racl_error[i] = racl_error_external_i[i - NumSubscribingIps];
     end
 
     // Last element is the internal RACL error of the own reg_top
-    combined_racl_error_valid[NumAllIps-1] = racl_ctrl_racl_error.valid;
-    combined_racl_error      [NumAllIps-1] = racl_ctrl_racl_error;
+    combined_racl_error[NumAllIps-1] = racl_ctrl_racl_error;
   end
 
-  // If there are multiple errors in the same cycle, arbitrate and get the first error.
-  // Lower index in combined_racl_error_valid has higher priority
-  logic [$bits(racl_error_log_t)-1:0] racl_error_logic;
-  logic [NumAllIps-1:0]               gnt;
+  // Arbitrate between all simultaneously valid error log requests.
   racl_error_log_t racl_error_arb;
-  prim_arbiter_fixed #(
-    .N  ( NumAllIps               ),
-    .DW ( $bits(racl_error_log_t) )
+  prim_racl_error_arb #(
+    .N ( NumAllIps )
   ) u_prim_err_arb (
     .clk_i,
     .rst_ni,
-    .req_i    ( combined_racl_error_valid ),
-    .data_i   ( combined_racl_error       ),
-    .gnt_o    ( gnt                       ),
-    .idx_o    (                           ),
-    .valid_o  (                           ),
-    .data_o   ( racl_error_logic          ),
-    .ready_i  ( 1'b1                      )
+    .error_log_i ( combined_racl_error ),
+    .error_log_o ( racl_error_arb      )
   );
-  assign racl_error_arb = racl_error_log_t'(racl_error_logic);
-
-  // If there are multiple errors at the same time, we need to directly assert the
-  // overflow bit in the log. Se if another request is there besides out the masked granted one.
-  logic multiple_errors;
-  assign multiple_errors = racl_error_arb.valid & |(combined_racl_error_valid & ~gnt);
 
   // On the first error, we log the address and other information
   logic first_error;
@@ -201,7 +182,7 @@ module ${module_instance_name} import ${module_instance_name}_reg_pkg::*; #(
   // error is coming in at the same time
   assign hw2reg.error_log.overflow.d  = ~clear_log;
   assign hw2reg.error_log.overflow.de = (reg2hw.error_log.valid.q & racl_error_arb.valid) |
-                                        multiple_errors                                   |
+                                        racl_error_arb.overflow                           |
                                         clear_log;
 
   assign hw2reg.error_log.read_access.d  = clear_log ? '0 : racl_error_arb.read_access;
