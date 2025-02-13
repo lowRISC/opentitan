@@ -14,8 +14,6 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-#define MIN(a, b) (((a) < (b)) ? (a) : (b))
-
 dif_kmac_config_t kKmacTestCases[] = {
 
     //////////////////////////////////////////////////////////////////////////////
