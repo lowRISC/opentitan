@@ -12,7 +12,7 @@ class chip_sw_rom_e2e_sigverify_always_a_bad_b_bad_vseq extends
   virtual task body();
     super.body();
     connect_rom_uart_agent();
-    lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
+    lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
     check_uart_output_msg(
       $sformatf("BFV:%0s\x0d\nLCV:%0s\x0d\n", ROM_BFV_BAD_RSA_SIGNATURE,
       lc_state_2_rom_lcv[lc_state]));

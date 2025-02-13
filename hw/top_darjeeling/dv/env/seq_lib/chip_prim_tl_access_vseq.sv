@@ -24,7 +24,7 @@ class chip_prim_tl_access_vseq extends chip_stub_cpu_base_vseq;
 
   virtual function void backdoor_override_otp();
     `DV_CHECK_MEMBER_RANDOMIZE_FATAL(lc_state)
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_state);
   endfunction
 
   virtual function void initialize_otp_sig_verify();

@@ -28,7 +28,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInWfi)
 
     // Update the lc state to a production state and reboot the chip.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_ctrl_state_pkg::LcStProd);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_ctrl_state_pkg::LcStProd);
     apply_reset();
 
     // At this point, a successful boot would be an error. We will start a parallel timeout thread
@@ -69,7 +69,7 @@ class chip_sw_rom_ctrl_integrity_check_vseq extends chip_sw_base_vseq;
     bit [sram_scrambler_pkg::SRAM_KEY_WIDTH-1:0]    key;
     rom_ctrl_bkdr_util rom;
 
-    `downcast(rom, cfg.mem_bkdr_util_h[Rom])
+    `downcast(rom, cfg.mem_bkdr_util_h[Rom0])
 
     // Pick any random addr and corrupt a single bit. We limit the addr selection to the digest
     // portion, since we need the ROM code to execute properly to completion in the first phase of
