@@ -107,7 +107,7 @@ pub const MBX5_SOC_SIZE_BYTES: usize = 0x20;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const MBX6_SOC_BASE_ADDR: usize = 0x1465600;
+pub const MBX6_SOC_BASE_ADDR: usize = 0x1496000;
 
 /// Peripheral size for soc device on mbx6 in top darjeeling.
 ///

@@ -74,7 +74,7 @@ package top_darjeeling_soc_mbx_pkg;
   /**
    * Peripheral base address for soc device on mbx6 in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_SOC_MBX_MBX6_SOC_BASE_ADDR = 32'h1465600;
+  parameter int unsigned TOP_DARJEELING_SOC_MBX_MBX6_SOC_BASE_ADDR = 32'h1496000;
 
   /**
    * Peripheral size in bytes for soc device on mbx6 in top darjeeling.
