@@ -258,6 +258,13 @@ class pattgen_base_vseq extends cip_base_vseq #(
   endtask : stop_pattgen_channels
 
   virtual task wait_for_channel_ready(channel_select_e ch_select);
+    // Wait for at least one clock cycle so that the csr_update for the
+    // channel setup don't happen in the same cycle. This avoids a warning in
+    // VCS saying: Setting the value of field while containing register is
+    // being accessed may result in loss of desired field value. A race
+    // condition between threads concurrently accessing the register model is
+    // the likely cause of the problem.
+    cfg.clk_rst_vif.wait_clks(1);
     case (ch_select)
       Channel0: begin
         csr_spinwait(.ptr(ral.ctrl.enable_ch0), .exp_data(1'b0));
