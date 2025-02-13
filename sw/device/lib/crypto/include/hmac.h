@@ -6,7 +6,7 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_HMAC_H_
 
 #include "datatypes.h"
-#include "hash.h"
+#include "sha2.h"
 
 /**
  * @file
@@ -26,7 +26,7 @@ extern "C" {
  * with #otcrypto_hmac_init.
  */
 typedef struct otcrypto_hmac_context {
-  uint32_t data[kOtcryptoHashCtxStructWords];
+  uint32_t data[kOtcryptoSha2CtxStructWords];
 } otcrypto_hmac_context_t;
 
 /**
