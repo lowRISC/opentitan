@@ -27,7 +27,7 @@ class chip_sw_otp_ctrl_vendor_test_csr_access_vseq extends chip_sw_base_vseq;
   }
 
   virtual function void backdoor_override_otp();
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(lc_state);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], lc_state);
   endfunction
 
   virtual task dut_init(string reset_kind = "HARD");

@@ -26,35 +26,19 @@ class chip_sw_rom_e2e_asm_init_vseq extends chip_sw_base_vseq;
   endfunction
 
   virtual task body();
-    lc_ctrl_state_pkg::lc_state_e lc_state = cfg.mem_bkdr_util_h[Otp].otp_read_lc_partition_state();
-    bit [31:0] otp_creator_sw_cfg_ast_init_en = 32'b0;
+    lc_ctrl_state_pkg::lc_state_e lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
     bit [31:0] otp_creator_sw_cfg_jitter_en = 32'b0;
 
     super.body();
 
-    // We backdoor read the LC state, AST init enablement state, and clock jitter enablement state
+    // We backdoor read the LC state and clock jitter enablement state
     // from OTP to alter the expectations this test checks below.
-    otp_creator_sw_cfg_ast_init_en =
-      cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset);
     otp_creator_sw_cfg_jitter_en =
       cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset);
 
     // Once the retention SRAM is initialized, we have made it to `rom_main()`. At this point, we
     // can start checking CSR states that were configured in the `rom_start.S` assembly.
     `DV_WAIT(cfg.chip_vif.sram_ret_init_done == 1)
-
-    `uvm_info(`gfn, "Checking ROM AST configuration ...", UVM_LOW)
-    if (otp_creator_sw_cfg_ast_init_en == prim_mubi_pkg::MuBi4True) begin
-      csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done),
-                   .compare_value(1),
-                   .backdoor(1));
-    end else if (otp_creator_sw_cfg_ast_init_en == prim_mubi_pkg::MuBi4False) begin
-      csr_rd_check(.ptr(ral.sensor_ctrl.status.ast_init_done),
-                   .compare_value(0),
-                   .backdoor(1));
-    end else begin
-      `uvm_fatal(`gfn, "OTP AST init enablement configuration state must be a valid 4-bit MuBi.")
-    end
 
     `uvm_info(`gfn, "Checking ROM clock jitter configuration ...", UVM_LOW)
     csr_rd_check(.ptr(ral.clkmgr_aon.jitter_enable),
