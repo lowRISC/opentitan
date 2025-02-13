@@ -140,7 +140,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_SOC_MBX_MBX6_SOC_BASE_ADDR 0x1465600u
+#define TOP_DARJEELING_SOC_MBX_MBX6_SOC_BASE_ADDR 0x1496000u
 
 /**
  * Peripheral size for soc device on mbx6 in top darjeeling.
