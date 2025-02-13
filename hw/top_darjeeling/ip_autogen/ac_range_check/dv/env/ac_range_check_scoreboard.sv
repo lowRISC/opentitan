@@ -56,11 +56,28 @@ endfunction : connect_phase
 
 task ac_range_check_scoreboard::run_phase(uvm_phase phase);
   super.run_phase(phase);
-  fork
-    process_tl_csr_fifo();
-    process_tl_unfilt_fifo();
-    process_tl_filt_fifo();
-  join_none
+  wait(cfg.under_reset);
+  forever begin
+    wait(!cfg.under_reset);
+    // This isolation fork is needed to ensure that "disable fork" call won't kill any other
+    // processes at the same level from the parent classes
+    fork begin : isolation_fork
+      fork
+        begin : main_thread
+          fork
+            process_tl_csr_fifo();
+            process_tl_unfilt_fifo();
+            process_tl_filt_fifo();
+          join
+          wait fork;  // To ensure it will be killed only when the reset will occur
+        end
+        begin : reset_thread
+          wait(cfg.under_reset);
+        end
+      join_any
+      disable fork;   // Terminates all descendants and sub-descendants of isolation_fork
+    end join
+  end
 endtask : run_phase
 
 task ac_range_check_scoreboard::process_tl_csr_fifo();
