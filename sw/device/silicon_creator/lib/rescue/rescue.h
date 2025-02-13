@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include "sw/device/silicon_creator/lib/boot_data.h"
+#include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
@@ -71,6 +72,8 @@ typedef struct RescueState {
   uint32_t frame;
   // Current data offset.
   uint32_t offset;
+  // Amount of data staged in the `data` buffer (for data to send to the host).
+  uint16_t staged_len;
   // Current flash write offset.
   uint32_t flash_offset;
   // Range to erase and write for firmware rescue (inclusive).
@@ -82,7 +85,64 @@ typedef struct RescueState {
   uint8_t data[2048];
 } rescue_state_t;
 
+/**
+ * Handle rescue modes that involve sending data to the host.
+ *
+ * @param state Rescue state
+ * @param bootdata Boot data
+ * @return kErrorOk if nothing to do, kErrorRescueSendStart if the state->data
+ *         buffer is ready to send, or an error.
+ */
+rom_error_t rescue_send_handler(rescue_state_t *state, boot_data_t *bootdata);
+
+/**
+ * Handle rescue movdes that involve receiving data into the device.
+ *
+ * @param state Rescue state
+ * @param bootdata Boot data
+ * @return kErrorOk if no error or an error code indicating a problem with
+ *         the received data.
+ */
+rom_error_t rescue_recv_handler(rescue_state_t *state, boot_data_t *bootdata);
+
+/**
+ * Validate a new rescue mode.
+ *
+ * @param mode The new mode.
+ * @param state Rescue state
+ * @param bootdata Boot data
+ * @return kErrorOk if the new mode was accepted, kErrorBadMode otherwise.
+ *
+ * The rescue state is updated: mode, offset and flash_offset.
+ */
+rom_error_t rescue_validate_mode(uint32_t mode, rescue_state_t *state,
+                                 boot_data_t *bootdata);
+
+/**
+ * Initialize the rescue state.
+ *
+ * @param state Rescue state
+ * @param config The ownership rescue config (if any).
+ */
+void rescue_state_init(rescue_state_t *state,
+                       const owner_rescue_config_t *config);
+
+/**
+ * Perform the rescue protocol.
+ *
+ * @param bootdata Boot data
+ * @param config The ownership rescue config (if any).
+ * @return Any error in processing the rescue protocol.
+ */
 rom_error_t rescue_protocol(boot_data_t *bootdata,
-                            const owner_rescue_config_t *rescue);
+                            const owner_rescue_config_t *config);
+
+/**
+ * Detect rescue entry.
+ *
+ * @param config The ownership rescue config (if any).
+ * @return kHardenedBoolTrue if we should enter rescue mode.
+ */
+hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config);
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_RESCUE_H_

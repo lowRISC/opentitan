@@ -157,7 +157,6 @@ cc_test(
         hdrs = ["rom_ext.h"],
         target_compatible_with = [OPENTITAN_CPU],
         deps = [
-            ":rescue",
             ":rom_ext_boot_policy",
             ":rom_ext_boot_policy_ptrs",
             ":rom_ext_manifest",
@@ -199,6 +198,7 @@ cc_test(
             "//sw/device/silicon_creator/lib/ownership",
             "//sw/device/silicon_creator/lib/ownership:ownership_activate",
             "//sw/device/silicon_creator/lib/ownership:ownership_unlock",
+            "//sw/device/silicon_creator/lib/rescue:rescue_xmodem",
             "//sw/device/silicon_creator/lib/sigverify",
             "//sw/device/silicon_creator/rom_ext/imm_section:imm_section_version",
             "//sw/otbn/crypto:boot",
