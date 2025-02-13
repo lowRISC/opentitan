@@ -551,31 +551,6 @@ opentitan_test(
 )
 
 cc_library(
-    name = "xmodem",
-    srcs = ["xmodem.c"],
-    hdrs = ["xmodem.h"],
-    deps = [
-        ":error",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib/drivers:uart",
-    ],
-)
-
-cc_library(
-    name = "xmodem_testlib",
-    srcs = [
-        "xmodem.c",
-        "xmodem.h",
-    ],
-    hdrs = ["xmodem_testlib.h"],
-    defines = ["XMODEM_TESTLIB=1"],
-    deps = [
-        ":error",
-        "//sw/device/lib/base:hardened",
-    ],
-)
-
-cc_library(
     name = "stack_utilization",
     srcs = ["stack_utilization.c"],
     hdrs = [

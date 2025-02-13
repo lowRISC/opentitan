@@ -2,9 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_TESTLIB_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_TESTLIB_H_
-#include "sw/device/silicon_creator/lib/xmodem.h"
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_TESTLIB_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_TESTLIB_H_
+#include "sw/device/silicon_creator/lib/rescue/xmodem.h"
 
 /**
  * Read data from the input within the specified timeout.
@@ -27,4 +27,4 @@ size_t xmodem_read(void *iohandle, uint8_t *data, size_t len,
  */
 void xmodem_write(void *iohandle, const uint8_t *data, size_t len);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_XMODEM_TESTLIB_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_XMODEM_TESTLIB_H_

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/rom_ext/rescue.h"
+#include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
@@ -15,7 +15,7 @@
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
-#include "sw/device/silicon_creator/lib/xmodem.h"
+#include "sw/device/silicon_creator/lib/rescue/xmodem.h"
 
 #include "hw/top/flash_ctrl_regs.h"
 
