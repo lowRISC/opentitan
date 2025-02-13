@@ -578,6 +578,7 @@ class IpHelper:
         self._init_irqs()
         self._init_alerts()
         self._init_clocks()
+        self._init_wakeups()
         self._init_periph_io()
         self.extension = (extension_cls or EmptyExtension).create_ext(self)
 
