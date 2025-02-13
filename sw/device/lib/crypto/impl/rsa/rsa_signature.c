@@ -10,7 +10,6 @@
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_modexp.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
-#include "sw/device/lib/crypto/include/hash.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 's', 'v')
