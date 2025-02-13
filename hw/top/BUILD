@@ -128,6 +128,30 @@ opentitan_top_dt_api(
 ]
 
 cc_library(
+    name = "dt_headers",
+    hdrs = flatten([
+        opentitan_if_ip(
+            ip,
+            ["dt_{}_hdr".format(ip)],
+            [],
+        )
+        for ip in ALL_IP_NAMES
+    ]),
+    # Make the header accessible as "dt_<ip>.h".
+    includes = ["."],
+    deps = [":dt_api"],
+)
+
+[
+    cc_library(
+        name = "dt_{}".format(ip),
+        srcs = [":dt_{}_src".format(ip)],
+        deps = [":dt_headers"],
+    )
+    for ip in ALL_IP_NAMES
+]
+
+cc_library(
     name = "dt",
     srcs = [],
     deps = flatten([
