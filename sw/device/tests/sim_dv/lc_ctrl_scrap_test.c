@@ -7,14 +7,11 @@
 
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
-#include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/lc_ctrl_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
-
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 static dif_lc_ctrl_t lc;
 
@@ -41,9 +38,10 @@ bool execute_lc_ctrl_scrap_test(bool use_ext_clk) {
   if (kPerformTransitionBySW) {
     LOG_INFO("Start LC_CTRL scrap test");
 
-    mmio_region_t lc_reg =
-        mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR);
-    CHECK_DIF_OK(dif_lc_ctrl_init(lc_reg, &lc));
+    dt_lc_ctrl_t kLcCtrlDt = (dt_lc_ctrl_t)0;
+    static_assert(kDtLcCtrlCount == 1,
+                  "This test expects exactly one LC controller");
+    CHECK_DIF_OK(dif_lc_ctrl_init_from_dt(kLcCtrlDt, &lc));
 
     // Acquire the mutex and perform a transition to SCRAP
     CHECK_DIF_OK(dif_lc_ctrl_mutex_try_acquire(&lc));
