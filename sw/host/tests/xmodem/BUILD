@@ -12,8 +12,8 @@ rust_bindgen_library(
     bindgen_flags = [
         "--allowlist-function=xmodem_.*",
     ],
-    cc_lib = "//sw/device/silicon_creator/lib:xmodem_testlib",
-    header = "//sw/device/silicon_creator/lib:xmodem_testlib.h",
+    cc_lib = "//sw/device/silicon_creator/lib/rescue:xmodem_testlib",
+    header = "//sw/device/silicon_creator/lib/rescue:xmodem_testlib.h",
     rustc_flags = [
         "--allow=non_snake_case",
         "--allow=non_upper_case_globals",
