@@ -9,8 +9,8 @@
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/hkdf.h"
 #include "sw/device/lib/crypto/include/hmac.h"
-#include "sw/device/lib/crypto/include/kdf.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 'k', 'd')
