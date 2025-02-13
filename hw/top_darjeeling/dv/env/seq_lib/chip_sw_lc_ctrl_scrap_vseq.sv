@@ -51,7 +51,7 @@ class chip_sw_lc_ctrl_scrap_vseq extends chip_sw_lc_base_vseq;
 
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp],
         lc_ctrl_dv_utils_pkg::encode_lc_state(src_state));
   endfunction : backdoor_override_otp
 

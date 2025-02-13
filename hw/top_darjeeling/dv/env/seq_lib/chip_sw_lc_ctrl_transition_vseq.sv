@@ -19,10 +19,10 @@ class chip_sw_lc_ctrl_transition_vseq extends chip_sw_lc_base_vseq;
 
   virtual function void backdoor_override_otp();
     // Override the LC partition to TestLocked1 state.
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStTestLocked1);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStTestLocked1);
 
     // Override the test exit token to match SW test's input token.
-    cfg.mem_bkdr_util_h[Otp].otp_write_secret0_partition(
+    otp_write_secret0_partition(cfg.mem_bkdr_util_h[Otp],
         .unlock_token(dec_otp_token_from_lc_csrs(lc_unlock_token)),
         .exit_token(dec_otp_token_from_lc_csrs(lc_exit_token)));
   endfunction

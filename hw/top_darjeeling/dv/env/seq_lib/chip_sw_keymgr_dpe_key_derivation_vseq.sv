@@ -60,7 +60,7 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     super.dut_init(reset_kind);
     void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
     if (lc_at_prod) begin
-      cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(LcStProd);
+      otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
     end
   endtask
 
@@ -393,11 +393,13 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
       otp_owner_seed[i * 32 +: 32] =
           cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::OwnerSeedOffset + i * 4);
     end
-    for (int i = 0; i < otp_ctrl_reg_pkg::OwnerSeedSize / 8; i++) begin
-      otp_owner_seed[i * 64 +: 64] =
-          otp_scrambler_pkg::descramble_data(otp_owner_seed[i * 64 +: 64],
-                                             otp_ctrl_part_pkg::Secret3Idx);
-    end
+    `uvm_fatal(`gfn, "OTP Secret3 key required")
+    // TODO: #26288 - Secret3 present only in Darjeeling.
+    //for (int i = 0; i < otp_ctrl_reg_pkg::OwnerSeedSize / 8; i++) begin
+    //  otp_owner_seed[i * 64 +: 64] =
+    //      otp_scrambler_pkg::descramble_data(otp_owner_seed[i * 64 +: 64],
+    //                                         otp_ctrl_part_pkg::Secret3Idx);
+    //end
     `uvm_info(`gfn, $sformatf("OwnerSeed:\n%s", key_str(otp_owner_seed)), UVM_LOW)
     return otp_owner_seed;
   endfunction

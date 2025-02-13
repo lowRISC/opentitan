@@ -180,7 +180,7 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
           `DV_SPINWAIT(
             do begin
               access_wrapper(mbx_ral.soc_status, rd, rdata, wdata);
-              soc_status.predict(rdata);
+              void'(soc_status.predict(rdata));
             end while (`gmv(soc_status.ready) != 1'b1);,
             "Timeout while polling for mbx.soc_status.ready = '1.")
         end
@@ -193,7 +193,7 @@ class chip_sw_mbx_smoke_vseq extends chip_sw_base_vseq;
           // > Upon receiving an interrupt, it checks the DOE Status Register
           // > .ready bit to see if the object is ready.
           access_wrapper(mbx_ral.soc_status, rd, rdata, wdata);
-          soc_status.predict(rdata);
+          void'(soc_status.predict(rdata));
           if (`gmv(soc_status.ready) != 1'b1) begin
             `uvm_fatal(`gfn, "soc_status.ready not set after interrupt!")
           end

@@ -1121,7 +1121,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_wipe_idx);
+        `DV_CHECK(uvm_hdl_read(mypath, rma_wipe_idx))
       end while (rma_wipe_idx != 3'h3);,
       "waiting for rma index = 3", 50_000_000
     )
@@ -1135,7 +1135,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
-        uvm_hdl_read(mypath, rma_ack);
+        `DV_CHECK(uvm_hdl_read(mypath, rma_ack))
       end while (rma_ack != lc_ctrl_pkg::On);,
       "waiting for rma ack == On", 80_000_000
     )

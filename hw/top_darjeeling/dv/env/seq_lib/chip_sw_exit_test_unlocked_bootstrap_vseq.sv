@@ -19,11 +19,11 @@ class chip_sw_exit_test_unlocked_bootstrap_vseq extends chip_sw_base_vseq;
     super.dut_init(reset_kind);
 
     // make sure we are in one of the unlocked states
-    cfg.mem_bkdr_util_h[Otp].otp_write_lc_partition_state(UnlockedStates[unlocked_idx].lc_state);
+    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], UnlockedStates[unlocked_idx].lc_state);
 
     // backdoorload the otp tokens and associated digest
     otp_exit_token_bits = dec_otp_token_from_lc_csrs(lc_exit_token);
-    cfg.mem_bkdr_util_h[Otp].otp_write_secret0_partition(
+    otp_write_secret0_partition(cfg.mem_bkdr_util_h[Otp],
       '0, otp_exit_token_bits);
 
     //ensure rom_exec_en is 0, so that flash is never reached
