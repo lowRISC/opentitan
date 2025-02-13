@@ -91,6 +91,7 @@ module tlul_adapter_reg_racl
     );
 
     // Collect RACL error information
+    assign racl_error_o.overflow    = 1'b0;
     assign racl_error_o.read_access = tl_i.a_opcode == tlul_pkg::Get;
     assign racl_error_o.racl_role   = racl_role;
     assign racl_error_o.ctn_uid     = top_racl_pkg::tlul_extract_ctn_uid_bits(tl_i.a_user.rsvd);

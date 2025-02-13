@@ -50,11 +50,11 @@ package top_racl_pkg;
 
   // RACL information logged in case of a denial
   typedef struct packed {
-    logic       valid;
+    logic       valid;        // Error information is valid
+    logic       overflow;     // Error overflow, More than 1 RACL error at a time
     racl_role_t racl_role;
     ctn_uid_t   ctn_uid;
-    // 0: Write access, 1: Read access
-    logic       read_access;
+    logic       read_access;  // 0: Write access, 1: Read access
   } racl_error_log_t;
 
   // Range definition for RACL protected SRAM adapter
