@@ -1041,25 +1041,34 @@ class aes_base_vseq extends cip_base_vseq #(
       if (cfg.reseed_en) csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
     end
     write_iv(cfg_item.iv, is_blocking);
+
+    // When in AES-GCM mode & manual operation is enabled, we need to trigger
+    // twice to process IV/key and calculate the hash subkey.
+    if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
+    if (cfg_item.mode == AES_GCM && manual_operation && !status.alert_fatal_fault) trigger();
+
     if (cfg_item.mode == AES_GCM) begin
       int valid_bytes = data_item.data_len == 0 ? 16 : data_item.data_len;
       if (new_msg == 0 && !status.alert_fatal_fault) begin
         if (data_item.item_type == AES_GCM_AAD) begin
           set_gcm_phase(GCM_AAD, valid_bytes, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
         end else if (data_item.item_type == AES_DATA) begin
           set_gcm_phase(GCM_TEXT, valid_bytes, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
         end else if (data_item.item_type == AES_GCM_TAG) begin
           set_gcm_phase(GCM_TAG, 16, 1);
           add_data(data_item.data_in, cfg_item.do_b2b);
+          if (manual_operation) trigger();
         end
       end
     end else begin
       add_data(data_item.data_in, cfg_item.do_b2b);
+      if (manual_operation) trigger();
     end
-    if (manual_operation) trigger();
-    if (cfg_item.mode == AES_GCM && manual_operation) trigger();
+
   endtask // try_recover
 
 
