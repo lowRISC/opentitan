@@ -2,12 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/silicon_creator/lib/xmodem.h"
+#include "sw/device/silicon_creator/lib/rescue/xmodem.h"
 
 #ifndef XMODEM_TESTLIB
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
 #else
-#include "sw/device/silicon_creator/lib/xmodem_testlib.h"
+#include "sw/device/silicon_creator/lib/rescue/xmodem_testlib.h"
 #endif
 
 /**
