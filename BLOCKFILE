@@ -67,7 +67,7 @@ hw/ip/tlul/rtl/*
 hw/ip/uart/rtl/*
 hw/ip/usbdev/rtl/*
 
-# Individual HJSON files that effect RTL generation (no wildcard as it's
+# Individual HJSON files that affect RTL generation (no wildcard as it's
 # too broad and will also block DV-only files)
 hw/ip/lc_ctrl/data/lc_ctrl.hjson
 hw/ip/rv_timer/data/rv_timer.hjson
@@ -108,10 +108,12 @@ hw/ip/rv_core_ibex/data/rv_core_ibex.hjson
 hw/ip/pwm/data/pwm.hjson
 hw/ip/aon_timer/data/aon_timer.hjson
 
+# HJSON files for ipgen blocks
 hw/top_earlgrey/ip/ast/data/ast.hjson
 hw/top_earlgrey/ip_autogen/alert_handler/data/alert_handler.hjson
 hw/top_earlgrey/ip_autogen/clkmgr/data/clkmgr.hjson
 hw/top_earlgrey/ip_autogen/flash_ctrl/data/flash_ctrl.hjson
+hw/top_earlgrey/ip_autogen/otp_ctrl/data/otp_ctrl.hjson
 hw/top_earlgrey/ip_autogen/pinmux/data/pinmux.hjson
 hw/top_earlgrey/ip_autogen/pwrmgr/data/pwrmgr.hjson
 hw/top_earlgrey/ip_autogen/rstmgr/data/rstmgr.hjson
