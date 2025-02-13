@@ -317,15 +317,6 @@ def opentitan_ip_dt_header(name, top, ip, deps = None, target_compatible_with = 
             output_group = grp,
         )
 
-    native.cc_library(
-        name = name,
-        srcs = [":{}_src".format(name)],
-        hdrs = [":{}_hdr".format(name)],
-        deps = deps,
-        # Make the header accessible as "dt_<ip>.h".
-        includes = ["."],
-    )
-
 def opentitan_top_dt_api(name, top, deps = None):
     """
     Create a library that exports the "dt_api.h" header. This library is created to the
