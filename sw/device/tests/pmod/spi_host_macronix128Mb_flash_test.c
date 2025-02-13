@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <assert.h>
 
+#include "dt/dt_api.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -45,9 +46,9 @@ static void init_test(dif_spi_host_t *spi_host) {
       CHECK(false, "Device not supported %u", kDeviceType);
       break;
   }
-  dif_pinmux_index_t csb_pin = kTopEarlgreyPinmuxMioOutIoc9;
+  dt_pad_t csb_pad = kDtPadIoc9;
   CHECK_STATUS_OK(
-      spi_host1_pinmux_connect_to_bob(&pinmux, csb_pin, platform_id));
+      spi_host1_pinmux_connect_to_bob(&pinmux, csb_pad, platform_id));
 
   addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(addr, spi_host));

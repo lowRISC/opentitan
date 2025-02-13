@@ -462,7 +462,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":pinmux_testutils",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",
