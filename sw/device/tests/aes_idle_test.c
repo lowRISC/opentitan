@@ -13,8 +13,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 #define TIMEOUT (1000 * 1000)
 
 // The mask share, used to mask kKey. Note that the masking should not be done
@@ -29,7 +27,14 @@ static const uint8_t kKeyShare1[] = {
 OTTF_DEFINE_TEST_CONFIG();
 static dif_clkmgr_t clkmgr;
 static const dif_clkmgr_hintable_clock_t kAesClock =
-    kTopEarlgreyHintableClocksMainAes;
+#if defined(OPENTITAN_IS_EARLGREY)
+    kTopEarlgreyHintableClocksMainAes
+#elif defined(OPENTITAN_IS_DARJEELING)
+    kTopDarjeelingHintableClocksMainAes
+#else
+#error Unsupported top
+#endif
+    ;
 
 static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
                                       dif_clkmgr_hintable_clock_t clock) {
@@ -40,8 +45,7 @@ static bool is_hintable_clock_enabled(const dif_clkmgr_t *clkmgr,
 }
 
 static status_t initialize_clkmgr(void) {
-  mmio_region_t addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_clkmgr_init(addr, &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   // Get initial hint and enable for AES clock and check both are enabled.
   dif_toggle_t clock_hint_state;
@@ -141,8 +145,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(initialize_clkmgr());
 
   // Initialise AES.
-  CHECK_DIF_OK(
-      dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
   CHECK_DIF_OK(dif_aes_reset(&aes));
 
   return status_ok(execute_test(&aes));
