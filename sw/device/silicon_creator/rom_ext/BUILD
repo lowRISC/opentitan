@@ -17,25 +17,6 @@ load(
 package(default_visibility = ["//visibility:public"])
 
 cc_library(
-    name = "rescue",
-    srcs = ["rescue.c"],
-    hdrs = ["rescue.h"],
-    deps = [
-        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib:boot_data",
-        "//sw/device/silicon_creator/lib:dbg_print",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib:xmodem",
-        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/drivers:retention_sram",
-        "//sw/device/silicon_creator/lib/drivers:rstmgr",
-        "//sw/device/silicon_creator/lib/ownership:owner_block",
-    ],
-)
-
-cc_library(
     name = "rom_ext_manifest",
     srcs = ["rom_ext_manifest.c"],
     hdrs = ["rom_ext_manifest.h"],

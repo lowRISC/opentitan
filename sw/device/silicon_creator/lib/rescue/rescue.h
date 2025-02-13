@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_RESCUE_H_
-#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_RESCUE_H_
+#ifndef OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_RESCUE_H_
+#define OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_RESCUE_H_
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -85,4 +85,4 @@ typedef struct RescueState {
 rom_error_t rescue_protocol(boot_data_t *bootdata,
                             const owner_rescue_config_t *rescue);
 
-#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_ROM_EXT_RESCUE_H_
+#endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_RESCUE_RESCUE_H_
