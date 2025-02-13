@@ -49,6 +49,11 @@ typedef struct dif_${ip.name_snake} {
    * The base address for the ${ip.name_snake} hardware registers.
    */
   mmio_region_t base_addr;
+  /**
+   * The instance, set to `kDt${ip.name_camel}Count` if not initialized
+   * through `dif_${ip.name_snake}_init_from_dt`.
+   */
+  dt_${ip.name_snake}_t dt;
 } dif_${ip.name_snake}_t;
 
 /**
@@ -81,6 +86,21 @@ OT_WARN_UNUSED_RESULT
 dif_result_t dif_${ip.name_snake}_init_from_dt(
   dt_${ip.name_snake}_t dt,
   dif_${ip.name_snake}_t *${ip.name_snake});
+
+/**
+ * Get the DT handle from this DIF.
+ *
+ * If this DIF was initialized by `dif_${ip.name_snake}_init_from_dt(dt, ..)`
+ * then this function will return `dt`. Otherwise it will return an error.
+ *
+ * @param dt A ${ip.name_snake} handle.
+ * @param[out] dt DT handle.
+ * @return `kDifBadArg` if the DIF has no DT information, `kDifOk` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_${ip.name_snake}_get_dt(
+  const dif_${ip.name_snake}_t *${ip.name_snake},
+  dt_${ip.name_snake}_t *dt);
 
 % if ip.alerts:
   /**
