@@ -112,9 +112,7 @@ static status_t hkdf_check_prk(size_t digest_words,
 
   // Ensure that the PRK is a symmetric key masked with XOR and is not supposed
   // to be hardware-backed.
-  HARDENED_TRY(keyblob_ensure_xor_masked(prk->config));
-
-  return OTCRYPTO_OK;
+  return keyblob_ensure_xor_masked(prk->config);
 }
 
 otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t ikm,

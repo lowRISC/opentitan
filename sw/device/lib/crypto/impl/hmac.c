@@ -208,8 +208,7 @@ otcrypto_status_t otcrypto_hmac_update(
   }
 
   hmac_ctx_t *hmac_ctx = (hmac_ctx_t *)ctx->data;
-  HARDENED_TRY(hmac_update(hmac_ctx, input_message.data, input_message.len));
-  return OTCRYPTO_OK;
+  return hmac_update(hmac_ctx, input_message.data, input_message.len);
 }
 
 otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
