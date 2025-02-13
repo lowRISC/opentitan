@@ -807,12 +807,8 @@ static rom_error_t rom_ext_start(boot_data_t *boot_data, boot_log_t *boot_log) {
   boot_log->bl0_min_sec_ver = boot_data->min_security_version_bl0;
   boot_log_digest_update(boot_log);
 
-  if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
-    dbg_printf("rescue: remember to clear break\r\n");
-    uart_enable_receiver();
+  if (rescue_detect_entry(owner_config.rescue) == kHardenedBoolTrue) {
     ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolTrue);
-    // TODO: update rescue protocol to accept boot data and rescue
-    // config from the owner_config.
     error = rescue_protocol(boot_data, owner_config.rescue);
   } else {
     ownership_pages_lockdown(boot_data, /*rescue=*/kHardenedBoolFalse);
