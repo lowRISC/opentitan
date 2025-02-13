@@ -90,9 +90,7 @@ uint32_t pinmux_testutils_read_straps(dif_pinmux_t *pinmux, dif_gpio_t *gpio);
  * A convenience struct to associate pad attributes with a specific pad.
  */
 typedef struct pinmux_pad_attributes {
-  // TODO Convert to multitop
-  dif_pinmux_index_t pad;
-  dif_pinmux_pad_kind_t kind;
+  dt_pad_t pad;
   dif_pinmux_pad_attr_flags_t flags;
 } pinmux_pad_attributes_t;
 

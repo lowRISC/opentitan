@@ -5439,6 +5439,7 @@ opentitan_test(
         "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
+        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:hmac_c_regs",

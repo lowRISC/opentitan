@@ -212,10 +212,10 @@ void pinmux_testutils_configure_pads(const dif_pinmux_t *pinmux,
                                      size_t num_attrs) {
   for (size_t i = 0; i < num_attrs; ++i) {
     dif_pinmux_pad_attr_t desired_attr, actual_attr;
-    CHECK_DIF_OK(dif_pinmux_pad_get_attrs(pinmux, attrs[i].pad, attrs[i].kind,
-                                          &desired_attr));
+    CHECK_DIF_OK(
+        dif_pinmux_pad_get_attrs_dt(pinmux, attrs[i].pad, &desired_attr));
     desired_attr.flags = attrs[i].flags;
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, attrs[i].pad, attrs[i].kind,
-                                            desired_attr, &actual_attr));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(pinmux, attrs[i].pad,
+                                               desired_attr, &actual_attr));
   }
 }

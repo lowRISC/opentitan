@@ -516,6 +516,7 @@ opentitan_test(
     exec_env = {"//hw/top_earlgrey:sim_dv": None},
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:bitfield",
         "//sw/device/lib/base:mmio",
