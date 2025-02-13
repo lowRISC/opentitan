@@ -87,7 +87,7 @@ module tlul_request_loopback
     .tl_o ( tl_razwi_rsp          )
   );
 
-  // Mux reponse if request was squased
+  // Mux response if request was squashed
   assign tl_d2h_o = loopback_request_q ? tl_razwi_rsp : tl_d2h_i;
 
 endmodule
