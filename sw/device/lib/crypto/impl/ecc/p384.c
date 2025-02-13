@@ -102,10 +102,8 @@ static status_t p384_masked_scalar_write(const p384_masked_scalar_t *src,
   // cause an error.
   HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
                              share0_addr + kP384MaskedScalarShareBytes));
-  HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
-                             share1_addr + kP384MaskedScalarShareBytes));
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_set(kMaskedScalarPaddingWords, 0,
+                       share1_addr + kP384MaskedScalarShareBytes);
 }
 
 /**
@@ -179,9 +177,7 @@ status_t p384_keygen_finalize(p384_masked_scalar_t *private_key,
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p384_sideload_keygen_start(void) {
@@ -205,9 +201,7 @@ status_t p384_sideload_keygen_finalize(p384_point_t *public_key) {
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p384_ecdsa_sign_start(const uint32_t digest[kP384ScalarWords],
@@ -256,9 +250,7 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
   HARDENED_TRY(otbn_dmem_read(kP384ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p384_ecdsa_verify_start(const p384_ecdsa_signature_t *signature,
@@ -308,9 +300,7 @@ status_t p384_ecdsa_verify_finalize(const p384_ecdsa_signature_t *signature,
   *result = hardened_memeq(x_r, signature->r, kP384ScalarWords);
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p384_ecdh_start(const p384_masked_scalar_t *private_key,
@@ -350,9 +340,7 @@ status_t p384_ecdh_finalize(p384_ecdh_shared_key_t *shared_key) {
   HARDENED_TRY(otbn_dmem_read(kP384CoordWords, kOtbnVarY, shared_key->share1));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p384_sideload_ecdh_start(const p384_point_t *public_key) {

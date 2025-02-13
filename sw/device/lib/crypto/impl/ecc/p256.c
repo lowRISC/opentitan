@@ -92,10 +92,8 @@ static status_t p256_masked_scalar_write(const p256_masked_scalar_t *src,
   // cause an error.
   HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
                              share0_addr + kP256MaskedScalarShareBytes));
-  HARDENED_TRY(otbn_dmem_set(kMaskedScalarPaddingWords, 0,
-                             share1_addr + kP256MaskedScalarShareBytes));
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_set(kMaskedScalarPaddingWords, 0,
+                       share1_addr + kP256MaskedScalarShareBytes);
 }
 
 status_t p256_keygen_start(void) {
@@ -138,9 +136,7 @@ status_t p256_keygen_finalize(p256_masked_scalar_t *private_key,
   HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
@@ -152,9 +148,7 @@ status_t p256_sideload_keygen_finalize(p256_point_t *public_key) {
   HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, public_key->y));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 /**
@@ -227,9 +221,7 @@ status_t p256_ecdsa_sign_finalize(p256_ecdsa_signature_t *result) {
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarS, result->s));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
@@ -282,9 +274,7 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
   *result = hardened_memeq(x_r, signature->r, kP256ScalarWords);
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_ecdh_start(const p256_masked_scalar_t *private_key,
@@ -326,9 +316,7 @@ status_t p256_ecdh_finalize(p256_ecdh_shared_key_t *shared_key) {
   HARDENED_TRY(otbn_dmem_read(kP256CoordWords, kOtbnVarY, shared_key->share1));
 
   // Wipe DMEM.
-  HARDENED_TRY(otbn_dmem_sec_wipe());
-
-  return OTCRYPTO_OK;
+  return otbn_dmem_sec_wipe();
 }
 
 status_t p256_sideload_ecdh_start(const p256_point_t *public_key) {
