@@ -191,7 +191,7 @@ ${"end" if loop.last else ""}
 %>\
     ${prefix}
     % for i in range(num_range):
-      % if lib.is_pow2(leaf.addr_ranges[asid][i][1]-leaf.addr_ranges[asid][0][0]+1):
+      % if lib.is_pow2(leaf.addr_ranges[asid][i][1]-leaf.addr_ranges[asid][i][0]+1):
       ((${addr_sig} & ~(${name_mask}[${i}])) == ${name_space}[${i}])${" ||" if not loop.last else ""}
       % else:
       ((${addr_sig} <= (${name_mask}[${i}] + ${name_space}[${i}])) &&
