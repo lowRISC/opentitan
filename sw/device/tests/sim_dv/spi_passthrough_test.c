@@ -6,7 +6,11 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "dt/dt_api.h"  // Generated
+#include "dt/dt_api.h"         // Generated
+#include "dt/dt_pinmux.h"      // Generated
+#include "dt/dt_rv_plic.h"     // Generated
+#include "dt/dt_spi_device.h"  // Generated
+#include "dt/dt_spi_host.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
@@ -24,8 +28,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 // Bit map of command slots to be filtered. This is supplied by the DV
@@ -35,14 +37,25 @@ const volatile uint32_t kFilteredCommands;
 // Whether to upload write commands and have software relay them.
 const volatile uint8_t kUploadWriteCommands;
 
+static const uint32_t kPlicTarget = 0;
 static dif_pinmux_t pinmux;
+static dt_pinmux_t kPinmuxDt = (dt_pinmux_t)0;
+static_assert(kDtPinmuxCount >= 1, "This test requires Pinmux");
 static dif_rv_plic_t rv_plic;
+static dt_rv_plic_t kRvPlicDt = (dt_rv_plic_t)0;
+static_assert(kDtRvPlicCount >= 1, "This test requires a RV PLIC");
 static dif_spi_device_handle_t spi_device;
-static dif_spi_host_t spi_host0;
-static dif_spi_host_t spi_host1;
+static dt_spi_device_t kSpiDeviceDt = (dt_spi_device_t)0;
+static_assert(kDtSpiDeviceCount >= 1,
+              "This test requires one SPI Device instance");
+static dif_spi_host_t spi_hosts[kDtSpiHostCount];
+static dt_spi_host_t kSpiHost0Dt = (dt_spi_host_t)0;
+static_assert(kDtSpiHostCount >= 1,
+              "This test requiest at least one SPI Host instance");
 
 // Enable pull-ups for spi_host data pins to avoid floating inputs.
 static const pinmux_pad_attributes_t pinmux_pad_config[] = {
+#if defined(OPENTITAN_IS_EARLGREY)
     {
         .pad = kDtPadIob1,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
@@ -53,6 +66,11 @@ static const pinmux_pad_attributes_t pinmux_pad_config[] = {
         .flags = kDifPinmuxPadAttrPullResistorEnable |
                  kDifPinmuxPadAttrPullResistorUp,
     },
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not need these pads pulled-up
+#else
+#error "spi_passthrough_test does not support this top"
+#endif
     {
         .pad = kDtPadSpiHost0Sd0,
         .flags = kDifPinmuxPadAttrPullResistorEnable |
@@ -75,62 +93,79 @@ static const pinmux_pad_attributes_t pinmux_pad_config[] = {
     },
 };
 
+#if defined(OPENTITAN_IS_EARLGREY)
 /**
  * A convenience struct to associate a mux selection that connects a pad and
  * peripheral. This can be used for an input mux or an output mux.
  */
 typedef struct pinmux_select {
-  dif_pinmux_index_t pad;
-  dif_pinmux_index_t peripheral;
+  dt_pad_t pad;
+  dt_spi_host_t peripheral_dt;
+  dt_spi_host_periph_io_t peripheral_sig;
 } pinmux_select_t;
 
 static const pinmux_select_t pinmux_out_config[] = {
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob0,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb,
+        .pad = kDtPadIob0,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoCsb,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob2,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sck,
+        .pad = kDtPadIob2,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoSck,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd0,
+        .pad = kDtPadIob1,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoSd0,
     },
     {
-        .pad = kTopEarlgreyPinmuxMioOutIob3,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd1,
+        .pad = kDtPadIob3,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoSd1,
     },
     // These peripheral I/Os are not assigned for tests.
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd2,
+    //         .peripheral_dt = kDtSpiHost1,
+    //         .peripheral_sig = kDtSpiHostPeriphIoSd2,
     //     },
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd3,
+    //         .peripheral_dt = kDtSpiHost1,
+    //         .peripheral_sig = kDtSpiHostPeriphIoSd3,
     //     },
 };
 
 static const pinmux_select_t pinmux_in_config[] = {
     {
-        .pad = kTopEarlgreyPinmuxInselIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd0,
+        .pad = kDtPadIob1,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoSd0,
     },
     {
-        .pad = kTopEarlgreyPinmuxInselIob3,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd1,
+        .pad = kDtPadIob3,
+        .peripheral_dt = kDtSpiHost1,
+        .peripheral_sig = kDtSpiHostPeriphIoSd1,
     },
     // These peripheral I/Os are not assigned for tests.
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd2,
+    //         .peripheral_dt = kDtSpiHost1,
+    //         .peripheral_sig = kDtSpiHostPeriphIoSd2,
     //     },
     //     {
     //         .pad = ???,
-    //         .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Sd3,
+    //         .peripheral_dt = kDtSpiHost1,
+    //         .peripheral_sig = kDtSpiHostPeriphIoSd3,
     //     },
 };
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling only has 1 SPI host, so SpiHost1 does not exist
+#else
+#error "spi_passthrough_test does not support this top"
+#endif
 
 /**
  * Initialize the provided SPI host. For the most part, the values provided are
@@ -178,7 +213,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
   status |= ((uint32_t)(payload) << offset);
   CHECK_DIF_OK(dif_spi_device_set_flash_status_registers(&spi_device, status));
 
-  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(&spi_host0));
+  CHECK_STATUS_OK(spi_flash_testutils_issue_write_enable(&spi_hosts[0]));
 
   dif_spi_host_segment_t transaction[] = {
       {.type = kDifSpiHostSegmentTypeOpcode,
@@ -193,9 +228,9 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
               },
       },
   };
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host0, /*csid=*/0, transaction,
+  CHECK_DIF_OK(dif_spi_host_transaction(&spi_hosts[0], /*csid=*/0, transaction,
                                         ARRAYSIZE(transaction)));
-  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(&spi_host0));
+  CHECK_STATUS_OK(spi_flash_testutils_wait_until_not_busy(&spi_hosts[0]));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -205,7 +240,7 @@ void handle_write_status(uint32_t status, uint8_t offset, uint8_t opcode) {
  * Relays the command out to the downstream SPI flash.
  */
 void handle_chip_erase(void) {
-  CHECK_STATUS_OK(spi_flash_testutils_erase_chip(&spi_host0));
+  CHECK_STATUS_OK(spi_flash_testutils_erase_chip(&spi_hosts[0]));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -229,7 +264,7 @@ void handle_sector_erase(void) {
 
   bool addr_is_4b = dif_toggle_to_bool(addr4b_enabled);
   CHECK_STATUS_OK(
-      spi_flash_testutils_erase_sector(&spi_host0, address, addr_is_4b));
+      spi_flash_testutils_erase_sector(&spi_hosts[0], address, addr_is_4b));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -263,7 +298,7 @@ void handle_page_program(void) {
 
   bool addr_is_4b = dif_toggle_to_bool(addr4b_enabled);
   CHECK_STATUS_OK(spi_flash_testutils_program_page(
-      &spi_host0, payload, payload_occupancy, address, addr_is_4b));
+      &spi_hosts[0], payload, payload_occupancy, address, addr_is_4b));
   CHECK_DIF_OK(dif_spi_device_clear_flash_busy_bit(&spi_device));
 }
 
@@ -334,21 +369,15 @@ void spi_device_isr(void) {
  * Runs in interrupt context.
  */
 void ottf_external_isr(uint32_t *exc_info) {
-  const uint32_t kPlicTarget = kTopEarlgreyPlicTargetIbex0;
   dif_rv_plic_irq_id_t plic_irq_id;
   CHECK_DIF_OK(dif_rv_plic_irq_claim(&rv_plic, kPlicTarget, &plic_irq_id));
 
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  switch (peripheral) {
-    case kTopEarlgreyPlicPeripheralSpiDevice:
-      // Only the UploadCmdfifoNotEmpty interrupt is expected.
-      CHECK(plic_irq_id == kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty);
-      spi_device_isr();
-      break;
-    default:
-      break;
+  dt_instance_id_t peripheral_id = dt_plic_id_to_instance_id(plic_irq_id);
+  if (peripheral_id == dt_spi_device_instance_id(kSpiDeviceDt)) {
+    dt_spi_device_irq_t irq =
+        dt_spi_device_irq_from_plic_id(kSpiDeviceDt, plic_irq_id);
+    CHECK(irq == kDtSpiDeviceIrqUploadCmdfifoNotEmpty);
+    spi_device_isr();
   }
 
   // Complete the IRQ at PLIC.
@@ -357,21 +386,29 @@ void ottf_external_isr(uint32_t *exc_info) {
 
 bool test_main(void) {
   // Initialize the pinmux.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   pinmux_testutils_init(&pinmux);
   pinmux_testutils_configure_pads(&pinmux, pinmux_pad_config,
                                   ARRAYSIZE(pinmux_pad_config));
+#if defined(OPENTITAN_IS_EARLGREY)
   for (int i = 0; i < ARRAYSIZE(pinmux_in_config); ++i) {
     pinmux_select_t setting = pinmux_in_config[i];
-    CHECK_DIF_OK(
-        dif_pinmux_input_select(&pinmux, setting.peripheral, setting.pad));
+    dt_periph_io_t peripheral =
+        dt_spi_host_periph_io(setting.peripheral_dt, setting.peripheral_sig);
+    CHECK_DIF_OK(dif_pinmux_mio_select_input(&pinmux, peripheral, setting.pad));
   }
   for (int i = 0; i < ARRAYSIZE(pinmux_out_config); ++i) {
     pinmux_select_t setting = pinmux_out_config[i];
+    dt_periph_io_t peripheral =
+        dt_spi_host_periph_io(setting.peripheral_dt, setting.peripheral_sig);
     CHECK_DIF_OK(
-        dif_pinmux_output_select(&pinmux, setting.pad, setting.peripheral));
+        dif_pinmux_mio_select_output(&pinmux, setting.pad, peripheral));
   }
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling only has 1 SPI Host, and so does not need these pinmux settings
+#else
+#error "spi_passthrough_test does not support this top"
+#endif
 
   // Configure fast slew rate, strong drive strength, and weak pull-ups for SPI
   // Host 0 pads.
@@ -381,54 +418,42 @@ bool test_main(void) {
   CHECK_STATUS_OK(spi_device_testutils_configure_pad_attrs(&pinmux));
 
   // Initialize the PLIC.
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &rv_plic));
+  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &rv_plic));
 
   // Initialize the spi_host devices.
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host1));
-  init_spi_host(&spi_host0, (uint32_t)kClockFreqHiSpeedPeripheralHz);
-  init_spi_host(&spi_host1, (uint32_t)kClockFreqPeripheralHz);
+  for (size_t i = 0; i < kDtSpiHostCount; i++) {
+    dt_spi_host_t spi_host_dt = (dt_spi_host_t)i;
+    uint32_t clock_freq =
+        dt_clock_frequency(dt_spi_host_clock(spi_host_dt, kDtSpiHostClockClk));
+    CHECK_DIF_OK(dif_spi_host_init_from_dt(spi_host_dt, &spi_hosts[i]));
+    init_spi_host(&spi_hosts[i], clock_freq);
+  }
 
   // Initialize spi_device.
-  mmio_region_t spi_device_base_addr =
-      mmio_region_from_addr(TOP_EARLGREY_SPI_DEVICE_BASE_ADDR);
-  CHECK_DIF_OK(dif_spi_device_init_handle(spi_device_base_addr, &spi_device));
+  CHECK_DIF_OK(dif_spi_device_init_from_dt(kSpiDeviceDt, &spi_device.dev));
   bool upload_write_commands = (kUploadWriteCommands != 0);
   CHECK_STATUS_OK(spi_device_testutils_configure_passthrough(
       &spi_device, kFilteredCommands, upload_write_commands));
 
   // Enable all spi_device and spi_host interrupts, and check that they do not
   // trigger unless command upload is enabled.
-  dif_spi_device_irq_t all_spi_device_irqs[] = {
-      kDifSpiDeviceIrqUploadCmdfifoNotEmpty,
-      kDifSpiDeviceIrqReadbufWatermark,
-      kDifSpiDeviceIrqReadbufFlip,
-      kDifSpiDeviceIrqTpmHeaderNotEmpty,
-  };
-  for (int i = 0; i < ARRAYSIZE(all_spi_device_irqs); ++i) {
-    dif_spi_device_irq_t irq = all_spi_device_irqs[i];
-    CHECK_DIF_OK(dif_spi_device_irq_set_enabled(&spi_device.dev, irq,
+  for (int i = 0; i < kDtSpiDeviceIrqCount; ++i) {
+    dt_spi_device_irq_t spi_irq = (dt_spi_device_irq_t)i;
+    CHECK_DIF_OK(dif_spi_device_irq_set_enabled(&spi_device.dev, spi_irq,
                                                 kDifToggleEnabled));
+    dif_rv_plic_irq_id_t irq =
+        dt_spi_device_irq_to_plic_id(kSpiDeviceDt, spi_irq);
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&rv_plic, irq, kPlicTarget,
+                                             kDifToggleEnabled));
+    CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&rv_plic, irq, 0x1));
   }
-  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, kDifSpiHostIrqError,
-                                            kDifToggleEnabled));
-  CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_host0, kDifSpiHostIrqSpiEvent,
-                                            kDifToggleEnabled));
-
-  dif_rv_plic_irq_id_t spi_irqs[] = {
-      kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufWatermark,
-      kTopEarlgreyPlicIrqIdSpiDeviceReadbufFlip,
-      kTopEarlgreyPlicIrqIdSpiHost0Error,
-      kTopEarlgreyPlicIrqIdSpiHost0SpiEvent,
-  };
-  for (int i = 0; i < ARRAYSIZE(spi_irqs); ++i) {
-    dif_rv_plic_irq_id_t irq = spi_irqs[i];
-    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(
-        &rv_plic, irq, kTopEarlgreyPlicTargetIbex0, kDifToggleEnabled));
+  for (int i = 0; i < kDtSpiHostIrqCount; ++i) {
+    dt_spi_host_irq_t spi_irq = (dt_spi_host_irq_t)i;
+    CHECK_DIF_OK(dif_spi_host_irq_set_enabled(&spi_hosts[0], spi_irq,
+                                              kDifToggleEnabled));
+    dif_rv_plic_irq_id_t irq = dt_spi_host_irq_to_plic_id(kSpiHost0Dt, spi_irq);
+    CHECK_DIF_OK(dif_rv_plic_irq_set_enabled(&rv_plic, irq, kPlicTarget,
+                                             kDifToggleEnabled));
     CHECK_DIF_OK(dif_rv_plic_irq_set_priority(&rv_plic, irq, 0x1));
   }
   irq_external_ctrl(/*en=*/true);
