@@ -10,9 +10,9 @@ class ac_range_check_env extends cip_base_env #(
   );
   `uvm_component_utils(ac_range_check_env)
 
-  tl_agent tl_csr_agent;
-  tl_agent tl_unfilt_agent;
-  tl_agent tl_filt_agent;
+  tl_agent tl_csr_agt;
+  tl_agent tl_unfilt_agt;
+  tl_agent tl_filt_agt;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -29,35 +29,35 @@ function void ac_range_check_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
   // Create CSR TL agent
-  tl_csr_agent = tl_agent::type_id::create("tl_csr_agent", this);
-  uvm_config_db#(tl_agent_cfg)::set(this, "tl_csr_agent*", "cfg", cfg.tl_csr_agent_cfg);
-  cfg.tl_csr_agent_cfg.en_cov = cfg.en_cov;
+  tl_csr_agt = tl_agent::type_id::create("tl_csr_agt", this);
+  uvm_config_db#(tl_agent_cfg)::set(this, "tl_csr_agt*", "cfg", cfg.tl_csr_agt_cfg);
+  cfg.tl_csr_agt_cfg.en_cov = cfg.en_cov;
 
   // Create Unfiltered TL agent
-  tl_unfilt_agent = tl_agent::type_id::create("tl_unfilt_agent", this);
-  uvm_config_db#(tl_agent_cfg)::set(this, "tl_unfilt_agent*", "cfg", cfg.tl_unfilt_agent_cfg);
-  cfg.tl_unfilt_agent_cfg.en_cov = cfg.en_cov;
+  tl_unfilt_agt = tl_agent::type_id::create("tl_unfilt_agt", this);
+  uvm_config_db#(tl_agent_cfg)::set(this, "tl_unfilt_agt*", "cfg", cfg.tl_unfilt_agt_cfg);
+  cfg.tl_unfilt_agt_cfg.en_cov = cfg.en_cov;
 
   // Create Fltered TL agent
-  tl_filt_agent = tl_agent::type_id::create("tl_filt_agent", this);
-  uvm_config_db#(tl_agent_cfg)::set(this, "tl_filt_agent*", "cfg", cfg.tl_filt_agent_cfg);
-  cfg.tl_filt_agent_cfg.en_cov = cfg.en_cov;
+  tl_filt_agt = tl_agent::type_id::create("tl_filt_agt", this);
+  uvm_config_db#(tl_agent_cfg)::set(this, "tl_filt_agt*", "cfg", cfg.tl_filt_agt_cfg);
+  cfg.tl_filt_agt_cfg.en_cov = cfg.en_cov;
 endfunction : build_phase
 
 function void ac_range_check_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   if (cfg.en_scb) begin
-    tl_csr_agent.monitor.analysis_port.connect(scoreboard.tl_csr_fifo.analysis_export);
-    tl_unfilt_agent.monitor.analysis_port.connect(scoreboard.tl_unfilt_fifo.analysis_export);
-    tl_filt_agent.monitor.analysis_port.connect(scoreboard.tl_filt_fifo.analysis_export);
+    tl_csr_agt.monitor.analysis_port.connect(scoreboard.tl_csr_fifo.analysis_export);
+    tl_unfilt_agt.monitor.analysis_port.connect(scoreboard.tl_unfilt_fifo.analysis_export);
+    tl_filt_agt.monitor.analysis_port.connect(scoreboard.tl_filt_fifo.analysis_export);
   end
-  if (cfg.is_active && cfg.tl_csr_agent_cfg.is_active) begin
-    virtual_sequencer.tl_csr_sqr = tl_csr_agent.sequencer;
+  if (cfg.is_active && cfg.tl_csr_agt_cfg.is_active) begin
+    virtual_sequencer.tl_csr_sqr = tl_csr_agt.sequencer;
   end
-  if (cfg.is_active && cfg.tl_unfilt_agent_cfg.is_active) begin
-    virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agent.sequencer;
+  if (cfg.is_active && cfg.tl_unfilt_agt_cfg.is_active) begin
+    virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agt.sequencer;
   end
-  if (cfg.is_active && cfg.tl_filt_agent_cfg.is_active) begin
-    virtual_sequencer.tl_filt_sqr = tl_filt_agent.sequencer;
+  if (cfg.is_active && cfg.tl_filt_agt_cfg.is_active) begin
+    virtual_sequencer.tl_filt_sqr = tl_filt_agt.sequencer;
   end
 endfunction : connect_phase
