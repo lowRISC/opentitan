@@ -124,10 +124,16 @@ OT_ASSERT_MEMBER_OFFSET(retention_sram_t, owner, 2048);
 OT_ASSERT_SIZE(retention_sram_t, 4096);
 
 enum {
+#ifdef OPENTITAN_IS_EARLGREY
   /**
    * Base address of retention SRAM storage area.
    */
   kRetentionSramBase = 0x40600000,
+#elif defined(OPENTITAN_IS_DARJEELING)
+  kRetentionSramBase = 0x30600000,
+#else
+#error multitop
+#endif
   /**
    * Engineering sample version.
    */

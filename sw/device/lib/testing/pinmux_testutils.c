@@ -15,8 +15,10 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
+#ifndef OPENTITAN_IS_DARJEELING
 static const dt_gpio_t kGpioDt = kDtGpio;
 static const dt_uart_t kUart0Dt = kDtUart0;
+#endif
 
 #if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
 static const dt_pad_t kPadUart0Tx = kDtPadIoc4;
@@ -30,8 +32,6 @@ static const dt_pad_t kPadStrap1 = kDtPadIoc1;
 static const dt_pad_t kPadStrap2 = kDtPadIoc2;
 
 #elif defined(OPENTITAN_IS_DARJEELING)
-static const dt_pad_t kPadUart0Tx = kDtPadUart0Tx;
-static const dt_pad_t kPadUart0Rx = kDtPadUart0Rx;
 /* No UART1 */
 static const dt_pad_t kPadStrap0 = kDtPadGpioGpio22;
 static const dt_pad_t kPadStrap1 = kDtPadGpioGpio23;
@@ -42,6 +42,7 @@ static const dt_pad_t kPadStrap2 = kDtPadGpioGpio24;
 #endif /* OPENTITAN_IS_* */
 
 void pinmux_testutils_init(dif_pinmux_t *pinmux) {
+#ifndef OPENTITAN_IS_DARJEELING
   // Set up SW straps on IOC0-IOC2, for GPIOs 22-24
   CHECK_DIF_OK(dif_pinmux_mio_select_input(
       pinmux, dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio22), kPadStrap0));
@@ -58,7 +59,9 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
   // Configure UART0 TX output.
   CHECK_DIF_OK(dif_pinmux_mio_select_output(
       pinmux, kPadUart0Tx, dt_uart_periph_io(kUart0Dt, kDtUartPeriphIoTx)));
-
+#endif
+// TODO: Discover for DJ!
+#if 0
   // Enable pull-ups on UART0 RX
   // Pull-ups are available only on certain platforms.
   if (kDeviceType == kDeviceSimDV) {
@@ -73,7 +76,7 @@ void pinmux_testutils_init(dif_pinmux_t *pinmux) {
         dif_pinmux_pad_write_attrs(pinmux, dt_pad_mio_pad_index(kPadUart0Rx),
                                    kDifPinmuxPadKindMio, in_attr, &out_attr));
   };
-
+#endif
 #ifdef HAS_UART1
   // Configure UART1 RX input.
   CHECK_DIF_OK(dif_pinmux_mio_select_input(

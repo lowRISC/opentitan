@@ -240,8 +240,11 @@ bool rom_test_main(void) {
       kFlashCtrlDt, kDtFlashCtrlRegBlockMem);
 #elif defined(OPENTITAN_IS_DARJEELING)
   // Always select slot a and enable address translation if manifest says to.
-  const manifest_t *manifest = (const manifest_t *)dt_soc_proxy_reg_block(
-      kDtSocProxy, kDtSocProxyRegBlockCtn);
+  //
+  // TODO: Need to bump up to SRAM itself, once the build system targets the
+  // correct address.
+  const manifest_t *manifest = (const manifest_t *)(dt_soc_proxy_reg_block(
+      kDtSocProxy, kDtSocProxyRegBlockCtn) + 0u);  // 0x01000000u
 #else
 #error I don't know how to find the test code on this platform!
 #endif
