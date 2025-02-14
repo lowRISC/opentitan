@@ -10,6 +10,7 @@
 #include "sw/device/silicon_creator/lib/dbg_print.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/lifecycle.h"
+#include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
@@ -281,10 +282,34 @@ void rescue_state_init(rescue_state_t *state,
 }
 
 hardened_bool_t rescue_detect_entry(const owner_rescue_config_t *config) {
-  if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
-    dbg_printf("rescue: remember to clear break\r\n");
-    uart_enable_receiver();
-    return kHardenedBoolTrue;
+  rescue_detect_t detect = kRescueDetectBreak;
+  uint32_t index = 0;
+  uint32_t gpio_val = 0;
+  if ((hardened_bool_t)config != kHardenedBoolFalse) {
+    detect = bitfield_field32_read(config->detect, RESCUE_DETECT);
+    index = bitfield_field32_read(config->detect, RESCUE_DETECT_INDEX);
+    gpio_val = bitfield_bit32_read(config->gpio, RESCUE_GPIO_VALUE_BIT);
+  }
+  switch (detect) {
+    case kRescueDetectNone:
+      break;
+    case kRescueDetectBreak:
+      if (uart_break_detect(kRescueDetectTime) == kHardenedBoolTrue) {
+        dbg_printf("rescue: remember to clear break\r\n");
+        uart_enable_receiver();
+        return kHardenedBoolTrue;
+      }
+      break;
+    case kRescueDetectGpio:
+      if (pinmux_read_gpio(0) == gpio_val) {
+        return kHardenedBoolTrue;
+      }
+      break;
+    case kRescueDetectStrap:
+      if (pinmux_read_straps() == index) {
+        return kHardenedBoolTrue;
+      }
+      break;
   }
   return kHardenedBoolFalse;
 }
