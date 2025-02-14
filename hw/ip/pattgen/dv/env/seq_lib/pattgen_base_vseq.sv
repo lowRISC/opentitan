@@ -88,8 +88,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
       update_pattgen_agent_cfg(.channel(0));
       csr_update(ral.ctrl);
       channel_setup[0] = 1'b1;
-      void'(right_rotation(channel_grant));
-      `uvm_info(`gfn, "\n  channel 0: programmed", UVM_DEBUG)
+      rol_grant();
     end
   endtask : setup_pattgen_channel_0
 
@@ -112,7 +111,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
       update_pattgen_agent_cfg(.channel(1));
       csr_update(ral.ctrl);
       channel_setup[1] = 1'b1;
-      void'(right_rotation(channel_grant));
+      rol_grant();
       `uvm_info(`gfn, "\n  channel 1: programmed", UVM_DEBUG)
     end
   endtask : setup_pattgen_channel_1
@@ -372,10 +371,11 @@ class pattgen_base_vseq extends cip_base_vseq #(
         cfg.m_pattgen_agent_cfg.length[channel]), UVM_DEBUG)
   endfunction : update_pattgen_agent_cfg
 
-  // right rotate a one-hot vector
-  virtual function right_rotation(ref bit [NUM_PATTGEN_CHANNELS-1:0] x);
-    x = {x[NUM_PATTGEN_CHANNELS-2:0], x[NUM_PATTGEN_CHANNELS-1]};
-  endfunction : right_rotation
+  // Left rotate the one-hot channel_grant bitmask by one place
+  local task rol_grant();
+    channel_grant = {channel_grant[NUM_PATTGEN_CHANNELS-2:0],
+                     channel_grant[NUM_PATTGEN_CHANNELS-1]};
+  endtask
 
   task wait_host_for_idle();
     csr_spinwait(.ptr(ral.ctrl.enable_ch0),     .exp_data(1'b0));
