@@ -124,8 +124,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // Set up the requested channel if this is a good time (there are still more patterns to request;
   // setup is granted; the channel is not yet set up; no other channel is running).
   local task setup_pattgen_channel(int unsigned ch);
-    channel_select_e ch_select = channel_select_e'(1 << ch);
-
     // If we have already requested enough patterns, there's nothing to do on the channel.
     if (num_pattern_req >= num_trans) return;
 
@@ -138,7 +136,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
     if (channel_start & ~(1 << ch)) return;
 
     // Wait to make sure that the channel isn't currently enabled
-    wait_for_channel_ready(ch_select);
+    wait_for_channel_ready(ch);
 
     // Pick a random configuration for the channel, storing it into channel_cfg
     channel_cfg[ch] = get_random_channel_config(.channel(ch));
@@ -271,7 +269,12 @@ class pattgen_base_vseq extends cip_base_vseq #(
     end
   endtask : stop_pattgen_channels
 
-  virtual task wait_for_channel_ready(channel_select_e ch_select);
+  // Wait (using multiple reads of the channel's enable register) until the requested channel is not
+  // enabled.
+  local task wait_for_channel_ready(int unsigned ch);
+    uvm_reg_field fld = ral.ctrl.get_field_by_name($sformatf("enable_ch%0d", ch));
+    `DV_CHECK_FATAL(fld != null)
+
     // Wait for at least one clock cycle so that the csr_update for the
     // channel setup don't happen in the same cycle. This avoids a warning in
     // VCS saying: Setting the value of field while containing register is
@@ -279,17 +282,10 @@ class pattgen_base_vseq extends cip_base_vseq #(
     // condition between threads concurrently accessing the register model is
     // the likely cause of the problem.
     cfg.clk_rst_vif.wait_clks(1);
-    case (ch_select)
-      Channel0: begin
-        csr_spinwait(.ptr(ral.ctrl.enable_ch0), .exp_data(1'b0));
-        `uvm_info(`gfn, $sformatf("\n  channel 0 is ready for programmed"), UVM_DEBUG)
-      end
-      Channel1: begin
-        csr_spinwait(.ptr(ral.ctrl.enable_ch1), .exp_data(1'b0));
-        `uvm_info(`gfn, $sformatf("\n  channel 1 is ready for programmed"), UVM_DEBUG)
-      end
-    endcase
-  endtask : wait_for_channel_ready
+
+    csr_spinwait(.ptr(fld), .exp_data(1'b0));
+    `uvm_info(`gfn, $sformatf("\n  channel %0d is ready for programming", ch), UVM_DEBUG)
+  endtask
 
   // this task allows channels to be activated or stopped independently/simultaneously
   virtual task control_channels(channel_select_e ch_select, channel_status_e status);
