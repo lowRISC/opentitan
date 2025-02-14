@@ -303,6 +303,9 @@ rom_error_t dice_chain_attestation_silicon(void) {
     // In both cases, we do nothing, and boot normally, later attestation
     // attempts will fail in a detectable manner.
     HARDENED_CHECK_EQ(dice_chain.cert_valid, kHardenedBoolFalse);
+
+    // CAUTION: This error message should match the one in
+    //   //sw/host/provisioning/ft_lib/src/lib.rs
     dbg_printf("error: UDS certificate not valid\r\n");
   } else {
     // Cert is valid, move to the next one.
