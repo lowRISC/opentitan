@@ -20,6 +20,7 @@ use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::ownership::{OwnerBlock, TlvHeader};
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::{Rescue, RescueMode};
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -99,7 +100,7 @@ impl CommandDispatch for Firmware {
         rescue.enter(transport, self.reset_target)?;
         if let Some(rate) = self.rate {
             prev_baudrate = uart.get_baudrate()?;
-            rescue.set_baud(rate)?;
+            rescue.set_speed(rate)?;
         }
         rescue.wait()?;
         if self.erase_other_slot {
@@ -112,7 +113,7 @@ impl CommandDispatch for Firmware {
         }
         rescue.update_firmware(self.slot, payload)?;
         if self.rate.is_some() {
-            rescue.set_baud(prev_baudrate)?;
+            rescue.set_speed(prev_baudrate)?;
         }
         if !self.wait {
             transport.reset_with_delay(UartRx::Keep, Duration::from_millis(50))?;
@@ -146,7 +147,7 @@ impl CommandDispatch for GetBootLog {
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
-            let data = rescue.get_raw(RescueSerial::BOOT_LOG)?;
+            let data = rescue.get_raw(RescueMode::BootLog)?;
             Ok(Some(Box::new(RawBytes(data))))
         } else {
             let data = rescue.get_boot_log()?;
@@ -180,7 +181,7 @@ impl CommandDispatch for GetBootSvc {
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
-            let data = rescue.get_raw(RescueSerial::BOOT_SVC_RSP)?;
+            let data = rescue.get_raw(RescueMode::BootSvcRsp)?;
             Ok(Some(Box::new(RawBytes(data))))
         } else {
             let data = rescue.get_boot_svc()?;
@@ -214,7 +215,7 @@ impl CommandDispatch for GetDeviceId {
         let rescue = RescueSerial::new(uart);
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
-            let data = rescue.get_raw(RescueSerial::OT_ID)?;
+            let data = rescue.get_raw(RescueMode::DeviceId)?;
             Ok(Some(Box::new(RawBytes(data))))
         } else {
             let data = rescue.get_device_id()?;
@@ -437,8 +438,8 @@ impl CommandDispatch for GetOwnerConfig {
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
         let page = match self.page {
-            0 => RescueSerial::GET_OWNER_PAGE0,
-            1 => RescueSerial::GET_OWNER_PAGE1,
+            0 => RescueMode::GetOwnerPage0,
+            1 => RescueMode::GetOwnerPage1,
             _ => return Err(anyhow!("Unsupported page {}", self.page)),
         };
         let uart = self.params.create(transport)?;
