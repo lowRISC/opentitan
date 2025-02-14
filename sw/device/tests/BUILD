@@ -3650,6 +3650,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     qemu = qemu_params(
@@ -3659,8 +3660,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
+        "//hw/top:dt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
