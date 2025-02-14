@@ -25,8 +25,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // this vector is initialized to 1 (the channel 0 is granted by default)
   bit [NUM_PATTGEN_CHANNELS-1:0]      channel_grant = 'h1;
 
-  // if start_all_channels bit is set: both channels can start simmultaneously
-  rand bit                            start_all_channels;
   rand bit                            do_error_injected;
 
   // A constraint for the gaps between items in the sequence of pattgen commands
@@ -35,12 +33,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // constraints
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.pattgen_min_num_trans : cfg.seq_cfg.pattgen_max_num_trans]};
-  }
-  constraint start_all_channels_c {
-    start_all_channels dist {
-      1'b1 :/ cfg.seq_cfg.pattgen_sync_channels_pct,
-      1'b0 :/ (100 - cfg.seq_cfg.pattgen_sync_channels_pct)
-    };
   }
   constraint do_error_injected_c {
     do_error_injected dist {
@@ -148,18 +140,14 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
   virtual task start_pattgen_channels();
     if (num_pattern_req < num_trans) begin
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(start_all_channels)
-      // if start_all_channels is set, then activate both channels if they are setup and not busy
-      if (start_all_channels) begin
-        // once start_all_channels is set, temporaly disable its randomization to sync all channels
-        start_all_channels.rand_mode(0);
+      if ($urandom_range(0, 99) < cfg.seq_cfg.pattgen_sync_channels_pct) begin
+        // For some percentage of the time, we start all the channels at the same instant (ensuring
+        // that they stay in sync)
         if (channel_setup[0] && !channel_start[0] && channel_setup[1] && !channel_start[1]) begin
           short_delay();
           control_channels(AllChannels, Enable);
           {channel_start[0], channel_start[1]} = {1'b1, 1'b1};
           `uvm_info(`gfn, "\n  all channels: activated", UVM_DEBUG)
-          // re-enable start_all_channels's randomization after all channels have been started
-          start_all_channels.rand_mode(1);
         end
       end else begin
       // otherwise, activate channels independently
