@@ -28,6 +28,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // A constraint for the gaps between items in the sequence of pattgen commands
   int unsigned                        pattgen_max_dly = 5;
 
+  // If this true then the sequence might inject errors in stop_pattgen_channels.
+  bit                                 error_injected_enb = 1'b0;
+
   // constraints
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.pattgen_min_num_trans : cfg.seq_cfg.pattgen_max_num_trans]};
@@ -37,7 +40,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
     // env_cfg must be reset after vseq completion
-    cfg.seq_cfg.error_injected_enb = 1'b0;
     cfg.seq_cfg.pattgen_min_prediv = 0;
     cfg.seq_cfg.pattgen_min_len    = 0;
     cfg.seq_cfg.pattgen_min_reps   = 0;
@@ -179,7 +181,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
       // 11 (CH1)  11            11        CH0 finished          CH1 finished
       // 11 (CH1)  00            11        CH0 error injected    CH1 error injected*
       channel_stop = intr_status; // default setting
-      if (cfg.seq_cfg.error_injected_enb) begin
+      if (error_injected_enb) begin
         if ($urandom_range(0, 99) < cfg.seq_cfg.error_injected_pct) begin
           if (intr_status != channel_start) begin
             channel_stop = channel_start;
