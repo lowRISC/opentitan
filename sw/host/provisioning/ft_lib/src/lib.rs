@@ -587,7 +587,11 @@ pub fn check_slot_b_boot_up(
         });
 
     response.stats.log_elapsed_time("rom_ext-done", t0);
-    let rom_ext_failure_msg = r"Invalid UDS certificate detected!";
+
+    // CAUTION: This error message should match the one in
+    //   //sw/device/silicon_creator/lib/cert/dice_chain.c.
+    let rom_ext_failure_msg = r"UDS certificate not valid";
+
     let anchor_text = if let Some(owner_anchor) = &owner_fw_success_string {
         let full_owner_anchor = if response.seeds.number != 0 {
             let seed0 = response.seeds.seed[0].as_slice();
