@@ -4,12 +4,10 @@
 
 use anyhow::{anyhow, Result};
 use clap::{Args, Subcommand};
-use opentitanlib::io::uart::UartParams;
 use serde_annotate::Annotate;
 use std::any::Any;
 use std::fs::File;
 use std::path::PathBuf;
-use std::rc::Rc;
 use std::time::Duration;
 
 use opentitanlib::app::command::CommandDispatch;
@@ -19,8 +17,7 @@ use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams}
 use opentitanlib::image::image::Image;
 use opentitanlib::image::manifest::ManifestKind;
 use opentitanlib::ownership::{OwnerBlock, TlvHeader};
-use opentitanlib::rescue::serial::RescueSerial;
-use opentitanlib::rescue::{Rescue, RescueMode};
+use opentitanlib::rescue::{RescueMode, RescueParams};
 use opentitanlib::util::file::FromReader;
 use opentitanlib::util::parse_int::ParseInt;
 
@@ -33,8 +30,6 @@ pub struct RawBytes(
 
 #[derive(Debug, Args)]
 pub struct Firmware {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(long, help = "After connecting to rescue, negotiate faster baudrate")]
     rate: Option<u32>,
     #[arg(long, default_value = "SlotA", help = "Which flash slot to rescue")]
@@ -70,7 +65,7 @@ pub struct Firmware {
 impl CommandDispatch for Firmware {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let image = Image::read_from_file(&self.filename)?;
@@ -91,13 +86,12 @@ impl CommandDispatch for Firmware {
             }
             subimage.data
         };
-        let uart = self.params.create(transport)?;
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         let mut prev_baudrate = 0u32;
-        let rescue = RescueSerial::new(Rc::clone(&uart));
         rescue.enter(transport, self.reset_target)?;
         if let Some(rate) = self.rate {
-            prev_baudrate = uart.get_baudrate()?;
-            rescue.set_speed(rate)?;
+            prev_baudrate = rescue.set_speed(rate)?;
         }
         rescue.wait()?;
         if self.erase_other_slot {
@@ -121,8 +115,6 @@ impl CommandDispatch for Firmware {
 
 #[derive(Debug, Args)]
 pub struct GetBootLog {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -137,11 +129,11 @@ pub struct GetBootLog {
 impl CommandDispatch for GetBootLog {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
             let data = rescue.get_raw(RescueMode::BootLog)?;
@@ -155,8 +147,6 @@ impl CommandDispatch for GetBootLog {
 
 #[derive(Debug, Args)]
 pub struct GetBootSvc {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -171,11 +161,11 @@ pub struct GetBootSvc {
 impl CommandDispatch for GetBootSvc {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
             let data = rescue.get_raw(RescueMode::BootSvcRsp)?;
@@ -189,8 +179,6 @@ impl CommandDispatch for GetBootSvc {
 
 #[derive(Debug, Args)]
 pub struct GetDeviceId {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -205,11 +193,11 @@ pub struct GetDeviceId {
 impl CommandDispatch for GetDeviceId {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         if self.raw {
             let data = rescue.get_raw(RescueMode::DeviceId)?;
@@ -223,8 +211,6 @@ impl CommandDispatch for GetDeviceId {
 
 #[derive(Debug, Args)]
 pub struct SetNextBl0Slot {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         short,
@@ -258,11 +244,11 @@ pub struct SetNextBl0Slot {
 impl CommandDispatch for SetNextBl0Slot {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_next_bl0_slot(self.primary, self.next)?;
         if self.get_response {
@@ -278,8 +264,6 @@ impl CommandDispatch for SetNextBl0Slot {
 
 #[derive(Debug, Args)]
 pub struct OwnershipUnlock {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -303,15 +287,15 @@ pub struct OwnershipUnlock {
 impl CommandDispatch for OwnershipUnlock {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let unlock = self
             .unlock
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_unlock(unlock)?;
         if self.get_response {
@@ -327,8 +311,6 @@ impl CommandDispatch for OwnershipUnlock {
 
 #[derive(Debug, Args)]
 pub struct OwnershipActivate {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -352,15 +334,15 @@ pub struct OwnershipActivate {
 impl CommandDispatch for OwnershipActivate {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let activate = self
             .activate
             .apply_to(self.input.as_ref().map(File::open).transpose()?.as_mut())?;
 
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.ownership_activate(activate)?;
         if self.get_response {
@@ -376,8 +358,6 @@ impl CommandDispatch for OwnershipActivate {
 
 #[derive(Debug, Args)]
 pub struct SetOwnerConfig {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -392,12 +372,12 @@ pub struct SetOwnerConfig {
 impl CommandDispatch for SetOwnerConfig {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let data = std::fs::read(&self.input)?;
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         rescue.set_owner_config(&data)?;
         Ok(None)
@@ -406,8 +386,6 @@ impl CommandDispatch for SetOwnerConfig {
 
 #[derive(Debug, Args)]
 pub struct GetOwnerConfig {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -431,7 +409,7 @@ pub struct GetOwnerConfig {
 impl CommandDispatch for GetOwnerConfig {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         let page = match self.page {
@@ -439,8 +417,8 @@ impl CommandDispatch for GetOwnerConfig {
             1 => RescueMode::GetOwnerPage1,
             _ => return Err(anyhow!("Unsupported page {}", self.page)),
         };
-        let uart = self.params.create(transport)?;
-        let rescue = RescueSerial::new(uart);
+        let context = context.downcast_ref::<RescueCommand>().unwrap();
+        let rescue = context.params.create(transport)?;
         rescue.enter(transport, self.reset_target)?;
         let data = rescue.get_raw(page)?;
         if let Some(output) = &self.output {
@@ -458,8 +436,6 @@ impl CommandDispatch for GetOwnerConfig {
 
 #[derive(Debug, Args)]
 pub struct EraseOwner {
-    #[command(flatten)]
-    params: UartParams,
     #[arg(
         long,
         default_value_t = true,
@@ -474,12 +450,12 @@ pub struct EraseOwner {
 impl CommandDispatch for EraseOwner {
     fn run(
         &self,
-        _context: &dyn Any,
+        context: &dyn Any,
         transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn Annotate>>> {
         if self.really {
-            let uart = self.params.create(transport)?;
-            let rescue = RescueSerial::new(uart);
+            let context = context.downcast_ref::<RescueCommand>().unwrap();
+            let rescue = context.params.create(transport)?;
             rescue.enter(transport, self.reset_target)?;
             rescue.erase_owner()?;
             Ok(None)
@@ -498,7 +474,7 @@ pub enum BootSvcCommand {
 }
 
 #[derive(Debug, Subcommand, CommandDispatch)]
-pub enum RescueCommand {
+pub enum InternalRescueCommand {
     #[command(subcommand)]
     BootSvc(BootSvcCommand),
     EraseOwner(EraseOwner),
@@ -507,4 +483,25 @@ pub enum RescueCommand {
     Firmware(Firmware),
     SetOwnerConfig(SetOwnerConfig),
     GetOwnerConfig(GetOwnerConfig),
+}
+
+#[derive(Debug, Args)]
+pub struct RescueCommand {
+    #[command(flatten)]
+    params: RescueParams,
+
+    #[command(subcommand)]
+    command: InternalRescueCommand,
+}
+
+impl CommandDispatch for RescueCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn Annotate>>> {
+        // None of the SPI commands care about the prior context, but they do
+        // care about the `bus` parameter in the current node.
+        self.command.run(self, transport)
+    }
 }
