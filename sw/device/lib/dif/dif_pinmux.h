@@ -446,6 +446,16 @@ dif_result_t dif_pinmux_pad_get_attrs(const dif_pinmux_t *pinmux,
                                       dif_pinmux_pad_attr_t *attrs);
 
 /**
+ * Get attributes for a pad.
+ *
+ * See `dif_pinmux_pad_get_attrs` except that the pad is represented by
+ * a `dt_pad_t` instead of a pair (index,type).
+ */
+dif_result_t dif_pinmux_pad_get_attrs_dt(const dif_pinmux_t *pinmux,
+                                         dt_pad_t pad,
+                                         dif_pinmux_pad_attr_t *attrs);
+
+/**
  * Enables deep sleep mode of a particular pad.
  *
  * NOTE:
