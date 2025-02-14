@@ -16,6 +16,7 @@ use opentitanlib::ownership::{
     OwnerConfigItem, OwnerFlashConfig, OwnerFlashRegion, OwnerRescueConfig, OwnershipKeyAlg,
 };
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::Rescue;
 
 use std::path::Path;
 

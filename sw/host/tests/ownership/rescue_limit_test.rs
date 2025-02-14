@@ -14,6 +14,7 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::chip::boot_svc::{BootSlot, UnlockMode};
 use opentitanlib::chip::rom_error::RomError;
 use opentitanlib::rescue::serial::RescueSerial;
+use opentitanlib::rescue::Rescue;
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::uart::console::UartConsole;
 
