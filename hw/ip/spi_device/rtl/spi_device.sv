@@ -105,13 +105,24 @@ module spi_device
   spi_device_reg_pkg::spi_device_reg2hw_t reg2hw;
   spi_device_reg_pkg::spi_device_hw2reg_t hw2reg;
 
-  top_racl_pkg::racl_error_log_t racl_error_regs;
-  top_racl_pkg::racl_error_log_t racl_error_win_egress_buffer;
-  top_racl_pkg::racl_error_log_t racl_error_win_ingress_buffer;
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_regs              |
-                        racl_error_win_egress_buffer |
-                        racl_error_win_ingress_buffer;
+  top_racl_pkg::racl_error_log_t racl_error[3];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 3 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    always_comb begin
+      unused_signals = ^{racl_error[0] ^ racl_error[1] ^ racl_error[2]};
+      racl_error_o   = '0;
+    end
+  end
 
   tlul_pkg::tl_h2d_t tl_sram_h2d[2];
   tlul_pkg::tl_d2h_t tl_sram_d2h[2];
@@ -1719,7 +1730,7 @@ module spi_device
     .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error_win_egress_buffer)
+    .racl_error_o               (racl_error[1])
   );
 
   tlul_adapter_sram_racl #(
@@ -1757,7 +1768,7 @@ module spi_device
     .wr_collision_i             (1'b0),
     .write_pending_i            (1'b0),
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error_win_ingress_buffer)
+    .racl_error_o               (racl_error[2])
   );
   assign sys_sram_l2m[SysSramFwEgress].wstrb =
     sram_mask2strb(sys_sram_l2m_fw_wmask[SPI_DEVICE_EGRESS_BUFFER_IDX]);
@@ -1910,7 +1921,7 @@ module spi_device
 
     // RACL interface
     .racl_policies_i  (racl_policies_i),
-    .racl_error_o     (racl_error_regs),
+    .racl_error_o     (racl_error[0]),
 
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o (alerts[0])
