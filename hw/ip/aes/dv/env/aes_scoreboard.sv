@@ -734,6 +734,21 @@ class aes_scoreboard extends cip_base_scoreboard #(
             $sformatf("\n\t ----|   MESSAGE #%0d MATCHED  %s  |-----",
                 cfg.good_cnt, msg.aes_mode.name()), UVM_MEDIUM)
         cfg.good_cnt++;
+
+        if (input_item.mode == AES_GCM) begin
+          // As the message and tag matched the predicted output, sample AAD &
+          // message length as well as the mode of operation.
+          int msg_blocks = msg.message_length / 16;
+          int msg_last_block_len_bytes = msg.message_length % 16;
+          int msg_block_zero = msg.message_length == 0 ? 1 : 0;
+          int aad_blocks = msg.aad_length / 16;
+          int aad_last_block_len_bytes = msg.aad_length % 16;
+          int aad_block_zero = msg.aad_length == 0 ? 1 : 0;
+          cov_if.cg_gcm_len_sample(aad_blocks, aad_last_block_len_bytes, aad_block_zero,
+                                   msg_blocks, msg_last_block_len_bytes, msg_block_zero,
+                                   msg.aes_operation);
+        end
+
       end else begin
         if (msg.aes_mode == AES_NONE) begin
           `uvm_info(`gfn,
