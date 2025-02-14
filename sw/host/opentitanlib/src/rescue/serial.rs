@@ -62,7 +62,7 @@ impl Rescue for RescueSerial {
         Ok(())
     }
 
-    fn set_speed(&self, baud: u32) -> Result<()> {
+    fn set_speed(&self, baud: u32) -> Result<u32> {
         // Make sure the requested rate is a known rate.
         let symbol = match baud {
             115200 => Self::BAUD_115K,
@@ -94,8 +94,9 @@ impl Rescue for RescueSerial {
             return Err(RescueError::BadMode(result[0].clone()).into());
         }
         // Change our side of the connection to the new rate.
+        let old = self.uart.get_baudrate()?;
         self.uart.set_baudrate(baud)?;
-        Ok(())
+        Ok(old)
     }
 
     fn set_mode(&self, mode: RescueMode) -> Result<()> {
