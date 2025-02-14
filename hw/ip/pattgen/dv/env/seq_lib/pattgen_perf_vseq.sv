@@ -5,14 +5,14 @@
 // basic perf test vseq
 class pattgen_perf_vseq extends pattgen_base_vseq;
   `uvm_object_utils(pattgen_perf_vseq)
-  `uvm_object_new
 
   // reduce num_trans due to long running simulations
   constraint num_trans_c        { num_trans inside {[3:6]}; }
-  // fast clear interrupt
-  constraint clear_intr_dly_c   { clear_intr_dly == 0; }
-  // fast stop/start channel
-  constraint b2b_pattern_dly_c { b2b_pattern_dly == 0; }
+
+  function new (string name="");
+    super.new(name);
+    pattgen_max_dly = 0;
+  endfunction
 
   // override this function for pattgen_perf test
   function pattgen_channel_cfg get_random_channel_config(uint channel);

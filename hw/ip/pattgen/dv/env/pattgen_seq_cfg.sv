@@ -16,10 +16,6 @@ class pattgen_seq_cfg extends uvm_object;
   uint pattgen_min_num_runs          = 1;
   uint pattgen_max_num_runs          = 5;
 
-  // knobs for pattgen channel
-  uint pattgen_min_dly               = 0;
-  uint pattgen_max_dly               = 5;
-
   // see the specification document, the effective values of prediv, len, and reps
   // are incremented from the coresponding register values
 

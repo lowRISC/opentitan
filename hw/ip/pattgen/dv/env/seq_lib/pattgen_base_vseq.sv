@@ -25,12 +25,12 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // this vector is initialized to 1 (the channel 0 is granted by default)
   bit [NUM_PATTGEN_CHANNELS-1:0]      channel_grant = 'h1;
 
-  // random variables
-  rand uint                           b2b_pattern_dly;
-  rand uint                           clear_intr_dly;
   // if start_all_channels bit is set: both channels can start simmultaneously
   rand bit                            start_all_channels;
   rand bit                            do_error_injected;
+
+  // A constraint for the gaps between items in the sequence of pattgen commands
+  int unsigned                        pattgen_max_dly = 5;
 
   // constraints
   constraint num_trans_c {
@@ -47,12 +47,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
       1'b1:/ cfg.seq_cfg.error_injected_pct,
       1'b0:/ (100 - cfg.seq_cfg.error_injected_pct)
     };
-  }
-  constraint b2b_pattern_dly_c {
-    b2b_pattern_dly inside {[cfg.seq_cfg.pattgen_min_dly : cfg.seq_cfg.pattgen_max_dly]};
-  }
-  constraint clear_intr_dly_c {
-    clear_intr_dly inside {[cfg.seq_cfg.pattgen_min_dly : cfg.seq_cfg.pattgen_max_dly]};
   }
 
   virtual task pre_start();
@@ -143,6 +137,15 @@ class pattgen_base_vseq extends cip_base_vseq #(
     end
   endtask : setup_pattgen_channel_1
 
+  // Wait a short time (up to pattgen_max_dly)
+  //
+  // Completes early on reset.
+  local task short_delay();
+    int unsigned dly;
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dly, dly inside {[0:pattgen_max_dly]};)
+    cfg.clk_rst_vif.wait_clks_or_rst(dly);
+  endtask
+
   virtual task start_pattgen_channels();
     if (num_pattern_req < num_trans) begin
       `DV_CHECK_MEMBER_RANDOMIZE_FATAL(start_all_channels)
@@ -151,8 +154,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
         // once start_all_channels is set, temporaly disable its randomization to sync all channels
         start_all_channels.rand_mode(0);
         if (channel_setup[0] && !channel_start[0] && channel_setup[1] && !channel_start[1]) begin
-          `DV_CHECK_MEMBER_RANDOMIZE_FATAL(b2b_pattern_dly)
-          cfg.clk_rst_vif.wait_clks(b2b_pattern_dly);
+          short_delay();
           control_channels(AllChannels, Enable);
           {channel_start[0], channel_start[1]} = {1'b1, 1'b1};
           `uvm_info(`gfn, "\n  all channels: activated", UVM_DEBUG)
@@ -165,8 +167,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
           if (channel_setup[i] && !channel_start[i]) begin
             channel_select_e ch_select;
             `downcast(ch_select, i+1)
-            `DV_CHECK_MEMBER_RANDOMIZE_FATAL(b2b_pattern_dly)
-            cfg.clk_rst_vif.wait_clks(b2b_pattern_dly);
+            short_delay();
             control_channels(ch_select, Enable);
             channel_start[i]= 1'b1;
             `uvm_info(`gfn, $sformatf("\n  channel %0d: activated", i), UVM_DEBUG)
@@ -334,8 +335,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
         AllChannels: intr_clear = (1 << DoneCh1) | (1 << DoneCh0);
         default:     `uvm_fatal(`gfn, "  invalid argument")
       endcase
-      `DV_CHECK_MEMBER_RANDOMIZE_FATAL(clear_intr_dly)
-      cfg.clk_rst_vif.wait_clks(clear_intr_dly);
+      short_delay();
       csr_wr(.ptr(ral.intr_state), .value(intr_clear));
     end else begin
       `uvm_info(`gfn, $sformatf("\n  channel error, no clear interrupts %b", intr_clear), UVM_DEBUG)
