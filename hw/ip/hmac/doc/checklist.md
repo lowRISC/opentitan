@@ -98,17 +98,17 @@ Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         | This block only con
 
  Type         | Item                    | Resolution  | Note/Collaterals
 --------------|-------------------------|-------------|------------------
-Documentation | [NEW_FEATURES_D3][]     | Not started |
-RTL           | [TODO_COMPLETE][]       | Not started |
-Code Quality  | [LINT_COMPLETE][]       | Not started |
-Code Quality  | [CDC_COMPLETE][]        | Not started |
-Code Quality  | [RDC_COMPLETE][]        | Not started |
-Review        | [REVIEW_RTL][]          | Not started |
-Review        | [REVIEW_DELETED_FF][]   | Not started |
-Review        | [REVIEW_SW_CHANGE][]    | Not started |
-Review        | [REVIEW_SW_ERRATA][]    | Not started |
-Review        | Reviewer(s)             | Not started |
-Review        | Signoff date            | Not started |
+Documentation | [NEW_FEATURES_D3][]     | Done        | Introduction of new fields in several CSRs (see #22852, #23242)
+RTL           | [TODO_COMPLETE][]       | Done        | (see #25519)
+Code Quality  | [LINT_COMPLETE][]       | Done        | (see #25519)
+Code Quality  | [CDC_COMPLETE][]        | N/A         |
+Code Quality  | [RDC_COMPLETE][]        | N/A         |
+Review        | [REVIEW_RTL][]          | Done        | (see #22638)
+Review        | [REVIEW_DELETED_FF][]   | Done        | (see #22638)
+Review        | [REVIEW_SW_CHANGE][]    | Done        | The new CSR fields from above have been reflected in the cryptolib driver (see #23510)
+Review        | [REVIEW_SW_ERRATA][]    | N/A         |
+Review        | Reviewer(s)             | Done        | andrea-caforio@ vogelpi@ rswarbrick@
+Review        | Signoff date            | Done        | 2025-02-21
 
 [NEW_FEATURES_D3]:      ../../../../doc/project_governance/checklist/README.md#new_features_d3
 [TODO_COMPLETE]:        ../../../../doc/project_governance/checklist/README.md#todo_complete
