@@ -287,47 +287,56 @@ class pattgen_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n  channel %0d is ready for programming", ch), UVM_DEBUG)
   endtask
 
-  // this task allows channels to be activated or stopped independently/simultaneously
-  virtual task control_channels(channel_select_e ch_select, channel_status_e status);
+  // A masked write to the channel enable fields. Set the status in the RAL for the channels that
+  // are true in the mask to match the status argument.
+  function void add_desired_enables(bit [NUM_PATTGEN_CHANNELS-1:0] mask, channel_status_e status);
+    for (int unsigned ch = 0; ch < NUM_PATTGEN_CHANNELS; ch++) begin
+      if (mask[ch]) begin
+        uvm_reg_field len_field = ral.ctrl.get_field_by_name($sformatf("enable_ch%0d", ch));
+        `DV_CHECK_FATAL(len_field != null)
+        len_field.set(status);
+      end
+    end
+  endfunction
+
+  // Update all the channels selected by ch_select with the enable status in the status argument.
+  local task control_channels(channel_select_e ch_select, channel_status_e status);
+    bit [NUM_PATTGEN_CHANNELS-1:0] mask;
+    string                         verb;
+    int unsigned                   counter;
+
+    case (ch_select)
+      Channel0: mask = 2'b01;
+      Channel1: mask = 2'b10;
+      AllChannels: mask = 2'b11;
+      default: `uvm_fatal(`gfn, "Unknown select")
+    endcase
+
     // wait for no register access on bus before enable channels to avoid the race condition
     // (i.e. concurrent access to update ctrl.polarity on the other channel)
     wait_no_outstanding_access();
-    case (ch_select)
-      Channel0: begin
-        ral.ctrl.enable_ch0.set(status);
-        if (status == Enable) begin
-          num_pattern_req++;
-          `uvm_info(`gfn, $sformatf("\n  channel 0: request %0d/%0d\n%s",
-              num_pattern_req, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG)
-        end
-      end
-      Channel1: begin
-        ral.ctrl.enable_ch1.set(status);
-        if (status == Enable) begin
-          num_pattern_req++;
-          `uvm_info(`gfn, $sformatf("\n  channel 1: request %0d/%0d\n%s",
-              num_pattern_req, num_trans, channel_cfg[1].convert2string()), UVM_DEBUG)
-        end
-      end
-      AllChannels: begin
-        ral.ctrl.enable_ch0.set(status);
-        ral.ctrl.enable_ch1.set(status);
-        if (status == Enable) begin
-          num_pattern_req += 2;
-          `uvm_info(`gfn, $sformatf("\n  sync channel 0: request %0d/%0d\n%s",
-              num_pattern_req - 1, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG)
-          `uvm_info(`gfn, $sformatf("\n  sync channel 1: request %0d/%0d\n%s",
-              num_pattern_req, num_trans, channel_cfg[0].convert2string()), UVM_DEBUG)
-        end
-      end
-    endcase
+
+    add_desired_enables(mask, status);
+
     if (status == Enable) begin
-      `uvm_info(`gfn, $sformatf("\n  requested %0d/%0d patterns",
-          num_pattern_req, num_trans), UVM_DEBUG)
-    end else begin
-      `uvm_info(`gfn, $sformatf("\n  received %0d/%0d patterns",
-          num_pattern_gen, num_trans), UVM_DEBUG)
+      for (int unsigned i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
+        if (mask[i]) begin
+          num_pattern_req++;
+          `uvm_info(`gfn,
+                    $sformatf("\n  channel %0d: request %0d/%0d\n%s",
+                              i, num_pattern_req, num_trans, channel_cfg[i].convert2string()),
+                    UVM_DEBUG)
+        end
+      end
     end
+
+    `uvm_info(`gfn,
+              $sformatf("\n  %s %0d/%0d patterns",
+                        (status == Enable) ? "requested" : "received",
+                        (status == Enable) ? num_pattern_req : num_pattern_gen,
+                        num_trans),
+              UVM_DEBUG)
+
     csr_update(ral.ctrl);
   endtask : control_channels
 
