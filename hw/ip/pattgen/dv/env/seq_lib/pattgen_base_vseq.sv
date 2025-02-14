@@ -46,19 +46,14 @@ class pattgen_base_vseq extends cip_base_vseq #(
     super.pre_start();
   endtask : pre_start
 
-  // setup basic pattgen features
-  virtual task initialize_dut();
-    csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
-    `uvm_info(`gfn, "\n  call pattgen_init", UVM_DEBUG)
-  endtask : initialize_dut
-
   // TODO: consider optimize the base_vseq to make each channel
   // cfg, start, stop independently with semaphore (PR #4040)
   virtual task body();
     `uvm_info(`gfn, "\n--> start of sequence", UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("\n--> total required patterns %0d", num_trans), UVM_DEBUG)
 
-    initialize_dut();
+    csr_wr(.ptr(ral.intr_enable), .value({TL_DW{1'b1}}));
+
     while (num_pattern_req < num_trans ||   // not send all pattern configs
            num_pattern_gen < num_trans ||   // not get  all pattern done interrupts
            channel_start) begin             // at least one channel is running
