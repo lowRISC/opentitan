@@ -4,7 +4,6 @@
 
 #include <stdint.h>
 
-#include "include/dice/cbor_reader.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/base/util.h"
 #include "sw/device/silicon_creator/lib/cert/cbor.h"
@@ -27,17 +26,6 @@
 #include "hw/top/otp_ctrl_regs.h"  // Generated.
 
 const dice_cert_format_t kDiceCertFormat = kDiceCertFormatCWTAndroid;
-
-enum {
-  // Must match the label used for the public key in
-  // `cwt_dice_chain_entry_payload.hjson`.
-  kDiceCwtSubjectPublicKeyLabel = -4670552,
-
-  // Must match the labels used for the public key X/Y coords in
-  // `cwt_cose_key.hjson`.
-  kDiceCwtCoseKeyXCoordLabel = -2,
-  kDiceCwtCoseKeyYCoordLabel = -3,
-};
 
 enum config_desc_labels {
   kSecurityVersionLabel = -70005,
@@ -68,6 +56,68 @@ enum payload_entry_sizes {
 };
 static_assert(kIssuerSubjectNameLength <= kIssuerSubjectKeyIdLength * 2,
               "Insufficient SubjectNameLength");
+
+enum cwt_cert_expectations {
+  // Size of magic bytes to distinguish between CoseKey and CoseSign1 message.
+  kDiceCwtMagicSizeBytes = 1,
+
+  // Magic header identifying a CoseKey message (CBOR map with 5 elements).
+  kDiceCwtCoseKeyMagic = 0xa5,
+
+  // Size of the CoseKey identity region header. (y-coord)
+  // Expects 1B mapKey(-3) + 2B bstr(32) header.
+  kDiceCwtCoseKeyIdHeaderSizeBytes = 1 + 2,
+
+  // Total size in bytes of the CoseKey identity region. (y-coord)
+  // Expects header + 32B p256 y-coord.
+  kDiceCwtCoseKeyIdSizeBytes =
+      kDiceCwtCoseKeyIdHeaderSizeBytes + kEcdsaP256PublicKeyCoordBytes,
+
+  // Offset to the CoseKey identity region. (y-coord)
+  // This offset is relative to the *end* of CoseKey message.
+  kDiceCwtCoseKeyIdOffsetBytes = 0,
+
+  // All valid CoseKey messages should be longer than this size.
+  kDiceCwtCoseKeyMinSizeBytes = kDiceCwtMagicSizeBytes +
+                                kDiceCwtCoseKeyIdOffsetBytes +
+                                kDiceCwtCoseKeyIdSizeBytes,
+
+  // Magic header identifying a CoseSign1 message (CBOR array with 4 elements).
+  kDiceCwtCoseSign1Magic = 0x84,
+
+  // Size of the CoseSign1 identity region header. (subject hex id)
+  // Expects 1B mapKey(2) + 2B text(64) header.
+  kDiceCwtCoseSign1IdHeaderSizeBytes = 1 + 2,
+
+  // Size of the CoseSign1 identity region. (subject hex id)
+  // Expects header + 64B subject hex id.
+  kDiceCwtCoseSign1IdSizeBytes =
+      kDiceCwtCoseSign1IdHeaderSizeBytes + kIssuerSubjectNameLength,
+
+  // Offset to the CoseSign1 identity region. (subject hex id)
+  // This offset is relative to the *begin* of CoseSign1.
+  // Expects 9B COSE prefix + 4B Payload prefix + 64B issuer id.
+  kDiceCwtCoseSign1IdOffsetBytes = 9 + 4 + kIssuerSubjectNameLength,
+
+  // All valid CoseSign1 messages should be longer than this size.
+  kDiceCwtCoseSign1MinSizeBytes = kDiceCwtMagicSizeBytes +
+                                  kDiceCwtCoseSign1IdOffsetBytes +
+                                  kDiceCwtCoseSign1IdSizeBytes,
+};
+
+// Reusable buffer for checking cose key identity.
+static char expected_cose_key_id[kDiceCwtCoseKeyIdSizeBytes] = {
+    0x22,                                 // mapKey -3 (y-coord)
+    0x58, kEcdsaP256PublicKeyCoordBytes,  // 32-byte bstr header
+    // Remaining bytes will be filled during check.
+};
+
+// Reusable buffer for checking cose sign1 cert identity.
+static char expected_cose_sign1_id[kDiceCwtCoseSign1IdSizeBytes] = {
+    0x02,                            // mapKey 2 (subject id)
+    0x78, kIssuerSubjectNameLength,  // 64-byte text header
+    // Remaining bytes will be filled during check.
+};
 
 // Reusable buffer for generating Configuration Descriptor
 static uint8_t config_desc_buf[kConfigDescBuffSize] = {0};
@@ -359,88 +409,35 @@ rom_error_t dice_cdi_1_cert_build(hmac_digest_t *owner_measurement,
   return kErrorOk;
 }
 
-static rom_error_t extract_pubkey_from_cose_key(const uint8_t *obj,
-                                                size_t obj_size,
-                                                const uint32_t **x_coord_p,
-                                                const uint32_t **y_coord_p) {
-  // Initialize CBOR object.
-  struct CborIn cbor_obj;
-  CborInInit(obj, obj_size, &cbor_obj);
-
-  // Find the x/y-coord bstrs.
-  size_t num_pairs = 0;
-  CborReadMap(&cbor_obj, &num_pairs);
-  if (num_pairs == 0) {
-    return kErrorDiceCwtKeyCoordsNotFound;
+static rom_error_t cose_key_check_valid(const uint8_t *cert, size_t cert_size,
+                                        const ecdsa_p256_public_key_t *pubkey,
+                                        hardened_bool_t *cert_valid_output) {
+  if (cert_size < kDiceCwtCoseKeyMinSizeBytes) {
+    return kErrorDiceCwtCoseKeyNotFound;
   }
-
-  size_t x_coord_size = 0;
-  size_t y_coord_size = 0;
-  *x_coord_p = NULL;
-  *y_coord_p = NULL;
-
-  // Locate public key coords bstrs.
-  int64_t key = 0;
-  for (size_t i = 0; i < num_pairs; ++i) {
-    CborReadInt(&cbor_obj, &key);
-    if (key == kDiceCwtCoseKeyXCoordLabel) {
-      CborReadBstr(&cbor_obj, &x_coord_size, (const uint8_t **)x_coord_p);
-      continue;
-    } else if (key == kDiceCwtCoseKeyYCoordLabel) {
-      CborReadBstr(&cbor_obj, &y_coord_size, (const uint8_t **)y_coord_p);
-      continue;
-    }
-    CborReadSkip(&cbor_obj);
+  memcpy(&expected_cose_key_id[kDiceCwtCoseKeyIdHeaderSizeBytes], pubkey->y,
+         sizeof(pubkey->y));
+  cert += cert_size - kDiceCwtCoseKeyIdOffsetBytes - kDiceCwtCoseKeyIdSizeBytes;
+  if (memcmp(cert, expected_cose_key_id, sizeof(expected_cose_key_id)) == 0) {
+    *cert_valid_output = kHardenedBoolTrue;
   }
-
-  // Confirm we found the key.
-  if (x_coord_p == NULL || y_coord_p == NULL) {
-    return kErrorDiceCwtKeyCoordsNotFound;
-  }
-  // Confirm the key is the correct size.
-  if (x_coord_size != kEcdsaP256PublicKeyCoordBytes ||
-      y_coord_size != kEcdsaP256PublicKeyCoordBytes) {
-    return kErrorDiceCwtCoseKeyBadSize;
-  }
-
   return kErrorOk;
 }
 
-static rom_error_t extract_pubkey_from_cose_sign1_payload(
-    const uint8_t *payload, size_t payload_size, const uint32_t **x_coord_p,
-    const uint32_t **y_coord_p) {
-  // Initialize CBOR object.
-  struct CborIn cbor_obj;
-  CborInInit(payload, payload_size, &cbor_obj);
-
-  // Find the COSE_Key object in the COSE_Sign1 payload.
-  size_t num_payload_pairs = 0;
-  CborReadMap(&cbor_obj, &num_payload_pairs);
-  if (num_payload_pairs == 0) {
+static rom_error_t cose_sign1_check_valid(const uint8_t *cert, size_t cert_size,
+                                          const hmac_digest_t *pubkey_id,
+                                          hardened_bool_t *cert_valid_output) {
+  if (cert_size < kDiceCwtCoseSign1MinSizeBytes) {
     return kErrorDiceCwtCoseKeyNotFound;
   }
-
-  int64_t key = 0;
-  size_t cose_key_size = 0;
-  const uint8_t *cose_key_p = NULL;
-  for (size_t i = 0; i < num_payload_pairs; ++i) {
-    CborReadInt(&cbor_obj, &key);
-    if (key == kDiceCwtSubjectPublicKeyLabel) {
-      CborReadBstr(&cbor_obj, &cose_key_size, &cose_key_p);
-      break;
-    }
-    CborReadSkip(&cbor_obj);
+  fill_dice_id_string(
+      (uint8_t *)(pubkey_id->digest),
+      &expected_cose_sign1_id[kDiceCwtCoseSign1IdHeaderSizeBytes]);
+  cert += kDiceCwtCoseSign1IdOffsetBytes;
+  if (memcmp(cert, expected_cose_sign1_id, sizeof(expected_cose_sign1_id)) ==
+      0) {
+    *cert_valid_output = kHardenedBoolTrue;
   }
-
-  // Check the COSE_Key object was found in the COSE_Sign1 payload.
-  if (key != kDiceCwtSubjectPublicKeyLabel) {
-    return kErrorDiceCwtCoseKeyNotFound;
-  }
-
-  // Extract the pubkey from the COSE_Key payload.
-  RETURN_IF_ERROR(extract_pubkey_from_cose_key(cose_key_p, cose_key_size,
-                                               x_coord_p, y_coord_p));
-
   return kErrorOk;
 }
 
@@ -448,51 +445,21 @@ rom_error_t dice_cert_check_valid(const perso_tlv_cert_obj_t *cert_obj,
                                   const hmac_digest_t *pubkey_id,
                                   const ecdsa_p256_public_key_t *pubkey,
                                   hardened_bool_t *cert_valid_output) {
-  const uint32_t *x_coord_p = NULL;
-  const uint32_t *y_coord_p = NULL;
+  *cert_valid_output = kHardenedBoolFalse;
 
-  struct CborIn cbor_obj;
-  CborInInit(cert_obj->cert_body_p, cert_obj->cert_body_size, &cbor_obj);
-
-  // Check if CBOR object is array or map. UDS is a COSE_Key which is a map.
-  // CDI_* are COSE_Sign1 objects, which are arrays.
-  size_t num_array_items = 0;
-  CborReadArray(&cbor_obj, &num_array_items);
-  size_t num_map_items = 0;
-  CborReadMap(&cbor_obj, &num_map_items);
-
-  // Extract the public key from the CBOR certificate object.
-  if (num_array_items > 0 && num_map_items == 0) {
-    // Skip first two parent items; subject public key is in the "payload" item
-    // of COSE_Sign1 object, which is encoded as a bstr.
-    CborReadSkip(&cbor_obj);
-    CborReadSkip(&cbor_obj);
-    size_t payload_size = 0;
-    const uint8_t *payload_p = NULL;
-    CborReadBstr(&cbor_obj, &payload_size, &payload_p);
-    RETURN_IF_ERROR(extract_pubkey_from_cose_sign1_payload(
-        payload_p, payload_size, &x_coord_p, &y_coord_p));
-  } else if (num_map_items > 0 && num_array_items == 0) {
-    RETURN_IF_ERROR(extract_pubkey_from_cose_key(cert_obj->cert_body_p,
-                                                 cert_obj->cert_body_size,
-                                                 &x_coord_p, &y_coord_p));
-  } else {
+  const size_t cert_size = cert_obj->cert_body_size;
+  if (cert_size < kDiceCwtMagicSizeBytes) {
     return kErrorDiceCwtCoseKeyNotFound;
   }
 
-  // Compare the public key in the certificate to the public updated key.
-  for (size_t i = 0; i < kEcdsaP256PublicKeyCoordWords; ++i) {
-    if (x_coord_p[i] != pubkey->x[i]) {
-      *cert_valid_output = kHardenedBoolFalse;
-      return kErrorOk;
-    }
-    if (y_coord_p[i] != pubkey->y[i]) {
-      *cert_valid_output = kHardenedBoolFalse;
-      return kErrorOk;
-    }
+  const uint8_t *cert = cert_obj->cert_body_p;
+
+  if (*cert == kDiceCwtCoseKeyMagic) {
+    return cose_key_check_valid(cert, cert_size, pubkey, cert_valid_output);
+  } else if (*cert == kDiceCwtCoseSign1Magic) {
+    return cose_sign1_check_valid(cert, cert_size, pubkey_id,
+                                  cert_valid_output);
   }
 
-  *cert_valid_output = kHardenedBoolTrue;
-
-  return kErrorOk;
+  return kErrorDiceCwtCoseKeyNotFound;
 }
