@@ -25,8 +25,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // this vector is initialized to 1 (the channel 0 is granted by default)
   bit [NUM_PATTGEN_CHANNELS-1:0]      channel_grant = 'h1;
 
-  rand bit                            do_error_injected;
-
   // A constraint for the gaps between items in the sequence of pattgen commands
   int unsigned                        pattgen_max_dly = 5;
 
@@ -34,13 +32,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.pattgen_min_num_trans : cfg.seq_cfg.pattgen_max_num_trans]};
   }
-  constraint do_error_injected_c {
-    do_error_injected dist {
-      1'b1:/ cfg.seq_cfg.error_injected_pct,
-      1'b0:/ (100 - cfg.seq_cfg.error_injected_pct)
-    };
-  }
-
   virtual task pre_start();
     cfg.m_pattgen_agent_cfg.en_monitor = cfg.en_scb;
     `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
@@ -189,8 +180,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
       // 11 (CH1)  00            11        CH0 error injected    CH1 error injected*
       channel_stop = intr_status; // default setting
       if (cfg.seq_cfg.error_injected_enb) begin
-        `DV_CHECK_MEMBER_RANDOMIZE_FATAL(do_error_injected)
-        if (do_error_injected) begin
+        if ($urandom_range(0, 99) < cfg.seq_cfg.error_injected_pct) begin
           if (intr_status != channel_start) begin
             channel_stop = channel_start;
             error_injected = 1'b1;
