@@ -28,7 +28,7 @@ class aes_smoke_test extends aes_base_test;
 
     cfg.message_len_min          = 16;    // one block (16bytes=128bits)
     cfg.message_len_max          = 32;    //
-    cfg.aad_len_min              = 16;    // one block (16bytes=128bits)
+    cfg.aad_len_min              = 0;     //
     cfg.aad_len_max              = 32;    //
     cfg.manual_operation_pct     = 50;
     cfg.use_key_mask             = 0;

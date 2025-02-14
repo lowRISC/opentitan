@@ -35,6 +35,8 @@ class aes_base_test extends cip_base_test #(
     cfg.num_messages_max            = 31;
     cfg.message_len_min             = 1;
     cfg.message_len_max             = 599;
+    cfg.aad_len_min                 = 0;
+    cfg.aad_len_max                 = 599;
     cfg.use_key_mask                = 0;
     cfg.use_c_model_pct             = 0;
     cfg.error_types                 = '0;

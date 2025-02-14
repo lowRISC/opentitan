@@ -37,7 +37,7 @@ class aes_manual_config_err_test extends aes_base_test;
 
     cfg.message_len_min          = 16;
     cfg.message_len_max          = 128;
-    cfg.aad_len_min              = 16;
+    cfg.aad_len_min              = 0;
     cfg.aad_len_max              = 128;
     cfg.manual_operation_pct     = 0;
 

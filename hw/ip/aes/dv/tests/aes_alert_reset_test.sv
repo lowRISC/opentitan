@@ -29,7 +29,7 @@ class aes_alert_reset_test extends aes_base_test;
 
     cfg.message_len_min          = 7;    // one block (16bytes=128bits)
     cfg.message_len_max          = 300;
-    cfg.aad_len_min              = 7;    // one block (16bytes=128bits)
+    cfg.aad_len_min              = 0;
     cfg.aad_len_max              = 300;
     cfg.manual_operation_pct     = 0;
     cfg.use_key_mask             = 0;

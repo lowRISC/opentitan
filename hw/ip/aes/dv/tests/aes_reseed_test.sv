@@ -29,8 +29,7 @@ class aes_reseed_test extends aes_base_test;
 
     cfg.message_len_min          = 7;    // bytes
     cfg.message_len_max          = 1023; // bytes
-
-    cfg.aad_len_min              = 7;    // bytes
+    cfg.aad_len_min              = 0;    //
     cfg.aad_len_max              = 1023; // bytes
 
     cfg.fixed_data_en            = 0;
