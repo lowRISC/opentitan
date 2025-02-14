@@ -26,7 +26,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   bit [NUM_PATTGEN_CHANNELS-1:0]      channel_grant = 'h1;
 
   // random variables
-  rand uint                           num_runs;
   rand uint                           b2b_pattern_dly;
   rand uint                           clear_intr_dly;
   // if start_all_channels bit is set: both channels can start simmultaneously
@@ -36,9 +35,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
   // constraints
   constraint num_trans_c {
     num_trans inside {[cfg.seq_cfg.pattgen_min_num_trans : cfg.seq_cfg.pattgen_max_num_trans]};
-  }
-  constraint num_runs_c {
-    num_runs inside {[cfg.seq_cfg.pattgen_min_num_runs : cfg.seq_cfg.pattgen_max_num_runs]};
   }
   constraint start_all_channels_c {
     start_all_channels dist {
@@ -63,7 +59,6 @@ class pattgen_base_vseq extends cip_base_vseq #(
     cfg.m_pattgen_agent_cfg.en_monitor = cfg.en_scb;
     `uvm_info(`gfn, $sformatf("\n--> %s monitor and scoreboard",
         cfg.en_scb ? "enable" : "disable"), UVM_DEBUG)
-    num_runs.rand_mode(0);
     // env_cfg must be reset after vseq completion
     cfg.seq_cfg.error_injected_enb = 1'b0;
     cfg.seq_cfg.pattgen_min_prediv = 0;

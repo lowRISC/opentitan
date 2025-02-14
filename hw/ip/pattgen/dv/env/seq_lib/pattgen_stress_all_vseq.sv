@@ -13,6 +13,12 @@ class pattgen_stress_all_vseq extends pattgen_base_vseq;
   local string str, seq_name;
   local int    seq_run_hist[string];
 
+  local rand int unsigned num_runs;
+
+  constraint num_runs_c {
+    num_runs inside {[cfg.seq_cfg.pattgen_min_num_runs : cfg.seq_cfg.pattgen_max_num_runs]};
+  }
+
   string seq_names[] = {
     "pattgen_common_vseq",      // for intr_test
     "pattgen_smoke_vseq",
