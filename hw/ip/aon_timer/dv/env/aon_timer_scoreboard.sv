@@ -658,9 +658,8 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
     if(csr.get_name() == "intr_state" || csr.get_name() == "wkup_cause")
       `uvm_info(`gfn, $sformatf("Write to %s", csr.get_name()), UVM_DEBUG)
     else begin
-      // TODO: check the predict function return all OK for any other register to guarantee correct
-      // mirrored value prediction
-      void'(csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)));
+      if (!csr.predict(.value(item.a_data), .kind(UVM_PREDICT_WRITE), .be(item.a_mask)))
+        `uvm_fatal(`gfn, $sformatf("%s prediction failed", csr.get_name()))
     end
     if (cfg.en_cov) begin
       //Sample configuration coverage
