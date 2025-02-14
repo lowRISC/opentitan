@@ -836,7 +836,7 @@ def check_clocks_resets(top, ip_name_to_block, xbar_name_to_block):
     unmanaged_resets = top.get('unmanaged_resets')
     if unmanaged_resets:
         if isinstance(unmanaged_resets, UnmanagedResets):
-            unmanaged_reset_nets = [reset.signal_name for reset in unmanaged_resets.resets]
+            unmanaged_reset_nets = [reset for reset in unmanaged_resets.resets.keys()]
         else:
             unmanaged_reset_nets = [net for reset in unmanaged_resets
                                     for net in reset.values()]
