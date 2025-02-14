@@ -398,6 +398,16 @@ dif_result_t dif_pinmux_pad_get_attrs(const dif_pinmux_t *pinmux,
   return kDifOk;
 }
 
+dif_result_t dif_pinmux_pad_get_attrs_dt(const dif_pinmux_t *pinmux,
+                                         dt_pad_t pad,
+                                         dif_pinmux_pad_attr_t *attrs) {
+  dif_pinmux_index_t index;
+  dif_pinmux_pad_kind_t type;
+  DIF_RETURN_IF_ERROR(dif_pinmux_pad_from_dt_pad(pad, &index, &type));
+  DIF_RETURN_IF_ERROR(dif_pinmux_pad_get_attrs(pinmux, index, type, attrs));
+  return kDifOk;
+}
+
 dif_result_t dif_pinmux_pad_sleep_enable(const dif_pinmux_t *pinmux,
                                          dif_pinmux_index_t pad,
                                          dif_pinmux_pad_kind_t type,
