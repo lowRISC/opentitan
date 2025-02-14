@@ -139,6 +139,17 @@ rom_error_t owner_keyring_find_key(const owner_application_keyring_t *keyring,
                                    uint32_t key_id, size_t *index);
 
 /**
+ * Apply the rescue configuration parameters in the owner block.
+ *
+ * This function sets up the trigger detection when a GPIO trigger specified in
+ * the configuration.
+ *
+ * @param rescue A pointer to the rescue configuration.
+ * @return error code.
+ */
+rom_error_t owner_block_rescue_apply(const owner_rescue_config_t *rescue);
+
+/**
  * Determine whether the given key is on owner page 0 or page 1.
  *
  * @return page number.
