@@ -68,14 +68,24 @@ module mbx_sysif
   mbx_soc_reg2hw_t reg2hw;
   mbx_soc_hw2reg_t hw2reg;
 
-  top_racl_pkg::racl_error_log_t racl_error_regs_soc;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_wdata;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_rdata;
-
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_regs_soc      |
-                        racl_error_win_soc_wdata |
-                        racl_error_win_soc_rdata;
+  top_racl_pkg::racl_error_log_t racl_error[3];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 3 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    always_comb begin
+      unused_signals = ^{racl_error[0] ^ racl_error[1] ^ racl_error[2]};
+      racl_error_o   = '0;
+    end
+  end
 
   // Interface for the custom register interface with bus blocking support
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
@@ -96,7 +106,7 @@ module mbx_sysif
     .reg2hw           ( reg2hw              ),
     .hw2reg           ( hw2reg              ),
     .racl_policies_i  ( racl_policies_i     ),
-    .racl_error_o     ( racl_error_regs_soc ),
+    .racl_error_o     ( racl_error[0]       ),
     .intg_err_o       ( intg_err_o          )
   );
 
@@ -234,7 +244,7 @@ module mbx_sysif
     .en_ifetch_i      ( prim_mubi_pkg::MuBi4False    ),
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
-    .racl_error_o     ( racl_error_win_soc_wdata     ),
+    .racl_error_o     ( racl_error[1]                ),
     .we_o             ( reg_wdata_we                 ),
     // No Reading of the write register. Always reads zero
     .re_o             (                              ),
@@ -265,7 +275,7 @@ module mbx_sysif
     .en_ifetch_i      ( prim_mubi_pkg::MuBi4False    ),
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
-    .racl_error_o     ( racl_error_win_soc_rdata     ),
+    .racl_error_o     ( racl_error[2]                ),
     // No writing to the read register
     .we_o             ( read_data_write_valid_o      ),
     .re_o             ( read_data_read_valid_o       ),

@@ -60,10 +60,24 @@ module spi_host
   spi_host_reg2hw_t reg2hw;
   spi_host_hw2reg_t hw2reg;
 
-  top_racl_pkg::racl_error_log_t racl_error_regs;
-  top_racl_pkg::racl_error_log_t racl_error_window;
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_regs | racl_error_window;
+  top_racl_pkg::racl_error_log_t racl_error[3];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 3 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    always_comb begin
+      unused_signals = ^{racl_error[0] ^ racl_error[1] ^ racl_error[2]};
+      racl_error_o   = '0;
+    end
+  end
 
   tlul_pkg::tl_h2d_t fifo_win_h2d [2];
   tlul_pkg::tl_d2h_t fifo_win_d2h [2];
@@ -86,7 +100,7 @@ module spi_host
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o       ( alerts[0]              ),
     .racl_policies_i  ( racl_policies_i        ),
-    .racl_error_o     ( racl_error_regs        )
+    .racl_error_o     ( racl_error[0]          )
   );
 
   // Alerts
@@ -331,7 +345,8 @@ module spi_host
     .rx_data_i        ( rx_data                     ),
     .rx_ready_o       ( rx_ready                    ),
     .racl_policies_i  ( racl_policies_i             ),
-    .racl_error_o     ( racl_error_window           )
+    .racl_error_tx_o  ( racl_error[1]               ),
+    .racl_error_rx_o  ( racl_error[2]               )
   );
 
   logic [31:0] core_tx_data;

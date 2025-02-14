@@ -91,10 +91,22 @@ module sram_ctrl
 
   `ASSERT_INIT(NonceWidthsLessThanSource_A, NonceWidth + LfsrWidth <= otp_ctrl_pkg::SramNonceWidth)
 
-  top_racl_pkg::racl_error_log_t racl_error_regs;
-  top_racl_pkg::racl_error_log_t racl_error_ram;
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_regs | racl_error_ram;
+  top_racl_pkg::racl_error_log_t racl_error[2];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 2 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    assign unused_signals = ^{racl_error[0] ^ racl_error[1]};
+    assign racl_error_o   = '0;
+  end
 
   /////////////////////////////////////
   // Anchor incoming seeds and constants
@@ -142,7 +154,7 @@ module sram_ctrl
     .hw2reg,
     // RACL interface
     .racl_policies_i  ( racl_policies_i    ),
-    .racl_error_o     ( racl_error_regs    ),
+    .racl_error_o     ( racl_error[0]      ),
     // SEC_CM: BUS.INTEGRITY
     .intg_err_o       ( bus_integ_error[0] )
    );
@@ -542,7 +554,7 @@ module sram_ctrl
     .write_pending_i            (sram_wpending),
     // RACL interface
     .racl_policies_i            (racl_policies_i),
-    .racl_error_o               (racl_error_ram)
+    .racl_error_o               (racl_error[1])
   );
 
   logic key_valid;
