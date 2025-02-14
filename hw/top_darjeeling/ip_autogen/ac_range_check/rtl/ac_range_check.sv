@@ -186,32 +186,17 @@ module ac_range_check
 
   // Based on the deny mask, we compute the leading bit in the mask. The index of the leading
   // bit determines the index of the range that denied the request.
+
   localparam int unsigned NumRangesWidth = prim_util_pkg::vbits(NumRanges);
-  logic [NumRanges-1:0] ppc_out;
-  logic [NumRanges-1:0] leading_deny_mask;
   logic [NumRangesWidth-1:0] deny_index;
-
-  // PPC
-  //   Even below code looks O(n) but DC optimizes it to O(log(N))
-  //   Using Parallel Prefix Computation
-  always_comb begin
-    ppc_out[0] = deny_mask[0];
-    for (int i = 1; i < NumRanges; i++) begin
-      ppc_out[i] = ppc_out[i-1] | deny_mask[i];
-    end
-  end
-
-  // This mask only contains one bit set determing the leading one in the deny mask
-  assign leading_deny_mask = ppc_out ^ {ppc_out[NumRanges-2:0], 1'b0};
-
-  always_comb begin
-    deny_index = '0;
-    for (int unsigned i = 0; i < NumRanges; i++) begin
-      if (leading_deny_mask[i]) begin
-        deny_index = i[NumRangesWidth-1:0];
-      end
-    end
-  end
+  prim_leading_one_ppc #(
+    .N ( NumRanges )
+  ) u_leading_one (
+    .in_i         ( deny_mask  ),
+    .leadig_one_o (            ),
+    .ppc_out_o    (            ),
+    .idx_o        ( deny_index )
+  );
 
   // The access fails if nothing is allowed and no overwrite is present
   logic range_check_fail;
