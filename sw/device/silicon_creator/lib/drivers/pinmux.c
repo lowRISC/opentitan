@@ -103,22 +103,27 @@ static const pinmux_input_t kInputUsbdevSense = {
 /**
  * Sets the input pad for the specified peripheral input.
  *
- * @param input A peripheral input and MIO pad to link it to.
+ * @param periph A peripheral input (e.g. top_earlgrey_pinmux_peripheral_in_t
+ * periph).
+ * @param insel An MIO pad to link it to (e.g. top_earlgrey_pinmux_insel_t
+ * insel).
  */
-static void configure_input(pinmux_input_t input) {
-  abs_mmio_write32(kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
-                       input.periph * sizeof(uint32_t),
-                   input.insel);
+void pinmux_configure_input(uint32_t periph, uint32_t insel) {
+  // TODO: what is the consequence of an illegal insel value?  The legal range
+  // is [0..48], but there are enough bits for [0..63].
+  abs_mmio_write32(
+      kBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET + periph * sizeof(uint32_t),
+      insel);
 }
 
 /**
  * Enables or disables pull-up/pull-down for the specified pad.
  *
- * @param pad A MIO pad.
+ * @param pad A MIO pad (e.g. top_earlgrey_muxed_pads_t).
  * @param enable Whether the internal pull resistor should be enabled.
  * @param up Whether the pull resistor should pull up(true) or down(false).
  */
-static void enable_pull(top_earlgrey_muxed_pads_t pad, bool enable, bool up) {
+void pinmux_enable_pull(uint32_t pad, bool enable, bool up) {
   uint32_t reg = 0;
   reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_EN_0_BIT, enable);
   reg = bitfield_bit32_write(reg, PINMUX_MIO_PAD_ATTR_0_PULL_SELECT_0_BIT, up);
@@ -147,7 +152,7 @@ static void pinmux_prop_delay(void) {
  */
 static uint32_t read_strap_pin(pinmux_input_t input) {
   // First, disable all pull resistors and read the state of the pin.
-  enable_pull(input.pad, false, false);
+  pinmux_enable_pull(input.pad, false, false);
   pinmux_prop_delay();
   uint32_t val =
       abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
@@ -157,7 +162,7 @@ static uint32_t read_strap_pin(pinmux_input_t input) {
   // Then, enable the opposite pull to the observed state.
   // If the external signal is weak, the internal pull resistor will win; if
   // the external signal is strong, the external resistor will win.
-  enable_pull(input.pad, true, !state);
+  pinmux_enable_pull(input.pad, true, !state);
   pinmux_prop_delay();
 
   val = abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
@@ -186,27 +191,27 @@ void pinmux_init(void) {
     HARDENED_CHECK_NE(bootstrap_dis, kHardenedBoolTrue);
     // Note: attributes should be configured before the pinmux matrix to avoid
     // "undesired electrical behavior and/or contention at the pads".
-    enable_pull(kInputSwStrap0.pad, /*enable=*/true, /*up=*/false);
-    enable_pull(kInputSwStrap1.pad, /*enable=*/true, /*up=*/false);
-    enable_pull(kInputSwStrap2.pad, /*enable=*/true, /*up=*/false);
+    pinmux_enable_pull(kInputSwStrap0.pad, /*enable=*/true, /*up=*/false);
+    pinmux_enable_pull(kInputSwStrap1.pad, /*enable=*/true, /*up=*/false);
+    pinmux_enable_pull(kInputSwStrap2.pad, /*enable=*/true, /*up=*/false);
     // Wait for pull downs to propagate to the physical pads.
     pinmux_prop_delay();
 
-    configure_input(kInputSwStrap0);
-    configure_input(kInputSwStrap1);
-    configure_input(kInputSwStrap2);
+    pinmux_configure_input(kInputSwStrap0.periph, kInputSwStrap0.insel);
+    pinmux_configure_input(kInputSwStrap1.periph, kInputSwStrap1.insel);
+    pinmux_configure_input(kInputSwStrap2.periph, kInputSwStrap2.insel);
   }
 
   // Pull the UART_RX line high (idle state for UART).  This prevents a
   // floating UART_RX from incorrectly triggering serial break.
-  enable_pull(kInputUart0.pad, /*enable=*/true, /*up=*/true);
-  configure_input(kInputUart0);
+  pinmux_enable_pull(kInputUart0.pad, /*enable=*/true, /*up=*/true);
+  pinmux_configure_input(kInputUart0.periph, kInputUart0.insel);
   configure_output(kOutputUart0);
 }
 
 void pinmux_init_usb(void) {
   // TODO: This might need to depend on sku-specific configuration.
-  configure_input(kInputUsbdevSense);
+  pinmux_configure_input(kInputUsbdevSense.periph, kInputUsbdevSense.insel);
 }
 
 uint32_t pinmux_read_straps(void) {
@@ -215,4 +220,10 @@ uint32_t pinmux_read_straps(void) {
   value |= read_strap_pin(kInputSwStrap1) << 2;
   value |= read_strap_pin(kInputSwStrap2) << 4;
   return value;
+}
+
+bool pinmux_read_gpio(uint32_t gpio) {
+  uint32_t val =
+      abs_mmio_read32(TOP_EARLGREY_GPIO_BASE_ADDR + GPIO_DATA_IN_REG_OFFSET);
+  return bitfield_bit32_read(val, gpio);
 }

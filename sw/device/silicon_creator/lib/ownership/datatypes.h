@@ -381,8 +381,46 @@ typedef struct owner_rescue_config {
    * length: 16 + sizeof(command_allow).
    */
   tlv_header_t header;
-  /** The rescue type.  Currently, only `XMDM` is supported. */
-  uint32_t rescue_type;
+  /**
+   * The rescue protocol:
+   * - 'X'modem.
+   * - 'U'SB-DFU.
+   * - 'S'PI-DFU.
+   */
+  uint8_t protocol;
+  /**
+   * The gpio configuration (if relevant, depending on `detect`).
+   *
+   *  7             2       1       0
+   * +---------------+--------+-------+
+   * | Reserved      | PullEn | Value |
+   * +---------------+--------+-------+
+   */
+  uint8_t gpio;
+  /**
+   * The timeout configuration (not implemented yet).
+   *
+   *     7        6  5               0
+   * +-----+--------+-----------------+
+   * | EoF | Enable |         Timeout |
+   * +-----+--------+-----------------+
+   */
+  uint8_t timeout;
+  /**
+   * Trigger detection configuration.
+   *
+   *  7     6  5                    0
+   * +--------+-----------------------+
+   * | Detect |                 Index |
+   * +--------+-----------------------+
+   *
+   * Detect:
+   *  0 - None; index is meaningless.
+   *  1 - UART Break; index is meaningless.
+   *  2 - Strapping pins; index is the strapping value.
+   *  3 - GPIO; index is the pin to sample.
+   */
+  uint8_t detect;
   /** The start offset of the rescue region in flash (in pages). */
   uint16_t start;
   /** The size of the rescue region in flash (in pages). */
@@ -394,11 +432,35 @@ typedef struct owner_rescue_config {
   uint32_t command_allow[];
 } owner_rescue_config_t;
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, header, 0);
-OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, rescue_type, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, protocol, 8);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, gpio, 9);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, timeout, 10);
+OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, detect, 11);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, start, 12);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, size, 14);
 OT_ASSERT_MEMBER_OFFSET(owner_rescue_config_t, command_allow, 16);
 OT_ASSERT_SIZE(owner_rescue_config_t, 16);
+
+#define RESCUE_ENTER_ON_FAIL_BIT 7
+#define RESCUE_TIMEOUT_ENABLED_BIT 6
+#define RESCUE_TIMEOUT_SECONDS ((bitfield_field32_t){.mask = 0x3F, .index = 06})
+#define RESCUE_GPIO_PULL_EN_BIT 1
+#define RESCUE_GPIO_VALUE_BIT 0
+#define RESCUE_DETECT ((bitfield_field32_t){.mask = 0x03, .index = 6})
+#define RESCUE_DETECT_INDEX ((bitfield_field32_t){.mask = 0x3F, .index = 0})
+
+typedef enum rescue_protocol {
+  kRescueProtocolXmodem = 'X',
+  kRescueProtocolUsbDfu = 'U',
+  kRescueProtocolSpiDfu = 'S',
+} rescue_protocol_t;
+
+typedef enum rescue_detect {
+  kRescueDetectNone = 0,
+  kRescueDetectBreak = 1,
+  kRescueDetectStrap = 2,
+  kRescueDetectGpio = 3,
+} rescue_detect_t;
 
 /**
  * The owner Integration Specific Firmware Binding (ISFB) configuration
