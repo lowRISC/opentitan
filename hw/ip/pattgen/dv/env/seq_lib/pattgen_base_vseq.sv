@@ -301,16 +301,9 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
   // Update all the channels selected by ch_select with the enable status in the status argument.
   local task control_channels(channel_select_e ch_select, channel_status_e status);
-    bit [NUM_PATTGEN_CHANNELS-1:0] mask;
+    bit [NUM_PATTGEN_CHANNELS-1:0] mask = channel_select_mask(ch_select);
     string                         verb;
     int unsigned                   counter;
-
-    case (ch_select)
-      Channel0: mask = 2'b01;
-      Channel1: mask = 2'b10;
-      AllChannels: mask = 2'b11;
-      default: `uvm_fatal(`gfn, "Unknown select")
-    endcase
 
     // wait for no register access on bus before enable channels to avoid the race condition
     // (i.e. concurrent access to update ctrl.polarity on the other channel)
@@ -347,23 +340,16 @@ class pattgen_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("\n  intr_state %b", intr_bits), UVM_DEBUG)
   endtask : get_interrupt_states
 
-  // this task allows the interrupts of channels to be cleared independently/simultaneously
+  // Clear the interrupts for all selected channels
   virtual task clear_interrupts(channel_select_e ch_select, bit error = 1'b0);
-    bit [TL_DW-1:0] intr_clear ='h0;
-
-    if (!error) begin
-      case (ch_select)
-        Channel0:    intr_clear = 1 << DoneCh0;
-        Channel1:    intr_clear = 1 << DoneCh1;
-        AllChannels: intr_clear = (1 << DoneCh1) | (1 << DoneCh0);
-        default:     `uvm_fatal(`gfn, "  invalid argument")
-      endcase
-      short_delay();
-      csr_wr(.ptr(ral.intr_state), .value(intr_clear));
-    end else begin
-      `uvm_info(`gfn, $sformatf("\n  channel error, no clear interrupts %b", intr_clear), UVM_DEBUG)
+    if (error) begin
+      `uvm_info(`gfn, $sformatf("\n  channel error, no clear interrupts"), UVM_DEBUG)
+      return;
     end
-  endtask : clear_interrupts
+
+    short_delay();
+    csr_wr(.ptr(ral.intr_state), .value(channel_select_mask(ch_select)));
+  endtask
 
   // this function randomizes the channel config
   virtual function pattgen_channel_cfg get_random_channel_config(uint channel);
