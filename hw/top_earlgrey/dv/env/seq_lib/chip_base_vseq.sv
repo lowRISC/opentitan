@@ -81,7 +81,7 @@ class chip_base_vseq #(
     rom_ctrl_util rom;
 
     `uvm_info(`gfn, "Random ROM init with digest", UVM_MEDIUM)
-    `downcast(rom, cfg.mem_bkdr_util_h[Rom])
+    `downcast(rom, cfg.mem_util_h[Rom])
 
     // Randomize the memory contents.
     //
@@ -125,10 +125,10 @@ class chip_base_vseq #(
     cfg.chip_vif.enable_spi_host = 1;
 
     // Initialize all memories via backdoor.
-    cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
+    cfg.mem_util_h[FlashBank0Info].set_mem();
+    cfg.mem_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
-    cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    cfg.mem_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
     // Plusargs to selectively clear the provisioning state of some of the OTP partitions.
     // This is useful in tests that make front-door accesses for provisioning purposes.
     void'($value$plusargs("otp_clear_hw_cfg0=%0d", otp_clear_hw_cfg0));
@@ -136,16 +136,16 @@ class chip_base_vseq #(
     void'($value$plusargs("otp_clear_secret1=%0d", otp_clear_secret1));
     void'($value$plusargs("otp_clear_secret2=%0d", otp_clear_secret2));
     if (otp_clear_hw_cfg0) begin
-        otp_clear_hw_cfg0_partition(cfg.mem_bkdr_util_h[Otp]);
+        otp_clear_hw_cfg0_partition(cfg.mem_util_h[Otp]);
     end
     if (otp_clear_secret0) begin
-        otp_clear_secret0_partition(cfg.mem_bkdr_util_h[Otp]);
+        otp_clear_secret0_partition(cfg.mem_util_h[Otp]);
     end
     if (otp_clear_secret1) begin
-        otp_clear_secret1_partition(cfg.mem_bkdr_util_h[Otp]);
+        otp_clear_secret1_partition(cfg.mem_util_h[Otp]);
     end
     if (otp_clear_secret2) begin
-        otp_clear_secret2_partition(cfg.mem_bkdr_util_h[Otp]);
+        otp_clear_secret2_partition(cfg.mem_util_h[Otp]);
     end
 
     initialize_otp_lc_state();
@@ -153,9 +153,9 @@ class chip_base_vseq #(
     // Initialize selected memories to all 0. This is required for some chip-level tests such as
     // otbn_mem_scramble that may intentionally read memories before writing them. Reading these
     // memories still triggeres ECC integrity errors that need to be handled by the test.
-    cfg.mem_bkdr_util_h[OtbnImem].clear_mem();
+    cfg.mem_util_h[OtbnImem].clear_mem();
     for (int ram_idx = 0; ram_idx < cfg.num_otbn_dmem_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
+      cfg.mem_util_h[chip_mem_e'(OtbnDmem0 + ram_idx)].clear_mem();
     end
     // Early cpu init
     if (cfg.early_cpu_init) cpu_init();
@@ -210,7 +210,7 @@ class chip_base_vseq #(
     // will load a "real" ROM image later. If the ROM integrity check is disabled, no digest needs
     // to be calculated and we can just randomize the memory.
     `ifdef DISABLE_ROM_INTEGRITY_CHECK
-      cfg.mem_bkdr_util_h[Rom].randomize_mem();
+      cfg.mem_util_h[Rom].randomize_mem();
     `else
       random_rom_init_with_digest();
     `endif
@@ -289,10 +289,10 @@ class chip_base_vseq #(
   virtual function void initialize_otp_creator_sw_cfg_ast_cfg();
     // The knob controls whether the AST is actually programmed.
     if (cfg.do_creator_sw_cfg_ast_cfg) begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
                                        prim_mubi_pkg::MuBi4True);
     end else begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset,
                                        prim_mubi_pkg::MuBi4False);
     end
 
@@ -305,7 +305,7 @@ class chip_base_vseq #(
                 i,
                 cfg.creator_sw_cfg_ast_cfg_data[i]
                 ), UVM_MEDIUM)
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4,
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4,
                                        cfg.creator_sw_cfg_ast_cfg_data[i]);
     end
   endfunction
@@ -317,17 +317,17 @@ class chip_base_vseq #(
     logic [31:0] chk_vector;
 
     // Set rom_exec_en only when we are not in RAW state.
-    lc_state = otp_read_lc_partition_state(cfg.mem_bkdr_util_h[Otp]);
+    lc_state = otp_read_lc_partition_state(cfg.mem_util_h[Otp]);
 
     // If we are already 1, we cannot set to 0.
     // This should probably be relocated to mem_bkdr_util eventually as an option for writes
-    otp_raw_val = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset);
+    otp_raw_val = cfg.mem_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset);
     chk_vector = ~value & (otp_raw_val ^ value);
     `DV_CHECK(chk_vector == '0);
 
     if (lc_state != LcStRaw) begin
       `uvm_info(`gfn, "Automatically set rom_exec_en", UVM_LOW)
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, value);
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, value);
     end
   endfunction
 
@@ -339,7 +339,7 @@ class chip_base_vseq #(
 
     `uvm_info(`gfn, $sformatf("Mem writes to %s %0d times", mem.get_full_name(), max_access),
               UVM_MEDIUM)
-    `downcast(rom, cfg.mem_bkdr_util_h[Rom])
+    `downcast(rom, cfg.mem_util_h[Rom])
 
     for (int i = 0; i < max_access; ++i) begin
       int unsigned offset = $urandom_range(sizemax, 0);

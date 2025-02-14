@@ -126,7 +126,7 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_addr_key)
     `DV_CHECK_STD_RANDOMIZE_FATAL(secret_flash_data_key)
     otp_write_secret1_partition(
-        .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+        .mem_util_h(cfg.mem_util_h[Otp]),
         .flash_addr_key_seed(get_flash_otp_key(secret_flash_addr_key)),
         .flash_data_key_seed(get_flash_otp_key(secret_flash_data_key)),
         .sram_data_key_seed(get_sram_otp_key(secret_sram_key)));
@@ -138,9 +138,9 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     flash_ctrl_util info0;
     bit [15:0] base_addr_bytes;
 
-    `downcast(data0, cfg.mem_bkdr_util_h[FlashBank0Data])
-    `downcast(data1, cfg.mem_bkdr_util_h[FlashBank1Data])
-    `downcast(info0, cfg.mem_bkdr_util_h[FlashBank0Info])
+    `downcast(data0, cfg.mem_util_h[FlashBank0Data])
+    `downcast(data1, cfg.mem_util_h[FlashBank1Data])
+    `downcast(info0, cfg.mem_util_h[FlashBank0Info])
 
     for (int i = 0; i < NUM_TEST_WORDS / 2; i++) begin
       base_addr_bytes = 16'h0;
@@ -305,8 +305,8 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
     join_none
 
     // Allow most test phases to write seed partition, but do not allow hardware to read
-    otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
-    cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
+    otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStProd);
+    cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
 
     // Looping through all test phases.
     for (int current_phase = UnscrambledTest0; current_phase <= LastPhase; current_phase++) begin
@@ -341,14 +341,14 @@ class chip_sw_flash_init_vseq extends chip_sw_base_vseq;
 
             // The actual data is irrelevant as long as the partition becomes locked.
             otp_write_secret2_partition(
-              .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
+              .mem_util_h(cfg.mem_util_h[Otp]),
               .rma_unlock_token('0), .creator_root_key0('0), .creator_root_key1('0));
           end
 
           KeyMgrTest1: begin
             `uvm_info(`gfn, $sformatf("Zero secret2 partition and disable seed reading"),
                       UVM_LOW)
-            cfg.mem_bkdr_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
+            cfg.mem_util_h[Otp].write64(otp_ctrl_reg_pkg::Secret2DigestOffset, 0);
             do_keymgr_check = 1;
           end
 

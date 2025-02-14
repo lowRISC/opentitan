@@ -104,7 +104,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     super.dut_init(reset_kind);
     void'($value$plusargs("lc_at_prod=%0d", lc_at_prod));
     if (lc_at_prod) begin
-      otp_write_lc_partition_state(cfg.mem_bkdr_util_h[Otp], LcStProd);
+      otp_write_lc_partition_state(cfg.mem_util_h[Otp], LcStProd);
     end
   endtask
 
@@ -266,7 +266,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
     key_shares_t otp_root_key;
     // backdoor read CreatorRootKey and descramble the data
     for (int i = 0; i < otp_ctrl_reg_pkg::CreatorRootKeyShare0Size / 4; i++) begin
-      otp_root_key[0][i * 32 +: 32] = cfg.mem_bkdr_util_h[Otp].read32(
+      otp_root_key[0][i * 32 +: 32] = cfg.mem_util_h[Otp].read32(
                              otp_ctrl_reg_pkg::CreatorRootKeyShare0Offset + i * 4);
     end
     for (int i = 0; i < otp_ctrl_reg_pkg::CreatorRootKeyShare0Size / 4 / 2; i++) begin
@@ -274,7 +274,7 @@ class chip_sw_keymgr_key_derivation_vseq extends chip_sw_base_vseq;
           otp_root_key[0][i * 64 +: 64], otp_ctrl_part_pkg::Secret2Idx);
     end
     for (int i = 0; i < otp_ctrl_reg_pkg::CreatorRootKeyShare1Size / 4; i++) begin
-      otp_root_key[1][i * 32 +: 32] = cfg.mem_bkdr_util_h[Otp].read32(
+      otp_root_key[1][i * 32 +: 32] = cfg.mem_util_h[Otp].read32(
                              otp_ctrl_reg_pkg::CreatorRootKeyShare1Offset + i * 4);
     end
     for (int i = 0; i < otp_ctrl_reg_pkg::CreatorRootKeyShare1Size / 4 / 2; i++) begin

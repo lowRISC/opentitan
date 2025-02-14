@@ -7,6 +7,7 @@ package rom_ctrl_util_pkg;
   import dv_utils_pkg::uint32_t, dv_utils_pkg::addr_range_t;
   import lc_ctrl_state_pkg::*;
   import mem_bkdr_util_pkg::*;
+  import mem_util_pkg::*;
   import prim_secded_pkg::*;
   // ROM scrambling uses the same properties as SRAM scrambling.
   import sram_scrambler_pkg::*;

@@ -81,7 +81,7 @@ class chip_sw_rv_dm_ndm_reset_when_cpu_halted_vseq extends chip_sw_base_vseq;
       for (int i = 0; i < otp_ctrl_pkg::DeviceIdWidth / 32; i++) begin
         csr_rd(.ptr(ral.lc_ctrl_regs.device_id[i]), .value(device_id_act[i*32+:32]), .blocking(1),
                .user_ftdr(cfg.debugger.m_sba_access_reg_frontdoor));
-        device_id_exp[i*32+:32] = cfg.mem_bkdr_util_h[Otp].read32(
+        device_id_exp[i*32+:32] = cfg.mem_util_h[Otp].read32(
             otp_ctrl_reg_pkg::DeviceIdOffset + i * 4);
       end
       `DV_CHECK_EQ(device_id_act, device_id_exp)

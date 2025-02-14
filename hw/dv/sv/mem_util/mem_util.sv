@@ -10,6 +10,10 @@ class mem_util extends uvm_object;
   // Number of PRINCE half rounds for scrambling, can be [1..5].
   protected uint32_t num_prince_rounds_half;
 
+  // Derived memory properties that are required often.
+  protected uint32_t addr_lsb;
+  protected uint32_t addr_width;
+
   // Address range of this memory in the system address map.
   protected addr_range_t addr_range;
 
@@ -50,22 +54,30 @@ class mem_util extends uvm_object;
                uint32_t num_prince_rounds_half = 3,
                uint32_t extra_bits_per_subword = 0, uint32_t system_base_addr = 0,
                string tiling_path = "", uint32_t tile_depth = depth);
+    uint32_t size_bytes;
 
-    mem_bkdr_util_h = new({name, "::mem_bkdr_util", path, depth, n_bits, err_detection_scheme,
+    mem_bkdr_util_h = new({name, "::mem_bkdr_util"}, path, depth, n_bits, err_detection_scheme,
                           extra_bits_per_subword, tiling_path, tile_depth);
-
 // TODO:
 //            $sformatf("addr_range.start_addr = 0x%0h\n", addr_range.start_addr),
 //            $sformatf("addr_range.end_addr = 0x%0h\n", addr_range.end_addr)};
-
+    size_bytes = depth * mem_bkdr_util_h.get_bytes_per_word();
     addr_range.start_addr = system_base_addr;
     addr_range.end_addr = system_base_addr + size_bytes - 1;
+
+    // Retain some properties of the memory because they are required often in derived classes.
+    this.addr_lsb = mem_bkdr_util_h.get_addr_lsb();
+    this.addr_width = mem_bkdr_util_h.get_addr_width();
 
     this.num_prince_rounds_half = num_prince_rounds_half;
   endfunction
 
   function int get_num_prince_rounds_half();
     return num_prince_rounds_half;
+  endfunction
+
+  function uint32_t get_size_subwords();
+    return mem_bkdr_util_h.get_size_subwords();
   endfunction
 
   function bit is_valid_addr(int unsigned system_addr);
@@ -75,6 +87,18 @@ class mem_util extends uvm_object;
   // Convenience macro to check the addr for each flavor of read and write functions.
   `define _ACCESS_CHECKS(_ADDR, _DW) \
     `DV_CHECK_EQ_FATAL(_ADDR % (_DW / 8), 0, $sformatf("addr 0x%0h not ``_DW``-bit aligned", _ADDR))
+
+  // Returns 1 if the given address falls within the memory's range, else 0.
+  //
+  // If addr is invalid, it throws UVM error before returning 0.
+  virtual function bit check_addr_valid(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    return mem_bkdr_util_h.check_addr_valid(addr);
+  endfunction
+
+  // Returns data with correctly computed ECC.
+  virtual function uvm_hdl_data_t get_ecc_computed_data(uvm_hdl_data_t data);
+    return mem_bkdr_util_h.get_ecc_computed_data(data);
+  endfunction
 
   // Read the entire word at the given address.
   //
@@ -92,6 +116,8 @@ class mem_util extends uvm_object;
   //
   // The data returned does not include the parity bits.
   virtual function logic [7:0] read8(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    uint32_t bytes_per_word = mem_bkdr_util_h.get_bytes_per_word();
+    uint32_t byte_width = mem_bkdr_util_h.get_byte_width();
     uvm_hdl_data_t data = mem_bkdr_util_h.read(addr);
     int byte_offset = addr % bytes_per_word;
     return (data >> (byte_offset * byte_width)) & 8'hff;
@@ -135,7 +161,7 @@ class mem_util extends uvm_object;
   //
   // Updates the entire width of the memory at the given address, including the ECC bits.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, uvm_hdl_data_t data);
-    mem_bkdr_util_h.write(addr);
+    mem_bkdr_util_h.write(addr, data);
   endfunction
 
   // Write a single byte at specified address.
@@ -143,6 +169,8 @@ class mem_util extends uvm_object;
   // Does a read-modify-write on the whole word. It updates the byte at the given address and
   // computes the parity and ECC bits as applicable.
   virtual function void write8(bit [bus_params_pkg::BUS_AW-1:0] addr, logic [7:0] data);
+    err_detection_e err_det_scheme = mem_bkdr_util_h.get_err_detection_scheme();
+    uint32_t addr_lsb = mem_bkdr_util_h.get_addr_lsb();
     uvm_hdl_data_t rw_data;
     uint32_t word_idx;
     uint32_t byte_idx;
@@ -153,10 +181,10 @@ class mem_util extends uvm_object;
     word_idx = addr >> addr_lsb;
     byte_idx = addr - (word_idx << addr_lsb);
 
-    if (`HAS_PARITY) begin
-      bit parity = (err_detection_scheme == ParityOdd) ? ~(^data) : (^data);
+    if (err_det_scheme inside {ParityEven, ParityOdd}) begin
+      bit parity = (err_det_scheme == ParityOdd) ? ~(^data) : (^data);
       rw_data[byte_idx * 9 +: 9] = {parity, data};
-      write(addr, rw_data);
+      mem_bkdr_util_h.write(addr, rw_data);
       return;
     end
 
@@ -164,7 +192,7 @@ class mem_util extends uvm_object;
     rw_data[byte_idx * 8 +: 8] = data;
 
     // Compute & set the new ECC value.
-    rw_data = get_ecc_computed_data(rw_data);
+    rw_data = mem_bkdr_util_h.get_ecc_computed_data(rw_data);
 
     // Write the whole array back to the memory.
     mem_bkdr_util_h.write(addr, rw_data);
@@ -239,7 +267,7 @@ class mem_util extends uvm_object;
 
   // Invalidate the memory.
   virtual function void invalidate_mem();
-    mem_bkdr_util_h.invalid_mem();
+    mem_bkdr_util_h.invalidate_mem();
   endfunction
 
   `undef _ACCESS_CHECKS

@@ -80,10 +80,10 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     // initialization and asserts the `ast_init_done_o` signal.
     uvm_reg_addr_t ast_addr = ral.ast.default_map.get_base_addr();
 
-    if (cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset) ==
+    if (cfg.mem_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstInitEnOffset) ==
         prim_mubi_pkg::MuBi4True) begin
       for (int i = 0; i < ast_pkg::AstRegsNum; i++) begin
-        data = cfg.mem_bkdr_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4);
+        data = cfg.mem_util_h[Otp].read32(otp_ctrl_reg_pkg::CreatorSwCfgAstCfgOffset + i * 4);
         `uvm_info(`gfn, $sformatf("Writing 0x%0h to 0x%0h", data, ast_addr), UVM_MEDIUM)
         tl_access(.addr(ast_addr), .write(1), .data(data));
         predict_csr_wr(ral.get_default_map(), ast_addr, data);

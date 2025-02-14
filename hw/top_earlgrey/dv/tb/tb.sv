@@ -465,127 +465,127 @@ module tb;
       sram_ctrl_util ram_main0, ram_ret0;
       rom_ctrl_util rom;
       chip_mem_e    mem;
-      mem_bkdr_util m_mem_bkdr_util[chip_mem_e];
+      mem_util m_mem_util[chip_mem_e];
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 data", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for flash 0 data", UVM_MEDIUM)
       data0 = new(
-          .name  ("mem_bkdr_util[FlashBank0Data]"),
+          .name  ("mem_util[FlashBank0Data]"),
           .path  (`DV_STRINGIFY(`FLASH0_DATA_MEM_HIER)),
           .depth ($size(`FLASH0_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH0_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
-      m_mem_bkdr_util[FlashBank0Data] = data0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
+      m_mem_util[FlashBank0Data] = data0;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[FlashBank0Data], `FLASH0_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 0 info", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for flash 0 info", UVM_MEDIUM)
       info0 = new(
-          .name  ("mem_bkdr_util[FlashBank0Info]"),
+          .name  ("mem_util[FlashBank0Info]"),
           .path  (`DV_STRINGIFY(`FLASH0_INFO_MEM_HIER)),
           .depth ($size(`FLASH0_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH0_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR));
-      m_mem_bkdr_util[FlashBank0Info] = info0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
+      m_mem_util[FlashBank0Info] = info0;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[FlashBank0Info], `FLASH0_INFO_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 data", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for flash 1 data", UVM_MEDIUM)
       data1 = new(
-          .name  ("mem_bkdr_util[FlashBank1Data]"),
+          .name  ("mem_util[FlashBank1Data]"),
           .path  (`DV_STRINGIFY(`FLASH1_DATA_MEM_HIER)),
           .depth ($size(`FLASH1_DATA_MEM_HIER)),
           .n_bits($bits(`FLASH1_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
               top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
-      m_mem_bkdr_util[FlashBank1Data] = data1;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
+      m_mem_util[FlashBank1Data] = data1;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[FlashBank1Data], `FLASH1_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for flash 1 info", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for flash 1 info", UVM_MEDIUM)
       info1 = new(
-          .name  ("mem_bkdr_util[FlashBank1Info]"),
+          .name  ("mem_util[FlashBank1Info]"),
           .path  (`DV_STRINGIFY(`FLASH1_INFO_MEM_HIER)),
           .depth ($size(`FLASH1_INFO_MEM_HIER)),
           .n_bits($bits(`FLASH1_INFO_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_76_68),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_EFLASH_BASE_ADDR +
               top_earlgrey_pkg::TOP_EARLGREY_EFLASH_SIZE_BYTES / flash_ctrl_pkg::NumBanks));
-      m_mem_bkdr_util[FlashBank1Info] = info1;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
+      m_mem_util[FlashBank1Info] = info1;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[FlashBank1Info], `FLASH1_INFO_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 tag", UVM_MEDIUM)
-      m_mem_bkdr_util[ICacheWay0Tag] = new(
-          .name  ("mem_bkdr_util[ICacheWay0Tag]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for I cache way 0 tag", UVM_MEDIUM)
+      m_mem_util[ICacheWay0Tag] = new(
+          .name  ("mem_util[ICacheWay0Tag]"),
           .path  (`DV_STRINGIFY(`ICACHE0_TAG_MEM_HIER)),
           .depth ($size(`ICACHE0_TAG_MEM_HIER)),
           .n_bits($bits(`ICACHE0_TAG_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_28_22));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay0Tag], `ICACHE0_TAG_MEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[ICacheWay0Tag], `ICACHE0_TAG_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 1 tag", UVM_MEDIUM)
-      m_mem_bkdr_util[ICacheWay1Tag] = new(
-          .name  ("mem_bkdr_util[ICacheWay1Tag]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for I cache way 1 tag", UVM_MEDIUM)
+      m_mem_util[ICacheWay1Tag] = new(
+          .name  ("mem_util[ICacheWay1Tag]"),
           .path  (`DV_STRINGIFY(`ICACHE1_TAG_MEM_HIER)),
           .depth ($size(`ICACHE1_TAG_MEM_HIER)),
           .n_bits($bits(`ICACHE1_TAG_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_28_22));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay1Tag], `ICACHE1_TAG_MEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[ICacheWay1Tag], `ICACHE1_TAG_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 0 data", UVM_MEDIUM)
-      m_mem_bkdr_util[ICacheWay0Data] = new(
-          .name  ("mem_bkdr_util[ICacheWay0Data]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for I cache way 0 data", UVM_MEDIUM)
+      m_mem_util[ICacheWay0Data] = new(
+          .name  ("mem_util[ICacheWay0Data]"),
           .path  (`DV_STRINGIFY(`ICACHE0_DATA_MEM_HIER)),
           .depth ($size(`ICACHE0_DATA_MEM_HIER)),
           .n_bits($bits(`ICACHE0_DATA_MEM_HIER)),
           // The line size is 2x 32 bits and ECC is applied separately at the 32-bit word level.
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay0Data], `ICACHE0_DATA_MEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[ICacheWay0Data], `ICACHE0_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for I cache way 1 data", UVM_MEDIUM)
-      m_mem_bkdr_util[ICacheWay1Data] = new(
-          .name  ("mem_bkdr_util[ICacheWay1Data]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for I cache way 1 data", UVM_MEDIUM)
+      m_mem_util[ICacheWay1Data] = new(
+          .name  ("mem_util[ICacheWay1Data]"),
           .path  (`DV_STRINGIFY(`ICACHE1_DATA_MEM_HIER)),
           .depth ($size(`ICACHE1_DATA_MEM_HIER)),
           .n_bits($bits(`ICACHE1_DATA_MEM_HIER)),
           // The line size is 2x 32 bits and ECC is applied separately at the 32-bit word level.
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[ICacheWay1Data], `ICACHE1_DATA_MEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[ICacheWay1Data], `ICACHE1_DATA_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTP", UVM_MEDIUM)
-      m_mem_bkdr_util[Otp] = new(
-          .name  ("mem_bkdr_util[Otp]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for OTP", UVM_MEDIUM)
+      m_mem_util[Otp] = new(
+          .name  ("mem_util[Otp]"),
           .path  (`DV_STRINGIFY(`OTP_MEM_HIER)),
           .depth ($size(`OTP_MEM_HIER)),
           .n_bits($bits(`OTP_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccHamming_22_16));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `OTP_MEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[Otp], `OTP_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for RAM", UVM_MEDIUM)
       ram_main0 = new(
-          .name  ("mem_bkdr_util[RamMain0]"),
+          .name  ("mem_util[RamMain0]"),
           .path  (`DV_STRINGIFY(`RAM_MAIN_MEM_HIER)),
           .depth ($size(`RAM_MAIN_MEM_HIER)),
           .n_bits($bits(`RAM_MAIN_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .num_prince_rounds_half(2),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RAM_MAIN_BASE_ADDR));
-      m_mem_bkdr_util[RamMain0] = ram_main0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamMain0], `RAM_MAIN_MEM_HIER)
+      m_mem_util[RamMain0] = ram_main0;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[RamMain0], `RAM_MAIN_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for RAM RET", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for RAM RET", UVM_MEDIUM)
       ram_ret0 = new(
-          .name  ("mem_bkdr_util[RamRet0]"),
+          .name  ("mem_util[RamRet0]"),
           .path  (`DV_STRINGIFY(`RAM_RET_MEM_HIER)),
           .depth ($size(`RAM_RET_MEM_HIER)),
           .n_bits($bits(`RAM_RET_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_RAM_RET_AON_BASE_ADDR));
-      m_mem_bkdr_util[RamRet0] = ram_ret0;
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[RamRet0], `RAM_RET_MEM_HIER)
+      m_mem_util[RamRet0] = ram_ret0;
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[RamRet0], `RAM_RET_MEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for ROM", UVM_MEDIUM)
+      `uvm_info("tb.sv", "Creating mem_util instance for ROM", UVM_MEDIUM)
       rom = new(
-          .name  ("mem_bkdr_util[Rom]"),
+          .name  ("mem_util[Rom]"),
           .path  (`DV_STRINGIFY(`ROM_MEM_HIER)),
           .depth ($size(`ROM_MEM_HIER)),
           .n_bits($bits(`ROM_MEM_HIER)),
@@ -597,32 +597,32 @@ module tb;
           .key   (top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrKey),
           .nonce (top_earlgrey_rnd_cnst_pkg::RndCnstRomCtrlScrNonce),
           .system_base_addr    (top_earlgrey_pkg::TOP_EARLGREY_ROM_BASE_ADDR));
-      m_mem_bkdr_util[Rom] = rom;
+      m_mem_util[Rom] = rom;
 
       // Knob to skip ROM backdoor logging (for sims that use ROM macro).
       if (!$value$plusargs("skip_rom_bkdr_load=%0b", skip_rom_bkdr_load)) skip_rom_bkdr_load = 0;
       if (!skip_rom_bkdr_load) begin
-        `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Rom], `ROM_MEM_HIER)
+        `MEM_BKDR_UTIL_FILE_OP(m_mem_util[Rom], `ROM_MEM_HIER)
       end
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN IMEM", UVM_MEDIUM)
-      m_mem_bkdr_util[OtbnImem] = new(.name  ("mem_bkdr_util[OtbnImem]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for OTBN IMEM", UVM_MEDIUM)
+      m_mem_util[OtbnImem] = new(.name  ("mem_util[OtbnImem]"),
                                       .path  (`DV_STRINGIFY(`OTBN_IMEM_HIER)),
                                       .depth ($size(`OTBN_IMEM_HIER)),
                                       .n_bits($bits(`OTBN_IMEM_HIER)),
                                       .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnImem], `OTBN_IMEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[OtbnImem], `OTBN_IMEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for OTBN DMEM", UVM_MEDIUM)
-      m_mem_bkdr_util[OtbnDmem0] = new(.name  ("mem_bkdr_util[OtbnDmem0]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for OTBN DMEM", UVM_MEDIUM)
+      m_mem_util[OtbnDmem0] = new(.name  ("mem_util[OtbnDmem0]"),
                                        .path  (`DV_STRINGIFY(`OTBN_DMEM_HIER)),
                                        .depth ($size(`OTBN_DMEM_HIER)),
                                        .n_bits($bits(`OTBN_DMEM_HIER)),
                                        .err_detection_scheme(mem_bkdr_util_pkg::EccInv_39_32));
-      `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[OtbnDmem0], `OTBN_DMEM_HIER)
+      `MEM_BKDR_UTIL_FILE_OP(m_mem_util[OtbnDmem0], `OTBN_DMEM_HIER)
 
-      `uvm_info("tb.sv", "Creating mem_bkdr_util instance for USBDEV BUFFER", UVM_MEDIUM)
-      m_mem_bkdr_util[UsbdevBuf] = new(.name  ("mem_bkdr_util[UsbdevBuf]"),
+      `uvm_info("tb.sv", "Creating mem_util instance for USBDEV BUFFER", UVM_MEDIUM)
+      m_mem_util[UsbdevBuf] = new(.name  ("mem_util[UsbdevBuf]"),
                                        .path  (`DV_STRINGIFY(`USBDEV_BUF_HIER)),
                                        .depth ($size(`USBDEV_BUF_HIER)),
                                        .n_bits($bits(`USBDEV_BUF_HIER)),
@@ -637,7 +637,7 @@ module tb;
           continue;
         end
         uvm_config_db#(mem_bkdr_util)::set(
-            null, "*.env", m_mem_bkdr_util[mem].get_name(), m_mem_bkdr_util[mem]);
+            null, "*.env", m_mem_util[mem].get_name(), m_mem_util[mem]);
         mem = mem.next();
       end while (mem != mem.first());
     end

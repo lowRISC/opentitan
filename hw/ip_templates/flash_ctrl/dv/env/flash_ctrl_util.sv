@@ -4,7 +4,7 @@
 
 // Specialization of the `mem_util` class for flash control's scrambling operations.
 
-class flash_ctrl_util extends mem_bkdr_util;
+class flash_ctrl_util extends mem_util;
 
   localparam int unsigned FlashDataWidth = flash_phy_pkg::DataWidth;
   localparam int unsigned FlashStagesPerCycle = FlashDataWidth / flash_phy_pkg::GfMultCycles;

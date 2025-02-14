@@ -79,7 +79,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "Initializing SRAMs", UVM_MEDIUM)
 
     // Assume each tile contains the same number of bytes.
-    size_bytes = cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0)].get_size_bytes();
+    size_bytes = cfg.mem_util_h[chip_mem_e'(RamMain0)].get_size_bytes();
     total_bytes = size_bytes * cfg.num_ram_main_tiles;
 
     // Randomize the main SRAM.
@@ -92,23 +92,23 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the data partition in all flash banks to all 1s.
     `uvm_info(`gfn, "Initializing flash banks (data partition only)", UVM_MEDIUM)
-    cfg.mem_bkdr_util_h[FlashBank0Data].set_mem();
-    cfg.mem_bkdr_util_h[FlashBank1Data].set_mem();
+    cfg.mem_util_h[FlashBank0Data].set_mem();
+    cfg.mem_util_h[FlashBank1Data].set_mem();
 
     // Randomize retention memory.  This is done intentionally with wrong integrity
     // as early portions of ROM will initialize it to the correct value.
     // The randomization here is just to ensure we do not have x's in the memory.
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ret_tiles; ram_idx++) begin
-      cfg.mem_bkdr_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
+      cfg.mem_util_h[chip_mem_e'(RamRet0 + ram_idx)].randomize_mem();
     end
 
     `uvm_info(`gfn, "Initializing ROM", UVM_MEDIUM)
     // Backdoor load memories with sw images.
     if (cfg.skip_rom_bkdr_load == 0) begin
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
-      cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
+      cfg.mem_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".32.vmem"});
 `else
-      cfg.mem_bkdr_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
+      cfg.mem_util_h[Rom].load_mem_from_file({cfg.sw_images[SwTypeRom], ".39.scr.vmem"});
 `endif
     end
 
@@ -118,13 +118,13 @@ class chip_sw_base_vseq extends chip_base_vseq;
         spi_device_load_bootstrap({cfg.sw_images[SwTypeTestSlotA], ".64.vmem"});
         cfg.use_spi_load_bootstrap = 1'b0;
       end else begin
-        cfg.mem_bkdr_util_h[FlashBank0Data].load_mem_from_file(
+        cfg.mem_util_h[FlashBank0Data].load_mem_from_file(
             {cfg.sw_images[SwTypeTestSlotA], ".64.scr.vmem"});
       end
     end
     if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
       // TODO: support bootstrapping entire flash address space, not just slot A.
-      cfg.mem_bkdr_util_h[FlashBank1Data].load_mem_from_file(
+      cfg.mem_util_h[FlashBank1Data].load_mem_from_file(
           {cfg.sw_images[SwTypeTestSlotB], ".64.scr.vmem"});
     end
 
@@ -138,10 +138,10 @@ class chip_sw_base_vseq extends chip_base_vseq;
     void'($value$plusargs("en_jitter=%0d", en_jitter));
     // ROM blindly copies from OTP, backdoor load a true or false value.
     if (en_jitter) begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4True);
     end else begin
-      cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
+      cfg.mem_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4False);
     end
   endtask
@@ -193,7 +193,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
 
     // Assume each tile contains the same number of bytes
-    size_bytes = cfg.mem_bkdr_util_h[mem].get_size_bytes();
+    size_bytes = cfg.mem_util_h[mem].get_size_bytes();
   endfunction
 
   // This performs a backdoor write. It will scramble the address and data, and add integrity bits.
@@ -217,7 +217,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int        tile_idx;
 
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
-    `downcast(sram, cfg.mem_bkdr_util_h[mem])
+    `downcast(sram, cfg.mem_util_h[mem])
 
     // calculate the scramble address
     addr_scr = sram.get_sram_encrypt_addr(
@@ -232,7 +232,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     data_scr = sram.get_sram_encrypt32_intg_data(
        .addr(addr), .data(data), .key(key), .nonce(nonce), .extra_addr_bits($clog2(num_tiles)),
        .flip_bits(flip_bits));
-    cfg.mem_bkdr_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
+    cfg.mem_util_h[mem].write39integ(addr_scr & addr_mask, data_scr ^ flip_bits);
   endfunction
 
   // This performs an ecc check at a given address. The address and data need to be de-scrambled,
@@ -253,7 +253,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     int        size_bytes;
 
     _sram_get_params(mem, num_tiles, size_bytes, is_main_ram);
-    `downcast(sram, cfg.mem_bkdr_util_h[mem])
+    `downcast(sram, cfg.mem_util_h[mem])
 
     // calculate the scramble address
     addr_scr = sram.get_sram_encrypt_addr(
@@ -634,7 +634,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `DV_CHECK_FATAL(mem inside {Rom, [RamMain0:RamMain15], FlashBank0Data, FlashBank1Data},
         $sformatf("SW symbol %0s is not expected to appear in %0s mem", symbol, mem))
 
-    addr_mask = (2**$clog2(cfg.mem_bkdr_util_h[mem].get_size_bytes()))-1;
+    addr_mask = (2**$clog2(cfg.mem_util_h[mem].get_size_bytes()))-1;
     mem_addr = addr & addr_mask;
 
     if (is_write) begin
@@ -646,7 +646,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
       if (mem == Rom) begin
         rom_ctrl_util rom;
-        `downcast(rom, cfg.mem_bkdr_util_h[mem])
+        `downcast(rom, cfg.mem_util_h[mem])
         `uvm_info(`gfn, "Regenerate ROM digest and update via backdoor", UVM_LOW)
         rom.update_rom_digest(RndCnstRomCtrlScrKey, RndCnstRomCtrlScrNonce);
       end
@@ -688,8 +688,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_write8(input chip_mem_e mem,
                                         input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                         input byte data);
-    byte prev_data = cfg.mem_bkdr_util_h[mem].read8(addr);
-    cfg.mem_bkdr_util_h[mem].write8(addr, data);
+    byte prev_data = cfg.mem_util_h[mem].read8(addr);
+    cfg.mem_util_h[mem].write8(addr, data);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h --> 0x%0h", addr, prev_data, data), UVM_HIGH)
   endfunction
 
@@ -699,7 +699,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
   virtual function void mem_bkdr_read8(input chip_mem_e mem,
                                        input bit [bus_params_pkg::BUS_AW-1:0] addr,
                                        output byte data);
-    data = cfg.mem_bkdr_util_h[mem].read8(addr);
+    data = cfg.mem_util_h[mem].read8(addr);
     `uvm_info(`gfn, $sformatf("addr %0h = 0x%0h", addr, data), UVM_HIGH)
   endfunction
 

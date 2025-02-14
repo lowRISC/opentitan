@@ -30,7 +30,7 @@ class mem_bkdr_util extends uvm_object;
   protected uint32_t width;
 
   // The number of subword entries in the whole memory
-  protected uint32_t num_entries;
+  protected uint32_t size_subwords;
 
   // Indicates the error detection scheme implemented for this memory.
   protected err_detection_e err_detection_scheme = ErrDetectionNone;
@@ -136,10 +136,10 @@ class mem_bkdr_util extends uvm_object;
 
       subwords_per_word = (width + bits_per_subword - 1) / bits_per_subword;
       this.data_width = subwords_per_word * non_ecc_bits_per_subword;
-      this.num_entries = depth * subwords_per_word;
+      this.size_subwords = depth * subwords_per_word;
     end else begin
       this.data_width = width;
-      this.num_entries = depth;
+      this.size_subwords = depth;
     end
 
     byte_width = `HAS_PARITY ? 9 : 8;
@@ -220,6 +220,10 @@ class mem_bkdr_util extends uvm_object;
     return size_bytes;
   endfunction
 
+  function uint32_t get_size_subwords();
+    return size_subwords;
+  endfunction
+
   function uint32_t get_addr_lsb();
     return addr_lsb;
   endfunction
@@ -239,7 +243,7 @@ class mem_bkdr_util extends uvm_object;
   // Returns 1 if the given address falls within the memory's range, else 0.
   //
   // If addr is invalid, it throws UVM error before returning 0.
-  protected virtual function bit check_addr_valid(bit [bus_params_pkg::BUS_AW-1:0] addr);
+  virtual function bit check_addr_valid(bit [bus_params_pkg::BUS_AW-1:0] addr);
     if (addr >= size_bytes) begin
       `uvm_error(`gfn, $sformatf("addr %0h is out of bounds: size = %0h", addr, size_bytes))
       return 1'b0;

@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// Specialization of the `mem_bkdr_util` class for ROM's encrypted read operation.
+// Specialization of the `mem_util` class for ROM's encrypted read operation.
 //
 // The data decoding is different from SRAM, but most of the underlying SRAM functions are reused
 // Also note that this function returns the raw data rather than data + syndrome + error because
 // the rom_ctrl testbench needs this for checking.
 
-class rom_ctrl_util extends mem_bkdr_util;
+class rom_ctrl_util extends mem_util;
 
   // Encryption configuration.
   bit [127:0] m_key;
