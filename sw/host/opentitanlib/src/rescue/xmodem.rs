@@ -190,7 +190,8 @@ impl Xmodem {
                 }
                 _ => {
                     return Err(XmodemError::UnsupportedMode(format!(
-                        "bad start of packet: {byte:?}"
+                        "bad start of packet: {byte:02x} ({})",
+                        byte as char
                     ))
                     .into());
                 }
