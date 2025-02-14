@@ -1046,11 +1046,12 @@ def amend_interrupt(top: OrderedDict,
     for irqs in top['incoming_interrupt'].values():
         for irq in irqs:
             # Qualify name with module name
-            irq["name"] = f"{irq['module_name']}_{irq['name']}"
-            irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
-            irq["incoming"] = True
-            irq["width"] = 1
-            interrupts.append(irq)
+            qual_irq = deepcopy(irq)
+            qual_irq["name"] = f"{irq['module_name']}_{irq['name']}"
+            qual_irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
+            qual_irq["incoming"] = True
+            qual_irq["width"] = 1
+            interrupts.append(qual_irq)
 
     top["interrupt"] = interrupts
 
