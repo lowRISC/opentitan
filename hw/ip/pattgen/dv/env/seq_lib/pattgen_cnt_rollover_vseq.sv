@@ -5,14 +5,14 @@
 // Count rollover test vseq
 class pattgen_cnt_rollover_vseq extends pattgen_base_vseq;
   `uvm_object_utils(pattgen_cnt_rollover_vseq)
-  `uvm_object_new
 
   // reduce num_trans due to long running simulations
   constraint num_trans_c        { num_trans inside {[2 : 3]}; }
-  // fast clear interrupt
-  constraint clear_intr_dly_c   { clear_intr_dly == 0; }
-  // fast stop/start channel
-  constraint b2b_pattern_dly_c  { b2b_pattern_dly == 0; }
+
+  function new (string name="");
+    super.new(name);
+    pattgen_max_dly = 0;
+  endfunction
 
   // override this function for pattgen_cnt_rollover test
   function pattgen_channel_cfg get_random_channel_config(uint channel);
