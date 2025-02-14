@@ -2,22 +2,91 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, ensure};
+use clap::{Args, ValueEnum};
 use thiserror::Error;
 
 use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::chip::device_id::DeviceId;
+use crate::io::uart::UartParams;
 use crate::with_unknown;
 
 pub mod serial;
 pub mod xmodem;
 
+pub use serial::RescueSerial;
+
 #[derive(Debug, Error)]
 pub enum RescueError {
     #[error("bad mode: {0}")]
     BadMode(String),
+    #[error("configuration error: {0}")]
+    Configuration(String),
+}
+
+#[derive(ValueEnum, Default, Debug, Clone, Copy, PartialEq)]
+pub enum RescueProtocol {
+    #[default]
+    Xmodem,
+    UsbDfu,
+    SpiDfu,
+}
+
+#[derive(ValueEnum, Default, Debug, Clone, Copy, PartialEq)]
+pub enum RescueTrigger {
+    #[default]
+    SerialBreak,
+    Gpio,
+    Strap,
+}
+
+#[derive(Clone, Default, Debug, Args)]
+pub struct RescueParams {
+    /// Rescue Protocol
+    #[arg(short, long, value_enum, default_value_t = RescueProtocol::Xmodem)]
+    pub protocol: RescueProtocol,
+    #[arg(short, long, value_enum, default_value_t = RescueTrigger::SerialBreak)]
+    pub trigger: RescueTrigger,
+    #[arg(short, long, default_value = "")]
+    pub value: String,
+    #[command(flatten)]
+    uart: UartParams,
+}
+
+impl RescueParams {
+    pub fn create(&self, transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
+        match self.protocol {
+            RescueProtocol::Xmodem => self.create_serial(transport),
+            RescueProtocol::UsbDfu => self.create_usbdfu(transport),
+            RescueProtocol::SpiDfu => self.create_spidfu(transport),
+        }
+    }
+    fn create_serial(&self, transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
+        ensure!(
+            self.trigger == RescueTrigger::SerialBreak,
+            RescueError::Configuration(format!(
+                "Xmodem does not support trigger {:?}",
+                self.trigger
+            ))
+        );
+        ensure!(
+            self.value.is_empty(),
+            RescueError::Configuration(format!(
+                "Xmodem does not support trigger value {:?}",
+                self.value
+            ))
+        );
+
+        Ok(Box::new(RescueSerial::new(self.uart.create(transport)?)))
+    }
+    fn create_usbdfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
+        unimplemented!()
+    }
+    fn create_spidfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
+        unimplemented!()
+    }
 }
 
 with_unknown! {
@@ -42,7 +111,7 @@ pub trait Rescue {
     fn recv(&self) -> Result<Vec<u8>>;
 
     // Not supported by all backends
-    fn set_speed(&self, speed: u32) -> Result<()>;
+    fn set_speed(&self, speed: u32) -> Result<u32>;
     fn wait(&self) -> Result<()>;
     fn reboot(&self) -> Result<()>;
 
