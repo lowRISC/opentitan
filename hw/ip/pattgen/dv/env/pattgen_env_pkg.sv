@@ -39,6 +39,16 @@ package pattgen_env_pkg;
     Disable     = 1'b0
   } channel_status_e;
 
+  // Return a bitmask of the channels selected by ch_select.
+  function bit[NUM_PATTGEN_CHANNELS-1:0] channel_select_mask(channel_select_e ch_select);
+    case (ch_select)
+      Channel0:    return 2'b01;
+      Channel1:    return 2'b10;
+      AllChannels: return 2'b11;
+      default: `uvm_fatal("channel_select_mask", "invalid ch_select")
+    endcase
+  endfunction
+
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault"};
