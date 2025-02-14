@@ -60,8 +60,8 @@ class pattgen_base_vseq extends cip_base_vseq #(
       wait(cfg.clk_rst_vif.rst_n); // wait until reset is de-asserted
       fork
         // all channels are completely independent (programm, start w/ or wo/ sync, and stop)
-        setup_pattgen_channel_0();
-        setup_pattgen_channel_1();
+        setup_pattgen_channel(0);
+        setup_pattgen_channel(1);
         start_pattgen_channels();
         stop_pattgen_channels();
       join
@@ -69,52 +69,96 @@ class pattgen_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, "\n--> end of sequence", UVM_DEBUG)
   endtask : body
 
-  virtual task setup_pattgen_channel_0();
-    if (num_pattern_req < num_trans &&
-        channel_grant[0] &&       // ch0 setup is granted
-        !channel_setup[0] &&       // ch0 has not been programmed
-        !channel_start[1]) begin   // ch1 is not under start (avoid re-programming regs)
-      wait_for_channel_ready(Channel0);
-      channel_cfg[0] = get_random_channel_config(.channel(0));
-      ral.size.len_ch0.set(channel_cfg[0].len);
-      ral.size.reps_ch0.set(channel_cfg[0].reps);
-      csr_update(ral.size);
-      csr_wr(.ptr(ral.prediv_ch0), .value(channel_cfg[0].prediv));
-      csr_wr(.ptr(ral.data_ch0[0]), .value(channel_cfg[0].data[31:0]));
-      csr_wr(.ptr(ral.data_ch0[1]), .value(channel_cfg[0].data[63:32]));
-      ral.ctrl.polarity_ch0.set(channel_cfg[0].polarity);
-      ral.ctrl.inactive_level_pcl_ch0.set(channel_cfg[0].inactive_level_pcl);
-      ral.ctrl.inactive_level_pda_ch0.set(channel_cfg[0].inactive_level_pda);
-      update_pattgen_agent_cfg(.channel(0));
-      csr_update(ral.ctrl);
-      channel_setup[0] = 1'b1;
-      rol_grant();
-    end
-  endtask : setup_pattgen_channel_0
+  // Return the named register, but with a suffix to get the version for the requested channel.
+  local function uvm_reg get_channel_reg(string name, int unsigned ch);
+    uvm_reg r = ral.get_reg_by_name($sformatf("%s_ch%0d", name, ch));
+    `DV_CHECK_FATAL(r !== null)
+    return r;
+  endfunction
 
-  virtual task setup_pattgen_channel_1();
-    if (num_pattern_req < num_trans &&
-        channel_grant[1]  &&       // ch1 setup is granted
-        !channel_setup[1] &&       // ch1 has not been programmed
-        !channel_start[0]) begin   // ch0 is not under start (avoid re-programming regs)
-      wait_for_channel_ready(Channel1);
-      channel_cfg[1] = get_random_channel_config(.channel(1));
-      ral.size.len_ch1.set(channel_cfg[1].len);
-      ral.size.reps_ch1.set(channel_cfg[1].reps);
-      csr_update(ral.size);
-      csr_wr(.ptr(ral.prediv_ch1), .value(channel_cfg[1].prediv));
-      csr_wr(.ptr(ral.data_ch1[0]), .value(channel_cfg[1].data[31:0]));
-      csr_wr(.ptr(ral.data_ch1[1]), .value(channel_cfg[1].data[63:32]));
-      ral.ctrl.polarity_ch1.set(channel_cfg[1].polarity);
-      ral.ctrl.inactive_level_pcl_ch1.set(channel_cfg[1].inactive_level_pcl);
-      ral.ctrl.inactive_level_pda_ch1.set(channel_cfg[1].inactive_level_pda);
-      update_pattgen_agent_cfg(.channel(1));
-      csr_update(ral.ctrl);
-      channel_setup[1] = 1'b1;
-      rol_grant();
-      `uvm_info(`gfn, "\n  channel 1: programmed", UVM_DEBUG)
+  // Update the SIZE register as it applies to the requested channel (setting LEN_CH* and REPS_CH*)
+  local task update_size_for_channel(int unsigned ch, int unsigned len, int unsigned reps);
+    uvm_reg_field len_field = ral.size.get_field_by_name($sformatf("len_ch%0d", ch));
+    uvm_reg_field reps_field = ral.size.get_field_by_name($sformatf("reps_ch%0d", ch));
+
+    `DV_CHECK_FATAL(len_field !== null)
+    `DV_CHECK_FATAL(reps_field !== null)
+
+    len_field.set(len);
+    reps_field.set(reps);
+    csr_update(ral.size);
+  endtask
+
+  // Update the CTRL register to specify the polarity and inactive levels for the given channel
+  // (setting INACTIVE_LEVEL_PCL_CH* and INACTIVE_LEVEL_PDA_CH*)
+  local task update_ctrl_for_channel(int unsigned ch, bit polarity, bit pcl, bit pda);
+    uvm_reg_field pol_fld = ral.ctrl.get_field_by_name($sformatf("polarity_ch%0d", ch));
+    uvm_reg_field pcl_fld = ral.ctrl.get_field_by_name($sformatf("inactive_level_pcl_ch%0d", ch));
+    uvm_reg_field pda_fld = ral.ctrl.get_field_by_name($sformatf("inactive_level_pcl_ch%0d", ch));
+
+    `DV_CHECK_FATAL(pol_fld !== null)
+    `DV_CHECK_FATAL(pcl_fld !== null)
+    `DV_CHECK_FATAL(pda_fld !== null)
+
+    pol_fld.set(polarity);
+    pcl_fld.set(pcl);
+    pda_fld.set(pda);
+
+    csr_update(ral.ctrl);
+  endtask
+
+  // Write a PREDIV_CH* register to set the requested pre-divider
+  local task write_prediv_for_channel(int unsigned ch, bit [31:0] value);
+    csr_wr(.ptr(get_channel_reg("prediv", ch)), .value(value));
+  endtask
+
+  // Write the DATA_CH* multireg with the given pattern
+  local task write_data_for_channel(int unsigned ch, bit [63:0] data);
+    for (int unsigned i = 0; i < 2; i++) begin
+      uvm_reg r = ral.get_reg_by_name($sformatf("data_ch%0d_%0d", ch, i));
+      `DV_CHECK_FATAL(r !== null)
+      csr_wr(.ptr(r), .value((data >> (32 * i)) & 32'hffffffff));
     end
-  endtask : setup_pattgen_channel_1
+  endtask
+
+  // Set up the requested channel if this is a good time (there are still more patterns to request;
+  // setup is granted; the channel is not yet set up; no other channel is running).
+  local task setup_pattgen_channel(int unsigned ch);
+    channel_select_e ch_select = channel_select_e'(1 << ch);
+
+    // If we have already requested enough patterns, there's nothing to do on the channel.
+    if (num_pattern_req >= num_trans) return;
+
+    // We can only do something if the channel's setup is granted but the channel has not yet been
+    // programmed.
+    if (!channel_grant[ch] || channel_setup[ch]) return;
+
+    // We don't want to do something if another channel is running. (This avoids re-programming
+    // registers)
+    if (channel_start & ~(1 << ch)) return;
+
+    // Wait to make sure that the channel isn't currently enabled
+    wait_for_channel_ready(ch_select);
+
+    // Pick a random configuration for the channel, storing it into channel_cfg
+    channel_cfg[ch] = get_random_channel_config(.channel(ch));
+
+    ral.size.get_field_by_name($sformatf("len_ch%0d", ch));
+
+    // Now perform register writes to configure the channel as desired. Annoyingly, this always uses
+    // registers or fields with the index in their name, so lots of the work is done by child tasks.
+    update_size_for_channel(ch, channel_cfg[ch].len, channel_cfg[ch].reps);
+    write_prediv_for_channel(ch, channel_cfg[ch].prediv);
+    write_data_for_channel(ch, channel_cfg[ch].data);
+    update_ctrl_for_channel(ch,
+                            channel_cfg[ch].polarity,
+                            channel_cfg[ch].inactive_level_pcl,
+                            channel_cfg[ch].inactive_level_pda);
+
+    update_pattgen_agent_cfg(.channel(ch));
+    channel_setup[ch] = 1'b1;
+    rol_grant();
+  endtask
 
   // Wait a short time (up to pattgen_max_dly)
   //
