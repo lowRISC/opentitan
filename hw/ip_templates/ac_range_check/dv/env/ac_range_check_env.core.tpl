@@ -2,15 +2,15 @@ CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-name: "lowrisc:dv:ac_range_check_env:0.1"
+name: ${instance_vlnv("lowrisc:dv:ac_range_check_env:0.1")}
 description: "AC_RANGE_CHECK DV UVM environment"
 filesets:
   files_dv:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
-      - lowrisc:dv:tl_agent
       - lowrisc:dv:dv_base_reg
+      - lowrisc:dv:dv_lib
     files:
       - ac_range_check_env_pkg.sv
       - ac_range_check_env_cfg.sv: {is_include_file: true}
@@ -29,7 +29,7 @@ generate:
     generator: ralgen
     parameters:
       name: ac_range_check
-      ip_hjson: ../../data/ac_range_check.hjson
+      ip_hjson: ../../data/${module_instance_name}.hjson
 
 targets:
   default:
