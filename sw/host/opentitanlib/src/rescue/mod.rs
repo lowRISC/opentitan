@@ -10,13 +10,18 @@ use crate::app::TransportWrapper;
 use crate::chip::boot_log::BootLog;
 use crate::chip::boot_svc::{BootSlot, BootSvc, OwnershipActivateRequest, OwnershipUnlockRequest};
 use crate::chip::device_id::DeviceId;
+use crate::io::gpio::PinMode;
 use crate::io::uart::UartParams;
+use crate::util::parse_int::ParseInt;
 use crate::with_unknown;
 
+pub mod dfu;
 pub mod serial;
+pub mod usbdfu;
 pub mod xmodem;
 
 pub use serial::RescueSerial;
+pub use usbdfu::UsbDfu;
 
 #[derive(Debug, Error)]
 pub enum RescueError {
@@ -55,6 +60,8 @@ pub struct RescueParams {
     pub value: String,
     #[command(flatten)]
     uart: UartParams,
+    #[arg(long)]
+    pub usb_serial: Option<String>,
 }
 
 impl RescueParams {
@@ -65,6 +72,15 @@ impl RescueParams {
             RescueProtocol::SpiDfu => self.create_spidfu(transport),
         }
     }
+
+    pub fn set_trigger(&self, transport: &TransportWrapper, trigger: bool) -> Result<()> {
+        match self.trigger {
+            RescueTrigger::SerialBreak => unimplemented!(),
+            RescueTrigger::Gpio => self.set_gpio(transport, trigger),
+            RescueTrigger::Strap => self.set_strap(transport, trigger),
+        }
+    }
+
     fn create_serial(&self, transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
         ensure!(
             self.trigger == RescueTrigger::SerialBreak,
@@ -80,14 +96,65 @@ impl RescueParams {
                 self.value
             ))
         );
-
         Ok(Box::new(RescueSerial::new(self.uart.create(transport)?)))
     }
+
     fn create_usbdfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
-        unimplemented!()
+        ensure!(
+            self.trigger != RescueTrigger::SerialBreak,
+            RescueError::Configuration(format!(
+                "Usb-DFU does not support trigger {:?}",
+                self.trigger
+            ))
+        );
+        ensure!(
+            !self.value.is_empty(),
+            RescueError::Configuration("Usb-DFU requires a trigger value".into())
+        );
+        Ok(Box::new(UsbDfu::new(self.clone())))
     }
+
     fn create_spidfu(&self, _transport: &TransportWrapper) -> Result<Box<dyn Rescue>> {
         unimplemented!()
+    }
+
+    fn set_strap(&self, transport: &TransportWrapper, trigger: bool) -> Result<()> {
+        let mut value = if trigger {
+            u8::from_str(&self.value)?
+        } else {
+            0u8
+        };
+        for strap in ["SW_STRAP0", "SW_STRAP1", "SW_STRAP2"] {
+            let pin = transport.gpio_pin(strap)?;
+            match value & 3 {
+                0 => pin.write(false)?,
+                1 | 2 => log::error!("weak straps not supported yet"),
+                3 => pin.write(true)?,
+                _ => unreachable!(),
+            };
+            value >>= 2;
+        }
+        Ok(())
+    }
+
+    fn parse_pin(&self) -> Result<(&str, bool)> {
+        if let Some(pin) = self.value.strip_prefix('+') {
+            Ok((pin, true))
+        } else if let Some(pin) = self.value.strip_prefix('-') {
+            Ok((pin, false))
+        } else {
+            Ok((self.value.as_str(), true))
+        }
+    }
+
+    fn set_gpio(&self, transport: &TransportWrapper, trigger: bool) -> Result<()> {
+        let (name, mut value) = self.parse_pin()?;
+        if !trigger {
+            value = !value
+        };
+        let pin = transport.gpio_pin(name)?;
+        pin.set(Some(PinMode::PushPull), Some(value), None, None)?;
+        Ok(())
     }
 }
 
