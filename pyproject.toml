@@ -124,7 +124,6 @@ extend-exclude = [
   "hw/top_englishbreakfast/util/prepare_sw.py",
   "rules/scripts/bitstreams_workspace*.py",
   "rules/scripts/clang_tidy.py",
-  "rules/scripts/qemu_pass.py",
   "sw/device/examples/teacup_demos/data/c-array-bitmap-generator.py",
   "sw/device/silicon_creator/lib/sigverify/**/*.py",
   "sw/device/tests/crypto/*.py",
