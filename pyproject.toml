@@ -94,6 +94,10 @@ py-modules = []
 [tool.ruff]
 target-version = "py38"
 line-length = 100
+extend-exclude = [
+  # Don't lint vendored files which must be fixed upstream.
+  "*vendor*",
+]
 
 [tool.ruff.lint]
 preview = true
