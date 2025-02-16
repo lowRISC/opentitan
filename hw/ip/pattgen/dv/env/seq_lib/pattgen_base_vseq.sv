@@ -231,8 +231,10 @@ class pattgen_base_vseq extends cip_base_vseq #(
 
       case (channel_stop)
         Channel0: begin
-          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = Channel0;
-          clear_interrupts(Channel0, error_injected);
+          if (!error_injected) begin
+            cfg.m_pattgen_agent_cfg.channel_done = Channel0;
+            clear_interrupts(Channel0);
+          end
           control_channels(Channel0, Disable);
           if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[0] = 1'b0;
           num_pattern_gen++;
@@ -241,8 +243,10 @@ class pattgen_base_vseq extends cip_base_vseq #(
               error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
         end
         Channel1: begin
-          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = Channel1;
-          clear_interrupts(Channel1, error_injected);
+          if (!error_injected) begin
+            cfg.m_pattgen_agent_cfg.channel_done = Channel1;
+            clear_interrupts(Channel1);
+          end
           control_channels(Channel1, Disable);
           if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[1] = 1'b0;
           num_pattern_gen++;
@@ -251,8 +255,10 @@ class pattgen_base_vseq extends cip_base_vseq #(
               error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
         end
         AllChannels: begin
-          if (!error_injected) cfg.m_pattgen_agent_cfg.channel_done = AllChannels;
-          clear_interrupts(AllChannels, error_injected);
+          if (!error_injected) begin
+            cfg.m_pattgen_agent_cfg.channel_done = AllChannels;
+            clear_interrupts(AllChannels);
+          end
           control_channels(AllChannels, Disable);
           if (error_injected) begin
             cfg.m_pattgen_agent_cfg.error_injected = NoChannels;
@@ -341,12 +347,7 @@ class pattgen_base_vseq extends cip_base_vseq #(
   endtask : get_interrupt_states
 
   // Clear the interrupts for all selected channels
-  virtual task clear_interrupts(channel_select_e ch_select, bit error = 1'b0);
-    if (error) begin
-      `uvm_info(`gfn, $sformatf("\n  channel error, no clear interrupts"), UVM_DEBUG)
-      return;
-    end
-
+  local task clear_interrupts(channel_select_e ch_select);
     short_delay();
     csr_wr(.ptr(ral.intr_state), .value(channel_select_mask(ch_select)));
   endtask
