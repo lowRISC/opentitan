@@ -54,6 +54,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
       - name: Python (mypy)
         run: ./ci/scripts/mypy.sh
+      - name: Python (ruff)
+        run: ruff check
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
       - name: C/C++ formatting
