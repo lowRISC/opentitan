@@ -93,15 +93,15 @@ class pattgen_base_vseq extends cip_base_vseq #(
   extern function void add_desired_enables(bit [NUM_PATTGEN_CHANNELS-1:0] mask,
                                            channel_status_e status);
 
-  // Update all the channels selected by ch_select with the enable status in the status argument.
-  extern local task control_channels(channel_select_e ch_select, channel_status_e status);
+  // Update all the channels selected by mask with the enable status in the status argument.
+  extern local task control_channels(bit [NUM_PATTGEN_CHANNELS-1:0] mask, channel_status_e status);
 
   // Write a bitmask of the channels that have stopped and generated an interrupt to the intr_bits
   // output argument.
   extern local task get_interrupt_status(output bit[NUM_PATTGEN_CHANNELS-1:0] intr_bits);
 
   // Clear the interrupts for all selected channels
-  extern local task clear_interrupts(channel_select_e ch_select);
+  extern local task clear_interrupts(bit [NUM_PATTGEN_CHANNELS-1:0] mask);
 
   // Return a randomised channel configuration. The channel index argument is just used to construct
   // the name of the object.
@@ -243,7 +243,7 @@ task pattgen_base_vseq::start_pattgen_channels();
       // that they stay in sync)
       if (channel_setup[0] && !channel_start[0] && channel_setup[1] && !channel_start[1]) begin
         short_delay();
-        control_channels(AllChannels, Enable);
+        control_channels(2'b11, Enable);
         {channel_start[0], channel_start[1]} = {1'b1, 1'b1};
         `uvm_info(`gfn, "\n  all channels: activated", UVM_DEBUG)
       end
@@ -251,10 +251,8 @@ task pattgen_base_vseq::start_pattgen_channels();
     // otherwise, activate channels independently
       for (uint i = 0; i < NUM_PATTGEN_CHANNELS; i++) begin
         if (channel_setup[i] && !channel_start[i]) begin
-          channel_select_e ch_select;
-          `downcast(ch_select, i+1)
           short_delay();
-          control_channels(ch_select, Enable);
+          control_channels(1 << i, Enable);
           channel_start[i]= 1'b1;
           `uvm_info(`gfn, $sformatf("\n  channel %0d: activated", i), UVM_DEBUG)
         end
@@ -298,38 +296,42 @@ task pattgen_base_vseq::stop_pattgen_channels();
     end
 
     case (channel_stop)
-      Channel0: begin
+      2'b00: begin
+        // If no channels have stopped yet and we don't want to inject an error by stopping one
+        // early then there is nothing to do.
+      end
+      2'b01: begin
         if (!error_injected) begin
-          cfg.m_pattgen_agent_cfg.channel_done = Channel0;
-          clear_interrupts(Channel0);
+          cfg.m_pattgen_agent_cfg.channel_done = 2'b01;
+          clear_interrupts(2'b01);
         end
-        control_channels(Channel0, Disable);
+        control_channels(2'b01, Disable);
         if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[0] = 1'b0;
         num_pattern_gen++;
         {channel_setup[0], channel_start[0]} = {1'b0, 1'b0};
         `uvm_info(`gfn, $sformatf("\n  channel 0: %s %0d/%0d",
             error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
       end
-      Channel1: begin
+      2'b10: begin
         if (!error_injected) begin
-          cfg.m_pattgen_agent_cfg.channel_done = Channel1;
-          clear_interrupts(Channel1);
+          cfg.m_pattgen_agent_cfg.channel_done = 2'b10;
+          clear_interrupts(2'b10);
         end
-        control_channels(Channel1, Disable);
+        control_channels(2'b10, Disable);
         if (error_injected) cfg.m_pattgen_agent_cfg.error_injected[1] = 1'b0;
         num_pattern_gen++;
         {channel_setup[1], channel_start[1]} = {1'b0, 1'b0};
         `uvm_info(`gfn, $sformatf("\n  channel 1: %s %0d/%0d",
             error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
       end
-      AllChannels: begin
+      2'b11: begin
         if (!error_injected) begin
-          cfg.m_pattgen_agent_cfg.channel_done = AllChannels;
-          clear_interrupts(AllChannels);
+          cfg.m_pattgen_agent_cfg.channel_done = 2'b11;
+          clear_interrupts(2'b11);
         end
-        control_channels(AllChannels, Disable);
+        control_channels(2'b11, Disable);
         if (error_injected) begin
-          cfg.m_pattgen_agent_cfg.error_injected = NoChannels;
+          cfg.m_pattgen_agent_cfg.error_injected = 2'b00;
           `uvm_info(`gfn, $sformatf("\n  update m_pattgen_agent_cfg.error_injected"), UVM_DEBUG)
         end
         num_pattern_gen += 2;
@@ -338,8 +340,9 @@ task pattgen_base_vseq::stop_pattgen_channels();
         `uvm_info(`gfn, $sformatf("\n  all channels: %s %0d/%0d",
             error_injected ? "error" : "completed", num_pattern_gen, num_trans), UVM_DEBUG)
       end
+      default: `uvm_fatal(`gfn, $sformatf("unknown value for channel_stop: 0x%0h", channel_stop))
     endcase
-    cfg.m_pattgen_agent_cfg.channel_done = NoChannels;
+    cfg.m_pattgen_agent_cfg.channel_done = 2'b00;
   end
 endtask
 
@@ -370,8 +373,8 @@ function void pattgen_base_vseq::add_desired_enables(bit [NUM_PATTGEN_CHANNELS-1
   end
 endfunction
 
-task pattgen_base_vseq::control_channels(channel_select_e ch_select, channel_status_e status);
-  bit [NUM_PATTGEN_CHANNELS-1:0] mask = channel_select_mask(ch_select);
+task pattgen_base_vseq::control_channels(bit [NUM_PATTGEN_CHANNELS-1:0] mask,
+                                         channel_status_e               status);
   string                         verb;
   int unsigned                   counter;
 
@@ -410,9 +413,9 @@ task pattgen_base_vseq::get_interrupt_status(output bit[NUM_PATTGEN_CHANNELS-1:0
   `uvm_info(`gfn, $sformatf("\n  intr_state %b", intr_bits), UVM_DEBUG)
 endtask
 
-task pattgen_base_vseq::clear_interrupts(channel_select_e ch_select);
+task pattgen_base_vseq::clear_interrupts(bit [NUM_PATTGEN_CHANNELS-1:0] mask);
   short_delay();
-  csr_wr(.ptr(ral.intr_state), .value(channel_select_mask(ch_select)));
+  csr_wr(.ptr(ral.intr_state), .value(mask));
 endtask
 
 function pattgen_channel_cfg pattgen_base_vseq::get_random_channel_config(uint channel);
