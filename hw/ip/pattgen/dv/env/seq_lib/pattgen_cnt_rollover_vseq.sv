@@ -20,10 +20,6 @@ class pattgen_cnt_rollover_vseq extends pattgen_base_vseq;
     pattgen_channel_cfg ch_cfg;
     ch_cfg = pattgen_channel_cfg::type_id::create($sformatf("channel_cfg_%0d", channel));
     `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,
-      polarity dist {
-        1'b0 :/ cfg.seq_cfg.pattgen_low_polarity_pct,
-        1'b1 :/ (100 - cfg.seq_cfg.pattgen_low_polarity_pct)
-      };
       prediv dist {0 :/ 1, [1 : 'hfffe] :/ 1, 'hffff :/ 1};
       len    dist {0 :/ 1, [1 : 'he] :/ 1, 'hf :/ 1};
       reps   dist {0 :/ 1, [1 : 'h3e] :/ 1, 'h3f :/ 1};

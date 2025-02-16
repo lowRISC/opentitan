@@ -426,10 +426,6 @@ function pattgen_channel_cfg pattgen_base_vseq::get_random_channel_config(uint c
     ch_cfg.inactive_level_disabled_c.constraint_mode(0);
   end
   `DV_CHECK_RANDOMIZE_WITH_FATAL(ch_cfg,
-    ch_cfg.polarity dist {
-      1'b0 :/ cfg.seq_cfg.pattgen_low_polarity_pct,
-      1'b1 :/ (100 - cfg.seq_cfg.pattgen_low_polarity_pct)
-    };
     ch_cfg.data[31:0] dist {
       DataMax :/ cfg.seq_cfg.data_top_pct,
       DataMin :/ cfg.seq_cfg.data_bottom_pct,
