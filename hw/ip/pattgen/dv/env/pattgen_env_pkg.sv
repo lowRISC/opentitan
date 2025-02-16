@@ -27,27 +27,10 @@ package pattgen_env_pkg;
     NumPattgenIntr = 2
   } pattgen_intr_e;
 
-  typedef enum bit[1:0] {
-    NoChannels   = 2'b00,
-    Channel0     = 2'b01,
-    Channel1     = 2'b10,
-    AllChannels  = 2'b11
-  } channel_select_e;
-
   typedef enum bit {
     Enable      = 1'b1,
     Disable     = 1'b0
   } channel_status_e;
-
-  // Return a bitmask of the channels selected by ch_select.
-  function bit[NUM_PATTGEN_CHANNELS-1:0] channel_select_mask(channel_select_e ch_select);
-    case (ch_select)
-      Channel0:    return 2'b01;
-      Channel1:    return 2'b10;
-      AllChannels: return 2'b11;
-      default: `uvm_fatal("channel_select_mask", "invalid ch_select")
-    endcase
-  endfunction
 
   // alerts
   parameter uint NUM_ALERTS = 1;
