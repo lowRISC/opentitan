@@ -68,7 +68,7 @@
     }
 
     {
-      name: cnt_rollover
+      name: pattgen_cnt_rollover
       uvm_test_seq: pattgen_cnt_rollover_vseq
     }
 
