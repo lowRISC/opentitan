@@ -233,9 +233,10 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
       top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
-
-  if (peripheral == kTopEarlgreyPlicPeripheralUart0 &&
-      ottf_console_flow_control_isr(exc_info)) {
+  // See if the test code wants to handle it.
+  bool handled = ottf_handle_irq(exc_info, peripheral, plic_irq_id);
+  // If not, see if that interrupt corresponds to an OTTF console IRQ.
+  if (handled || ottf_console_flow_control_isr(exc_info)) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(
         dif_rv_plic_irq_complete(&ottf_plic, kPlicTarget, plic_irq_id));
@@ -251,6 +252,8 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif  // OT_IS_ENGLISH_BREAKFAST
   }
 
+  LOG_ERROR("unhandled IRQ: plic_id=%d, peripheral ID=%d", plic_irq_id,
+            peripheral);
   ottf_generic_fault_print(exc_info, "External IRQ", ibex_mcause_read());
   abort();
 }
@@ -258,6 +261,13 @@ void ottf_external_isr(uint32_t *exc_info) {
 static void generic_internal_irq_handler(uint32_t *exc_info) {
   ottf_generic_fault_print(exc_info, "Internal IRQ", ibex_mcause_read());
   abort();
+}
+
+OT_WEAK
+bool ottf_handle_irq(uint32_t *exc_info,
+                     top_earlgrey_plic_peripheral_t peripheral,
+                     dif_rv_plic_irq_id_t plic_id) {
+  return false;
 }
 
 OT_WEAK
