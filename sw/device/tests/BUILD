@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@bazel_skylib//lib:dicts.bzl", "dicts")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 load(
     "//rules:const.bzl",
     "CONST",
@@ -3700,15 +3701,15 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     verilator = verilator_params(timeout = "long"),
     deps = [
+        "//hw/top:dt",
         "//hw/top:i2c_c_regs",
         "//hw/top:spi_device_c_regs",
         "//hw/top:spi_host_c_regs",
-        "//hw/top:usbdev_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -3716,11 +3717,20 @@ opentitan_test(
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/dif:spi_device",
         "//sw/device/lib/dif:spi_host",
-        "//sw/device/lib/dif:usbdev",
         "//sw/device/lib/runtime:hart",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": [
+                "//hw/top:usbdev_c_regs",
+                "//sw/device/lib/dif:usbdev",
+            ],
+            # Darjeeling doesn't have a USB Device to test
+            "darjeeling": [],
+        },
+        ["@platforms//:incompatible"],
+    ),
 )
 
 opentitan_test(
