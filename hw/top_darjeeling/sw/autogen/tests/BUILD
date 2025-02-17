@@ -4,13 +4,11 @@
 #
 # ------------------- W A R N I N G: A U T O - G E N E R A T E D   C O D E !! -------------------#
 # PLEASE DO NOT HAND-EDIT THIS FILE. IT HAS BEEN AUTO-GENERATED WITH THE FOLLOWING COMMAND:
-# util/topgen.py -t hw/top_earlgrey/data/top_earlgrey.hjson
-# -o hw/top_earlgrey
+# util/topgen.py -t hw/top_darjeeling/data/top_darjeeling.hjson
+# -o hw/top_darjeeling
 
 load(
     "//rules/opentitan:defs.bzl",
-    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
-    "EARLGREY_TEST_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
@@ -30,12 +28,8 @@ package(default_visibility = ["//visibility:public"])
             "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
         ],
         exec_env = dicts.add(
-            EARLGREY_TEST_ENVS,
-            EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
             {
-                "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-                "//hw/top_earlgrey:fpga_cw310_sival": None,
-                "//hw/top_earlgrey:silicon_creator": None,
+                "//hw/top_darjeeling:sim_dv": None,
             },
         ),
         verilator = verilator_params(
@@ -49,40 +43,36 @@ package(default_visibility = ["//visibility:public"])
             # often times out in 3600s on 4 cores
         ),
         deps = [
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//hw/top_darjeeling/sw/autogen:top_darjeeling",
             "//sw/device/lib/arch:boot_stage",
             "//sw/device/lib/base:mmio",
-            "//sw/device/lib/dif/autogen:adc_ctrl",
             "//sw/device/lib/dif/autogen:alert_handler",
             "//sw/device/lib/dif/autogen:aon_timer",
             "//sw/device/lib/dif/autogen:csrng",
+            "//sw/device/lib/dif/autogen:dma",
             "//sw/device/lib/dif/autogen:edn",
-            "//sw/device/lib/dif/autogen:entropy_src",
-            "//sw/device/lib/dif/autogen:flash_ctrl",
             "//sw/device/lib/dif/autogen:gpio",
             "//sw/device/lib/dif/autogen:hmac",
             "//sw/device/lib/dif/autogen:i2c",
-            "//sw/device/lib/dif/autogen:keymgr",
+            "//sw/device/lib/dif/autogen:keymgr_dpe",
             "//sw/device/lib/dif/autogen:kmac",
+            "//sw/device/lib/dif/autogen:mbx",
             "//sw/device/lib/dif/autogen:otbn",
             "//sw/device/lib/dif/autogen:otp_ctrl",
-            "//sw/device/lib/dif/autogen:pattgen",
             "//sw/device/lib/dif/autogen:pwrmgr",
             "//sw/device/lib/dif/autogen:rv_plic",
             "//sw/device/lib/dif/autogen:rv_timer",
-            "//sw/device/lib/dif/autogen:sensor_ctrl",
+            "//sw/device/lib/dif/autogen:soc_proxy",
             "//sw/device/lib/dif/autogen:spi_device",
             "//sw/device/lib/dif/autogen:spi_host",
-            "//sw/device/lib/dif/autogen:sysrst_ctrl",
             "//sw/device/lib/dif/autogen:uart",
-            "//sw/device/lib/dif/autogen:usbdev",
             "//sw/device/lib/runtime:irq",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:rv_plic_testutils",
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, 23, 10)
+    for min in range(0, 19, 10)
 ]
 
 test_suite(
@@ -90,7 +80,6 @@ test_suite(
     tests = [
         "plic_all_irqs_test_0",
         "plic_all_irqs_test_10",
-        "plic_all_irqs_test_20",
     ],
 )
 
@@ -98,52 +87,44 @@ opentitan_test(
     name = "alert_test",
     srcs = ["alert_test.c"],
     exec_env = dicts.add(
-        EARLGREY_TEST_ENVS,
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw310_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw310_sival": None,
-            "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
         "//sw/device/lib/arch:boot_stage",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif/autogen:adc_ctrl",
         "//sw/device/lib/dif/autogen:aes",
         "//sw/device/lib/dif/autogen:alert_handler",
         "//sw/device/lib/dif/autogen:aon_timer",
         "//sw/device/lib/dif/autogen:clkmgr",
         "//sw/device/lib/dif/autogen:csrng",
+        "//sw/device/lib/dif/autogen:dma",
         "//sw/device/lib/dif/autogen:edn",
-        "//sw/device/lib/dif/autogen:entropy_src",
-        "//sw/device/lib/dif/autogen:flash_ctrl",
         "//sw/device/lib/dif/autogen:gpio",
         "//sw/device/lib/dif/autogen:hmac",
         "//sw/device/lib/dif/autogen:i2c",
-        "//sw/device/lib/dif/autogen:keymgr",
+        "//sw/device/lib/dif/autogen:keymgr_dpe",
         "//sw/device/lib/dif/autogen:kmac",
         "//sw/device/lib/dif/autogen:lc_ctrl",
+        "//sw/device/lib/dif/autogen:mbx",
         "//sw/device/lib/dif/autogen:otbn",
         "//sw/device/lib/dif/autogen:otp_ctrl",
-        "//sw/device/lib/dif/autogen:pattgen",
         "//sw/device/lib/dif/autogen:pinmux",
-        "//sw/device/lib/dif/autogen:pwm",
         "//sw/device/lib/dif/autogen:pwrmgr",
         "//sw/device/lib/dif/autogen:rom_ctrl",
         "//sw/device/lib/dif/autogen:rstmgr",
         "//sw/device/lib/dif/autogen:rv_core_ibex",
         "//sw/device/lib/dif/autogen:rv_plic",
         "//sw/device/lib/dif/autogen:rv_timer",
-        "//sw/device/lib/dif/autogen:sensor_ctrl",
+        "//sw/device/lib/dif/autogen:soc_dbg_ctrl",
+        "//sw/device/lib/dif/autogen:soc_proxy",
         "//sw/device/lib/dif/autogen:spi_device",
         "//sw/device/lib/dif/autogen:spi_host",
         "//sw/device/lib/dif/autogen:sram_ctrl",
-        "//sw/device/lib/dif/autogen:sysrst_ctrl",
         "//sw/device/lib/dif/autogen:uart",
-        "//sw/device/lib/dif/autogen:usbdev",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:alert_handler_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",

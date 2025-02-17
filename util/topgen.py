@@ -1783,15 +1783,13 @@ def main():
                 gencmd=gencmd_c)
 
             # Auto-generate tests in "sw/device/tests/autogen" area.
-            # TODO: Fix the test templates to not be earlgrey-specific
-            if topname == "earlgrey":
-                outfile = cformat_dir / "tests" / "BUILD"
-                render_template(
-                    TOPGEN_TEMPLATE_PATH / "BUILD.tpl",
-                    outfile,
-                    helper=c_helper,
-                    addr_space='hart',  # TODO: Don't hard-code
-                    gencmd=gencmd_bzl)
+            outfile = cformat_dir / "tests" / "BUILD"
+            render_template(
+                TOPGEN_TEMPLATE_PATH / "BUILD.tpl",
+                outfile,
+                helper=c_helper,
+                addr_space='hart',  # TODO: Don't hard-code
+                gencmd=gencmd_bzl)
 
             outfile = cformat_dir / "tests" / "plic_all_irqs_test.c"
             render_template(
