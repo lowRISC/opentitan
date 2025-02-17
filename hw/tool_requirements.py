@@ -16,7 +16,7 @@
 #                 entry gives the required version.
 #
 __TOOL_REQUIREMENTS__ = {
-    'python': '3.8',
+    'python': '3.10',
     'edalize': '0.2.0',
     'ninja': {
         'min_version': '1.8.2',

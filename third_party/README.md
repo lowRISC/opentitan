@@ -25,7 +25,7 @@ toolchains and downloading package dependencies. This example uses an extension 
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
 python.toolchain(
     is_default = True,
-    python_version = "3.9",
+    python_version = "3.10",
 )
 use_repo(python, "pythons_hub")
 register_toolchains("@pythons_hub//:all")

@@ -6,7 +6,7 @@
 name = "opentitan"
 version = "0.0.0"
 description = "Open-source hardware root-of-trust"
-requires-python = ">=3.8.1"
+requires-python = ">=3.10"
 
 dependencies = [
   # Dependency management
@@ -93,7 +93,7 @@ dependencies = [
 py-modules = []
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 line-length = 100
 extend-exclude = [
   # Don't lint vendored files which must be fixed upstream.
