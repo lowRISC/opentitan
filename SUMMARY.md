@@ -226,6 +226,8 @@
     - [Checklist](./hw/ip/keymgr/doc/checklist.md)
   - [Key Manager DPE](./hw/ip/keymgr_dpe/README.md)
     - [Theory of Operation](./hw/ip/keymgr_dpe/doc/theory_of_operation.md)
+    - [Design Verification](./hw/ip/keymgr_dpe/dv/README.md)
+      - [Testplan](./hw/ip/keymgr_dpe/data/keymgr_dpe_testplan.hjson)
     - [Programmer's Guide](./hw/ip/keymgr_dpe/doc/programmers_guide.md)
     - [Hardware Interfaces](./hw/ip/keymgr_dpe/doc/interfaces.md)
     - [Registers](./hw/ip/keymgr_dpe/doc/registers.md)
