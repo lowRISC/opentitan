@@ -15,6 +15,7 @@ filesets:
       - lowrisc:dv:otbn_test
       - lowrisc:dv:otbn_sva
       - lowrisc:dv:mem_bkdr_util
+      - lowrisc:dv:sram_bkdr_util
       - lowrisc:ip:edn_pkg
     files:
       - tb.sv

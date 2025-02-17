@@ -43,7 +43,7 @@ class flash_bkdr_util extends mem_bkdr_util;
     end
   endfunction
 
-  function bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
+  static function bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
     bit [FlashDataWidth-1:0] mult_out;
 
     mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^
@@ -51,7 +51,7 @@ class flash_bkdr_util extends mem_bkdr_util;
     return mult_out;
   endfunction
 
-  function bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] flash_gen_matrix(
+  static function bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] flash_gen_matrix(
       bit [FlashDataWidth-1:0] seed, bit init);
     bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] matrix_out;
 
@@ -63,8 +63,8 @@ class flash_bkdr_util extends mem_bkdr_util;
     return matrix_out;
   endfunction
 
-  function bit [FlashDataWidth-1:0] flash_galois_multiply(bit [FlashKeySize-1:0] addr_key,
-                                                          bit [FlashAddrWidth-1:0] addr);
+  static function bit [FlashDataWidth-1:0] flash_galois_multiply(bit [FlashKeySize-1:0] addr_key,
+                                                                 bit [FlashAddrWidth-1:0] addr);
     bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] matrix[2];
     bit [FlashDataWidth-1:0] product[2];
     bit [FlashDataWidth-1:0] add_vector;
@@ -87,23 +87,32 @@ class flash_bkdr_util extends mem_bkdr_util;
     return product[1];
   endfunction
 
-  virtual function void flash_write_scrambled(
+  // TODO; consider changing these functions to member functions and retaining the flash_addr_
+  // and flash_data_ keys as members.
+  static function bit [FlashDataWidth-1:0] flash_create_masked_data(
       bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] byte_addr,
       bit [FlashKeySize-1:0] flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
-    bit [FlashAddrWidth-1:0] word_addr;
-    bit [FlashDataWidth-1:0] mask;
-    bit [FlashDataWidth-1:0] masked_data;
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0] scrambled_data;
-    bit [71:0] ecc_72;
-    bit [75:0] ecc_76;
+    bit [FlashDataWidth-1:0] masked_data;
+    bit [FlashDataWidth-1:0] mask;
 
-    word_addr = byte_addr >> addr_lsb;
-    mask = flash_galois_multiply(flash_addr_key, word_addr);
+    mask = flash_galois_multiply(flash_addr_key, byte_addr >> 3);
     masked_data = data ^ mask;
 
     crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
                                                  .old_key_schedule(0), .ciphertext(scrambled_data));
-    masked_data = scrambled_data[FlashNumRoundsHalf-1] ^ mask;
+    return scrambled_data[FlashNumRoundsHalf-1] ^ mask;
+  endfunction
+
+  virtual function void flash_write_scrambled(
+      bit [FlashDataWidth-1:0] data, bit [FlashAddrWidth-1:0] byte_addr,
+      bit [FlashKeySize-1:0] flash_addr_key, bit [FlashKeySize-1:0] flash_data_key);
+    bit [FlashDataWidth-1:0] masked_data;
+    bit [71:0] ecc_72;
+    bit [75:0] ecc_76;
+
+    masked_data = flash_create_masked_data(data, byte_addr, flash_addr_key, flash_data_key);
+
     // ecc functions used are hardcoded to a fixed sized.
     ecc_72 = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
     ecc_76 = prim_secded_pkg::prim_secded_hamming_76_68_enc({ecc_72[67:64], masked_data[63:0]});

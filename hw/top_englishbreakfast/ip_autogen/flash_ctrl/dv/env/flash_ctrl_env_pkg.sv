@@ -350,78 +350,21 @@ package flash_ctrl_env_pkg;
   // remove bank select
   localparam int unsigned FlashByteAddrWidth = flash_ctrl_pkg::BusAddrByteW - 1;
 
-  function automatic bit [FlashDataWidth-1:0] flash_gf_mult2(bit [FlashDataWidth-1:0] operand);
-    bit [FlashDataWidth-1:0]          mult_out;
-
-    mult_out = operand[FlashDataWidth-1] ? (operand << 1) ^
-      flash_phy_pkg::ScrambleIPoly : (operand << 1);
-    return mult_out;
-  endfunction
-
-  function automatic bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] flash_gen_matrix(
-                                      bit [FlashDataWidth-1:0] seed, bit init);
-    bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0] matrix_out;
-
-    matrix_out[0] = init ? seed : flash_gf_mult2(seed);
-    matrix_out[FlashStagesPerCycle-1:1] = '0;
-    for (int i = 1; i < FlashStagesPerCycle; i++) begin
-      matrix_out[i] = flash_gf_mult2(matrix_out[i-1]);
-    end
-    return matrix_out;
-  endfunction
-
-  function automatic bit [FlashDataWidth-1:0] flash_galois_multiply(bit [FlashKeySize-1:0] addr_key,
-                                                          bit [FlashAddrWidth-1:0] addr);
-    bit [FlashStagesPerCycle-1:0][FlashDataWidth-1:0]                              matrix[2];
-    bit [FlashDataWidth-1:0]                                                       product[2];
-    bit [FlashDataWidth-1:0]                                                       add_vector;
-    bit [FlashDataWidth-1:0]                                                       mult_out;
-
-    // generate matrix.
-    matrix[0] =
-      flash_gen_matrix({addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr}, 1'b1);
-    matrix[1] = flash_gen_matrix(matrix[0][FlashStagesPerCycle-1], 1'b0);
-    `uvm_info("SCR_DBG", $sformatf("waddr: %x   op_a_i : %x     vector: %x",
-              addr,  {addr_key[FlashKeySize-FlashAddrWidth-1:FlashKeySize-64], addr},
-              matrix[0][FlashStagesPerCycle-1]), UVM_HIGH)
-
-    // galois multiply.
-    for (int j = 0; j < 2; j++) begin
-      mult_out = '0;
-      for (int i = 0; i < FlashStagesPerCycle; i++) begin
-        add_vector = addr_key[(j*FlashStagesPerCycle)+i] ? matrix[j][i] : '0;
-        mult_out   = mult_out ^ add_vector;
-      end
-      product[j] = mult_out;
-    end
-    product[1] = product[1] ^ product[0];
-    `uvm_info("SCR_DBG", $sformatf("prod1:%x   prod0:%x",product[1],product[0]), UVM_HIGH)
-
-    return product[1];
-  endfunction
-
   function automatic bit[63:0] create_flash_data(
            bit [FlashDataWidth-1:0] data, bit [FlashByteAddrWidth-1:0] byte_addr,
            bit [FlashKeySize-1:0]   flash_addr_key, bit [FlashKeySize-1:0] flash_data_key,
            bit dis = 1);
-    bit [FlashAddrWidth-1:0]                                    word_addr;
-    bit [FlashDataWidth-1:0]                                    mask;
-    bit [FlashDataWidth-1:0]                                    masked_data;
-    bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0]            scrambled_data;
+    bit [FlashDataWidth-1:0] masked_data;
 
-    // These parameters will be removed once it is included in mem_bkdr_util.sv
-    int                                                         addr_lsb = 3;
-
-    word_addr = byte_addr >> addr_lsb;
-    mask = flash_galois_multiply(flash_addr_key, word_addr);
-    masked_data = data ^ mask;
-    crypto_dpi_prince_pkg::sv_dpi_prince_encrypt(.plaintext(masked_data), .key(flash_data_key),
-                                             .old_key_schedule(0), .ciphertext(scrambled_data));
-    masked_data = scrambled_data[FlashNumRoundsHalf-1] ^ mask;
-
+    masked_data = flash_bkdr_util::flash_create_masked_data(data, byte_addr, flash_addr_key,
+                                                            flash_data_key);
     if (dis) begin
+      bit [FlashAddrWidth-1:0] word_addr = byte_addr >> 3;
       `uvm_info("SCR_DBG", $sformatf("addr:%x  mask:%x  din:%x dout:%x",
-                                     word_addr, mask, data, masked_data), UVM_MEDIUM)
+                                     word_addr,
+                                     flash_bkdr_util::flash_galois_multiply(flash_addr_key,
+                                                                            word_addr),
+                                     data, masked_data), UVM_MEDIUM)
     end
     return masked_data;
   endfunction
@@ -439,7 +382,7 @@ package flash_ctrl_env_pkg;
     bit [FlashDataWidth-1:0]                         plain_text;
     bit [FlashNumRoundsHalf-1:0][FlashDataWidth-1:0] descrambled_data;
 
-    mask = flash_galois_multiply(flash_addr_key, bank_addr);
+    mask = flash_bkdr_util::flash_galois_multiply(flash_addr_key, bank_addr);
     masked_data = data ^ mask;
     plain_text = crypto_dpi_prince_pkg::c_dpi_prince_decrypt(masked_data,
                                                              flash_data_key[127:64],

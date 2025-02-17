@@ -28,8 +28,8 @@ class otbn_env_cfg extends cip_base_env_cfg #(.RAL_T(otbn_reg_block));
   virtual otbn_rnd_if        rnd_vif;
   virtual otbn_ssctrl_if     ssctrl_vif;
 
-  mem_bkdr_util imem_util;
-  mem_bkdr_util dmem_util;
+  sram_bkdr_util imem_util;
+  sram_bkdr_util dmem_util;
 
   // A handle to the scoreboard, used to flag expected errors.
   otbn_scoreboard scoreboard;

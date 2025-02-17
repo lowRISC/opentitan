@@ -6,7 +6,7 @@ module tb;
   // dep packages (test)
   import uvm_pkg::*;
   import dv_utils_pkg::*;
-  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import sram_bkdr_util_pkg::sram_bkdr_util;
   import otbn_env_pkg::*;
   import otbn_test_pkg::*;
   import otbn_pkg::NGpr, otbn_pkg::NWdr;
@@ -300,7 +300,7 @@ module tb;
     clk, !rst_n || model_if.status == otbn_pkg::StatusLocked)
 
   initial begin
-    mem_bkdr_util imem_util, dmem_util;
+    sram_bkdr_util imem_util, dmem_util;
 
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
@@ -359,8 +359,8 @@ module tb;
                     .n_bits (DmemSizeByte / 32 * 312),
                     .err_detection_scheme (mem_bkdr_util_pkg::EccInv_39_32));
 
-    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);
-    uvm_config_db#(mem_bkdr_util)::set(null, "*.env", dmem_util.get_name(), dmem_util);
+    uvm_config_db#(sram_bkdr_util)::set(null, "*.env", imem_util.get_name(), imem_util);
+    uvm_config_db#(sram_bkdr_util)::set(null, "*.env", dmem_util.get_name(), dmem_util);
 
     $timeformat(-12, 0, " ps", 12);
     run_test();
