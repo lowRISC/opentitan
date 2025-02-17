@@ -163,7 +163,7 @@
     - [Checklist](./hw/ip/csrng/doc/checklist.md)
   - [DMA](./hw/ip/dma/README.md)
     - [Theory of Operation](./hw/ip/dma/doc/theory_of_operation.md)
-    - [Design Verification]()
+    - [Design Verification](./hw/ip/dma/dv/README.md)
       - [Testplan](./hw/ip/dma/data/dma_testplan.hjson)
     - [Programmer's Guide]()
     - [Hardware Interfaces]()
