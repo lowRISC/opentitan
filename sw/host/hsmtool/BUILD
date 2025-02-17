@@ -106,6 +106,7 @@ rust_library(
         "src/commands/ecdsa/verify.rs",
         "src/commands/exec.rs",
         "src/commands/kdf/export.rs",
+        "src/commands/kdf/generate.rs",
         "src/commands/kdf/import.rs",
         "src/commands/kdf/mod.rs",
         "src/commands/mod.rs",

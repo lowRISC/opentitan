@@ -11,11 +11,13 @@ use crate::commands::Dispatch;
 use crate::module::Module;
 
 pub mod export;
+pub mod generate;
 pub mod import;
 
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Kdf {
     Export(export::Export),
+    Generate(generate::Generate),
     Import(import::Import),
 }
 
@@ -29,6 +31,7 @@ impl Dispatch for Kdf {
     ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
             Kdf::Export(x) => x.run(context, hsm, session),
+            Kdf::Generate(x) => x.run(context, hsm, session),
             Kdf::Import(x) => x.run(context, hsm, session),
         }
     }
@@ -38,6 +41,7 @@ impl Dispatch for Kdf {
     {
         match self {
             Kdf::Export(x) => x.leaf(),
+            Kdf::Generate(x) => x.leaf(),
             Kdf::Import(x) => x.leaf(),
         }
     }
