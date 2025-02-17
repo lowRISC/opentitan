@@ -9,7 +9,7 @@ from typing import Any, List, Tuple
 
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
-import importlib_resources
+import importlib.resources
 
 from .xbar import Xbar
 
@@ -21,13 +21,13 @@ def generate(xbar: Xbar, library_name: str = "ip") -> List[Tuple[str, Any]]:
     pairs of files to write, each in the form (path, contents).
     """
     xbar_rtl_tpl = Template(
-        filename=str(importlib_resources.files('tlgen') / 'xbar.rtl.sv.tpl'))
+        filename=str(importlib.resources.files('tlgen') / 'xbar.rtl.sv.tpl'))
     xbar_pkg_tpl = Template(
-        filename=str(importlib_resources.files('tlgen') / 'xbar.pkg.sv.tpl'))
+        filename=str(importlib.resources.files('tlgen') / 'xbar.pkg.sv.tpl'))
     xbar_core_tpl = Template(
-        filename=str(importlib_resources.files('tlgen') / 'xbar.core.tpl'))
+        filename=str(importlib.resources.files('tlgen') / 'xbar.core.tpl'))
     xbar_hjson_tpl = Template(
-        filename=str(importlib_resources.files('tlgen') / 'xbar.hjson.tpl'))
+        filename=str(importlib.resources.files('tlgen') / 'xbar.hjson.tpl'))
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
