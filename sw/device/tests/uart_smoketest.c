@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_uart.h"
+#include "dt/dt_api.h"   // Generated
+#include "dt/dt_uart.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -24,7 +25,7 @@ bool test_main(void) {
   CHECK_DIF_OK(dif_uart_configure(
       &uart, (dif_uart_config_t){
                  .baudrate = (uint32_t)kUartBaudrate,
-                 .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                 .clk_freq_hz = dt_clock_frequency(kDtClockIo),
                  .parity_enable = kDifToggleDisabled,
                  .parity = kDifUartParityEven,
                  .tx_enable = kDifToggleEnabled,

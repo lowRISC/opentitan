@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_api.h"     // Generated
+#include "dt/dt_pinmux.h"  // Generated
+#include "dt/dt_uart.h"    // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_uart.h"
@@ -12,15 +15,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_utils.h"
 #include "sw/device/lib/testing/uart_testutils.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static const uint8_t kSendData[] = "Loopback test!";
-static const uint32_t kBaseAddrs[4] = {
-    TOP_EARLGREY_UART0_BASE_ADDR,
-    TOP_EARLGREY_UART1_BASE_ADDR,
-    TOP_EARLGREY_UART2_BASE_ADDR,
-    TOP_EARLGREY_UART3_BASE_ADDR,
-};
 enum {
   kTestTimeoutMicros = 1000000,
 };
@@ -41,32 +36,30 @@ static dif_pinmux_t pinmux;
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
 bool test_main(void) {
-  mmio_region_t base_addr;
-
   // Wait for the testbench to set the `uart_idx`.
   OTTF_WAIT_FOR(uart_idx != 0xff, kTestTimeoutMicros);
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_PINMUX_AON_BASE_ADDR);
-  CHECK_DIF_OK(dif_pinmux_init(base_addr, &pinmux));
+  CHECK(kDtUart0 <= uart_idx && uart_idx < kDtUartCount,
+        "uart_idx %d out of range", uart_idx);
+  CHECK_DIF_OK(dif_uart_init_from_dt((dt_uart_t)uart_idx, &uart));
+
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
 
   // If we're testing UART0 we need to move the console to UART1.
   if (uart_idx == 0) {
     CHECK_STATUS_OK(
         uart_testutils_select_pinmux(&pinmux, 1, kUartPinmuxChannelConsole));
-    ottf_console_configure_uart(TOP_EARLGREY_UART1_BASE_ADDR);
+    ottf_console_configure_uart(dt_uart_primary_reg_block(kDtUart1));
   }
 
   // Attach the UART under test to the DUT channel.
   CHECK_STATUS_OK(
       uart_testutils_select_pinmux(&pinmux, uart_idx, kUartPinmuxChannelDut));
 
-  base_addr = mmio_region_from_addr(kBaseAddrs[uart_idx]);
-  CHECK_DIF_OK(dif_uart_init(base_addr, &uart));
-
   CHECK_DIF_OK(dif_uart_configure(
       &uart, (dif_uart_config_t){
                  .baudrate = (uint32_t)kUartBaudrate,
-                 .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                 .clk_freq_hz = dt_clock_frequency(kDtClockIo),
                  .parity_enable = kDifToggleDisabled,
                  .parity = kDifUartParityEven,
                  .tx_enable = kDifToggleDisabled,
