@@ -12,12 +12,10 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   // Local variables
 
   // TLM agent fifos
-  uvm_tlm_analysis_fifo #(tl_seq_item) tl_csr_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_unfilt_fifo;
   uvm_tlm_analysis_fifo #(tl_seq_item) tl_filt_fifo;
 
   // Local queues to hold incoming packets pending comparison
-  tl_seq_item tl_csr_q[$];
   tl_seq_item tl_unfilt_q[$];
   tl_seq_item tl_filt_q[$];
 
@@ -29,7 +27,6 @@ class ac_range_check_scoreboard extends cip_base_scoreboard #(
   extern function void check_phase(uvm_phase phase);
 
   // Class specific methods
-  extern task process_tl_csr_fifo();
   extern task process_tl_unfilt_fifo();
   extern task process_tl_filt_fifo();
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
@@ -43,7 +40,6 @@ endfunction : new
 
 function void ac_range_check_scoreboard::build_phase(uvm_phase phase);
   super.build_phase(phase);
-  tl_csr_fifo    = new("tl_csr_fifo", this);
   tl_unfilt_fifo = new("tl_unfilt_fifo", this);
   tl_filt_fifo   = new("tl_filt_fifo", this);
   // TODO: remove once support alert checking
@@ -65,7 +61,6 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
       fork
         begin : main_thread
           fork
-            process_tl_csr_fifo();
             process_tl_unfilt_fifo();
             process_tl_filt_fifo();
           join
@@ -79,14 +74,6 @@ task ac_range_check_scoreboard::run_phase(uvm_phase phase);
     end join
   end
 endtask : run_phase
-
-task ac_range_check_scoreboard::process_tl_csr_fifo();
-  tl_seq_item item;
-  forever begin
-    tl_csr_fifo.get(item);
-    `uvm_info(`gfn, $sformatf("received tl_csr item:\n%0s", item.sprint()), UVM_HIGH)
-  end
-endtask : process_tl_csr_fifo
 
 task ac_range_check_scoreboard::process_tl_unfilt_fifo();
   tl_seq_item item;

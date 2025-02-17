@@ -8,7 +8,6 @@ class ac_range_check_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(ac_range_check_virtual_sequencer)
 
-  tl_sequencer tl_csr_sqr;
   tl_sequencer tl_unfilt_sqr;
   tl_sequencer tl_filt_sqr;
 
