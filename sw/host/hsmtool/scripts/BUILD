@@ -23,7 +23,7 @@ filegroup(
 
 alias(
     name = "binding_srcs",
-    actual = "@crate_index__cryptoki-sys-0.1.6//:binding_srcs",
+    actual = "@crate_index__cryptoki-sys-0.2.0//:binding_srcs",
 )
 
 py_binary(
