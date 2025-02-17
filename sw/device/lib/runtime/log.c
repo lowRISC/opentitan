@@ -83,7 +83,8 @@ void base_log_internal_core(const log_fields_t *log, ...) {
  * @param ... format parameters matching the format string.
  */
 void base_log_internal_dv(const log_fields_t *log, uint32_t nargs, ...) {
-  mmio_region_t log_device = mmio_region_from_addr(kDeviceLogBypassUartAddress);
+  mmio_region_t log_device =
+      mmio_region_from_addr(device_log_bypass_uart_address());
   mmio_region_write32(log_device, 0x0, (uintptr_t)log);
 
   va_list args;

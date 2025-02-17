@@ -4,23 +4,19 @@
 
 #include <stdbool.h>
 
+#include "dt/dt_rv_core_ibex.h"
 #include "sw/device/lib/arch/device.h"
 
 #include "rv_core_ibex_regs.h"
 #include "uart_regs.h"
 
-// FIXME: this is not a scalable solution. The kDeviceTestStatusAddress
-// constant should become a function that can then leverage the DT to
-// get the address.
-#if defined(OPENTITAN_IS_EARLGREY)
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-#define RV_CORE_IBEX_CFG_BASE_ADDR TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR
-#elif defined(OPENTITAN_IS_DARJEELING)
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#define RV_CORE_IBEX_CFG_BASE_ADDR TOP_DARJEELING_RV_CORE_IBEX_CFG_BASE_ADDR
-#else
-#error unsupported top
-#endif
+// Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.
+static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
+static_assert(kDtRvCoreIbexCount == 1, "Only single core tops are supported");
+
+static inline uintptr_t rv_core_ibex_base(void) {
+  return (uintptr_t)dt_rv_core_ibex_primary_reg_block(kRvCoreIbexDt);
+}
 
 /**
  * Device-specific symbol definitions for the DV simulation device.
@@ -69,10 +65,12 @@ const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
-const uintptr_t kDeviceTestStatusAddress =
-    RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
+uintptr_t device_test_status_address(void) {
+  return rv_core_ibex_base() + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
+}
 
-const uintptr_t kDeviceLogBypassUartAddress =
-    RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
+uintptr_t device_log_bypass_uart_address(void) {
+  return rv_core_ibex_base() + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
+}
 
 void device_fpga_version_print(void) {}

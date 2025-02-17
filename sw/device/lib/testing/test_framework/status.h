@@ -20,8 +20,8 @@ typedef enum test_status {
   /**
    * Indicates that the CPU has started executing the test_rom code.
    *
-   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
-   * the current device.
+   * Writing this value to #device_test_status_address() must not stop
+   * simulation of the current device.
    */
   kTestStatusInBootRom = 0xb090,  // 'bogo', BOotrom GO
 
@@ -29,24 +29,24 @@ typedef enum test_status {
    * Indicates that the CPU has seen ROM_EXEC_EN = 0 and will now stop
    * execution.
    *
-   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
-   * the current device.
+   * Writing this value to #device_test_status_address() must not stop
+   * simulation of the current device.
    */
   kTestStatusInBootRomHalt = 0xb057,  // 'bost', BOotrom STop
 
   /**
    * Indicates that the CPU has started executing the test code.
    *
-   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
-   * the current device.
+   * Writing this value to #device_test_status_address() must not stop
+   * simulation of the current device.
    */
   kTestStatusInTest = 0x4354,  // 'test'
 
   /**
    * Indicates that the CPU is in the WFI state.
    *
-   * Writing this value to #kDeviceTestStatusAddress must not stop simulation of
-   * the current device.
+   * Writing this value to #device_test_status_address() must not stop
+   * simulation of the current device.
    */
   kTestStatusInWfi = 0x1d1e,  // 'idle'
 
@@ -54,8 +54,8 @@ typedef enum test_status {
    * This indicates that the test has passed. This is a terminal state. Any code
    * appearing after this value is set is unreachable.
    *
-   * Writing this value to #kDeviceTestStatusAddress may stop simulation of the
-   * current device.
+   * Writing this value to #device_test_status_address() may stop simulation of
+   * the current device.
    */
   kTestStatusPassed = 0x900d,  // 'good'
 
@@ -63,8 +63,8 @@ typedef enum test_status {
    * This indicates that the test has failed. This is a terminal state. Any code
    * appearing after this value is set is unreachable.
    *
-   * Writing this value to #kDeviceTestStatusAddress may stop simulation of the
-   * current device.
+   * Writing this value to #device_test_status_address() may stop simulation of
+   * the current device.
    */
   kTestStatusFailed = 0xbaad  // 'baad'
 } test_status_t;
@@ -78,8 +78,9 @@ typedef enum test_status {
  * In simulated testing (Verilator, DV), this function writes `test_status` to
  * a specific address, which may cause the simulation to end.
  *
- * In environments with a null #kDeviceTestStatusAddress, this logs a message
- * for terminal states and calls abort. Otherwise, the function returns safely.
+ * In environments with a null #device_test_status_address(), this logs a
+ * message for terminal states and calls abort. Otherwise, the function returns
+ * safely.
  *
  * @param test_status current status of the test.
  */

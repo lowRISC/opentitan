@@ -289,7 +289,7 @@
   ({                                                 \
     status_t status_ = expr;                         \
     if (!status_ok(status_)) {                       \
-      if (kDeviceLogBypassUartAddress) {             \
+      if (device_log_bypass_uart_address()) {        \
         _LOG_ERROR_STATUS_DV(status_);               \
       } else {                                       \
         LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
@@ -310,7 +310,7 @@
   do {                                               \
     status_t status_ = expr;                         \
     if (!status_ok(status_)) {                       \
-      if (kDeviceLogBypassUartAddress) {             \
+      if (device_log_bypass_uart_address()) {        \
         _LOG_ERROR_STATUS_DV(status_);               \
       } else {                                       \
         LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
@@ -330,7 +330,7 @@
   do {                                               \
     status_t status_ = expr;                         \
     if (status_ok(status_)) {                        \
-      if (kDeviceLogBypassUartAddress) {             \
+      if (device_log_bypass_uart_address()) {        \
         _LOG_ERROR_STATUS_DV(status_);               \
       } else {                                       \
         LOG_ERROR("CHECK-STATUS-fail: %r", status_); \
