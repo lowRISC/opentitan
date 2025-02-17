@@ -2,18 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{bail, Result};
+use anyhow::Result;
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
 use std::any::Any;
 use std::path::PathBuf;
-use std::str::FromStr;
 
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
+use crate::util::attribute::{AttrData, AttributeMap};
 use crate::util::helper;
+use crate::util::secret::Secret;
+use crate::util::wrap::Wrap;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
@@ -22,24 +23,13 @@ pub struct Import {
     #[arg(short, long)]
     label: Option<String>,
     #[arg(long)]
-    attributes: Option<AttributeMap>,
+    template: Option<AttributeMap>,
     /// Unwrap the imported key with a wrapping key.
     #[arg(long)]
     unwrap: Option<String>,
+    #[arg(long, default_value = "rsa-pkcs-oaep", help=Wrap::HELP)]
+    unwrap_mechanism: Wrap,
     filename: PathBuf,
-}
-
-impl Import {
-    const ATTRIBUTES: &'static str = r#"{
-        "CKA_TOKEN": true,
-        "CKA_CLASS": "CKO_SECRET_KEY",
-        "CKA_KEY_TYPE": "CKK_GENERIC_SECRET",
-        "CKA_DERIVE": true,
-    }"#;
-
-    fn unwrap_key(&self, _session: &Session, _template: &AttributeMap) -> Result<()> {
-        bail!("Kdf key import by unwrapping is not supported yet!");
-    }
 }
 
 #[typetag::serde(name = "kdf-import")]
@@ -53,28 +43,34 @@ impl Dispatch for Import {
         let session = session.ok_or(HsmError::SessionRequired)?;
         helper::no_object_exists(session, self.id.as_deref(), self.label.as_deref())?;
 
-        let mut attributes = AttributeMap::from_str(Self::ATTRIBUTES).expect("error in ATTRIBUTES");
-        let id = AttrData::Str(self.id.as_ref().cloned().unwrap_or_else(helper::random_id));
         let result = Box::new(BasicResult {
             success: true,
-            id: id.clone(),
+            id: AttrData::Str(self.id.as_ref().cloned().unwrap_or_else(helper::random_id)),
             label: AttrData::Str(self.label.as_ref().cloned().unwrap_or_default()),
             value: None,
             error: None,
         });
 
-        attributes.insert(AttributeType::Id, id.clone());
-        attributes.insert(AttributeType::Label, result.label.clone());
-        if let Some(tpl) = &self.attributes {
-            attributes.merge(tpl.clone());
-        }
-
+        let secret = Secret::GenericSecret;
+        let key = helper::read_file(&self.filename)?;
         if self.unwrap.is_some() {
-            self.unwrap_key(session, &attributes)?;
+            let _object = secret.unwrap_key(
+                session,
+                result.id.clone(),
+                result.label.clone(),
+                key,
+                self.template.clone(),
+                self.unwrap.as_deref(),
+                &self.unwrap_mechanism,
+            )?;
         } else {
-            let key = helper::read_file(&self.filename)?;
-            attributes.insert(AttributeType::Value, AttrData::from(key.as_slice()));
-            let _secretkey = session.create_object(&attributes.to_vec()?)?;
+            let _object = secret.import(
+                session,
+                result.id.clone(),
+                result.label.clone(),
+                key,
+                self.template.clone(),
+            )?;
         }
         Ok(result)
     }
