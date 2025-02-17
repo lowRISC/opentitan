@@ -94,6 +94,10 @@ genrule(
 rust_library(
     name = "hsmlib",
     srcs = [
+        "src/commands/aes/export.rs",
+        "src/commands/aes/generate.rs",
+        "src/commands/aes/import.rs",
+        "src/commands/aes/mod.rs",
         "src/commands/ecdsa/export.rs",
         "src/commands/ecdsa/generate.rs",
         "src/commands/ecdsa/import.rs",
