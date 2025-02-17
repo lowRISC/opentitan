@@ -683,7 +683,7 @@ fn generate_cbor_instructions(
 
     let call_wrapper = |func_call: String| {
         indoc::formatdoc! { r#"
-            {prefix}RETURN_IF_ERROR({func_call});
+            {prefix}{func_call};
             "#
         }
     };
@@ -869,11 +869,11 @@ fn generate_source(
         rom_error_t {template_name}_build({template_name}_values_t *values, uint8_t *buffer, size_t *inout_size) {{
         {size_computations}
         {input_size_checks}
-          struct CborOut cbor;
-          RETURN_IF_ERROR(cbor_write_out_init(&cbor, buffer, *inout_size));
+          cbor_out_t cbor;
+          cbor_out_init(&cbor, buffer);
 
         {cbor_instructions}
-          *inout_size = CborOutSize(&cbor);
+          *inout_size = cbor_out_size(&cbor);
         {output_size_checks}
           return kErrorOk;
         }}
