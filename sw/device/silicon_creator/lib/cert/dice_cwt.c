@@ -84,19 +84,31 @@ static void fill_dice_id_string(
 static rom_error_t configuration_descriptor_build(
     uint8_t *buf, size_t *buf_size, const size_t sec_version,
     const hmac_digest_t *manifest_measurement) {
-  struct CborOut kCborOutHandle;
-  struct CborOut *pCborOut = &kCborOutHandle;
-  HARDENED_RETURN_IF_ERROR(
-      cbor_write_out_init(pCborOut, config_desc_buf, *buf_size));
-  HARDENED_RETURN_IF_ERROR(
-      cbor_map_init(pCborOut, (manifest_measurement != NULL) ? 2 : 1));
-  HARDENED_RETURN_IF_ERROR(
-      cbor_write_pair_int_uint(pCborOut, kSecurityVersionLabel, sec_version));
-  if (manifest_measurement != NULL)
-    HARDENED_RETURN_IF_ERROR(cbor_write_pair_int_bytes(
-        pCborOut, kOwnerManifestMeasurmentLabel,
-        (uint8_t *)&manifest_measurement->digest[0], kHmacDigestNumBytes));
-  *buf_size = CborOutSize(pCborOut);
+  cbor_out_t cbor_out;
+  cbor_out_init(&cbor_out, config_desc_buf);
+
+  cbor_out_t *ptrs[2] = {NULL, &cbor_out};
+  const size_t ptrs_len = sizeof(ptrs) / sizeof(ptrs[0]);
+
+  for (size_t i = 0; i < ptrs_len; ++i) {
+    cbor_out_t *cbor = ptrs[i];
+    size_t sz = 0;
+
+    sz += cbor_write_map_header(cbor, (manifest_measurement != NULL) ? 2 : 1);
+    sz += cbor_write_int(cbor, kSecurityVersionLabel);
+    sz += cbor_write_int(cbor, sec_version);
+
+    if (manifest_measurement != NULL) {
+      sz += cbor_write_int(cbor, kOwnerManifestMeasurmentLabel);
+      sz += cbor_write_bstr(cbor, (uint8_t *)&manifest_measurement->digest[0],
+                            kHmacDigestNumBytes);
+    }
+
+    if (sz > *buf_size)
+      return kErrorCertInvalidSize;
+  }
+
+  *buf_size = cbor_out_size(&cbor_out);
 
   return kErrorOk;
 }
