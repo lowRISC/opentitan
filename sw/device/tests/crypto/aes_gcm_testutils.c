@@ -9,7 +9,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/aes.h"
+#include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/profile.h"

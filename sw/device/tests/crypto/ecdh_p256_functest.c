@@ -4,7 +4,7 @@
 
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
-#include "sw/device/lib/crypto/include/ecc.h"
+#include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -23,15 +23,10 @@ enum {
   kP256SharedKeyWords = kP256SharedKeyBytes / sizeof(uint32_t),
 };
 
-static const otcrypto_ecc_curve_t kCurveP256 = {
-    .curve_type = kOtcryptoEccCurveTypeNistP256,
-    .domain_parameter = NULL,
-};
-
 // Configuration for the private key.
 static const otcrypto_key_config_t kEcdhPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdh,
+    .key_mode = kOtcryptoKeyModeEcdhP256,
     .key_length = kP256PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -69,23 +64,23 @@ status_t key_exchange_test(void) {
   uint32_t pkA[kP256PublicKeyWords] = {0};
   uint32_t pkB[kP256PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_keyA = {
-      .key_mode = kOtcryptoKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(pkA),
       .key = pkA,
   };
   otcrypto_unblinded_key_t public_keyB = {
-      .key_mode = kOtcryptoKeyModeEcdh,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
       .key_length = sizeof(pkB),
       .key = pkB,
   };
 
   // Generate a keypair.
   LOG_INFO("Generating keypair A...");
-  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyA, &public_keyA));
+  TRY(otcrypto_ecdh_p256_keygen(&private_keyA, &public_keyA));
 
   // Generate a second keypair.
   LOG_INFO("Generating keypair B...");
-  TRY(otcrypto_ecdh_keygen(&kCurveP256, &private_keyB, &public_keyB));
+  TRY(otcrypto_ecdh_p256_keygen(&private_keyB, &public_keyB));
 
   // Sanity check; public keys should be different from each other.
   CHECK_ARRAYS_NE(pkA, pkB, ARRAYSIZE(pkA));
@@ -109,12 +104,12 @@ status_t key_exchange_test(void) {
   // Compute the shared secret from A's side of the computation (using A's
   // private key and B's public key).
   LOG_INFO("Generating shared secret (A)...");
-  TRY(otcrypto_ecdh(&private_keyA, &public_keyB, &kCurveP256, &shared_keyA));
+  TRY(otcrypto_ecdh_p256(&private_keyA, &public_keyB, &shared_keyA));
 
   // Compute the shared secret from B's side of the computation (using B's
   // private key and A's public key).
   LOG_INFO("Generating shared secret (B)...");
-  TRY(otcrypto_ecdh(&private_keyB, &public_keyA, &kCurveP256, &shared_keyB));
+  TRY(otcrypto_ecdh_p256(&private_keyB, &public_keyA, &shared_keyB));
 
   // Get pointers to individual shares of both shared keys.
   uint32_t *keyA0;

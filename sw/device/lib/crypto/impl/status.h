@@ -70,11 +70,8 @@ extern "C" {
 #define HARDENED_TRY(expr_)                                           \
   ({                                                                  \
     status_t status_ = expr_;                                         \
-    if (!status_ok(status_)) {                                        \
-      return status_;                                                 \
-    }                                                                 \
     if (launder32(OT_UNSIGNED(status_.value)) != kHardenedBoolTrue) { \
-      return OTCRYPTO_FATAL_ERR;                                      \
+      return status_;                                                 \
     }                                                                 \
     HARDENED_CHECK_EQ(status_.value, kHardenedBoolTrue);              \
     status_.value;                                                    \

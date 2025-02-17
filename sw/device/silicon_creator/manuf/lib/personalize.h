@@ -6,8 +6,6 @@
 #define OPENTITAN_SW_DEVICE_SILICON_CREATOR_MANUF_LIB_PERSONALIZE_H_
 
 #include "sw/device/lib/base/status.h"
-#include "sw/device/lib/crypto/impl/ecc/p256.h"
-#include "sw/device/lib/crypto/include/ecc.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"

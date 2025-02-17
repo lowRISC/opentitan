@@ -9,7 +9,7 @@
 #define OPENTITAN_SW_DEVICE_TESTS_CRYPTO_KDF_TESTVECTORS_H_
 
 #include "sw/device/lib/crypto/drivers/kmac.h"
-#include "sw/device/lib/crypto/include/mac.h"
+#include "sw/device/lib/crypto/include/kmac.h"
 
 #ifdef __cplusplus
 extern "C" {

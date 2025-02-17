@@ -128,23 +128,16 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_mode }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_operation }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_tag_len }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_tag_len }}
 
 #### Elliptic curve data structures
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_eddsa_sign_mode }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_domain }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve_type }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecc_curve }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_eddsa_sign_mode }}
 
 #### Hash data structures
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hash_digest }}
-
-#### Message authentication data structures
-
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac_mode }}
 
 #### RSA data structures
 
@@ -157,8 +150,8 @@ The following data structures are considered implementation specific.
 The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_context }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_context }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
 
 ## AES
 
@@ -190,23 +183,14 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 
 #### GCM - Authenticated Encryption and Decryption
 
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_init }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_init }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_aad }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_update_encrypted_data }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_encrypt_final }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_gcm_decrypt_final }}
-
-### AES-KWP
-
-Key Wrap with Padding (KWP) mode is used for the protection of cryptographic keys.
-AES-KWP is specified in [NIST SP800-38F][kwp-spec].
-
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrapped_len }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_wrap }}
-{{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_kwp_unwrap }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt_init }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_update_aad }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_update_encrypted_data }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt_final }}
+{{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt_final }}
 
 ## Hash functions
 
@@ -222,26 +206,30 @@ Note that hardware support for one-shot SHA-256 means that the one-shot version 
 
 This mode is used when the entire data to be hashed is available upfront.
 
-This is a generic hash API where the required digest type and length is passed as an input parameter.
-The supported hash modes are SHA256, SHA384, SHA512, SHA3-224, SHA3-256, SHA3-384 and SHA3-512.
-
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_512 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_224 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_384 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_sha3_512 }}
 
 The cryptolib supports the SHAKE and cSHAKE extendable-output functions, which can produce a varaible-sized digest.
 To avoid locking up the KMAC block, only a one-shot mode is supported.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_shake }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_xof_cshake }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_shake256 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake128 }}
+{{#header-snippet sw/device/lib/crypto/include/sha3.h otcrypto_cshake256 }}
 
 ### Streaming mode
 
 The streaming mode API is used for incremental hashing, where the data to be hashed is split and passed in multiple blocks.
-Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because these hash functions are implemented in software and their state can therefore be saved without locking up hardware blocks.
-Attempting to use the streaming API for SHA3 will result in an error.
+Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because the SHA-3 hardware does not support saving and restoring a hash context.
 
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_init }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_update }}
-{{#header-snippet sw/device/lib/crypto/include/hash.h otcrypto_hash_final }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
 
 ## Message Authentication
 
@@ -254,8 +242,8 @@ The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 1
 
 ### One-shot mode
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_kmac }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac }}
+{{#header-snippet sw/device/lib/crypto/include/kmac.h otcrypto_kmac }}
 
 ### Streaming mode
 
@@ -263,9 +251,9 @@ The streaming mode API is used for incremental hashing use-case, where the data 
 
 To avoid locking up the KMAC hardware, the streaming mode is supported **only for HMAC**.
 
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_init }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_update }}
-{{#header-snippet sw/device/lib/crypto/include/mac.h otcrypto_hmac_final }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_init }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_update }}
+{{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_final }}
 
 ## RSA
 
@@ -334,7 +322,7 @@ All ECC operations may be run [asynchronously](#asynchronous-operations) through
 ### Supported Curves
 
 Elliptic curves of the short Weierstrass form, Montgomery form, and twisted Edward form are supported.
-- For short Weierstrass form three predefined named curves are supported (NIST P-256, NIST P-384 and brainpool 256) along with support for user-defined generic curves.
+- For short Weierstrass form, NIST P-256 and P-384 are supported.
 - For the Montgomery form, only X25519 is supported.
 - For twisted Edwards form only Ed25519 is supported.
 
@@ -367,68 +355,95 @@ The two curves are birationally equivalent, in mathematical terms, so it is poss
 
 For ECDSA, the cryptography library supports keypair generation, signing, and signature verification.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
 
 #### ECDH
 
 For ECDH (elliptic-curve Diffie-Hellman) key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256 }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384 }}
 
 #### Ed25519
 
 For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
-There is **no need to specify curve parameters for Ed25519**, since it operates on a specific curve already.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify }}
 
 #### X25519
 
 For x25519 key exchange, the cryptography library supports keypair generation and shared-key generation.
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519 }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519 }}
 
 ### ECC Asynchronous API
 
 #### ECDSA
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdsa_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_finalize }}
 
 #### ECDH
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ecdh_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdh_p256_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdh_p384_async_finalize }}
 
 #### Ed25519
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_sign_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_ed25519_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_sign_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ed25519.h otcrypto_ed25519_verify_async_finalize }}
 
 #### X25519
 
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_keygen_async_finalize }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_async_start }}
-{{#header-snippet sw/device/lib/crypto/include/ecc.h otcrypto_x25519_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/x25519.h otcrypto_x25519_async_finalize }}
 
 ## Deterministic random bit generation
 
@@ -471,17 +486,19 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 
 ### API
 
-#### KDF-CTR
-
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hmac_ctr }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_kmac }}
-
-
 #### HKDF
 
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_extract }}
-{{#header-snippet sw/device/lib/crypto/include/kdf.h otcrypto_kdf_hkdf_expand }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_extract }}
+{{#header-snippet sw/device/lib/crypto/include/hkdf.h otcrypto_hkdf_expand }}
+
+#### KDF-CTR
+
+{{#header-snippet sw/device/lib/crypto/include/kdf_ctr.h otcrypto_kdf_ctr_hmac }}
+
+#### KMAC-KDF
+
+{{#header-snippet sw/device/lib/crypto/include/kmac_kdf.h otcrypto_kmac_kdf }}
 
 ## Key transport
 
@@ -500,6 +517,15 @@ See the [key data structures](#key-data-structures) section for more details.
 ### Package hardware-backed keys
 
 {{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_key }}
+
+### Wrap and unwrap keys
+
+Secret keys can be encrypted (e.g. for storage) using the key wrap/unwrap routines.
+We use AES Key Wrapping with Padding (KWP), which is specified in [NIST SP800-38F][kwp-spec].
+
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_wrapped_key_len }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_key_wrap }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_key_unwrap }}
 
 ### Import Symmetric Keys
 

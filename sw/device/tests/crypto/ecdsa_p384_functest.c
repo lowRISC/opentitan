@@ -6,8 +6,8 @@
 #include "sw/device/lib/crypto/impl/integrity.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/ecc.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
@@ -25,14 +25,9 @@ enum {
 // Message
 static const char kMessage[] = "test message";
 
-static const otcrypto_ecc_curve_t kCurveP384 = {
-    .curve_type = kOtcryptoEccCurveTypeNistP384,
-    .domain_parameter = NULL,
-};
-
 static const otcrypto_key_config_t kPrivateKeyConfig = {
     .version = kOtcryptoLibVersion1,
-    .key_mode = kOtcryptoKeyModeEcdsa,
+    .key_mode = kOtcryptoKeyModeEcdsaP384,
     .key_length = kP384PrivateKeyBytes,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -50,44 +45,42 @@ status_t sign_then_verify_test(hardened_bool_t *verification_result) {
   // Allocate space for a public key.
   uint32_t pk[kP384PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_key = {
-      .key_mode = kOtcryptoKeyModeEcdsa,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
       .key_length = sizeof(pk),
       .key = pk,
   };
 
   // Generate a keypair.
   LOG_INFO("Generating keypair...");
-  CHECK_STATUS_OK(
-      otcrypto_ecdsa_keygen(&kCurveP384, &private_key, &public_key));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_keygen(&private_key, &public_key));
 
   // Hash the message.
   otcrypto_const_byte_buf_t msg = {
       .len = sizeof(kMessage) - 1,
       .data = (unsigned char *)&kMessage,
   };
-  uint32_t msg_digest_data[kSha384DigestWords];
+  uint32_t msg_digest_data[384 / 32];
   otcrypto_hash_digest_t msg_digest = {
       .data = msg_digest_data,
       .len = ARRAYSIZE(msg_digest_data),
-      .mode = kOtcryptoHashModeSha384,
   };
-  TRY(otcrypto_hash(msg, msg_digest));
+  TRY(otcrypto_sha2_384(msg, msg_digest));
 
   // Allocate space for the signature.
   uint32_t sig[kP384SignatureWords] = {0};
 
   // Generate a signature for the message.
   LOG_INFO("Signing...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_sign(
-      &private_key, msg_digest, &kCurveP384,
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign(
+      &private_key, msg_digest,
       (otcrypto_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)}));
 
   // Verify the signature.
   LOG_INFO("Verifying...");
-  CHECK_STATUS_OK(otcrypto_ecdsa_verify(
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_verify(
       &public_key, msg_digest,
       (otcrypto_const_word32_buf_t){.data = sig, .len = ARRAYSIZE(sig)},
-      &kCurveP384, verification_result));
+      verification_result));
 
   return OTCRYPTO_OK;
 }

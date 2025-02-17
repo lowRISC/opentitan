@@ -6,14 +6,22 @@
 #define OPENTITAN_SW_DEVICE_LIB_CRYPTO_INCLUDE_OTCRYPTO_H_
 
 #include "aes.h"
+#include "aes_gcm.h"
 #include "datatypes.h"
 #include "drbg.h"
-#include "ecc.h"
-#include "hash.h"
-#include "kdf.h"
+#include "ecc_p256.h"
+#include "ecc_p384.h"
+#include "ed25519.h"
+#include "hkdf.h"
+#include "hmac.h"
+#include "kdf_ctr.h"
 #include "key_transport.h"
-#include "mac.h"
+#include "kmac.h"
+#include "kmac_kdf.h"
 #include "rsa.h"
+#include "sha2.h"
+#include "sha3.h"
+#include "x25519.h"
 
 /**
  * @file
