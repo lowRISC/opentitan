@@ -2,13 +2,16 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, Optional, List
+from typing import Dict, List, Optional
+
 from .clocks import Clocks
 
 
 class ResetItem:
     '''Individual resets'''
-    def __init__(self, hier: Dict[str, str], raw: Dict[str, object], clocks: Clocks):
+
+    def __init__(self, hier: Dict[str, str], raw: Dict[str, object],
+                 clocks: Clocks):
         if not raw['name']:
             raise ValueError('Reset has no name')
 
@@ -64,6 +67,7 @@ class ResetItem:
 
 class Resets:
     '''Resets for the chip'''
+
     def __init__(self, raw: Dict[str, object], clocks: Clocks):
         self.hier_paths = {}
         assert isinstance(raw['hier_paths'], dict)
@@ -118,30 +122,27 @@ class Resets:
     def get_generated_resets(self) -> list:
         '''Get generated resets and return reset object
         '''
-        return [reset
-                for reset in self.nodes.values()
-                if reset.gen]
+        return [reset for reset in self.nodes.values() if reset.gen]
 
     def get_top_resets(self) -> list:
         '''Get resets pushed to the top level'''
 
-        return [reset
-                for reset in self.nodes.values()
-                if reset.rst_type == 'top']
+        return [
+            reset for reset in self.nodes.values() if reset.rst_type == 'top'
+        ]
 
     def get_sw_resets(self) -> list:
         '''Get software controlled resets'''
 
-        return [reset.name
-                for reset in self.nodes.values()
-                if reset.sw]
+        return [reset.name for reset in self.nodes.values() if reset.sw]
 
-    def get_path(self, name: str, domain: Optional[str], shadow = False) -> str:
+    def get_path(self, name: str, domain: Optional[str], shadow=False) -> str:
         '''Get path to reset'''
 
         reset = self.get_reset_by_name(name)
         if reset.rst_type == 'int':
-            raise ValueError(f'Reset {name} is not a reset exported from rstmgr')
+            raise ValueError(
+                f'Reset {name} is not a reset exported from rstmgr')
 
         if reset.rst_type == 'ext':
             return reset.path
@@ -156,15 +157,20 @@ class Resets:
 
         return path
 
-    def get_lpg_path(self, name: str, domain: Optional[str], shadow = False) -> str:
+    def get_lpg_path(self,
+                     name: str,
+                     domain: Optional[str],
+                     shadow=False) -> str:
         '''Get path to lpg indication signals'''
 
         reset = self.get_reset_by_name(name)
         if reset.rst_type == 'int':
-            raise ValueError(f'Reset {name} is not a reset exported from rstmgr')
+            raise ValueError(
+                f'Reset {name} is not a reset exported from rstmgr')
 
         if reset.rst_type == 'ext':
-            raise ValueError(f'External reset {name} cannot be associated with an LPG')
+            raise ValueError(
+                f'External reset {name} cannot be associated with an LPG')
 
         if shadow:
             path = reset.shadow_lpg_path
@@ -179,9 +185,9 @@ class Resets:
     def get_unused_resets(self, domains: list) -> Dict[str, str]:
         '''Get unused resets'''
 
-        top_resets = [reset
-                      for reset in self.nodes.values()
-                      if reset.rst_type == 'top']
+        top_resets = [
+            reset for reset in self.nodes.values() if reset.rst_type == 'top'
+        ]
 
         ret = {}
         for reset in top_resets:
