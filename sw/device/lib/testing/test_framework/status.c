@@ -15,9 +15,9 @@
  * @param test_status current status of the test.
  */
 static void test_status_device_write(test_status_t test_status) {
-  if (kDeviceTestStatusAddress != 0) {
-    mmio_region_t test_status_device_addr =
-        mmio_region_from_addr(kDeviceTestStatusAddress);
+  uintptr_t status_addr = device_test_status_address();
+  if (status_addr != 0) {
+    mmio_region_t test_status_device_addr = mmio_region_from_addr(status_addr);
     mmio_region_write32(test_status_device_addr, 0x0, (uint32_t)test_status);
   }
 }

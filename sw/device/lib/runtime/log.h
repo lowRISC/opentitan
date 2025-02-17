@@ -132,7 +132,7 @@ extern char _dv_log_offset[];
 #define LOG(severity, format, ...)                               \
   do {                                                           \
     OT_CHECK_VALID_LOG_ARGS(__VA_ARGS__);                        \
-    if (kDeviceLogBypassUartAddress != 0) {                      \
+    if (device_log_bypass_uart_address() != 0) {                 \
       /* clang-format off */                                     \
       /* Put DV-only log constants in .logs.* sections, which
        * the linker will dutifully discard.

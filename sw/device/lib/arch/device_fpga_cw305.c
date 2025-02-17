@@ -54,9 +54,9 @@ const uint32_t kUartTxFifoCpuCycles = CALCULATE_UART_TX_FIFO_CPU_CYCLES(
 const uint32_t kAstCheckPollCpuCycles =
     CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
 
-const uintptr_t kDeviceTestStatusAddress = 0;
+uintptr_t device_test_status_address(void) { return 0; }
 
-const uintptr_t kDeviceLogBypassUartAddress = 0;
+uintptr_t device_log_bypass_uart_address(void) { return 0; }
 
 void device_fpga_version_print(void) {
   // This value is guaranteed to be zero on all non-FPGA implementations.

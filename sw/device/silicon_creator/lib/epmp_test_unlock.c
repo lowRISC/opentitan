@@ -20,18 +20,19 @@ bool epmp_unlock_test_status(void) {
   const epmp_perm_t kPerm = kEpmpPermLockedReadWrite;
 
   // Check that address space is word aligned.
-  if (kDeviceTestStatusAddress % sizeof(uint32_t) != 0) {
+  uintptr_t status_addr = device_test_status_address();
+  if (status_addr % sizeof(uint32_t) != 0) {
     return false;
   }
 
   // Update the shadow register values.
-  epmp_region_t region = {.start = kDeviceTestStatusAddress,
-                          .end = kDeviceTestStatusAddress + sizeof(uint32_t)};
+  epmp_region_t region = {.start = status_addr,
+                          .end = status_addr + sizeof(uint32_t)};
   epmp_state_configure_na4(kEntry, region, kPerm);
 
   // Update the hardware registers.
   static_assert(kEntry == 6, "PMP entry has changed, update CSR operations.");
-  CSR_WRITE(CSR_REG_PMPADDR6, kDeviceTestStatusAddress / sizeof(uint32_t));
+  CSR_WRITE(CSR_REG_PMPADDR6, status_addr / sizeof(uint32_t));
   CSR_SET_BITS(CSR_REG_PMPCFG1, (kEpmpModeNa4 | kPerm)
                                     << ((kEntry % sizeof(uint32_t)) * 8));
 
