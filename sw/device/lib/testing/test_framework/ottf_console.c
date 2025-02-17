@@ -268,8 +268,6 @@ static uint32_t get_flow_control_watermark_plic_id(void) {
 }
 
 void ottf_console_flow_control_enable(void) {
-  CHECK_DIF_OK(dif_rv_plic_init_from_dt(kDtRvPlic, &ottf_plic));
-
   dif_uart_t *uart = (dif_uart_t *)ottf_console_get();
   CHECK_DIF_OK(dif_uart_watermark_rx_set(uart, kFlowControlRxWatermark));
   CHECK_DIF_OK(dif_uart_irq_set_enabled(uart, kDifUartIrqRxWatermark,
