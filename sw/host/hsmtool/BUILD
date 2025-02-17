@@ -147,7 +147,9 @@ rust_library(
         "src/util/key/mod.rs",
         "src/util/key/rsa.rs",
         "src/util/mod.rs",
+        "src/util/secret.rs",
         "src/util/signing.rs",
+        "src/util/wrap.rs",
     ],
     compile_data = [
         ":attribute_type",
