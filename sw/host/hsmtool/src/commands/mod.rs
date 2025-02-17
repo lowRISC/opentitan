@@ -12,6 +12,7 @@ use std::io::IsTerminal;
 use crate::module::Module;
 use crate::util::attribute::AttrData;
 
+mod aes;
 mod ecdsa;
 mod exec;
 mod kdf;
@@ -40,16 +41,18 @@ pub trait Dispatch {
 #[derive(clap::Subcommand, Debug, Serialize, Deserialize)]
 pub enum Commands {
     #[command(subcommand)]
+    Aes(aes::Aes),
+    #[command(subcommand)]
     Ecdsa(ecdsa::Ecdsa),
     Exec(exec::Exec),
+    #[command(subcommand)]
+    Kdf(kdf::Kdf),
     #[command(subcommand)]
     Object(object::Object),
     #[command(subcommand)]
     Rsa(rsa::Rsa),
     #[command(subcommand)]
     Spx(spx::Spx),
-    #[command(subcommand)]
-    Kdf(kdf::Kdf),
     #[command(subcommand)]
     Token(token::Token),
 }
@@ -63,12 +66,13 @@ impl Dispatch for Commands {
         session: Option<&Session>,
     ) -> Result<Box<dyn erased_serde::Serialize>> {
         match self {
+            Commands::Aes(x) => x.run(context, hsm, session),
             Commands::Ecdsa(x) => x.run(context, hsm, session),
             Commands::Exec(x) => x.run(context, hsm, session),
-            Commands::Object(x) => x.run(context, hsm, session),
-            Commands::Spx(x) => x.run(context, hsm, session),
-            Commands::Rsa(x) => x.run(context, hsm, session),
             Commands::Kdf(x) => x.run(context, hsm, session),
+            Commands::Object(x) => x.run(context, hsm, session),
+            Commands::Rsa(x) => x.run(context, hsm, session),
+            Commands::Spx(x) => x.run(context, hsm, session),
             Commands::Token(x) => x.run(context, hsm, session),
         }
     }
@@ -78,12 +82,13 @@ impl Dispatch for Commands {
         Self: Sized,
     {
         match self {
+            Commands::Aes(x) => x.leaf(),
             Commands::Ecdsa(x) => x.leaf(),
             Commands::Exec(x) => x.leaf(),
-            Commands::Object(x) => x.leaf(),
-            Commands::Spx(x) => x.leaf(),
-            Commands::Rsa(x) => x.leaf(),
             Commands::Kdf(x) => x.leaf(),
+            Commands::Object(x) => x.leaf(),
+            Commands::Rsa(x) => x.leaf(),
+            Commands::Spx(x) => x.leaf(),
             Commands::Token(x) => x.leaf(),
         }
     }
