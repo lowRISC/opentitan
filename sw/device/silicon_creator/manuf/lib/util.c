@@ -8,7 +8,8 @@
 
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/hash.h"
+#include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
 
@@ -18,6 +19,10 @@
 static_assert(
     OTP_CTRL_PARAM_VENDOR_TEST_SIZE % sizeof(uint32_t) == 0,
     "OTP Vendor Test partition should be an integer multiple of 32-bit words.");
+
+enum {
+  kSha256DigestWords = 256 / 32,
+};
 
 status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
                                              size_t token_size_bytes,
@@ -49,11 +54,10 @@ status_t manuf_util_hash_lc_transition_token(const uint32_t *raw_token,
   otcrypto_hash_digest_t output = {
       .data = token_data,
       .len = token_num_words,
-      .mode = kOtcryptoHashXofModeCshake128,
   };
 
-  TRY(otcrypto_xof_cshake(input, function_name_string, customization_string,
-                          output));
+  TRY(otcrypto_cshake128(input, function_name_string, customization_string,
+                         &output));
   memcpy(hashed_token, token_data, sizeof(token_data));
 
   return OK_STATUS();
@@ -68,7 +72,6 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
   otcrypto_hash_digest_t digest = {
       .data = output.data,
       .len = output.len,
-      .mode = kOtcryptoHashModeSha256,
   };
 
   switch (partition) {
@@ -87,7 +90,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE -
                  OTP_CTRL_PARAM_VENDOR_TEST_DIGEST_SIZE,
       };
-      TRY(otcrypto_hash(input, digest));
+      TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionCreatorSwCfg: {
       otcrypto_const_byte_buf_t input = {
@@ -97,7 +100,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE -
                  OTP_CTRL_PARAM_CREATOR_SW_CFG_DIGEST_SIZE,
       };
-      TRY(otcrypto_hash(input, digest));
+      TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionOwnerSwCfg: {
       otcrypto_const_byte_buf_t input = {
@@ -107,7 +110,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE -
                  OTP_CTRL_PARAM_OWNER_SW_CFG_DIGEST_SIZE,
       };
-      TRY(otcrypto_hash(input, digest));
+      TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign: {
       uint32_t rot_creator_auth_codesign_32bit_array
@@ -125,7 +128,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
                  OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
       };
-      TRY(otcrypto_hash(input, digest));
+      TRY(otcrypto_sha2_256(input, &digest));
     } break;
     case kDifOtpCtrlPartitionRotCreatorAuthState: {
       uint32_t rot_creator_auth_state_32bit_array
@@ -143,7 +146,7 @@ status_t manuf_util_hash_otp_partition(const dif_otp_ctrl_t *otp_ctrl,
           .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE -
                  OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_DIGEST_SIZE,
       };
-      TRY(otcrypto_hash(input, digest));
+      TRY(otcrypto_sha2_256(input, &digest));
     } break;
     default:
       return INVALID_ARGUMENT();
