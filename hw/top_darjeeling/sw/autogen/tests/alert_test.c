@@ -10,49 +10,46 @@
 // -o hw/top_darjeeling
 #include "sw/device/lib/arch/boot_stage.h"
 #include "sw/device/lib/base/mmio.h"
-#include "sw/device/lib/dif/dif_ac_range_check.h"
-#include "sw/device/lib/dif/dif_aes.h"
-#include "sw/device/lib/dif/dif_alert_handler.h"
-#include "sw/device/lib/dif/dif_aon_timer.h"
-#include "sw/device/lib/dif/dif_clkmgr.h"
-#include "sw/device/lib/dif/dif_csrng.h"
-#include "sw/device/lib/dif/dif_dma.h"
-#include "sw/device/lib/dif/dif_edn.h"
-#include "sw/device/lib/dif/dif_gpio.h"
-#include "sw/device/lib/dif/dif_hmac.h"
-#include "sw/device/lib/dif/dif_i2c.h"
-#include "sw/device/lib/dif/dif_keymgr_dpe.h"
-#include "sw/device/lib/dif/dif_kmac.h"
-#include "sw/device/lib/dif/dif_lc_ctrl.h"
-#include "sw/device/lib/dif/dif_mbx.h"
-#include "sw/device/lib/dif/dif_otbn.h"
-#include "sw/device/lib/dif/dif_otp_ctrl.h"
-#include "sw/device/lib/dif/dif_pinmux.h"
-#include "sw/device/lib/dif/dif_pwrmgr.h"
-#include "sw/device/lib/dif/dif_racl_ctrl.h"
-#include "sw/device/lib/dif/dif_rom_ctrl.h"
-#include "sw/device/lib/dif/dif_rstmgr.h"
-#include "sw/device/lib/dif/dif_rv_core_ibex.h"
-#include "sw/device/lib/dif/dif_rv_plic.h"
-#include "sw/device/lib/dif/dif_rv_timer.h"
-#include "sw/device/lib/dif/dif_soc_dbg_ctrl.h"
-#include "sw/device/lib/dif/dif_soc_proxy.h"
-#include "sw/device/lib/dif/dif_spi_device.h"
-#include "sw/device/lib/dif/dif_spi_host.h"
-#include "sw/device/lib/dif/dif_sram_ctrl.h"
-#include "sw/device/lib/dif/dif_uart.h"
+#include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_clkmgr_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_dma_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_keymgr_dpe_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_mbx_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_otbn_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_otp_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_pinmux_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_pwrmgr_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rom_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rstmgr_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rv_core_ibex_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rv_plic_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_rv_timer_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_soc_dbg_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_soc_proxy_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_spi_device_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_spi_host_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_sram_ctrl_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_uart_autogen.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
 #include "sw/device/lib/testing/test_framework/FreeRTOSConfig.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_test_config.h"
 
 #include "alert_handler_regs.h"  // Generated.
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
 static dif_alert_handler_t alert_handler;
-static dif_ac_range_check_t ac_range_check;
 static dif_aes_t aes;
 static dif_aon_timer_t aon_timer_aon;
 static dif_clkmgr_t clkmgr_aon;
@@ -80,7 +77,6 @@ static dif_otbn_t otbn;
 static dif_otp_ctrl_t otp_ctrl;
 static dif_pinmux_t pinmux_aon;
 static dif_pwrmgr_t pwrmgr_aon;
-static dif_racl_ctrl_t racl_ctrl;
 static dif_rom_ctrl_t rom_ctrl0;
 static dif_rom_ctrl_t rom_ctrl1;
 static dif_rstmgr_t rstmgr_aon;
@@ -101,11 +97,8 @@ static dif_uart_t uart0;
  */
 static void init_peripherals(void) {
   mmio_region_t base_addr;
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_ALERT_HANDLER_BASE_ADDR);
   CHECK_DIF_OK(dif_alert_handler_init(base_addr, &alert_handler));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_MBX_AC_RANGE_CHECK_BASE_ADDR);
-  CHECK_DIF_OK(dif_ac_range_check_init(base_addr, &ac_range_check));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_AES_BASE_ADDR);
   CHECK_DIF_OK(dif_aes_init(base_addr, &aes));
@@ -187,9 +180,6 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_PWRMGR_AON_BASE_ADDR);
   CHECK_DIF_OK(dif_pwrmgr_init(base_addr, &pwrmgr_aon));
-
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_SOC_MBX_RACL_CTRL_BASE_ADDR);
-  CHECK_DIF_OK(dif_racl_ctrl_init(base_addr, &racl_ctrl));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_ROM_CTRL0_REGS_BASE_ADDR);
   CHECK_DIF_OK(dif_rom_ctrl_init(base_addr, &rom_ctrl0));
@@ -290,21 +280,6 @@ static void alert_handler_config(void) {
 static void trigger_alert_test(void) {
   bool is_cause;
   dif_alert_handler_alert_t exp_alert;
-
-  // Write ac_range_check's alert_test reg and check alert_cause.
-  for (dif_ac_range_check_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_ac_range_check_alert_force(&ac_range_check, kDifAcRangeCheckAlertRecovCtrlUpdateErr + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdAcRangeCheckRecovCtrlUpdateErr + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
 
   // Write aes's alert_test reg and check alert_cause.
   for (dif_aes_alert_t i = 0; i < 2; ++i) {
@@ -705,21 +680,6 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = kTopDarjeelingAlertIdPwrmgrAonFatalFault + i;
-    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
-        &alert_handler, exp_alert, &is_cause));
-    CHECK(is_cause, "Expect alert %d!", exp_alert);
-
-    // Clear alert cause register
-    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
-        &alert_handler, exp_alert));
-  }
-
-  // Write racl_ctrl's alert_test reg and check alert_cause.
-  for (dif_racl_ctrl_alert_t i = 0; i < 2; ++i) {
-    CHECK_DIF_OK(dif_racl_ctrl_alert_force(&racl_ctrl, kDifRaclCtrlAlertFatalFault + i));
-
-    // Verify that alert handler received it.
-    exp_alert = kTopDarjeelingAlertIdRaclCtrlFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
