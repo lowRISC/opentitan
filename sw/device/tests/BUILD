@@ -31,6 +31,7 @@ load(
     "verilator_params",
 )
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -5914,6 +5915,7 @@ test_suite(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -5928,12 +5930,8 @@ test_suite(
         ),
         deps = [
             "//hw/top:dt",
-            "//hw/top:adc_ctrl_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top:keymgr_c_regs",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
-            "//hw/top:sysrst_ctrl_c_regs",
             "//sw/device/lib/base:mmio",
             "//sw/device/lib/dif:rstmgr",
             "//sw/device/lib/runtime:hart",
@@ -5941,7 +5939,19 @@ test_suite(
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-        ],
+        ] + opentitan_select_top(
+            {
+                "darjeeling": [
+                    "//hw/top:keymgr_dpe_c_regs",
+                ],
+            },
+            [
+                "//hw/top:adc_ctrl_c_regs",
+                "//hw/top:flash_ctrl_c_regs",
+                "//hw/top:keymgr_c_regs",
+                "//hw/top:sysrst_ctrl_c_regs",
+            ],
+        ),
     )
     for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
 ]

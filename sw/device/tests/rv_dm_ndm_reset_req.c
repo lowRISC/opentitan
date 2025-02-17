@@ -2,27 +2,40 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "dt/dt_adc_ctrl.h"     // Generated
-#include "dt/dt_flash_ctrl.h"   // Generated
-#include "dt/dt_keymgr.h"       // Generated
-#include "dt/dt_otp_ctrl.h"     // Generated
-#include "dt/dt_pinmux.h"       // Generated
-#include "dt/dt_sysrst_ctrl.h"  // Generated
+#include "dt/dt_otp_ctrl.h"  // Generated
+#include "dt/dt_pinmux.h"    // Generated
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
 #include "sw/device/lib/testing/rstmgr_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
+#include "otp_ctrl_regs.h"
+#include "pinmux_regs.h"
+
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "dt/dt_adc_ctrl.h"     // Generated
+#include "dt/dt_flash_ctrl.h"   // Generated
+#include "dt/dt_keymgr.h"       // Generated
+#include "dt/dt_sysrst_ctrl.h"  // Generated
+
 #include "adc_ctrl_regs.h"
 #include "flash_ctrl_regs.h"
 #include "keymgr_regs.h"
-#include "otp_ctrl_regs.h"
-#include "pinmux_regs.h"
 #include "sysrst_ctrl_regs.h"
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "dt/dt_keymgr_dpe.h"  // Generated
+
+#include "keymgr_dpe_regs.h"
+#else
+#error Unsupported top
+#endif
+
 /*
    RV_DM NDM RESET REQUEST TEST
-   In top_earlgrey, the CSRs can be divided into 3 groups as below.
+
+   In top_earlgrey and top_darjeeling, the CSRs can be divided into 3 groups as
+   below.
      1. Group1 : Device under por_reset
         - pwrmgr, rstmgr
      2. Group2 : Device under lc_reset
@@ -37,12 +50,15 @@
        OTP_CTRL.DIRECT_ACCESS_WDATA0      0x0      0x0609_2022
        PINMUX.WKUP_DETECTOR_CNT_TH_1      0X0      0X44 --> move to LC
        SRAM RET ADDRESS(8)                ?        0xDDAA_55BB
-    Group3:
+    Group3 (earlgrey):
                                           RESET    PRGM (ARBITRARY VALUE)
        ADC_CTRL.ADC_SAMPLE_CTL            0x9B     0x37
        SYSRST_CTRL.EC_RST_CTL             0x7D0    0x567
        KEYMGR.MAX_OWNER_KEY_VER_SHADOWED  0x0      0x1600_ABBA
        FLASH_CTRL.SCRATCH                 0x0      0x3927
+    Group3 (darjeeling):
+                                          RESET    PRGM (ARBITRARY VALUE)
+       KEYMGR_DPE.MAX_KEY_VER_SHADOWED    0x0      0x1600_ABBA
 
    After programming csrs, the test assert NDM reset from RV_DM and de-assert.
    Read programmed csr to check all Group2 keep programmed value while group 3
@@ -116,6 +132,7 @@ bool test_main(void) {
         .exp_read_val = PINMUX_WKUP_DETECTOR_CNT_TH_1_REG_RESVAL,
 
     },
+#if defined(OPENTITAN_IS_EARLGREY)
     {
         .name = "ADC_CTRL",
         .base = dt_adc_ctrl_primary_reg_block(kDtAdcCtrlAon),
@@ -147,6 +164,17 @@ bool test_main(void) {
         .write_val = 0x3927,
         .exp_read_val = FLASH_CTRL_SCRATCH_REG_RESVAL,
     },
+#elif defined(OPENTITAN_IS_DARJEELING)
+    {
+        .name = "KEYMGR_DPE",
+        .base = dt_keymgr_dpe_primary_reg_block(kDtKeymgrDpe),
+        .offset = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_OFFSET,
+        .write_val = 0x1600ABBA,
+        .exp_read_val = KEYMGR_DPE_MAX_KEY_VER_SHADOWED_REG_RESVAL,
+    },
+#else
+#error Unsupported top
+#endif
   };
 
   CHECK_DIF_OK(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
