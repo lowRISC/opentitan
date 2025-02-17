@@ -1,14 +1,17 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-import re
-import logging as log
-from enum import Enum
-from typing import Dict, List
 
-from .resets import Resets, UnmanagedResets
-from reggen.validate import check_keys
+import logging as log
+import re
+from enum import Enum
+from typing import Dict, List, Union
+
+from basegen.typing import ConfigT
 from reggen.ip_block import IpBlock
+from reggen.validate import check_keys
+from topgen.resets import Resets, UnmanagedResets
+from topgen.typing import IpBlocksT
 
 # For the reference
 # val_types = {
@@ -43,8 +46,10 @@ top_required = {
     'resets': ['l', 'list of resets'],
     'addr_spaces': ['g', 'list of address spaces'],
     'module': ['l', 'list of modules to instantiate'],
-    'memory': ['l', 'list of memories. At least one memory '
-                    'is needed to run the software'],
+    'memory': [
+        'l',
+        'list of memories. At least one memory is needed to run the software'
+    ],
     'xbar': ['l', 'List of the xbar used in the top'],
     'pinout': ['g', 'Pinout configuration'],
     'targets': ['l', ' Target configurations'],
@@ -54,10 +59,8 @@ top_required = {
 
 top_optional = {
     'ac_range_check': ['g', 'Optional AC range configuration'],
-    'alert_module': [
-        'l',
-        'list of the modules that connects to alert_handler'
-    ],
+    'alert_module':
+    ['l', 'list of the modules that connects to alert_handler'],
     'datawidth': ['pn', "default data width"],
     'exported_clks': ['g', 'clock signal routing rules'],
     'host': ['g', 'list of host-only components in the system'],
@@ -80,24 +83,19 @@ top_added = {
     'incoming_interrupt': ['g', 'Parsed incoming interrupts'],
     'interrupt': ['l', 'interrupts'],
     'racl': ['g', 'the expansion of the racl_config file'],
-    'wakeups': [
-        'l',
-        'list of wakeup requests each holding name, width, and module'
-    ],
+    'wakeups':
+    ['l', 'list of wakeup requests each holding name, width, and module'],
     'cfg_path': ['s', 'Path to the folder of the toplevel HJSON file']
 }
 
 pinmux_required = {
     'enable_usb_wakeup': ['pb', 'Enable USB wakeup in pinmux'],
-    'enable_strap_sampling': ['pb', 'Enable hardware strap sampling of pinmux']
+    'enable_strap_sampling':
+    ['pb', 'Enable hardware strap sampling of pinmux']
 }
 pinmux_optional = {
-    'num_wkup_detect': [
-        'd', 'Number of wakeup detectors'
-    ],
-    'wkup_cnt_width': [
-        'd', 'Number of bits in wakeup detector counters'
-    ],
+    'num_wkup_detect': ['d', 'Number of wakeup detectors'],
+    'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],
 }
 pinmux_added = {
@@ -107,8 +105,10 @@ pinmux_added = {
 
 pinmux_sig_required = {
     'instance': ['s', 'Module instance name'],
-    'connection': ['s', 'Specification of connection type, '
-                        'can be direct, manual or muxed'],
+    'connection': [
+        's', 'Specification of connection type, can be direct, manual or '
+        'muxed'
+    ],
 }
 pinmux_sig_optional = {
     'port': ['s', 'Port name of module'],
@@ -121,8 +121,8 @@ pinmux_sig_added = {}
 pinmux_io_required = {
     'name': ['s', 'the name of the io'],
     'width': ['d', 'the bit width of the io'],
-    'connection': ['s', 'Specification of connection type, '
-                        'can be direct, manual or muxed'],
+    'connection':
+    ['s', 'Specification of connection type, can be direct, manual or muxed'],
     'type': ['s', 'input, output, or inout TODO'],
 }
 pinmux_io_optional = {
@@ -144,8 +144,7 @@ pinout_required = {
     'banks': ['l', 'List of IO power banks'],
     'pads': ['l', 'List of pads']
 }
-pinout_optional = {
-}
+pinout_optional = {}
 pinout_added = {
     'idx': ['d', 'the index of the pin'],
 }
@@ -154,8 +153,10 @@ pad_required = {
     'name': ['l', 'Pad name'],
     'type': ['s', 'Pad type'],
     'bank': ['s', 'IO power bank for the pad'],
-    'connection': ['s', 'Specification of connection type, '
-                        'can be direct, manual or muxed'],
+    'connection': [
+        's', 'Specification of connection type, '
+        'can be direct, manual or muxed'
+    ],
 }
 pad_optional = {
     'desc': ['s', 'Pad description'],
@@ -170,12 +171,12 @@ target_required = {
     'pinout': ['g', 'Target-specific pinout configuration'],
     'pinmux': ['g', 'Target-specific pinmux configuration']
 }
-target_optional = {
-}
+target_optional = {}
 target_added = {}
 
 target_pinmux_required = {
-    'special_signals': ['l', 'List of special signals and the pad they are mapped to.'],
+    'special_signals':
+    ['l', 'List of special signals and the pad they are mapped to.'],
 }
 target_pinmux_optional = {}
 target_pinmux_added = {}
@@ -221,7 +222,8 @@ eflash_required = {
     'type': ['s', 'string indicating type of memory'],
     'banks': ['d', 'number of flash banks'],
     'pages_per_bank': ['d', 'number of data pages per flash bank'],
-    'program_resolution': ['d', 'maximum number of flash words allowed to program'],
+    'program_resolution':
+    ['d', 'maximum number of flash words allowed to program'],
 }
 
 eflash_optional = {}
@@ -238,31 +240,52 @@ module_required = {
 
 module_optional = {
     'domain': ['l', 'optional list of power domains, defaults to Domain0'],
-    'clock_reset_export': ['l', 'optional list with prefixes for exported '
-                                'clocks and resets at the chip level'],
-    'attr': ['s', 'optional attribute indicating whether the IP is '
-                  '"ipgen", "reggen_top", or "reggen_only"'],
-    'base_addr': ['g', 'dict of address space mapped to the corresponding '
-                       'hex start address of the peripheral '
-                       '(if the IP has only a single TL-UL interface)'],
-    'base_addrs': ['g', 'hex start addresses of the peripheral '
-                        ' (if the IP has multiple TL-UL interfaces)'],
+    'clock_reset_export': [
+        'l', 'optional list with prefixes for exported '
+        'clocks and resets at the chip level'
+    ],
+    'attr': [
+        's', 'optional attribute indicating whether the IP is '
+        '"ipgen", "reggen_top", or "reggen_only"'
+    ],
+    'base_addr': [
+        'g', 'dict of address space mapped to the corresponding hex start '
+        'address of the peripheral (if the IP has only a single TL-UL '
+        'interface)'
+    ],
+    'base_addrs': [
+        'g', 'hex start addresses of the peripheral '
+        ' (if the IP has multiple TL-UL interfaces)'
+    ],
     'memory': ['g', 'optional dict with memory region attributes'],
-    'param_decl': ['g', 'optional dict that allows to override instantiation parameters'],
-    'generate_dif': ['pb', 'optional bool to indicate if a DIF should be generated for that '
-                           'module'],
-    'outgoing_alert': ['s', 'optional string to indicate alerts are routed externally to the named '
-                            'group'],
-    'incoming_alert': ['l', 'optional list of paths to incoming alert configurations for the '
-                            'alert_handler'],
+    'param_decl':
+    ['g', 'optional dict that allows to override instantiation parameters'],
+    'generate_dif': [
+        'pb',
+        'optional bool to indicate if a DIF should be generated for that '
+        'module'
+    ],
+    'outgoing_alert': [
+        's', 'optional string to indicate alerts are routed externally to '
+        'the named group'
+    ],
+    'incoming_alert': [
+        'l', 'optional list of paths to incoming alert configurations for the '
+        'alert_handler'
+    ],
     'ipgen_param': ['g', 'Optional ipgen parameters for that instance'],
     'template_type': ['s', 'Base template type of ipgen IPs'],
-    'racl_group': ['s', 'Only valid for racl_ctrl IPs. Defines the RACL group this control IP is '
-                        'associated to'],
-    'racl_mappings': ['g', 'dict that maps an interface to its associated RACL mapping'],
-    'racl_mapping': ['s', 'A special case of racl_mappings. If specified, this is taken to '
-                          'represent a dict that associates all interfaces with the give mapping. '
-                          'It is an error to specify both this and racl_mappings.'],
+    'racl_group': [
+        's', 'Only valid for racl_ctrl IPs. Defines the RACL group this '
+        'control IP is associated to'
+    ],
+    'racl_mappings':
+    ['g', 'dict that maps an interface to its associated RACL mapping'],
+    'racl_mapping': [
+        's', 'A special case of racl_mappings. If specified, this is taken to '
+        'represent a dict that associates all interfaces with the given '
+        'mapping. It is an error to specify both this and racl_mappings.'
+    ],
 }
 
 module_added = {
@@ -276,21 +299,21 @@ memory_required = {
     'label': ['s', 'region label for the linker script'],
     'swaccess': ['s', 'access attributes for the memory region (ro, rw)'],
     'exec': ['pb', 'executable region indication for the linker script'],
-    'byte_write': ['pb', 'indicate whether the memory supports byte write accesses'],
+    'byte_write':
+    ['pb', 'indicate whether the memory supports byte write accesses'],
 }
 
 memory_optional = {
-    'size': ['d', 'memory region size in bytes for the linker script, '
-                  'xbar and RTL parameterisations'],
+    'size': [
+        'd', 'memory region size in bytes for the linker script, '
+        'xbar and RTL parameterisations'
+    ],
     'config': ['d', 'Extra configuration for a particular memory'],
-    'data_intg_passthru': [
-        'pb',
-        'Integrity bits are passed through directly from the memory'
-    ]
+    'data_intg_passthru':
+    ['pb', 'Integrity bits are passed through directly from the memory']
 }
 
-memory_added = {
-}
+memory_added = {}
 
 reset_connection_required = {
     'name': ['s', 'name of the connecting reset'],
@@ -303,8 +326,7 @@ reset_connection_added = {}
 reset_requests_required = {}
 reset_requests_optional = {
     'int': [
-        's',
-        'internal request list, for example, escalation reset and '
+        's', 'internal request list, for example, escalation reset and '
         'power glitches'
     ],
     'debug': [
@@ -433,6 +455,7 @@ class TargetType(Enum):
 class Target:
     """Target class informs the checkers if we are validating a module or xbar
     """
+
     def __init__(self, target_type):
         # The type of this target
         self.target_type = target_type
@@ -452,7 +475,10 @@ class Flash:
     max_pages_per_bank = 1024
 
     def __init__(self, mem, base_addrs):
-        self.base_addrs = {asid: int(base, 16) for (asid, base) in base_addrs.items()}
+        self.base_addrs = {
+            asid: int(base, 16)
+            for (asid, base) in base_addrs.items()
+        }
         self.banks = mem.get('banks', 2)
         self.pages_per_bank = mem.get('pages_per_bank', 8)
         self.program_resolution = mem.get('program_resolution', 128)
@@ -462,7 +488,8 @@ class Flash:
         self.info_types = 3
         self.infos_per_bank = [10, 1, 2]
         self.word_bytes = int(self.data_width / 8)
-        self.pgm_resolution_bytes = int(self.program_resolution * self.word_bytes)
+        self.pgm_resolution_bytes = int(self.program_resolution *
+                                        self.word_bytes)
         self.check_values()
 
         # populate size variable
@@ -483,11 +510,13 @@ class Flash:
                        (self.pages_per_bank <= Flash.max_pages_per_bank))
 
         if not pow2_check:
-            raise ValueError('flash power of 2 check failed. A supplied parameter '
-                             'is not power of 2')
+            raise ValueError(
+                'flash power of 2 check failed. A supplied parameter '
+                'is not power of 2')
 
         if not limit_check:
-            raise ValueError('flash number of banks and pages per bank too large')
+            raise ValueError(
+                'flash number of banks and pages per bank too large')
 
     def _asdict(self):
         return {
@@ -502,8 +531,8 @@ class Flash:
 
 
 # Check to see if each module/xbar defined in top.hjson exists as ip/xbar.hjson
-# Also check to make sure there are not multiple definitions of ip/xbar.hjson for each
-# top level definition
+# Also check there are not multiple definitions of ip/xbar.hjson for each top
+# level definition
 # If it does, return a dictionary of instance names to index in ip/xbarobjs
 def check_target(top, name_to_block, tgtobj):
     error = 0
@@ -522,14 +551,10 @@ def check_target(top, name_to_block, tgtobj):
     return error
 
 
-def check_pad(top: Dict,
-              pad: Dict,
-              known_pad_names: Dict,
-              valid_connections: List[str],
-              prefix: str) -> int:
+def check_pad(top: ConfigT, pad: Dict, known_pad_names: Dict,
+              valid_connections: List[str], prefix: str) -> int:
     error = 0
-    error += check_keys(pad, pad_required, pad_optional,
-                        pad_added, prefix)
+    error += check_keys(pad, pad_required, pad_optional, pad_added, prefix)
 
     # check name uniqueness
     if pad['name'] in known_pad_names:
@@ -546,8 +571,8 @@ def check_pad(top: Dict,
         error += 1
 
     if pad['connection'] not in valid_connections:
-        log.warning('Connection type {} of pad {} is invalid'
-                    .format(pad['connection'], pad['name']))
+        log.warning('Connection type {} of pad {} is invalid'.format(
+            pad['connection'], pad['name']))
         error += 1
 
     pad.setdefault('port_type', 'inout')
@@ -555,7 +580,7 @@ def check_pad(top: Dict,
     return error
 
 
-def check_alerts(top: Dict, prefix: str) -> int:
+def check_alerts(top: ConfigT, prefix: str) -> int:
     if 'alert' not in top:
         return 0
     error = 0
@@ -565,7 +590,7 @@ def check_alerts(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_incoming_alerts(top: Dict, prefix: str) -> int:
+def check_incoming_alerts(top: ConfigT, prefix: str) -> int:
     if 'incoming_alert' not in top:
         return 0
     error = 0
@@ -573,7 +598,7 @@ def check_incoming_alerts(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_outgoing_alerts(top: Dict, prefix: str) -> int:
+def check_outgoing_alerts(top: ConfigT, prefix: str) -> int:
     if 'outgoing_alert' not in top:
         return 0
     error = 0
@@ -581,7 +606,7 @@ def check_outgoing_alerts(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_interrupts(top: Dict, prefix: str) -> int:
+def check_interrupts(top: ConfigT, prefix: str) -> int:
     if 'interrupt' not in top:
         return 0
     error = 0
@@ -591,29 +616,28 @@ def check_interrupts(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_incoming_interrupts(top: Dict, prefix: str) -> int:
+def check_incoming_interrupts(top: ConfigT, prefix: str) -> int:
     error = 0
     # TODO
     return error
 
 
-def check_pinout(top: Dict, prefix: str) -> int:
+def check_pinout(top: ConfigT, prefix: str) -> int:
     error = check_keys(top['pinout'], pinout_required, pinout_optional,
                        pinout_added, prefix + ' Pinout')
 
     known_names = {}
     for pad in top['pinout']['pads']:
-        error += check_keys(pad, pad_required, pad_optional,
-                            pad_added, prefix + ' Pinout')
+        error += check_keys(pad, pad_required, pad_optional, pad_added,
+                            prefix + ' Pinout')
 
         error += check_pad(top, pad, known_names,
-                           ['direct', 'manual', 'muxed'],
-                           prefix + ' Pad')
+                           ['direct', 'manual', 'muxed'], prefix + ' Pad')
 
     return error
 
 
-def check_pinmux(top: Dict, prefix: str) -> int:
+def check_pinmux(top: ConfigT, prefix: str) -> int:
     error = check_keys(top['pinmux'], pinmux_required, pinmux_optional,
                        pinmux_added, prefix + ' Pinmux')
 
@@ -633,7 +657,7 @@ def check_pinmux(top: Dict, prefix: str) -> int:
                             pinmux_sig_added, prefix + ' Pinmux signal')
 
         if sig['connection'] not in ['direct', 'manual', 'muxed']:
-            log.warning('Invalid connection type {}'.format(sig['connection']))
+            log.warning(f'Invalid connection type {sig["connection"]}')
             error += 1
 
         # The pad needs to refer to a valid pad name in the pinout that is of
@@ -647,8 +671,8 @@ def check_pinmux(top: Dict, prefix: str) -> int:
                     known_direct_pads[padname] = 0
                     padattr = direct_pad_attr[padname]
                 else:
-                    log.warning('Warning, direct pad {} is already connected'
-                                .format(padname))
+                    log.warning(
+                        f'Warning, direct pad {padname} is already connected')
                     error += 1
             else:
                 log.warning('Unknown direct pad {}'.format(padname))
@@ -659,8 +683,7 @@ def check_pinmux(top: Dict, prefix: str) -> int:
         pattern = r'^[a-zA-Z0-9_]*(\[[0-9]*\]){0,1}'
         matches = re.match(pattern, port)
         if matches is None:
-            log.warning('Port name {} has wrong format'
-                        .format(port))
+            log.warning(f'Port name {port} has wrong format')
             error += 1
 
         # Check that only direct connections have pad keys
@@ -671,37 +694,36 @@ def check_pinmux(top: Dict, prefix: str) -> int:
                     '{} does not match expected {}'.format(
                         sig['instance'], sig['port'], sig['attr'], padattr))
                 error += 1
-            # Since the signal is directly connected, we can automatically infer
-            # the pad type needed to instantiate the correct attribute CSR WARL
-            # module inside the pinmux.
+            # Since the signal is directly connected, we can automatically
+            # infer the pad type needed to instantiate the correct attribute
+            # CSR WARL module inside the pinmux.
             sig['attr'] = padattr
 
             if padname == '':
-                log.warning('Instance {} port {} connection is of direct type '
-                            'and therefore must have an associated pad name.'
-                            .format(sig['instance'],
-                                    sig['port']))
+                log.warning(
+                    'Instance {} port {} connection is of direct type and '
+                    'therefore must have an associated pad name.'.format(
+                        sig['instance'], sig['port']))
                 error += 1
             if port == '':
-                log.warning('Instance {} port {} connection is of direct type '
-                            'and therefore must have an associated port name.'
-                            .format(sig['instance'],
-                                    sig['port']))
+                log.warning(
+                    'Instance {} port {} connection is of direct type and '
+                    'therefore must have an associated port name.'.format(
+                        sig['instance'], sig['port']))
                 error += 1
         elif sig['connection'] == 'muxed':
             # Muxed signals do not have a corresponding pad and attribute CSR,
             # since they first go through the pinmux matrix.
             if sig.setdefault('attr', '') != '':
-                log.warning('Muxed connection of instance {} port {} '
-                            'must not have an associated pad attribute field'
-                            .format(sig['instance'],
-                                    sig['port']))
+                log.warning(
+                    'Muxed connection of instance {} port {} must not have '
+                    'an associated pad attribute field'.format(
+                        sig['instance'], sig['port']))
                 error += 1
             if padname != '':
                 log.warning('Muxed connection of instance {} port {} '
-                            'must not have an associated pad'
-                            .format(sig['instance'],
-                                    sig['port']))
+                            'must not have an associated pad'.format(
+                                sig['instance'], sig['port']))
                 error += 1
         elif sig['connection'] == 'manual':
             # This pad attr key is only allowed in the manual case,
@@ -709,16 +731,14 @@ def check_pinmux(top: Dict, prefix: str) -> int:
             sig.setdefault('attr', 'BidirStd')
             if padname != '':
                 log.warning('Manual connection of instance {} port {} '
-                            'must not have an associated pad'
-                            .format(sig['instance'],
-                                    sig['port']))
+                            'must not have an associated pad'.format(
+                                sig['instance'], sig['port']))
                 error += 1
 
     # At this point, all direct pads should have been ticked off.
     for key, val in known_direct_pads.items():
         if val == 1:
-            log.warning('Direct pad {} has not been connected'
-                        .format(key))
+            log.warning('Direct pad {} has not been connected'.format(key))
             error += 1
 
     # Check added ios
@@ -739,7 +759,7 @@ def check_pinmux(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_implementation_targets(top: Dict, prefix: str) -> int:
+def check_implementation_targets(top: ConfigT, prefix: str) -> int:
     error = 0
     known_names = {}
     for target in top['targets']:
@@ -752,21 +772,25 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
             error += 1
         known_names[target['name']] = 1
 
-        error += check_keys(target['pinmux'], target_pinmux_required, target_pinmux_optional,
-                            target_pinmux_added, prefix + ' Target pinmux')
+        error += check_keys(target['pinmux'], target_pinmux_required,
+                            target_pinmux_optional, target_pinmux_added,
+                            prefix + ' Target pinmux')
 
-        error += check_keys(target['pinout'], target_pinout_required, target_pinout_optional,
-                            target_pinout_added, prefix + ' Target pinout')
+        error += check_keys(target['pinout'], target_pinout_required,
+                            target_pinout_optional, target_pinout_added,
+                            prefix + ' Target pinout')
 
         # Check special pad signals
         known_entry_names = {}
         for entry in target['pinmux']['special_signals']:
-            error += check_keys(entry, special_sig_required, special_sig_optional,
-                                special_sig_added, prefix + ' Special signal')
+            error += check_keys(entry, special_sig_required,
+                                special_sig_optional, special_sig_added,
+                                prefix + ' Special signal')
 
             # check name uniqueness
             if entry['name'] in known_entry_names:
-                log.warning('Special pad name {} is not unique'.format(entry['name']))
+                log.warning('Special pad name {} is not unique'.format(
+                    entry['name']))
                 error += 1
             known_entry_names[entry['name']] = 1
 
@@ -781,13 +805,15 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
                 error += 1
 
             if not is_muxed:
-                # If this is not a muxed pad, we need to make sure this refers to
-                # DIO that is NOT a manual pad.
+                # If this is not a muxed pad, we need to make sure this refers
+                # to DIO that is NOT a manual pad.
                 for sig in top['pinmux']['signals']:
                     if entry['pad'] == sig['pad']:
                         break
                 else:
-                    log.warning('Special pad {} cannot refer to a manual pad'.format(entry['pad']))
+                    log.warning(
+                        'Special pad {} cannot refer to a manual pad'.format(
+                            entry['pad']))
                     error += 1
 
         # Check ports to remove
@@ -822,7 +848,8 @@ def check_implementation_targets(top: Dict, prefix: str) -> int:
     return error
 
 
-def check_clocks_resets(top, ip_name_to_block, xbar_name_to_block):
+def check_clocks_resets(top: ConfigT, ip_name_to_block: IpBlocksT,
+                        xbar_name_to_block: IpBlocksT) -> int:
 
     error = 0
 
@@ -836,19 +863,22 @@ def check_clocks_resets(top, ip_name_to_block, xbar_name_to_block):
     unmanaged_resets = top.get('unmanaged_resets')
     if unmanaged_resets:
         if isinstance(unmanaged_resets, UnmanagedResets):
-            unmanaged_reset_nets = [reset for reset in unmanaged_resets.resets.keys()]
+            unmanaged_reset_nets = [
+                reset for reset in unmanaged_resets.resets.keys()
+            ]
         else:
-            unmanaged_reset_nets = [net for reset in unmanaged_resets
-                                    for net in reset.values()]
+            unmanaged_reset_nets = [
+                net for reset in unmanaged_resets for net in reset.values()
+            ]
 
     # Check clock/reset port connection for all IPs
     for ipcfg in top['module']:
         ipcfg_name = ipcfg['type']
         log.info("Checking clock/resets for %s" % ipcfg_name)
-        error += validate_reset(ipcfg, ip_name_to_block[ipcfg_name], reset_nets,
-                                unmanaged_reset_nets)
-        error += validate_clock(ipcfg, ip_name_to_block[ipcfg_name], clock_srcs,
-                                unmanaged_clock_srcs)
+        error += validate_reset(ipcfg, ip_name_to_block[ipcfg_name],
+                                reset_nets, unmanaged_reset_nets)
+        error += validate_clock(ipcfg, ip_name_to_block[ipcfg_name],
+                                clock_srcs, unmanaged_clock_srcs)
 
         if error:
             log.error("module clock/reset checking failed")
@@ -870,7 +900,7 @@ def check_clocks_resets(top, ip_name_to_block, xbar_name_to_block):
     return error
 
 
-def check_reset_requests(top: Dict, component: str) -> int:
+def check_reset_requests(top: ConfigT, component: str) -> int:
     error = 0
     for key, resets in top.get('reset_requests', {}).items():
         all_keys = [
@@ -889,7 +919,7 @@ def check_reset_requests(top: Dict, component: str) -> int:
     return error
 
 
-def check_exported_resets(top: Dict, component: str) -> int:
+def check_exported_resets(top: ConfigT, component: str) -> int:
     error = 0
     for key, resets in top.get('exported_rsts', {}).items():
         # TODO
@@ -897,7 +927,7 @@ def check_exported_resets(top: Dict, component: str) -> int:
     return error
 
 
-def check_wakeups(top: Dict, component: str) -> int:
+def check_wakeups(top: ConfigT, component: str) -> int:
     error = 0
     for wakeup in top.get('wakeups', []):
         error += check_keys(wakeup, wakeup_required, wakeup_optional,
@@ -906,10 +936,14 @@ def check_wakeups(top: Dict, component: str) -> int:
 
 
 # Checks the following
-# For each defined reset connection in top*.hjson, there exists a defined port at the destination
-# and defined reset net
-# There are the same number of defined connections as there are ports
-def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
+# - For each defined reset connection in top*.hjson, there exists a defined
+#   port at the destination and defined reset net
+# - There are the same number of defined connections as there are ports
+def validate_reset(top: ConfigT,
+                   inst: Union[IpBlock, ConfigT],
+                   reset_nets: List[str],
+                   unmanaged_reset_nets: List[str],
+                   prefix="") -> int:
     # Gather inst port list
     error = 0
 
@@ -923,8 +957,7 @@ def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
         reset_signals = ([inst.get('reset_primary', 'rst_ni')] +
                          inst.get('other_reset_list', []))
 
-    log.info("%s %s resets are %s" %
-             (prefix, name, reset_signals))
+    log.info(f"{prefix} {name} resets are {reset_signals}")
 
     # Check if reset connections are properly formatted
     # There are two options
@@ -945,22 +978,20 @@ def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
                 top["reset_connections"][port]['domain'] = top["domain"][0]
 
         if isinstance(reset, dict):
-            error += check_keys(reset,
-                                reset_connection_required,
+            error += check_keys(reset, reset_connection_required,
                                 reset_connection_optional,
                                 reset_connection_added,
                                 'dict structure for reset connections')
 
             if reset['domain'] not in top["domain"]:
                 error += 1
-                log.error(f"domain {reset['domain']} defined for reset {reset['name']} "
-                          f"is not a domain of {top['name']}")
+                log.error(f"domain {reset['domain']} defined for reset "
+                          f"{reset['name']} is not a domain of {top['name']}")
 
     # Check if the reset connections are fully populated
     if len(top['reset_connections']) != len(reset_signals):
         error += 1
-        log.error("%s %s mismatched number of reset ports and nets" %
-                  (prefix, name))
+        log.error(f"{prefix} {name} mismatched number of reset ports and nets")
 
     missing_port = [
         port for port in top['reset_connections'].keys()
@@ -969,9 +1000,8 @@ def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
 
     if missing_port:
         error += 1
-        log.error("%s %s Following reset ports do not exist:" %
-                  (prefix, name))
-        [log.error("%s" % port) for port in missing_port]
+        log.error(f"{prefix} {name} Following reset ports do not exist:")
+        [log.error(f"{port}") for port in missing_port]
 
     missing_net = [
         net['name'] for net in top['reset_connections'].values()
@@ -980,18 +1010,21 @@ def validate_reset(top, inst, reset_nets, unmanaged_reset_nets, prefix=""):
 
     if missing_net:
         error += 1
-        log.error("%s %s Following reset nets do not exist:" %
-                  (prefix, name))
-        [log.error("%s" % net) for net in missing_net]
+        log.error(f"{prefix} {name} Following reset nets do not exist:")
+        [log.error(f"{net}") for net in missing_net]
 
     return error
 
 
 # Checks the following
-# For each defined clock_src in top*.hjson, there exists a defined port at the destination
-# and defined clock source
-# There are the same number of defined connections as there are ports
-def validate_clock(top, inst, clock_srcs, unmanaged_clock_srcs, prefix=""):
+# - For each defined clock_src in top*.hjson, there exists a defined port at
+#   the destination and defined clock source
+# - There are the same number of defined connections as there are ports
+def validate_clock(top: ConfigT,
+                   inst: Union[IpBlock, ConfigT],
+                   clock_srcs: List[str],
+                   unmanaged_clock_srcs: List[str],
+                   prefix="") -> int:
     # Gather inst port list
     error = 0
 
@@ -1007,19 +1040,16 @@ def validate_clock(top, inst, clock_srcs, unmanaged_clock_srcs, prefix=""):
 
     if len(top['clock_srcs']) != len(clock_signals):
         error += 1
-        log.error("%s %s mismatched number of clock ports and nets" %
-                  (prefix, name))
+        log.error(f"{prefix} {name} mismatched number of clock ports and nets")
 
     missing_port = [
-        port for port in top['clock_srcs'].keys()
-        if port not in clock_signals
+        port for port in top['clock_srcs'].keys() if port not in clock_signals
     ]
 
     if missing_port:
         error += 1
-        log.error("%s %s Following clock ports do not exist:" %
-                  (prefix, name))
-        [log.error("%s" % port) for port in missing_port]
+        log.error(f"{prefix} {name} Following clock ports do not exist:")
+        [log.error(f"{port}") for port in missing_port]
 
     missing_net = []
     for port, net in top['clock_srcs'].items():
@@ -1030,24 +1060,24 @@ def validate_clock(top, inst, clock_srcs, unmanaged_clock_srcs, prefix=""):
 
     if missing_net:
         error += 1
-        log.error("%s %s Following clock nets do not exist:" %
-                  (prefix, name))
-        [log.error("%s" % net) for net in missing_net]
+        log.error(f"{prefix} {name} Following clock nets do not exist:")
+        [log.error(f"{net}") for net in missing_net]
 
     return error
 
 
-def check_flash(top):
+def check_flash(top: ConfigT):
 
     for mem in top['memory']:
         if mem['type'] == "eflash":
 
-            raise ValueError('top level flash memory definition not supported. Please use '
-                             'the flash embedded inside flash_ctrl instead.  If there is a '
-                             'need for top level flash memory, please file an issue.')
+            raise ValueError(
+                'top level flash memory definition not supported. Please use '
+                'the flash embedded inside flash_ctrl instead.  If there is a '
+                'need for top level flash memory, please file an issue.')
 
 
-def check_power_domains(top):
+def check_power_domains(top: ConfigT):
 
     # check that the default domain is valid
     if top['power']['default'] not in top['power']['domains']:
@@ -1063,10 +1093,11 @@ def check_power_domains(top):
 
         for d in end_point['domain']:
             if d not in top['power']['domains']:
-                raise ValueError(f"{end_point['name']} defined invalid domain {d}")
+                raise ValueError(
+                    f"{end_point['name']} defined invalid domain {d}")
 
 
-def check_modules(top, prefix):
+def check_modules(top: ConfigT, prefix: str) -> int:
     error = 0
     for m in top['module']:
         modname = m.get("name", "unnamed module")
@@ -1076,45 +1107,50 @@ def check_modules(top, prefix):
         # these fields are mutually exclusive
         if 'base_addr' in m and 'base_addrs' in m:
             log.error("{} {} a module cannot define both the 'base_addr' "
-                      "and 'base_addrs' keys at the same time"
-                      .format(prefix, modname))
+                      "and 'base_addrs' keys at the same time".format(
+                          prefix, modname))
             error += 1
 
         if 'base_addrs' in m and 'memory' in m:
             for intf, value in m['memory'].items():
-                error += check_keys(value, memory_required,
-                                    memory_optional, memory_added,
+                error += check_keys(value, memory_required, memory_optional,
+                                    memory_added,
                                     prefix + " " + modname + " " + intf)
 
-                # if size is not declared, there must be extra config to determine it
+                # if size is not declared, there must be extra config to
+                # determine it
                 if 'size' not in value and 'config' not in value:
-                    raise ValueError(f'{m["name"]} memory declaration has neither size '
-                                     'nor extra configuration.  Unable to determine '
-                                     'memory size')
+                    raise ValueError(
+                        f'{m["name"]} memory declaration has neither size '
+                        'nor extra configuration.  Unable to determine '
+                        'memory size')
 
-                # make sure the memory regions correspond to the TL-UL interfaces
+                # check the memory regions correspond to the TL-UL interfaces
                 if intf not in m['base_addrs']:
-                    raise ValueError(f'{prefix} {modname} memory region {intf} does not '
-                                     'correspond to any of the defined TL-UL interfaces')
+                    raise ValueError(
+                        f'{prefix} {modname} memory region {intf} does not '
+                        'correspond to any of the defined TL-UL interfaces')
 
                 if 'size' not in value:
                     mem_type = value['config'].get('type', "")
 
                     if mem_type == "flash":
-                        check_keys(value['config'], eflash_required, eflash_optional,
-                                   eflash_added, "Eflash")
+                        check_keys(value['config'], eflash_required,
+                                   eflash_optional, eflash_added, "Eflash")
                         flash = Flash(value['config'], m['base_addrs'][intf])
                         value['size'] = flash.size
                         value['config'] = flash
                     else:
-                        raise ValueError(f'{m["name"]} memory config declaration does not have '
-                                         'a valid type')
+                        raise ValueError(
+                            f'{m["name"]} memory config declaration does not '
+                            'have a valid type')
 
                 # make sure the linker region access attribute is valid
                 attr = value.get('swaccess', 'unknown attribute')
                 if attr not in ['ro', 'rw']:
-                    log.error('{} {} swaccess attribute {} of memory region {} '
-                              'is not valid'.format(prefix, modname, attr, intf))
+                    log.error(
+                        '{} {} swaccess attribute {} of memory region {} '
+                        'is not valid'.format(prefix, modname, attr, intf))
                     error += 1
         if 'inter_signal_list' in m:
             for sig in m['inter_signal_list']:
@@ -1131,7 +1167,8 @@ def check_modules(top, prefix):
     return error
 
 
-def validate_top(top, ip_name_to_block, xbar_name_to_block):
+def validate_top(top: ConfigT, ip_name_to_block: IpBlocksT,
+                 xbar_name_to_block: IpBlocksT) -> int:
     # return as it is for now
     error = check_keys(top, top_required, top_optional, top_added, "top")
 
