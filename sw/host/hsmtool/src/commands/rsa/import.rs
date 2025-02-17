@@ -13,9 +13,10 @@ use std::str::FromStr;
 use crate::commands::{BasicResult, Dispatch};
 use crate::error::HsmError;
 use crate::module::Module;
-use crate::util::attribute::{AttrData, AttributeMap, AttributeType, ObjectClass};
+use crate::util::attribute::{AttrData, AttributeMap, AttributeType};
 use crate::util::helper;
 use crate::util::key::rsa::{load_private_key, load_public_key};
+use crate::util::wrap::Wrap;
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Import {
@@ -57,16 +58,11 @@ impl Import {
         "CKA_SIGN": true
     }"#;
 
-    fn unwrap_key(&self, session: &Session, _template: &AttributeMap) -> Result<()> {
-        let mut attrs = helper::search_spec(None, self.unwrap.as_deref())?;
-        attrs.push(Attribute::Class(ObjectClass::SecretKey.try_into()?));
-        let _wkey = helper::find_one_object(session, &attrs).context("Find unwrapping key")?;
-
-        bail!("RSA import by unwrapping is not supported yet!");
-        // FIXME(cfrantz): Turn this back on when cryptoki includes the correct mechanisms.
-        //let key = std::fs::read(&self.filename)?;
-        //let k = session.unwrap_key(&Mechanism::RsaPkcs, wkey, &key, &template.to_vec()?)?;
-        //Ok(())
+    fn unwrap_key(&self, session: &Session, template: &AttributeMap) -> Result<()> {
+        let key = std::fs::read(&self.filename)?;
+        let wrapper = Wrap::AesKeyWrapPad;
+        let _key = wrapper.unwrap(session, key.as_slice(), self.unwrap.as_deref(), template)?;
+        Ok(())
     }
 }
 
