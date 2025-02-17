@@ -26,11 +26,25 @@ enum {
   kAesNumAADBlocks = 2,
 };
 
+// AES GCM configuration used for this test.
+static dif_aes_transaction_t transaction = {
+    .operation = kDifAesOperationEncrypt,
+    .mode = kDifAesModeGcm,
+    .key_len = kDifAesKey128,
+    .key_provider = kDifAesKeySoftwareProvided,
+    .mask_reseeding = kDifAesReseedPerBlock,
+    .manual_operation = kDifAesManualOperationAuto,
+    .reseed_on_key_change = false,
+    .ctrl_aux_lock = false,
+};
+
 OTTF_DEFINE_TEST_CONFIG();
 
-status_t execute_test(void) {
+status_t execute_test(bool save_and_restore_aad, bool save_and_restore_ptx) {
   // Initialise AES.
   dif_aes_t aes;
+  dif_aes_data_t saved_gcm_state;
+  dif_aes_iv_t saved_iv;
   TRY(dif_aes_init(mmio_region_from_addr(TOP_EARLGREY_AES_BASE_ADDR), &aes));
   TRY(dif_aes_reset(&aes));
 
@@ -43,18 +57,6 @@ status_t execute_test(void) {
   dif_aes_key_share_t key;
   memcpy(key.share0, kAesModesGcmKey128, sizeof(key.share0));
   memset(key.share1, 0, sizeof(key.share1));
-
-  // AES GCM configuration used for this test.
-  dif_aes_transaction_t transaction = {
-      .operation = kDifAesOperationEncrypt,
-      .mode = kDifAesModeGcm,
-      .key_len = kDifAesKey128,
-      .key_provider = kDifAesKeySoftwareProvided,
-      .mask_reseeding = kDifAesReseedPerBlock,
-      .manual_operation = kDifAesManualOperationAuto,
-      .reseed_on_key_change = false,
-      .ctrl_aux_lock = false,
-  };
 
   // Write the initial key share, IV and data in CSRs.
   TRY(dif_aes_start(&aes, &transaction, &key, &aes_iv));
@@ -71,6 +73,25 @@ status_t execute_test(void) {
   TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD,
                             16));
   TRY(dif_aes_load_data(&aes, aes_aad[0]));
+  // When testing the save and restore feature, save the current state after the
+  // first AAD is processed, reset the AES, restore the state, and proceed with
+  // the operation.
+  if (save_and_restore_aad) {
+    LOG_INFO("Saving AES-GCM state after processing first AAD block...");
+    TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_SAVE,
+                              16));
+    TRY(dif_aes_read_output(&aes, &saved_gcm_state));
+    TRY(dif_aes_read_iv(&aes, &saved_iv));
+    TRY(dif_aes_reset(&aes));
+    LOG_INFO("Restoring AES-GCM state...");
+    saved_iv.iv[3] = 0;  // Clear upper IV bits to restore the original IV.
+    TRY(dif_aes_start(&aes, &transaction, &key, &saved_iv));
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                  kTestTimeoutMicros);
+    TRY(dif_aes_set_gcm_phase(
+        &aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_RESTORE, 16));
+    TRY(dif_aes_load_data(&aes, saved_gcm_state));
+  }
   // Load the second 4-bytes AAD block into the AES.
   TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_AAD,
                             4));
@@ -84,25 +105,48 @@ status_t execute_test(void) {
          sizeof(kAesModesPlainTextGcm));
 
   // Process the plaintext blocks.
-  bool gcm_text_mode_set = false;
-  for (size_t it = 0; it < kAesNumBlocks; it++) {
-    size_t valid_bytes = sizeof(plain_text[0].data);
-    if (it == kAesNumBlocks - 1) {
-      // Last block could be smaller than 128-bit.
-      valid_bytes = valid_bytes - (kAesNumBlocks * sizeof(plain_text[0].data) -
-                                   sizeof(kAesModesPlainTextGcm));
-      if (valid_bytes != sizeof(plain_text[0].data)) {
-        gcm_text_mode_set = false;
-      }
-    }
-    if (!gcm_text_mode_set) {
-      TRY(dif_aes_set_gcm_phase(
-          &aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT, valid_bytes));
-      gcm_text_mode_set = true;
-    }
-    TRY(dif_aes_load_data(&aes, plain_text[it]));
-    TRY(dif_aes_read_output(&aes, &cipher_text[it]));
+  // Block 0.
+  size_t valid_bytes = sizeof(plain_text[0].data);
+  TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                            valid_bytes));
+  TRY(dif_aes_load_data(&aes, plain_text[0]));
+  TRY(dif_aes_read_output(&aes, &cipher_text[0]));
+  if (save_and_restore_ptx) {
+    LOG_INFO("Saving AES-GCM state after processing first PTX block...");
+    TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_SAVE,
+                              16));
+    TRY(dif_aes_read_output(&aes, &saved_gcm_state));
+    TRY(dif_aes_read_iv(&aes, &saved_iv));
+    TRY(dif_aes_reset(&aes));
+    LOG_INFO("Restoring AES-GCM state...");
+    uint32_t iv_increment = saved_iv.iv[3];
+    saved_iv.iv[3] = 0;  // Clear upper IV bits to restore the original IV.
+    TRY(dif_aes_start(&aes, &transaction, &key, &saved_iv));
+    AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, true,
+                                  kTestTimeoutMicros);
+    TRY(dif_aes_set_gcm_phase(
+        &aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_RESTORE, 16));
+    // Restore the saved AES-GCM context.
+    TRY(dif_aes_load_data(&aes, saved_gcm_state));
+    // Restore the saved IV.
+    saved_iv.iv[3] = iv_increment;
+    TRY(dif_aes_load_iv(&aes, saved_iv));
+    TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                              16));
   }
+  // Block 1.
+  TRY(dif_aes_load_data(&aes, plain_text[1]));
+  TRY(dif_aes_read_output(&aes, &cipher_text[1]));
+  // Block 2.
+  TRY(dif_aes_load_data(&aes, plain_text[2]));
+  TRY(dif_aes_read_output(&aes, &cipher_text[2]));
+  // Block 3.
+  valid_bytes = valid_bytes -
+                (valid_bytes * kAesNumBlocks - sizeof(kAesModesPlainTextGcm));
+  TRY(dif_aes_set_gcm_phase(&aes, AES_CTRL_GCM_SHADOWED_PHASE_VALUE_GCM_TEXT,
+                            valid_bytes));
+  TRY(dif_aes_load_data(&aes, plain_text[3]));
+  TRY(dif_aes_read_output(&aes, &cipher_text[3]));
 
   // "Convert" `dif_aes_data_t` array to plain data byte arrays.
   unsigned char ctx[ARRAYSIZE(kAesModesCipherTextGcm128)];
@@ -137,5 +181,20 @@ status_t execute_test(void) {
 
 bool test_main(void) {
   LOG_INFO("Entering AES-GCM Test");
-  return status_ok(execute_test());
+  status_t result = OK_STATUS();
+
+  // First parameter after execute_test: save_and_restore_aad
+  //                                     save GCM state and IV after processing
+  //                                     AAD block 0 clear AES, restore, and
+  //                                     continue with AAD block 1
+  // Second parameter after execute_test: save_and_restore_ptx
+  //                                      save GCM state and IV after processing
+  //                                      PTX block 0 clear AES, restore, and
+  //                                      continue with PTX block 1
+  EXECUTE_TEST(result, execute_test, false, false);
+  EXECUTE_TEST(result, execute_test, true, false);
+  EXECUTE_TEST(result, execute_test, false, true);
+  EXECUTE_TEST(result, execute_test, true, true);
+
+  return status_ok(result);
 }
