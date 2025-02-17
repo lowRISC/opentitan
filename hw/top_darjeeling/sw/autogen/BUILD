@@ -20,6 +20,8 @@ cc_library(
     hdrs = [
         "top_darjeeling.h",
         "top_darjeeling_memory.h",
+        "top_darjeeling_soc_dbg.h",
+        "top_darjeeling_soc_mbx.h",
     ],
     defines = ["OPENTITAN_IS_DARJEELING"],
     target_compatible_with = opentitan_require_top("darjeeling"),
