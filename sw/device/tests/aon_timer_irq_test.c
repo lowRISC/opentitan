@@ -39,7 +39,6 @@ static dif_rv_plic_t plic;
 static dt_rv_plic_t kRvPlicDt = kDtRvPlic;
 
 static volatile dt_aon_timer_irq_t irq;
-static volatile dt_instance_id_t peripheral;
 static volatile uint64_t irq_tick;
 
 // TODO:(lowrisc/opentitan#9984): Add timing API to the test framework
@@ -115,15 +114,12 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   //           " "watchdog timer counter", (count_cycles >> 32),
   //           (uint32_t)count_cycles);
 
-  // Set the default value to a different value than expected.
-  peripheral = kDtInstanceIdUnknown;
-  irq = kDtAonTimerIrqWdogTimerBark;
+  // Set the default value to an invalid value.
+  irq = kDtAonTimerIrqCount;
   if (expected_irq == kDtAonTimerIrqWkupTimerExpired) {
     // Setup the wake up interrupt.
     CHECK_STATUS_OK(aon_timer_testutils_wakeup_config(aon_timer, count_cycles));
   } else {
-    // Change the default value since the expectation is different.
-    irq = kDtAonTimerIrqWkupTimerExpired;
     // Setup the wdog bark interrupt.
     CHECK_STATUS_OK(aon_timer_testutils_watchdog_config(
         aon_timer,
@@ -134,18 +130,13 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
   // Capture the current tick to measure the time the IRQ will take.
   uint32_t start_tick = (uint32_t)tick_count_get();
 
-  ATOMIC_WAIT_FOR_INTERRUPT(peripheral ==
-                            dt_aon_timer_instance_id(kAonTimerDt));
+  ATOMIC_WAIT_FOR_INTERRUPT(irq != kDtAonTimerIrqCount);
 
   uint32_t time_elapsed = (uint32_t)irq_tick - start_tick;
   CHECK(time_elapsed <= sleep_range_h && time_elapsed >= sleep_range_l,
         "Timer took %u usec which is not in the range %u usec and %u usec",
         (uint32_t)time_elapsed, (uint32_t)sleep_range_l,
         (uint32_t)sleep_range_h);
-
-  CHECK(peripheral == dt_aon_timer_instance_id(kAonTimerDt),
-        "Interrupt from incorrect peripheral: exp = %d, obs = %d",
-        dt_aon_timer_instance_id(kAonTimerDt), peripheral);
 
   CHECK(irq == expected_irq, "Interrupt type incorrect: exp = %d, obs = %d",
         kDtAonTimerIrqWkupTimerExpired, irq);
@@ -156,30 +147,24 @@ static void execute_test(dif_aon_timer_t *aon_timer, uint64_t irq_time_us,
 /**
  * External interrupt handler.
  */
-void ottf_external_isr(uint32_t *exc_info) {
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t devid,
+                     dif_rv_plic_irq_id_t irq_id) {
+  if (devid != dt_aon_timer_instance_id(kAonTimerDt)) {
+    return false;
+  }
   // Calc the elapsed time since the activation of the IRQ.
   irq_tick = tick_count_get();
 
-  dif_rv_plic_irq_id_t irq_id;
-  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kPlicTarget, &irq_id));
+  irq = dt_aon_timer_irq_from_plic_id(kAonTimerDt, irq_id);
 
-  peripheral = dt_plic_id_to_instance_id(irq_id);
-
-  if (peripheral == dt_aon_timer_instance_id(kAonTimerDt)) {
-    irq = dt_aon_timer_irq_from_plic_id(kAonTimerDt, irq_id);
-
-    if (irq == kDtAonTimerIrqWkupTimerExpired) {
-      CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
-    } else if (irq == kDtAonTimerIrqWdogTimerBark) {
-      CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
-    }
-
-    CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
+  if (irq == kDtAonTimerIrqWkupTimerExpired) {
+    CHECK_DIF_OK(dif_aon_timer_wakeup_stop(&aon_timer));
+  } else if (irq == kDtAonTimerIrqWdogTimerBark) {
+    CHECK_DIF_OK(dif_aon_timer_watchdog_stop(&aon_timer));
   }
 
-  // Complete the IRQ by writing the IRQ source to the Ibex specific CC.
-  // register
-  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kPlicTarget, irq_id));
+  CHECK_DIF_OK(dif_aon_timer_irq_acknowledge(&aon_timer, irq));
+  return true;
 }
 
 /**
