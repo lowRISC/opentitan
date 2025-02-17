@@ -26,7 +26,13 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
   aes_nist_vectors_gcm  nist_obj = new;
   nist_vector_gcm_t     nist_vectors[];
 
+  virtual      aes_cov_if   cov_if;           // handle to aes coverage interface
+
   task body();
+
+    if (!uvm_config_db#(virtual aes_cov_if)::get(null, "*.env" , "aes_cov_if", cov_if)) begin
+      `uvm_fatal(`gfn, $sformatf("FAILED TO GET HANDLE TO COVER IF"))
+    end
 
     `uvm_info(`gfn, $sformatf("STARTING AES NIST VECTOR GCM SEQUENCE"), UVM_LOW)
     num_vec = nist_obj.get_num_vectors_gcm();
@@ -43,6 +49,10 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
       /*****************************************************************************/
       int num_aad_blocks = nist_vectors[i].num_aad_blocks;
       int num_ptx_blocks = nist_vectors[i].num_plain_text_blocks;
+      int last_plain_text_block_size = nist_vectors[i].last_plain_text_block_size;
+      int last_aad_block_size = nist_vectors[i].last_aad_block_size;
+      int aad_block_zero = num_aad_blocks == 0 ? 1 : 0;
+      int ptx_block_zero = num_ptx_blocks == 0 ? 1 : 0;
       // Wait for dut idle.
       csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
       `uvm_info(`gfn, $sformatf("%s", vectorgcm2string(nist_vectors[i]) ), UVM_LOW)
@@ -74,7 +84,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Put AES-GCM into AAD phase.
         int valid_bytes = 16;
         if (num_aad_blocks == 1) begin
-          valid_bytes = nist_vectors[i].last_aad_block_size;
+          valid_bytes = last_aad_block_size;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING AAD"), UVM_MEDIUM)
         set_gcm_phase(GCM_AAD, valid_bytes, 1);
@@ -88,8 +98,8 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the AAD phase with the block size.
-        if (num_aad_blocks != 1 && nist_vectors[i].last_aad_block_size != 16) begin
-          set_gcm_phase(GCM_AAD, nist_vectors[i].last_aad_block_size, 1);
+        if (num_aad_blocks != 1 && last_aad_block_size != 16) begin
+          set_gcm_phase(GCM_AAD, last_aad_block_size, 1);
         end
         // Write last AAD block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -102,7 +112,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Put AES-GCM into TEXT phase.
         int valid_bytes = 16;
         if (num_ptx_blocks == 1) begin
-          valid_bytes = nist_vectors[i].last_plain_text_block_size;
+          valid_bytes = last_plain_text_block_size;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING PLAIN TEXT"), UVM_MEDIUM)
         set_gcm_phase(GCM_TEXT, valid_bytes, 1);
@@ -119,8 +129,8 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
-        if (num_ptx_blocks != 1 && nist_vectors[i].last_plain_text_block_size != 16) begin
-          set_gcm_phase(GCM_TEXT, nist_vectors[i].last_plain_text_block_size, 1);
+        if (num_ptx_blocks != 1 && last_plain_text_block_size != 16) begin
+          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1);
         end
         // Write last PTX block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -158,6 +168,11 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
                     i, nist_vectors[i].tag, tag));
       end
 
+      // After checking the output, sample the current message for the coverage.
+      cov_if.cg_gcm_len_sample(num_aad_blocks, last_aad_block_size, aad_block_zero,
+                               num_ptx_blocks, last_plain_text_block_size, ptx_block_zero,
+                               AES_ENC);
+
       /*****************************************************************************/
       /** AES-GCM-128 Decryption                                                  **/
       /*****************************************************************************/
@@ -190,7 +205,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Put AES-GCM into AAD phase.
         int valid_bytes = 16;
         if (num_aad_blocks == 1) begin
-          valid_bytes = nist_vectors[i].last_aad_block_size;
+          valid_bytes = last_aad_block_size;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING AAD"), UVM_MEDIUM)
         set_gcm_phase(GCM_AAD, valid_bytes, 1);
@@ -204,8 +219,8 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the AAD phase with the block size.
-        if (num_aad_blocks != 1 && nist_vectors[i].last_aad_block_size != 16) begin
-          set_gcm_phase(GCM_AAD, nist_vectors[i].last_aad_block_size, 1);
+        if (num_aad_blocks != 1 && last_aad_block_size != 16) begin
+          set_gcm_phase(GCM_AAD, last_aad_block_size, 1);
         end
         // Write last AAD block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -218,7 +233,7 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
         // Put AES-GCM into TEXT phase.
         int valid_bytes = 16;
         if (num_ptx_blocks == 1) begin
-          valid_bytes = nist_vectors[i].last_plain_text_block_size;
+          valid_bytes = last_plain_text_block_size;
         end
         `uvm_info(`gfn, $sformatf(" \n\t ---| ADDING CIPHER TEXT"), UVM_MEDIUM)
         set_gcm_phase(GCM_TEXT, valid_bytes, 1);
@@ -235,8 +250,8 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
 
         // For the last block, check if the block size is smaller than 16 bytes.
         // Then we need to again put AES-GCM into the TEXT phase with the block size.
-        if (num_ptx_blocks != 1 && nist_vectors[i].last_plain_text_block_size != 16) begin
-          set_gcm_phase(GCM_TEXT, nist_vectors[i].last_plain_text_block_size, 1);
+        if (num_ptx_blocks != 1 && last_plain_text_block_size != 16) begin
+          set_gcm_phase(GCM_TEXT, last_plain_text_block_size, 1);
         end
         // Write last CTX block to AES.
         csr_spinwait(.ptr(ral.status.input_ready), .exp_data(1'b1));
@@ -273,6 +288,12 @@ class aes_nist_vectors_gcm_vseq extends aes_base_vseq;
           $sformatf("Tag does not match for vector %d, \n nist: %0h \n output: %0h",
                     i, nist_vectors[i].tag, tag));
       end
+
+      // After checking the output, sample the current message for the coverage.
+      cov_if.cg_gcm_len_sample(num_aad_blocks, last_aad_block_size, aad_block_zero,
+                               num_ptx_blocks, last_plain_text_block_size, ptx_block_zero,
+                               AES_DEC);
+
     end
     `uvm_info(`gfn, $sformatf(" \n\t ---| YAY TEST PASSED |--- \n \t "), UVM_NONE)
   endtask : body
