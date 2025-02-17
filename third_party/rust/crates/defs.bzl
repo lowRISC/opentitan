@@ -309,8 +309,8 @@ _NORMAL_DEPENDENCIES = {
             "clap-num": "@crate_index__clap-num-1.0.2//:clap_num",
             "const-oid": "@crate_index__const-oid-0.9.6//:const_oid",
             "crc": "@crate_index__crc-3.0.1//:crc",
-            "cryptoki": "@crate_index__cryptoki-0.5.0//:cryptoki",
-            "cryptoki-sys": "@crate_index__cryptoki-sys-0.1.6//:cryptoki_sys",
+            "cryptoki": "@crate_index__cryptoki-0.8.0//:cryptoki",
+            "cryptoki-sys": "@crate_index__cryptoki-sys-0.2.0//:cryptoki_sys",
             "der": "@crate_index__der-0.7.8//:der",
             "deser-hjson": "@crate_index__deser-hjson-2.1.0//:deser_hjson",
             "directories": "@crate_index__directories-5.0.1//:directories",
@@ -1104,7 +1104,7 @@ def crate_repositories():
 
     maybe(
         http_archive,
-        name = "crate_index__cryptoki-0.5.0",
+        name = "crate_index__cryptoki-0.8.0",
         patch_args = [
             "-p2",
         ],
@@ -1112,21 +1112,21 @@ def crate_repositories():
             "@lowrisc_opentitan//third_party/rust/patches:cryptoki-profile.patch",
             "@lowrisc_opentitan//third_party/rust/patches:cryptoki-vendor-defined-mechanism-type.patch",
         ],
-        sha256 = "95d9fb68c88020896fa3741a10e41f206b2ace927724170a753a3f2ba5f77c2b",
+        sha256 = "2e45b5f1ddb06ae54aea3f6d60e88c493356c51f43b8e741c9d5ac661f4d02d3",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cryptoki/0.5.0/download"],
-        strip_prefix = "cryptoki-0.5.0",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-0.5.0.bazel"),
+        urls = ["https://static.crates.io/crates/cryptoki/0.8.0/download"],
+        strip_prefix = "cryptoki-0.8.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-0.8.0.bazel"),
     )
 
     maybe(
         http_archive,
-        name = "crate_index__cryptoki-sys-0.1.6",
-        sha256 = "4bc9943e09928a84ed6e76dbaea1699b7678e95b2487b0de31075af300221095",
+        name = "crate_index__cryptoki-sys-0.2.0",
+        sha256 = "062316aeb324b15a0b10c9475a9e67d613b7409056c33fbe33b7c12027408cfb",
         type = "tar.gz",
-        urls = ["https://static.crates.io/crates/cryptoki-sys/0.1.6/download"],
-        strip_prefix = "cryptoki-sys-0.1.6",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-sys-0.1.6.bazel"),
+        urls = ["https://static.crates.io/crates/cryptoki-sys/0.2.0/download"],
+        strip_prefix = "cryptoki-sys-0.2.0",
+        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.cryptoki-sys-0.2.0.bazel"),
     )
 
     maybe(
@@ -3479,16 +3479,6 @@ def crate_repositories():
         urls = ["https://static.crates.io/crates/tar/0.4.40/download"],
         strip_prefix = "tar-0.4.40",
         build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.tar-0.4.40.bazel"),
-    )
-
-    maybe(
-        http_archive,
-        name = "crate_index__target-lexicon-0.12.11",
-        sha256 = "9d0e916b1148c8e263850e1ebcbd046f333e0683c724876bb0da63ea4373dc8a",
-        type = "tar.gz",
-        urls = ["https://static.crates.io/crates/target-lexicon/0.12.11/download"],
-        strip_prefix = "target-lexicon-0.12.11",
-        build_file = Label("@lowrisc_opentitan//third_party/rust/crates:BUILD.target-lexicon-0.12.11.bazel"),
     )
 
     maybe(
