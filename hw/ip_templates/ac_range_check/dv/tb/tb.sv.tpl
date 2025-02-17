@@ -76,9 +76,9 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_csr_agt*", "tl_csr_vif", tl_csr_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_unfilt_agt*", "tl_unfilt_vif", tl_unfilt_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_filt_agt*", "tl_filt_vif", tl_filt_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_csr_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_unfilt_agt*", "vif", tl_unfilt_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.tl_filt_agt*", "vif", tl_filt_if);
     $timeformat(-12, 0, " ps", 12);
     run_test();
   end
