@@ -138,6 +138,33 @@ void ottf_timer_isr(uint32_t *exc_info);
 void ottf_external_isr(uint32_t *exc_info);
 
 /**
+ * Test external IRQ handler.
+ *
+ * `ottf_isrs.c` provides a weak definition of this symbol, which can be
+ * overridden at link-time by providing an additional non-weak definition.
+ *
+ * Overriding this function is the preferred way for device tests to handle
+ * IRQs, unless they really need to bypass the OTTF entirely.
+ *
+ * Before calling this function, `ottf_external_isr` will claim the interrupt
+ * at the PLIC and obtain the corresponding instance ID using the DT.
+ * If this function returns true, `ottf_external_isr` will complete the
+ * interrupt at the PLIC. If this function returns false, the OTTF will try
+ * to handle this IRQ for its internal functions (e.g. ottf_console). If that's
+ * not possible, a fatal error will occur.
+ *
+ * NOTE When overriding `ottf_handle_irq`, the code does not need to call
+ * `ottf_console_flow_control_isr`, this will be done automatically if the
+ * function returns false.
+ *
+ * @param inst_id The device instance that produced the interrupt.
+ * @param plid_id The PLIC IRQ ID to handle.
+ * @returns Whether the IRQ was handled.
+ */
+bool ottf_handle_irq(uint32_t *exc_info, dt_instance_id_t inst_id,
+                     dif_rv_plic_irq_id_t plic_id);
+
+/**
  * OTTF external NMI internal IRQ handler.
  *
  * `ottf_isrs.c` provides a weak definition of this symbol, which can be
