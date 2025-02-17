@@ -27,24 +27,7 @@ def compute_n0_inv(n):
 
     Sigverify expects this constant to be precomputed.
     '''
-    # Note: On Python 3.8 and above, this could simply be: pow(-n, -1, 2**256).
-    # Unfortunately, older versions of Python 3 don't support negative modular
-    # exponents, so we use the standard algorithm from "Montgomery Arithmetic
-    # from a Software Perspective" (https://eprint.iacr.org/2017/1057)
-    # (algorithm 3).
-    w = 256
-    y = 1
-    # n0 = n mod 2^256
-    n0 = n & ((1 << 256) - 1)
-    # maski = 2^i - 1 (start with i=2)
-    maski = 3
-    for i in range(2, w + 1):
-        # (n * y) mod 2^i = (n0 * y) mod 2^i because i <= 256
-        if (n0 * y) & maski != 1:
-            y = y + (1 << (i - 1))
-        maski <<= 1
-        maski += 1
-    return (1 << w) - y
+    return pow(-n, -1, 2**256)
 
 
 def encode_message(msg_bytes):
