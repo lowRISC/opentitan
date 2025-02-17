@@ -9,7 +9,7 @@ from pathlib import Path
 import hjson  # type: ignore
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
-import importlib_resources
+import importlib.resources
 
 from reggen.ip_block import IpBlock
 
@@ -51,7 +51,7 @@ def gen_sec_cm_testplan(block: IpBlock, outdir: str) -> int:
 
         return 0
 
-    lookup = TemplateLookup(directories=[str(importlib_resources.files('reggen'))])
+    lookup = TemplateLookup(directories=[str(importlib.resources.files('reggen'))])
     sec_cm_testplan_tpl = lookup.get_template('sec_cm_testplan.hjson.tpl')
     with open(outfile, 'w', encoding='UTF-8') as f:
         try:

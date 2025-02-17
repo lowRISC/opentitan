@@ -12,12 +12,6 @@ dependencies = [
   # Dependency management
   "uv==0.6.1",
 
-  # Polyfill library
-  "importlib-resources ~= 5.12", # Need for Python<3.9
-  # This are condition dependency of importlib-resources
-  # Add it here otherwise it'll get dropped when uv/pip tries to lock dependency with Python>=3.10.
-  "zipp ~= 3.16", # Need for Python<3.10
-
   # Keep sorted
   "beautifulsoup4==4.12.2",
   "hjson==3.1.0",

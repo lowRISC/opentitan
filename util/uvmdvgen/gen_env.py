@@ -8,7 +8,7 @@ import os
 import logging as log
 
 from mako.template import Template
-import importlib_resources
+import importlib.resources
 from uvmdvgen import VENDOR_DEFAULT
 
 
@@ -69,7 +69,7 @@ def gen_env(name, is_cip, has_ral, has_interrupts, has_alerts, num_edn,
             continue
 
         # read template
-        tpl = Template(filename=str(importlib_resources.files('uvmdvgen') / ftpl))
+        tpl = Template(filename=str(importlib.resources.files('uvmdvgen') / ftpl))
 
         # create rendered file
         with open(file_path, 'w') as fout:

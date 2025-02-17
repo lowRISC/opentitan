@@ -12,7 +12,7 @@ import os.path
 import yaml
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
-import importlib_resources
+import importlib.resources
 
 from reggen.ip_block import IpBlock
 
@@ -20,7 +20,7 @@ from reggen.ip_block import IpBlock
 def gen_fpv(block: IpBlock, outdir: str) -> int:
     # Read Register templates
     fpv_csr_tpl = Template(
-        filename=str(importlib_resources.files('reggen') / "fpv_csr.sv.tpl"))
+        filename=str(importlib.resources.files('reggen') / "fpv_csr.sv.tpl"))
 
     device_hier_paths = block.bus_interfaces.device_hier_paths
 

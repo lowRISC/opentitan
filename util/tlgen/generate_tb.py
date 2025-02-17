@@ -9,7 +9,7 @@ from pathlib import Path
 
 from mako import exceptions  # type: ignore
 from mako.template import Template  # type: ignore
-import importlib_resources
+import importlib.resources
 
 from .xbar import Xbar
 
@@ -25,7 +25,7 @@ def generate_tb(xbar: Xbar,
     ]
 
     for fname in tb_files:
-        tpl = Template(filename=str(importlib_resources.files('tlgen') / (fname + '.tpl')))
+        tpl = Template(filename=str(importlib.resources.files('tlgen') / (fname + '.tpl')))
 
         # some files need to be renamed
         if fname == "xbar.sim.core":
