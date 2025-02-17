@@ -3,10 +3,8 @@
 The top generation tool `topgen.py` is used to build top specific modules for a specific OpenTitan design - for example [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey).
 Currently, as part of this generation process, the following top specific modules are created
 * Overall top module
-* Platform level interrupt controller
-* Pinmux
 * Crossbar
-
+In addition, a number of templated peripherals are expanded according to top specific configurations.
 This document explains the overall generation process, the required inputs, the output locations, as well as how the tool should be invoked.
 
 ## Generation Process
@@ -37,10 +35,16 @@ The top level Hjson however, does not contain details such as:
 * Number of input or output pins in each peripheral
 * Details of crossbar connection and which host can reach which device
 
+There are two kinds of peripherals:
+* Generic peripherals, which are the same for any top configuration
+* Ipgen peripherals, which have a set of template files, and are expanded based on top-specific parameters
+
 The topgen tool thus hierarchically gathers and generates the missing information from additional Hjson files that describe the detail of each component.
-These are primarily located in two places:
-* `hw/ip/data/*.hjson`
-* `hw/top_*/data/xbar_*.hjson`
+
+These are primarily located in the following places:
+* `hw/ip/*/data/*.hjson` for generic peripherals
+* `hw/ip_templates/*/data/*.hjson.tpl` for ipgen peripherals
+* `hw/top_*/data/xbar_*.hjson` for crossbars which are also generated from templates
 
 In the process of gathering, each individual Hjson file is validated for input correctness and then merged into a final generated Hjson output that represents the complete information that makes up each OpenTitan design.
 For example, see [`top_earlgrey`](https://github.com/lowRISC/opentitan/tree/master/hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson).
@@ -48,7 +52,7 @@ Note specifically the generated interrupt list, the pinmux connections, and the 
 
 The purpose for this two step process, instead of describing the design completely inside one Hjson file, is to decouple the top and components development while allowing re-use of components by multiple tops.
 
-This process also clearly separates what information needs to be known by top vs what needs to be known by a specific component.
+This process also clearly separates what information needs to be known by top vs. what needs to be known by a specific component.
 For example, a component does not need to know how many clock sources a top has or how many muxed pins it contains.
 Likewise, the top does not need to know the details of why an interrupt is generated, just how many there are.
 The user supplied `top_*.hjson` thus acts like a integration specification while the remaining details are filled in through lower level inputs.
@@ -59,12 +63,43 @@ In addition to design collateral, the tool also generates all the top level RAL 
 
 As stated previously, each of the gathered component Hjson files is validated for correctness.
 For the peripherals, this is done by invoking `util/reggen/validate.py`, while the  xbar components are validated through `util/tlgen/validate.py`.
-The peripheral and xbar components are then validated through `topgen/validate.py`, which checks for interrupt, pinmux, clock and reset consistency.
+The peripheral and xbar components are then validated through `util/topgen/validate.py`.
+This  performs extensive checks on the top configuration, for example interrupt, pinmux, clock and reset consistency.
 
-Once all validation is passed, the final Hjson is created.
+Once all validation is passed, the final Hjson is created by `util/topgen/merge.py`.
 This Hjson is then used to generate the final top RTL.
 
-As part of this process, topgen invokes other tools, please see the documentation for [`reggen`](../reggen/README.md) and [`tlgen`](../tlgen/README.md) for more tool specific details.
+As part of this process, topgen invokes other tools, please see the documentation for [`ipgen`](../ipgen/README.md), [`reggen`](../reggen/README.md), and [`tlgen`](../tlgen/README.md) for more tool specific details.
+
+### Generation Flow
+
+In order to generate the complete set of artifacts for a given top the first step is to generate the complete top configuration file (named `top_*/data/autogen/top_*.gen.hjson` as mentioned above).
+Most other artifacts, like the top-level module(s), ipgen peripherals, and top-level SV and software collateral require this file for generation.
+These artifacts can be generated independently and concurrently from the complete top configuration.
+
+#### Generating the Complete Top Configuration
+
+The generation of ipgen peripherals is delicate since they depend on each other.
+All these dependencies are captured in the top configuration as it is completed.
+As ipgen peripherals are expanded they provide information that will be used for expanding other ipgen peripherals.
+This means the order in which ipgen peripherals are expanded needs to be careful in order to avoid multiple generation passes.
+The top configuration is completed progressively as individual peripherals are processed.
+All this is done in-memory, and the individual peripherals are added in the following order:
+* Add all generic peripherals
+* Add the ipgen peripherals in a topological sort based on their inter-dependencies
+* Add the crossbars
+
+It is important to progressively complete the top config with the most up-to-date data specific to each ipgen peripheral before expanding it.
+The completion is done using functions that are called in merge_top, except they get an extra argument to allow incomplete configuration since not all ipgen peripherals will have been expanded.
+Once all ipgen peripherals are expanded one last merge is performed, this time not allowing incomplete configurations.
+To make sure there are no mistakes in the order of ipgen peripherals the expansion can make multiple generation passes, stopping when the complete top configuration is stable.
+
+#### Generating other Artifacts
+
+There is a large number of artifacts that are generated from the complete top config using topgen, including:
+* The templates of ipgen peripherals are expanded into directories specific to aech top, for example `hw/top_darjeeling/ip_autogen/clkmgr`.
+* The crossbars are also expanded from templates into top-specific directories, for example `hw/top_earlgrey/ip/xbar_*/*/autogen`.
+* The C register declarations for top-level and ipgen peripherals are generated by bazel rules.
 
 ## Usage
 
@@ -74,7 +109,6 @@ The example below shows the latter:
 ```console
 $ cd ${REPO_TOP}
 $ make -C hw top
-
 ```
 
 It is possible to restrict what the tool should generate.
