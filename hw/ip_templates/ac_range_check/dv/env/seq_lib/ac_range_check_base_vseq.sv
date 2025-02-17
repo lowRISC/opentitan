@@ -34,5 +34,8 @@ task ac_range_check_base_vseq::dut_init(string reset_kind = "HARD");
 endtask : dut_init
 
 task ac_range_check_base_vseq::ac_range_check_init();
-  `uvm_error(`gfn, "FIXME")
+  bit [TL_DW-1:0] tmp_test;
+  csr_wr(.ptr(ral.range_base[0]), .value(32'hABCD_1234));
+  csr_rd(.ptr(ral.range_base[0]), .value(tmp_test));
+  `uvm_info(`gfn, $sformatf("tmp_test=%0h", tmp_test), UVM_LOW)
 endtask : ac_range_check_init

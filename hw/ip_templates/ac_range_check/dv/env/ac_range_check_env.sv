@@ -10,7 +10,6 @@ class ac_range_check_env extends cip_base_env #(
   );
   `uvm_component_utils(ac_range_check_env)
 
-  tl_agent tl_csr_agt;
   tl_agent tl_unfilt_agt;
   tl_agent tl_filt_agt;
 
@@ -28,11 +27,6 @@ endfunction : new
 function void ac_range_check_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
-  // Create CSR TL agent
-  tl_csr_agt = tl_agent::type_id::create("tl_csr_agt", this);
-  uvm_config_db#(tl_agent_cfg)::set(this, "tl_csr_agt*", "cfg", cfg.tl_csr_agt_cfg);
-  cfg.tl_csr_agt_cfg.en_cov = cfg.en_cov;
-
   // Create Unfiltered TL agent
   tl_unfilt_agt = tl_agent::type_id::create("tl_unfilt_agt", this);
   uvm_config_db#(tl_agent_cfg)::set(this, "tl_unfilt_agt*", "cfg", cfg.tl_unfilt_agt_cfg);
@@ -47,12 +41,8 @@ endfunction : build_phase
 function void ac_range_check_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
   if (cfg.en_scb) begin
-    tl_csr_agt.monitor.analysis_port.connect(scoreboard.tl_csr_fifo.analysis_export);
     tl_unfilt_agt.monitor.analysis_port.connect(scoreboard.tl_unfilt_fifo.analysis_export);
     tl_filt_agt.monitor.analysis_port.connect(scoreboard.tl_filt_fifo.analysis_export);
-  end
-  if (cfg.is_active && cfg.tl_csr_agt_cfg.is_active) begin
-    virtual_sequencer.tl_csr_sqr = tl_csr_agt.sequencer;
   end
   if (cfg.is_active && cfg.tl_unfilt_agt_cfg.is_active) begin
     virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agt.sequencer;
