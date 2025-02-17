@@ -498,6 +498,21 @@ dif_result_t dif_aes_get_status(const dif_aes_t *aes, dif_aes_status_t flag,
 OT_WARN_UNUSED_RESULT
 dif_result_t dif_aes_read_iv(const dif_aes_t *aes, dif_aes_iv_t *iv);
 
+/**
+ * Loads AES IV.
+ *
+ * This function will load the provided IV into the AES.
+ *
+ * The peripheral must be idle and will return `kDifUnavailable` if this
+ * condition is not met.
+ *
+ * @param aes AES state data.
+ * @param data AES Input Data.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+dif_result_t dif_aes_load_iv(const dif_aes_t *aes, const dif_aes_iv_t iv);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

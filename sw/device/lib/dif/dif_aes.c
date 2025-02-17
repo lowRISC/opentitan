@@ -466,3 +466,17 @@ dif_result_t dif_aes_read_iv(const dif_aes_t *aes, dif_aes_iv_t *iv) {
   }
   return kDifOk;
 }
+
+dif_result_t dif_aes_load_iv(const dif_aes_t *aes, const dif_aes_iv_t iv) {
+  if (aes == NULL) {
+    return kDifBadArg;
+  }
+
+  if (!aes_idle(aes)) {
+    return kDifUnavailable;
+  }
+
+  aes_set_multireg(aes, &iv.iv[0], AES_IV_MULTIREG_COUNT, AES_IV_0_REG_OFFSET);
+
+  return kDifOk;
+}
