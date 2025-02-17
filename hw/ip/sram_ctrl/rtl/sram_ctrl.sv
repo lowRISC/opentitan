@@ -79,6 +79,7 @@ module sram_ctrl
   import lc_ctrl_pkg::lc_to_mubi4;
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi8_t;
+  import prim_mubi_pkg::MuBi4Width;
   import prim_mubi_pkg::MuBi4True;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::mubi8_test_true_strict;
@@ -490,9 +491,10 @@ module sram_ctrl
   logic sram_compound_txn_in_progress;
 
 
-  // // SEC_CM: MEM.READBACK
+  // SEC_CM: MEM.READBACK
+  // Readback feature is only supported for non-flopped RAMs for now
   mubi4_t reg_readback_en;
-  assign reg_readback_en = mubi4_t'(reg2hw.readback.q);
+  assign reg_readback_en = mubi4_t'({MuBi4Width{~FlopRamOutputreg}} & hw.readback.q);
 
   tlul_adapter_sram #(
     .SramAw(AddrWidth),
