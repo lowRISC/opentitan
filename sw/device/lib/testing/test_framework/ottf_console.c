@@ -39,8 +39,6 @@ static char main_spi_buf[kSpiDeviceMaxFramePayloadSizeBytes];
 ottf_console_t *ottf_console_get(void) { return &main_console; }
 
 void ottf_console_init(void) {
-  CHECK_DIF_OK(dif_rv_plic_init(
-      mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &ottf_plic));
   // Initialize/Configure the console device.
   uintptr_t base_addr = kOttfTestConfig.console.base_addr;
   main_console.type = kOttfTestConfig.console.type;
