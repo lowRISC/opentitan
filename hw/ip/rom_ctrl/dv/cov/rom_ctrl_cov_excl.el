@@ -40,7 +40,7 @@ INSTANCE: tb.dut.u_tl_adapter_rom.u_tlul_data_integ_enc_instr.u_data_gen
 Block 1 "3318159292" "data_o = 39'(data_i);"
 
 INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic
-ANNOTATION: "cfg_i is tied to rom_cfg_i in rom_ctrl.sv which is wired to a constant"
+ANNOTATION: "cfg_i is tied to rom_cfg_i in rom_ctrl.sv. This is opaque to DV code and may be constant (so the continuous assignment will never execute)."
 Block 1 "118728425" "assign unused_cfg = (^cfg_i);"
 
 INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_seed_anchor.u_secure_anchor_buf.gen_generic.u_impl_generic
