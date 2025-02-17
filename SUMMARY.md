@@ -166,7 +166,7 @@
     - [Design Verification](./hw/ip/dma/dv/README.md)
       - [Testplan](./hw/ip/dma/data/dma_testplan.hjson)
     - [Programmer's Guide]()
-    - [Hardware Interfaces]()
+    - [Hardware Interfaces](./hw/ip/dma/doc/interfaces.md)
     - [Registers](./hw/ip/dma/doc/registers.md)
     - [Device Interface Functions](./sw/device/lib/dif/dif_dma.h)
     - [Checklist]()
