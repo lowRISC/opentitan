@@ -796,18 +796,18 @@ task aon_timer_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
           `uvm_info(`gfn, "Setting intr_status_exp[WKUP]", UVM_DEBUG)
           update_timed_regs_wkup();
           wkup_intr_predicted_values(intr_status_exp[WKUP]);
+          `uvm_info(`gfn, "Updating intr_state[WDOG] due to intr_test[WKUP] write", UVM_DEBUG)
+          predict_intr_state(.pred_intr_state(intr_status_exp), .field_only(1), .is_wkup(1));
         end
         if (intr_test_val[WDOG]) begin
           intr_status_exp[WDOG] = 1'b1;
           `uvm_info(`gfn, "Setting intr_status_exp[WDOG]", UVM_DEBUG)
           update_timed_regs_wdog();
           wdog_intr_predicted_values(intr_status_exp[WDOG]);
+          `uvm_info(`gfn, "Updating intr_state[WDOG] due to intr_test[WDOG] write", UVM_DEBUG)
+          predict_intr_state(.pred_intr_state(intr_status_exp), .field_only(1), .is_wkup(0));
         end
 
-        if (intr_test_val[WDOG] | intr_test_val[WKUP]) begin
-          `uvm_info(`gfn, "Updating intr_state due to intr_test write", UVM_DEBUG)
-          predict_intr_state(intr_status_exp);
-        end
         if (cfg.en_cov) begin
           cov.intr_test_cg.sample(WKUP, intr_test_val[WKUP],
                                   wkup_en, intr_status_exp[WKUP]);
