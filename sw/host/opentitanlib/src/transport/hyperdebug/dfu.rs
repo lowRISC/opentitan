@@ -206,7 +206,12 @@ pub fn update_firmware(
     if wait_for_idle(usb_device, dfu_desc.dfu_interface)? != DFU_STATE_APP_IDLE {
         // Device is already running DFU bootloader, proceed to firmware transfer.
         do_update_firmware(usb_device, dfu_desc, firmware, progress)?;
-        restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
+        log::info!("Connecting to newly flashed firmware...");
+        if restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number()).is_none() {
+            bail!(TransportError::FirmwareProgramFailed(
+                "Unable to establish connection after flashing.  Possibly bad image.".to_string()
+            ));
+        }
         return Ok(None);
     }
 
@@ -229,39 +234,45 @@ pub fn update_firmware(
         .and_then(|_| wait_for_idle(usb_device, dfu_desc.dfu_interface));
 
     // We get here most likely as a result of an `Err()` from the above block, as the device reset
-    // and disconnected from the USB bus.  Wait a little while, and then attempt to establish
-    // connection with the DFU bootloader, which will appear with STM DID:VID (not Google's), but
-    // same serial number as before.
+    // and disconnected from the USB bus.  Wait up to five seconds, repeatedly testing if the
+    // device can be found on the USB bus with the DID:VID of the STM DFU bootloader, but same
+    // serial number as before.
     std::thread::sleep(std::time::Duration::from_millis(1000));
     log::info!("Connecting to DFU bootloader...");
-    let mut dfu_device = UsbBackend::new(
+    let Some(mut dfu_device) = restablish_connection(
         VID_ST_MICROELECTRONICS,
         PID_DFU_BOOTLOADER,
-        Some(usb_device.get_serial_number()),
-    )?;
+        usb_device.get_serial_number(),
+    ) else {
+        bail!(TransportError::FirmwareProgramFailed(
+            "Unable to establish connection with DFU bootloader.".to_string()
+        ));
+    };
     log::info!("Connected to DFU bootloader");
 
     let dfu_desc = scan_usb_descriptor(&dfu_device)?;
     dfu_device.claim_interface(dfu_desc.dfu_interface)?;
     do_update_firmware(&dfu_device, dfu_desc, firmware, progress)?;
-    restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number())?;
+    // The new firmware has been completely transferred, and the USB device is resetting and
+    // booting the new firmware.  Wait up to five seconds, repeatedly testing if the device can be
+    // found on the USB bus with the original DID:VID.
+    log::info!("Connecting to newly flashed firmware...");
+    if restablish_connection(usb_vid, usb_pid, usb_device.get_serial_number()).is_none() {
+        bail!(TransportError::FirmwareProgramFailed(
+            "Unable to establish connection after flashing.  Possibly bad image.".to_string()
+        ));
+    }
     Ok(None)
 }
 
-fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Result<()> {
-    // At this point, the new firmware has been completely transferred, and the USB device is
-    // resetting and booting the new firmware.  Wait up to five seconds, repeatedly testing if the
-    // device can be found on the USB bus with the original DID:VID.
-    log::info!("Connecting to newly flashed firmware...");
+fn restablish_connection(usb_vid: u16, usb_pid: u16, serial_number: &str) -> Option<UsbBackend> {
     for _ in 0..10 {
         std::thread::sleep(std::time::Duration::from_millis(500));
-        if UsbBackend::new(usb_vid, usb_pid, Some(serial_number)).is_ok() {
-            return Ok(());
+        if let Ok(usb_backend) = UsbBackend::new(usb_vid, usb_pid, Some(serial_number)) {
+            return Some(usb_backend);
         }
     }
-    bail!(TransportError::FirmwareProgramFailed(
-        "Unable to establish connection after flashing.  Possibly bad image.".to_string()
-    ));
+    None
 }
 
 fn do_update_firmware(
