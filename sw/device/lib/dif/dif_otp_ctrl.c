@@ -11,6 +11,10 @@
 
 #include "otp_ctrl_regs.h"  // Generated.
 
+#if !defined(OPENTITAN_IS_EARLGREY) && !defined(OPENTITAN_IS_DARJEELING)
+#error unsupported top
+#endif
+
 /**
  * Checks if integrity/consistency-check-related operations are locked.
  *
@@ -158,6 +162,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
                                     ptrdiff_t *reg_offset,
                                     bitfield_bit32_index_t *index) {
   switch (partition) {
+#ifdef OPENTITAN_IS_EARLGREY
     case kDifOtpCtrlPartitionVendorTest:
       *reg_offset = OTP_CTRL_VENDOR_TEST_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_VENDOR_TEST_READ_LOCK_VENDOR_TEST_READ_LOCK_BIT;
@@ -180,6 +185,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *index =
           OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT;
       break;
+#endif  // OPENTITAN_IS_EARLGREY
     default:
       return false;
   }
@@ -229,34 +235,37 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
   }
 
   static const bitfield_bit32_index_t kIndices[] = {
-      [kDifOtpCtrlStatusCodeVendorTestError] =
-          OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
-          OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
-          OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
-          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
-          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLifeCycleError] =
-          OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeScramblingError] =
-          OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeBusIntegError] =
-          OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
-      [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
+#ifdef OPENTITAN_IS_EARLGREY
+    [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
+        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
+        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
+#endif  // OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
+    [kDifOtpCtrlStatusCodeVendorTestError] =
+        OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
+        OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
+        OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeLifeCycleError] =
+        OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeScramblingError] =
+        OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeBusIntegError] = OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
+    [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
+#endif  // defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
   };
 
   status->codes = 0;
@@ -363,6 +372,23 @@ typedef struct partition_info {
 // We opt to just disable formatting.
 // clang-format off
 static const partition_info_t kPartitions[] = {
+#ifdef OPENTITAN_IS_EARLGREY
+    [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotCreatorAuthState] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+#endif  // OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
     [kDifOtpCtrlPartitionVendorTest] = {
         .start_addr = OTP_CTRL_PARAM_VENDOR_TEST_OFFSET,
         .len = OTP_CTRL_PARAM_VENDOR_TEST_SIZE,
@@ -380,20 +406,6 @@ static const partition_info_t kPartitions[] = {
     [kDifOtpCtrlPartitionOwnerSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
         .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
-        .align_mask = 0x3,
-        .is_software = true,
-        .has_digest = true,
-        .is_lifecycle = false},
-    [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
-        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
-        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
-        .align_mask = 0x3,
-        .is_software = true,
-        .has_digest = true,
-        .is_lifecycle = false},
-    [kDifOtpCtrlPartitionRotCreatorAuthState] = {
-        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
-        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
@@ -440,6 +452,7 @@ static const partition_info_t kPartitions[] = {
         .is_software = false,
         .has_digest = false,
         .is_lifecycle = true},
+#endif  // defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
 };
 // clang-format on
 
@@ -654,6 +667,17 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
 static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
                             ptrdiff_t *reg1) {
   switch (partition) {
+#ifdef OPENTITAN_IS_EARLGREY
+    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
+      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuthState:
+      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
+      break;
+#endif  // OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
     case kDifOtpCtrlPartitionVendorTest:
       *reg0 = OTP_CTRL_VENDOR_TEST_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_VENDOR_TEST_DIGEST_1_REG_OFFSET;
@@ -665,14 +689,6 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
     case kDifOtpCtrlPartitionOwnerSwCfg:
       *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
-      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET;
-      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET;
-      break;
-    case kDifOtpCtrlPartitionRotCreatorAuthState:
-      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET;
-      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
       break;
     case kDifOtpCtrlPartitionHwCfg0:
       *reg0 = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET;
@@ -694,6 +710,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
       break;
+#endif  // defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_DARJEELING)
     default:
       return false;
   }
