@@ -4,7 +4,8 @@
 <%
   rg_srcs = list(sorted({sig['src_name'] for sig
                          in typed_clocks['rg_clks'].values()}))
-%>
+%>\
+
 module clkmgr_bind;
 `ifndef GATE_LEVEL
   bind clkmgr tlul_assert #(
@@ -143,16 +144,14 @@ module clkmgr_bind;
     .meas_ctrl_regwen(u_reg.measure_ctrl_regwen_qs)
   );
 
-% for clk in rg_srcs:
-  % if clk != 'aon':
-  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_${clk}_ctrl_en_sva_if (
+% for src in rg_srcs:
+  bind clkmgr clkmgr_lost_calib_ctrl_en_sva_if clkmgr_lost_calib_${src}_ctrl_en_sva_if (
     .clk(clk_i),
     .rst_n(rst_ni),
     .calib_rdy(calib_rdy_i),
-    .meas_ctrl_en(u_reg.${clk}_meas_ctrl_en_qs)
+    .meas_ctrl_en(u_reg.${src}_meas_ctrl_en_qs)
   );
 
-  % endif
 % endfor
   bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
     .clk_i,
