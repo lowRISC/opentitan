@@ -15,8 +15,10 @@ cc_library(
     hdrs = ["imm_rom_ext.h"],
     deps = [
         ":imm_rom_ext_epmp",
+        "//hw/ip/otp_ctrl/data:otp_ctrl_c_regs",
         "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:macros",
         "//sw/device/silicon_creator/lib:dbg_print",
         "//sw/device/silicon_creator/lib:epmp_state",

@@ -21,6 +21,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/imm_rom_ext:defs.bzl",
+    "IMMUTABLE_HASH_UNENFORCED_MSG",
     "IMM_ROM_EXT_TARGETS",
 )
 
@@ -135,6 +136,7 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "owner_offset": "0x10000",
         "success": "rom_ext_slot = AA__\r\n",
+        "failure": IMMUTABLE_HASH_UNENFORCED_MSG,
         "otp_img": ":otp_img_with_{}_imm_romext_enabled".format(name),
     }
     for name in IMM_ROM_EXT_TARGETS
@@ -153,6 +155,7 @@ _POSITIONS = {
             binaries = {
                 position["romext"]: "romext",
             },
+            exit_failure = position.get("failure", DEFAULT_TEST_FAILURE_MSG),
             exit_success = position["success"],
             otp = position["otp_img"],
             owner_offset = position["owner_offset"],
