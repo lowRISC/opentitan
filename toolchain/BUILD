@@ -51,6 +51,9 @@ cc_toolchain(
         ":feat_rv32_bitmanip",
         ":feat_warnings_as_errors",
         ":feat_guards",
+        ":feat_use_lld",
+        ":feat_lto",
+        ":feat_minsize",
     ],
     known_features = [
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
