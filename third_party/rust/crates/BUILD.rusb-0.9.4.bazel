@@ -16,7 +16,7 @@ package(default_visibility = ["//visibility:public"])
 # ])
 
 rust_library(
-    name = "libusb1_sys",
+    name = "rusb",
     srcs = glob(["**/*.rs"]),
     compile_data = glob(
         include = ["**"],
@@ -34,7 +34,7 @@ rust_library(
     rustc_flags = ["--cap-lints=allow"],
     tags = [
         "cargo-bazel",
-        "crate-name=libusb1-sys",
+        "crate-name=rusb",
         "manual",
         "noclippy",
         "norustfmt",
@@ -73,15 +73,16 @@ rust_library(
         "@rules_rust//rust/platform:x86_64-unknown-none": [],
         "//conditions:default": ["@platforms//:incompatible"],
     }),
-    version = "0.6.4",
+    version = "0.9.4",
     deps = [
         "@crate_index__libc-0.2.169//:libc",
-        "@crate_index__libusb1-sys-0.6.4//:build_script_build",
+        "@crate_index__libusb1-sys-0.7.0//:libusb1_sys",
+        "@crate_index__rusb-0.9.4//:build_script_build",
     ],
 )
 
 cargo_build_script(
-    name = "libusb1-sys_build_script",
+    name = "rusb_build_script",
     srcs = glob(["**/*.rs"]),
     crate_name = "build_script_build",
     crate_root = "build.rs",
@@ -97,38 +98,25 @@ cargo_build_script(
         ],
     ),
     edition = "2018",
-    links = "usb-1.0",
+    link_deps = [
+        "@crate_index__libusb1-sys-0.7.0//:libusb1_sys",
+    ],
     rustc_flags = [
         "--cap-lints=allow",
     ],
     tags = [
         "cargo-bazel",
-        "crate-name=libusb1-sys",
+        "crate-name=rusb",
         "manual",
         "noclippy",
         "norustfmt",
     ],
-    version = "0.6.4",
+    version = "0.9.4",
     visibility = ["//visibility:private"],
-    deps = [
-        "@crate_index__cc-1.0.83//:cc",
-        "@crate_index__pkg-config-0.3.27//:pkg_config",
-    ] + select({
-        "@rules_rust//rust/platform:aarch64-pc-windows-msvc": [
-            "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(target_env = "msvc")
-        ],
-        "@rules_rust//rust/platform:i686-pc-windows-msvc": [
-            "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(target_env = "msvc")
-        ],
-        "@rules_rust//rust/platform:x86_64-pc-windows-msvc": [
-            "@crate_index__vcpkg-0.2.15//:vcpkg",  # cfg(target_env = "msvc")
-        ],
-        "//conditions:default": [],
-    }),
 )
 
 alias(
     name = "build_script_build",
-    actual = "libusb1-sys_build_script",
+    actual = "rusb_build_script",
     tags = ["manual"],
 )

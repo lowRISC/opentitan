@@ -429,7 +429,7 @@ alias(
 
 alias(
     name = "rusb",
-    actual = "@crate_index__rusb-0.9.3//:rusb",
+    actual = "@crate_index__rusb-0.9.4//:rusb",
     tags = ["manual"],
 )
 
