@@ -14,7 +14,6 @@ import hjson
 from basegen.typing import ConfigT
 from mako.template import Template
 from reggen.ip_block import IpBlock
-from topgen.typing import IpBlocksT
 from version_file import VersionInformation
 
 # Ignore flake8 warning as the function is used in the template
@@ -23,6 +22,7 @@ from .intermodule import find_otherside_modules  # noqa : F401 # isort:skip
 from .intermodule import im_portname, im_defname, im_netname # noqa : F401 # isort:skip
 from .intermodule import get_direction # noqa : F401 # isort:skip
 from .intermodule import get_dangling_im_def # noqa : F401 # isort:skip
+from .typing import IpBlocksT
 
 
 class CEnum(object):
