@@ -25,7 +25,7 @@ bazel_dep(
 )
 git_override(
     module_name = "lowrisc_misc_linters",
-    commit = "13303cfa284e8b8c7040c6ad716b0b0c55e0aa8d",
+    commit = "c49d1dc0cb9ea1f09de0750c696b9cee0e01833e",
     remote = "https://github.com/lowRISC/misc-linters",
 )
 
