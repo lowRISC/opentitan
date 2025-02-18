@@ -139,7 +139,7 @@ package top_darjeeling_pkg;
   /**
    * Peripheral size in bytes for clkmgr_aon in top darjeeling.
    */
-  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES = 32'h80;
+  parameter int unsigned TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for pinmux_aon in top darjeeling.
