@@ -19746,7 +19746,7 @@ module spi_device_reg_top
   assign cfg_rx_order_wd = reg_wdata[3];
 
   assign cfg_mailbox_en_wd = reg_wdata[24];
-  assign status_re = racl_addr_hit_write[6] & reg_re & !reg_error;
+  assign status_re = racl_addr_hit_read[6] & reg_re & !reg_error;
   assign intercept_en_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign intercept_en_status_wd = reg_wdata[0];
@@ -19756,12 +19756,12 @@ module spi_device_reg_top
   assign intercept_en_sfdp_wd = reg_wdata[2];
 
   assign intercept_en_mbx_wd = reg_wdata[3];
-  assign addr_mode_re = racl_addr_hit_write[8] & reg_re & !reg_error;
+  assign addr_mode_re = racl_addr_hit_read[8] & reg_re & !reg_error;
   assign addr_mode_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign addr_mode_addr_4b_en_wd = reg_wdata[0];
-  assign last_read_addr_re = racl_addr_hit_write[9] & reg_re & !reg_error;
-  assign flash_status_re = racl_addr_hit_write[10] & reg_re & !reg_error;
+  assign last_read_addr_re = racl_addr_hit_read[9] & reg_re & !reg_error;
+  assign flash_status_re = racl_addr_hit_read[10] & reg_re & !reg_error;
   assign flash_status_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign flash_status_busy_wd = reg_wdata[0];
@@ -19785,8 +19785,8 @@ module spi_device_reg_top
   assign mailbox_addr_we = racl_addr_hit_write[14] & reg_we & !reg_error;
 
   assign mailbox_addr_wd = reg_wdata[31:0];
-  assign upload_cmdfifo_re = racl_addr_hit_write[17] & reg_re & !reg_error;
-  assign upload_addrfifo_re = racl_addr_hit_write[18] & reg_re & !reg_error;
+  assign upload_cmdfifo_re = racl_addr_hit_read[17] & reg_re & !reg_error;
+  assign upload_addrfifo_re = racl_addr_hit_read[18] & reg_re & !reg_error;
   assign cmd_filter_0_we = racl_addr_hit_write[19] & reg_we & !reg_error;
 
   assign cmd_filter_0_filter_0_wd = reg_wdata[0];
@@ -20998,7 +20998,7 @@ module spi_device_reg_top
   assign tpm_cfg_tpm_reg_chk_dis_wd = reg_wdata[3];
 
   assign tpm_cfg_invalid_locality_wd = reg_wdata[4];
-  assign tpm_status_re = racl_addr_hit_write[61] & reg_re & !reg_error;
+  assign tpm_status_re = racl_addr_hit_read[61] & reg_re & !reg_error;
   assign tpm_status_we = racl_addr_hit_write[61] & reg_we & !reg_error;
 
   assign tpm_status_wrfifo_pending_wd = reg_wdata[1];
@@ -21037,7 +21037,7 @@ module spi_device_reg_top
   assign tpm_rid_we = racl_addr_hit_write[70] & reg_we & !reg_error;
 
   assign tpm_rid_wd = reg_wdata[7:0];
-  assign tpm_cmd_addr_re = racl_addr_hit_write[71] & reg_re & !reg_error;
+  assign tpm_cmd_addr_re = racl_addr_hit_read[71] & reg_re & !reg_error;
   assign tpm_read_fifo_we = racl_addr_hit_write[72] & reg_we & !reg_error;
 
   assign tpm_read_fifo_wd = reg_wdata[31:0];

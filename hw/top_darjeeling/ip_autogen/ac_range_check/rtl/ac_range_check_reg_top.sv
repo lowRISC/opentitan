@@ -12935,193 +12935,193 @@ module ac_range_check_reg_top
   assign range_perm_31_execute_access_31_wd = reg_wdata[15:12];
 
   assign range_perm_31_log_denied_access_31_wd = reg_wdata[19:16];
-  assign range_racl_policy_shadowed_0_re = racl_addr_hit_write[135] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_0_re = racl_addr_hit_read[135] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_0_we = racl_addr_hit_write[135] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_0_read_perm_0_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_0_write_perm_0_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_1_re = racl_addr_hit_write[136] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_1_re = racl_addr_hit_read[136] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_1_we = racl_addr_hit_write[136] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_1_read_perm_1_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_1_write_perm_1_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_2_re = racl_addr_hit_write[137] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_2_re = racl_addr_hit_read[137] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_2_we = racl_addr_hit_write[137] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_2_read_perm_2_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_2_write_perm_2_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_3_re = racl_addr_hit_write[138] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_3_re = racl_addr_hit_read[138] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_3_we = racl_addr_hit_write[138] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_3_read_perm_3_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_3_write_perm_3_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_4_re = racl_addr_hit_write[139] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_4_re = racl_addr_hit_read[139] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_4_we = racl_addr_hit_write[139] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_4_read_perm_4_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_4_write_perm_4_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_5_re = racl_addr_hit_write[140] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_5_re = racl_addr_hit_read[140] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_5_we = racl_addr_hit_write[140] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_5_read_perm_5_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_5_write_perm_5_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_6_re = racl_addr_hit_write[141] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_6_re = racl_addr_hit_read[141] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_6_we = racl_addr_hit_write[141] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_6_read_perm_6_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_6_write_perm_6_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_7_re = racl_addr_hit_write[142] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_7_re = racl_addr_hit_read[142] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_7_we = racl_addr_hit_write[142] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_7_read_perm_7_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_7_write_perm_7_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_8_re = racl_addr_hit_write[143] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_8_re = racl_addr_hit_read[143] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_8_we = racl_addr_hit_write[143] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_8_read_perm_8_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_8_write_perm_8_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_9_re = racl_addr_hit_write[144] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_9_re = racl_addr_hit_read[144] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_9_we = racl_addr_hit_write[144] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_9_read_perm_9_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_9_write_perm_9_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_10_re = racl_addr_hit_write[145] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_10_re = racl_addr_hit_read[145] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_10_we = racl_addr_hit_write[145] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_10_read_perm_10_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_10_write_perm_10_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_11_re = racl_addr_hit_write[146] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_11_re = racl_addr_hit_read[146] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_11_we = racl_addr_hit_write[146] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_11_read_perm_11_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_11_write_perm_11_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_12_re = racl_addr_hit_write[147] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_12_re = racl_addr_hit_read[147] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_12_we = racl_addr_hit_write[147] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_12_read_perm_12_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_12_write_perm_12_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_13_re = racl_addr_hit_write[148] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_13_re = racl_addr_hit_read[148] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_13_we = racl_addr_hit_write[148] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_13_read_perm_13_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_13_write_perm_13_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_14_re = racl_addr_hit_write[149] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_14_re = racl_addr_hit_read[149] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_14_we = racl_addr_hit_write[149] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_14_read_perm_14_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_14_write_perm_14_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_15_re = racl_addr_hit_write[150] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_15_re = racl_addr_hit_read[150] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_15_we = racl_addr_hit_write[150] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_15_read_perm_15_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_15_write_perm_15_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_16_re = racl_addr_hit_write[151] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_16_re = racl_addr_hit_read[151] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_16_we = racl_addr_hit_write[151] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_16_read_perm_16_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_16_write_perm_16_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_17_re = racl_addr_hit_write[152] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_17_re = racl_addr_hit_read[152] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_17_we = racl_addr_hit_write[152] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_17_read_perm_17_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_17_write_perm_17_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_18_re = racl_addr_hit_write[153] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_18_re = racl_addr_hit_read[153] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_18_we = racl_addr_hit_write[153] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_18_read_perm_18_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_18_write_perm_18_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_19_re = racl_addr_hit_write[154] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_19_re = racl_addr_hit_read[154] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_19_we = racl_addr_hit_write[154] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_19_read_perm_19_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_19_write_perm_19_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_20_re = racl_addr_hit_write[155] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_20_re = racl_addr_hit_read[155] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_20_we = racl_addr_hit_write[155] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_20_read_perm_20_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_20_write_perm_20_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_21_re = racl_addr_hit_write[156] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_21_re = racl_addr_hit_read[156] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_21_we = racl_addr_hit_write[156] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_21_read_perm_21_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_21_write_perm_21_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_22_re = racl_addr_hit_write[157] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_22_re = racl_addr_hit_read[157] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_22_we = racl_addr_hit_write[157] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_22_read_perm_22_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_22_write_perm_22_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_23_re = racl_addr_hit_write[158] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_23_re = racl_addr_hit_read[158] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_23_we = racl_addr_hit_write[158] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_23_read_perm_23_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_23_write_perm_23_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_24_re = racl_addr_hit_write[159] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_24_re = racl_addr_hit_read[159] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_24_we = racl_addr_hit_write[159] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_24_read_perm_24_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_24_write_perm_24_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_25_re = racl_addr_hit_write[160] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_25_re = racl_addr_hit_read[160] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_25_we = racl_addr_hit_write[160] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_25_read_perm_25_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_25_write_perm_25_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_26_re = racl_addr_hit_write[161] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_26_re = racl_addr_hit_read[161] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_26_we = racl_addr_hit_write[161] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_26_read_perm_26_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_26_write_perm_26_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_27_re = racl_addr_hit_write[162] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_27_re = racl_addr_hit_read[162] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_27_we = racl_addr_hit_write[162] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_27_read_perm_27_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_27_write_perm_27_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_28_re = racl_addr_hit_write[163] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_28_re = racl_addr_hit_read[163] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_28_we = racl_addr_hit_write[163] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_28_read_perm_28_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_28_write_perm_28_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_29_re = racl_addr_hit_write[164] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_29_re = racl_addr_hit_read[164] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_29_we = racl_addr_hit_write[164] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_29_read_perm_29_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_29_write_perm_29_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_30_re = racl_addr_hit_write[165] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_30_re = racl_addr_hit_read[165] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_30_we = racl_addr_hit_write[165] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_30_read_perm_30_wd = reg_wdata[15:0];
 
   assign range_racl_policy_shadowed_30_write_perm_30_wd = reg_wdata[31:16];
-  assign range_racl_policy_shadowed_31_re = racl_addr_hit_write[166] & reg_re & !reg_error;
+  assign range_racl_policy_shadowed_31_re = racl_addr_hit_read[166] & reg_re & !reg_error;
   assign range_racl_policy_shadowed_31_we = racl_addr_hit_write[166] & reg_we & !reg_error;
 
   assign range_racl_policy_shadowed_31_read_perm_31_wd = reg_wdata[15:0];

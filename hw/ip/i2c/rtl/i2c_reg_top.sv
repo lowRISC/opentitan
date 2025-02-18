@@ -3620,8 +3620,8 @@ module i2c_reg_top
   assign ctrl_multi_controller_monitor_en_wd = reg_wdata[5];
 
   assign ctrl_tx_stretch_ctrl_en_wd = reg_wdata[6];
-  assign status_re = racl_addr_hit_write[5] & reg_re & !reg_error;
-  assign rdata_re = racl_addr_hit_write[6] & reg_re & !reg_error;
+  assign status_re = racl_addr_hit_read[5] & reg_re & !reg_error;
+  assign rdata_re = racl_addr_hit_read[6] & reg_re & !reg_error;
   assign fdata_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign fdata_fbyte_wd = reg_wdata[7:0];
@@ -3654,8 +3654,8 @@ module i2c_reg_top
   assign target_fifo_config_tx_thresh_wd = reg_wdata[11:0];
 
   assign target_fifo_config_acq_thresh_wd = reg_wdata[27:16];
-  assign host_fifo_status_re = racl_addr_hit_write[11] & reg_re & !reg_error;
-  assign target_fifo_status_re = racl_addr_hit_write[12] & reg_re & !reg_error;
+  assign host_fifo_status_re = racl_addr_hit_read[11] & reg_re & !reg_error;
+  assign target_fifo_status_re = racl_addr_hit_read[12] & reg_re & !reg_error;
   assign ovrd_we = racl_addr_hit_write[13] & reg_we & !reg_error;
 
   assign ovrd_txovrden_wd = reg_wdata[0];
@@ -3663,7 +3663,7 @@ module i2c_reg_top
   assign ovrd_sclval_wd = reg_wdata[1];
 
   assign ovrd_sdaval_wd = reg_wdata[2];
-  assign val_re = racl_addr_hit_write[14] & reg_re & !reg_error;
+  assign val_re = racl_addr_hit_read[14] & reg_re & !reg_error;
   assign timing0_we = racl_addr_hit_write[15] & reg_we & !reg_error;
 
   assign timing0_thigh_wd = reg_wdata[12:0];
@@ -3705,7 +3705,7 @@ module i2c_reg_top
   assign target_id_address1_wd = reg_wdata[20:14];
 
   assign target_id_mask1_wd = reg_wdata[27:21];
-  assign acqdata_re = racl_addr_hit_write[22] & reg_re & !reg_error;
+  assign acqdata_re = racl_addr_hit_read[22] & reg_re & !reg_error;
   assign txdata_we = racl_addr_hit_write[23] & reg_we & !reg_error;
 
   assign txdata_wd = reg_wdata[7:0];
@@ -3717,16 +3717,16 @@ module i2c_reg_top
   assign target_timeout_ctrl_val_wd = reg_wdata[30:0];
 
   assign target_timeout_ctrl_en_wd = reg_wdata[31];
-  assign target_nack_count_re = racl_addr_hit_write[26] & reg_re & !reg_error;
+  assign target_nack_count_re = racl_addr_hit_read[26] & reg_re & !reg_error;
 
   assign target_nack_count_wd = '1;
-  assign target_ack_ctrl_re = racl_addr_hit_write[27] & reg_re & !reg_error;
+  assign target_ack_ctrl_re = racl_addr_hit_read[27] & reg_re & !reg_error;
   assign target_ack_ctrl_we = racl_addr_hit_write[27] & reg_we & !reg_error;
 
   assign target_ack_ctrl_nbytes_wd = reg_wdata[8:0];
 
   assign target_ack_ctrl_nack_wd = reg_wdata[31];
-  assign acq_fifo_next_data_re = racl_addr_hit_write[28] & reg_re & !reg_error;
+  assign acq_fifo_next_data_re = racl_addr_hit_read[28] & reg_re & !reg_error;
   assign host_nack_handler_timeout_we = racl_addr_hit_write[29] & reg_we & !reg_error;
 
   assign host_nack_handler_timeout_val_wd = reg_wdata[30:0];

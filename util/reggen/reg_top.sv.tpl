@@ -1180,8 +1180,9 @@ ${bits.msb}\
 </%def>\
 <%def name="reg_enable_gen(reg, idx)">\
 <% wr_addr_hit = 'racl_addr_hit_write' if racl_support else 'addr_hit'%>\
+<% re_addr_hit = 'racl_addr_hit_read'  if racl_support else 'addr_hit'%>\
   % if reg.needs_re():
-  assign ${reg.name.lower()}_re = ${wr_addr_hit}[${idx}] & reg_re & !reg_error;
+  assign ${reg.name.lower()}_re = ${re_addr_hit}[${idx}] & reg_re & !reg_error;
   % endif
   % if reg.needs_we():
   assign ${reg.name.lower()}_we = ${wr_addr_hit}[${idx}] & reg_we & !reg_error;

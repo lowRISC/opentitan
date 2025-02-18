@@ -542,7 +542,7 @@ module mbx_soc_reg_top
   end
 
   // Generate write-enables
-  assign soc_control_re = racl_addr_hit_write[0] & reg_re & !reg_error;
+  assign soc_control_re = racl_addr_hit_read[0] & reg_re & !reg_error;
   assign soc_control_we = racl_addr_hit_write[0] & reg_we & !reg_error;
 
   assign soc_control_abort_wd = reg_wdata[0];
