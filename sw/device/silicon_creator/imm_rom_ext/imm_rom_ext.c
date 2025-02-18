@@ -5,12 +5,14 @@
 #include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/silicon_creator/imm_rom_ext/imm_rom_ext_epmp.h"
 #include "sw/device/silicon_creator/lib/base/boot_measurements.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/cert/dice_chain.h"
 #include "sw/device/silicon_creator/lib/dbg_print.h"
+#include "sw/device/silicon_creator/lib/drivers/otp.h"
 #include "sw/device/silicon_creator/lib/drivers/pinmux.h"
 #include "sw/device/silicon_creator/lib/drivers/rnd.h"
 #include "sw/device/silicon_creator/lib/drivers/uart.h"
@@ -20,6 +22,8 @@
 #include "sw/device/silicon_creator/lib/ownership/ownership_key.h"
 #include "sw/device/silicon_creator/lib/shutdown.h"
 #include "sw/device/silicon_creator/rom_ext/rom_ext_manifest.h"
+
+#include "otp_ctrl_regs.h"  // Generated.
 
 OT_WARN_UNUSED_RESULT
 static rom_error_t imm_rom_ext_start(void) {
@@ -39,6 +43,13 @@ static rom_error_t imm_rom_ext_start(void) {
   uart_init(kUartNCOValue);
 
   dbg_puts("IMM_ROM_EXT:0.1\r\n");
+  uint32_t hash_enforcement =
+      otp_read32(OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET);
+  if (hash_enforcement != kHardenedBoolTrue) {
+    // CAUTION: The message below should match the message defined in:
+    //   //sw/device/silicon_creator/imm_rom_ext/defs.bzl
+    dbg_puts("info: hash unenforced\r\n");
+  }
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
