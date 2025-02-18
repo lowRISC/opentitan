@@ -19,14 +19,23 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+# Number of periphals per test
+NR_IRQ_PERIPH_PER_TEST = 10
+
+# Total numbers of tests (the last will contain only remaining IRQs)
+NR_IRQ_PERIPH_TESTS = 2
+
 [
     opentitan_test(
-        name = "plic_all_irqs_test_{}".format(min),
+        name = "plic_all_irqs_test_{}".format(idx * NR_IRQ_PERIPH_PER_TEST),
         srcs = ["plic_all_irqs_test.c"],
+        # For the last test, do not specify TEST_MAX_IRQ_PERIPHERAL to be sure
+        # that we are capturing all peripherals.
         copts = [
-            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(min),
-            "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
-        ],
+            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(idx * NR_IRQ_PERIPH_PER_TEST),
+        ] + ([
+            "-DTEST_MAX_IRQ_PERIPHERAL={}".format((idx + 1) * NR_IRQ_PERIPH_PER_TEST),
+        ] if idx < NR_IRQ_PERIPH_PER_TEST - 1 else []),
         exec_env = dicts.add(
             {
                 "//hw/top_darjeeling:sim_dv": None,
@@ -72,14 +81,14 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, 19, 10)
+    for idx in range(NR_IRQ_PERIPH_TESTS)
 ]
 
 test_suite(
     name = "plic_all_irqs_test",
     tests = [
-        "plic_all_irqs_test_0",
-        "plic_all_irqs_test_10",
+        "plic_all_irqs_test_{}".format(idx * NR_IRQ_PERIPH_PER_TEST)
+        for idx in range(NR_IRQ_PERIPH_TESTS)
     ],
 )
 
