@@ -73,6 +73,15 @@ ${helper.clock_enum.render()}
 ${helper.reset_enum.render()}
 
 % endif
+% if helper.has_reset_requests():
+/**
+ * List of reset requests.
+ *
+ * Reset requests are guaranteed to be numbered consecutively from 0.
+ */
+${helper.reset_req_enum.render()}
+
+% endif
 % if helper.has_periph_io():
 /**
  * List of peripheral I/O.
