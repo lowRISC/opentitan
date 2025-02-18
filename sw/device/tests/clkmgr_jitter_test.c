@@ -9,7 +9,6 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
 #include "clkmgr_regs.h"
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -35,8 +34,7 @@ void test_jitter_locked(const dif_clkmgr_t *clkmgr,
 
 bool test_main(void) {
   dif_clkmgr_t clkmgr;
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   // Get the initial jitter state. It might be enabled or disabled depending
   // on reset behavior - either is fine for the purposes of this test.
