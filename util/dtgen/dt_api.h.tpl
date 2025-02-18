@@ -112,6 +112,13 @@ ${helper.clock_enum.render()}
 uint32_t dt_clock_frequency(dt_clock_t clk);
 
 /**
+ * List of resets.
+ *
+ * Resets are guaranteed to be numbered consecutively from 0.
+ */
+${helper.reset_enum.render()}
+
+/**
  * List of pads names.
  */
 ${helper.pad_enum.render()}

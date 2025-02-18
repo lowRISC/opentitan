@@ -258,6 +258,7 @@ class TopHelper:
     DT_INSTANCE_ID_NAME = Name(["dt", "instance", "id"])
     DT_DEVICE_TYPE_NAME = Name(["dt", "device", "type"])
     DT_CLOCK_ENUM_NAME = Name(["dt", "clock"])
+    DT_RESET_ENUM_NAME = Name(["dt", "reset"])
     DT_PAD_NAME = Name(["dt", "pad"])
     DT_PAD_DESC_NAME = Name(["dt", "pad", "desc"])
 
@@ -354,6 +355,14 @@ class TopHelper:
             clock_name = Name.from_snake_case(clock["name"])
             self.clock_enum.add_constant(clock_name)
         self.clock_enum.add_constant(Name(["count"]), "Number of clocks")
+
+        # List of all reset nodes and put them in an enum.
+        self.reset_enum = self._enum_type(Name([]), self.DT_RESET_ENUM_NAME)
+        self.reset_enum.add_constant(Name(["unknown"]), "Unknown reset")
+        for reset_node in self.top["resets"]["nodes"]:
+            reset_name = Name.from_snake_case(reset_node["name"])
+            self.reset_enum.add_constant(reset_name)
+        self.reset_enum.add_constant(Name(["count"]), "Number of resets")
 
         # Create structure to describe a peripheral I/O and a pad.
         self._create_periph_io_struct()
@@ -549,6 +558,7 @@ class IpHelper:
     INST_ID_FIELD_NAME = Name(["inst", "id"])
     BASE_ADDR_FIELD_NAME = Name(["base", "addr"])
     CLOCK_FIELD_NAME = Name(["clock"])
+    RESET_FIELD_NAME = Name(["reset"])
     PERIPH_IO_FIELD_NAME = Name(["periph", "io"])
     DT_STRUCT_NAME_PREFIX = Name(["dt", "desc"])
     FIRST_IRQ_FIELD_NAME = Name(["first", "irq"])
@@ -582,6 +592,7 @@ class IpHelper:
         self._init_clocks()
         self._init_wakeups()
         self._init_reset_requests()
+        self._init_resets()
         self._init_periph_io()
         self.extension = (extension_cls or EmptyExtension).create_ext(self)
 
@@ -698,6 +709,28 @@ class IpHelper:
             self.reset_req_enum.add_constant(Name.from_snake_case(req))
         if isinstance(self.reset_req_enum, CEnum):
             self.reset_req_enum.add_constant(Name(["count"]), "Number of reset requests")
+
+    def has_resets(self):
+        return len(self.reset_map) > 0
+
+    def _init_resets(self):
+        self.reset_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["reset"]))
+        self.reset_map = OrderedDict()
+        # Resets are listed alongside clocks.
+        for rst in self.ip.clocking.reset_signals():
+            rst_orig = rst
+            # Remove the rst_ prefix and _ni suffix.
+            assert rst.startswith("rst_") and rst.endswith("_ni"), \
+                f"reset '{rst}' does not start with rst_ and end with _ni"
+            # There is a special case: if the reset name is "rst_ni" then we would get a weird name.
+            if rst == "rst_ni":
+                rst = "rst"
+            else:
+                rst = rst.removeprefix("rst_").removesuffix("_ni")
+            self.reset_map[rst_orig] = rst
+            self.reset_enum.add_constant(Name.from_snake_case(rst))
+        if isinstance(self.reset_enum, CEnum):
+            self.reset_enum.add_constant(Name(["count"]), "Number of reset ports")
 
     def has_periph_io(self):
         return len(self._device_signals) > 0
@@ -816,6 +849,16 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 ),
                 docstring = "Clock signal connected to each clock port"
             )
+        if self.has_resets():
+            self.inst_struct.add_field(
+                name = self.RESET_FIELD_NAME,
+                field_type = ArrayMapType(
+                    elem_type = ScalarType(TopHelper.DT_RESET_ENUM_NAME),
+                    index_type = ScalarType(self.reset_enum.name),
+                    length = Name(["count"]),
+                ),
+                docstring = "Reset signal connected to each reset port"
+            )
         if self.has_periph_io():
             self.inst_struct.add_field(
                 name = self.PERIPH_IO_FIELD_NAME,
@@ -872,6 +915,13 @@ This value is undefined if the block is not connected to the Alert Handler."""
                 inst_clock_map[Name.from_snake_case(self.clock_map[port])] = \
                     Name.from_snake_case(clk_name)
             inst_desc[self.CLOCK_FIELD_NAME] = inst_clock_map
+        # Reset map.
+        if self.has_resets():
+            inst_reset_map = OrderedDict()
+            for (port, rst) in m["reset_connections"].items():
+                inst_reset_map[Name.from_snake_case(self.reset_map[port])] = \
+                    Name.from_snake_case(rst["name"])
+            inst_desc[self.RESET_FIELD_NAME] = inst_reset_map
         # First IRQ
         if self.has_irqs():
             irqs_packed = [irq for irq in self.top["interrupt"] if irq["module_name"] == modname]
