@@ -306,7 +306,7 @@
  * address between #TOP_DARJEELING_CLKMGR_AON_BASE_ADDR and
  * `TOP_DARJEELING_CLKMGR_AON_BASE_ADDR + TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x80
+#define TOP_DARJEELING_CLKMGR_AON_SIZE_BYTES 0x40
 /**
  * Peripheral base address for pinmux_aon in top darjeeling.
  *

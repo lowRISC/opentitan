@@ -27,8 +27,8 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   //
   // The exp_alert cip feature requires a single alert at a time, so we set at most one of the
   // clocks to fail measurement.
-  rand int clk_tested;
-  constraint clk_tested_c {clk_tested inside {[ClkMesrIo : ClkMesrUsb]};}
+  rand clk_mesr_e clk_tested;
+  constraint clk_tested_c {clk_tested != ClkMesrSize;}
 
   // If cause_saturation is active, force the initial measurement count of clk_tested to a high
   // value so the counter will saturate.
@@ -65,9 +65,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   }
 
   constraint all_clk_en_c {
-    io_ip_clk_en == 1;
-    main_ip_clk_en == 1;
-    usb_ip_clk_en == 1;
+% for src in sorted(src_clks.values(), key=lambda s: s['name']):
+  % if not src['aon']:
+    ${src['name']}_ip_clk_en == 1;
+  % endif
+% endfor
   }
 
   function void post_randomize();
@@ -80,6 +82,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   local task maybe_saturate_count(bit saturate, clk_mesr_e clk_tested);
     forever begin
       @cfg.aon_clk_rst_vif.cbn;
+      control_meas_saturation_assert(clk_tested, 0);
       if (saturate) cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
     end
   endtask
@@ -140,7 +143,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
-      logic [ClkMesrUsb:0] expected_recov_meas_err = '0;
+      logic [ClkMesrSize-1:0] expected_recov_meas_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       // Update calib_rdy input: if calibration is not ready the measurements
@@ -190,6 +193,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             wait_before_read_recov_err_code(expect_alert);
           join_any
           disable fork;
+          control_meas_saturation_assert(clk_tested, 1);
         end
       join
 

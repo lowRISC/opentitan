@@ -132,7 +132,8 @@ task alert_receiver_driver::rsp_alert();
       fork
         wait(under_reset);
         repeat (4) begin
-          if (cfg.vif.receiver_cb.alert_tx.alert_p) break;
+          if (cfg.vif.receiver_cb.alert_tx.alert_p ||
+	      !cfg.vif.receiver_cb.alert_tx.alert_n) break;
           @(cfg.vif.receiver_cb);
         end
       join_any

@@ -22,8 +22,8 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
       0 := 1
     };
   }
-  rand int clk_timeout;
-  constraint clk_timeout_c {clk_timeout inside {[ClkMesrIo : ClkMesrUsb]};}
+  rand clk_mesr_e clk_timeout;
+  constraint clk_timeout_c {clk_timeout != ClkMesrSize;}
 
   constraint all_clk_en_c {
     io_ip_clk_en == 1;
@@ -64,7 +64,7 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
     `uvm_info(`gfn, $sformatf("Will run %0d rounds", num_trans), UVM_MEDIUM)
     for (int i = 0; i < num_trans; ++i) begin
       clkmgr_recov_err_t actual_recov_err = '{default: '0};
-      logic [ClkMesrUsb:0] expected_recov_timeout_err = '0;
+      logic [ClkMesrSize-1:0] expected_recov_timeout_err = '0;
       bit expect_alert = 0;
       `DV_CHECK_RANDOMIZE_FATAL(this)
       `uvm_info(`gfn, "New round", UVM_MEDIUM)
@@ -89,8 +89,6 @@ class clkmgr_frequency_timeout_vseq extends clkmgr_base_vseq;
         `uvm_info(`gfn, $sformatf("Will cause a timeout for clk %0s", clk_mesr_timeout.name()),
                   UVM_MEDIUM)
         if (clk_mesr_timeout inside {ClkMesrIo, ClkMesrIoDiv2, ClkMesrIoDiv4}) begin
-          // All these clocks are derived from io so that gets disabled, and all derived
-          // clocks will get a timeout.
           expected_recov_timeout_err[ClkMesrIo] = 1;
           expected_recov_timeout_err[ClkMesrIoDiv2] = 1;
           expected_recov_timeout_err[ClkMesrIoDiv4] = 1;
