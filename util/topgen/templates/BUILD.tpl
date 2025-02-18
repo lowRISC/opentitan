@@ -44,6 +44,26 @@ defs_imports = sorted(
         "verilator_params",
     ]
 )
+
+## Check we still have the same number of tests that we expect for each top:
+## if we don't, then before updating these values, the corresponding DV tests
+## need to be updated.
+irq_per_test = 10
+irq_test_count = len(irq_peripheral_names) // 10 + 1
+expected_irq_tests = {
+    "earlgrey": 3,
+    "darjeeling": 2,
+    "englishbreakfast": 1,
+}
+
+## If this check fails, the testplans / DV tests need to be updated to account
+## for the change in software test targets, and then the ## `expected_irq_tests`
+## value needs updating to its new value.
+if irq_test_count != expected_irq_tests.get(top["name"], irq_test_count):
+    raise Exception(
+       "Number of PLIC IRQ tests does not match the hardcoded number. "
+       "Testplans / DV tests and this templates/BUILD.tpl file needs updating."
+    )
 %>\
 load(
     "//rules/opentitan:defs.bzl",
@@ -55,14 +75,23 @@ load("@bazel_skylib//lib:dicts.bzl", "dicts")
 
 package(default_visibility = ["//visibility:public"])
 
+# Number of periphals per test
+NR_IRQ_PERIPH_PER_TEST = ${irq_per_test}
+
+# Total numbers of tests (the last will contain only remaining IRQs)
+NR_IRQ_PERIPH_TESTS = ${irq_test_count}
+
 [
     opentitan_test(
-        name = "plic_all_irqs_test_{}".format(min),
+        name = "plic_all_irqs_test_{}".format(idx * NR_IRQ_PERIPH_PER_TEST),
         srcs = ["plic_all_irqs_test.c"],
+        # For the last test, do not specify TEST_MAX_IRQ_PERIPHERAL to be sure
+        # that we are capturing all peripherals.
         copts = [
-            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(min),
-            "-DTEST_MAX_IRQ_PERIPHERAL={}".format(min + 10),
-        ],
+            "-DTEST_MIN_IRQ_PERIPHERAL={}".format(idx * NR_IRQ_PERIPH_PER_TEST),
+        ] + ([
+            "-DTEST_MAX_IRQ_PERIPHERAL={}".format((idx + 1) * NR_IRQ_PERIPH_PER_TEST),
+        ] if idx < NR_IRQ_PERIPH_PER_TEST - 1 else []),
         exec_env = dicts.add(
 % for exec_env in exec_envs:
 % if isinstance(exec_env, str):
@@ -99,17 +128,14 @@ package(default_visibility = ["//visibility:public"])
             "//sw/device/lib/testing/test_framework:ottf_main",
         ],
     )
-    for min in range(0, ${len(irq_peripheral_names)}, 10)
+    for idx in range(NR_IRQ_PERIPH_TESTS)
 ]
 
 test_suite(
     name = "plic_all_irqs_test",
     tests = [
-## Use template loop instead of Starlark loop here to be able to easily detect
-## if number of tests have changed (so DV files can be updated accordingly)
-% for min in range(0, len(irq_peripheral_names), 10):
-        "plic_all_irqs_test_${min}",
-% endfor
+        "plic_all_irqs_test_{}".format(idx * NR_IRQ_PERIPH_PER_TEST)
+        for idx in range(NR_IRQ_PERIPH_TESTS)
     ],
 )
 
