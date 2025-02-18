@@ -40,3 +40,7 @@ SLOT_VIRTUAL_IMM_ROM_EXT_SECTIONS = {
         "//sw/device/silicon_creator/imm_rom_ext:main_section_slot_virtual_silicon_creator",
     ],
 }
+
+# CAUTION: The message below should match the message defined in:
+#   //sw/device/silicon_creator/imm_rom_ext/imm_rom_ext.c
+IMMUTABLE_HASH_UNENFORCED_MSG = "hash unenforced"
