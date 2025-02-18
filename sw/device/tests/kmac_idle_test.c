@@ -2,7 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-#include "sw/device/lib/base/mmio.h"
+#include "dt/dt_clkmgr.h"  // Generated
+#include "dt/dt_kmac.h"    // Generated
 #include "sw/device/lib/dif/dif_clkmgr.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -10,15 +11,24 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 static dif_clkmgr_t clkmgr;
 static dif_kmac_t kmac;
 
 OTTF_DEFINE_TEST_CONFIG();
 
+// TODO: change this conditional compilation to use a clkmgr DT extension
+// when one is available.
+#if defined(OPENTITAN_IS_EARLGREY)
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 const dif_clkmgr_hintable_clock_t kmac_clock =
     kTopEarlgreyHintableClocksMainKmac;
+#elif defined(OPENTITAN_IS_DARJEELING)
+#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
+const dif_clkmgr_hintable_clock_t kmac_clock =
+    kTopDarjeelingHintableClocksMainKmac;
+#else
+#error "kmac_idle_test does not support this top"
+#endif
 
 #define TIMEOUT (1000 * 1000)
 
@@ -110,8 +120,7 @@ static void do_sha3_test(void) {
 }
 
 bool test_main(void) {
-  CHECK_DIF_OK(dif_clkmgr_init(
-      mmio_region_from_addr(TOP_EARLGREY_CLKMGR_AON_BASE_ADDR), &clkmgr));
+  CHECK_DIF_OK(dif_clkmgr_init_from_dt(kDtClkmgrAon, &clkmgr));
 
   // Get initial hint and enable for KMAC clock and check both are enabled.
   dif_toggle_t clock_hint_state;
@@ -131,8 +140,8 @@ bool test_main(void) {
   check_clock_state(kDifToggleEnabled);
 
   // Initialize KMAC hardware.
-  CHECK_DIF_OK(
-      dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
+  static_assert(kDtKmacCount > 0, "This test requires a KMAC instance");
+  CHECK_DIF_OK(dif_kmac_init_from_dt((dt_kmac_t)0, &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
