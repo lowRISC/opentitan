@@ -459,7 +459,7 @@
                 The DOE instance receives data objects via writes to this register.
                 A successful write adds one DWORD to the data object being assembled in the DOE instance.
                 A write of 1 to the DOE Go bit in the DOE Control Register marks the completion of the data transfer, i.e, final DWORD for the object has been written.
-                  '''
+                '''
         }
       }
       { window: {
