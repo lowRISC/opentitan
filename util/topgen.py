@@ -804,8 +804,8 @@ def generate_top_ral(top: ConfigT, name_to_block: IpBlocksT,
     for item in list(top.get("memory", [])):
         mems.append(create_mem(item, addrsep, regwidth))
 
-    # Top-level may override the mem setting. Store the new type to name_to_block
-    # If no other instance uses the original type, delete it
+    # Top-level may override the mem setting. Store the new type to
+    # name_to_block. If no other instance uses the original type, delete it
     original_types = set()
     for module in top["module"]:
         if "memory" in module.keys() and len(module["memory"]) > 0:
@@ -1469,40 +1469,26 @@ def main():
         log.error('Seed "rnd_cnst_seed" not found in configuration HJSON.')
         exit(1)
 
-    # TODO, long term, the levels of dependency should be automatically
-    # determined instead of hardcoded.  The following are a few examples:
-    # Example 1: pinmux depends on amending all modules before calculating the
-    #            correct number of pins.
-    #            This would be 1 level of dependency and require 2 passes.
-    # Example 2: pinmux depends on amending all modules, and pwrmgr depends on
-    #            pinmux generation to know correct number of wakeups.  This
-    #            would be 2 levels of dependency and require 3 passes.
+    # The generation of ipgen modules needs to be carefully orchestrated to
+    # avoid performing multiple passes when creating the complete top
+    # configuration. Please refer to the description in util/topgen/README.md.
     #
-    # How does multi-pass work?
-    # In example 1, the first pass gathers all modules and merges them.
-    # However, the merge process uses a stale pinmux.  The correct pinmux is
-    # then generated using the merged configuration.  The second pass now merges
-    # all the correct modules (including the generated pinmux) and creates the
-    # final merged config.
-    #
-    # In example 2, the first pass gathers all modules and merges them.
-    # However, the merge process uses a stale pinmux and pwrmgr.  The correct
-    # pinmux is then generated using the merged configuration.  However, since
-    # pwrmgr is dependent on this new pinmux, it is still generated incorrectly.
-    # The second pass merge now has an updated pinmux but stale pwrmgr.  The
-    # correct pwrmgr can now be generated.  The final pass then merges all the
-    # correct modules and creates the final configuration.
+    # This performs mutiple passes until the complete top configuration
+    # doesn't change.
     #
     # This fix is related to #2083
     maximum_passes = 3
 
     # topgen generates IP blocks and associated Hjson configuration in multiple
-    # steps. After each step, the IP Hjson configuration is read back and then
-    # combined into the toplevel configuration. To generate the chip-level RAL,
-    # we need to run the full generation step, but ultimately only care about
-    # the toplevel configuration (a single Hjson file). Since we don't have a
-    # better way at the moment dump all output into a temporary directory, and
-    # delete it after the fact, retaining only the toplevel configuration.
+    # steps. In each step, the ipgen peripheral's IP Hjson configuration is
+    # regenerated from the updated top configuration, which can induce further
+    # changes to the toplevel configuration.
+    #
+    # To generate the chip-level RAL we need to run the full generation step,
+    # but ultimately only care about the toplevel configuration (a single Hjson
+    # file). Since we don't have a better way at the moment, we dump all output
+    # into a temporary directory, and delete it after the fact, retaining only
+    # the toplevel configuration.
     if args.top_ral:
         out_path_gen = Path(tempfile.mkdtemp())
     else:

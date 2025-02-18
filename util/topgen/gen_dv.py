@@ -5,7 +5,6 @@
 import logging as log
 from typing import List, Optional, Tuple
 
-import importlib_resources
 from mako import exceptions  # type: ignore
 from mako.lookup import TemplateLookup  # type: ignore
 import importlib.resources
