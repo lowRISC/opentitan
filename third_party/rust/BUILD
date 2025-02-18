@@ -29,7 +29,7 @@ cc_import(
 )
 
 cc_import(
-    name = "libc++",
+    name = "libcxx",
     shared_library = "@llvm_toolchain_llvm//:lib/libc++.so",
 )
 
@@ -38,7 +38,7 @@ rust_bindgen_toolchain(
     bindgen = "@rules_rust_bindgen//3rdparty:bindgen",
     clang = "@llvm_toolchain_llvm//:bin/clang",
     libclang = ":libclang",
-    libstdcxx = ":libc++",
+    libstdcxx = ":libcxx",
 )
 
 toolchain(

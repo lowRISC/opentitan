@@ -106,7 +106,6 @@ jobs:
         run: ./ci/scripts/check-bazel-banned-rules.sh
       - name: Bazel target names
         run: ./ci/scripts/check_bazel_target_names.py
-        continue-on-error: true
       - name: DV software images
         run: ./ci/scripts/check_dv_sw_images.sh
         continue-on-error: true
