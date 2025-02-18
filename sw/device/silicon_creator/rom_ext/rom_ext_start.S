@@ -4,6 +4,7 @@
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey_memory.h"
 #include "sw/device/lib/base/hardened_asm.h"
+#include "sw/device/silicon_creator/imm_rom_ext/hash_enforcement.h"
 #include "otp_ctrl_regs.h"
 
 /**
@@ -95,6 +96,7 @@ _rom_ext_start_boot:
   lw   t0, OTP_CTRL_PARAM_CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN_OFFSET(a0)
   li   t1, HARDENED_BOOL_TRUE
   beq  t0, t1, .L_mutable_start_boot
+  li   a0, IMMUTABLE_HASH_UNENFORCED
   call _rom_ext_immutable_start
 
   /**

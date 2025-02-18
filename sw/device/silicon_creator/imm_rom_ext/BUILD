@@ -23,6 +23,7 @@ cc_library(
     hdrs = ["imm_rom_ext.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":hash_enforcement",
         ":imm_rom_ext_epmp",
         "//hw/top:flash_ctrl_c_regs",
         "//sw/device/lib/arch:device",
@@ -42,6 +43,11 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
     ],
+)
+
+cc_library(
+    name = "hash_enforcement",
+    hdrs = ["hash_enforcement.h"],
 )
 
 cc_library(

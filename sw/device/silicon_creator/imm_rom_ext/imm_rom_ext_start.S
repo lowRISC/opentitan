@@ -37,6 +37,7 @@ _imm_rom_ext_start_boot:
    */
   addi sp, sp, -8
   sw ra, 4(sp)
+  sw a0, 8(sp) /* Hash enforced / unenforced */
 
   /**
    * Disable Interrupts.
@@ -81,6 +82,7 @@ _imm_rom_ext_start_boot:
    * Restore registers.
    */
   lw ra, 4(sp)
+  lw a0, 8(sp) /* Hash enforced / unenforced */
   addi sp, sp, 8
 
   /**
