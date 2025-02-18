@@ -412,7 +412,7 @@
               desc: "One byte per transaction."
             }
             { value: "1",
-              name: TWO_BYTE",
+              name: "TWO_BYTE",
               desc: "Two bytes per transaction."
             }
             { value: "2",

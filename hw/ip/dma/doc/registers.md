@@ -446,11 +446,11 @@ Note that firmware may need to set a different value if a receiving IP supports 
 This does not affect the wrap-around mechanism.
 Note that the value 3 for this register represents an invalid configuration that leads to an error.
 
-| Value   | Name       | Description                                            |
-|:--------|:-----------|:-------------------------------------------------------|
-| 0x0     | ONE_BYTE   | One byte per transaction.                              |
-| 0x1     | TWO_BYTE", | Two bytes per transaction.                             |
-| 0x2     | FOUR_BYTE  | Four bytes per transaction. Default value after reset. |
+| Value   | Name      | Description                                            |
+|:--------|:----------|:-------------------------------------------------------|
+| 0x0     | ONE_BYTE  | One byte per transaction.                              |
+| 0x1     | TWO_BYTE  | Two bytes per transaction.                             |
+| 0x2     | FOUR_BYTE | Four bytes per transaction. Default value after reset. |
 
 Other values are reserved.
 
