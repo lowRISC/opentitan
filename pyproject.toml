@@ -196,3 +196,5 @@ extend-exclude = [
 preview = true
 explicit-preview-rules = true
 select = ["ALL", "E303", "W391"]
+# Ignore conflicting rules as recommended
+ignore = ["D203", "D213", "COM812", "ISC001"]
