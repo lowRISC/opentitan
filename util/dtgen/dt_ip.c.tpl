@@ -189,5 +189,24 @@ dt_clock_t dt_${module_name}_clock(
 }
 % endif
 
+% if helper.has_resets():
+/**
+ * Get the reset signal connected to a reset port of an instance.
+ *
+ * @param dt Instance of ${module_name}.
+ * @param sig Reset port.
+ * @return Reset signal.
+ */
+dt_reset_t dt_${module_name}_reset(
+    dt_${module_name}_t dt,
+    dt_${module_name}_reset_t rst) {
+  const dt_${module_name}_reset_t count = ${helper.reset_enum.name.as_c_enum()}Count;
+  if (rst >= count) {
+    return kDtResetUnknown;
+  }
+  return TRY_GET_DT(dt, kDtResetUnknown)->reset[rst];
+}
+% endif
+
 ## Extension
 ${helper.render_extension(Extension.DtIpPos.SourceEnd)}
