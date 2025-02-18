@@ -47,8 +47,11 @@ def create_pinout_table(top, c_helper, target):
     # map pad names to special function signals
     special_pads = {}
     for sig in special_signals:
-        special_pads.update({sig['pad']: {'name': sig['name'],
-                                          'desc': sig['desc']}})
+        special_pads.update(
+            {sig['pad']: {
+                'name': sig['name'],
+                'desc': sig['desc']
+            }})
 
     i = 2  # insel enum starts at 2
     j = 0  # mio_out enum starts at 0
@@ -79,13 +82,8 @@ def create_pinout_table(top, c_helper, target):
             special_func = "-"
             desc = pad['desc']
         row = [
-            pad['name'],
-            pad['type'],
-            pad['bank'],
-            pad['connection'],
-            special_func,
-            insel + ' / ' + mio_out,
-            desc
+            pad['name'], pad['type'], pad['bank'], pad['connection'],
+            special_func, insel + ' / ' + mio_out, desc
         ]
         table_rows.append(set_md_table_font_size(row, "smaller"))
 
@@ -128,10 +126,7 @@ def create_pinmux_table(top, c_helper):
         else:
             periph_in = "-"
         row = [
-            port,
-            sig['connection'],
-            pad,
-            outsel + " / " + periph_in,
+            port, sig['connection'], pad, outsel + " / " + periph_in,
             sig['desc']
         ]
         table_rows.append(set_md_table_font_size(row, "smaller"))
@@ -178,7 +173,8 @@ def gen_pinmux_docs(top, c_helper, out_path):
         table_str, stats = create_pinout_table(top, c_helper, target)
 
         # create file with pinout+pinmux subtable for this target
-        pinout_table = f'# "{name.upper()}" Target : Pinout and Pinmux Connectivity\n'
+        pinout_table = (
+            f'# "{name.upper()}" Target : Pinout and Pinmux Connectivity\n')
         pinout_table += TABLE_HEADER.format(gencmd)
         pinout_table += '## Pinout Table\n\n'
         pinout_table += table_str + '\n'
@@ -196,7 +192,8 @@ def gen_pinmux_docs(top, c_helper, out_path):
             stats['direct'],  # direct pads
             stats['manual'],  # manual pads
             stats['muxed'] + stats['direct'] + stats['manual'],  # total pads
-            f"[Pinout Table](./{pinout_name})"  # subtable, in same dir as the summary table
+            # subtable, in same dir as the summary table
+            f"[Pinout Table](./{pinout_name})"
         ]
         table_rows.append(row)
 

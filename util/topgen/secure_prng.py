@@ -15,9 +15,10 @@ internal state).
 
 import logging as log
 import sys
-from Crypto.Cipher import AES
 from math import ceil as _ceil
 from math import log as _log
+
+from Crypto.Cipher import AES
 
 
 class secure_prng():
@@ -97,8 +98,9 @@ class secure_prng():
 
         # Checks that the requested number of bits is allowed.
         if requested_number_of_bits > self.REQ_MAX:
-            log.error("Maximal number of bits per request is %d, but %d was "
-                      "requested", self.REQ_MAX, requested_number_of_bits)
+            log.error(
+                "Maximal number of bits per request is %d, but %d was "
+                "requested", self.REQ_MAX, requested_number_of_bits)
             sys.exit(1)
 
         # Step 1
@@ -179,9 +181,10 @@ class secure_prng():
         if seed.bit_length() < 250:
             # Warn, but don't fail, because the DV logic always passes in 32-bit
             # seeds and this can naturally happen about 1% of the time.
-            log.warn(f'PRNG seed is only {seed.bit_length()} bits long, which is '
-                     'unlikely for a sample from a 256-bit distribution. Please '
-                     'double-check the logic.')
+            log.warn(
+                f'PRNG seed is only {seed.bit_length()} bits long, which is '
+                'unlikely for a sample from a 256-bit distribution. Please '
+                'double-check the logic.')
         # Check if the seed is longer than 256 bits. Trim the excess bits and
         # issue a warning if it is.
         if seed.bit_length() > 256:
@@ -296,7 +299,8 @@ class secure_prng():
             'V_First': V1,
             'ReturnedBits': test_word,
             'Key_Second': K2,
-            'V_Second': V2}
+            'V_Second': V2
+        }
         return test_point
 
 
