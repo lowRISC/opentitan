@@ -579,6 +579,7 @@ class IpHelper:
         self._init_alerts()
         self._init_clocks()
         self._init_wakeups()
+        self._init_reset_requests()
         self._init_periph_io()
         self.extension = (extension_cls or EmptyExtension).create_ext(self)
 
@@ -669,6 +670,32 @@ class IpHelper:
             self.clock_enum.add_constant(Name.from_snake_case(clk))
         if isinstance(self.reg_block_enum, CEnum):
             self.clock_enum.add_constant(Name(["count"]), "Number of clock ports")
+
+    def has_reset_requests(self):
+        return len(self.reset_req_map) > 0
+
+    def simplify_reset_request_name(self, req: str) -> str:
+        # Remove the rst_req prefix or suffix
+        if req.startswith("rst_req_"):
+            req = req.removeprefix("rst_req_")
+        if req.endswith("_rst_req"):
+            req = req.removesuffix("_rst_req")
+        return req
+
+    def _init_reset_requests(self):
+        self.reset_req_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name +
+                                              Name(["reset", "req"]))
+        self.reset_req_map = OrderedDict()
+        # Resets are listed alongside clocks.
+        for req in self.ip.reset_requests:
+            req = req.name
+            req_orig = req
+            req = self.simplify_reset_request_name(req)
+
+            self.reset_req_map[req_orig] = req
+            self.reset_req_enum.add_constant(Name.from_snake_case(req))
+        if isinstance(self.reset_req_enum, CEnum):
+            self.reset_req_enum.add_constant(Name(["count"]), "Number of reset requests")
 
     def has_periph_io(self):
         return len(self._device_signals) > 0
