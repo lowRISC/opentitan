@@ -372,10 +372,16 @@ dif_result_t dif_clkmgr_enable_measure_counts(const dif_clkmgr_t *clkmgr,
       lo_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_LO_FIELD;     \
       hi_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_HI_FIELD; break, break)
 
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifClkmgrMeasureClockIo:
       PICK_COUNT_CTRL_FIELDS(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_COUNT_CTRL_FIELDS(IO_DIV2);
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have Io / IoDiv2 clock measurements
+#else
+#error "dif_clkmgr does not support this top"
+#endif
     case kDifClkmgrMeasureClockIoDiv4:
       PICK_COUNT_CTRL_FIELDS(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
@@ -422,12 +428,18 @@ dif_result_t dif_clkmgr_disable_measure_counts(
       en_offset = CLKMGR_##kind_##_MEAS_CTRL_EN_REG_OFFSET; \
       break, break)
 
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifClkmgrMeasureClockIo:
       PICK_EN_OFFSET(IO);
       break;
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_EN_OFFSET(IO_DIV2);
       break;
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have Io / IoDiv2 clock measurements
+#else
+#error "dif_clkmgr does not support this top"
+#endif
     case kDifClkmgrMeasureClockIoDiv4:
       PICK_EN_OFFSET(IO_DIV4);
       break;
@@ -460,10 +472,16 @@ dif_result_t dif_clkmgr_measure_counts_get_enable(
       en_offset = CLKMGR_##kind_##_MEAS_CTRL_EN_REG_OFFSET; \
       break, break)
 
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifClkmgrMeasureClockIo:
       PICK_EN_OFFSET(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_EN_OFFSET(IO_DIV2);
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have Io / IoDiv2 clock measurements
+#else
+#error "dif_clkmgr does not support this top"
+#endif
     case kDifClkmgrMeasureClockIoDiv4:
       PICK_EN_OFFSET(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
@@ -497,10 +515,16 @@ dif_result_t dif_clkmgr_measure_counts_get_thresholds(
       reg_offset = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_REG_OFFSET; \
       lo_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_LO_FIELD;     \
       hi_field = CLKMGR_##kind_##_MEAS_CTRL_SHADOWED_HI_FIELD; break, break)
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifClkmgrMeasureClockIo:
       PICK_THRESHOLD_FIELDS(IO);
     case kDifClkmgrMeasureClockIoDiv2:
       PICK_THRESHOLD_FIELDS(IO_DIV2);
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling does not have Io / IoDiv2 clock measurements
+#else
+#error "dif_clkmgr does not support this top"
+#endif
     case kDifClkmgrMeasureClockIoDiv4:
       PICK_THRESHOLD_FIELDS(IO_DIV4);
     case kDifClkmgrMeasureClockMain:
