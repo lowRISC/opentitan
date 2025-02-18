@@ -64,6 +64,7 @@ dependencies = [
   "isort==5.10.1",
   "mypy==0.971",
   "yapf==0.32.0",
+  "ruff>=0.9.6",
 
   # Type stubs for mypy checking.
   "types-pyyaml==6.0.11",
@@ -85,7 +86,6 @@ dependencies = [
   # and bug fixes. We fix the version for improved stability and manually update
   # if necessary.
   "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
-  "ruff>=0.9.6",
 ]
 
 [tool.setuptools]
