@@ -813,33 +813,33 @@ module gpio_reg_top
   assign alert_test_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign alert_test_wd = reg_wdata[0];
-  assign direct_out_re = racl_addr_hit_write[5] & reg_re & !reg_error;
+  assign direct_out_re = racl_addr_hit_read[5] & reg_re & !reg_error;
   assign direct_out_we = racl_addr_hit_write[5] & reg_we & !reg_error;
 
   assign direct_out_wd = reg_wdata[31:0];
-  assign masked_out_lower_re = racl_addr_hit_write[6] & reg_re & !reg_error;
+  assign masked_out_lower_re = racl_addr_hit_read[6] & reg_re & !reg_error;
   assign masked_out_lower_we = racl_addr_hit_write[6] & reg_we & !reg_error;
 
   assign masked_out_lower_data_wd = reg_wdata[15:0];
 
   assign masked_out_lower_mask_wd = reg_wdata[31:16];
-  assign masked_out_upper_re = racl_addr_hit_write[7] & reg_re & !reg_error;
+  assign masked_out_upper_re = racl_addr_hit_read[7] & reg_re & !reg_error;
   assign masked_out_upper_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign masked_out_upper_data_wd = reg_wdata[15:0];
 
   assign masked_out_upper_mask_wd = reg_wdata[31:16];
-  assign direct_oe_re = racl_addr_hit_write[8] & reg_re & !reg_error;
+  assign direct_oe_re = racl_addr_hit_read[8] & reg_re & !reg_error;
   assign direct_oe_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
   assign direct_oe_wd = reg_wdata[31:0];
-  assign masked_oe_lower_re = racl_addr_hit_write[9] & reg_re & !reg_error;
+  assign masked_oe_lower_re = racl_addr_hit_read[9] & reg_re & !reg_error;
   assign masked_oe_lower_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
   assign masked_oe_lower_data_wd = reg_wdata[15:0];
 
   assign masked_oe_lower_mask_wd = reg_wdata[31:16];
-  assign masked_oe_upper_re = racl_addr_hit_write[10] & reg_re & !reg_error;
+  assign masked_oe_upper_re = racl_addr_hit_read[10] & reg_re & !reg_error;
   assign masked_oe_upper_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign masked_oe_upper_data_wd = reg_wdata[15:0];

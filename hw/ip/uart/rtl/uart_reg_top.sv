@@ -1734,8 +1734,8 @@ module uart_reg_top
   assign ctrl_rxblvl_wd = reg_wdata[9:8];
 
   assign ctrl_nco_wd = reg_wdata[31:16];
-  assign status_re = racl_addr_hit_write[5] & reg_re & !reg_error;
-  assign rdata_re = racl_addr_hit_write[6] & reg_re & !reg_error;
+  assign status_re = racl_addr_hit_read[5] & reg_re & !reg_error;
+  assign rdata_re = racl_addr_hit_read[6] & reg_re & !reg_error;
   assign wdata_we = racl_addr_hit_write[7] & reg_we & !reg_error;
 
   assign wdata_wd = reg_wdata[7:0];
@@ -1748,13 +1748,13 @@ module uart_reg_top
   assign fifo_ctrl_rxilvl_wd = reg_wdata[4:2];
 
   assign fifo_ctrl_txilvl_wd = reg_wdata[7:5];
-  assign fifo_status_re = racl_addr_hit_write[9] & reg_re & !reg_error;
+  assign fifo_status_re = racl_addr_hit_read[9] & reg_re & !reg_error;
   assign ovrd_we = racl_addr_hit_write[10] & reg_we & !reg_error;
 
   assign ovrd_txen_wd = reg_wdata[0];
 
   assign ovrd_txval_wd = reg_wdata[1];
-  assign val_re = racl_addr_hit_write[11] & reg_re & !reg_error;
+  assign val_re = racl_addr_hit_read[11] & reg_re & !reg_error;
   assign timeout_ctrl_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
   assign timeout_ctrl_val_wd = reg_wdata[23:0];

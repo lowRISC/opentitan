@@ -669,19 +669,19 @@ module racl_ctrl_reg_top
   assign error_log_we = racl_addr_hit_write[1] & reg_we & !reg_error;
 
   assign error_log_valid_wd = reg_wdata[0];
-  assign policy_all_rd_wr_shadowed_re = racl_addr_hit_write[2] & reg_re & !reg_error;
+  assign policy_all_rd_wr_shadowed_re = racl_addr_hit_read[2] & reg_re & !reg_error;
   assign policy_all_rd_wr_shadowed_we = racl_addr_hit_write[2] & reg_we & !reg_error;
 
   assign policy_all_rd_wr_shadowed_read_perm_wd = reg_wdata[15:0];
 
   assign policy_all_rd_wr_shadowed_write_perm_wd = reg_wdata[31:16];
-  assign policy_rot_private_shadowed_re = racl_addr_hit_write[3] & reg_re & !reg_error;
+  assign policy_rot_private_shadowed_re = racl_addr_hit_read[3] & reg_re & !reg_error;
   assign policy_rot_private_shadowed_we = racl_addr_hit_write[3] & reg_we & !reg_error;
 
   assign policy_rot_private_shadowed_read_perm_wd = reg_wdata[15:0];
 
   assign policy_rot_private_shadowed_write_perm_wd = reg_wdata[31:16];
-  assign policy_soc_rot_shadowed_re = racl_addr_hit_write[4] & reg_re & !reg_error;
+  assign policy_soc_rot_shadowed_re = racl_addr_hit_read[4] & reg_re & !reg_error;
   assign policy_soc_rot_shadowed_we = racl_addr_hit_write[4] & reg_we & !reg_error;
 
   assign policy_soc_rot_shadowed_read_perm_wd = reg_wdata[15:0];
