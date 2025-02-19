@@ -68,6 +68,29 @@ static const dt_plic_irq_id_t kDtPlicIrqIdNone=${top_name.as_c_enum()}PlicIrqIdN
  */
 dt_instance_id_t dt_plic_id_to_instance_id(dt_plic_irq_id_t irq);
 
+% if helper.has_alert_handler():
+/* Alert ID type.
+ *
+ * This type represents a raw alert ID from the Alert Handler.
+ *
+ * This is an alias to the top's `alert_id_t` type for backward compatability
+ * with existing code.
+ */
+typedef ${top_name.as_snake_case()}_alert_id_t dt_alert_id_t;
+
+/**
+ * Get the instance ID for a given alert ID.
+ *
+ * For example, on earlgrey, the instance ID of `kTopEarlgreyAlertIdUart0FatalFault` is
+ * `kDtInstanceIdUart0`. One can then use the type specific function to retrieve the
+ * alert name, for example `dt_uart_alert_from_alert_id` for the UART.
+ *
+ * @param dev An alert ID.
+ * @return The instance ID, or `kDtInstanceIdUnknown` if the alert ID is not valid.
+ */
+dt_instance_id_t dt_alert_id_to_instance_id(dt_alert_id_t alert);
+
+% endif
 /**
  * List of clocks.
  *
