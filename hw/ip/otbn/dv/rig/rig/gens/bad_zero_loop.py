@@ -67,7 +67,7 @@ class BadZeroLoop(Loop):
         op1_type = insn.operands[1].op_type
 
         iter_opval, _num_iters = self._bad_iterations(op0_type,
-                                                     bodysize, model_before)
+                                                      bodysize, model_before)
 
         # Generate a new head instruction
         enc_bodysize = op1_type.op_val_to_enc_val(bodysize, model_before.pc)

@@ -87,7 +87,7 @@ def parse_rsp(file_path: str, persists: list[str] = []) -> dict:
                 if key in group_variables:
                     # We've already seen this variable in the current group. Store all
                     # the values in a list.
-                    if type(d[key]) == str:
+                    if type(d[key]) is str:
                         d[key] = [d[key], value]
                     else:
                         d[key].append(value)

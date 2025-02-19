@@ -86,16 +86,8 @@ py-modules = []
 [tool.ruff]
 target-version = "py310"
 line-length = 100
-extend-exclude = [
-  # Don't lint vendored files which must be fixed upstream.
-  "*vendor*",
-  # Files and directories that currently fail linting. Anyone is welcome to resolve issues
-  # in these files and remove them from the list. Please do not add to it unless necessary.
-  "hw/ip/otbn/util/otbn_ld.py",
-  "sw/host/cryptotest/testvectors/parsers/cryptotest_util.py",
-  "util/design/lib/LcStEnc.py",
-  "util/otbn_build.py",
-]
+# Don't lint vendored files which must be fixed upstream.
+extend-exclude = [ "*vendor*" ]
 
 [tool.ruff.lint]
 preview = true
