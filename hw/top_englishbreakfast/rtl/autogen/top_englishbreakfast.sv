@@ -51,6 +51,7 @@ module top_englishbreakfast #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlMainEccCorrection = 0,
   parameter int SramCtrlMainRaclPolicySelRangesRamNum = 1,
   // parameters for rom_ctrl
   parameter RomCtrlBootRomInitFile = "",
@@ -1192,6 +1193,7 @@ module top_englishbreakfast #(
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
+    .EccCorrection(SramCtrlMainEccCorrection),
     .RaclPolicySelRangesRamNum(SramCtrlMainRaclPolicySelRangesRamNum)
   ) u_sram_ctrl_main (
       // [22]: fatal_error
@@ -1209,6 +1211,7 @@ module top_englishbreakfast #(
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
       .racl_policy_sel_ranges_ram_i({SramCtrlMainRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
+      .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_main_regs_tl_req),
       .regs_tl_o(sram_ctrl_main_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_main_ram_tl_req),

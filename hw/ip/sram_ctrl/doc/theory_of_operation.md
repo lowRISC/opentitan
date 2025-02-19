@@ -99,3 +99,22 @@ Read accesses however always take 1 cycle, no matter whether the access is a ful
 
 Note that this has been implemented in this way to not overly complicate the design, and since it is assumed that sub-word write operations happen relatively infrequently.
 For full write throughput, a more elaborate write buffering scheme would be required.
+
+### ECC Error Handling and Correction
+
+This memory utilizes a SECDED ECC code stored alongside the data in the underlying memory primitive to enhance data integrity.
+Error correction for single-bit errors can be enabled by setting the top-level parameter `EccCorrection` to 1.
+When enabled and a correctable single-bit error is detected, the memory automatically corrects the data before providing it.
+If an uncorrectable multi-bit error is detected, the data is not corrected.
+Instead, the invalid data word is returned to the requester, which must then implement its own error handling or escalation strategy.
+
+Regardless of whether an error is correctable or not, the `sram_rerror_o` output port signals its detection.
+This output also indicates whether the error was corrected (if correction is enabled) and provides the memory location where the error occurred.
+This information is valuable for system-level Reliability, Availability, and Serviceability (RAS) monitoring and management.
+
+#### Important Considerations
+
+* Activating the single-bit correction mechanism slightly reduces the overall probability of detecting multi-bit errors compared to detection-only mode.
+* The correction process involves internal decoding and re-encoding steps, during which unencoded, non-redundant data exists temporarily on internal wires.
+* Dedicated DV support for this specific correction feature is not yet available.
+* By default, the `EccCorrection` feature is disabled.

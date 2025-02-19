@@ -4402,6 +4402,15 @@
           name_top: SramCtrlRetAonOutstanding
         }
         {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlRetAonEccCorrection
+        }
+        {
           name: RaclPolicySelRangesRamNum
           desc: Number of Racl Policy Selection Ranges for the Ram interface
           type: int
@@ -4551,6 +4560,17 @@
             expose: true
             name_top: SramCtrlRetAonRaclPolicySelRangesRamNum
           }
+          inst_name: sram_ctrl_ret_aon
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+          struct: sram_error_t
+          package: sram_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
           inst_name: sram_ctrl_ret_aon
           index: -1
         }
@@ -6717,6 +6737,15 @@
           name_top: SramCtrlMainOutstanding
         }
         {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMainEccCorrection
+        }
+        {
           name: RaclPolicySelRangesRamNum
           desc: Number of Racl Policy Selection Ranges for the Ram interface
           type: int
@@ -6868,6 +6897,17 @@
             expose: true
             name_top: SramCtrlMainRaclPolicySelRangesRamNum
           }
+          inst_name: sram_ctrl_main
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+          struct: sram_error_t
+          package: sram_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
           inst_name: sram_ctrl_main
           index: -1
         }
@@ -7054,6 +7094,15 @@
           name_top: SramCtrlMboxOutstanding
         }
         {
+          name: EccCorrection
+          desc: Enable single-bit error correction and error logging
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: SramCtrlMboxEccCorrection
+        }
+        {
           name: RaclPolicySelRangesRamNum
           desc: Number of Racl Policy Selection Ranges for the Ram interface
           type: int
@@ -7203,6 +7252,17 @@
             expose: true
             name_top: SramCtrlMboxRaclPolicySelRangesRamNum
           }
+          inst_name: sram_ctrl_mbox
+          index: -1
+        }
+        {
+          name: sram_rerror
+          desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+          struct: sram_error_t
+          package: sram_ctrl_pkg
+          type: uni
+          act: req
+          width: 1
           inst_name: sram_ctrl_mbox
           index: -1
         }
@@ -22737,6 +22797,17 @@
         index: -1
       }
       {
+        name: sram_rerror
+        desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+        struct: sram_error_t
+        package: sram_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_ret_aon
+        index: -1
+      }
+      {
         name: regs_tl
         struct: tl
         package: tlul_pkg
@@ -23908,6 +23979,17 @@
         index: -1
       }
       {
+        name: sram_rerror
+        desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+        struct: sram_error_t
+        package: sram_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: sram_ctrl_main
+        index: -1
+      }
+      {
         name: regs_tl
         struct: tl
         package: tlul_pkg
@@ -24071,6 +24153,17 @@
           expose: true
           name_top: SramCtrlMboxRaclPolicySelRangesRamNum
         }
+        inst_name: sram_ctrl_mbox
+        index: -1
+      }
+      {
+        name: sram_rerror
+        desc: SRAM read error indicating correctable and uncorrectable ECC errors.
+        struct: sram_error_t
+        package: sram_ctrl_pkg
+        type: uni
+        act: req
+        width: 1
         inst_name: sram_ctrl_mbox
         index: -1
       }

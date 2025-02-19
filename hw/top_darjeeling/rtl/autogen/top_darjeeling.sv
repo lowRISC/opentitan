@@ -52,6 +52,7 @@ module top_darjeeling #(
   parameter int SramCtrlRetAonNumRamInst = 1,
   parameter bit SramCtrlRetAonInstrExec = 0,
   parameter int SramCtrlRetAonNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlRetAonEccCorrection = 0,
   parameter int SramCtrlRetAonRaclPolicySelRangesRamNum = 1,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
@@ -93,12 +94,14 @@ module top_darjeeling #(
   parameter int SramCtrlMainNumRamInst = 1,
   parameter bit SramCtrlMainInstrExec = 1,
   parameter int SramCtrlMainNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlMainEccCorrection = 0,
   parameter int SramCtrlMainRaclPolicySelRangesRamNum = 1,
   // parameters for sram_ctrl_mbox
   parameter int SramCtrlMboxInstSize = 4096,
   parameter int SramCtrlMboxNumRamInst = 1,
   parameter bit SramCtrlMboxInstrExec = 0,
   parameter int SramCtrlMboxNumPrinceRoundsHalf = 3,
+  parameter bit SramCtrlMboxEccCorrection = 0,
   parameter int SramCtrlMboxRaclPolicySelRangesRamNum = 1,
   // parameters for rom_ctrl0
   parameter RomCtrl0BootRomInitFile = "",
@@ -1698,6 +1701,7 @@ module top_darjeeling #(
     .InstrExec(SramCtrlRetAonInstrExec),
     .NumPrinceRoundsHalf(SramCtrlRetAonNumPrinceRoundsHalf),
     .Outstanding(SramCtrlRetAonOutstanding),
+    .EccCorrection(SramCtrlRetAonEccCorrection),
     .RaclPolicySelRangesRamNum(SramCtrlRetAonRaclPolicySelRangesRamNum)
   ) u_sram_ctrl_ret_aon (
       // [50]: fatal_error
@@ -1715,6 +1719,7 @@ module top_darjeeling #(
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
       .racl_policy_sel_ranges_ram_i({SramCtrlRetAonRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
+      .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_ret_aon_regs_tl_req),
       .regs_tl_o(sram_ctrl_ret_aon_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_ret_aon_ram_tl_req),
@@ -2071,6 +2076,7 @@ module top_darjeeling #(
     .InstrExec(SramCtrlMainInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMainNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMainOutstanding),
+    .EccCorrection(SramCtrlMainEccCorrection),
     .RaclPolicySelRangesRamNum(SramCtrlMainRaclPolicySelRangesRamNum)
   ) u_sram_ctrl_main (
       // [68]: fatal_error
@@ -2088,6 +2094,7 @@ module top_darjeeling #(
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
       .racl_policy_sel_ranges_ram_i({SramCtrlMainRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
+      .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_main_regs_tl_req),
       .regs_tl_o(sram_ctrl_main_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_main_ram_tl_req),
@@ -2111,6 +2118,7 @@ module top_darjeeling #(
     .InstrExec(SramCtrlMboxInstrExec),
     .NumPrinceRoundsHalf(SramCtrlMboxNumPrinceRoundsHalf),
     .Outstanding(SramCtrlMboxOutstanding),
+    .EccCorrection(SramCtrlMboxEccCorrection),
     .RaclPolicySelRangesRamNum(SramCtrlMboxRaclPolicySelRangesRamNum)
   ) u_sram_ctrl_mbox (
       // [69]: fatal_error
@@ -2128,6 +2136,7 @@ module top_darjeeling #(
       .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
       .racl_error_o(),
       .racl_policy_sel_ranges_ram_i({SramCtrlMboxRaclPolicySelRangesRamNum{top_racl_pkg::RACL_RANGE_T_DEFAULT}}),
+      .sram_rerror_o(),
       .regs_tl_i(sram_ctrl_mbox_regs_tl_req),
       .regs_tl_o(sram_ctrl_mbox_regs_tl_rsp),
       .ram_tl_i(sram_ctrl_mbox_ram_tl_req),
