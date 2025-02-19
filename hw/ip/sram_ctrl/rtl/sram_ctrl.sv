@@ -586,7 +586,7 @@ module sram_ctrl
     (key_req_pending_q)         ? 1'b0 :
     (reg2hw.status.escalated.q) ? (tl_gate_resp_pending & sram_compound_txn_in_progress) : 1'b1;
 
-  // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE
+  // SEC_CM: MEM.SCRAMBLE, ADDR.SCRAMBLE, PRIM_RAM.CTRL.MUBI
   prim_ram_1p_scr #(
     .Width(DataWidth),
     .Depth(Depth),
