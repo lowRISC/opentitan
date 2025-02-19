@@ -93,6 +93,47 @@ dt_${module_name}_irq_t dt_${module_name}_irq_from_plic_id(
 
 %endif
 
+% if helper.has_alerts() and helper.has_alert_handler():
+/**
+ * Get the alert ID of a ${module_name} alert for a given instance.
+ *
+ * NOTE This function only makes sense if the instance is connected to the Alert Handler. For any
+ * instances where the instance is not connected, the return value is unspecified.
+ *
+ * @param dt Instance of ${module_name}.
+ * @param alert_type A ${module_name} alert.
+ * @return The Alert Handler alert ID of the alert of this instance.
+ */
+dt_alert_id_t dt_${module_name}_alert_to_alert_id(
+    dt_${module_name}_t dt,
+    dt_${module_name}_alert_t alert) {
+  return (dt_alert_id_t)((uint32_t)${dt_array}[dt].first_alert + (uint32_t)alert);
+}
+
+/**
+ * Convert a global alert ID to a local ${module_name} alert type.
+ *
+ * @param dt Instance of ${module_name}.
+ * @param alert A global alert ID that belongs to this instance.
+ * @return The ${module_name} alert, or `${helper.alert_enum.name.as_c_enum()}Count`.
+ *
+ * NOTE This function assumes that the global alert ID belongs to the
+ * instance of ${module_name} passed in parameter. In other words, it must be the case
+ * that `dt_${module_name}_instance_id(dt) == dt_alert_id_to_instance_id(alert)`. Otherwise,
+ * this function will return `${helper.alert_enum.name.as_c_enum()}Count`.
+ */
+dt_${module_name}_alert_t dt_${module_name}_alert_from_alert_id(
+    dt_${module_name}_t dt,
+    dt_alert_id_t alert) {
+  dt_${module_name}_alert_t count = ${helper.alert_enum.name.as_c_enum()}Count;
+  if (alert < ${dt_array}[dt].first_alert || alert >= ${dt_array}[dt].first_alert + (dt_alert_id_t)count) {
+    return count;
+  }
+  return (dt_${module_name}_alert_t)(alert - ${dt_array}[dt].first_alert);
+}
+
+%endif
+
 % if helper.has_periph_io():
 /**
  * Get the peripheral I/O description of an instance.
