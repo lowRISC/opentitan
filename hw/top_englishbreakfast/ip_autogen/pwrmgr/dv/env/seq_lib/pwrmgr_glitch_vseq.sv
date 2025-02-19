@@ -15,7 +15,7 @@ class pwrmgr_glitch_vseq extends pwrmgr_base_vseq;
   virtual task body();
     expect_fatal_alerts = 1;
     for (int i = 0; i < num_trans; ++i) begin
-      wait_for_fast_fsm(FastFsmActive);
+      wait_for_rom_and_active();
       cfg.clk_rst_vif.wait_clks(4);
 
       fork

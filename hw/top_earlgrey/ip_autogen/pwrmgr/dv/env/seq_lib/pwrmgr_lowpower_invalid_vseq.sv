@@ -45,7 +45,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     // by disable fork, we have to disable spurious interrup check.
     cfg.invalid_st_test = 1;
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "At body start", UVM_MEDIUM)
     check_wake_status('0);
     reset_index = DVWaitFallThrough;
@@ -74,8 +74,8 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
       repeat (10) @cfg.clk_rst_vif.cb;
 
       apply_reset();
-      reset_index=reset_index.next();
-      wait_for_fast_fsm(FastFsmActive);
+      reset_index = reset_index.next();
+      wait_for_rom_and_active();
     end  // for (int i = 0; i < 4; ++i)
   endtask
 
@@ -110,7 +110,7 @@ class pwrmgr_lowpower_invalid_vseq extends pwrmgr_base_vseq;
     // wakeups should be registered.
     cfg.pwrmgr_vif.update_wakeups('1);
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "Back from wakeup", UVM_MEDIUM)
   endtask : start_lowpower_transition
 

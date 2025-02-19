@@ -55,10 +55,14 @@ package pwrmgr_env_pkg;
 
   typedef struct packed {
     logic main_pd_n;
+% for clk in reversed(src_clks):
+  % if clk == 'usb':
     logic usb_clk_en_active;
     logic usb_clk_en_lp;
-    logic io_clk_en;
-    logic core_clk_en;
+  % else:
+    logic ${clk}_clk_en;
+  % endif
+% endfor
   } control_enables_t;
 
   typedef bit [pwrmgr_reg_pkg::NumWkups-1:0] wakeups_t;

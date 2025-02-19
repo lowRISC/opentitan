@@ -5,6 +5,7 @@
 // Power Manager Package
 //
 
+<% ast_clks = {clk: 'core' if clk == 'main' else clk for clk in src_clks} %>\
 package pwrmgr_pkg;
 
   // global constant
@@ -30,34 +31,36 @@ package pwrmgr_pkg;
     logic main_pd_n;
     logic pwr_clamp_env;
     logic pwr_clamp;
+% if has_aon_clk:
     logic slow_clk_en;
-    logic core_clk_en;
-    logic io_clk_en;
-    logic usb_clk_en;
+% endif
+% for clk in src_clks:
+    logic ${ast_clks[clk]}_clk_en;
+% endfor
   } pwr_ast_req_t;
 
   typedef struct packed {
     logic slow_clk_val;
-    logic core_clk_val;
-    logic io_clk_val;
-    logic usb_clk_val;
+% for clk in src_clks:
+    logic ${ast_clks[clk]}_clk_val;
+% endfor
     logic main_pok;
   } pwr_ast_rsp_t;
 
   // default value of pwr_ast_rsp (for dangling ports)
   parameter pwr_ast_rsp_t PWR_AST_RSP_DEFAULT = '{
     slow_clk_val: 1'b1,
-    core_clk_val: 1'b1,
-    io_clk_val: 1'b1,
-    usb_clk_val: 1'b1,
+% for clk in src_clks:
+    ${ast_clks[clk]}_clk_val: 1'b1,
+% endfor
     main_pok: 1'b1
   };
 
   parameter pwr_ast_rsp_t PWR_AST_RSP_SYNC_DEFAULT = '{
     slow_clk_val: 1'b0,
-    core_clk_val: 1'b0,
-    io_clk_val: 1'b0,
-    usb_clk_val: 1'b0,
+% for clk in src_clks:
+    ${ast_clks[clk]}_clk_val: 1'b0,
+% endfor
     main_pok: 1'b0
   };
 
@@ -91,16 +94,16 @@ package pwrmgr_pkg;
 
   // pwrmgr to clkmgr
   typedef struct packed {
-    logic main_ip_clk_en;
-    logic io_ip_clk_en;
-    logic usb_ip_clk_en;
+% for clk in src_clks:
+    logic ${clk}_ip_clk_en;
+% endfor
   } pwr_clk_req_t;
 
   // clkmgr to pwrmgr
   typedef struct packed {
-    logic main_status;
-    logic io_status;
-    logic usb_status;
+% for clk in src_clks:
+    logic ${clk}_status;
+% endfor
   } pwr_clk_rsp_t;
 
   // pwrmgr to otp

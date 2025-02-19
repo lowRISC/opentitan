@@ -107,7 +107,7 @@ module tb;
     .strap_o    (pwrmgr_if.strap),
     .low_power_o(pwrmgr_if.low_power),
 
-    .rom_ctrl_i(pwrmgr_if.rom_ctrl),
+    .rom_ctrl_i(pwrmgr_if.rom_ctrl_i),
 
     .sw_rst_req_i(pwrmgr_if.sw_rst_req_i),
 
