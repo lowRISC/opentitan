@@ -39,9 +39,9 @@ runs:
         grep '^[^#]' apt-requirements.txt | xargs sudo apt install -y
       shell: bash
 
-    - uses: astral-sh/setup-uv@v3
+    - uses: astral-sh/setup-uv@v5
       with:
-        version: '0.4.20'
+        version: '0.6.1'
         enable-cache: true
         cache-dependency-glob: |
           pyproject.toml
