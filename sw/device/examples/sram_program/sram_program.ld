@@ -59,23 +59,23 @@ SECTIONS {
      * hopefully only take one instruction. Other data will likely need
      * multiple instructions to load, so we're less concerned about address
      * materialisation taking more than one instruction. */
-    KEEP(*(.srodata))
-    KEEP(*(.srodata.*))
-    KEEP(*(.rodata))
-    KEEP(*(.rodata.*))
+    *(.srodata)
+    *(.srodata.*)
+    *(.rodata)
+    *(.rodata.*)
     . = ALIGN(4);
-    KEEP(*(.sdata))
-    KEEP(*(.sdata.*))
-    KEEP(*(.data))
-    KEEP(*(.data.*))
+    *(.sdata)
+    *(.sdata.*)
+    *(.data)
+    *(.data.*)
     . = ALIGN(4);
-    KEEP(*(.text))
-    KEEP(*(.text.*))
+    *(.text)
+    *(.text.*)
     . = ALIGN(4);
-    KEEP(*(.sbss))
-    KEEP(*(.sbss.*))
-    KEEP(*(.bss))
-    KEEP(*(.bss.*))
+    *(.sbss)
+    *(.sbss.*)
+    *(.bss)
+    *(.bss.*)
     . = ALIGN(4);
   } > ram_main
 
