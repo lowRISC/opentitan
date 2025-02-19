@@ -200,14 +200,20 @@ class pwrmgr_scoreboard extends cip_base_scoreboard #(
 
   task rom_coverage_collector();
     forever
-      @(cfg.pwrmgr_vif.rom_ctrl[0] or
+      @(
+% for r in range(NumRomInputs):
+        cfg.pwrmgr_vif.rom_ctrl_i[${r}] or
+% endfor
         cfg.pwrmgr_vif.lc_hw_debug_en or
         cfg.pwrmgr_vif.lc_dft_en) begin
         if (cfg.en_cov) begin
-          cov.rom_active_blockers_cg.sample(cfg.pwrmgr_vif.rom_ctrl[0].done,
-                                            cfg.pwrmgr_vif.rom_ctrl[0].good,
-                                            cfg.pwrmgr_vif.lc_dft_en,
-                                            cfg.pwrmgr_vif.lc_hw_debug_en);
+          cov.rom_active_blockers_cg.sample(
+% for r in range(NumRomInputs):
+              cfg.pwrmgr_vif.rom_ctrl_i[${r}].done,
+              cfg.pwrmgr_vif.rom_ctrl_i[${r}].good,
+% endfor
+              cfg.pwrmgr_vif.lc_dft_en,
+              cfg.pwrmgr_vif.lc_hw_debug_en);
         end
       end
   endtask

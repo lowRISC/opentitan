@@ -161,15 +161,8 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     end
 
     `uvm_info(`gfn, "waiting for fast active after applying reset", UVM_MEDIUM)
-
-    // There is tb lock up case
-    // when reset come while rom_ctrl = {false, false}.
-    // So we need rom_ctrl driver runs in parallel with
-    // wait_for_fast_fsm(FastFsmActive)
-    fork
-      wait_for_fast_fsm(FastFsmActive);
-      init_rom_response();
-    join
+    update_roms_response(.done(MuBi4True), .good(MuBi4True));
+    wait_for_fast_fsm(FastFsmActive);
     // And drive the cpu not sleeping.
     cfg.pwrmgr_vif.update_cpu_sleeping(1'b0);
   endtask
@@ -791,59 +784,71 @@ class pwrmgr_base_vseq extends cip_base_vseq #(
     cfg.pwrmgr_vif.glitch_power_reset();
   endtask
 
-  // bad_bits = {done, good}
-  task add_rom_rsp_noise();
-    bit [MUBI4W*2-1:0] bad_bits;
-    int delay;
-
-    repeat (10) begin
-      delay = $urandom_range(5, 10);
-      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bad_bits,
-                                         bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4True;
-                                         bad_bits[MUBI4W*2-1:MUBI4W] != prim_mubi_pkg::MuBi4False;
-                                         bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4False;
-                                         bad_bits[MUBI4W-1:0] != prim_mubi_pkg::MuBi4True;)
-      `uvm_info(`gfn, $sformatf("add_rom_rsp_noise to 0x%x", bad_bits), UVM_HIGH)
-      cfg.pwrmgr_vif.rom_ctrl[0] = bad_bits;
-      #(delay * 10ns);
+  // This sets rom_ctrl responses.
+  function void update_roms_response(mubi4_t done = MuBi4True, mubi4_t good = MuBi4True);
+    // Set all to true.
+    for (int r = 0; r < NumRomInputs; ++r) begin
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, r);
     end
-  endtask : add_rom_rsp_noise
+  endfunction
 
-  // Drive rom_ctrl at post reset stage
-  virtual task init_rom_response();
-    if (cfg.pwrmgr_vif.rom_ctrl[0].done != prim_mubi_pkg::MuBi4True) begin
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(10);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = get_rand_mubi4_val(
-          .t_weight(1), .f_weight(1), .other_weight(1)
-      );
-      cfg.pwrmgr_vif.rom_ctrl[0].done = get_rand_mubi4_val(
-          .t_weight(0), .f_weight(1), .other_weight(1)
-      );
-      cfg.slow_clk_rst_vif.wait_clks(5);
-      cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-      cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
+  // Randomize roms response.
+  // This can be called after a reset before the fast fsm is active to check the
+  // rom response handling.
+  task randomize_roms_response();
+    mubi4_t done;
+    mubi4_t good;
+    int rom_index;
+    // Randomize all without setting done to True.
+    repeat (5) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rom_index, rom_index inside {[0:NumRomInputs-1]};)
+      done = get_rand_mubi4_val(.t_weight(0), .f_weight(1), .other_weight(1));
+      good = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, rom_index);
+      cfg.clk_rst_vif.wait_clks(5);
     end
+    // Set done to true and randomize good without setting it to True.
+    // Notice this can lead to a transition to active state depending on some lc inputs.
+    update_roms_response(.done(MuBi4True), .good(MuBi4False));
+    `DV_WAIT(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone)
+    repeat (5) begin
+      `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(rom_index, rom_index inside {[0:NumRomInputs-1]};)
+      done = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      good = get_rand_mubi4_val(.t_weight(1), .f_weight(1), .other_weight(1));
+      cfg.pwrmgr_vif.update_rom_ctrl('{done: done, good: good}, rom_index);
+      cfg.clk_rst_vif.wait_clks(5);
+    end
+    // Set all to true.
+    update_roms_response(.done(MuBi4True), .good(MuBi4True));
     `uvm_info(`gfn, "Set rom response to MuBi4True", UVM_MEDIUM)
+  endtask : randomize_roms_response
+
+  // Drive rom_ctrl during a reset to randomly check rom responses.
+  virtual task wait_for_rom_and_active();
+    // Do nothing if the fast fsm is active and cpu is enabled.
+    if (cpu_is_enabled()) return;
+    // First make sure the rom will block transition to active.
+    `uvm_info(`gfn, "Started wait_for_rom_and_active", UVM_MEDIUM)
+    cfg.pwrmgr_vif.update_rom_ctrl('{default: MuBi4False}, 0);
+    fork
+      randomize_roms_response();
+      wait_for_fast_fsm(FastFsmActive);
+    join
+    `uvm_info(`gfn, "Finished wait_for_rom_and_active", UVM_MEDIUM)
+  endtask
+
+  // Control assertions in rom_ctrl synchronizers since they check for stability and the rom_ctrl
+  // randomization can trip them.
+  task control_rom_ctrl_sync_assertions(bit enable);
+    if (enable) begin
+      $asserton(0, "tb.dut.u_cdc.gen_rom_inputs[0].u_sync_rom_ctrl");
+      $asserton(0, "tb.dut.u_cdc.gen_rom_inputs[1].u_sync_rom_ctrl");
+      $asserton(0, "tb.dut.u_cdc.gen_rom_inputs[2].u_sync_rom_ctrl");
+    end else begin
+      $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[0].u_sync_rom_ctrl");
+      $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[1].u_sync_rom_ctrl");
+      $assertoff(0, "tb.dut.u_cdc.gen_rom_inputs[2].u_sync_rom_ctrl");
+    end
   endtask
 
 endclass : pwrmgr_base_vseq
