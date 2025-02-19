@@ -29,6 +29,26 @@ dt_instance_id_t dt_plic_id_to_instance_id(dt_plic_irq_id_t irq) {
   return kDtInstanceIdUnknown;
 }
 
+% if helper.has_alert_handler():
+<%
+  top_alert_id_name = Name.from_snake_case("top_" + helper.top["name"] + "_alert_id")
+  top_alert_id_last = top_alert_id_name + Name(["last"])
+  top_alert_id_count = top_alert_id_name + Name(["count"])
+%>
+enum {
+  ${top_alert_id_count.as_c_enum()} = ${top_alert_id_last.as_c_enum()} + 1,
+};
+
+static const ${helper.inst_from_alert_map.render_var_def(Name.from_snake_case("instance_from_alert"), helper.inst_from_alert_values)}
+
+dt_instance_id_t dt_alert_id_to_instance_id(dt_alert_id_t alert) {
+  if (alert <= ${top_alert_id_last.as_c_enum()}) {
+    return instance_from_alert[alert];
+  }
+  return kDtInstanceIdUnknown;
+}
+
+%endif
 static const ${helper.dev_type_map.render_var_def(Name.from_snake_case("device_type"), helper.dev_type_values)}
 
 dt_device_type_t dt_device_type(dt_instance_id_t dev) {

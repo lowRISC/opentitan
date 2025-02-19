@@ -48,7 +48,7 @@ class BaseType(ABC):
 
         Example (name="my_var"): "int my_var = 42"
         """
-        return "{} = {};\n".format(self.render_var_decl(name), self.render_value(value))
+        return "{} = {};".format(self.render_var_decl(name), self.render_value(value))
 
 
 class ScalarType(BaseType):
@@ -240,6 +240,8 @@ class TopHelper:
         self._init_api()
         self._init_pads()
         self._init_irq_map()
+        if self.has_alert_handler():
+            self._init_alert_map()
         self._init_dev_type_map()
 
     def _init_api(self):
@@ -420,8 +422,9 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                                     Name(["plic", "irq", "id"])),
             length = Name(["count"])
         )
-        self.inst_from_irq_values = OrderedDict()
-        self.inst_from_irq_values = {Name(["none"]): Name(["unknown"])}
+        self.inst_from_irq_values = OrderedDict(
+            {Name(["none"]): Name(["unknown"])},
+        )
         for intr in self.top["interrupt"]:
             width = int(intr["width"])
             for i in range(width):
@@ -433,6 +436,31 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 else:
                     module_name = Name.from_snake_case(intr["module_name"])
                 self.inst_from_irq_values[name] = module_name
+
+    def has_alert_handler(self):
+        # FIXME find a better way then just harcoding this module name
+        return any(module["name"] == "alert_handler" for module in self.top["module"])
+
+    def _init_alert_map(self):
+        """
+        Create the array mappings to dispatch alerts.
+        """
+        self.inst_from_alert_map = ArrayMapType(
+            elem_type = ScalarType(self.instance_id_enum.name),
+            index_type = ScalarType(Name(["top"]) +
+                                    Name.from_snake_case(self.top["name"]) +
+                                    Name(["alert", "id"])),
+            length = Name(["count"])
+        )
+        self.inst_from_alert_values = OrderedDict()
+        for alert in self.top["alert"]:
+            width = int(alert["width"])
+            for i in range(width):
+                name = Name.from_snake_case(alert["name"])
+                if width > 1:
+                    name += Name([str(i)])
+                self.inst_from_alert_values[name] = Name.from_snake_case(
+                    alert["module_name"])
 
     def _init_dev_type_map(self):
         """
