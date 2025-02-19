@@ -19,7 +19,7 @@ class LoopDupEndInner(Loop):
     '''The generator used by LoopDupEnd to make the inner loop'''
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__(cfg, insns_file)
-        self.loop_end_stack = []  # type: List[int]
+        self.loop_end_stack: List[int] = []
 
     def gen_with_end(self,
                      loop_end: int,

@@ -66,8 +66,8 @@ class SnippetGens:
     ]
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
-        self._cont_generators = []  # type: List[Tuple[SnippetGen, float]]
-        self._end_generators = []   # type: List[Tuple[SnippetGen, float]]
+        self._cont_generators: List[Tuple[SnippetGen, float]] = []
+        self._end_generators: List[Tuple[SnippetGen, float]] = []
 
         # Grab an ECall generator. We'll use it in self.gens to append an ECALL
         # instruction if necessary.
@@ -193,7 +193,7 @@ class SnippetGens:
         model.pc at the place where the next instruction should be inserted).
 
         '''
-        children = []  # type: List[Snippet]
+        children: List[Snippet] = []
         while True:
             gen_ecall = False
             # If we've run out of space and end is False, we stop immediately.

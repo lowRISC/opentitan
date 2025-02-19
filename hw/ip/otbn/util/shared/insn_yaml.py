@@ -404,7 +404,7 @@ def load_file(path: str, isrs: Optional[IsrMaps]) -> InsnsFile:
 def make_isr_dict(path: str) -> IsrMap:
     '''Load a YAML file at path and return a map from name to Isr.'''
     try:
-        name_to_isr = {}  # type: Dict[str, Isr]
+        name_to_isr: Dict[str, Isr] = {}
         for isr in read_isrs(path):
             name = isr.name.lower()
             if name in name_to_isr:
@@ -417,7 +417,7 @@ def make_isr_dict(path: str) -> IsrMap:
                            .format(path, err)) from None
 
 
-_DEFAULT_INSNS_FILE = None  # type: Optional[InsnsFile]
+_DEFAULT_INSNS_FILE: Optional[InsnsFile] = None
 
 
 def load_insns_yaml() -> InsnsFile:

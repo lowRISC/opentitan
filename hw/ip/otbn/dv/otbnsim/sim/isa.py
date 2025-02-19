@@ -54,7 +54,7 @@ class OTBNInsn:
 
     # A class variable that holds the Insn subclass corresponding to this
     # instruction.
-    insn = DummyInsn()  # type: Insn
+    insn: Insn = DummyInsn()
 
     # A class variable that is set by Insn subclasses that represent
     # instructions that affect control flow (and are not allowed at the end of
@@ -76,7 +76,7 @@ class OTBNInsn:
         # Memoized disassembly for this instruction. We store the PC at which
         # we disassembled too (which should be the same next time around, but
         # it can't hurt to check).
-        self._disasm = None  # type: Optional[Tuple[int, str]]
+        self._disasm: Optional[Tuple[int, str]] = None
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         '''Execute the instruction

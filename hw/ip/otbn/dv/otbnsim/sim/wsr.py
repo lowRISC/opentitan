@@ -78,7 +78,7 @@ class DumbWSR(WSR):
     def __init__(self, name: str):
         super().__init__(name)
         self._value = 0
-        self._next_value = None  # type: Optional[int]
+        self._next_value: Optional[int] = None
 
     def on_start(self) -> None:
         self._value = 0
@@ -124,8 +124,8 @@ class RandWSR(WSR):
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
         super().__init__(name)
 
-        self._random_value = None  # type: Optional[int]
-        self._next_random_value = None  # type: Optional[int]
+        self._random_value: Optional[int] = None
+        self._next_random_value: Optional[int] = None
         self._ext_regs = ext_regs
 
         # The pending_request flag says that we've started an instruction that
@@ -289,8 +289,8 @@ class SideloadKey:
     '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
     def __init__(self, name: str):
         self.name = name
-        self._value = None  # type: Optional[int]
-        self._new_value = None  # type: Optional[Tuple[bool, int]]
+        self._value: Optional[int] = None
+        self._new_value: Optional[Tuple[bool, int]] = None
 
     def has_value(self) -> bool:
         return self._value is not None
@@ -424,7 +424,7 @@ class WSRFile:
         self.KeyS1.commit()
 
     def changes(self) -> List[Trace]:
-        ret = []  # type: List[Trace]
+        ret: List[Trace] = []
         ret += self.MOD.changes()
         ret += self.RND.changes()
         ret += self.ACC.changes()

@@ -38,7 +38,7 @@ class FlagReg:
         self.L = L
         self.Z = Z
 
-        self._new_val = None  # type: Optional['FlagReg']
+        self._new_val: Optional['FlagReg'] = None
 
     def set_flags(self, other: 'FlagReg') -> None:
         self._new_val = other

@@ -52,7 +52,7 @@ class Dmem:
         # if the word has invalid integrity bits and we'll get an error if we
         # try to read it. Otherwise, we store the integer value.
         num_words = dmem_size // 4
-        self.data = [None] * num_words  # type: List[Optional[int]]
+        self.data: List[Optional[int]] = [None] * num_words
 
         # Because it's an actual memory, stores to DMEM take two cycles in the
         # RTL. We wouldn't need to model this except that a DMEM invalidation
@@ -63,8 +63,8 @@ class Dmem:
         # this cycle. However, the first commit() will then move it to the
         # self.pending list. Entries here will only make it to self.data on the
         # next commit().
-        self.trace = []  # type: List[TraceDmemStore]
-        self.pending = {}  # type: Dict[int, int]
+        self.trace: List[TraceDmemStore] = []
+        self.pending: Dict[int, int] = {}
 
     def _load_5byte_le_words(self, data: bytes) -> None:
         '''Replace the start of memory with data

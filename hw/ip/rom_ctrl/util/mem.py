@@ -109,7 +109,7 @@ class MemFile:
     def _load_preproc(width: int, infile: IO[str]) -> 'MemFile':
         '''Load a pre-processed file'''
         chunks = []
-        next_chunk = None  # type: Optional[MemChunk]
+        next_chunk: Optional[MemChunk] = None
         for line in infile:
             # If the line is empty or whitespace, skip it.
             if not line or line.isspace():
@@ -166,7 +166,7 @@ class MemFile:
     def load_elf32(infile: BinaryIO, base_addr: int) -> 'MemFile':
         '''Read a little-endian 32-bit ELF file'''
         elf_file = ELFFile(infile)
-        segments = []  # type: List[Tuple[int, int, bytes]]
+        segments: List[Tuple[int, int, bytes]] = []
         for segment in elf_file.iter_segments():
             seg_type = segment['p_type']
 
@@ -213,7 +213,7 @@ class MemFile:
         # Merge any adjacent segments, bridging any sub-word gaps. This doesn't
         # do any other right padding: we'll do that on the final pass that
         # converts to 32-bit words.
-        merged_segments = []  # type: List[Tuple[int, int, bytes]]
+        merged_segments: List[Tuple[int, int, bytes]] = []
         next_word = 0
         for lma, top, data in segments:
             # Round the LMA down to the previous word boundary. The non-overlap
@@ -248,7 +248,7 @@ class MemFile:
         # Assemble the bytes in each segment into little-endian 32-bit words.
         # Zero-extend any partial word at the end of a segment. Because of the
         # merging in the previous pass, we know this won't cause any overlaps.
-        chunks = []  # type: List[MemChunk]
+        chunks: List[MemChunk] = []
         for lma_word, _, data in merged_segments:
             words = []
             word = 0

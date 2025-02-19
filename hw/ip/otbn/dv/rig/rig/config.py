@@ -17,7 +17,7 @@ class Weights:
                              'but was actually a {}.'
                              .format(what, type(yml).__name__))
 
-        self.values = {}  # type: Dict[str, float]
+        self.values: Dict[str, float] = {}
         for key, value in yml.items():
             if not isinstance(key, str):
                 raise ValueError('{} had key {!r}, which is not a string.'
@@ -58,8 +58,8 @@ class MinMaxes:
                              'but was actually a {}.'
                              .format(what, type(yml).__name__))
 
-        self.min_values = {}  # type: Dict[str, int]
-        self.max_values = {}  # type: Dict[str, int]
+        self.min_values: Dict[str, int] = {}
+        self.max_values: Dict[str, int] = {}
 
         for key, value in yml.items():
             if not isinstance(key, str):
