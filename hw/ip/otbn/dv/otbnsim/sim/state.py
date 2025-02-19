@@ -85,7 +85,7 @@ class OTBNState:
         self.csrs = CSRFile()
 
         self.pc = 0
-        self._pc_next_override = None  # type: Optional[int]
+        self._pc_next_override: Optional[int] = None
 
         self.imem_size = get_memory_layout().imem_size_bytes
 
@@ -119,7 +119,7 @@ class OTBNState:
         # model except for matching its timing) has a copy of the next
         # instruction. Make this a counter, decremented once per cycle. When we
         # get to zero, we set the flag.
-        self._time_to_imem_invalidation = None  # type: Optional[int]
+        self._time_to_imem_invalidation: Optional[int] = None
         self.invalidated_imem = False
 
         # This is the number of cycles left for wiping. When we're in the
@@ -143,7 +143,7 @@ class OTBNState:
         # precise cycle that this happens depends slightly on how we decide to
         # do so. If this is not None, it is a counter of the number of cycles
         # before the zeroing should happen.
-        self.time_to_insn_cnt_zero = None  # type: Optional[int]
+        self.time_to_insn_cnt_zero: Optional[int] = None
 
         # If this is set, all software errors should result in the model status
         # being locked.
@@ -262,7 +262,7 @@ class OTBNState:
         return bool(self.loop_stack.stack)
 
     def changes(self) -> List[Trace]:
-        c = []  # type: List[Trace]
+        c: List[Trace] = []
         c += self.gprs.changes()
         if self._pc_next_override is not None:
             # Only append the next program counter to the trace if it has

@@ -67,7 +67,7 @@ class OtbnMemoryLayout:
         self.dmem_size_bytes = dmem_window[1] + _DmemScratchSizeBytes
 
 
-_LAYOUT = None  # type: Optional[OtbnMemoryLayout]
+_LAYOUT: Optional[OtbnMemoryLayout] = None
 
 
 def get_memory_layout() -> OtbnMemoryLayout:
