@@ -16,7 +16,7 @@
 #include "rstmgr_regs.h"  // Generated.
 
 // These assertions are only defined for the Earl Grey chip.
-#ifdef OPENTITAN_IS_EARLGREY
+#if defined(OPENTITAN_IS_EARLGREY)
 // This macro simplifies the `static_assert` check to make sure that the
 // public reset info register bitfield matches register bits.
 #define RSTMGR_RESET_INFO_CHECK(pub_name, priv_name)         \
@@ -53,7 +53,11 @@ static_assert(
 static_assert(
     DIF_RSTMGR_ALERT_INFO_MAX_SIZE == RSTMGR_ALERT_INFO_CTRL_INDEX_MASK,
     "Alert info dump max size has grown, please update the public define!");
-#endif  // OPENTITAN_IS_EARLGREY
+#elif defined(OPENTITAN_IS_DARJEELING)
+// TODO: equivalent assertations are not yet defined for Darjeeling
+#else
+#error "dif_rstmgr does not support this top"
+#endif
 
 /**
  * Checks whether alert_info capture is disabled.

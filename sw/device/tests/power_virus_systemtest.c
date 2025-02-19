@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_api.h"  // Generated
 #include "hw/ip/aes/model/aes_modes.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/base/multibits.h"
@@ -578,51 +579,43 @@ static void configure_pinmux_sim(void) {
   const pinmux_pad_attributes_t pinmux_pad_attributes[] = {
       // Enable pull-ups for spi_host_0 data pins to avoid floating inputs.
       {
-          .pad = kTopEarlgreyDirectPadsSpiHost0Sd0,
-          .kind = kDifPinmuxPadKindDio,
+          .pad = kDtPadSpiHost0Sd0,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyDirectPadsSpiHost0Sd1,
-          .kind = kDifPinmuxPadKindDio,
+          .pad = kDtPadSpiHost0Sd1,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyDirectPadsSpiHost0Sd2,
-          .kind = kDifPinmuxPadKindDio,
+          .pad = kDtPadSpiHost0Sd2,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyDirectPadsSpiHost0Sd3,
-          .kind = kDifPinmuxPadKindDio,
+          .pad = kDtPadSpiHost0Sd3,
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       // Enable pull-ups for spi_host_1 data pins to avoid floating inputs.
       {
-          .pad = kTopEarlgreyMuxedPadsIob3,  // SD0
-          .kind = kDifPinmuxPadKindMio,
+          .pad = kDtPadIob3,  // SD0
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyMuxedPadsIob4,  // SD1
-          .kind = kDifPinmuxPadKindMio,
+          .pad = kDtPadIob4,  // SD1
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyMuxedPadsIob5,  // SD2
-          .kind = kDifPinmuxPadKindMio,
+          .pad = kDtPadIob5,  // SD2
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },
       {
-          .pad = kTopEarlgreyMuxedPadsIob6,  // SD3
-          .kind = kDifPinmuxPadKindMio,
+          .pad = kDtPadIob6,  // SD3
           .flags = kDifPinmuxPadAttrPullResistorEnable |
                    kDifPinmuxPadAttrPullResistorUp,
       },

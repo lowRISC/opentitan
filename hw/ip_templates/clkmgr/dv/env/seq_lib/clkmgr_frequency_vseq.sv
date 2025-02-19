@@ -80,7 +80,10 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
   local task maybe_saturate_count(bit saturate, clk_mesr_e clk_tested);
     forever begin
       @cfg.aon_clk_rst_vif.cbn;
-      if (saturate) cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
+      if (saturate) begin
+        control_meas_saturation_assert(clk_tested, 0);
+        cfg.clkmgr_vif.force_high_starting_count(clk_mesr_e'(clk_tested));
+      end
     end
   endtask
 
@@ -190,6 +193,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
             wait_before_read_recov_err_code(expect_alert);
           join_any
           disable fork;
+          control_meas_saturation_assert(clk_tested, 1);
         end
       join
 

@@ -11,14 +11,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name               | Package::Struct               | Type    | Act   | Width                     | Description                                                                                                                                                                                                              |
-|:------------------------|:------------------------------|:--------|:------|:--------------------------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| racl_policies           | top_racl_pkg::racl_policy_vec | uni     | req   | 1                         | Policy vector distributed to the subscribing RACL IPs.                                                                                                                                                                   |
-| racl_error              | logic                         | uni     | rcv   | NumSubscribingIps         | Error notification vector collecting errors from all subscribing IPs. A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected. Only one IP can raise an error at a time.          |
-| racl_error_log          | top_racl_pkg::racl_error_log  | uni     | rcv   | NumSubscribingIps         | Error log information from all IPs.                                                                                                                                                                                      |
-| racl_error_external     | logic                         | uni     | rcv   | NumExternalSubscribingIps | Error notification vector collecting errors from all external subscribing IPs. A 1 indicates the corresponding IP raised a RACL error and the error log needs to be collected. Only one IP can raise an error at a time. |
-| racl_error_log_external | top_racl_pkg::racl_error_log  | uni     | rcv   | NumExternalSubscribingIps | Error log information from all external IPs.                                                                                                                                                                             |
-| tl                      | tlul_pkg::tl                  | req_rsp | rsp   | 1                         |                                                                                                                                                                                                                          |
+| Port Name           | Package::Struct               | Type    | Act   | Width                     | Description                                                                            |
+|:--------------------|:------------------------------|:--------|:------|:--------------------------|:---------------------------------------------------------------------------------------|
+| racl_policies       | top_racl_pkg::racl_policy_vec | uni     | req   | 1                         | Policy vector distributed to the subscribing RACL IPs.                                 |
+| racl_error          | top_racl_pkg::racl_error_log  | uni     | rcv   | NumSubscribingIps         | Error log information from all IPs. Only one IP can raise an error at a time.          |
+| racl_error_external | top_racl_pkg::racl_error_log  | uni     | rcv   | NumExternalSubscribingIps | Error log information from all external IPs. Only one IP can raise an error at a time. |
+| tl                  | tlul_pkg::tl                  | req_rsp | rsp   | 1                         |                                                                                        |
 
 ## Security Alerts
 

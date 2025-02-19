@@ -212,7 +212,7 @@ class TopHelper:
     DT_PERIPH_IO_DIR_FIELD_NAME = Name(["dir"])
     DT_PERIPH_IO_DIR_ENUM_NAME = Name.from_snake_case("dt_periph_io_dir")
     DT_PERIPH_IO_PERIPH_IN_DIO_PAD_FIELD_NAME = Name.from_snake_case("periph_input_or_direct_pad")
-    DT_PERIPH_IO_OUTSEL_FIELD_NAME = Name(["outsel"])
+    DT_PERIPH_IO_OUTSEL_FIELD_NAME = Name.from_snake_case("outsel_or_dt_pad")
 
     DT_PAD_NAME = Name(["dt", "pad"])
     DT_PAD_STRUCT_NAME = Name(["dt", "pad", "desc"])
@@ -220,6 +220,8 @@ class TopHelper:
     DT_PAD_TYPE_ENUM_NAME = Name.from_snake_case("dt_pad_type")
     DT_PAD_MIO_OUT_DIO_FIELD_NAME = Name.from_snake_case("mio_out_or_direct_pad")
     DT_PAD_INSEL_FIELD_NAME = Name(["insel"])
+
+    KNOWN_PORT_TYPES = ["input", "output", "inout", "`INOUT_AO"]
 
     def __init__(self, topcfg, enum_type, array_mapping_type):
         self.top = topcfg
@@ -337,7 +339,7 @@ that control this peripheral I/O.""",  # noqa:E501
             name = self.DT_PERIPH_IO_OUTSEL_FIELD_NAME,
             field_type = ScalarType("uint16_t"),
             docstring = """For `kDtPeriphIoTypeMio`: peripheral output number. This is the value to put in the MIO_OUTSEL registers
-to connect an output to this peripheral I/O.""",  # noqa:E501
+to connect an output to this peripheral I/O. For `kDtPeriphIoTypeDio`: the pad index (`dt_pad_t`) to which this I/O is connected.""",  # noqa:E501
         )
 
     def _create_pad_struct(self):
@@ -382,10 +384,12 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
                 pad_type = Name.from_snake_case("mio")
                 pad_mio_out_or_direct_pad = "0"
                 pad_insel = "0"
-                if pad["port_type"] in ["input", "inout"]:
+                assert pad["port_type"] in self.KNOWN_PORT_TYPES, \
+                    "unexpected pad port type '{}'".format(pad["port_type"])
+                if pad["port_type"] in ["input", "inout", "`INOUT_AO"]:
                     pad_mio_out_or_direct_pad = \
                         Name.from_snake_case(f"top_{topname}_pinmux_mio_out_{padname}").as_c_enum()
-                if pad["port_type"] in ["output", "inout"]:
+                if pad["port_type"] in ["output", "inout", "`INOUT_AO"]:
                     pad_insel = \
                         Name.from_snake_case(f"top_{topname}_pinmux_insel_{padname}").as_c_enum()
             elif pad["connection"] == "direct":
@@ -757,7 +761,26 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
             pin_type = "Dio"
             direct_pad = f"top_{topname}_direct_pads_{modname}_{pin_name}"
             pin_periph_input_or_direct_pad = Name.from_snake_case(direct_pad).as_c_enum()
-            pin_outsel = "0"
+            # Unfortunately, the top level has two distinct names for pads: the pads listed
+            # in top.pinmux.pads and the ones in top.pinmux.ios. Since the pad list uses
+            # names from top.pinmux.ios for DIOs, but that the connections use the names
+            # from top.pinmux.pads, we need to map between the two.
+            padname = None
+            for io in self.top['pinmux']['ios']:
+                if io["connection"] == "direct" and io["pad"] == conn["pad"]:
+                    if padname is not None:
+                        raise RuntimeError(
+                            "found at least two IOs that maps to pad {}".format(conn["pad"]) +
+                            ": {} and {}".format(padname, io["name"])
+                        )
+                    padname = Name.from_snake_case(io["name"])
+                    # IOs have a width, we need to handle that
+                    if int(io["width"]) > 1:
+                        padname += Name([str(io["idx"])])
+            if padname is None:
+                raise RuntimeError("could not find IO that maps to pad {}".format(conn["pad"]))
+            pad_index = self.top_helper.pad_enum.name + padname
+            pin_outsel = pad_index.as_c_enum()
         else:
             assert conn["connection"] == "manual", \
                 "unexpected connection type '{}'".format(conn["connection"])

@@ -221,6 +221,7 @@ status_t clkmgr_testutils_disable_clock_counts(const dif_clkmgr_t *clkmgr) {
     dif_clkmgr_measure_clock_t clock = (dif_clkmgr_measure_clock_t)i;
     TRY(dif_clkmgr_disable_measure_counts(clkmgr, clock));
   }
+  LOG_INFO("Disabling all clock count done");
   return OK_STATUS();
 }
 

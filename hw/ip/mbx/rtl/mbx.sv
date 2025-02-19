@@ -36,8 +36,7 @@ module mbx
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t            racl_policies_i,
-  output logic                                      racl_error_o,
-  output top_racl_pkg::racl_error_log_t             racl_error_log_o,
+  output top_racl_pkg::racl_error_log_t             racl_error_o,
   // Device port facing OpenTitan
   input   tlul_pkg::tl_h2d_t                        core_tl_d_i,
   output  tlul_pkg::tl_d2h_t                        core_tl_d_o,
@@ -246,8 +245,7 @@ module mbx
     .read_data_i                         ( sysif_read_data                    ),
     // RACL interface
     .racl_policies_i                     ( racl_policies_i                    ),
-    .racl_error_o                        ( racl_error_o                       ),
-    .racl_error_log_o                    ( racl_error_log_o                   )
+    .racl_error_o                        ( racl_error_o                       )
   );
 
 
@@ -375,6 +373,5 @@ module mbx
   `ASSERT_KNOWN(SocTlAReadyKnownO_A, soc_tl_d_o.a_ready)
   `ASSERT_KNOWN(SramTlAValidKnownO_A, sram_tl_h_o.a_valid)
   `ASSERT_KNOWN(SramTlDReadyKnownO_A, sram_tl_h_o.d_ready)
-  `ASSERT_KNOWN(RaclErrorKnown_A, racl_error_o)
-  `ASSERT_KNOWN(RaclErrorLogKnown_A, racl_error_log_o)
+  `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 endmodule

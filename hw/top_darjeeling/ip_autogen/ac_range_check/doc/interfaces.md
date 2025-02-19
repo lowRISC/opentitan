@@ -18,8 +18,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ctn_filtered_tl_h2d   | tlul_pkg::tl_h2d              | uni     | req   |       1 | Filtered TL-UL output port (request part), synchronous                                                                               |
 | ctn_filtered_tl_d2h   | tlul_pkg::tl_d2h              | uni     | rcv   |       1 | Filtered TL-UL output port (response part), synchronous                                                                              |
 | racl_policies         | top_racl_pkg::racl_policy_vec | uni     | rcv   |       1 | Incoming RACL policy vector from a racl_ctrl instance. The policy selection vector (parameter) selects the policy for each register. |
-| racl_error            | logic                         | uni     | req   |       1 | RACL error indication signal. If 1, the error log contains valid information.                                                        |
-| racl_error_log        | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
+| racl_error            | top_racl_pkg::racl_error_log  | uni     | req   |       1 | RACL error log information of this module.                                                                                           |
 | tl                    | tlul_pkg::tl                  | req_rsp | rsp   |       1 |                                                                                                                                      |
 
 ## Interrupts

@@ -273,7 +273,7 @@ const SPI_TPM_WRITE: u32 = 0x40000000;
 const SPI_TPM_DATA_LEN_POS: u8 = 24;
 const SPI_TPM_ADDRESS_OFFSET: u32 = 0x00D40000;
 
-const MAX_TRANSACTION_SIZE: usize = 32;
+const MAX_TRANSACTION_SIZE: usize = 64;
 const RESPONSE_HEADER_SIZE: usize = 6;
 const MAX_RESPONSE_SIZE: usize = 4096;
 const TIMEOUT: Duration = Duration::from_millis(500);
@@ -288,9 +288,9 @@ impl Driver for SpiDriver {
         if self.use_gsc_ready {
             self.spi.run_transaction(&mut [
                 spi::Transfer::Write(&req),
-                spi::Transfer::GscReady,
                 spi::Transfer::TpmPoll,
                 spi::Transfer::Read(data),
+                spi::Transfer::GscReady,
             ])
         } else {
             self.spi.run_transaction(&mut [

@@ -25,8 +25,8 @@ module spi_host_window
   output logic              rx_ready_o,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o
+  output top_racl_pkg::racl_error_log_t  racl_error_tx_o,
+  output top_racl_pkg::racl_error_log_t  racl_error_rx_o
 );
 
   localparam int AW = spi_host_reg_pkg::BlockAw;
@@ -46,17 +46,6 @@ module spi_host_window
   logic  rx_access_error;
   assign rx_access_error = rx_we;
 
-  logic racl_error_win_rxdata;
-  logic racl_error_win_txdata;
-  top_racl_pkg::racl_error_log_t racl_error_win_rxdata_log;
-  top_racl_pkg::racl_error_log_t racl_error_win_txdata_log;
-
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_win_rxdata |
-                        racl_error_win_txdata;
-  assign racl_error_log_o = racl_error_win_rxdata_log |
-                            racl_error_win_txdata_log;
-
   tlul_adapter_reg_racl #(
     .RegAw             ( AW                       ),
     .RegDw             ( DW                       ),
@@ -72,8 +61,7 @@ module spi_host_window
     .en_ifetch_i      ( prim_mubi_pkg::MuBi4False ),
     .intg_error_o     (                           ),
     .racl_policies_i  ( racl_policies_i           ),
-    .racl_error_o     ( racl_error_win_rxdata     ),
-    .racl_error_log_o ( racl_error_win_rxdata_log ),
+    .racl_error_o     ( racl_error_rx_o           ),
     .we_o             ( rx_we                     ),
     .re_o             ( rx_ready_o                ),
     .addr_o           (                           ),
@@ -130,8 +118,7 @@ module spi_host_window
     .wr_collision_i(1'b0),
     .write_pending_i(1'b0),
     .racl_policies_i  (racl_policies_i),
-    .racl_error_o     (racl_error_win_txdata),
-    .racl_error_log_o (racl_error_win_txdata_log)
+    .racl_error_o     (racl_error_tx_o)
   );
 
 endmodule : spi_host_window

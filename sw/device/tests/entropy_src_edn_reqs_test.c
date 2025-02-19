@@ -17,6 +17,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/alert_handler_testutils.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/keymgr_testutils.h"
 #include "sw/device/lib/testing/otp_ctrl_testutils.h"
@@ -243,8 +244,7 @@ status_t execute_test(void) {
     AES_TESTUTILS_WAIT_FOR_STATUS(&aes, kDifAesStatusIdle, /*value=*/true,
                                   /*timeout_usec=*/100000);
     CHECK(otbn_randomness_test_end(&otbn, /*skip_otbn_done_check=*/false));
-    CHECK_STATUS_OK(
-        entropy_testutils_error_check(&entropy_src, &csrng, &edn0, &edn1));
+    CHECK_STATUS_OK(entropy_testutils_error_check(&csrng, &edn0, &edn1));
   }
 
   return OK_STATUS();
@@ -263,7 +263,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
 
   // ensure health tests are actually running
-  CHECK_STATUS_OK(entropy_testutils_wait_for_state(
+  CHECK_STATUS_OK(entropy_src_testutils_wait_for_state(
       &entropy_src, kDifEntropySrcMainFsmStateContHTRunning));
 
   return status_ok(execute_test());

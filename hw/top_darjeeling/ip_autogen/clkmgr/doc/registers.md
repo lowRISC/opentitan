@@ -154,6 +154,7 @@ Enable jittery clock
 - Offset: `0x14`
 - Reset default: `0x9`
 - Reset mask: `0xf`
+- Register enable: [`JITTER_REGWEN`](#jitter_regwen)
 
 ### Fields
 

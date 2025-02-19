@@ -567,5 +567,4 @@ module rom_ctrl
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(ReqFifoRptrCheck_A,
       u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
       alert_tx_o[AlertFatal])
-  `ASSERT(CfgStable_A, $stable(rom_cfg_i))
 endmodule

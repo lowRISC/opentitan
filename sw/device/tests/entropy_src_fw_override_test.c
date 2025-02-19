@@ -16,6 +16,7 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/aes_testutils.h"
 #include "sw/device/lib/testing/edn_testutils.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
 #include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/kmac_testutils.h"
 #include "sw/device/lib/testing/rand_testutils.h"
@@ -157,7 +158,7 @@ void ottf_external_isr(uint32_t *exc_info) {
   // then we need to drain it and start again or our samples won't be
   // contiguous.
   if (words_to_input > 0 && entropy_src_fifo_has_overflowed()) {
-    CHECK_STATUS_OK(entropy_testutils_drain_observe_fifo(&entropy_src));
+    CHECK_STATUS_OK(entropy_src_testutils_drain_observe_fifo(&entropy_src));
     // Reset the input buffer.
     input_buf -= (kFifoBufferSizeWords - words_to_input);
     words_to_input = kFifoBufferSizeWords;
@@ -255,7 +256,7 @@ static status_t entropy_config(
   // Disable the entropy complex.
   TRY(entropy_testutils_stop_all());
   // Disable all health tests.
-  TRY(entropy_testutils_disable_health_tests(&entropy_src));
+  TRY(entropy_src_testutils_disable_health_tests(&entropy_src));
 
   // Enable FW override.
   TRY(dif_entropy_src_fw_override_configure(

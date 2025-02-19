@@ -1456,7 +1456,6 @@
         'soc_dbg_ctrl.halt_cpu_boot'           : 'debug_halt_cpu_boot',
         'racl_ctrl.racl_policies'              : 'racl_policies',
         'racl_ctrl.racl_error_external'        : 'racl_error',
-        'racl_ctrl.racl_error_log_external'    : 'racl_error_log',
         'ac_range_check.range_check_overwrite' : 'ac_range_check_overwrite',
         'ac_range_check.ctn_filtered_tl_h2d'   : 'ctn_tl_h2d',
         'ac_range_check.ctn_filtered_tl_d2h'   : 'ctn_tl_d2h'

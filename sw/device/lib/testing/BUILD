@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
+load("//hw/top:defs.bzl", "opentitan_if_ip")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -47,7 +48,6 @@ cc_library(
     hdrs = ["aon_timer_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aon_timer",
@@ -100,20 +100,37 @@ cc_library(
 )
 
 cc_library(
-    name = "entropy_testutils",
-    srcs = ["entropy_testutils.c"],
-    hdrs = ["entropy_testutils.h"],
+    name = "entropy_src_testutils",
+    srcs = ["entropy_src_testutils.c"],
+    hdrs = ["entropy_src_testutils.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        "//hw/top:edn_c_regs",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:csrng_shared",
-        "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/testing/test_framework:check",
     ],
+)
+
+cc_library(
+    name = "entropy_testutils",
+    srcs = ["entropy_testutils.c"],
+    hdrs = ["entropy_testutils.h"],
+    local_defines = opentitan_if_ip(
+        "entropy_src",
+        ["HAS_ENTROPY_SRC"],
+        [],
+    ),
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top:edn_c_regs",
+        "//sw/device/lib/dif:csrng",
+        "//sw/device/lib/dif:csrng_shared",
+        "//sw/device/lib/dif:edn",
+        "//sw/device/lib/testing/test_framework:check",
+    ] + opentitan_if_ip(
+        "entropy_src",
+        ["//sw/device/lib/dif:entropy_src"],
+        [],
+    ),
 )
 
 cc_library(
@@ -444,7 +461,7 @@ cc_library(
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
         ":pinmux_testutils",
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:status",
         "//sw/device/lib/dif:pinmux",
         "//sw/device/lib/dif:spi_host",

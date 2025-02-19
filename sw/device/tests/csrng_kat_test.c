@@ -11,8 +11,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
 OTTF_DEFINE_TEST_CONFIG();
 
 status_t test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
@@ -25,8 +23,9 @@ status_t test_ctr_drbg_ctr0(const dif_csrng_t *csrng) {
 
 bool test_main(void) {
   dif_csrng_t csrng;
-  mmio_region_t base_addr = mmio_region_from_addr(TOP_EARLGREY_CSRNG_BASE_ADDR);
-  CHECK_DIF_OK(dif_csrng_init(base_addr, &csrng));
+  dt_csrng_t kCsrngDt = (dt_csrng_t)0;
+  static_assert(kDtCsrngCount == 1, "This test expects exactly one CSRNG");
+  CHECK_DIF_OK(dif_csrng_init_from_dt(kCsrngDt, &csrng));
   CHECK_DIF_OK(dif_csrng_configure(&csrng));
 
   CHECK_STATUS_OK(test_ctr_drbg_ctr0(&csrng));

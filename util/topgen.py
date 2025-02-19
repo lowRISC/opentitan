@@ -249,7 +249,8 @@ def _get_alert_handler_params(top: Dict[str, object]) -> Dict[str, object]:
     # They are added after the merge pass, so the ip_block won't have them.
     n_alerts = sum(
         [int(x["width"]) if "width" in x else 1 for x in top["alert"]])
-    n_lpgs = len(top.get("alert_lpgs", []))
+    n_lpgs_int = len(top.get("alert_lpgs", []))
+    n_lpgs = n_lpgs_int
     n_lpgs_incoming_offset = n_lpgs
     # Add incoming alerts and their LPGs
     for alerts in top['incoming_alert'].values():
@@ -274,7 +275,7 @@ def _get_alert_handler_params(top: Dict[str, object]) -> Dict[str, object]:
     for alert in top["alert"]:
         for _ in range(alert["width"]):
             async_on.append(async_on_format.format(int(alert["async"])))
-            if n_lpgs:
+            if n_lpgs_int:
                 lpg_map.append(lpg_idx_format.format(int(alert["lpg_idx"])))
 
     if "incoming_alert" in top:
@@ -1665,8 +1666,13 @@ def main():
                         gencmd=gencmd_sv)
 
         racl_config = completecfg.get('racl', DEFAULT_RACL_CONFIG)
-        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+        render_template(TOPGEN_TEMPLATE_PATH / 'top_racl_pkg.sv.tpl',
                         out_path / 'rtl' / 'autogen' / 'top_racl_pkg.sv',
+                        gencmd=gencmd_sv,
+                        topcfg=completecfg,
+                        racl_config=racl_config)
+        render_template(TOPGEN_TEMPLATE_PATH / 'toplevel_racl_pkg.sv.tpl',
+                        out_path / 'rtl' / 'autogen' / f'top_{topname}_racl_pkg.sv',
                         gencmd=gencmd_sv,
                         topcfg=completecfg,
                         racl_config=racl_config)

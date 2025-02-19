@@ -133,10 +133,17 @@ static void configure_health_checks_from_otp(void) {
 
   // The entropy_src DIF expects the alert threshold to be set at configuration
   // time. We skip enabling csrng and edn0/1 in this case.
-  dif_entropy_src_config_t entropy_src_config =
-      entropy_testutils_config_default();
-  entropy_src_config.alert_threshold = (uint16_t)otp_read32(
-      OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET);
+  dif_entropy_src_config_t entropy_src_config = {
+      .fips_enable = true,
+      .fips_flag = true,
+      .rng_fips = true,
+      .route_to_firmware = false,
+      .bypass_conditioner = false,
+      .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
+      .health_test_window_size = 0x0200,
+      .alert_threshold = (uint16_t)otp_read32(
+          OTP_CTRL_PARAM_CREATOR_SW_CFG_RNG_ALERT_THRESHOLD_OFFSET),
+  };
   CHECK_DIF_OK(dif_entropy_src_configure(&entropy_src, entropy_src_config,
                                          kDifToggleEnabled));
 }

@@ -21,20 +21,20 @@ interface pattgen_cov_if (
   `define CH0_PATH u_pattgen_core.chan0
   `define CH1_PATH u_pattgen_core.chan1
 
-  wire rep_cnt_en_ch0 = `CH0_PATH.rep_cnt_en;
-  wire rep_cnt_en_ch1 = `CH1_PATH.rep_cnt_en;
-  wire len_q0 = `CH0_PATH.len_q;
-  wire len_q1 = `CH1_PATH.len_q;
-  wire reps_q0 = `CH0_PATH.reps_q;
-  wire reps_q1 = `CH1_PATH.reps_q;
-  wire clk_cnt_q0 = `CH0_PATH.clk_cnt_q;
-  wire clk_cnt_q1 = `CH1_PATH.clk_cnt_q;
-  wire bit_cnt_q0 = `CH0_PATH.bit_cnt_q;
-  wire bit_cnt_q1 = `CH1_PATH.bit_cnt_q;
-  wire rep_cnt_q0 = `CH0_PATH.rep_cnt_q;
-  wire rep_cnt_q1 = `CH1_PATH.rep_cnt_q;
-  wire prediv_q0 = `CH0_PATH.prediv_q;
-  wire prediv_q1 = `CH1_PATH.prediv_q;
+  wire        rep_cnt_en_ch0 = `CH0_PATH.rep_cnt_en;
+  wire        rep_cnt_en_ch1 = `CH1_PATH.rep_cnt_en;
+  wire  [5:0] len_q0 = `CH0_PATH.len_q;
+  wire  [5:0] len_q1 = `CH1_PATH.len_q;
+  wire  [9:0] reps_q0 = `CH0_PATH.reps_q;
+  wire  [9:0] reps_q1 = `CH1_PATH.reps_q;
+  wire [31:0] clk_cnt_q0 = `CH0_PATH.clk_cnt_q;
+  wire [31:0] clk_cnt_q1 = `CH1_PATH.clk_cnt_q;
+  wire  [5:0] bit_cnt_q0 = `CH0_PATH.bit_cnt_q;
+  wire  [5:0] bit_cnt_q1 = `CH1_PATH.bit_cnt_q;
+  wire  [9:0] rep_cnt_q0 = `CH0_PATH.rep_cnt_q;
+  wire  [9:0] rep_cnt_q1 = `CH1_PATH.rep_cnt_q;
+  wire [31:0] prediv_q0 = `CH0_PATH.prediv_q;
+  wire [31:0] prediv_q1 = `CH1_PATH.prediv_q;
 
 
   bit en_full_cov = 1'b1;

@@ -299,6 +299,32 @@ class clkmgr_base_vseq extends cip_base_vseq #(
     end
   endtask
 
+  function control_meas_saturation_assert(clk_mesr_e clk, bit enable);
+    case (clk)
+      ClkMesrIo: begin
+        if (enable) $asserton(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_io_meas.u_meas.MaxWidth_A");
+      end
+      ClkMesrIoDiv2: begin
+        if (enable) $asserton(0, "tb.dut.u_io_div2_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_io_div2_meas.u_meas.MaxWidth_A");
+      end
+      ClkMesrIoDiv4: begin
+        if (enable) $asserton(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_io_div4_meas.u_meas.MaxWidth_A");
+      end
+      ClkMesrMain: begin
+        if (enable) $asserton(0, "tb.dut.u_main_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_main_meas.u_meas.MaxWidth_A");
+      end
+      ClkMesrUsb: begin
+        if (enable) $asserton(0, "tb.dut.u_usb_meas.u_meas.MaxWidth_A");
+        else $assertoff(0, "tb.dut.u_usb_meas.u_meas.MaxWidth_A");
+      end
+      default: `uvm_error(`gfn, $sformatf("unexpected clock index '%0d'", clk))
+    endcase
+  endfunction
+
   local function void control_sync_pulse_assert(clk_mesr_e clk, bit enable);
     case (clk)
       ClkMesrIo: begin

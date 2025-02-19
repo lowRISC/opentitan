@@ -270,11 +270,6 @@ def autoconnect(topcfg: OrderedDict, name_to_block: Dict[str, IpBlock]):
                                            req_s="racl_error",
                                            rsp_m=m['name'],
                                            rsp_s="racl_error")
-                add_intermodule_connection(obj=topcfg,
-                                           req_m=racl_ctrl['name'],
-                                           req_s="racl_error_log",
-                                           rsp_m=m['name'],
-                                           rsp_s="racl_error_log")
 
 
 def _get_default_name(sig, suffix):

@@ -325,7 +325,7 @@ task hmac_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
           key[key_idx] = item.a_data;
         end
         "wipe_secret": begin
-          // TODO (#23563): when writing wipe_secret, trigger RTL assertion checks
+          // Do nothing
         end
         "intr_enable", "intr_state", "alert_test", "status": begin
           // Do nothing

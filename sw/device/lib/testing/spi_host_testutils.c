@@ -8,110 +8,6 @@
 #include "sw/device/lib/testing/pinmux_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
-
-/**
- * Define an spi pinmux configuration.
- */
-typedef struct spi_host1_pinmux_pins {
-  pinmux_testutils_mio_pin_t clk;
-  pinmux_testutils_mio_pin_t sd0;
-  pinmux_testutils_mio_pin_t sd1;
-  pinmux_testutils_mio_pin_t sd2;
-  pinmux_testutils_mio_pin_t sd3;
-} spi_host1_pinmux_pins_t;
-
-/**
- * This table store spi host 1 pin mappings of different platforms.
- * This is used to connect spi host 1 to mio pins based on the platform.
- */
-static const spi_host1_pinmux_pins_t kSpiHost1PinmuxMap[] = {
-    [kSpiPinmuxPlatformIdCw310] =
-        {
-            .clk =
-                {
-                    .insel = kTopEarlgreyPinmuxInselConstantZero,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa3,
-                },
-            .sd0 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa5,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa5,
-                },
-            .sd1 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa4,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa4,
-                },
-            .sd2 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa8,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-                },
-            .sd3 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa7,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-                },
-        },
-    [kSpiPinmuxPlatformIdCw340] =
-        {
-            .clk =
-                {
-                    .insel = kTopEarlgreyPinmuxInselConstantZero,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa3,
-                },
-            .sd0 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa5,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa5,
-                },
-            .sd1 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa4,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa4,
-                },
-            .sd2 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa8,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-                },
-            .sd3 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa7,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-                },
-        },
-    [kSpiPinmuxPlatformIdTeacup] =
-        {
-            .clk =
-                {
-                    .insel = kTopEarlgreyPinmuxInselConstantZero,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa3,
-                },
-            .sd0 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa4,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa4,
-                },
-            .sd1 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa5,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa5,
-                },
-            .sd2 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa8,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa8,
-                },
-            .sd3 =
-                {
-                    .insel = kTopEarlgreyPinmuxInselIoa7,
-                    .mio_out = kTopEarlgreyPinmuxMioOutIoa7,
-                },
-        },
-};
-
 status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
   // Set fast slew rate and strong drive strengh for SPI host0 pads.
   dif_pinmux_pad_attr_t out_attr;
@@ -122,9 +18,11 @@ status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
       .flags = kDifPinmuxPadAttrPullResistorEnable |
                kDifPinmuxPadAttrPullResistorUp};
   dif_result_t res;
-  for (uint32_t i = 0; i <= ARRAYSIZE(spi_host0_direct_pads); ++i) {
-    res = dif_pinmux_pad_write_attrs(pinmux, spi_host0_direct_pads[i],
-                                     kDifPinmuxPadKindDio, in_attr, &out_attr);
+  for (uint32_t i = 0; i < kDtSpiHostPeriphIoCount; ++i) {
+    dt_periph_io_t periph_io =
+        dt_spi_host_periph_io(kDtSpiHost0, (dt_spi_host_periph_io_t)i);
+    dt_pad_t pad = dt_periph_io_dio_pad(periph_io);
+    res = dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr);
     if (res == kDifError) {
       // Some target platforms may not support the specified value for slew rate
       // and drive strength. If that's the case, use the values actually
@@ -140,9 +38,8 @@ status_t spi_host_testutils_configure_host0_pad_attrs(dif_pinmux_t *pinmux) {
             "strength");
         in_attr.drive_strength = out_attr.drive_strength;
       }
-      CHECK_DIF_OK(dif_pinmux_pad_write_attrs(pinmux, spi_host0_direct_pads[i],
-                                              kDifPinmuxPadKindDio, in_attr,
-                                              &out_attr));
+      CHECK_DIF_OK(
+          dif_pinmux_pad_write_attrs_dt(pinmux, pad, in_attr, &out_attr));
       // Note: fallthrough with the modified `in_attr` so that the same
       // attributes are used for all pads.
     }
@@ -165,38 +62,87 @@ status_t spi_host_testutils_flush(dif_spi_host_t *spi_host) {
   return OK_STATUS();
 }
 
+#if defined(OPENTITAN_IS_EARLGREY)
+/**
+ * Define a spi pinmux configuration.
+ */
+typedef struct spi_host1_pinmux_pads {
+  dt_pad_t clk;
+  dt_pad_t sd0;
+  dt_pad_t sd1;
+  dt_pad_t sd2;
+  dt_pad_t sd3;
+} spi_host1_pinmux_pads_t;
+
+/**
+ * This table stores spi host 1 pin mappings of different platforms.
+ * This is used to connect spi host 1 to mio pins based on the platform.
+ */
+static const spi_host1_pinmux_pads_t kSpiHost1PinmuxMap[] = {
+    [kSpiPinmuxPlatformIdCw310] =
+        {
+            .clk = kDtPadIoa3,
+            .sd0 = kDtPadIoa5,
+            .sd1 = kDtPadIoa4,
+            .sd2 = kDtPadIoa8,
+            .sd3 = kDtPadIoa7,
+        },
+    [kSpiPinmuxPlatformIdCw340] =
+        {
+            .clk = kDtPadIoa3,
+            .sd0 = kDtPadIoa5,
+            .sd1 = kDtPadIoa4,
+            .sd2 = kDtPadIoa8,
+            .sd3 = kDtPadIoa7,
+        },
+    [kSpiPinmuxPlatformIdTeacup] =
+        {
+            .clk = kDtPadIoa3,
+            .sd0 = kDtPadIoa4,
+            .sd1 = kDtPadIoa5,
+            .sd2 = kDtPadIoa8,
+            .sd3 = kDtPadIoa7,
+        },
+};
+
 status_t spi_host1_pinmux_connect_to_bob(const dif_pinmux_t *pinmux,
-                                         dif_pinmux_index_t csb_outsel,
+                                         dt_pad_t csb_outsel,
                                          spi_pinmux_platform_id_t platform_id) {
   TRY_CHECK(platform_id < kSpiPinmuxPlatformIdCount);
-  const spi_host1_pinmux_pins_t *platform = &kSpiHost1PinmuxMap[platform_id];
+  const spi_host1_pinmux_pads_t *platform = &kSpiHost1PinmuxMap[platform_id];
 
   // CSB.
-  TRY(dif_pinmux_output_select(pinmux, csb_outsel,
-                               kTopEarlgreyPinmuxOutselSpiHost1Csb));
-  // SCLK.
-  TRY(dif_pinmux_output_select(pinmux, platform->clk.mio_out,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sck));
+  dt_periph_io_t csb =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoCsb);
+  TRY(dif_pinmux_mio_select_output(pinmux, csb_outsel, csb));
+  // SCK.
+  dt_periph_io_t sck =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoSck);
+  TRY(dif_pinmux_mio_select_output(pinmux, platform->clk, sck));
   // SD0.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd0,
-                              platform->sd0.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform->sd0.mio_out,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd0));
-
+  dt_periph_io_t sd0 =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoSd0);
+  TRY(dif_pinmux_mio_select_input(pinmux, sd0, platform->sd0));
+  TRY(dif_pinmux_mio_select_output(pinmux, platform->sd0, sd0));
   // SD1.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd1,
-                              platform->sd1.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform->sd1.mio_out,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd1));
+  dt_periph_io_t sd1 =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoSd1);
+  TRY(dif_pinmux_mio_select_input(pinmux, sd1, platform->sd1));
+  TRY(dif_pinmux_mio_select_output(pinmux, platform->sd1, sd1));
   // SD2.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd2,
-                              platform->sd2.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform->sd2.mio_out,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd2));
+  dt_periph_io_t sd2 =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoSd2);
+  TRY(dif_pinmux_mio_select_input(pinmux, sd2, platform->sd2));
+  TRY(dif_pinmux_mio_select_output(pinmux, platform->sd2, sd2));
   // SD3.
-  TRY(dif_pinmux_input_select(pinmux, kTopEarlgreyPinmuxPeripheralInSpiHost1Sd3,
-                              platform->sd3.insel));
-  TRY(dif_pinmux_output_select(pinmux, platform->sd3.mio_out,
-                               kTopEarlgreyPinmuxOutselSpiHost1Sd3));
+  dt_periph_io_t sd3 =
+      dt_spi_host_periph_io(kDtSpiHost1, kDtSpiHostPeriphIoSd3);
+  TRY(dif_pinmux_mio_select_input(pinmux, sd3, platform->sd3));
+  TRY(dif_pinmux_mio_select_output(pinmux, platform->sd3, sd3));
   return OK_STATUS();
 }
+#elif defined(OPENTITAN_IS_DARJEELING)
+// Darjeeling only has a single SPI host
+#else
+#error "spi_host_testutils does not support this top"
+#endif

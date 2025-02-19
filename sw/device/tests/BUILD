@@ -31,6 +31,7 @@ load(
     "verilator_params",
 )
 load("//rules/opentitan:keyutils.bzl", "ECDSA_ONLY_KEY_STRUCTS")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -853,6 +854,7 @@ opentitan_test(
     verilator = verilator_params(tags = ["broken"]),
     deps = [
         "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:clkmgr",
@@ -1172,6 +1174,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     silicon = silicon_params(
@@ -1369,6 +1372,7 @@ opentitan_test(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -1385,6 +1389,7 @@ cc_library(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:check",
     ],
@@ -1427,6 +1432,7 @@ opentitan_test(
         "//sw/device/lib/dif:base",
         "//sw/device/lib/dif:entropy_src",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -1511,6 +1517,7 @@ opentitan_test(
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:rv_core_ibex_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -1546,6 +1553,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:alert_handler_testutils",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:keymgr_testutils",
         "//sw/device/lib/testing:otp_ctrl_testutils",
@@ -2127,6 +2135,30 @@ opentitan_test(
         "//sw/device/lib/dif:hmac",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:clkmgr_testutils",
+        "//sw/device/lib/testing:hmac_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
+    name = "hmac_endianness_test",
+    srcs = ["hmac_endianness_test.c"],
+    exec_env = dicts.add(
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        {
+            "//hw/top_earlgrey:sim_verilator": None,
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
+        },
+    ),
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:mmio",
+        "//sw/device/lib/dif:hmac",
+        "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
     ],
@@ -3588,6 +3620,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     verilator = verilator_params(
@@ -3595,7 +3628,7 @@ opentitan_test(
         tags = ["broken"],
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
@@ -3619,6 +3652,7 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     qemu = qemu_params(
@@ -3628,8 +3662,7 @@ opentitan_test(
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
-        "//sw/device/lib/base:mmio",
+        "//hw/top:dt",
         "//sw/device/lib/dif:rstmgr",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:rstmgr_testutils",
@@ -5262,13 +5295,11 @@ opentitan_test(
         {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
     ),
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
         "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:edn",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:entropy_testutils",
@@ -5433,6 +5464,7 @@ opentitan_test(
         "//hw/top:adc_ctrl_c_regs",
         "//hw/top:aes_c_regs",
         "//hw/top:csrng_c_regs",
+        "//hw/top:dt",
         "//hw/top:entropy_src_c_regs",
         "//hw/top:gpio_c_regs",
         "//hw/top:hmac_c_regs",
@@ -5885,6 +5917,7 @@ test_suite(
         exec_env = {
             "//hw/top_earlgrey:fpga_cw310_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
+            "//hw/top_darjeeling:sim_dv": None,
         },
         fpga = fpga_params(
             needs_jtag = True,
@@ -5898,27 +5931,29 @@ test_suite(
             test_harness = "//sw/host/tests/chip/rv_dm:ndm_reset_req",
         ),
         deps = [
-            "//hw/top:adc_ctrl_c_regs",
-            "//hw/top:flash_ctrl_c_regs",
-            "//hw/top:keymgr_c_regs",
+            "//hw/top:dt",
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top:pinmux_c_regs",
-            "//hw/top:sysrst_ctrl_c_regs",
-            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
             "//sw/device/lib/base:mmio",
-            "//sw/device/lib/dif:adc_ctrl",
-            "//sw/device/lib/dif:flash_ctrl",
-            "//sw/device/lib/dif:keymgr",
-            "//sw/device/lib/dif:otp_ctrl",
-            "//sw/device/lib/dif:pinmux",
             "//sw/device/lib/dif:rstmgr",
-            "//sw/device/lib/dif:sysrst_ctrl",
             "//sw/device/lib/runtime:hart",
             "//sw/device/lib/runtime:log",
             "//sw/device/lib/testing:rstmgr_testutils",
             "//sw/device/lib/testing/test_framework:check",
             "//sw/device/lib/testing/test_framework:ottf_main",
-        ],
+        ] + opentitan_select_top(
+            {
+                "darjeeling": [
+                    "//hw/top:keymgr_dpe_c_regs",
+                ],
+            },
+            [
+                "//hw/top:adc_ctrl_c_regs",
+                "//hw/top:flash_ctrl_c_regs",
+                "//hw/top:keymgr_c_regs",
+                "//hw/top:sysrst_ctrl_c_regs",
+            ],
+        ),
     )
     for lc_state, lc_state_val in _RV_DM_JTAG_LC_STATES
 ]
@@ -7071,6 +7106,7 @@ opentitan_test(
         "//sw/device/lib/runtime:log",
         "//sw/device/lib/testing:aes_testutils",
         "//sw/device/lib/testing:edn_testutils",
+        "//sw/device/lib/testing:entropy_src_testutils",
         "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:hmac_testutils",
         "//sw/device/lib/testing:kmac_testutils",

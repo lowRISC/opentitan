@@ -809,7 +809,7 @@ impl Target for HyperdebugSpiTarget {
                 self.receive(rbuf)?;
                 return Ok(());
             }
-            [Transfer::Write(wbuf), Transfer::GscReady, Transfer::TpmPoll, Transfer::Read(rbuf)] => {
+            [Transfer::Write(wbuf), Transfer::TpmPoll, Transfer::Read(rbuf), Transfer::GscReady] => {
                 // Hyperdebug can do SPI TPM transaction as a single USB
                 // request/reply.
                 ensure!(

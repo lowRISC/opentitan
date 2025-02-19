@@ -712,7 +712,11 @@ def connect_clocks(top, name_to_block: Dict[str, IpBlock]):
     assert isinstance(clocks, Clocks)
 
     # add entry to inter_module automatically
-    clkmgr_name = _find_module_name(top['module'], 'clkmgr')
+    clkmgr_name = _find_module_name(top["module"], "clkmgr")
+    # If there is no clkmgr, nothing to do here
+    if not clkmgr_name:
+        return
+
     external = top['inter_module']['external']
     for intf in top['exported_clks']:
         external[f'{clkmgr_name}.clocks_{intf}'] = f"clks_{intf}"
@@ -739,11 +743,7 @@ def connect_clocks(top, name_to_block: Dict[str, IpBlock]):
         # find the corresponding IpBlock. To do this, we have to do a (linear)
         # search through top['module'] to find the instance that matches the
         # endpoint, then use that instance's type as a key in name_to_block.
-        ep_inst = None
-        for inst in top['module']:
-            if inst['name'] == ep_name:
-                ep_inst = inst
-                break
+        ep_inst = lib.find_module(top["module"], ep_name)
         if ep_inst is None:
             raise ValueError(f'No module instance with name {ep_name}: only '
                              f'modules can have hint clocks. Is this a '
@@ -1046,11 +1046,12 @@ def amend_interrupt(top: OrderedDict,
     for irqs in top['incoming_interrupt'].values():
         for irq in irqs:
             # Qualify name with module name
-            irq["name"] = f"{irq['module_name']}_{irq['name']}"
-            irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
-            irq["incoming"] = True
-            irq["width"] = 1
-            interrupts.append(irq)
+            qual_irq = deepcopy(irq)
+            qual_irq["name"] = f"{irq['module_name']}_{irq['name']}"
+            qual_irq["desc"] = f"{irq['module_name']} {irq['name']} incoming interrupt"
+            qual_irq["incoming"] = True
+            qual_irq["width"] = 1
+            interrupts.append(qual_irq)
 
     top["interrupt"] = interrupts
 

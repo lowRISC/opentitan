@@ -60,6 +60,26 @@ function void aon_timer_intr_timed_regs::predict(timed_reg_e r, uvm_reg_data_t p
                                                  uvm_reg_data_t new_data);
   `uvm_info(`gfn, $sformatf("Expecting reg %p <= 0x%0x, from 0x%0x (mask 0x%0x), time_now %0d",
                             r, new_data, prev_data, prev_data ^ new_data, time_now), UVM_MEDIUM)
+
+  // The interrupts get predicted on:
+  // - neg-edge for counter > threshold predictions and on
+  // - pos-edge for intr_state/test predictions.
+  // If they occur at the same clock tick there will be two (maybe opposite) predictions at the same
+  // time resulting in an error.
+  // The RTL prioritises an intr_state/test write over a counter prediction and hence the oldest
+  // prediction is removed to model the RTL correctly.
+  // The loop below removes the newest prediction before the new one is added.
+  foreach(timed[r].fields[i]) begin
+    int unsigned max_delay = timed[r].fields[i].max_delay;
+    if ((max_delay + time_now) == timed[r].fields[i].pred_q[$].latest_time) begin
+      `uvm_info(`gfn, $sformatf({"There's already a predicted interrupt at the same time. ",
+                                 "Priority is given to latest prediction. Removing old ",
+                                 "prediction (%p)"}, timed[r].fields[i].pred_q[$]), UVM_DEBUG)
+
+      // Popping the last predicted item, since the new prediction from intr_state wins
+      void'(timed[r].fields[i].pred_q.pop_back());
+    end
+  end
   timed[r].predict(time_now, new_data, prev_data);
 endfunction : predict
 

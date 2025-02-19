@@ -98,19 +98,9 @@
         The policy selection vector (parameter) selects the policy for each register.
       '''
     }
-    { struct:  "logic",
-      type:    "uni",
-      name:    "racl_error",
-      act:     "req",
-      width  : "1",
-      desc:    '''
-        RACL error indication signal.
-        If 1, the error log contains valid information.
-      '''
-    }
     { struct:  "racl_error_log",
       type:    "uni",
-      name:    "racl_error_log",
+      name:    "racl_error",
       act:     "req",
       width:   "1"
       package: "top_racl_pkg",

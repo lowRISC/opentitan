@@ -655,6 +655,9 @@ module clkmgr_reg_top (
 
 
   // R[jitter_enable]: V(False)
+  // Create REGWEN-gated WE signal
+  logic jitter_enable_gated_we;
+  assign jitter_enable_gated_we = jitter_enable_we & jitter_regwen_qs;
   prim_subreg #(
     .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -665,7 +668,7 @@ module clkmgr_reg_top (
     .rst_ni  (rst_ni),
 
     // from register interface
-    .we     (jitter_enable_we),
+    .we     (jitter_enable_gated_we),
     .wd     (jitter_enable_wd),
 
     // from internal hardware
@@ -1891,7 +1894,7 @@ module clkmgr_reg_top (
     reg_we_check[2] = extclk_ctrl_gated_we;
     reg_we_check[3] = 1'b0;
     reg_we_check[4] = jitter_regwen_we;
-    reg_we_check[5] = jitter_enable_we;
+    reg_we_check[5] = jitter_enable_gated_we;
     reg_we_check[6] = clk_enables_we;
     reg_we_check[7] = clk_hints_we;
     reg_we_check[8] = 1'b0;

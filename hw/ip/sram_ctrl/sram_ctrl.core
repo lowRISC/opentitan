@@ -13,6 +13,7 @@ filesets:
       - lowrisc:prim:lc_sync
       - lowrisc:prim:count
       - lowrisc:prim:ram_1p_scr
+      - lowrisc:prim:racl_error_arb
       - lowrisc:tlul:adapter_sram
       - lowrisc:ip:tlul
       - lowrisc:ip:sram_ctrl_pkg

@@ -59,6 +59,7 @@ py_library(
         "//util:version_file",
         "//util/reggen:inter_signal",
         "//util/reggen:ip_block",
+        "//util/reggen:md_helpers",
         "//util/reggen:validate",
         requirement("hjson"),
         requirement("mako"),

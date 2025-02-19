@@ -54,6 +54,8 @@ jobs:
         if: ${{ github.event_name == 'pull_request' }}
       - name: Python (mypy)
         run: ./ci/scripts/mypy.sh
+      - name: Python (ruff)
+        run: ruff check
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
       - name: C/C++ formatting
@@ -104,7 +106,6 @@ jobs:
         run: ./ci/scripts/check-bazel-banned-rules.sh
       - name: Bazel target names
         run: ./ci/scripts/check_bazel_target_names.py
-        continue-on-error: true
       - name: DV software images
         run: ./ci/scripts/check_dv_sw_images.sh
         continue-on-error: true

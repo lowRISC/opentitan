@@ -40,7 +40,7 @@ INSTANCE: tb.dut.u_tl_adapter_rom.u_tlul_data_integ_enc_instr.u_data_gen
 Block 1 "3318159292" "data_o = 39'(data_i);"
 
 INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom.gen_generic.u_impl_generic
-ANNOTATION: "cfg_i is tied to rom_cfg_i in rom_ctrl.sv which is wired to a constant"
+ANNOTATION: "cfg_i is tied to rom_cfg_i in rom_ctrl.sv. This is opaque to DV code and may be constant (so the continuous assignment will never execute)."
 Block 1 "118728425" "assign unused_cfg = (^cfg_i);"
 
 INSTANCE: tb.dut.gen_rom_scramble_enabled.u_rom.u_seed_anchor.u_secure_anchor_buf.gen_generic.u_impl_generic
@@ -195,6 +195,28 @@ Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst)))
 // u_reqfifo applies here as well.
 INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
 Condition 3 "1324655787" "(rvalid_o & rready_i & ((~gen_normal_fifo.under_rst))) 1 -1" (3 "110")
+
+// wvalid_i gets driven in u_tl_adapter_rom as reqfifo_wvalid by a_ack. a_ack requires
+// tl_o_int.a_ready as true to set itself true. But that signal requires wready_o=1, which is
+// reqfifo_wready in u_tl_adapter_rom. So, we can't get wvalid_i without wready_o.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_reqfifo
+Condition 2 "803322985" "(wvalid_i & wready_o) 1 -1" (2 "10")
+
+// The u_rspfifo instance in tlul_adapter_sram can never give any backpressure through the wready_o
+// signal. This is because u_reqfifo will always be at least as full as u_rspfifo, each item in
+// u_rspfifo is a response to a request that is still stored in u_reqfifo. The request is stored in
+// order to be able to supply d_size and d_source in the TL response.
+//
+// If w_valid_i is true in u_rspfifo, this is the response to some request which must be stored in
+// u_reqfifo, which implies there is a slot to store it.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_rspfifo
+Condition 2 "803322985" "(wvalid_i & wready_o) 1 -1" (2 "10")
+
+// For u_sramreqfifo, we can only get wready_o=0 when under_rst=1 or the SRAM fifo is full. But we
+// can't get the sramreqfifo full as the SRAM req goes out to rom and rom responds in one cycle.
+// So, we can't queue the request into the u_sramreqfifo.
+INSTANCE: tb.dut.u_tl_adapter_rom.u_sramreqfifo
+Condition 2 "803322985" "(wvalid_i & wready_o) 1 -1" (2 "10")
 
 INSTANCE: tb.dut
 // rom_cfg_i is tied to 0 inside the instantiation of rom_ctrl.

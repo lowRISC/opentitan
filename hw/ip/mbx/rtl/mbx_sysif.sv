@@ -61,28 +61,31 @@ module mbx_sysif
   input  logic [CfgSramDataWidth-1:0]    read_data_i,
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
-  output logic                           racl_error_o,
-  output top_racl_pkg::racl_error_log_t  racl_error_log_o
+  output top_racl_pkg::racl_error_log_t  racl_error_o
 );
   import mbx_reg_pkg::*;
 
   mbx_soc_reg2hw_t reg2hw;
   mbx_soc_hw2reg_t hw2reg;
 
-  logic racl_error_regs_soc;
-  logic racl_error_win_soc_wdata;
-  logic racl_error_win_soc_rdata;
-  top_racl_pkg::racl_error_log_t racl_error_regs_soc_log;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_wdata_log;
-  top_racl_pkg::racl_error_log_t racl_error_win_soc_rdata_log;
-
-  // We are combining all racl errors here because only one of them can be set at any time.
-  assign racl_error_o = racl_error_regs_soc      |
-                        racl_error_win_soc_wdata |
-                        racl_error_win_soc_rdata;
-  assign racl_error_log_o = racl_error_regs_soc_log      |
-                            racl_error_win_soc_wdata_log |
-                            racl_error_win_soc_rdata_log;
+  top_racl_pkg::racl_error_log_t racl_error[3];
+  if (EnableRacl) begin : gen_racl_error_arb
+    // Arbitrate between all simultaneously valid error log requests.
+    prim_racl_error_arb #(
+      .N ( 3 )
+    ) u_prim_err_arb (
+      .clk_i,
+      .rst_ni,
+      .error_log_i ( racl_error   ),
+      .error_log_o ( racl_error_o )
+    );
+  end else begin : gen_no_racl_error_arb
+    logic unused_signals;
+    always_comb begin
+      unused_signals = ^{racl_error[0] ^ racl_error[1] ^ racl_error[2]};
+      racl_error_o   = '0;
+    end
+  end
 
   // Interface for the custom register interface with bus blocking support
   tlul_pkg::tl_h2d_t tl_win_h2d[2];
@@ -94,18 +97,17 @@ module mbx_sysif
     .RaclErrorRsp(RaclErrorRsp),
     .RaclPolicySelVec(RaclPolicySelVecSoc)
   ) u_soc_regs (
-    .clk_i            ( clk_i      ),
-    .rst_ni           ( rst_ni     ),
-    .tl_i             ( tl_sys_i   ),
-    .tl_o             ( tl_sys_o   ),
-    .tl_win_o         ( tl_win_h2d ),
-    .tl_win_i         ( tl_win_d2h ),
-    .reg2hw           ( reg2hw     ),
-    .hw2reg           ( hw2reg     ),
-    .racl_policies_i  ( racl_policies_i ),
-    .racl_error_o     ( racl_error_regs_soc ),
-    .racl_error_log_o ( racl_error_regs_soc_log ),
-    .intg_err_o       ( intg_err_o )
+    .clk_i            ( clk_i               ),
+    .rst_ni           ( rst_ni              ),
+    .tl_i             ( tl_sys_i            ),
+    .tl_o             ( tl_sys_o            ),
+    .tl_win_o         ( tl_win_h2d          ),
+    .tl_win_i         ( tl_win_d2h          ),
+    .reg2hw           ( reg2hw              ),
+    .hw2reg           ( hw2reg              ),
+    .racl_policies_i  ( racl_policies_i     ),
+    .racl_error_o     ( racl_error[0]       ),
+    .intg_err_o       ( intg_err_o          )
   );
 
   // Straps for the external capability header registers
@@ -242,8 +244,7 @@ module mbx_sysif
     .en_ifetch_i      ( prim_mubi_pkg::MuBi4False    ),
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
-    .racl_error_o     ( racl_error_win_soc_wdata     ),
-    .racl_error_log_o ( racl_error_win_soc_wdata_log ),
+    .racl_error_o     ( racl_error[1]                ),
     .we_o             ( reg_wdata_we                 ),
     // No Reading of the write register. Always reads zero
     .re_o             (                              ),
@@ -274,8 +275,7 @@ module mbx_sysif
     .en_ifetch_i      ( prim_mubi_pkg::MuBi4False    ),
     .intg_error_o     (                              ),
     .racl_policies_i  ( racl_policies_i              ),
-    .racl_error_o     ( racl_error_win_soc_rdata     ),
-    .racl_error_log_o ( racl_error_win_soc_rdata_log ),
+    .racl_error_o     ( racl_error[2]                ),
     // No writing to the read register
     .we_o             ( read_data_write_valid_o      ),
     .re_o             ( read_data_read_valid_o       ),

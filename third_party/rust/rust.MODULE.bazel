@@ -21,6 +21,7 @@ single_version_override(
     module_name = "rules_rust_bindgen",
     patches = [
         "//third_party/rust/patches:rules_rust.bindgen_static_lib.patch",
+        "//third_party/rust/patches:rules_rust.bindgen_defines.patch",
     ],
     patch_strip = 3,
     version = "0.56.0",
