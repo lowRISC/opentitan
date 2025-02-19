@@ -16,26 +16,12 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
 
   bit super_sequence_done;
 
-  // add invalid value to rom_ctrl
-  virtual task twirl_rom_response();
-    add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4False;
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4False;
-    cfg.clk_rst_vif.wait_clks(5);
-    add_rom_rsp_noise();
-    wait(cfg.pwrmgr_vif.fast_state == pwrmgr_pkg::FastPwrStateRomCheckDone);
-    add_rom_rsp_noise();
-    cfg.pwrmgr_vif.rom_ctrl[0].good = prim_mubi_pkg::MuBi4True;
-    cfg.clk_rst_vif.wait_clks(5);
-    cfg.pwrmgr_vif.rom_ctrl[0].done = prim_mubi_pkg::MuBi4True;
-  endtask
-
   task body();
     num_trans_c.constraint_mode(0);
     num_trans = 50;
     super_sequence_done = 0;
 
-    disable_assert();
+    control_rom_ctrl_sync_assertions(.enable(1'b0));
     fork
       begin
         super.body();
@@ -44,10 +30,6 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
       drv_stim(mubi_mode);
     join
   endtask : body
-
-  function void disable_assert();
-    $assertoff(0, "tb.dut.u_cdc.u_sync_rom_ctrl");
-  endfunction : disable_assert
 
   task drv_stim(pwrmgr_mubi_e mubi_mode);
     if (mubi_mode == PwrmgrMubiLcCtrl) drv_lc_ctrl();
@@ -59,10 +41,13 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(cycles_from_reset, cycles_from_reset inside {[2 : 8]};)
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(micros_to_release, micros_to_release inside {[2 : 4]};)
 
-    repeat (50) begin
+    repeat (50) begin : repeat_50
       wait(cfg.esc_clk_rst_vif.rst_n);
       cfg.clk_rst_vif.wait_clks(cycles_from_reset);
-      if (super_sequence_done) break;
+      if (super_sequence_done) begin
+        `uvm_info(`gfn, "Break from drv_lc_ctrl", UVM_MEDIUM)
+        break;
+      end
       `uvm_info(`gfn, "Injection to lc_hw_debug_en", UVM_MEDIUM)
       cfg.pwrmgr_vif.lc_hw_debug_en = get_rand_lc_tx_val(
           .t_weight(1), .f_weight(1), .other_weight(2)
@@ -72,7 +57,7 @@ class pwrmgr_repeat_wakeup_reset_vseq extends pwrmgr_wakeup_reset_vseq;
       if (super_sequence_done) break;
       cfg.pwrmgr_vif.lc_dft_en = get_rand_lc_tx_val(.t_weight(1), .f_weight(1), .other_weight(2));
       #(micros_to_release * 1us);
-    end  // repeat (50)
+    end : repeat_50
     `uvm_info(`gfn, "ended drv_lc_ctrl", UVM_MEDIUM)
   endtask : drv_lc_ctrl
 
