@@ -85,6 +85,7 @@ module soc_dbg_ctrl
 
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: DEBUG_POLICY_VALID.CONFIG.SHADOW
+  // SEC_CM: DEBUG_POLICY_CATEGORY.CONFIG.SHADOW
   soc_dbg_ctrl_core_reg_top u_core_reg (
     .clk_i,
     .rst_ni,
@@ -369,7 +370,7 @@ module soc_dbg_ctrl
     endcase
   end
 
-  // SEC_CM: FSM.SPARSE
+  // SEC_CM: HALT.FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, halt_state_d, halt_state_q, halt_state_e, Idle)
 
   logic unused_signals;

@@ -56,8 +56,11 @@
     { name: "DEBUG_POLICY_VALID.CONFIG.SHADOW",
       desc: "Debug policy valid register is shadowed."
     }
-    { name: "DEBUG_POLICY_RELOCKED.CONFIG.SHADOW",
-      desc: "Debug policy relocked register is shadowed."
+    { name: "DEBUG_POLICY_CATEGORY.CONFIG.SHADOW",
+      desc: "Debug policy category register is shadowed."
+    }
+    { name: "HALT.FSM.SPARSE",
+      desc: "The halt FSM uses a sparse state encoding."
     }
   ]
 
