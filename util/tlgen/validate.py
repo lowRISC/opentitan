@@ -185,7 +185,7 @@ def check_keys(obj: Dict[Any, Any],
                                 prefix=prefix_name)
 
         elif checker[0] == 'd':
-            int_v, err = check_int(obj[k], prefix_name)
+            _int_v, err = check_int(obj[k], prefix_name)
             if err:
                 error += 1
 
@@ -194,7 +194,7 @@ def check_keys(obj: Dict[Any, Any],
             pass
 
         elif checker[0] == 'pb':
-            b_v, err = check_bool(obj[k], prefix_name)
+            _b_v, err = check_bool(obj[k], prefix_name)
             if err:
                 error += 1
 

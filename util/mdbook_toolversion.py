@@ -20,7 +20,7 @@ def main() -> None:
     tool_requirements = check_tool_requirements.read_tool_requirements()
 
     # load both the context and the book from stdin
-    context, book = json.load(sys.stdin)
+    _context, book = json.load(sys.stdin)
 
     for chapter in md_utils.chapters(book["sections"]):
         # Add in the minimum tool version

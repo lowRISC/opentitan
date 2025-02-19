@@ -436,7 +436,7 @@ def _fix_cycles(program: OTBNProgram, graph: ControlGraph) -> None:
     # The new_entries dictionary will have the same structure as graph.graph.
     new_entries = {}
     for start_pc in graph.graph:
-        sec, edges = graph.get_entry(start_pc)
+        sec, _edges = graph.get_entry(start_pc)
         for pc in sec:
             if pc in cycle_start_pcs and pc != sec.start:
                 # Split this section and create a new edge leading to the cycle

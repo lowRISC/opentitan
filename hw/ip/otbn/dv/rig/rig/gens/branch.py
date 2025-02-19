@@ -223,7 +223,7 @@ class Branch(SnippetGen):
             if jump_ret is None:
                 return None
 
-            jmp_insn, jmp_snippet, model0 = jump_ret
+            _jmp_insn, jmp_snippet, model0 = jump_ret
             snippet0 = Snippet.cons_option(snippet0, jmp_snippet)
         else:
             # Add the jump to go from branch 1 to branch 0
@@ -233,7 +233,7 @@ class Branch(SnippetGen):
             if jump_ret is None:
                 return None
 
-            jmp_insn, jmp_snippet, model1 = jump_ret
+            _jmp_insn, jmp_snippet, model1 = jump_ret
             snippet1 = Snippet.cons_option(snippet1, jmp_snippet)
 
         assert model0.pc == model1.pc

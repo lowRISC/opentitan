@@ -90,7 +90,7 @@ class BadIspr(SnippetGen):
                 continue
 
             assert prog_insn.lsu_info is not None
-            mem_type, tgt_addr = prog_insn.lsu_info
+            mem_type, _tgt_addr = prog_insn.lsu_info
             # Replace good CSR / WSR address with bad address.
             bad_addr = model.pick_bad_addr(mem_type)
             assert bad_addr is not None

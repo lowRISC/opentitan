@@ -53,7 +53,7 @@ class TestBitstreamCache(unittest.TestCase):
 
         m = unittest.mock.mock_open(read_data=MOCK_MANIFEST)
         with unittest.mock.patch('bitstreams_workspace.open', m):
-            (manifest, manifest_path) = cache.GetFromCache('abcd')
+            (manifest, _manifest_path) = cache.GetFromCache('abcd')
         m.assert_called_once_with('cache/abcd/manifest.json', 'r')
 
         # This is more of an implementation detail, but it verifies that we hit

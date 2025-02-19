@@ -103,7 +103,7 @@ def ipgen_hjson_render(template_name: str, topname: str,
 
     Aborts the program execution in case of an error.
     """
-    (module_name, ip_template,
+    (_module_name, ip_template,
      ip_config) = _ipgen_render_prelude(template_name, topname, params)
 
     try:

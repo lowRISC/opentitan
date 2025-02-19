@@ -446,7 +446,7 @@ class Loop(SnippetGen):
                 if jump_ret is None:
                     return None
 
-                jump_insn, jump_snippet, model = jump_ret
+                _jump_insn, jump_snippet, model = jump_ret
                 assert model.pc == tail_start
 
                 head_snippet = Snippet.cons_option(head_snippet, jump_snippet)
@@ -538,7 +538,7 @@ class Loop(SnippetGen):
         # Extract the encoded operand value from iters. We ignore num_iters and
         # warp: they will be used in gen_pieces (returned in lshape), but we
         # don't need them here.
-        iter_opval, num_iters, warp = iters
+        iter_opval, _num_iters, _warp = iters
 
         # Generate the head instruction (which runs once, unconditionally) and
         # clone model and program to add it
@@ -582,7 +582,7 @@ class Loop(SnippetGen):
 
         hd_insn, lshape = ret
         bodysize, iters = lshape
-        iter_opval, num_iters, warp = iters
+        _iter_opval, num_iters, warp = iters
 
         # The address of the final instruction in the loop
         end_addr = model.pc + 4 * bodysize
@@ -660,7 +660,7 @@ class Loop(SnippetGen):
         if pieces is None:
             return None
 
-        shape, hd_insn, body_snippet, model, warp = pieces
+        _shape, hd_insn, body_snippet, model, warp = pieces
 
         snippet = LoopSnippet(hd_addr, hd_insn, body_snippet, warp)
         snippet.insert_into_program(program)

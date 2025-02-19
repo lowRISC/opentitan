@@ -358,7 +358,7 @@ def elab_intermodule(topcfg: OrderedDict):
         log.info("{req} --> {rsps}".format(req=req, rsps=rsps))
 
         # Split index
-        req_module, req_signal, req_index = filter_index(req)
+        req_module, req_signal, _req_index = filter_index(req)
 
         # get the module signal
         req_struct = find_intermodule_signal(list_of_intersignals, req_module,
@@ -373,7 +373,7 @@ def elab_intermodule(topcfg: OrderedDict):
             package = req_struct["package"]
         else:
             for rsp in rsps:
-                rsp_module, rsp_signal, rsp_index = filter_index(rsp)
+                rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
                 rsp_struct = find_intermodule_signal(list_of_intersignals,
                                                      rsp_module, rsp_signal)
                 if "package" in rsp_struct:
@@ -434,7 +434,7 @@ def elab_intermodule(topcfg: OrderedDict):
 
         for i, rsp in enumerate(rsps):
             # Split index
-            rsp_module, rsp_signal, rsp_index = filter_index(rsp)
+            rsp_module, rsp_signal, _rsp_index = filter_index(rsp)
 
             rsp_struct = find_intermodule_signal(list_of_intersignals,
                                                  rsp_module, rsp_signal)
@@ -713,13 +713,13 @@ def find_otherside_modules(topcfg: OrderedDict, m,
             # return rsps after splitting module instance name and the port
             result = []
             for rsp in rsps:
-                rsp_m, rsp_s, rsp_i = filter_index(rsp)
+                rsp_m, rsp_s, _rsp_i = filter_index(rsp)
                 result.append(('connect', rsp_m, rsp_s))
             return result
 
         for rsp in rsps:
             if signame == rsp:
-                req_m, req_s, req_i = filter_index(req)
+                req_m, req_s, _req_i = filter_index(req)
                 return [('connect', req_m, req_s)]
 
     # if reaches here, it means either the format is wrong, or floating port.

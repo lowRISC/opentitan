@@ -299,7 +299,7 @@ def xbar_addhost(top, xbar, host):
         xbar["nodes"].append(obj)
         return
 
-    xbar_bool, xbar_h = is_xbar(top, host)
+    xbar_bool, _xbar_h = is_xbar(top, host)
     if xbar_bool:
         log.info("host {} is a crossbar. Nothing to deal with.".format(host))
 
