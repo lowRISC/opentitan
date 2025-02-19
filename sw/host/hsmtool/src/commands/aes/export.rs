@@ -24,7 +24,7 @@ pub struct Export {
     /// Wrap the exported key using an RSA wrapping key.
     #[arg(long)]
     wrap: Option<String>,
-    #[arg(long, default_value = "rsa-pkcs-oaep", help=Wrap::HELP)]
+    #[arg(long, default_value = "rsa-pkcs")]
     wrap_mechanism: Wrap,
     #[arg(short, long)]
     output: Option<PathBuf>,

@@ -7,50 +7,31 @@
 // padding, and RSA PKCS OAEP.
 
 use anyhow::{Ok, Result};
+use clap::ValueEnum;
 use cryptoki::mechanism::rsa::{PkcsMgfType, PkcsOaepParams, PkcsOaepSource};
 use cryptoki::mechanism::{Mechanism, MechanismType};
 use cryptoki::object::{Attribute, ObjectHandle};
 use cryptoki::session::Session;
 use serde::{Deserialize, Serialize};
-use std::str::FromStr;
+use strum::{Display, EnumString};
 
 use crate::error::HsmError;
 use crate::util::attribute::{AttributeMap, AttributeType, KeyType, ObjectClass};
 use crate::util::helper;
 
 /// The wrapping mechanism to use.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(
+    Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Display, EnumString, ValueEnum,
+)]
+#[strum(ascii_case_insensitive)]
 pub enum Wrap {
-    #[serde(alias = "aes-key-wrap")]
     AesKeyWrap,
-    #[serde(alias = "aes-key-wrap-pad")]
     AesKeyWrapPad,
-    #[serde(alias = "rsa-pkcs")]
     RsaPkcs,
-    #[serde(alias = "rsa-pkcs-oaep")]
     RsaPkcsOaep,
 }
 
-impl FromStr for Wrap {
-    type Err = anyhow::Error;
-    fn from_str(input: &str) -> Result<Self> {
-        if input.eq_ignore_ascii_case("aes-key-wrap") {
-            Ok(Wrap::AesKeyWrap)
-        } else if input.eq_ignore_ascii_case("aes-key-wrap-pad") {
-            Ok(Wrap::AesKeyWrapPad)
-        } else if input.eq_ignore_ascii_case("rsa-pkcs") {
-            Ok(Wrap::RsaPkcs)
-        } else if input.eq_ignore_ascii_case("rsa-pkcs-oaep") {
-            Ok(Wrap::RsaPkcsOaep)
-        } else {
-            Err(HsmError::Unsupported(format!("invalid variant: {input}")).into())
-        }
-    }
-}
-
 impl Wrap {
-    pub const HELP: &'static str =
-        "[allowed values: aes-key-wrap, aes-key-wrap-pad, rsa-pkcs, rsa-pkcs-oaep]";
     pub fn mechanism(&self) -> Result<Mechanism<'_>> {
         match self {
             Wrap::AesKeyWrap => Ok(Mechanism::AesKeyWrap),
