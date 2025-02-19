@@ -27,7 +27,7 @@ pub struct Import {
     /// Unwrap the imported key with a wrapping key.
     #[arg(long)]
     unwrap: Option<String>,
-    #[arg(long, default_value = "rsa-pkcs-oaep", help=Wrap::HELP)]
+    #[arg(long, default_value = "rsa-pkcs")]
     unwrap_mechanism: Wrap,
     filename: PathBuf,
 }
