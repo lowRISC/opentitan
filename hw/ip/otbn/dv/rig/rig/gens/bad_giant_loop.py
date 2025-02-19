@@ -86,7 +86,7 @@ class BadGiantLoop(Loop):
         if iters is None:
             return None
 
-        iters_opval, num_iters, warp = iters
+        iters_opval, _num_iters, _warp = iters
         hd_addr = model.pc
         hd_insn = ProgInsn(insn, [iters_opval, enc_bodysize], None)
 

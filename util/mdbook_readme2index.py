@@ -42,7 +42,7 @@ def main() -> None:
             sys.exit(1)
 
     # load both the context and the book from stdin
-    context, book = json.load(sys.stdin)
+    _context, book = json.load(sys.stdin)
 
     for chapter in md_utils.chapters(book["sections"]):
         chapter["content"] = RM2IDX_PATTERN_INLINE.sub(r"\1index\2", chapter["content"])

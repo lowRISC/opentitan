@@ -46,7 +46,7 @@ class Jump(SnippetGen):
         if ret is None:
             return None
 
-        prog_insn, snippet, model = ret
+        _prog_insn, snippet, model = ret
         return (snippet, model)
 
     def gen_tgt(self,

@@ -823,7 +823,7 @@ class Model:
         if not exp_shape:
             raise RuntimeError('Unexpected shape for bn.lid')
 
-        grd, grs1, offset, grs1_inc, grd_inc = op_vals
+        grd, grs1, _offset, grs1_inc, grd_inc = op_vals
         grd_val = self.get_reg('gpr', grd)
         grs1_val = self.get_reg('gpr', grs1)
 
@@ -865,7 +865,7 @@ class Model:
         if not exp_shape:
             raise RuntimeError('Unexpected shape for bn.sid')
 
-        grs1, grs2, offset, grs1_inc, grs2_inc = op_vals
+        grs1, grs2, _offset, grs1_inc, grs2_inc = op_vals
         grs1_val = self.get_reg('gpr', grs1)
         grs2_val = self.get_reg('gpr', grs2)
 

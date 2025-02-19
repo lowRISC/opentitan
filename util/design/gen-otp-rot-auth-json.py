@@ -184,7 +184,7 @@ def main():
         json_in = hjson.load(f)
 
     partition_parser = RotCreatorAuthCodesign(json_in)
-    partition_buffer, digest = partition_parser.build_partition_buffer()
+    _partition_buffer, digest = partition_parser.build_partition_buffer()
     partition_parser.update_json_with_partition_digest(digest)
 
     with open(args.output, 'w') as f:

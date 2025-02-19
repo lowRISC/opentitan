@@ -37,7 +37,7 @@ def main() -> None:
     (base_content, bignum_content) = get_listings()
 
     # load both the context and the book from stdin
-    context, book = json.load(sys.stdin)
+    _context, book = json.load(sys.stdin)
 
     isa_book_path = None
     for chapter in md_utils.chapters(book["sections"]):

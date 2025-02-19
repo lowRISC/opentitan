@@ -182,7 +182,7 @@ class BadDeepLoop(SnippetGen):
             jump_ret = self.jump_gen.gen_tgt(model, program, gap_lo)
             assert jump_ret is not None
 
-            jump_insn, jump_snippet, model = jump_ret
+            _jump_insn, jump_snippet, model = jump_ret
             assert model.pc == gap_lo
             body_snippet = jump_snippet
 
