@@ -3,7 +3,6 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from collections import Counter
-import typing
 from typing import Dict, List, Optional, Tuple
 
 from elftools.dwarf.dwarfinfo import DWARFInfo  # type: ignore
