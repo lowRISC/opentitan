@@ -36,6 +36,7 @@ filegroup(
         "rstmgr.h",
         "spi_device.c",
         "spi_device.h",
+        "spi_device_bfpt.h",
     ],
 )
 
@@ -867,8 +868,14 @@ dual_cc_library(
     ),
     hdrs = dual_inputs(
         host = ["mock_spi_device.h"],
-        shared = ["spi_device.h"],
+        shared = [
+            "spi_device.h",
+            "spi_device_bfpt.h",
+        ],
     ),
+    copts = [
+        "-Wno-gnu-flexible-array-initializer",
+    ],
     deps = dual_inputs(
         device = [
             "//hw/top:flash_ctrl_c_regs",
