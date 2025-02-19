@@ -144,13 +144,10 @@
       name: gcm_save_and_restore
       desc: '''
             Verify that saving and restoring contexts in GCM works correctly.
-            When triggered, two different scenarios are possible:
-              - Save and restore the same context
-              - Save and restore with a different message scheduled in between
-            This feature may be randomly exercised during tests, alternatively a dedicated but randomized test sequence may be used.
+            When triggered, save the current context, clear the entire state, restore the context, and proceed with the operation.
             '''
       stage: V2
-      tests: []
+      tests: ["aes_gcm_save_restore"]
     }
     {
       name: reseeding
