@@ -47,7 +47,7 @@ def get_next_item(arr, index):
 
 
 class Scheduler:
-    """An object that runs one or more Deploy items"""
+    """An object that runs one or more Deploy items."""
 
     def __init__(self, items, launcher_cls, interactive):
         self.items = items
@@ -424,9 +424,7 @@ class Scheduler:
         # weights.
         sum_weight = 0
         slots_filled = 0
-        total_weight = sum(
-            self._queued[t][0].weight for t in self._queued if self._queued[t]
-        )
+        total_weight = sum(self._queued[t][0].weight for t in self._queued if self._queued[t])
 
         for target in self._scheduled:
             if not self._queued[target]:
@@ -490,7 +488,7 @@ class Scheduler:
                 except LauncherBusy as err:
                     log.error("Launcher busy: %s", err)
 
-                    self._queued[target].push(item)
+                    self._queued[target].append(item)
 
                     log.log(
                         VERBOSE,

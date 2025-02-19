@@ -16,7 +16,7 @@ from Launcher import ErrorMessage, Launcher, LauncherBusy, LauncherError
 class LocalLauncher(Launcher):
     """Implementation of Launcher to launch jobs in the user's local workstation."""
 
-    def __init__(self, deploy):
+    def __init__(self, deploy) -> None:
         """Initialize common class members."""
         super().__init__(deploy)
 
