@@ -2,88 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-[project]
-name = "opentitan"
-version = "0.0.0"
-description = "Open-source hardware root-of-trust"
-requires-python = ">=3.10"
+# This configuration file enables ALL Ruff lints. Enable it with:
+#
+# ```
+# ruff check --config ci/lint/ruff.toml
+# ```
+#
+# Currently most files are excluded because they currently fail. If you would like a file
+# to be clean for ALL lints, remove it from the list below.
+#
+# Note: this configuration file should not be in a directory containing any Python,
+# otherwise it will apply to those files even when `--config` is not used.
 
-dependencies = [
-  # Dependency management
-  "uv==0.6.1",
-
-  # Keep sorted
-  "beautifulsoup4==4.12.2",
-  "hjson==3.1.0",
-  "libclang==16.0.0",
-  "libcst == 1.1.0", # 1.2.0+ needs Python 3.9+
-  "lxml ~= 5.0",
-  "mako ~= 1.2.2",
-  "ninja==1.11.1.1",
-  "pluralizer==1.2.0",
-  "pycryptodome ~= 3.19.1",
-  "pyelftools==0.29",
-  "pytest-timeout==2.1.0",
-  "pytest ~= 7.2",
-  "pyyaml ~= 6.0.2",
-  "rich==12.6.0", # maximum version compatible with Python 3.6.8 (used on CentOS7 nightly regression machines)
-  "semantic_version==2.10.0",
-  "tabulate==0.8.10",
-  "typer==0.6.1",
-
-  # Dependencies: bitstreams cache
-  "jsonschema==4.17.3",
-
-  # Dependencies: gen-flash-img.py
-  "pyfinite==1.9.1",
-
-  # Dependencies: dv_sim
-  "enlighten==1.10.2",
-  "mistletoe==0.9.0",
-  # Premailer 3.9.0 broke the API by introducing an allow_loading_external_files
-  # argument that is now mandatory, but didn't exist in previous versions.
-  # To relax the constraint we either need to do a runtime detection, or switch all
-  # users to a newer version.
-  "premailer==3.8.0",
-
-  # Dependencies: check_dif_statuses.py
-  "pydriller ~= 2.7",
-  "termcolor==1.1.0",
-
-  # Linters
-  "flake8 ~= 7.1",
-  "isort==5.10.1",
-  "mypy==0.971",
-  "yapf==0.32.0",
-  "ruff>=0.9.6",
-
-  # Type stubs for mypy checking.
-  "types-pyyaml==6.0.11",
-  "types-tabulate==0.8.11",
-
-  # Dependency of sw/host/vendor/google_verible_verilog_syntax_py
-  "anytree==2.8.0",
-
-  # Dependency of third_party/tock
-  "tockloader==1.13",
-
-  # Development version with OT-specific changes
-  "fusesoc@https://github.com/lowRISC/fusesoc/archive/refs/tags/ot-0.5.dev0.zip",
-
-  # Development version with OT-specific changes
-  "edalize@https://github.com/lowRISC/edalize/archive/refs/tags/v0.4.0.zip",
-
-  # Development version of minimal ChipWhisperer toolchain with latest features
-  # and bug fixes. We fix the version for improved stability and manually update
-  # if necessary.
-  "chipwhisperer@https://github.com/newaetech/chipwhisperer-minimal/archive/2643131b71e528791446ee1bab7359120288f4ab.zip",
-]
-
-[tool.setuptools]
-# This is actually not a python project, we just use pyproject.toml to manage dependencies.
-py-modules = []
-
-[tool.ruff]
 target-version = "py310"
 line-length = 100
 extend-exclude = [
@@ -183,9 +113,9 @@ extend-exclude = [
   "util/version_file.py",
 ]
 
-[tool.ruff.lint]
+[lint]
 preview = true
 explicit-preview-rules = true
-extend-select = ["E303", "W391"]
+select = ["ALL", "E303", "W391"]
 # Ignore conflicting rules as recommended
 ignore = ["D203", "D213", "COM812", "ISC001"]
