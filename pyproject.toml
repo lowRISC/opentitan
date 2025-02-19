@@ -91,17 +91,13 @@ extend-exclude = [
   "*vendor*",
   # Files and directories that currently fail linting. Anyone is welcome to resolve issues
   # in these files and remove them from the list. Please do not add to it unless necessary.
-  "hw/ip/otbn/dv/otbnsim/**/*.py",
   "hw/ip/otbn/dv/rig/rig/**.py",
   "hw/ip/otbn/util/**.py",
-  "hw/ip/rom_ctrl/util/*.py",
   "rules/scripts/bitstreams_workspace*.py",
   "sw/host/cryptotest/testvectors/parsers/*.py",
   "util/design/**/*.py",
-  "util/dvsim/*.py",
   "util/mdbook_*.py",
   "util/otbn_build.py",
-  "util/reggen/*.py",
   "util/tlgen/*.py",
   "util/topgen.py",
   "util/topgen/*.py",
