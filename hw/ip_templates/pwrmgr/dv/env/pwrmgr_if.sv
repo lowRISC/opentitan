@@ -51,7 +51,7 @@ interface pwrmgr_if (
   logic                                                            strap;
   logic                                                            low_power;
 
-  rom_ctrl_pkg::pwrmgr_data_t                   [NumRomInputs-1:0] rom_ctrl;
+  rom_ctrl_pkg::pwrmgr_data_t                   [NumRomInputs-1:0] rom_ctrl_i;
 
   prim_mubi_pkg::mubi4_t                                           sw_rst_req_i;
 
@@ -176,6 +176,12 @@ interface pwrmgr_if (
     sw_rst_req_i = value;
   endfunction
 
+  // This could be in a hypothetical rom_ctrl driver.
+  function automatic void update_rom_ctrl(rom_ctrl_pkg::pwrmgr_data_t ctrl, bit unsigned index);
+    `DV_CHECK(index < NumRomInputs, , , "pwrmgr_if")
+    rom_ctrl_i[index] = ctrl;
+  endfunction
+
   // Sends a main power glitch and disables a design assertion that trips for power glitches.
   task automatic glitch_power_reset();
     rst_main_n = 1'b0;
@@ -201,7 +207,7 @@ interface pwrmgr_if (
     wakeups_i = pwrmgr_pkg::WAKEUPS_DEFAULT;
     rstreqs_i = pwrmgr_pkg::RSTREQS_DEFAULT;
     sw_rst_req_i = prim_mubi_pkg::MuBi4False;
-    rom_ctrl = rom_ctrl_pkg::PWRMGR_DATA_DEFAULT;
+    rom_ctrl_i = '{default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT};
   end
 
   clocking slow_cb @(posedge clk_slow);

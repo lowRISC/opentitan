@@ -161,21 +161,30 @@ class pwrmgr_env_cov extends cip_base_env_cov #(
 
   // This covers the rom inputs that should prevent entering the active state.
   covergroup rom_active_blockers_cg with function sample (
-      logic [3:0] done, logic [3:0] good, logic [3:0] dft, logic [3:0] debug
+% for r in range(NumRomInputs):
+      logic [3:0] done_${r}, logic [3:0] good_${r},
+% endfor
+      logic [3:0] dft, logic [3:0] debug
   );
-    done_cp: coverpoint done {
+% for r in range(NumRomInputs):
+    done_${r}_cp: coverpoint done_${r} {
       `DV_MUBI4_CP_BINS
     }
-    good_cp: coverpoint good {
+    good_${r}_cp: coverpoint good_${r} {
       `DV_MUBI4_CP_BINS
     }
+% endfor
     dft_cp: coverpoint dft {
       `DV_LC_TX_T_CP_BINS
     }
     debug_cp: coverpoint debug {
       `DV_LC_TX_T_CP_BINS
     }
-    blockers_cross: cross done_cp, good_cp, dft_cp, debug_cp;
+    blockers_cross: cross
+% for r in range(NumRomInputs):
+      done_${r}_cp, good_${r}_cp,
+% endfor
+      dft_cp, debug_cp;
   endgroup
 
   function new(string name, uvm_component parent);

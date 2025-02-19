@@ -34,7 +34,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     logic [TL_DW-1:0] value;
     wakeups_t wakeup_en;
     resets_t reset_en;
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     set_nvms_idle();
     setup_interrupt(.enable(1'b1));
 
@@ -56,7 +56,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
     cfg.slow_clk_rst_vif.wait_clks(cycles_before_wakeup);
     cfg.pwrmgr_vif.update_wakeups(wakeups);
 
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
     `uvm_info(`gfn, "smoke back from wakeup", UVM_MEDIUM)
 
     check_wake_status(wakeups & wakeup_en);
@@ -79,7 +79,7 @@ class pwrmgr_smoke_vseq extends pwrmgr_base_vseq;
 
     // Now bring it back: the slow fsm doesn't participate on this, so we cannot
     // rely on the ctrl_cfg_regwen CSR. Wait for the reset status to clear.
-    wait_for_fast_fsm(FastFsmActive);
+    wait_for_rom_and_active();
 
     // The reset_status CSR should be clear since the unit requesting reset
     // should have been reset, so the incoming reset should have cleared.
