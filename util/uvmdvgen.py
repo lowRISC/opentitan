@@ -11,10 +11,9 @@ import logging as log
 import re
 import sys
 
-import gen_agent
-import gen_env
-
-VENDOR_DEFAULT = "lowrisc"
+from uvmdvgen import gen_agent
+from uvmdvgen import gen_env
+from uvmdvgen import VENDOR_DEFAULT
 
 
 def main():
