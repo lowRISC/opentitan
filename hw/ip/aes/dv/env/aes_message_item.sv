@@ -333,7 +333,7 @@ class aes_message_item extends uvm_sequence_item;
     if (item.mode == AES_GCM) begin
       if (item.item_type == AES_GCM_AAD) begin
         add_aad_item(item);
-      end else begin
+      end else if (item.item_type == AES_DATA) begin
         `uvm_info(`gfn, $sformatf("ADDING DATA ITEM TYPE IS %s", item.item_type.name()), UVM_LOW)
         add_data_item(item);
       end

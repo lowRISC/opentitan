@@ -105,10 +105,12 @@ class aes_scoreboard extends cip_base_scoreboard #(
 
   function void on_ctrl_gcm_shadowed_write(logic [31:0] wdata);
     case (get_field_val(ral.ctrl_gcm_shadowed.phase, wdata))
-      GCM_INIT:  input_item.item_type = AES_CFG;
-      GCM_TEXT:  input_item.item_type = AES_DATA;
-      GCM_AAD:   input_item.item_type = AES_GCM_AAD;
-      GCM_TAG:   input_item.item_type = AES_GCM_TAG;
+      GCM_INIT:     input_item.item_type = AES_CFG;
+      GCM_TEXT:     input_item.item_type = AES_DATA;
+      GCM_AAD:      input_item.item_type = AES_GCM_AAD;
+      GCM_TAG:      input_item.item_type = AES_GCM_TAG;
+      GCM_SAVE:     input_item.item_type = AES_GCM_SAVE;
+      GCM_RESTORE:  input_item.item_type = AES_GCM_RESTORE;
       default:   input_item.item_type = AES_CFG;
     endcase
 
