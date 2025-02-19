@@ -113,6 +113,13 @@
       local:     "true",
       expose:    "true",
       default:   "2"
+    }
+    { name:      "EccCorrection",
+      desc:      "Enable single-bit error correction and error logging",
+      type:      "bit",
+      local:     "false",
+      expose:    "true",
+      default:   "0"
     },
     { name:      "RaclPolicySelRangesRamNum",
       desc:      "Number of Racl Policy Selection Ranges for the Ram interface",
@@ -247,6 +254,16 @@
         Incoming array of RACL policy ranges.
       '''
     }
+    { struct:  "sram_error_t",
+      package: "sram_ctrl_pkg",
+      width:   "1"
+      type:    "uni",
+      name:    "sram_rerror",
+      act:     "req",
+      desc:    '''
+               SRAM read error indicating correctable and uncorrectable ECC errors.
+               '''
+    },
   ]
 
   /////////////////////

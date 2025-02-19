@@ -26,15 +26,18 @@ module sram_ctrl
   parameter int NumPrinceRoundsHalf                        = 3,
   // Number of outstanding TLUL transfers
   parameter int Outstanding                                = 2,
+  // Enable single-bit error correction and error logging
+  parameter bit                         EccCorrection      = 0,
+  // RACL configuration
+  parameter bit                         EnableRacl       = 1'b0,
+  parameter bit                         RaclErrorRsp     = EnableRacl,
+  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}},
+  parameter int unsigned                RaclPolicySelRangesRamNum = 1,
   // Random netlist constants
   parameter  otp_ctrl_pkg::sram_key_t   RndCnstSramKey   = RndCnstSramKeyDefault,
   parameter  otp_ctrl_pkg::sram_nonce_t RndCnstSramNonce = RndCnstSramNonceDefault,
   parameter  lfsr_seed_t                RndCnstLfsrSeed  = RndCnstLfsrSeedDefault,
-  parameter  lfsr_perm_t                RndCnstLfsrPerm  = RndCnstLfsrPermDefault,
-  parameter bit                         EnableRacl       = 1'b0,
-  parameter bit                         RaclErrorRsp     = EnableRacl,
-  parameter top_racl_pkg::racl_policy_sel_t RaclPolicySelVecRegs[NumRegsRegs] = '{NumRegsRegs{0}},
-  parameter int unsigned RaclPolicySelRangesRamNum = 1
+  parameter  lfsr_perm_t                RndCnstLfsrPerm  = RndCnstLfsrPermDefault
 ) (
   // SRAM Clock
   input  logic                                               clk_i,
@@ -69,7 +72,9 @@ module sram_ctrl
   input  otp_ctrl_pkg::sram_otp_key_rsp_t                    sram_otp_key_i,
   // config
   input   prim_ram_1p_pkg::ram_1p_cfg_t     [NumRamInst-1:0] cfg_i,
-  output  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o
+  output  prim_ram_1p_pkg::ram_1p_cfg_rsp_t [NumRamInst-1:0] cfg_rsp_o,
+  // Error record
+  output sram_ctrl_pkg::sram_error_t                         sram_rerror_o
 );
 
   import lc_ctrl_pkg::lc_tx_t;
@@ -505,9 +510,10 @@ module sram_ctrl
   logic [AddrWidth-1:0] tlul_addr;
   logic [DataWidth-1:0] tlul_wdata, tlul_wmask;
 
-  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid;
-  logic [AddrWidth-1:0] sram_addr;
-  logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata;
+  logic sram_intg_error, sram_req, sram_gnt, sram_we, sram_rvalid, sram_rvalid_scr;
+  logic [1:0] sram_rerror, sram_rerror_scr;
+  logic [AddrWidth-1:0] sram_addr, sram_rerror_addr_scr;
+  logic [DataWidth-1:0] sram_wdata, sram_wmask, sram_rdata, sram_rdata_scr;
   logic                 sram_wpending, sram_wr_collision;
 
   logic sram_compound_txn_in_progress;
@@ -549,7 +555,7 @@ module sram_ctrl
     .user_rsvd_o                (),
     .rdata_i                    (sram_rdata),
     .rvalid_i                   (sram_rvalid),
-    .rerror_i                   ('0),
+    .rerror_i                   (sram_rerror),
     .compound_txn_in_progress_o (sram_compound_txn_in_progress),
     .readback_en_i              (reg_readback_en),
     .readback_error_o           (readback_error),
@@ -576,6 +582,82 @@ module sram_ctrl
   assign sram_addr       = (init_req) ? init_cnt          : tlul_addr;
   assign sram_wdata      = (init_req) ? lfsr_out_integ    : tlul_wdata;
   assign sram_wmask      = (init_req) ? {DataWidth{1'b1}} : tlul_wmask;
+
+  if (EccCorrection) begin : gen_ecc_correction
+    // Detect ECC errors and decode data. If data is correctable, data is genuine and we
+    // can use it further and re-encode
+    logic [31:0] dec_data;
+    logic [1:0] ecc_error;
+    prim_secded_inv_39_32_dec u_dec (
+      .data_i     (sram_rdata_scr),
+      .data_o     (dec_data),
+      .syndrome_o (),
+      .err_o      (ecc_error)
+    );
+
+    logic [DataWidth-1:0] ecc_enc_data;
+    prim_secded_inv_39_32_enc u_enc (
+      .data_i(dec_data),
+      .data_o(ecc_enc_data)
+    );
+
+    logic uncorrectable_error_q;
+    prim_flop #(
+      .Width(1)
+    ) u_flop_uncorr_error (
+      .clk_i,
+      .rst_ni,
+      .d_i(ecc_error[1]),
+      .q_o(uncorrectable_error_q)
+    );
+
+    // Correctable errors are corrected.
+    // Uncorrectable errors are passed through to the requester.
+    assign sram_rerror[0] = 1'b0;
+    assign sram_rerror[1] = uncorrectable_error_q;
+
+    // Error log if any error happened
+    assign sram_rerror_o.valid   = sram_rvalid_scr & |ecc_error;
+    assign ecc_error.correctable = sram_rvalid_scr & ~ecc_error[1];
+
+    // Translate word address to byte address and fill remaining bits with 0
+    always_comb begin
+      sram_rerror_o.address               = '0;
+      sram_rerror_o.address[2+:AddrWidth] = sram_rerror_addr_scr;
+    end
+
+    prim_flop #(
+      .Width(1)
+    ) u_flop_rvalid (
+      .clk_i,
+      .rst_ni,
+      .d_i(sram_rvalid_scr),
+      .q_o(sram_rvalid)
+    );
+
+    prim_flop #(
+      .Width(DataWidth)
+    ) u_flop_enc_data (
+      .clk_i,
+      .rst_ni,
+      .d_i(ecc_enc_data),
+      .q_o(sram_rdata)
+    );
+
+    // We don't use the read error from the prim, we re-compute it here
+    logic unused_rerror;
+    assign unused_rerror = ^sram_rerror_scr;
+  end else begin : gen_no_ecc_correction
+    assign sram_rdata  = sram_rdata_scr;
+    assign sram_rerror = sram_rerror_scr;
+    assign sram_rvalid = sram_rvalid_scr;
+    // ECC errors are not detected (and thus not reported either) in this configuration.
+    assign sram_rerror_o = '0;
+
+    // Error address not used here
+    logic unused_rerror_addr;
+    assign unused_rerror_addr = ^sram_rerror_addr_scr;
+  end
 
   // The SRAM scrambling wrapper will not accept any transactions while the
   // key req is pending or if we have escalated. Note that we're not using
@@ -613,10 +695,10 @@ module sram_ctrl
     .addr_i           (sram_addr),
     .wdata_i          (sram_wdata),
     .wmask_i          (sram_wmask),
-    .rdata_o          (sram_rdata),
-    .rvalid_o         (sram_rvalid),
-    .rerror_o         ( ),
-    .raddr_o          ( ),
+    .rdata_o          (sram_rdata_scr),
+    .rvalid_o         (sram_rvalid_scr),
+    .rerror_o         (sram_rerror_scr),
+    .raddr_o          (sram_rerror_addr_scr),
     .cfg_i,
     .cfg_rsp_o,
     .wr_collision_o   (sram_wr_collision),
@@ -639,6 +721,7 @@ module sram_ctrl
   `ASSERT_KNOWN(AlertOutKnown_A,   alert_tx_o)
   `ASSERT_KNOWN(SramOtpKeyKnown_A, sram_otp_key_o)
   `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
+  `ASSERT_KNOWN(SramRerrorKnown_A, sram_rerror_o)
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntCheck_A,

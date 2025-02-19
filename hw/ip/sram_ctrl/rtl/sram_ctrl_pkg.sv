@@ -31,4 +31,15 @@ package sram_ctrl_pkg;
   parameter lfsr_perm_t RndCnstLfsrPermDefault = {
     160'h438131ae2cb71ffdd2e4c29a1f412231747cd7b2
   };
+
+  //////////////////////
+  // Type definitions //
+  //////////////////////
+
+  typedef struct packed {
+    logic                      valid;
+    logic                      correctable;
+    logic [top_pkg::TL_AW-1:0] address;
+  } sram_error_t;
+
 endpackage : sram_ctrl_pkg
