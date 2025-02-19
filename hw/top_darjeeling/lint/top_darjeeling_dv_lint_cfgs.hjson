@@ -175,6 +175,11 @@
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
                   rel_path: "hw/ip/rv_timer/dv/lint/{tool}"
              },
+             {    name: soc_dbg_ctrl
+                  fusesoc_core: lowrisc:dv:soc_dbg_ctrl_sim
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  rel_path: "hw/ip/soc_dbg_ctrl/dv/lint/{tool}"
+             },
              {    name: spi_device
                   fusesoc_core: lowrisc:dv:spi_device_sim
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
