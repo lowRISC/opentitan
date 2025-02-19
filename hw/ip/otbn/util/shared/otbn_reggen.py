@@ -9,7 +9,7 @@ from typing import Optional, Tuple
 
 from reggen import ip_block, reg_block
 
-_LR_RETVAL = None  # type: Optional[Tuple[int, object]]
+_LR_RETVAL: Optional[Tuple[int, object]] = None
 
 
 def load_registers() -> Tuple[int, object]:
