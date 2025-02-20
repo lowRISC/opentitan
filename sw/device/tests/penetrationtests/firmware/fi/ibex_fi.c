@@ -151,6 +151,7 @@ OT_SECTION(".data")
 static volatile uint32_t sram_main_buffer[256];
 
 // Make sure that this function does not get optimized by the compiler.
+OT_USED
 void increment_counter(void) __attribute__((optnone)) {
   asm volatile("addi x5, x5, 1");
 }
@@ -334,6 +335,7 @@ static inline void read_temp_regs(uint32_t buffer[]) {
 }
 
 // Make sure that this function does not get optimized by the compiler.
+OT_USED
 void not_increment_counter(void) __attribute__((optnone)) {
   asm volatile("ret");
   asm volatile(ADDI10);
