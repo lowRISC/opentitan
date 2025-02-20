@@ -342,6 +342,7 @@ manifest(d = {
 
 opentitan_binary(
     name = "rom_ext_slot_a_bad_address_translation",
+    testonly = True,
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:test_key_0_ecdsa_p256": "test_key_0"},
     exec_env = [
         "//hw/top_earlgrey:fpga_cw310",
@@ -356,6 +357,7 @@ opentitan_binary(
         ":rom_ext",
         "//sw/device/lib/crt",
         "//sw/device/silicon_creator/lib:manifest_def",
-        "//sw/device/silicon_creator/rom_ext/keys/fake",
+        "//sw/device/silicon_creator/lib/ownership:test_owner",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake",
     ],
 )
