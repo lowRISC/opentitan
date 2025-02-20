@@ -132,6 +132,9 @@ package dma_reg_pkg;
     } initial_transfer;
     struct packed {
       logic        q;
+    } digest_swap;
+    struct packed {
+      logic        q;
     } hardware_handshake_enable;
     struct packed {
       logic [3:0]  q;
@@ -319,23 +322,23 @@ package dma_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    dma_reg2hw_intr_state_reg_t intr_state; // [1043:1041]
-    dma_reg2hw_intr_enable_reg_t intr_enable; // [1040:1038]
-    dma_reg2hw_intr_test_reg_t intr_test; // [1037:1032]
-    dma_reg2hw_alert_test_reg_t alert_test; // [1031:1030]
-    dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1029:998]
-    dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [997:966]
-    dma_reg2hw_dst_addr_lo_reg_t dst_addr_lo; // [965:934]
-    dma_reg2hw_dst_addr_hi_reg_t dst_addr_hi; // [933:902]
-    dma_reg2hw_addr_space_id_reg_t addr_space_id; // [901:894]
-    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [893:861]
-    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [860:828]
-    dma_reg2hw_range_valid_reg_t range_valid; // [827:827]
-    dma_reg2hw_range_regwen_reg_t range_regwen; // [826:823]
-    dma_reg2hw_total_data_size_reg_t total_data_size; // [822:791]
-    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [790:759]
-    dma_reg2hw_transfer_width_reg_t transfer_width; // [758:757]
-    dma_reg2hw_control_reg_t control; // [756:748]
+    dma_reg2hw_intr_state_reg_t intr_state; // [1044:1042]
+    dma_reg2hw_intr_enable_reg_t intr_enable; // [1041:1039]
+    dma_reg2hw_intr_test_reg_t intr_test; // [1038:1033]
+    dma_reg2hw_alert_test_reg_t alert_test; // [1032:1031]
+    dma_reg2hw_src_addr_lo_reg_t src_addr_lo; // [1030:999]
+    dma_reg2hw_src_addr_hi_reg_t src_addr_hi; // [998:967]
+    dma_reg2hw_dst_addr_lo_reg_t dst_addr_lo; // [966:935]
+    dma_reg2hw_dst_addr_hi_reg_t dst_addr_hi; // [934:903]
+    dma_reg2hw_addr_space_id_reg_t addr_space_id; // [902:895]
+    dma_reg2hw_enabled_memory_range_base_reg_t enabled_memory_range_base; // [894:862]
+    dma_reg2hw_enabled_memory_range_limit_reg_t enabled_memory_range_limit; // [861:829]
+    dma_reg2hw_range_valid_reg_t range_valid; // [828:828]
+    dma_reg2hw_range_regwen_reg_t range_regwen; // [827:824]
+    dma_reg2hw_total_data_size_reg_t total_data_size; // [823:792]
+    dma_reg2hw_chunk_data_size_reg_t chunk_data_size; // [791:760]
+    dma_reg2hw_transfer_width_reg_t transfer_width; // [759:758]
+    dma_reg2hw_control_reg_t control; // [757:748]
     dma_reg2hw_src_config_reg_t src_config; // [747:746]
     dma_reg2hw_dst_config_reg_t dst_config; // [745:744]
     dma_reg2hw_status_reg_t status; // [743:737]
