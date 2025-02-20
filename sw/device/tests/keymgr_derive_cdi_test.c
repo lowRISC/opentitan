@@ -416,6 +416,8 @@ bool test_main(void) {
       rstmgr_testutils_reason_get();
   size_t reset_counter;
 
+  ret_sram_testutils_init();
+
   // Reset the reset counter after the first power up.
   if (reset_info == kDifRstmgrResetInfoPor) {
     CHECK_STATUS_OK(ret_sram_testutils_counter_clear(0));
