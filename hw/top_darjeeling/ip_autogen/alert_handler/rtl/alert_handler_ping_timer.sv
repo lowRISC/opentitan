@@ -276,7 +276,7 @@ module alert_handler_ping_timer import alert_handler_pkg::*; #(
 
   // generate ping enable vector
   assign alert_ping_req_o = NAlerts'(alert_ping_en) << id_to_ping_q;
-  assign esc_ping_req_o   = EscSenderIdxWidth'(esc_ping_en) << esc_cnt;
+  assign esc_ping_req_o   = N_ESC_SEV'(esc_ping_en) << esc_cnt;
 
   // under normal operation, these signals should never be asserted.
   // we place hand instantiated buffers here such that these signals are not
