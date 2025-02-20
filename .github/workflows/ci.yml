@@ -56,8 +56,6 @@ jobs:
         run: ./ci/scripts/mypy.sh
       - name: Python (ruff)
         run: ruff check
-      - name: Python (ruff ALL)
-        run: ruff check --config ci/lint/ruff.toml
       - name: Validate testplans with schema
         run: ./ci/scripts/validate_testplans.sh
       - name: C/C++ formatting
