@@ -4,6 +4,9 @@
 
 #include "sw/device/lib/testing/keymgr_dpe_testutils.h"
 
+#include "dt/dt_keymgr_dpe.h"
+#include "dt/dt_otp_ctrl.h"
+#include "dt/dt_rstmgr.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
 #include "sw/device/lib/dif/dif_rstmgr.h"
@@ -14,15 +17,12 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/silicon_creator/lib/base/chip.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-
 status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
                                       uint32_t slot_dst_sel) {
   dif_rstmgr_t rstmgr;
   dif_rstmgr_reset_info_bitfield_t info;
 
-  TRY(dif_rstmgr_init(
-      mmio_region_from_addr(TOP_DARJEELING_RSTMGR_AON_BASE_ADDR), &rstmgr));
+  TRY(dif_rstmgr_init_from_dt(kDtRstmgrAon, &rstmgr));
   info = rstmgr_testutils_reason_get();
 
   // POR reset.
@@ -30,8 +30,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
     LOG_INFO(
         "Powered up for the first time, lock SECRET2 and SECRET3 partitions");
     dif_otp_ctrl_t otp;
-    TRY(dif_otp_ctrl_init(
-        mmio_region_from_addr(TOP_DARJEELING_OTP_CTRL_CORE_BASE_ADDR), &otp));
+    TRY(dif_otp_ctrl_init_from_dt(kDtOtpCtrl, &otp));
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret2,
                                           0));
     TRY(otp_ctrl_testutils_lock_partition(&otp, kDifOtpCtrlPartitionSecret3,
@@ -52,9 +51,7 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
         "Powered up for the second time, actuate keymgr_dpe and perform test.");
 
     // Initialize keymgr_dpe context.
-    TRY(dif_keymgr_dpe_init(
-        mmio_region_from_addr(TOP_DARJEELING_KEYMGR_DPE_BASE_ADDR),
-        keymgr_dpe));
+    TRY(dif_keymgr_dpe_init_from_dt(kDtKeymgrDpe, keymgr_dpe));
 
     // Advance to Initialized state.
     TRY(keymgr_dpe_testutils_check_state(keymgr_dpe, kDifKeymgrDpeStateReset));
