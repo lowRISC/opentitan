@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "dt/dt_dma.h"
+#include "dt/dt_pinmux.h"
+#include "dt/dt_spi_host.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_base.h"
@@ -15,9 +18,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/status.h"
-
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "spi_host_regs.h"  // Generated.
 
 // The TX_SIZE must be in sync with the data size in spi_device_dma_seq.sv
 // 1 SPI segment can only transfer at maximum 512 bytes
@@ -48,20 +48,17 @@ static dif_dma_t dma;
 
 bool test_main(void) {
   // Initialize the pinmux.
-  CHECK_DIF_OK(dif_pinmux_init(
-      mmio_region_from_addr(TOP_DARJEELING_PINMUX_AON_BASE_ADDR), &pinmux));
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxAon, &pinmux));
   pinmux_testutils_init(&pinmux);
 
   // Initialise DMA.
-  CHECK_DIF_OK(
-      dif_dma_init(mmio_region_from_addr(TOP_DARJEELING_DMA_BASE_ADDR), &dma));
+  CHECK_DIF_OK(dif_dma_init_from_dt(kDtDma, &dma));
 
   // Setup pinmux if required, enable weak pull-up on relevant pads
   setup_pads_spi_host0(&pinmux);  // direct
 
   // Setup spi host configuration
-  CHECK_DIF_OK(dif_spi_host_init(
-      mmio_region_from_addr(TOP_DARJEELING_SPI_HOST0_BASE_ADDR), &spi_host));
+  CHECK_DIF_OK(dif_spi_host_init_from_dt((dt_spi_host_t)0, &spi_host));
   init_spi_host(&spi_host, (uint32_t)kClockFreqHiSpeedPeripheralHz,
                 CHUNK_SIZE / 4);
 
