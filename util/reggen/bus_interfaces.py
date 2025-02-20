@@ -167,7 +167,9 @@ class BusInterfaces:
 
     @staticmethod
     def _if_dict(is_host: bool, name: Optional[str]) -> Dict[str, object]:
-        ret = {"protocol": "tlul", "direction": "host" if is_host else "device"}  # type: Dict[str, object]
+        ret: Dict[str, object] = {"protocol": "tlul"}
+
+        ret["direction"] = "host" if is_host else "device"
 
         if name is not None:
             ret["name"] = name

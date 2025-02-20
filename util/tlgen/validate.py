@@ -38,7 +38,8 @@ from .xbar import Xbar
 # }
 addrs = {
     "name": "Address configurations",
-    "description": """Device Node address configuration. It contains the base address and the size in bytes.
+    "description": """\
+Device Node address configuration. It contains the base address and the size in bytes.
 """,
     "required": {
         "base_addrs": ["g", "Base addresses of the device. It is required for the device"],

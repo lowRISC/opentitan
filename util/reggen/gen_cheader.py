@@ -21,6 +21,8 @@ from reggen.multi_register import MultiRegister
 from reggen.signal import Signal
 from reggen.window import Window
 
+BITFIELD_DEFN = "((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})"
+
 
 def genout(outfile: TextIO, msg: str) -> None:
     outfile.write(msg)
@@ -153,9 +155,7 @@ def gen_cdefine_register(
                     gen_define(
                         dname + "_FIELD",
                         [],
-                        "((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})".format(
-                            dname=dname
-                        ),
+                        BITFIELD_DEFN.format(dname=dname),
                         existing_defines,
                     ),
                 )
@@ -309,9 +309,7 @@ def gen_cdefines_interrupt_field(
                 gen_define(
                     defname + "_FIELD",
                     [],
-                    "((bitfield_field32_t) {{ .mask = {dname}_MASK, .index = {dname}_OFFSET }})".format(
-                        dname=defname
-                    ),
+                    BITFIELD_DEFN.format(dname=defname),
                     existing_defines,
                 ),
             )

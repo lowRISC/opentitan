@@ -12,7 +12,7 @@ import logging as log
 def main():
     parser = argparse.ArgumentParser(
         prog="keccak round constant generator",
-        description="""This tool generates the round constants based on the given max round number""",
+        description="""Generate round constants based on the given max round number""",
     )
     parser.add_argument(
         "-r",
