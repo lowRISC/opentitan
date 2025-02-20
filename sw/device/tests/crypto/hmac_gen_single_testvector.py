@@ -10,9 +10,9 @@ import sys
 import hjson
 from Crypto.Hash import HMAC, SHA256, SHA384, SHA512
 
-'''
+"""
 Generate a HMAC/SHA2 vectors for specified sizes.
-'''
+"""
 
 
 def validate_inputs(operation, input_msg_len, key_len):
@@ -27,7 +27,6 @@ def validate_inputs(operation, input_msg_len, key_len):
 # Generate a HMAC test vector and return it as string in hjson format.
 # The input length arguments are all in bit size.
 def gen_random_test(seed, operation, input_msg_len, key_len):
-
     validate_inputs(operation, input_msg_len, key_len)
 
     random_instance = random.Random(seed)
@@ -50,53 +49,47 @@ def gen_random_test(seed, operation, input_msg_len, key_len):
 
     mac.update(input_msg)
     digest = mac.hexdigest()
-    vector_identifier = \
-        "./sw/device/tests/crypto/hmac_gen_single_testvector.py "\
-        "--seed={} --key_len={} --operation={} --input_msg_len={} "\
-        "<output-file>"\
-        .format(seed, key_len, operation, input_msg_len)
+    vector_identifier = (
+        "./sw/device/tests/crypto/hmac_gen_single_testvector.py "
+        "--seed={} --key_len={} --operation={} --input_msg_len={} "
+        "<output-file>".format(seed, key_len, operation, input_msg_len)
+    )
 
     print(vector_identifier)
     testvec = {
-        'vector_identifier': vector_identifier,
-        'operation': operation,
-        'input_msg': '0x' + input_msg.hex(),
-        'digest': '0x' + digest,
+        "vector_identifier": vector_identifier,
+        "operation": operation,
+        "input_msg": "0x" + input_msg.hex(),
+        "digest": "0x" + digest,
     }
 
     if operation in ["HMAC256", "HMAC384", "HMAC512"]:
-        testvec['key'] = '0x' + key.hex()
+        testvec["key"] = "0x" + key.hex()
     return testvec
 
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--seed',
-                        required=True,
-                        type=int,
-                        help='Seed for randomness.')
-    parser.add_argument('--key_len',
-                        required=True,
-                        type=int,
-                        default=0,
-                        help='Key length (in bits).')
-    parser.add_argument('--operation',
-                        required=True,
-                        choices=['SHA256', 'SHA384', 'SHA512', 'HMAC256', 'HMAC384', 'HMAC512'],
-                        help='SHA/HMAC mode (e.g. SHA256 or HMAC256).')
-    parser.add_argument('--input_msg_len',
-                        required=True,
-                        type=int,
-                        help='Input message length (in bits).')
-    parser.add_argument('outfile',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
+    parser.add_argument("--seed", required=True, type=int, help="Seed for randomness.")
+    parser.add_argument(
+        "--key_len", required=True, type=int, default=0, help="Key length (in bits)."
+    )
+    parser.add_argument(
+        "--operation",
+        required=True,
+        choices=["SHA256", "SHA384", "SHA512", "HMAC256", "HMAC384", "HMAC512"],
+        help="SHA/HMAC mode (e.g. SHA256 or HMAC256).",
+    )
+    parser.add_argument(
+        "--input_msg_len", required=True, type=int, help="Input message length (in bits)."
+    )
+    parser.add_argument(
+        "outfile", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
 
     args = parser.parse_args()
 
-    testvecs = gen_random_test(args.seed, args.operation, args.input_msg_len,
-                               args.key_len)
+    testvecs = gen_random_test(args.seed, args.operation, args.input_msg_len, args.key_len)
 
     hjson.dump(testvecs, args.outfile)
     args.outfile.close()
@@ -104,5 +97,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

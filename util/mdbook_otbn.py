@@ -20,15 +20,15 @@ REPO_TOP = Path(__file__).resolve().parents[1]
 
 # We are looking to match on the following example strings
 # {{#otbn-isa base }}
-OTBN_ISA_BASE_PATTERN = re.compile(r'\{\{#otbn-isa\s+base\s*\}\}')
-OTBN_ISA_BIGNUM_PATTERN = re.compile(r'\{\{#otbn-isa\s+bignum\s*\}\}')
+OTBN_ISA_BASE_PATTERN = re.compile(r"\{\{#otbn-isa\s+base\s*\}\}")
+OTBN_ISA_BIGNUM_PATTERN = re.compile(r"\{\{#otbn-isa\s+bignum\s*\}\}")
 
 # {{#otbn-insn-ref insn }}
-OTBN_INSNREF_PATTERN = re.compile(r'\{\{#otbn-insn-ref\s+?(.+?)\s*?\}\}')
+OTBN_INSNREF_PATTERN = re.compile(r"\{\{#otbn-insn-ref\s+?(.+?)\s*?\}\}")
 
-OTBN_SCRIPT = REPO_TOP / 'hw/ip/otbn/util/yaml_to_doc.py'
-OTBN_CFG = REPO_TOP / 'hw/ip/otbn/data/insns.yml'
-OTBN_IMPL = REPO_TOP / 'hw/ip/otbn/dv/otbnsim/sim/insn.py'
+OTBN_SCRIPT = REPO_TOP / "hw/ip/otbn/util/yaml_to_doc.py"
+OTBN_CFG = REPO_TOP / "hw/ip/otbn/data/insns.yml"
+OTBN_IMPL = REPO_TOP / "hw/ip/otbn/dv/otbnsim/sim/insn.py"
 
 
 def main() -> None:
@@ -44,9 +44,9 @@ def main() -> None:
         if chapter["source_path"] is None:
             continue
 
-        if OTBN_ISA_BASE_PATTERN.search(chapter["content"]) \
-                and OTBN_ISA_BIGNUM_PATTERN.search(chapter["content"]):
-
+        if OTBN_ISA_BASE_PATTERN.search(chapter["content"]) and OTBN_ISA_BIGNUM_PATTERN.search(
+            chapter["content"]
+        ):
             chapter["content"] = OTBN_ISA_BASE_PATTERN.sub(base_content, chapter["content"])
             chapter["content"] = OTBN_ISA_BIGNUM_PATTERN.sub(bignum_content, chapter["content"])
 
@@ -62,10 +62,9 @@ def main() -> None:
         return '<a href="/{}#{}"><code>{}</code></a>)'.format(isa_book_path, ref, instr)
 
     for chapter in md_utils.chapters(book["sections"]):
-        chapter["content"] = \
-            OTBN_INSNREF_PATTERN.sub(
-                ref_to_link,
-                chapter["content"],
+        chapter["content"] = OTBN_INSNREF_PATTERN.sub(
+            ref_to_link,
+            chapter["content"],
         )
 
     # dump the book into stdout

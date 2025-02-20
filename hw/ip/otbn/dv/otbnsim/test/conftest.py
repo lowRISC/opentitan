@@ -6,4 +6,4 @@ import os
 import sys
 
 # Make tested code available for import
-sys.path.append(os.path.join(os.path.dirname(__file__), '../'))
+sys.path.append(os.path.join(os.path.dirname(__file__), "../"))

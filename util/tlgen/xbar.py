@@ -9,8 +9,8 @@ from .item import Edge, Node, Host, Device, AsyncFifo, Socket1N, SocketM1
 
 
 class Xbar:
-    """Xbar contains configurations to generate TL-UL crossbar.
-    """
+    """Xbar contains configurations to generate TL-UL crossbar."""
+
     def __init__(self) -> None:
         self.clock = ""  # str  # primary clock of xbar
         self.reset = ""  # str  # primary reset of xbar
@@ -47,16 +47,16 @@ class Xbar:
 
         if len(node.ds) == 0:
             log.error(
-                "Node (%s) doesn't have downstream Node: US(%s), DS(%s)" %
-                (node.name, ' '.join(map(repr, node.us)), ' '.join(
-                    map(repr, node.ds))))
+                "Node (%s) doesn't have downstream Node: US(%s), DS(%s)"
+                % (node.name, " ".join(map(repr, node.us)), " ".join(map(repr, node.ds)))
+            )
         return self.get_downstream_device(node.ds[0].ds)
 
     def get_downstream_device_from_edge(self, edge: Edge) -> Device:
         return self.get_downstream_device(edge.ds)
 
     def get_leaf_from_s1n(self, node: Node, idx: int) -> Device:
-        """ get end-device node from Socket_1n's Downstream port
+        """get end-device node from Socket_1n's Downstream port
 
         Current implementation can't have multiple devices under the tree of
         one downstream port in Socket_1N
@@ -64,8 +64,8 @@ class Xbar:
         return self.get_downstream_device(node.ds[idx].ds)
 
     def get_socket_if_exist(self, node):  # Node -> Node
-        """ return SOCKET_1N or SOCKET_M1 if exists down from the node, else
-            return itself
+        """return SOCKET_1N or SOCKET_M1 if exists down from the node, else
+        return itself
         """
         if isinstance(node, Device):
             log.error("get_socket_if_exist hits DEVICE type (unexpected)")
@@ -77,19 +77,15 @@ class Xbar:
         return self.get_socket_if_exist(node.ds[0].ds)
 
     def get_leaf_from_node(self, node: Node, idx: int) -> Node:
-        """ get end device node from any node, idx is given to look down.
-        """
+        """get end device node from any node, idx is given to look down."""
         num_dev = len(self.get_socket_if_exist(node).ds)
         if idx >= num_dev:
-            log.error(
-                "given index is greater than number of devices under the node")
+            log.error("given index is greater than number of devices under the node")
 
         return self.get_leaf_from_s1n(self.get_socket_if_exist(node), idx)
 
     def get_devices_from_host(self, host: Node) -> List[Device]:
-        devices = list(
-            map(self.get_downstream_device_from_edge,
-                self.get_socket_if_exist(host).ds))
+        devices = list(map(self.get_downstream_device_from_edge, self.get_socket_if_exist(host).ds))
 
         return devices
 
@@ -109,10 +105,7 @@ class Xbar:
             assert host_asid in dnNode.addr_spaces
         edge = Edge(upNode, dnNode)
 
-        if any([
-                e.us.name == edge.us.name and e.ds.name == edge.ds.name
-                for e in self.edges
-        ]):
+        if any([e.us.name == edge.us.name and e.ds.name == edge.ds.name for e in self.edges]):
             return False
 
         self.edges.append(edge)
@@ -122,7 +115,7 @@ class Xbar:
 
         return True
 
-    def insert_node(self, new_node: Node, node: Node) -> 'Xbar':
+    def insert_node(self, new_node: Node, node: Node) -> "Xbar":
         if isinstance(new_node, AsyncFifo):
             if isinstance(node, Host):
                 # Insert node to downstream
@@ -174,8 +167,8 @@ class Xbar:
         else:
             # Caller passes HOST or DEVICE as a new node. Error!
             log.error(
-                "Xbar.insert_node is called with HOST or DEVICE: %s. Ignored" %
-                (new_node.name))
+                "Xbar.insert_node is called with HOST or DEVICE: %s. Ignored" % (new_node.name)
+            )
 
         return self
 
@@ -195,14 +188,14 @@ class Xbar:
         out = "// "
         if indent != 0:
             # not First
-            out += ' ' * indent + '-> '
+            out += " " * indent + "-> "
 
         out += node.name
 
         if not isinstance(node, Device):
             # still more nodes exist under this node
             for ds in node.ds:
-                out += '\n'
+                out += "\n"
                 out += self.repr_tree(ds.ds, indent + 2)
 
         return out

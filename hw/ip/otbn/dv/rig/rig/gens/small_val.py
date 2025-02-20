@@ -16,40 +16,41 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class SmallVal(SnippetGen):
-    '''A snippet generator that generates writes small values to registers
+    """A snippet generator that generates writes small values to registers
 
     We do so using addi (which is modelled fully in model.py), which means we
     can then use those small values for later instructions: useful for things
     like loop counters.
 
-    '''
+    """
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
-        if 'addi' not in insns_file.mnemonic_to_insn:
-            raise RuntimeError('ADDI instruction not in instructions file')
-        self.insn = insns_file.mnemonic_to_insn['addi']
+        if "addi" not in insns_file.mnemonic_to_insn:
+            raise RuntimeError("ADDI instruction not in instructions file")
+        self.insn = insns_file.mnemonic_to_insn["addi"]
 
         # ADDI has three operands: grd, grs1 and imm.
-        if not (len(self.insn.operands) == 3 and
-                isinstance(self.insn.operands[0].op_type, RegOperandType) and
-                self.insn.operands[0].op_type.reg_type == 'gpr' and
-                isinstance(self.insn.operands[1].op_type, RegOperandType) and
-                self.insn.operands[1].op_type.reg_type == 'gpr' and
-                isinstance(self.insn.operands[2].op_type, ImmOperandType) and
-                self.insn.operands[2].op_type.signed):
-            raise RuntimeError('ADDI instruction from instructions file not '
-                               'the shape expected by the SmallVal generator.')
+        if not (
+            len(self.insn.operands) == 3
+            and isinstance(self.insn.operands[0].op_type, RegOperandType)
+            and self.insn.operands[0].op_type.reg_type == "gpr"
+            and isinstance(self.insn.operands[1].op_type, RegOperandType)
+            and self.insn.operands[1].op_type.reg_type == "gpr"
+            and isinstance(self.insn.operands[2].op_type, ImmOperandType)
+            and self.insn.operands[2].op_type.signed
+        ):
+            raise RuntimeError(
+                "ADDI instruction from instructions file not "
+                "the shape expected by the SmallVal generator."
+            )
 
         self.grd_op_type = self.insn.operands[0].op_type
         self.grs1_op_type = self.insn.operands[1].op_type
         self.imm_op_type = self.insn.operands[2].op_type
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Return None if this is the last instruction in the current gap
         # because we need to either jump or do an ECALL to avoid getting stuck.
         if program.get_insn_space_at(model.pc) <= 1:

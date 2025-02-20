@@ -5,10 +5,9 @@
 Generates the documentation for the register tool
 
 """
+
 from reggen.access import SWACCESS_PERMITTED, HWACCESS_PERMITTED
-from reggen import (validate,
-                    ip_block, enum_entry, field,
-                    register, multi_register, window)
+from reggen import validate, ip_block, enum_entry, field, register, multi_register, window
 
 from typing import Any, Optional, TextIO
 
@@ -212,12 +211,10 @@ def doc_tbl_head(outfile: TextIO, use: bool) -> None:
         genout(outfile, "--- | -----------\n")
 
 
-def doc_tbl_line(outfile: TextIO, key: str,
-                 use: Optional[str], desc: Any) -> None:
+def doc_tbl_line(outfile: TextIO, key: str, use: Optional[str], desc: Any) -> None:
     if use is not None:
         desc_key, desc_txt = desc
-        val_type = (validate.val_types[desc_key][0]
-                    if desc_key is not None else None)
+        val_type = validate.val_types[desc_key][0] if desc_key is not None else None
     else:
         assert isinstance(desc, str)
         val_type = None
@@ -226,8 +223,8 @@ def doc_tbl_line(outfile: TextIO, key: str,
     if val_type is not None:
         assert use is not None
         genout(
-            outfile, '{} | {} | {} | {}\n'.format(key, validate.key_use[use],
-                                                  val_type, desc_txt))
+            outfile, "{} | {} | {} | {}\n".format(key, validate.key_use[use], val_type, desc_txt)
+        )
     else:
         genout(outfile, key + " | " + desc_txt + "\n")
 
@@ -235,9 +232,7 @@ def doc_tbl_line(outfile: TextIO, key: str,
 def document(outfile: TextIO) -> None:
     genout(outfile, doc_intro)
     for x in validate.val_types:
-        genout(
-            outfile,
-            validate.val_types[x][0] + " | " + validate.val_types[x][1] + "\n")
+        genout(outfile, validate.val_types[x][0] + " | " + validate.val_types[x][1] + "\n")
 
     genout(outfile, swaccess_intro)
     doc_tbl_head(outfile, False)
@@ -249,47 +244,51 @@ def document(outfile: TextIO) -> None:
     for key, hw_value in HWACCESS_PERMITTED.items():
         doc_tbl_line(outfile, key, None, hw_value[0])
 
-    genout(
-        outfile, "\n\nThe top level of the JSON is a group containing "
-        "the following keys:\n")
+    genout(outfile, "\n\nThe top level of the JSON is a group containing the following keys:\n")
     doc_tbl_head(outfile, True)
     for k, v in ip_block.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
     for k, v in ip_block.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+        doc_tbl_line(outfile, k, "o", v)
     genout(outfile, top_example)
 
     genout(
-        outfile, "\n\nThe list of registers includes register definition "
-        "groups containing the following keys:\n")
+        outfile,
+        "\n\nThe list of registers includes register definition "
+        "groups containing the following keys:\n",
+    )
     doc_tbl_head(outfile, True)
     for k, v in register.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
     for k, v in register.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+        doc_tbl_line(outfile, k, "o", v)
     genout(outfile, register_example)
 
     genout(
-        outfile, "\n\nIn the fields list each field definition is a group "
-        "itself containing the following keys:\n")
+        outfile,
+        "\n\nIn the fields list each field definition is a group "
+        "itself containing the following keys:\n",
+    )
     doc_tbl_head(outfile, True)
     for k, v in field.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
     for k, v in field.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+        doc_tbl_line(outfile, k, "o", v)
     genout(outfile, field_example)
 
     genout(outfile, "\n\nDefinitions in an enumeration group contain:\n")
     doc_tbl_head(outfile, True)
     for k, v in enum_entry.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
 
     genout(
-        outfile, "\n\nThe list of registers may include single entry groups "
-        "to control the offset, open a window or generate registers:\n")
+        outfile,
+        "\n\nThe list of registers may include single entry groups "
+        "to control the offset, open a window or generate registers:\n",
+    )
     doc_tbl_head(outfile, True)
     for x in validate.list_optone:
-        doc_tbl_line(outfile, x, 'o', validate.list_optone[x])
+        doc_tbl_line(outfile, x, "o", validate.list_optone[x])
 
     genout(outfile, offset_intro)
     genout(outfile, regwen_intro)
@@ -297,15 +296,15 @@ def document(outfile: TextIO) -> None:
     genout(outfile, window_intro)
     doc_tbl_head(outfile, True)
     for k, v in window.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
     for k, v in window.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+        doc_tbl_line(outfile, k, "o", v)
 
     genout(outfile, multi_intro)
     doc_tbl_head(outfile, True)
     for k, v in multi_register.REQUIRED_FIELDS.items():
-        doc_tbl_line(outfile, k, 'r', v)
+        doc_tbl_line(outfile, k, "r", v)
     for k, v in multi_register.OPTIONAL_FIELDS.items():
-        doc_tbl_line(outfile, k, 'o', v)
+        doc_tbl_line(outfile, k, "o", v)
 
     genout(outfile, doc_tail)

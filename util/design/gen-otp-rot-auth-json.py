@@ -78,7 +78,6 @@ _DIGEST_FIELD_NAME = "ROT_CREATOR_AUTH_CODESIGN_BLOCK_SHA2_256_HASH"
 
 
 class RotCreatorAuthCodesign:
-
     def __init__(self, json_data):
         self.json_data = json_data
 
@@ -94,8 +93,7 @@ class RotCreatorAuthCodesign:
                 for item in partition["items"]:
                     if item["name"] == item_name:
                         key_value = item["value"]
-                        key_value = key_value[2:] if key_value.startswith(
-                            "0x") else key_value
+                        key_value = key_value[2:] if key_value.startswith("0x") else key_value
                         key_value = binascii.unhexlify(key_value)
                         return key_value
         return None
@@ -116,8 +114,7 @@ class RotCreatorAuthCodesign:
                         return
                 partition["items"].append({"name": item_name, "value": value})
 
-    def build_key_type_buffer(self, key_items: list[str],
-                              num_keys: int) -> bytearray:
+    def build_key_type_buffer(self, key_items: list[str], num_keys: int) -> bytearray:
         """Build the key type buffer.
 
         Args:
@@ -132,9 +129,9 @@ class RotCreatorAuthCodesign:
                 value = self.get_key_value(item + str(i))
                 if value is not None:
                     padding_length = _EXPECTED_ITEM_SIZES[item] - len(value)
-                    bin_data = b'\x00' * padding_length + value
+                    bin_data = b"\x00" * padding_length + value
                 else:
-                    bin_data = b'\x00' * _EXPECTED_ITEM_SIZES[item]
+                    bin_data = b"\x00" * _EXPECTED_ITEM_SIZES[item]
                 reversed_bits = list(bin_data)
                 reversed_bits.reverse()
                 key_struct_buffer += bytes(reversed_bits)
@@ -147,10 +144,8 @@ class RotCreatorAuthCodesign:
             The partition buffer and digest.
         """
         partition_buffer = bytearray()
-        partition_buffer += self.build_key_type_buffer(
-            _STRUCT_ITEM_NAMES_ECDSA, _ECDSA_KEY_COUNT)
-        partition_buffer += self.build_key_type_buffer(_STRUCT_ITEM_NAMES_SPX,
-                                                       _SPX_KEY_COUNT)
+        partition_buffer += self.build_key_type_buffer(_STRUCT_ITEM_NAMES_ECDSA, _ECDSA_KEY_COUNT)
+        partition_buffer += self.build_key_type_buffer(_STRUCT_ITEM_NAMES_SPX, _SPX_KEY_COUNT)
         digest = SHA256.new(partition_buffer).digest()
         return partition_buffer, bytes(digest)
 
@@ -168,26 +163,19 @@ def main():
     parser = argparse.ArgumentParser(
         prog="gen-otp-rot-auth-json",
         description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-i',
-                        '--input',
-                        type=str,
-                        metavar='<path>',
-                        help='Input JSON file path.')
-    parser.add_argument('-o',
-                        '--output',
-                        type=str,
-                        metavar='<path>',
-                        help='Output JSON file path.')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("-i", "--input", type=str, metavar="<path>", help="Input JSON file path.")
+    parser.add_argument("-o", "--output", type=str, metavar="<path>", help="Output JSON file path.")
     args = parser.parse_args()
-    with open(args.input, 'r') as f:
+    with open(args.input, "r") as f:
         json_in = hjson.load(f)
 
     partition_parser = RotCreatorAuthCodesign(json_in)
     _partition_buffer, digest = partition_parser.build_partition_buffer()
     partition_parser.update_json_with_partition_digest(digest)
 
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         f.write(json.dumps(partition_parser.json_data, indent=4))
 
 

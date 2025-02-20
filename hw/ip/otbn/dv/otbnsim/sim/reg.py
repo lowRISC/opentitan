@@ -15,22 +15,17 @@ class TraceRegister(Trace):
 
     def trace(self) -> str:
         if self.new_value is not None:
-            fmt_str = '{{}} = 0x{{:0{}x}}'.format(self.width // 4)
+            fmt_str = "{{}} = 0x{{:0{}x}}".format(self.width // 4)
             return fmt_str.format(self.name, self.new_value)
         else:
-            return '0x' + 'x' * (self.width // 4)
+            return "0x" + "x" * (self.width // 4)
 
     def rtl_trace(self) -> str:
-        return '> {}: {}'.format(self.name,
-                                 Trace.hex_value(self.new_value, self.width))
+        return "> {}: {}".format(self.name, Trace.hex_value(self.new_value, self.width))
 
 
 class Reg:
-    def __init__(self,
-                 parent: Optional['RegFile'],
-                 idx: int,
-                 width: int,
-                 uval: int):
+    def __init__(self, parent: Optional["RegFile"], idx: int, width: int, uval: int):
         assert 0 <= width
         assert 0 <= uval < (1 << width)
 
@@ -61,7 +56,7 @@ class Reg:
         return uval - (1 << self._width if uval >> (self._width - 1) else 0)
 
     def read_unsigned_inverted(self) -> int:
-        '''Read value as an unsigned integer, but invert all bits'''
+        """Read value as an unsigned integer, but invert all bits"""
         return self.read_unsigned() ^ ((1 << self._width) - 1)
 
     def write_signed(self, ival: int) -> None:
@@ -83,16 +78,14 @@ class Reg:
 
 
 class RegFile:
-    '''A base class for register files (used for both GPRs and WDRs).
+    """A base class for register files (used for both GPRs and WDRs).
 
     For GPRs, we override it (see gpr.py) to support our magic x0 and x1
     behaviour.
 
-    '''
-    def __init__(self,
-                 name_pfx: str,
-                 width: int,
-                 depth: int):
+    """
+
+    def __init__(self, name_pfx: str, width: int, depth: int):
         assert 0 <= width
         assert 0 <= depth
 
@@ -102,7 +95,7 @@ class RegFile:
         self._pending_writes: Set[int] = set()
 
     def mark_written(self, idx: int) -> None:
-        '''Mark a register as having been written'''
+        """Mark a register as having been written"""
         assert 0 <= idx < len(self._registers)
         self._pending_writes.add(idx)
 
@@ -115,9 +108,7 @@ class RegFile:
         for idx in sorted(self._pending_writes):
             assert 0 <= idx < len(self._registers)
             next_val = self.get_reg(idx).read_next()
-            ret.append(TraceRegister('{}{:02}'.format(self._name_pfx, idx),
-                                     self._width,
-                                     next_val))
+            ret.append(TraceRegister("{}{:02}".format(self._name_pfx, idx), self._width, next_val))
         return ret
 
     def commit(self) -> None:
@@ -133,7 +124,7 @@ class RegFile:
         self._pending_writes.clear()
 
     def peek_unsigned_values(self) -> List[int]:
-        '''Get a list of the (unsigned) values of the registers'''
+        """Get a list of the (unsigned) values of the registers"""
         return [reg.read_unsigned(backdoor=True) for reg in self._registers]
 
     def wipe(self) -> None:

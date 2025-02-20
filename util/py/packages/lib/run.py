@@ -19,13 +19,15 @@ def run(*args: str) -> list[str]:
     """
     log.debug(f"command: {' '.join(args)}")
     try:
-        res = subprocess.run(args,
-                             env=os.environ.copy(),
-                             stdout=subprocess.PIPE,
-                             stderr=subprocess.PIPE,
-                             encoding='ascii',
-                             errors='ignore',
-                             check=True)
+        res = subprocess.run(
+            args,
+            env=os.environ.copy(),
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            encoding="ascii",
+            errors="ignore",
+            check=True,
+        )
     except subprocess.CalledProcessError as e:
         log.error(f"stdout: {e.stdout if e.stdout else '(empty)'}")
         log.error(f"stderr: {e.stderr if e.stderr else '(empty)'}")

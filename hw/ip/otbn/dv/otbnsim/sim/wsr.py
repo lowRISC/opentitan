@@ -15,66 +15,67 @@ class TraceWSR(Trace):
         self.new_value = new_value
 
     def trace(self) -> str:
-        s = '{} = '.format(self.wsr_name)
+        s = "{} = ".format(self.wsr_name)
         if self.new_value is None:
-            s += '0x' + 'x' * 8
+            s += "0x" + "x" * 8
         else:
-            s += '{:#x}'.format(self.new_value)
+            s += "{:#x}".format(self.new_value)
         return s
 
     def rtl_trace(self) -> str:
-        return '> {}: {}'.format(self.wsr_name,
-                                 Trace.hex_value(self.new_value, 256))
+        return "> {}: {}".format(self.wsr_name, Trace.hex_value(self.new_value, 256))
 
 
 class WSR:
-    '''Models a Wide Status Register'''
+    """Models a Wide Status Register"""
+
     def __init__(self, name: str):
         self.name = name
         self._pending_write = False
 
     def has_value(self) -> bool:
-        '''Return whether the WSR has a valid value'''
+        """Return whether the WSR has a valid value"""
         return True
 
     def on_start(self) -> None:
-        '''Reset the WSR if necessary for the start of an operation'''
+        """Reset the WSR if necessary for the start of an operation"""
         return
 
     def read_unsigned(self) -> int:
-        '''Get the stored value as a 256-bit unsigned value'''
+        """Get the stored value as a 256-bit unsigned value"""
         raise NotImplementedError()
 
     def write_unsigned(self, value: int) -> None:
-        '''Set the stored value as a 256-bit unsigned value'''
+        """Set the stored value as a 256-bit unsigned value"""
         raise NotImplementedError()
 
     def read_signed(self) -> int:
-        '''Get the stored value as a 256-bit signed value'''
+        """Get the stored value as a 256-bit signed value"""
         uval = self.read_unsigned()
         return uval - (1 << 256 if uval >> 255 else 0)
 
     def write_signed(self, value: int) -> None:
-        '''Set the stored value as a 256-bit signed value'''
+        """Set the stored value as a 256-bit signed value"""
         assert -(1 << 255) <= value < (1 << 255)
         uval = (1 << 256) + value if value < 0 else value
         self.write_unsigned(uval)
 
     def commit(self) -> None:
-        '''Commit pending changes'''
+        """Commit pending changes"""
         self._pending_write = False
 
     def abort(self) -> None:
-        '''Abort pending changes'''
+        """Abort pending changes"""
         self._pending_write = False
 
     def changes(self) -> Sequence[Trace]:
-        '''Return list of pending architectural changes'''
+        """Return list of pending architectural changes"""
         return []
 
 
 class DumbWSR(WSR):
-    '''Models a WSR without special behaviour'''
+    """Models a WSR without special behaviour"""
+
     def __init__(self, name: str):
         super().__init__(name)
         self._value = 0
@@ -107,12 +108,11 @@ class DumbWSR(WSR):
         self._pending_write = False
 
     def changes(self) -> List[TraceWSR]:
-        return ([TraceWSR(self.name, self._next_value)]
-                if self._pending_write else [])
+        return [TraceWSR(self.name, self._next_value)] if self._pending_write else []
 
 
 class RandWSR(WSR):
-    '''The magic RND WSR
+    """The magic RND WSR
 
     RND is special as OTBN can stall on reads to it. A read from RND either
     immediately returns data from a cache of a previous EDN request (triggered
@@ -120,7 +120,8 @@ class RandWSR(WSR):
     model this, anything reading from RND must first call `request_value` which
     returns True if the value is available.
 
-    '''
+    """
+
     def __init__(self, name: str, ext_regs: OTBNExtRegs):
         super().__init__(name)
 
@@ -151,17 +152,17 @@ class RandWSR(WSR):
         return self._random_value
 
     def read_u32(self) -> int:
-        '''Read a 32-bit unsigned result'''
+        """Read a 32-bit unsigned result"""
         self.rep_err_escalate = self._rep_err
         self.fips_err_escalate = self._fips_err
         return self.read_unsigned() & ((1 << 32) - 1)
 
     def write_unsigned(self, value: int) -> None:
-        '''Writes to RND are ignored
+        """Writes to RND are ignored
 
         Note this is different to `set_unsigned`. This is used by executing
         instruction, see `set_unsigned` docstring for more details
-        '''
+        """
         return
 
     def on_start(self) -> None:
@@ -175,7 +176,7 @@ class RandWSR(WSR):
         self._pending_request = self._next_pending_request
 
     def request_value(self) -> bool:
-        '''Signals intent to read RND, returns True if a value is available'''
+        """Signals intent to read RND, returns True if a value is available"""
         if self._random_value is not None:
             return True
         if not self._pending_request:
@@ -184,7 +185,7 @@ class RandWSR(WSR):
         return False
 
     def set_unsigned(self, value: int, fips_err: bool, rep_err: bool) -> None:
-        '''Sets a random value that can be read by a future `read_unsigned`
+        """Sets a random value that can be read by a future `read_unsigned`
 
         This is different to `write_unsigned`, that is used by an executing
         instruction to write to RND. This is used by the simulation environment
@@ -192,7 +193,7 @@ class RandWSR(WSR):
         relate to instruction execution (e.g. in an RTL simulation it monitors
         the EDN bus and supplies the simulator with an RND value when a fresh
         one is seen on the EDN bus).
-        '''
+        """
         assert 0 <= value < (1 << 256)
         self._fips_err = fips_err
         self._rep_err = rep_err
@@ -203,26 +204,26 @@ class RandWSR(WSR):
 
 
 class URNDWSR(WSR):
-    '''Models URND PRNG Structure'''
+    """Models URND PRNG Structure"""
+
     def __init__(self, name: str):
         super().__init__(name)
-        seed = [0x84ddfadaf7e1134d, 0x70aa1c59de6197ff,
-                0x25a4fe335d095f1e, 0x2cba89acbe4a07e9]
+        seed = [0x84DDFADAF7E1134D, 0x70AA1C59DE6197FF, 0x25A4FE335D095F1E, 0x2CBA89ACBE4A07E9]
         self._state = [seed, 4 * [0], 4 * [0], 4 * [0], 4 * [0]]
         self._next_value = 0
         self._value = 0
         self.running = False
 
     def rol(self, n: int, d: int) -> int:
-        '''Rotate n left by d bits'''
+        """Rotate n left by d bits"""
         return ((n << d) & ((1 << 64) - 1)) | (n >> (64 - d))
 
     def read_u32(self) -> int:
-        '''Read a 32-bit unsigned result'''
+        """Read a 32-bit unsigned result"""
         return self.read_unsigned() & ((1 << 32) - 1)
 
     def write_unsigned(self, value: int) -> None:
-        '''Writes to URND are ignored'''
+        """Writes to URND are ignored"""
         return
 
     def on_start(self) -> None:
@@ -281,12 +282,13 @@ class KeyTrace(Trace):
         self.new_value = new_value
 
     def trace(self) -> str:
-        val_desc = '(unset)' if self.new_value is None else self.new_value
-        return '{} = {}'.format(self.name, val_desc)
+        val_desc = "(unset)" if self.new_value is None else self.new_value
+        return "{} = {}".format(self.name, val_desc)
 
 
 class SideloadKey:
-    '''Represents a sideloaded key, with 384 bits of data and a valid signal'''
+    """Represents a sideloaded key, with 384 bits of data and a valid signal"""
+
     def __init__(self, name: str):
         self.name = name
         self._value: Optional[int] = None
@@ -304,12 +306,12 @@ class SideloadKey:
         return (self._value >> shift) & mask256
 
     def set_unsigned(self, value: Optional[int]) -> None:
-        '''Unlike the WSR write_unsigned, this takes effect immediately
+        """Unlike the WSR write_unsigned, this takes effect immediately
 
         That way, we can correctly model the combinatorial path from sideload
         keys to the WSR file in the RTL. Note that we do still report the
         change until the next commit.
-        '''
+        """
         assert value is None or (0 <= value < (1 << 384))
         self._value = value
         self._new_value = (False, 0) if value is None else (True, value)
@@ -343,19 +345,20 @@ class KeyWSR(WSR):
 
 
 class WSRFile:
-    '''A model of the WSR file'''
-    def __init__(self, ext_regs: OTBNExtRegs) -> None:
-        self.KeyS0 = SideloadKey('KeyS0')
-        self.KeyS1 = SideloadKey('KeyS1')
+    """A model of the WSR file"""
 
-        self.MOD = DumbWSR('MOD')
-        self.RND = RandWSR('RND', ext_regs)
-        self.URND = URNDWSR('URND')
-        self.ACC = DumbWSR('ACC')
-        self.KeyS0L = KeyWSR('KeyS0L', 0, self.KeyS0)
-        self.KeyS0H = KeyWSR('KeyS0H', 256, self.KeyS0)
-        self.KeyS1L = KeyWSR('KeyS1L', 0, self.KeyS1)
-        self.KeyS1H = KeyWSR('KeyS1H', 256, self.KeyS1)
+    def __init__(self, ext_regs: OTBNExtRegs) -> None:
+        self.KeyS0 = SideloadKey("KeyS0")
+        self.KeyS1 = SideloadKey("KeyS1")
+
+        self.MOD = DumbWSR("MOD")
+        self.RND = RandWSR("RND", ext_regs)
+        self.URND = URNDWSR("URND")
+        self.ACC = DumbWSR("ACC")
+        self.KeyS0L = KeyWSR("KeyS0L", 0, self.KeyS0)
+        self.KeyS0H = KeyWSR("KeyS0H", 256, self.KeyS0)
+        self.KeyS1L = KeyWSR("KeyS1L", 0, self.KeyS1)
+        self.KeyS1H = KeyWSR("KeyS1H", 256, self.KeyS1)
 
         self._by_idx = {
             0: self.MOD,
@@ -369,40 +372,40 @@ class WSRFile:
         }
 
     def on_start(self) -> None:
-        '''Called at the start of an operation
+        """Called at the start of an operation
 
         This clears values that don't persist between runs (everything except
         RND and the key registers)
-        '''
+        """
         for reg in self._by_idx.values():
             reg.on_start()
 
     def check_idx(self, idx: int) -> bool:
-        '''Return True if idx is a valid WSR index'''
+        """Return True if idx is a valid WSR index"""
         return idx in self._by_idx
 
     def has_value_at_idx(self, idx: int) -> int:
-        '''Return True if the WSR at idx has a valid valu.
+        """Return True if the WSR at idx has a valid valu.
 
         Assumes that idx is a valid index (call check_idx to ensure this).
 
-        '''
+        """
         return self._by_idx[idx].has_value()
 
     def read_at_idx(self, idx: int) -> int:
-        '''Read the WSR at idx as an unsigned 256-bit value
+        """Read the WSR at idx as an unsigned 256-bit value
 
         Assumes that idx is a valid index (call check_idx to ensure this).
 
-        '''
+        """
         return self._by_idx[idx].read_unsigned()
 
     def write_at_idx(self, idx: int, value: int) -> None:
-        '''Write the WSR at idx as an unsigned 256-bit value
+        """Write the WSR at idx as an unsigned 256-bit value
 
         Assumes that idx is a valid index (call check_idx to ensure this).
 
-        '''
+        """
         return self._by_idx[idx].write_unsigned(value)
 
     def commit(self) -> None:
@@ -432,9 +435,7 @@ class WSRFile:
         ret += self.KeyS1.changes()
         return ret
 
-    def set_sideload_keys(self,
-                          key0: Optional[int],
-                          key1: Optional[int]) -> None:
+    def set_sideload_keys(self, key0: Optional[int], key1: Optional[int]) -> None:
         self.KeyS0.set_unsigned(key0)
         self.KeyS1.set_unsigned(key1)
 

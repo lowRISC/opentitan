@@ -36,9 +36,9 @@ class Dut:
 # strip // comments
 def strip_comments(buf):
     outbuf = ""
-    for line in buf.split('\n'):
+    for line in buf.split("\n"):
         for k in range(len(line) - 1):
-            if line[k:k + 2] == "//":
+            if line[k : k + 2] == "//":
                 break
             else:
                 outbuf += line[k]
@@ -50,12 +50,12 @@ def strip_comments(buf):
     return outbuf
 
 
-PARENTH_STYLES = {'(': ')', '[': ']', '{': '}'}
+PARENTH_STYLES = {"(": ")", "[": "]", "{": "}"}
 
 
 # parse parenthesis and optionally handle the body using the handler function
 # if no handler is specified, it just calls itself recursively
-def parse_parenthesis(hdl_raw, dut, style='(', handler=None):
+def parse_parenthesis(hdl_raw, dut, style="(", handler=None):
     if style not in PARENTH_STYLES:
         print("Unknown parenthesis style %s, aborting." % style)
     else:
@@ -97,8 +97,8 @@ def parse_port(buf, dut):
 
 # parse individual parameter declaration
 def parse_param(buf, dut):
-    words = buf.split('=')
-    value = '='.join(words[1:])
+    words = buf.split("=")
+    value = "=".join(words[1:])
     words = words[0].split()
 
     if words:
@@ -106,9 +106,7 @@ def parse_param(buf, dut):
             print("Warning, expected parameter or localparam keyword")
         else:
             if len(words) > 2:
-                dut.params += [
-                    Param(words[-1], " ".join(words[1:-1]), words[0], value)
-                ]
+                dut.params += [Param(words[-1], " ".join(words[1:-1]), words[0], value)]
             elif len(words) == 2:
                 dut.params += [Param(words[-1], "", words[0], value)]
             else:
@@ -125,13 +123,13 @@ def parse_declaration(hdl_raw, dut, handler):
     while hdl_raw:
         c = hdl_raw.pop(0)
         # end of this port
-        if c == ',':
+        if c == ",":
             handler(buf, dut)
             buf = ""
-        elif c == '(':
+        elif c == "(":
             par_opened = par_opened + 1
             buf += c
-        elif c == ')':
+        elif c == ")":
             if par_opened:
                 # part of the declaration
                 par_opened = par_opened - 1
@@ -139,7 +137,7 @@ def parse_declaration(hdl_raw, dut, handler):
             else:
                 # end of the declaration list
                 handler(buf.rstrip(), dut)
-                hdl_raw.insert(0, ')')
+                hdl_raw.insert(0, ")")
                 break
         else:
             buf += c
@@ -166,19 +164,19 @@ def parse_module(words, dut):
             else:
                 print("Unexpected end")
         # stop package scan and move on to body
-        elif '#' in w or '(' in w:
+        elif "#" in w or "(" in w:
             words.insert(0, w)
             break
 
-    hdl_raw = list(' '.join(words))
+    hdl_raw = list(" ".join(words))
     while hdl_raw:
         c = hdl_raw.pop(0)
-        if c == '#':
-            parse_parenthesis(hdl_raw, dut, '(', parse_params)
-        elif c == '(':
-            hdl_raw.insert(0, '(')
-            parse_parenthesis(hdl_raw, dut, '(', parse_ports)
-        elif c == ';':
+        if c == "#":
+            parse_parenthesis(hdl_raw, dut, "(", parse_params)
+        elif c == "(":
+            hdl_raw.insert(0, "(")
+            parse_parenthesis(hdl_raw, dut, "(", parse_ports)
+        elif c == ";":
             break
     return
 
@@ -188,7 +186,7 @@ def parse_module(words, dut):
 def parse_file(file):
     dut = Dut()
     hdl_raw = ""
-    with open(file, 'r') as fp:
+    with open(file, "r") as fp:
         hdl_raw = strip_comments(fp.read())
     # extract first module declaration in file and extract port list
     # also look for imported packages (either in the module declaration

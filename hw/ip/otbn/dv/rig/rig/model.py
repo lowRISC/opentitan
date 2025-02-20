@@ -6,8 +6,13 @@ import math
 import random
 from typing import Dict, List, Optional, Set, Tuple
 
-from shared.operand import (OperandType, EnumOperandType,
-                            ImmOperandType, OptionOperandType, RegOperandType)
+from shared.operand import (
+    OperandType,
+    EnumOperandType,
+    ImmOperandType,
+    OptionOperandType,
+    RegOperandType,
+)
 
 from .known_mem import KnownMem
 from .program import ProgInsn
@@ -17,26 +22,26 @@ WDict = Dict[int, float]
 
 
 class CallStack:
-    '''An abstract model of the x1 call stack'''
+    """An abstract model of the x1 call stack"""
+
     def __init__(self) -> None:
         self._min_depth = 0
         self._max_depth = 0
         self._elts_at_top = []  # type: List[Optional[int]]
 
-    def copy(self) -> 'CallStack':
-        '''Return a deep copy of the call stack'''
+    def copy(self) -> "CallStack":
+        """Return a deep copy of the call stack"""
         ret = CallStack()
         ret._min_depth = self._min_depth
         ret._max_depth = self._max_depth
         ret._elts_at_top = self._elts_at_top.copy()
         return ret
 
-    def merge(self, other: 'CallStack') -> None:
+    def merge(self, other: "CallStack") -> None:
         self._min_depth = min(self._min_depth, other._min_depth)
         self._max_depth = max(self._max_depth, other._max_depth)
         new_top = []
-        for a, b in zip(reversed(self._elts_at_top),
-                        reversed(other._elts_at_top)):
+        for a, b in zip(reversed(self._elts_at_top), reversed(other._elts_at_top)):
             if a == b:
                 new_top.append(a)
             else:
@@ -55,7 +60,7 @@ class CallStack:
         return self._max_depth == 8
 
     def depth_range(self) -> Tuple[int, int]:
-        '''Return the (inclusive) range of possible depths'''
+        """Return the (inclusive) range of possible depths"""
         return (self._min_depth, self._max_depth)
 
     def pop(self) -> None:
@@ -70,11 +75,11 @@ class CallStack:
         return self._elts_at_top[-1] if self._elts_at_top else None
 
     def write(self, value: Optional[int], update: bool) -> None:
-        '''Write a value to the call stack.
+        """Write a value to the call stack.
 
         The update flag works as described for Model.write_reg
 
-        '''
+        """
         if update:
             # If we're updating a write to x1, check that the new value refines
             # the top of the call stack.
@@ -91,12 +96,12 @@ class CallStack:
             self._elts_at_top.append(value)
 
     def forget_value(self) -> None:
-        '''Replace any known values with None'''
+        """Replace any known values with None"""
         self._elts_at_top = [None] * len(self._elts_at_top)
 
 
 class LoopStack:
-    '''An abstract model of the loop stack
+    """An abstract model of the loop stack
 
     The idea is that most of the time, we push loop end addresses onto _stack
     when entering a loop body and pop them off again when exiting. If something
@@ -108,7 +113,8 @@ class LoopStack:
     because otherwise we can't merge branches (where one side might have had an
     ill-formed loop, but the other didn't).
 
-    '''
+    """
+
     stack_depth = 8
 
     def __init__(self) -> None:
@@ -116,15 +122,15 @@ class LoopStack:
         self._min_stuck = 0
         self._max_stuck = 0
 
-    def copy(self) -> 'LoopStack':
-        '''Return a deep copy of the loop stack'''
+    def copy(self) -> "LoopStack":
+        """Return a deep copy of the loop stack"""
         ret = LoopStack()
         ret._stack = self._stack.copy()
         ret._min_stuck = self._min_stuck
         ret._max_stuck = self._max_stuck
         return ret
 
-    def merge(self, other: 'LoopStack') -> None:
+    def merge(self, other: "LoopStack") -> None:
         if self._stack == other._stack:
             matching_stack = self._stack
             ns_min = 0
@@ -168,20 +174,21 @@ class LoopStack:
         return self.max_depth() == LoopStack.stack_depth
 
     def force_full(self) -> None:
-        '''Make the loop stack look like it's completely full'''
+        """Make the loop stack look like it's completely full"""
         self._stack = []
         self._min_stuck = LoopStack.stack_depth
         self._max_stuck = LoopStack.stack_depth
 
 
 class Model:
-    '''An abstract model of the processor and memories
+    """An abstract model of the processor and memories
 
     This definitely doesn't try to act as a simulator. Rather, it tracks what
     registers and locations in memory are guaranteed have defined values after
     following the instruction stream to this point.
 
-    '''
+    """
+
     def __init__(self, dmem_size: int, fuel: int) -> None:
         assert fuel >= 0
         self.initial_fuel = fuel
@@ -202,7 +209,7 @@ class Model:
         self._known_regs = {}  # type: Dict[str, Dict[int, Optional[int]]]
 
         # Set x0 (the zeros register)
-        self._known_regs['gpr'] = {0: 0}
+        self._known_regs["gpr"] = {0: 0}
 
         # Registers that must be kept constant. This is used for things like
         # loop bodies, where we want to allow some registers to have known
@@ -227,55 +234,46 @@ class Model:
         # Known values for memory, keyed by memory type ('dmem', 'csr', 'wsr').
         csrs = KnownMem(4096)
         wsrs = KnownMem(4096)
-        self._known_mem = {
-            'dmem': KnownMem(dmem_size),
-            'csr': csrs,
-            'wsr': wsrs
-        }
+        self._known_mem = {"dmem": KnownMem(dmem_size), "csr": csrs, "wsr": wsrs}
 
         # Valid CSRs and WSRs
-        csrs.touch_addr(0x7c0)      # FG0
-        csrs.touch_addr(0x7c1)      # FG1
-        csrs.touch_addr(0x7c8)      # FLAGS
-        csrs.touch_range(0x7d0, 8)  # MOD0 - MOD7
-        csrs.touch_addr(0x7d8)      # RND_PREFETCH
-        csrs.touch_addr(0xfc0)      # RND
-        csrs.touch_addr(0xfc1)      # URND
+        csrs.touch_addr(0x7C0)  # FG0
+        csrs.touch_addr(0x7C1)  # FG1
+        csrs.touch_addr(0x7C8)  # FLAGS
+        csrs.touch_range(0x7D0, 8)  # MOD0 - MOD7
+        csrs.touch_addr(0x7D8)  # RND_PREFETCH
+        csrs.touch_addr(0xFC0)  # RND
+        csrs.touch_addr(0xFC1)  # URND
 
-        wsrs.touch_addr(0x0)        # MOD
-        wsrs.touch_addr(0x1)        # RND
-        wsrs.touch_addr(0x2)        # URND
-        wsrs.touch_addr(0x3)        # ACC
-        wsrs.touch_addr(0x4)        # KEY_S0_L
-        wsrs.touch_addr(0x5)        # KEY_S0_H
-        wsrs.touch_addr(0x6)        # KEY_S1_L
-        wsrs.touch_addr(0x7)        # KEY_S1_H
+        wsrs.touch_addr(0x0)  # MOD
+        wsrs.touch_addr(0x1)  # RND
+        wsrs.touch_addr(0x2)  # URND
+        wsrs.touch_addr(0x3)  # ACC
+        wsrs.touch_addr(0x4)  # KEY_S0_L
+        wsrs.touch_addr(0x5)  # KEY_S0_H
+        wsrs.touch_addr(0x6)  # KEY_S1_L
+        wsrs.touch_addr(0x7)  # KEY_S1_H
 
         # The current PC (the address of the next instruction that needs
         # generating)
         self.pc = 0
 
-    def copy(self) -> 'Model':
-        '''Return a deep copy of the model'''
+    def copy(self) -> "Model":
+        """Return a deep copy of the model"""
         ret = Model(self.dmem_size, self.initial_fuel)
         ret.pc = self.pc
         ret.fuel = self.fuel
-        ret._known_regs = {n: regs.copy()
-                           for n, regs in self._known_regs.items()}
-        ret._const_regs = {n: regs.copy()
-                           for n, regs in self._const_regs.items()}
+        ret._known_regs = {n: regs.copy() for n, regs in self._known_regs.items()}
+        ret._const_regs = {n: regs.copy() for n, regs in self._const_regs.items()}
         for entry in self._const_stack:
-            ret._const_stack.append({n: regs.copy()
-                                     for n, regs in entry.items()})
+            ret._const_stack.append({n: regs.copy() for n, regs in entry.items()})
         ret.call_stack = self.call_stack.copy()
         ret.loop_stack = self.loop_stack.copy()
-        ret._known_mem = {n: mem.copy()
-                          for n, mem in self._known_mem.items()}
+        ret._known_mem = {n: mem.copy() for n, mem in self._known_mem.items()}
         return ret
 
-    def _merge_known_regs(self,
-                          other: Dict[str, Dict[int, Optional[int]]]) -> None:
-        '''Merge known registers from another model'''
+    def _merge_known_regs(self, other: Dict[str, Dict[int, Optional[int]]]) -> None:
+        """Merge known registers from another model"""
         for reg_type in self._known_regs.keys() | other.keys():
             sregs = self._known_regs.get(reg_type)
             oregs = other.get(reg_type)
@@ -293,8 +291,8 @@ class Model:
             # Build a new, merged version.
             merged = {}  # type: Dict[int, Optional[int]]
             for reg_name, svalue in sregs.items():
-                ovalue = oregs.get(reg_name, 'missing')
-                if ovalue == 'missing':
+                ovalue = oregs.get(reg_name, "missing")
+                if ovalue == "missing":
                     # The register is missing from oregs. This means it might
                     # not have an architectural value, so we should skip it
                     # from sregs too.
@@ -320,13 +318,13 @@ class Model:
             self._known_regs[reg_type] = merged
 
     def _merge_const_regs(self, other: Dict[str, Set[int]]) -> None:
-        '''Merge constant registers from another model'''
+        """Merge constant registers from another model"""
         for reg_type in self._const_regs.keys() | other.keys():
             cr = self._const_regs.setdefault(reg_type, set())
             cr |= other.get(reg_type, set())
 
-    def merge(self, other: 'Model') -> None:
-        '''Merge in values from another model'''
+    def merge(self, other: "Model") -> None:
+        """Merge in values from another model"""
         assert self.initial_fuel == other.initial_fuel
         self.fuel = min(self.fuel, other.fuel)
         assert self.dmem_size == other.dmem_size
@@ -345,23 +343,19 @@ class Model:
         assert self.pc == other.pc
 
     def read_reg(self, reg_type: str, idx: int) -> None:
-        '''Update the model for a read of the given register
+        """Update the model for a read of the given register
 
         This is mostly ignored, but has an effect for x1, which pops from the
         call stack on a read.
 
-        '''
-        if reg_type == 'gpr' and idx == 1:
+        """
+        if reg_type == "gpr" and idx == 1:
             # We shouldn't ever read from x1 if it is marked constant
-            assert not self.is_const('gpr', 1)
+            assert not self.is_const("gpr", 1)
             self.call_stack.pop()
 
-    def write_reg(self,
-                  reg_type: str,
-                  idx: int,
-                  value: Optional[int],
-                  update: bool) -> None:
-        '''Mark a register as having an architectural value
+    def write_reg(self, reg_type: str, idx: int, value: Optional[int], update: bool) -> None:
+        """Mark a register as having an architectural value
 
         If value is not None, it is the actual value that the register has.
         Writes to the zeros register x0 are ignored.
@@ -372,10 +366,10 @@ class Model:
         which refines the previous value. This is irrelevant for idempotent
         registers, but matters for x1.
 
-        '''
+        """
         assert not self.is_const(reg_type, idx)
 
-        if reg_type == 'gpr':
+        if reg_type == "gpr":
             if idx == 0:
                 # Ignore writes to x0
                 return
@@ -388,21 +382,21 @@ class Model:
         self._known_regs.setdefault(reg_type, {})[idx] = value
 
     def get_reg(self, reg_type: str, idx: int) -> Optional[int]:
-        '''Get a register value, if known.'''
-        if reg_type == 'gpr' and idx == 1:
+        """Get a register value, if known."""
+        if reg_type == "gpr" and idx == 1:
             return self.call_stack.peek()
 
         return self._known_regs.setdefault(reg_type, {}).get(idx)
 
     def touch_mem(self, mem_type: str, base: int, width: int) -> None:
-        '''Mark {base .. base+width} as known for given memory type'''
+        """Mark {base .. base+width} as known for given memory type"""
         assert mem_type in self._known_mem
         self._known_mem[mem_type].touch_range(base, width)
 
-    def pick_operand_value(self,
-                           op_type: OperandType,
-                           weights: Optional[WDict] = None) -> Optional[int]:
-        '''Pick a random value for an operand
+    def pick_operand_value(
+        self, op_type: OperandType, weights: Optional[WDict] = None
+    ) -> Optional[int]:
+        """Pick a random value for an operand
 
         The result will always be non-negative: if the operand is a signed
         immediate, this is encoded as 2s complement.
@@ -411,7 +405,7 @@ class Model:
         bias towards particular values. Registers that don't appear in the
         dictionary get a default weight of 1.
 
-        '''
+        """
         if isinstance(op_type, RegOperandType):
             return self._pick_reg_operand_value(op_type, weights)
         else:
@@ -425,14 +419,14 @@ class Model:
 
             assert 0
 
-    def _pick_reg_operand_value(self,
-                                op_type: RegOperandType,
-                                weights: Optional[WDict]) -> Optional[int]:
-        '''Pick a random value for a register operand
+    def _pick_reg_operand_value(
+        self, op_type: RegOperandType, weights: Optional[WDict]
+    ) -> Optional[int]:
+        """Pick a random value for a register operand
 
         Returns None if there's no valid value possible.
 
-        '''
+        """
 
         # A register can be used if all of the following hold:
         #
@@ -453,8 +447,11 @@ class Model:
 
         assert op_type.width is not None
 
-        reg_set = set(self._known_regs.get(op_type.reg_type, {}).keys()
-                      if is_src else range(1 << op_type.width))
+        reg_set = set(
+            self._known_regs.get(op_type.reg_type, {}).keys()
+            if is_src
+            else range(1 << op_type.width)
+        )
         if is_dst:
             reg_set -= self._const_regs.get(op_type.reg_type, set())
 
@@ -462,8 +459,8 @@ class Model:
         #
         # Note that this won't allow us to generate things like add x1, x1, x1
         # when the stack is full, because we only do one operand at a time.
-        if op_type.reg_type == 'gpr':
-            can_use_x1 = not self.is_const('gpr', 1)
+        if op_type.reg_type == "gpr":
+            can_use_x1 = not self.is_const("gpr", 1)
             if is_src and self.call_stack.empty():
                 can_use_x1 = False
             if is_dst and self.call_stack.full():
@@ -481,7 +478,7 @@ class Model:
             return None
 
         if weights is None:
-            if op_type.reg_type == 'gpr' and is_dst and not is_src:
+            if op_type.reg_type == "gpr" and is_dst and not is_src:
                 # Destination registers without a specific set of weights get a
                 # default that makes x1 more likely. The idea is that we'll be
                 # more likely to fill the call stack this way.
@@ -504,9 +501,7 @@ class Model:
 
         return random.choices(regs, weights=reg_weights)[0]
 
-    def _pick_imm_operand_value(self,
-                                op_type: ImmOperandType) -> Optional[int]:
-
+    def _pick_imm_operand_value(self, op_type: ImmOperandType) -> Optional[int]:
         op_rng = op_type.get_op_val_range(self.pc)
         if op_rng is None:
             # If we don't know the width, the only immediate that we *know*
@@ -523,7 +518,7 @@ class Model:
         return op_type.op_val_to_enc_val(op_val, self.pc)
 
     def all_regs_with_known_vals(self) -> Dict[str, List[Tuple[int, int]]]:
-        '''Like regs_with_known_vals, but returns all reg types'''
+        """Like regs_with_known_vals, but returns all reg types"""
         ret = {}  # type: Dict[str, List[Tuple[int, int]]]
         for rt in self._known_regs.keys():
             kv = self.regs_with_known_vals(rt)
@@ -532,12 +527,12 @@ class Model:
         return ret
 
     def regs_with_known_vals(self, reg_type: str) -> List[Tuple[int, int]]:
-        '''Find registers whose values are known and can be read
+        """Find registers whose values are known and can be read
 
         Returns a list of pairs (idx, value) where idx is the register index
         and value is its value.
 
-        '''
+        """
         known_regs = self._known_regs.get(reg_type)
         if known_regs is None:
             return []
@@ -549,72 +544,72 @@ class Model:
 
         # Handle x1, which has a known value iff the top of the call stack is
         # not None and can be read iff it isn't marked constant.
-        if reg_type == 'gpr':
+        if reg_type == "gpr":
             assert 1 not in known_regs
             if not self.call_stack.empty():
                 x1 = self.call_stack.peek()
                 if x1 is not None:
-                    if not self.is_const('gpr', 1):
+                    if not self.is_const("gpr", 1):
                         ret.append((1, x1))
 
         return ret
 
     def regs_with_architectural_vals(self, reg_type: str) -> List[int]:
-        '''List registers that have an architectural value and can be read'''
+        """List registers that have an architectural value and can be read"""
         known_regs = self._known_regs.setdefault(reg_type, {})
         arch_regs = list(known_regs.keys())
 
         # Handle x1, which has an architectural (and known) value iff the call
         # stack is not empty.
-        if reg_type == 'gpr':
+        if reg_type == "gpr":
             assert 1 not in arch_regs
             if not self.call_stack.empty():
-                if not self.is_const('gpr', 1):
+                if not self.is_const("gpr", 1):
                     arch_regs.append(1)
 
         return arch_regs
 
     def push_const(self) -> int:
-        '''Snapshot the current _const_regs state and return a token
+        """Snapshot the current _const_regs state and return a token
 
         This token should be passed to pop_const (to catch errors from
         unbalanced push/pop pairs)
 
-        '''
+        """
         snapshot = {n: regs.copy() for n, regs in self._const_regs.items()}
         self._const_stack.append(snapshot)
         return len(self._const_stack)
 
     def pop_const(self, token: int) -> None:
-        '''Pop an entry from the _const_regs snapshot stack'''
+        """Pop an entry from the _const_regs snapshot stack"""
         assert token >= 1
         assert len(self._const_stack) == token
         self._const_regs = self._const_stack.pop()
 
     def mark_const(self, reg_type: str, reg_idx: int) -> None:
-        '''Mark a register as constant
+        """Mark a register as constant
 
         The model will no longer pick it as a destination operand or allow it
         to be changed.
 
-        '''
+        """
         # Marking x0 as constant has no effect (since it is a real constant
         # register)
-        if reg_idx == 0 and reg_type == 'gpr':
+        if reg_idx == 0 and reg_type == "gpr":
             return
 
         self._const_regs.setdefault(reg_type, set()).add(reg_idx)
 
     def is_const(self, reg_type: str, reg_idx: int) -> bool:
-        '''Return true if this register is marked as constant'''
+        """Return true if this register is marked as constant"""
         cr = self._const_regs.get(reg_type)
         if cr is None:
             return False
         return reg_idx in cr
 
     def forget_value(self, reg_type: str, reg_idx: int) -> None:
-        '''If the given register has a known value, forget it.'''
-        if reg_type == 'gpr':
+        """If the given register has a known value, forget it."""
+        if reg_type == "gpr":
             # We always know the value of x0
             if reg_idx == 0:
                 return
@@ -630,16 +625,16 @@ class Model:
         if reg_idx in kr:
             kr[reg_idx] = None
 
-    def pick_lsu_target(self,
-                        mem_type: str,
-                        loads_value: bool,
-                        known_regs: Dict[str, List[Tuple[int, int]]],
-                        imm_rng: Tuple[int, int],
-                        imm_shift: int,
-                        byte_width: int) -> Optional[Tuple[int,
-                                                           int,
-                                                           Dict[str, int]]]:
-        '''Try to pick an address for a naturally-aligned LSU operation.
+    def pick_lsu_target(
+        self,
+        mem_type: str,
+        loads_value: bool,
+        known_regs: Dict[str, List[Tuple[int, int]]],
+        imm_rng: Tuple[int, int],
+        imm_shift: int,
+        byte_width: int,
+    ) -> Optional[Tuple[int, int, Dict[str, int]]]:
+        """Try to pick an address for a naturally-aligned LSU operation.
 
         mem_type is the type of memory (which must a key of self._known_mem).
         If loads_value, this address needs to have an architecturally defined
@@ -656,7 +651,7 @@ class Model:
         the value of any immediate operand and reg_vals is a map from operand
         name to the index picked for that register operand.
 
-        '''
+        """
         assert mem_type in self._known_mem
         assert imm_rng[0] <= imm_rng[1]
         assert 0 <= imm_shift
@@ -674,9 +669,7 @@ class Model:
         base_align = math.gcd(byte_width, 1 << imm_shift)
 
         for name, indices in known_regs.items():
-            aligned_regs = [(idx, value)
-                            for idx, value in indices
-                            if value % base_align == 0]
+            aligned_regs = [(idx, value) for idx, value in indices if value % base_align == 0]
 
             # If there are no known aligned indices for this operand, give up
             # now.
@@ -689,12 +682,9 @@ class Model:
             reg_indices[name] = idx
 
         known_mem = self._known_mem[mem_type]
-        ret = known_mem.pick_lsu_target(loads_value,
-                                        reg_sum,
-                                        imm_rng,
-                                        1 << imm_shift,
-                                        byte_width,
-                                        byte_width)
+        ret = known_mem.pick_lsu_target(
+            loads_value, reg_sum, imm_rng, 1 << imm_shift, byte_width, byte_width
+        )
 
         # If there was no address we could use, give up.
         if ret is None:
@@ -705,61 +695,69 @@ class Model:
         return (addr, offset, reg_indices)
 
     def update_for_lui(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after a LUI
+        """Update model state after a LUI
 
         A lui instruction looks like "lui x2, 80000" or similar. This operation
         is easy to understand, so we can actually update the model registers
         appropriately.
 
-        '''
+        """
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'lui'
+        assert insn.mnemonic == "lui"
         assert len(insn.operands) == len(op_vals)
 
-        exp_shape = (len(insn.operands) == 2 and
-                     isinstance(insn.operands[0].op_type, RegOperandType) and
-                     insn.operands[0].op_type.reg_type == 'gpr' and
-                     insn.operands[0].op_type.is_dest() and
-                     isinstance(insn.operands[1].op_type, ImmOperandType) and
-                     not insn.operands[1].op_type.signed)
+        exp_shape = (
+            len(insn.operands) == 2
+            and isinstance(insn.operands[0].op_type, RegOperandType)
+            and insn.operands[0].op_type.reg_type == "gpr"
+            and insn.operands[0].op_type.is_dest()
+            and isinstance(insn.operands[1].op_type, ImmOperandType)
+            and not insn.operands[1].op_type.signed
+        )
         if not exp_shape:
-            raise RuntimeError('LUI instruction read from insns.yml is '
-                               'not the shape expected by '
-                               'Model.update_for_lui.')
+            raise RuntimeError(
+                "LUI instruction read from insns.yml is "
+                "not the shape expected by "
+                "Model.update_for_lui."
+            )
 
         self._generic_update_for_insn(prog_insn)
 
         assert op_vals[1] >= 0
-        self.write_reg('gpr', op_vals[0], op_vals[1] << 12, True)
+        self.write_reg("gpr", op_vals[0], op_vals[1] << 12, True)
 
     def update_for_addi(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an ADDI
+        """Update model state after an ADDI
 
         If the source register happens to have a known value, we can do the
         addition and store the known result.
 
-        '''
+        """
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'addi'
+        assert insn.mnemonic == "addi"
         assert len(insn.operands) == len(op_vals)
 
-        exp_shape = (len(insn.operands) == 3 and
-                     isinstance(insn.operands[0].op_type, RegOperandType) and
-                     insn.operands[0].op_type.reg_type == 'gpr' and
-                     insn.operands[0].op_type.is_dest() and
-                     isinstance(insn.operands[1].op_type, RegOperandType) and
-                     insn.operands[1].op_type.reg_type == 'gpr' and
-                     not insn.operands[1].op_type.is_dest() and
-                     isinstance(insn.operands[2].op_type, ImmOperandType) and
-                     insn.operands[2].op_type.signed)
+        exp_shape = (
+            len(insn.operands) == 3
+            and isinstance(insn.operands[0].op_type, RegOperandType)
+            and insn.operands[0].op_type.reg_type == "gpr"
+            and insn.operands[0].op_type.is_dest()
+            and isinstance(insn.operands[1].op_type, RegOperandType)
+            and insn.operands[1].op_type.reg_type == "gpr"
+            and not insn.operands[1].op_type.is_dest()
+            and isinstance(insn.operands[2].op_type, ImmOperandType)
+            and insn.operands[2].op_type.signed
+        )
         if not exp_shape:
-            raise RuntimeError('ADDI instruction read from insns.yml is '
-                               'not the shape expected by '
-                               'Model.update_for_addi.')
+            raise RuntimeError(
+                "ADDI instruction read from insns.yml is "
+                "not the shape expected by "
+                "Model.update_for_addi."
+            )
 
-        src_val = self.get_reg('gpr', op_vals[1])
+        src_val = self.get_reg("gpr", op_vals[1])
         if src_val is None:
             result = None
         else:
@@ -773,64 +771,65 @@ class Model:
 
         self._generic_update_for_insn(prog_insn)
 
-        self.write_reg('gpr', op_vals[0], result, True)
+        self.write_reg("gpr", op_vals[0], result, True)
 
-    def _inc_gpr(self,
-                 gpr: int,
-                 gpr_val: Optional[int],
-                 delta: int) -> None:
-        '''Mark gpr as having a value and increment it if known
+    def _inc_gpr(self, gpr: int, gpr_val: Optional[int], delta: int) -> None:
+        """Mark gpr as having a value and increment it if known
 
         This passes update=False to self.write_reg: it should be used for
         registers that haven't already been marked as updated by the
         instruction.
 
-        '''
+        """
         mask = (1 << 32) - 1
         new_val = (gpr_val + delta) & mask if gpr_val is not None else None
-        self.write_reg('gpr', gpr, new_val, False)
+        self.write_reg("gpr", gpr, new_val, False)
 
     def update_for_bnlid(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an BN.LID
+        """Update model state after an BN.LID
 
         We need this special case code because of the indirect access to the
         wide-side register file.
 
-        '''
+        """
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'bn.lid'
+        assert insn.mnemonic == "bn.lid"
         assert len(insn.operands) == len(op_vals)
 
         grd_op, grs1_op, offset_op, grs1_inc_op, grd_inc_op = insn.operands
         exp_shape = (
             # grd
-            isinstance(grd_op.op_type, RegOperandType) and
-            grd_op.op_type.reg_type == 'gpr' and
-            not grd_op.op_type.is_dest() and
+            isinstance(grd_op.op_type, RegOperandType)
+            and grd_op.op_type.reg_type == "gpr"
+            and not grd_op.op_type.is_dest()
+            and
             # grs1
-            isinstance(grs1_op.op_type, RegOperandType) and
-            grs1_op.op_type.reg_type == 'gpr' and
-            not grs1_op.op_type.is_dest() and
+            isinstance(grs1_op.op_type, RegOperandType)
+            and grs1_op.op_type.reg_type == "gpr"
+            and not grs1_op.op_type.is_dest()
+            and
             # offset
-            isinstance(offset_op.op_type, ImmOperandType) and
-            offset_op.op_type.signed and
+            isinstance(offset_op.op_type, ImmOperandType)
+            and offset_op.op_type.signed
+            and
             # grs1_inc
-            isinstance(grs1_inc_op.op_type, OptionOperandType) and
+            isinstance(grs1_inc_op.op_type, OptionOperandType)
+            and
             # grd_inc
             isinstance(grd_inc_op.op_type, OptionOperandType)
         )
         if not exp_shape:
-            raise RuntimeError('Unexpected shape for bn.lid')
+            raise RuntimeError("Unexpected shape for bn.lid")
 
         grd, grs1, _offset, grs1_inc, grd_inc = op_vals
-        grd_val = self.get_reg('gpr', grd)
-        grs1_val = self.get_reg('gpr', grs1)
+        grd_val = self.get_reg("gpr", grd)
+        grs1_val = self.get_reg("gpr", grs1)
 
         self._generic_update_for_insn(prog_insn)
 
         if grd_val is not None:
-            self.write_reg('wdr', grd_val & 31, None, False)
+            self.write_reg("wdr", grd_val & 31, None, False)
 
         if grs1_inc:
             self._inc_gpr(grs1, grs1_val, 32)
@@ -838,36 +837,40 @@ class Model:
             self._inc_gpr(grd, grd_val, 1)
 
     def update_for_bnsid(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an BN.SID'''
+        """Update model state after an BN.SID"""
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'bn.sid'
+        assert insn.mnemonic == "bn.sid"
         assert len(insn.operands) == len(op_vals)
 
         grs1_op, grs2_op, offset_op, grs1_inc_op, grs2_inc_op = insn.operands
         exp_shape = (
             # grs1
-            isinstance(grs1_op.op_type, RegOperandType) and
-            grs1_op.op_type.reg_type == 'gpr' and
-            not grs1_op.op_type.is_dest() and
+            isinstance(grs1_op.op_type, RegOperandType)
+            and grs1_op.op_type.reg_type == "gpr"
+            and not grs1_op.op_type.is_dest()
+            and
             # grs2
-            isinstance(grs2_op.op_type, RegOperandType) and
-            grs2_op.op_type.reg_type == 'gpr' and
-            not grs2_op.op_type.is_dest() and
+            isinstance(grs2_op.op_type, RegOperandType)
+            and grs2_op.op_type.reg_type == "gpr"
+            and not grs2_op.op_type.is_dest()
+            and
             # offset
-            isinstance(offset_op.op_type, ImmOperandType) and
-            offset_op.op_type.signed and
+            isinstance(offset_op.op_type, ImmOperandType)
+            and offset_op.op_type.signed
+            and
             # grs1_inc
-            isinstance(grs1_inc_op.op_type, OptionOperandType) and
+            isinstance(grs1_inc_op.op_type, OptionOperandType)
+            and
             # grs2_inc
             isinstance(grs2_inc_op.op_type, OptionOperandType)
         )
         if not exp_shape:
-            raise RuntimeError('Unexpected shape for bn.sid')
+            raise RuntimeError("Unexpected shape for bn.sid")
 
         grs1, grs2, _offset, grs1_inc, grs2_inc = op_vals
-        grs1_val = self.get_reg('gpr', grs1)
-        grs2_val = self.get_reg('gpr', grs2)
+        grs1_val = self.get_reg("gpr", grs1)
+        grs2_val = self.get_reg("gpr", grs2)
 
         self._generic_update_for_insn(prog_insn)
 
@@ -877,38 +880,41 @@ class Model:
             self._inc_gpr(grs2, grs2_val, 1)
 
     def update_for_bnmovr(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an BN.MOVR'''
+        """Update model state after an BN.MOVR"""
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'bn.movr'
+        assert insn.mnemonic == "bn.movr"
         assert len(insn.operands) == len(op_vals)
 
         grd_op, grs_op, grd_inc_op, grs_inc_op = insn.operands
         exp_shape = (
             # grd
-            isinstance(grd_op.op_type, RegOperandType) and
-            grd_op.op_type.reg_type == 'gpr' and
-            not grd_op.op_type.is_dest() and
+            isinstance(grd_op.op_type, RegOperandType)
+            and grd_op.op_type.reg_type == "gpr"
+            and not grd_op.op_type.is_dest()
+            and
             # grs
-            isinstance(grs_op.op_type, RegOperandType) and
-            grs_op.op_type.reg_type == 'gpr' and
-            not grs_op.op_type.is_dest() and
+            isinstance(grs_op.op_type, RegOperandType)
+            and grs_op.op_type.reg_type == "gpr"
+            and not grs_op.op_type.is_dest()
+            and
             # grd_inc
-            isinstance(grd_inc_op.op_type, OptionOperandType) and
+            isinstance(grd_inc_op.op_type, OptionOperandType)
+            and
             # grs_inc
             isinstance(grs_inc_op.op_type, OptionOperandType)
         )
         if not exp_shape:
-            raise RuntimeError('Unexpected shape for bn.movr')
+            raise RuntimeError("Unexpected shape for bn.movr")
 
         grd, grs, grd_inc, grs_inc = op_vals
-        grd_val = self.get_reg('gpr', grd)
-        grs_val = self.get_reg('gpr', grs)
+        grd_val = self.get_reg("gpr", grd)
+        grs_val = self.get_reg("gpr", grs)
 
         self._generic_update_for_insn(prog_insn)
 
         if grd_val is not None:
-            self.write_reg('wdr', grd_val & 31, None, False)
+            self.write_reg("wdr", grd_val & 31, None, False)
 
         if grd_inc:
             self._inc_gpr(grd, grd_val, 1)
@@ -916,34 +922,38 @@ class Model:
             self._inc_gpr(grs, grs_val, 1)
 
     def update_for_bnxor(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an BN.XOR
+        """Update model state after an BN.XOR
 
         If the source register happens to have a known value, we can do the
         addition and store the known result.
 
-        '''
+        """
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'bn.xor'
+        assert insn.mnemonic == "bn.xor"
         assert len(insn.operands) == len(op_vals)
 
-        exp_shape = (isinstance(insn.operands[0].op_type, RegOperandType) and
-                     insn.operands[0].op_type.reg_type == 'wdr' and
-                     insn.operands[0].op_type.is_dest() and
-                     isinstance(insn.operands[1].op_type, RegOperandType) and
-                     insn.operands[1].op_type.reg_type == 'wdr' and
-                     not insn.operands[1].op_type.is_dest() and
-                     isinstance(insn.operands[2].op_type, RegOperandType) and
-                     insn.operands[2].op_type.reg_type == 'wdr' and
-                     not insn.operands[2].op_type.is_dest() and
-                     isinstance(insn.operands[4].op_type, ImmOperandType))
+        exp_shape = (
+            isinstance(insn.operands[0].op_type, RegOperandType)
+            and insn.operands[0].op_type.reg_type == "wdr"
+            and insn.operands[0].op_type.is_dest()
+            and isinstance(insn.operands[1].op_type, RegOperandType)
+            and insn.operands[1].op_type.reg_type == "wdr"
+            and not insn.operands[1].op_type.is_dest()
+            and isinstance(insn.operands[2].op_type, RegOperandType)
+            and insn.operands[2].op_type.reg_type == "wdr"
+            and not insn.operands[2].op_type.is_dest()
+            and isinstance(insn.operands[4].op_type, ImmOperandType)
+        )
         if not exp_shape:
-            raise RuntimeError('BN.XOR instruction read from insns.yml is '
-                               'not the shape expected by '
-                               'Model.update_for_bnxor.')
+            raise RuntimeError(
+                "BN.XOR instruction read from insns.yml is "
+                "not the shape expected by "
+                "Model.update_for_bnxor."
+            )
 
-        wrs1_val = self.get_reg('wdr', op_vals[1])
-        wrs2_val = self.get_reg('wdr', op_vals[2])
+        wrs1_val = self.get_reg("wdr", op_vals[1])
+        wrs2_val = self.get_reg("wdr", op_vals[2])
 
         result = None
 
@@ -955,41 +965,45 @@ class Model:
         else:
             if op_vals[3]:
                 src2_val = wrs2_val >> op_vals[4]
-                result = (wrs1_val ^ src2_val)
+                result = wrs1_val ^ src2_val
             else:
                 src2_val = wrs2_val << op_vals[4]
-                result = (wrs1_val ^ src2_val)
+                result = wrs1_val ^ src2_val
 
         self._generic_update_for_insn(prog_insn)
 
-        self.write_reg('wdr', op_vals[0], result, True)
+        self.write_reg("wdr", op_vals[0], result, True)
 
     def update_for_bnnot(self, prog_insn: ProgInsn) -> None:
-        '''Update model state after an BN.NOT
+        """Update model state after an BN.NOT
 
         If the source register happens to have a known value, we can do the
         addition and store the known result.
 
-        '''
+        """
         insn = prog_insn.insn
         op_vals = prog_insn.operands
-        assert insn.mnemonic == 'bn.not'
+        assert insn.mnemonic == "bn.not"
         assert len(insn.operands) == len(op_vals)
 
-        exp_shape = (isinstance(insn.operands[0].op_type, RegOperandType) and
-                     insn.operands[0].op_type.reg_type == 'wdr' and
-                     insn.operands[0].op_type.is_dest() and
-                     isinstance(insn.operands[1].op_type, RegOperandType) and
-                     insn.operands[1].op_type.reg_type == 'wdr' and
-                     not insn.operands[1].op_type.is_dest() and
-                     isinstance(insn.operands[2].op_type, EnumOperandType) and
-                     isinstance(insn.operands[3].op_type, ImmOperandType))
+        exp_shape = (
+            isinstance(insn.operands[0].op_type, RegOperandType)
+            and insn.operands[0].op_type.reg_type == "wdr"
+            and insn.operands[0].op_type.is_dest()
+            and isinstance(insn.operands[1].op_type, RegOperandType)
+            and insn.operands[1].op_type.reg_type == "wdr"
+            and not insn.operands[1].op_type.is_dest()
+            and isinstance(insn.operands[2].op_type, EnumOperandType)
+            and isinstance(insn.operands[3].op_type, ImmOperandType)
+        )
         if not exp_shape:
-            raise RuntimeError('BN.NOT instruction read from insns.yml is '
-                               'not the shape expected by '
-                               'Model.update_for_bnnot.')
+            raise RuntimeError(
+                "BN.NOT instruction read from insns.yml is "
+                "not the shape expected by "
+                "Model.update_for_bnnot."
+            )
 
-        wrs_val = self.get_reg('wdr', op_vals[1])
+        wrs_val = self.get_reg("wdr", op_vals[1])
 
         result = None
         if wrs_val is not None:
@@ -997,14 +1011,14 @@ class Model:
                 src_val = wrs_val >> op_vals[4]
             else:
                 src_val = wrs_val << op_vals[4]
-            result = (src_val ^ ((1 << 256) - 1))
+            result = src_val ^ ((1 << 256) - 1)
 
         self._generic_update_for_insn(prog_insn)
 
-        self.write_reg('wdr', op_vals[0], result, True)
+        self.write_reg("wdr", op_vals[0], result, True)
 
     def _generic_update_for_insn(self, prog_insn: ProgInsn) -> None:
-        '''Update registers and memory for prog_insn
+        """Update registers and memory for prog_insn
 
         Apply side-effecting reads (relevant for x1) then mark any destination
         operand as having an architectural value. Finally, apply any memory
@@ -1013,7 +1027,7 @@ class Model:
         This is called by update_for_insn, either by the specialized updater if
         there is one or on its own if there's none.
 
-        '''
+        """
         seen_writes = []  # type: List[Tuple[str, int]]
         seen_reads = set()  # type: Set[Tuple[str, int]]
         insn = prog_insn.insn
@@ -1039,7 +1053,7 @@ class Model:
             self.touch_mem(mem_type, addr, insn.lsu.idx_width)
 
     def consume_fuel(self) -> None:
-        '''Consume one item of fuel'''
+        """Consume one item of fuel"""
         assert self.fuel > 0
         self.fuel -= 1
 
@@ -1048,13 +1062,13 @@ class Model:
         # result, or a complicated instruction where we have to do something
         # clever, actually set the destination register with a value.
         updaters = {
-            'lui': self.update_for_lui,
-            'addi': self.update_for_addi,
-            'bn.lid': self.update_for_bnlid,
-            'bn.sid': self.update_for_bnsid,
-            'bn.movr': self.update_for_bnmovr,
-            'bn.xor': self.update_for_bnxor,
-            'bn.not': self.update_for_bnnot
+            "lui": self.update_for_lui,
+            "addi": self.update_for_addi,
+            "bn.lid": self.update_for_bnlid,
+            "bn.sid": self.update_for_bnsid,
+            "bn.movr": self.update_for_bnmovr,
+            "bn.xor": self.update_for_bnxor,
+            "bn.not": self.update_for_bnnot,
         }
         updater = updaters.get(prog_insn.insn.mnemonic)
         if updater is not None:

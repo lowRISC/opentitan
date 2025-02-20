@@ -2,17 +2,22 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''A module defining a base class for a snippet generator.
+"""A module defining a base class for a snippet generator.
 
 The generators in the ./gens/ subdirectory all derive from this class. To
 actually generate some snippets, use the wrapper in snippet_gens.py.
 
-'''
+"""
 
 from typing import Callable, Optional, Tuple, List
 
-from shared.operand import (EnumOperandType, ImmOperandType, RegOperandType,
-                            OptionOperandType, Operand)
+from shared.operand import (
+    EnumOperandType,
+    ImmOperandType,
+    RegOperandType,
+    OptionOperandType,
+    Operand,
+)
 from shared.insn_yaml import Insn, InsnsFile
 
 from .program import Program
@@ -38,12 +43,13 @@ GenCont = Callable[[Model, Program, bool], GensRet]
 
 
 class SnippetGen:
-    '''A parameterised sequence of instructions
+    """A parameterised sequence of instructions
 
     These can be added to the instructions generated so far for a given random
     binary.
 
-    '''
+    """
+
     # A class-level variable that is set for generators that will end the
     # program (with an ECALL or an error)
     ends_program: bool = False
@@ -51,11 +57,8 @@ class SnippetGen:
     def __init__(self) -> None:
         self.disabled = False
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-        '''Try to generate instructions for this type of snippet.
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
+        """Try to generate instructions for this type of snippet.
 
         On success, inserts the instructions into program, updates the model,
         and returns a GenRet tuple. See comment above the type definition for
@@ -74,13 +77,11 @@ class SnippetGen:
         This will only be called when model.fuel > 0 and
         program.get_insn_space_at(model.pc) > 0.
 
-        '''
-        raise NotImplementedError('gen not implemented by subclass')
+        """
+        raise NotImplementedError("gen not implemented by subclass")
 
-    def pick_weight(self,
-                    model: Model,
-                    program: Program) -> float:
-        '''Pick a weight by which to multiply this generator's default weight
+    def pick_weight(self, model: Model, program: Program) -> float:
+        """Pick a weight by which to multiply this generator's default weight
 
         This is called for each generator before we start trying to generate a
         snippet for a given program and model state. This can be used to
@@ -97,67 +98,77 @@ class SnippetGen:
 
         The default implementation always returns 1.0.
 
-        '''
+        """
         return 1.0
 
     @staticmethod
     def _check_bnxor_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 6 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'wdr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'wdr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, RegOperandType) and
-                ops[2].op_type.reg_type == 'wdr' and
-                not ops[2].op_type.is_dest() and
-                isinstance(ops[4].op_type, ImmOperandType))
+        return (
+            len(ops) == 6
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "wdr"
+            and ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "wdr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, RegOperandType)
+            and ops[2].op_type.reg_type == "wdr"
+            and not ops[2].op_type.is_dest()
+            and isinstance(ops[4].op_type, ImmOperandType)
+        )
 
     @staticmethod
     def _check_bnnot_shape(ops: List[Operand]) -> bool:
-        return (isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'wdr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'wdr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, EnumOperandType) and
-                isinstance(ops[3].op_type, ImmOperandType))
+        return (
+            isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "wdr"
+            and ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "wdr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, EnumOperandType)
+            and isinstance(ops[3].op_type, ImmOperandType)
+        )
 
     @staticmethod
     def _check_bnmovr_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 4 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, OptionOperandType) and
-                isinstance(ops[3].op_type, OptionOperandType))
+        return (
+            len(ops) == 4
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and not ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "gpr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, OptionOperandType)
+            and isinstance(ops[3].op_type, OptionOperandType)
+        )
 
     @staticmethod
     def _check_lw_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 3 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, ImmOperandType) and
-                isinstance(ops[2].op_type, RegOperandType) and
-                ops[2].op_type.reg_type == 'gpr' and
-                not ops[2].op_type.is_dest())
+        return (
+            len(ops) == 3
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, ImmOperandType)
+            and isinstance(ops[2].op_type, RegOperandType)
+            and ops[2].op_type.reg_type == "gpr"
+            and not ops[2].op_type.is_dest()
+        )
 
     @staticmethod
     def _check_sw_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 3 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, ImmOperandType) and
-                isinstance(ops[2].op_type, RegOperandType) and
-                ops[2].op_type.reg_type == 'gpr' and
-                not ops[2].op_type.is_dest())
+        return (
+            len(ops) == 3
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and not ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, ImmOperandType)
+            and isinstance(ops[2].op_type, RegOperandType)
+            and ops[2].op_type.reg_type == "gpr"
+            and not ops[2].op_type.is_dest()
+        )
 
     # BN.LID grd is destination in a sense, but it's
     # used as the indirect destination of which we
@@ -165,116 +176,130 @@ class SnippetGen:
     # source from the perspective of the RIG
     @staticmethod
     def _check_bnlid_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 5 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed and
-                isinstance(ops[3].op_type, OptionOperandType) and
-                isinstance(ops[4].op_type, OptionOperandType))
+        return (
+            len(ops) == 5
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and not ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "gpr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, ImmOperandType)
+            and ops[2].op_type.signed
+            and isinstance(ops[3].op_type, OptionOperandType)
+            and isinstance(ops[4].op_type, OptionOperandType)
+        )
 
     @staticmethod
     def _check_bnsid_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 5 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed and
-                isinstance(ops[3].op_type, OptionOperandType) and
-                isinstance(ops[4].op_type, OptionOperandType))
+        return (
+            len(ops) == 5
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and not ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "gpr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, ImmOperandType)
+            and ops[2].op_type.signed
+            and isinstance(ops[3].op_type, OptionOperandType)
+            and isinstance(ops[4].op_type, OptionOperandType)
+        )
 
     @staticmethod
     def _check_branch_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 3 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                not ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed)
+        return (
+            len(ops) == 3
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and not ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "gpr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, ImmOperandType)
+            and ops[2].op_type.signed
+        )
 
     @staticmethod
     def _check_jal_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 2 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, ImmOperandType) and
-                ops[1].op_type.signed)
+        return (
+            len(ops) == 2
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, ImmOperandType)
+            and ops[1].op_type.signed
+        )
 
     @staticmethod
     def _check_jalr_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 3 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                ops[0].op_type.is_dest() and
-                isinstance(ops[1].op_type, RegOperandType) and
-                ops[1].op_type.reg_type == 'gpr' and
-                not ops[1].op_type.is_dest() and
-                isinstance(ops[2].op_type, ImmOperandType) and
-                ops[2].op_type.signed)
+        return (
+            len(ops) == 3
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and ops[0].op_type.is_dest()
+            and isinstance(ops[1].op_type, RegOperandType)
+            and ops[1].op_type.reg_type == "gpr"
+            and not ops[1].op_type.is_dest()
+            and isinstance(ops[2].op_type, ImmOperandType)
+            and ops[2].op_type.signed
+        )
 
     @staticmethod
     def _check_loop_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 2 and
-                isinstance(ops[0].op_type, RegOperandType) and
-                ops[0].op_type.reg_type == 'gpr' and
-                isinstance(ops[1].op_type, ImmOperandType) and
-                not ops[1].op_type.signed)
+        return (
+            len(ops) == 2
+            and isinstance(ops[0].op_type, RegOperandType)
+            and ops[0].op_type.reg_type == "gpr"
+            and isinstance(ops[1].op_type, ImmOperandType)
+            and not ops[1].op_type.signed
+        )
 
     @staticmethod
     def _check_loopi_shape(ops: List[Operand]) -> bool:
-        return (len(ops) == 2 and
-                isinstance(ops[0].op_type, ImmOperandType) and
-                not ops[0].op_type.signed and
-                isinstance(ops[1].op_type, ImmOperandType) and
-                not ops[1].op_type.signed)
+        return (
+            len(ops) == 2
+            and isinstance(ops[0].op_type, ImmOperandType)
+            and not ops[0].op_type.signed
+            and isinstance(ops[1].op_type, ImmOperandType)
+            and not ops[1].op_type.signed
+        )
 
     def _check_insn_shape(self, insn: Insn, mnemonic: str) -> bool:
         shape_checkers = {
-            'bn.xor': SnippetGen._check_bnxor_shape,
-            'bn.not': SnippetGen._check_bnnot_shape,
-            'bn.movr': SnippetGen._check_bnmovr_shape,
-            'lw': SnippetGen._check_lw_shape,
-            'sw': SnippetGen._check_sw_shape,
-            'bn.lid': SnippetGen._check_bnlid_shape,
-            'bn.sid': SnippetGen._check_bnsid_shape,
-            'beq': SnippetGen._check_branch_shape,
-            'bne': SnippetGen._check_branch_shape,
-            'jal': SnippetGen._check_jal_shape,
-            'jalr': SnippetGen._check_jalr_shape,
-            'loop': SnippetGen._check_loop_shape,
-            'loopi': SnippetGen._check_loopi_shape,
+            "bn.xor": SnippetGen._check_bnxor_shape,
+            "bn.not": SnippetGen._check_bnnot_shape,
+            "bn.movr": SnippetGen._check_bnmovr_shape,
+            "lw": SnippetGen._check_lw_shape,
+            "sw": SnippetGen._check_sw_shape,
+            "bn.lid": SnippetGen._check_bnlid_shape,
+            "bn.sid": SnippetGen._check_bnsid_shape,
+            "beq": SnippetGen._check_branch_shape,
+            "bne": SnippetGen._check_branch_shape,
+            "jal": SnippetGen._check_jal_shape,
+            "jalr": SnippetGen._check_jalr_shape,
+            "loop": SnippetGen._check_loop_shape,
+            "loopi": SnippetGen._check_loopi_shape,
         }
         checker = shape_checkers.get(mnemonic)
         return checker is None or checker(insn.operands)
 
     def _get_named_insn(self, insns_file: InsnsFile, mnemonic: str) -> Insn:
-        '''Get an instruction from insns_file by mnemonic
+        """Get an instruction from insns_file by mnemonic
 
         This is used for specialized snippets that need to generate a specific
         instruction and wraps the error handling for when someone has removed
         the instruction from the file.
 
-        '''
+        """
         insn = insns_file.mnemonic_to_insn.get(mnemonic.lower())
         if insn is None:
-            raise RuntimeError('No {} instruction in instructions file.'
-                               .format(mnemonic.upper()))
+            raise RuntimeError("No {} instruction in instructions file.".format(mnemonic.upper()))
 
         if not self._check_insn_shape(insn, mnemonic.lower()):
-            raise RuntimeError('Fetched instruction {} from instructions file '
-                               'is not the shape expected by the generator.'
-                               .format(mnemonic.upper()))
+            raise RuntimeError(
+                "Fetched instruction {} from instructions file "
+                "is not the shape expected by the generator.".format(mnemonic.upper())
+            )
 
         return insn

@@ -16,7 +16,7 @@ from ..snippet_gen import GenCont, GenRet
 
 
 class BadGiantLoop(Loop):
-    '''A generator for loops with end addresses that don't lie in memory
+    """A generator for loops with end addresses that don't lie in memory
 
     This generator has "ends_program = True", but doesn't end the program in
     itself. Instead, it sets up a loop with an endpoint that doesn't fit in
@@ -24,18 +24,14 @@ class BadGiantLoop(Loop):
     a sequence for the rest of the program, to go inside the body. OTBN will
     complete its operation without popping the loop off the stack.
 
-    '''
+    """
 
     ends_program = True
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__(cfg, insns_file)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # We need space for at least 2 instructions here: one for the loop head
         # instruction and one for the minimal body (which might contain an
         # ECALL, for example)
@@ -92,8 +88,7 @@ class BadGiantLoop(Loop):
 
         end_addr = model.pc + 4 * bodysize
 
-        body_model, body_loop_stack = self._setup_body(hd_insn, end_addr,
-                                                       model, program, False)
+        body_model, body_loop_stack = self._setup_body(hd_insn, end_addr, model, program, False)
         assert body_loop_stack is None
 
         # At this point, all the "loop related work" is done: we've entered the

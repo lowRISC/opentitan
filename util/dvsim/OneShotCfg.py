@@ -20,8 +20,7 @@ class OneShotCfg(FlowCfg):
     linting, synthesis and FPV.
     """
 
-    ignored_wildcards = (FlowCfg.ignored_wildcards +
-                         ['build_mode', 'index', 'test'])
+    ignored_wildcards = FlowCfg.ignored_wildcards + ["build_mode", "index", "test"]
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
         # Options set from command line
@@ -87,8 +86,7 @@ class OneShotCfg(FlowCfg):
         super()._expand()
 
         # Stuff below only pertains to individual cfg (not primary cfg).
-        if not self.is_primary_cfg and (not self.select_cfgs or
-                                        self.name in self.select_cfgs):
+        if not self.is_primary_cfg and (not self.select_cfgs or self.name in self.select_cfgs):
             # Print scratch_path at the start:
             log.info("[scratch_path]: [%s] [%s]", self.name, self.scratch_path)
 
@@ -97,7 +95,7 @@ class OneShotCfg(FlowCfg):
                 "D": self.scratch_path + "/" + "dispatched",
                 "P": self.scratch_path + "/" + "passed",
                 "F": self.scratch_path + "/" + "failed",
-                "K": self.scratch_path + "/" + "killed"
+                "K": self.scratch_path + "/" + "killed",
             }
 
             # Use the default build mode for tests that do not specify it
@@ -116,8 +114,7 @@ class OneShotCfg(FlowCfg):
 
     def _create_objects(self):
         # Create build and run modes objects
-        build_modes = Mode.create_modes(BuildMode,
-                                        getattr(self, "build_modes"))
+        build_modes = Mode.create_modes(BuildMode, getattr(self, "build_modes"))
         setattr(self, "build_modes", build_modes)
 
         # All defined build modes are being built, h
@@ -136,15 +133,13 @@ class OneShotCfg(FlowCfg):
                 log.error("Item %s does not exist!", list_item)
 
     def _create_dirs(self):
-        '''Create initial set of directories
-        '''
+        """Create initial set of directories"""
         for link in self.links.keys():
             rm_path(self.links[link])
             os.makedirs(self.links[link])
 
     def _create_deploy_objects(self):
-        '''Create deploy objects from build modes
-        '''
+        """Create deploy objects from build modes"""
         builds = []
         for build in self.build_modes:
             item = CompileOneShot(build, self)

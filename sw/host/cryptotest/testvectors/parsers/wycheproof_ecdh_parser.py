@@ -41,13 +41,11 @@ def parse_test_vectors(raw_data):
             # Crypto.PublicKey.ECC.import_key(), so we manually exclude these
             # tests.
             if "InvalidAsn" in test["flags"]:
-                logging.info(
-                    f"Skipped tcId {test['tcId']}: Tagged as Invalid ASN."
-                )
+                logging.info(f"Skipped tcId {test['tcId']}: Tagged as Invalid ASN.")
                 continue
             test_vec = {
                 "vendor": "wycheproof",
-                "test_case_id": test['tcId'],
+                "test_case_id": test["tcId"],
                 "algorithm": "ecdh",
                 "curve": EC_NAME_MAPPING[group["curve"]],
                 "d": list(bytes.fromhex(test["private"])),
@@ -100,22 +98,15 @@ def parse_test_vectors(raw_data):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument(
-        "--src",
-        metavar="FILE",
-        type=argparse.FileType("r"),
-        help="Test vector input file to parse"
+        "--src", metavar="FILE", type=argparse.FileType("r"), help="Test vector input file to parse"
     )
     parser.add_argument(
         "--dst",
         metavar="FILE",
         type=argparse.FileType("w"),
-        help="File to write parsed JSON test cases"
+        help="File to write parsed JSON test cases",
     )
-    parser.add_argument(
-        "--schema",
-        type = str,
-        help = "Test vector schema file"
-    )
+    parser.add_argument("--schema", type=str, help="Test vector schema file")
     args = parser.parse_args()
 
     testvecs = parse_test_vectors(json.load(args.src))

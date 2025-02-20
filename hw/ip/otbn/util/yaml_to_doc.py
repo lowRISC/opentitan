@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''Generate Markdown documentation for the instructions in insns.yml'''
+"""Generate Markdown documentation for the instructions in insns.yml"""
 
 import argparse
 import os
@@ -20,53 +20,48 @@ from docs.get_impl import read_implementation
 _O2EDicts = Tuple[Dict[str, List[str]], Dict[int, str]]
 
 
-def render_operand_row(operand: Operand,
-                       op_ranges: Optional[List[str]]) -> str:
-    '''Generate the single row of a markdown table for an operand'''
+def render_operand_row(operand: Operand, op_ranges: Optional[List[str]]) -> str:
+    """Generate the single row of a markdown table for an operand"""
 
     # This is in <tr><td> form, but we want to embed arbitrary markup (and
     # don't want to have to faff around with &lt; encodings. So we have to
     # include a blank line above and below. This makes (at least) Github
     # flavoured markdown switch back to "markdown mode" for the contents.
     parts = []
-    parts.append('<tr><td>\n\n')
-    parts.append('`{}`'.format(operand.name))
-    parts.append('\n\n</td><td>')
+    parts.append("<tr><td>\n\n")
+    parts.append("`{}`".format(operand.name))
+    parts.append("\n\n</td><td>")
 
     # The "description" cell contains any documentation supplied in the file,
     # and then any extra documentation that's implied by the type of the
     # operand.
     if operand.doc is not None:
-        parts.append('\n\n')
+        parts.append("\n\n")
         parts.append(operand.doc)
 
     if operand.op_type is not None:
         ot_doc = operand.op_type.markdown_doc()
         if ot_doc is not None:
-            parts.append('\n\n')
+            parts.append("\n\n")
             parts.append(ot_doc)
 
         if op_ranges is not None:
-            parts.append('\n\n')
+            parts.append("\n\n")
             dec_str = operand.op_type.describe_decode(op_ranges)
-            parts.append('Decode as `{}`\n\n'.format(dec_str))
+            parts.append("Decode as `{}`\n\n".format(dec_str))
 
-    parts.append('\n\n</td></tr>')
-    return ''.join(parts)
+    parts.append("\n\n</td></tr>")
+    return "".join(parts)
 
 
-def render_operand_table(operands: List[Operand],
-                         o2e: Optional[Dict[str, List[str]]]) -> str:
-    '''Generate the operand table for an instruction'''
+def render_operand_table(operands: List[Operand], o2e: Optional[Dict[str, List[str]]]) -> str:
+    """Generate the operand table for an instruction"""
 
     # We have to generate this in <tr><td> form because we want to put
     # block-level elements into the table cells (and markdown tables only
     # support inline elements).
     parts = []
-    parts.append('<table><thead>'
-                 '<tr><th>Operand</th><th>Description</th></tr>'
-                 '</thead>'
-                 '<tbody>')
+    parts.append("<table><thead><tr><th>Operand</th><th>Description</th></tr></thead><tbody>")
     for operand in operands:
         if o2e is None:
             op_ranges = None
@@ -78,21 +73,19 @@ def render_operand_table(operands: List[Operand],
 
         parts.append(render_operand_row(operand, op_ranges))
 
-    parts.append('</tbody></table>\n\n')
-    return ''.join(parts)
+    parts.append("</tbody></table>\n\n")
+    return "".join(parts)
 
 
-def render_encoding(mnemonic: str,
-                    encoding: Encoding,
-                    e2o: Dict[int, str]) -> str:
-    '''Generate a table displaying an instruction encoding'''
+def render_encoding(mnemonic: str, encoding: Encoding, e2o: Dict[int, str]) -> str:
+    """Generate a table displaying an instruction encoding"""
     parts = []
     parts.append('<table style="font-size: 75%">')
-    parts.append('<tr>')
-    parts.append('<td></td>')
+    parts.append("<tr>")
+    parts.append("<td></td>")
     for bit in range(31, -1, -1):
-        parts.append('<td>{}</td>'.format(bit))
-    parts.append('</tr>')
+        parts.append("<td>{}</td>".format(bit))
+    parts.append("</tr>")
 
     # Build dictionary of bit ranges, keyed by the msb and with value a pair
     # (width, desc) where width is the width of the range in bits and desc is a
@@ -114,7 +107,7 @@ def render_encoding(mnemonic: str,
 
                 for idx in range(0, msb - lsb + 1):
                     desc = field.value.char_for_bit(val_lsb + idx)
-                    by_msb[lsb + idx] = (1, '' if desc == 'x' else desc)
+                    by_msb[lsb + idx] = (1, "" if desc == "x" else desc)
             continue
 
         # Otherwise this field's value is an operand name. name_op_enc_fields
@@ -124,8 +117,8 @@ def render_encoding(mnemonic: str,
             assert msb in e2o
             by_msb[msb] = (msb - lsb + 1, e2o[msb])
 
-    parts.append('<tr>')
-    parts.append('<td>{}</td>'.format(mnemonic.upper()))
+    parts.append("<tr>")
+    parts.append("<td>{}</td>".format(mnemonic.upper()))
 
     # Now run down the ranges in descending order of msb to get the table cells
     next_bit = 31
@@ -140,27 +133,28 @@ def render_encoding(mnemonic: str,
         parts.append('<td colspan="{}">{}</td>'.format(width, desc))
 
     assert next_bit == -1
-    parts.append('</tr>')
+    parts.append("</tr>")
 
-    parts.append('</table>\n\n')
-    return ''.join(parts)
+    parts.append("</table>\n\n")
+    return "".join(parts)
 
 
 def render_literal_pseudo_op(rewrite: List[str]) -> str:
-    '''Generate documentation with expansion of a pseudo op'''
+    """Generate documentation with expansion of a pseudo op"""
     parts = []
-    parts.append('This instruction is a pseudo-operation and expands to the '
-                 'following instruction sequence:\n```\n')
+    parts.append(
+        "This instruction is a pseudo-operation and expands to the "
+        "following instruction sequence:\n```\n"
+    )
     for line in rewrite:
         parts.append(line)
-        parts.append('\n')
-    parts.append('```\n\n')
-    return ''.join(parts)
+        parts.append("\n")
+    parts.append("```\n\n")
+    return "".join(parts)
 
 
-def name_op_enc_fields(name_to_operand: Dict[str, Operand],
-                       encoding: Encoding) -> _O2EDicts:
-    '''Name the encoding fields corresponding to operators
+def name_op_enc_fields(name_to_operand: Dict[str, Operand], encoding: Encoding) -> _O2EDicts:
+    """Name the encoding fields corresponding to operators
 
     In the generated documentation, we name encoding fields based on the
     operand that the encode. For example, if the operand "foo" is encoded in a
@@ -178,7 +172,7 @@ def name_op_enc_fields(name_to_operand: Dict[str, Operand],
     upper range of bits for the encoding field for 'foo' had MSB 10. Then
     e2o[10] = 'FOO_1'.
 
-    '''
+    """
     o2e = {}  # type: Dict[str, List[str]]
     e2o = {}  # type: Dict[int, str]
 
@@ -221,7 +215,7 @@ def name_op_enc_fields(name_to_operand: Dict[str, Operand],
         # field having index zero).
         o2e_list = []
         for idx, (msb, lsb) in enumerate(reversed(scheme_field.bits.ranges)):
-            range_name = '{}_{}'.format(basename, idx)
+            range_name = "{}_{}".format(basename, idx)
             o2e_list.append(range_name)
             assert msb not in e2o
             e2o[msb] = range_name
@@ -233,61 +227,58 @@ def name_op_enc_fields(name_to_operand: Dict[str, Operand],
 
 
 def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
-    '''Generate the documentation for an instruction
+    """Generate the documentation for an instruction
 
     heading_level is the current Markdown heading level. It should be greater
     than zero. For example, if it is 3, then the instruction will be introduced
     with "### <insn_name>".
 
-    '''
+    """
     assert heading_level > 0
 
     parts = []
     mnem = insn.mnemonic.upper()
-    subhead = '#' * (heading_level + 1) + ' '
+    subhead = "#" * (heading_level + 1) + " "
 
     # Heading, based on mnemonic (upper-cased)
-    parts.append('{} {}\n'.format('#' * heading_level, mnem))
+    parts.append("{} {}\n".format("#" * heading_level, mnem))
 
     # If there's a note, render it as a callout
     if insn.note is not None:
-        parts.append('<div class="bd-callout bd-callout-warning">'
-                     '<h5>Note</h5>\n\n')
+        parts.append('<div class="bd-callout bd-callout-warning"><h5>Note</h5>\n\n')
         parts.append(insn.note)
-        parts.append('\n\n</div>\n\n')
+        parts.append("\n\n</div>\n\n")
 
     # Optional synopsis: some bold-face text expanding the mnemonic to
     # something more understandable.
     if insn.synopsis is not None:
-        parts.append('**{}.**\n'.format(insn.synopsis))
+        parts.append("**{}.**\n".format(insn.synopsis))
 
     # Optional documentation (using existing markdown formatting). Add a blank
     # line afterwards to separate from the syntax and operand table.
     if insn.doc is not None:
-        parts.append(insn.doc + '\n')
-    parts.append('\n')
+        parts.append(insn.doc + "\n")
+    parts.append("\n")
 
     # If this came from the RV32I instruction set, say so.
     if insn.rv32i:
-        parts.append('This instruction is defined in the '
-                     'RV32I instruction set.\n\n')
+        parts.append("This instruction is defined in the RV32I instruction set.\n\n")
 
     # A list of errors that the instruction might cause.
     if insn.errs is not None:
-        parts.append(subhead + 'Errors\n')
+        parts.append(subhead + "Errors\n")
         if not insn.errs:
-            parts.append('{} cannot cause any software errors.\n'.format(mnem))
+            parts.append("{} cannot cause any software errors.\n".format(mnem))
         else:
-            parts.append('{} might cause the following software errors:\n'
-                         .format(mnem))
+            parts.append("{} might cause the following software errors:\n".format(mnem))
             for desc in insn.errs:
-                parts.append('- {}\n'.format(desc))
-        parts.append('\n')
+                parts.append("- {}\n".format(desc))
+        parts.append("\n")
 
     # Syntax example: either given explicitly or figured out from operands
-    parts.append(subhead + 'Syntax\n')
+    parts.append(subhead + "Syntax\n")
     parts.append("```\n")
-    parts.append(insn.mnemonic.upper() + ('' if insn.glued_ops else ' '))
+    parts.append(insn.mnemonic.upper() + ("" if insn.glued_ops else " "))
     parts.append(insn.syntax.render_doc())
     parts.append("\n```\n\n")
 
@@ -303,12 +294,12 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
     # Show the operand table if there is at least one operand and this isn't a
     # pseudo-op.
     if insn.operands and not is_pseudo:
-        parts.append(subhead + 'Operands\n')
+        parts.append(subhead + "Operands\n")
         parts.append(render_operand_table(insn.operands, o2e))
 
     # Show encoding if we have one
     if e2o is not None:
-        parts.append(subhead + 'Encoding\n')
+        parts.append(subhead + "Encoding\n")
         assert insn.encoding is not None
         parts.append(render_encoding(insn.mnemonic, insn.encoding, e2o))
 
@@ -317,76 +308,69 @@ def render_insn(insn: Insn, impl: Optional[str], heading_level: int) -> str:
         parts.append(render_literal_pseudo_op(insn.literal_pseudo_op))
 
     if impl is not None:
-        parts.append(subhead + 'Operation\n')
+        parts.append(subhead + "Operation\n")
 
         # Add a handy header to remind readers that enum operands and option
         # operands are referred to by their integer values.
         not_num_ops = []
         for operand in insn.operands:
-            if ((isinstance(operand.op_type, EnumOperandType) or
-                 isinstance(operand.op_type, OptionOperandType))):
+            if isinstance(operand.op_type, EnumOperandType) or isinstance(
+                operand.op_type, OptionOperandType
+            ):
                 not_num_ops.append(operand.name)
 
         if not_num_ops:
             if len(not_num_ops) == 1:
-                op_str = ('operand `{}` is referred to by its'
-                          .format(not_num_ops[0]))
+                op_str = "operand `{}` is referred to by its".format(not_num_ops[0])
             else:
-                op_str = ('operands {} and `{}` are referred to by their'
-                          .format(', '.join('`{}`'.format(e)
-                                            for e in not_num_ops[:-1]),
-                                  not_num_ops[-1]))
+                op_str = "operands {} and `{}` are referred to by their".format(
+                    ", ".join("`{}`".format(e) for e in not_num_ops[:-1]), not_num_ops[-1]
+                )
 
-            parts.append('In the listing below, {} integer value.\n'
-                         'The operand table above shows how this corresponds '
-                         'to assembly syntax.\n\n'
-                         .format(op_str))
+            parts.append(
+                "In the listing below, {} integer value.\n"
+                "The operand table above shows how this corresponds "
+                "to assembly syntax.\n\n".format(op_str)
+            )
 
         # Note: No trailing newline after the inserted contents because libcst
         # (which we use for extracting documentation) always adds a trailing
         # newline itself.
-        parts.append('```\n'
-                     '{}'
-                     '```\n\n'
-                     .format(impl))
-    return ''.join(parts)
+        parts.append("```\n{}```\n\n".format(impl))
+    return "".join(parts)
 
 
-def render_insn_group(group: InsnGroup,
-                      impls: Dict[str, str],
-                      heading_level: int,
-                      out_file: TextIO) -> None:
+def render_insn_group(
+    group: InsnGroup, impls: Dict[str, str], heading_level: int, out_file: TextIO
+) -> None:
     # We don't print the group heading: that's done in the top-level
     # documentation so it makes it into the TOC.
 
-    out_file.write(group.doc + '\n\n')
+    out_file.write(group.doc + "\n\n")
 
     if not group.insns:
-        out_file.write('No instructions in group.\n\n')
+        out_file.write("No instructions in group.\n\n")
         return
 
     for insn in group.insns:
-        class_name = insn.mnemonic.replace('.', '').upper()
+        class_name = insn.mnemonic.replace(".", "").upper()
         impl = impls.get(class_name)
         out_file.write(render_insn(insn, impl, heading_level))
 
 
-def render_insns(insns: InsnsFile,
-                 impls: Dict[str, str],
-                 heading_level: int,
-                 out_dir: str) -> None:
-    '''Render documentation for all instructions'''
+def render_insns(insns: InsnsFile, impls: Dict[str, str], heading_level: int, out_dir: str) -> None:
+    """Render documentation for all instructions"""
     for group in insns.groups.groups:
-        group_path = os.path.join(out_dir, group.key + '.md')
-        with open(group_path, 'w') as group_file:
+        group_path = os.path.join(out_dir, group.key + ".md")
+        with open(group_path, "w") as group_file:
             render_insn_group(group, impls, heading_level, group_file)
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('yaml_file')
-    parser.add_argument('py_file')
-    parser.add_argument('out_dir')
+    parser.add_argument("yaml_file")
+    parser.add_argument("py_file")
+    parser.add_argument("out_dir")
 
     args = parser.parse_args()
 
@@ -400,12 +384,11 @@ def main() -> int:
     try:
         os.makedirs(args.out_dir, exist_ok=True)
     except OSError as err:
-        print('Failed to create output directory {!r}: {}.'
-              .format(args.out_dir, err))
+        print("Failed to create output directory {!r}: {}.".format(args.out_dir, err))
 
     render_insns(insns, impls, 2, args.out_dir)
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

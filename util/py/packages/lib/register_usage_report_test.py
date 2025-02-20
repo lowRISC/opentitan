@@ -7,8 +7,11 @@ import tempfile
 import clang.cindex
 
 from util.py.packages.lib.register_usage_report import (
-    RegisterTokenPattern, RegisterUsageReport, RegisterUsageReportGroup,
-    SingleFileSourceRange)
+    RegisterTokenPattern,
+    RegisterUsageReport,
+    RegisterUsageReportGroup,
+    SingleFileSourceRange,
+)
 
 
 class TestSingleFileSourceRange(unittest.TestCase):
@@ -17,17 +20,20 @@ class TestSingleFileSourceRange(unittest.TestCase):
 
         Hash collisions are unlikely, but not impossible, so this test might be flaky.
         """
-        self.assertEqual(hash(SingleFileSourceRange("foo", 1, 2)),
-                         hash(SingleFileSourceRange("foo", 1, 2)))
-        self.assertNotEqual(hash(SingleFileSourceRange("foo", 1, 2)),
-                            hash(SingleFileSourceRange("bar", 1, 2)))
-        self.assertNotEqual(hash(SingleFileSourceRange("foo", 1, 2)),
-                            hash(SingleFileSourceRange("foo", 9, 2)))
-        self.assertNotEqual(hash(SingleFileSourceRange("foo", 1, 2)),
-                            hash(SingleFileSourceRange("foo", 1, 9)))
+        self.assertEqual(
+            hash(SingleFileSourceRange("foo", 1, 2)), hash(SingleFileSourceRange("foo", 1, 2))
+        )
+        self.assertNotEqual(
+            hash(SingleFileSourceRange("foo", 1, 2)), hash(SingleFileSourceRange("bar", 1, 2))
+        )
+        self.assertNotEqual(
+            hash(SingleFileSourceRange("foo", 1, 2)), hash(SingleFileSourceRange("foo", 9, 2))
+        )
+        self.assertNotEqual(
+            hash(SingleFileSourceRange("foo", 1, 2)), hash(SingleFileSourceRange("foo", 1, 9))
+        )
 
     def test_preview(self):
-
         with tempfile.NamedTemporaryFile() as tf:
             tf.write(b"fn foo() {\n")
             tf.write(b"  let x = 0;\n")
@@ -70,8 +76,7 @@ class TestRegisterUsageReport(unittest.TestCase):
         }
         unparsed_callsites = set([SingleFileSourceRange("baz.c", 2, 2)])
         reports = [
-            RegisterUsageReport("func_name", registers_to_callsites,
-                                unparsed_callsites),
+            RegisterUsageReport("func_name", registers_to_callsites, unparsed_callsites),
             RegisterUsageReport("func_name", dict(), set()),
         ]
         merged = RegisterUsageReport.merge_reports(reports)
@@ -81,87 +86,110 @@ class TestRegisterUsageReport(unittest.TestCase):
 
     def test_merge_disjoint(self):
         report1 = RegisterUsageReport(
-            "func_name", {
+            "func_name",
+            {
                 "REG_TOKEN_ABC": set([SingleFileSourceRange("foo.c", 1, 4)]),
                 "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
             },
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz.c", 3, 4),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz.c", 3, 4),
+                ]
+            ),
+        )
         report2 = RegisterUsageReport(
-            "func_name", {
+            "func_name",
+            {
                 "REG_TOKEN_DEF": set([SingleFileSourceRange("foo2.c", 2, 5)]),
-                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)
-                                      ]),
+                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)]),
             },
-            set([
-                SingleFileSourceRange("bar2.c", 2, 3),
-                SingleFileSourceRange("baz2.c", 4, 5),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar2.c", 2, 3),
+                    SingleFileSourceRange("baz2.c", 4, 5),
+                ]
+            ),
+        )
 
         merged = RegisterUsageReport.merge_reports([report1, report2])
         self.assertEqual(merged.function_name, "func_name")
         self.assertEqual(
-            merged.registers_to_callsites, {
+            merged.registers_to_callsites,
+            {
                 "REG_TOKEN_ABC": set([SingleFileSourceRange("foo.c", 1, 4)]),
                 "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
                 "REG_TOKEN_DEF": set([SingleFileSourceRange("foo2.c", 2, 5)]),
-                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)
-                                      ]),
-            })
+                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)]),
+            },
+        )
         self.assertEqual(len(merged.registers_to_callsites), 4)
         self.assertEqual(
             merged.unparsed_callsites,
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz.c", 3, 4),
-                SingleFileSourceRange("bar2.c", 2, 3),
-                SingleFileSourceRange("baz2.c", 4, 5),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz.c", 3, 4),
+                    SingleFileSourceRange("bar2.c", 2, 3),
+                    SingleFileSourceRange("baz2.c", 4, 5),
+                ]
+            ),
+        )
         self.assertEqual(len(merged.unparsed_callsites), 4)
 
     def test_merge_overlapping(self):
         report1 = RegisterUsageReport(
-            "func_name", {
+            "func_name",
+            {
                 "REG_TOKEN_ABC": set([SingleFileSourceRange("foo.c", 1, 4)]),
                 "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
             },
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz.c", 3, 4),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz.c", 3, 4),
+                ]
+            ),
+        )
         report2 = RegisterUsageReport(
-            "func_name", {
-                "REG_TOKEN_ABC": set(
-                    [SingleFileSourceRange("baz.c", 100, 101)]),
+            "func_name",
+            {
+                "REG_TOKEN_ABC": set([SingleFileSourceRange("baz.c", 100, 101)]),
                 "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
             },
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz2.c", 4, 5),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz2.c", 4, 5),
+                ]
+            ),
+        )
 
         merged = RegisterUsageReport.merge_reports([report1, report2])
         self.assertEqual(merged.function_name, "func_name")
         self.assertEqual(
-            merged.registers_to_callsites, {
-                "REG_TOKEN_ABC":
-                set([
-                    SingleFileSourceRange("foo.c", 1, 4),
-                    SingleFileSourceRange("baz.c", 100, 101),
-                ]),
-                "REG_TOKEN_XYZ":
-                set([SingleFileSourceRange("bar.c", 42, 45)]),
-            })
+            merged.registers_to_callsites,
+            {
+                "REG_TOKEN_ABC": set(
+                    [
+                        SingleFileSourceRange("foo.c", 1, 4),
+                        SingleFileSourceRange("baz.c", 100, 101),
+                    ]
+                ),
+                "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
+            },
+        )
         self.assertEqual(len(merged.registers_to_callsites), 2)
         self.assertEqual(
             merged.unparsed_callsites,
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz.c", 3, 4),
-                SingleFileSourceRange("baz2.c", 4, 5),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz.c", 3, 4),
+                    SingleFileSourceRange("baz2.c", 4, 5),
+                ]
+            ),
+        )
         self.assertEqual(len(merged.unparsed_callsites), 3)
 
 
@@ -169,20 +197,19 @@ class TestRegisterUsageReportGroup(unittest.TestCase):
     def test_serialization_roundtrips(self):
         report_groups = [
             RegisterUsageReportGroup({}),
-            RegisterUsageReportGroup({
-                "foo":
-                RegisterUsageReport(
-                    "foo",
-                    {"func": set([SingleFileSourceRange("foo.c", 1, 2)])},
-                    set())
-            }),
+            RegisterUsageReportGroup(
+                {
+                    "foo": RegisterUsageReport(
+                        "foo", {"func": set([SingleFileSourceRange("foo.c", 1, 2)])}, set()
+                    )
+                }
+            ),
         ]
 
         for group in report_groups:
             with self.subTest(group=group):
                 group_bytes = group.serialize()
-                group_parsed = RegisterUsageReportGroup.deserialize(
-                    group_bytes)
+                group_parsed = RegisterUsageReportGroup.deserialize(group_bytes)
                 self.assertIsNotNone(group_parsed)
                 self.assertEqual(group, group_parsed)
 
@@ -190,54 +217,66 @@ class TestRegisterUsageReportGroup(unittest.TestCase):
         self.assertIsNone(RegisterUsageReportGroup.merge([]))
         self.assertEqual(
             RegisterUsageReportGroup.merge([RegisterUsageReportGroup({})]),
-            RegisterUsageReportGroup({}))
+            RegisterUsageReportGroup({}),
+        )
 
         report1 = RegisterUsageReport(
-            "func_name", {
+            "func_name",
+            {
                 "REG_TOKEN_ABC": set([SingleFileSourceRange("foo.c", 1, 4)]),
                 "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
             },
-            set([
-                SingleFileSourceRange("bar.c", 1, 2),
-                SingleFileSourceRange("baz.c", 3, 4),
-            ]))
+            set(
+                [
+                    SingleFileSourceRange("bar.c", 1, 2),
+                    SingleFileSourceRange("baz.c", 3, 4),
+                ]
+            ),
+        )
         report2 = RegisterUsageReport(
-            "func_name", {
+            "func_name",
+            {
                 "REG_TOKEN_DEF": set([SingleFileSourceRange("foo2.c", 2, 5)]),
-                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)
-                                      ]),
+                "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)]),
             },
-            set([
-                SingleFileSourceRange("bar2.c", 2, 3),
-                SingleFileSourceRange("baz2.c", 4, 5),
-            ]))
-        merged = RegisterUsageReportGroup.merge([
-            RegisterUsageReportGroup({"func_name": report1}),
-            RegisterUsageReportGroup({"func_name": report2}),
-        ])
+            set(
+                [
+                    SingleFileSourceRange("bar2.c", 2, 3),
+                    SingleFileSourceRange("baz2.c", 4, 5),
+                ]
+            ),
+        )
+        merged = RegisterUsageReportGroup.merge(
+            [
+                RegisterUsageReportGroup({"func_name": report1}),
+                RegisterUsageReportGroup({"func_name": report2}),
+            ]
+        )
 
         self.assertEqual(
             merged,
-            RegisterUsageReportGroup({
-                "func_name":
-                RegisterUsageReport(
-                    "func_name", {
-                        "REG_TOKEN_ABC":
-                        set([SingleFileSourceRange("foo.c", 1, 4)]),
-                        "REG_TOKEN_XYZ":
-                        set([SingleFileSourceRange("bar.c", 42, 45)]),
-                        "REG_TOKEN_DEF":
-                        set([SingleFileSourceRange("foo2.c", 2, 5)]),
-                        "REG_TOKEN_UVW":
-                        set([SingleFileSourceRange("foo2.c", 43, 46)]),
-                    },
-                    set([
-                        SingleFileSourceRange("bar.c", 1, 2),
-                        SingleFileSourceRange("baz.c", 3, 4),
-                        SingleFileSourceRange("bar2.c", 2, 3),
-                        SingleFileSourceRange("baz2.c", 4, 5),
-                    ]))
-            }))
+            RegisterUsageReportGroup(
+                {
+                    "func_name": RegisterUsageReport(
+                        "func_name",
+                        {
+                            "REG_TOKEN_ABC": set([SingleFileSourceRange("foo.c", 1, 4)]),
+                            "REG_TOKEN_XYZ": set([SingleFileSourceRange("bar.c", 42, 45)]),
+                            "REG_TOKEN_DEF": set([SingleFileSourceRange("foo2.c", 2, 5)]),
+                            "REG_TOKEN_UVW": set([SingleFileSourceRange("foo2.c", 43, 46)]),
+                        },
+                        set(
+                            [
+                                SingleFileSourceRange("bar.c", 1, 2),
+                                SingleFileSourceRange("baz.c", 3, 4),
+                                SingleFileSourceRange("bar2.c", 2, 3),
+                                SingleFileSourceRange("baz2.c", 4, 5),
+                            ]
+                        ),
+                    )
+                }
+            ),
+        )
 
 
 class TestRegisterTokenPattern(unittest.TestCase):
@@ -262,17 +301,16 @@ class TestRegisterTokenPattern(unittest.TestCase):
         pattern = RegisterTokenPattern(["base_ptr", "+", None])
         self.assertEqual(pattern.count_wildcards(), 1)
         self.assertIsNone(pattern.find_matches(["some", "other", "expr"]))
-        self.assertEqual(pattern.find_matches(["base_ptr", "+", "REG_TOKEN"]),
-                         ["REG_TOKEN"])
+        self.assertEqual(pattern.find_matches(["base_ptr", "+", "REG_TOKEN"]), ["REG_TOKEN"])
 
     def test_two_wildcards(self):
         pattern = RegisterTokenPattern(["base_ptr", "*", None, "+", None])
         self.assertEqual(pattern.count_wildcards(), 2)
         self.assertIsNone(pattern.find_matches(["some", "other", "expr"]))
         self.assertEqual(
-            pattern.find_matches(
-                ["base_ptr", "*", "REG_TOKEN_A", "+", "REG_TOKEN_B"]),
-            ["REG_TOKEN_A", "REG_TOKEN_B"])
+            pattern.find_matches(["base_ptr", "*", "REG_TOKEN_A", "+", "REG_TOKEN_B"]),
+            ["REG_TOKEN_A", "REG_TOKEN_B"],
+        )
 
 
 class TestLibclang(unittest.TestCase):
@@ -295,10 +333,36 @@ void entry_point(void) {
 }
 """
         INCORRECT_ARG_TOKENS = [
-            '0', '#', 'define', 'CALL_MAGIC', '(', 'name', ')', 'magic', '(',
-            'CONST_', '##', 'name', ')', 'void', 'magic', '(', 'int',
-            'register_offset', ')', ';', 'void', 'entry_point', '(', 'void',
-            ')', '{', 'CALL_MAGIC', '(', 'FOO', ')'
+            "0",
+            "#",
+            "define",
+            "CALL_MAGIC",
+            "(",
+            "name",
+            ")",
+            "magic",
+            "(",
+            "CONST_",
+            "##",
+            "name",
+            ")",
+            "void",
+            "magic",
+            "(",
+            "int",
+            "register_offset",
+            ")",
+            ";",
+            "void",
+            "entry_point",
+            "(",
+            "void",
+            ")",
+            "{",
+            "CALL_MAGIC",
+            "(",
+            "FOO",
+            ")",
         ]
 
         index = clang.cindex.Index.create()
@@ -310,9 +374,9 @@ void entry_point(void) {
             translation_unit = index.parse(tf.name, args=[])
 
             [cursor] = [
-                c for c in translation_unit.cursor.walk_preorder()
-                if c.kind == clang.cindex.CursorKind.CALL_EXPR and
-                c.displayname == 'magic'
+                c
+                for c in translation_unit.cursor.walk_preorder()
+                if c.kind == clang.cindex.CursorKind.CALL_EXPR and c.displayname == "magic"
             ]
 
             [arg] = list(cursor.get_arguments())
@@ -322,7 +386,7 @@ void entry_point(void) {
             # These assertions may feel a little backwards because the purpose
             # of this test is to document the unwanted behavior.
             self.assertEqual(tokens, INCORRECT_ARG_TOKENS)
-            self.assertNotEqual(tokens, ['CONST_FOO'])
+            self.assertNotEqual(tokens, ["CONST_FOO"])
 
 
 if __name__ == "__main__":

@@ -10,7 +10,7 @@ from unittest.mock import patch
 import rom_chip_info
 
 
-EXAMPLE_SHA1_DIGEST = 0x4bbd966dcbfc4aa39291f4de9f52bc0f66ca32a4
+EXAMPLE_SHA1_DIGEST = 0x4BBD966DCBFC4AA39291F4DE9F52BC0F66CA32A4
 
 
 class TestGenerateChipInfoCSource(unittest.TestCase):
@@ -67,56 +67,49 @@ const chip_info_t kChipInfo = {
 
     def test_sha1_digest_too_large(self):
         # Compute the max SHA1 digest plus one.
-        INVALID_SHA1_DIGEST_LARGE = 2**(20 * 8)
+        INVALID_SHA1_DIGEST_LARGE = 2 ** (20 * 8)
         with self.assertRaises(AssertionError):
-            rom_chip_info.generate_chip_info_c_source(
-                INVALID_SHA1_DIGEST_LARGE)
+            rom_chip_info.generate_chip_info_c_source(INVALID_SHA1_DIGEST_LARGE)
 
     def test_sha1_digest_too_small(self):
         INVALID_SHA1_DIGEST_SMALL = -1
         with self.assertRaises(AssertionError):
-            rom_chip_info.generate_chip_info_c_source(
-                INVALID_SHA1_DIGEST_SMALL)
+            rom_chip_info.generate_chip_info_c_source(INVALID_SHA1_DIGEST_SMALL)
 
 
 class TestFileOperations(unittest.TestCase):
-    @patch('version_file.open',
-           mock_open(read_data=f'BUILD_SCM_REVISION {EXAMPLE_SHA1_DIGEST:x}'))
+    @patch("version_file.open", mock_open(read_data=f"BUILD_SCM_REVISION {EXAMPLE_SHA1_DIGEST:x}"))
     def test_read_version_file(self):
-        """Reading a properly-formatted version file produces the expected int.
-        """
-        version = rom_chip_info.read_version_file(
-            pathlib.Path("fake/path/version.txt"), None)
+        """Reading a properly-formatted version file produces the expected int."""
+        version = rom_chip_info.read_version_file(pathlib.Path("fake/path/version.txt"), None)
         self.assertEqual(version, EXAMPLE_SHA1_DIGEST)
 
-    @patch("version_file.open", mock_open(read_data=''))
+    @patch("version_file.open", mock_open(read_data=""))
     def test_read_version_file_empty(self):
-        """Reading an empty version file raises an exception.
-        """
+        """Reading an empty version file raises an exception."""
         version = rom_chip_info.read_version_file(
-            pathlib.Path("fake/path/version.txt"), f'{EXAMPLE_SHA1_DIGEST:x}')
+            pathlib.Path("fake/path/version.txt"), f"{EXAMPLE_SHA1_DIGEST:x}"
+        )
         self.assertEqual(version, EXAMPLE_SHA1_DIGEST)
 
-    @patch("version_file.open", mock_open(read_data='BUILD_SCM_REVISION xyz'))
+    @patch("version_file.open", mock_open(read_data="BUILD_SCM_REVISION xyz"))
     def test_read_version_file_invalid_hex(self):
-        """Reading an invalid version file raises an exception.
-        """
+        """Reading an invalid version file raises an exception."""
         with self.assertRaisesRegex(ValueError, "invalid literal for int"):
-            rom_chip_info.read_version_file(
-                pathlib.Path("fake/path/version.txt"), None)
+            rom_chip_info.read_version_file(pathlib.Path("fake/path/version.txt"), None)
 
     @patch("pathlib.Path.open", new_callable=mock_open)
     def test_write_source_file(self, mock_path_open):
-        """Calling write_source_file() produces the expected file.
-        """
-        src_path = rom_chip_info.write_source_file(pathlib.Path("fake/out/"),
-                                                   "// This is a C program")
+        """Calling write_source_file() produces the expected file."""
+        src_path = rom_chip_info.write_source_file(
+            pathlib.Path("fake/out/"), "// This is a C program"
+        )
         self.assertEqual(src_path, pathlib.Path("fake/out/chip_info.c"))
-        mock_path_open.assert_called_once_with(mode='w', encoding='utf-8')
+        mock_path_open.assert_called_once_with(mode="w", encoding="utf-8")
 
         handle = mock_path_open()
-        handle.write.assert_called_once_with('// This is a C program')
+        handle.write.assert_called_once_with("// This is a C program")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

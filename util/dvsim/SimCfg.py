@@ -40,13 +40,22 @@ class SimCfg(FlowCfg):
     a DV regression framework.
     """
 
-    flow = 'sim'
+    flow = "sim"
 
     # TODO: Find a way to set these in sim cfg instead
     ignored_wildcards = [
-        "build_mode", "index", "test", "seed", "svseed", "uvm_test", "uvm_test_seq",
-        "cov_db_dirs", "sw_images", "sw_build_device", "sw_build_cmd",
-        "sw_build_opts"
+        "build_mode",
+        "index",
+        "test",
+        "seed",
+        "svseed",
+        "uvm_test",
+        "uvm_test_seq",
+        "cov_db_dirs",
+        "sw_images",
+        "sw_build_device",
+        "sw_build_cmd",
+        "sw_build_opts",
     ]
 
     def __init__(self, flow_cfg_file, hjson_data, args, mk_config):
@@ -67,11 +76,11 @@ class SimCfg(FlowCfg):
         self.reseed_multiplier = args.reseed_multiplier
         # Waves must be of type string, since it may be used as substitution
         # variable in the HJson cfg files.
-        self.waves = args.waves or 'none'
+        self.waves = args.waves or "none"
         self.max_waves = args.max_waves
         self.cov = args.cov
         self.cov_merge_previous = args.cov_merge_previous
-        self.profile = args.profile or '(cfg uses profile without --profile)'
+        self.profile = args.profile or "(cfg uses profile without --profile)"
         self.xprop_off = args.xprop_off
         self.no_rerun = args.no_rerun
         self.verbosity = None  # set in _expand
@@ -172,16 +181,16 @@ class SimCfg(FlowCfg):
         # Stuff below only pertains to individual cfg (not primary cfg)
         # or individual selected cfgs (if select_cfgs is configured via command line)
         # TODO: find a better way to support select_cfgs
-        if not self.is_primary_cfg and (not self.select_cfgs or
-                                        self.name in self.select_cfgs):
+        if not self.is_primary_cfg and (not self.select_cfgs or self.name in self.select_cfgs):
             # If self.tool is None at this point, there was no --tool argument on
             # the command line, and there is no default tool set in the config
             # file. That's ok if this is a primary config (where the
             # sub-configurations can choose tools themselves), but not otherwise.
             if self.tool is None:
                 log.error(
-                    'Config file does not specify a default tool, '
-                    'and there was no --tool argument on the command line.')
+                    "Config file does not specify a default tool, "
+                    "and there was no --tool argument on the command line."
+                )
                 sys.exit(1)
 
             # Print scratch_path at the start:
@@ -192,12 +201,12 @@ class SimCfg(FlowCfg):
                 "D": self.scratch_path + "/" + "dispatched",
                 "P": self.scratch_path + "/" + "passed",
                 "F": self.scratch_path + "/" + "failed",
-                "K": self.scratch_path + "/" + "killed"
+                "K": self.scratch_path + "/" + "killed",
             }
 
             # Use the default build mode for tests that do not specify it
             if not hasattr(self, "build_mode"):
-                self.build_mode = 'default'
+                self.build_mode = "default"
 
             # Set the primary build mode. The coverage associated to this build
             # is the main coverage. Some tools need this information. This is
@@ -212,7 +221,7 @@ class SimCfg(FlowCfg):
             self._create_objects()
 
     def _resolve_waves(self):
-        '''Choose and return a wave format, if waves are enabled.
+        """Choose and return a wave format, if waves are enabled.
 
         This is called after reading the config file. This method is used to
         update the value of class member 'waves', which must be of type string,
@@ -220,9 +229,9 @@ class SimCfg(FlowCfg):
         If waves are not enabled, or if this is a primary cfg, then return
         'none'. 'tool', which must be set at this point, supports a limited
         list of wave formats (supplied with 'supported_wave_formats' key).
-        '''
-        if self.waves == 'none' or self.is_primary_cfg:
-            return 'none'
+        """
+        if self.waves == "none" or self.is_primary_cfg:
+            return "none"
 
         assert self.tool is not None
 
@@ -230,10 +239,10 @@ class SimCfg(FlowCfg):
         # a sanity check, error out if the chosen tool doesn't support the
         # format, but only if we know about the tool. If not, we'll just assume
         # they know what they're doing.
-        if self.supported_wave_formats and \
-           self.waves not in self.supported_wave_formats:
-            log.error('Chosen tool ({}) does not support wave format '
-                      '{!r}.'.format(self.tool, self.waves))
+        if self.supported_wave_formats and self.waves not in self.supported_wave_formats:
+            log.error(
+                "Chosen tool ({}) does not support wave format {!r}.".format(self.tool, self.waves)
+            )
             sys.exit(1)
 
         return self.waves
@@ -262,9 +271,7 @@ class SimCfg(FlowCfg):
                 self.sw_images.extend(build_mode_obj.sw_images)
                 self.sw_build_opts.extend(build_mode_obj.sw_build_opts)
             else:
-                log.error(
-                    "Mode \"%s\" enabled on the command line is not defined",
-                    en_build_mode)
+                log.error('Mode "%s" enabled on the command line is not defined', en_build_mode)
                 sys.exit(1)
 
         # Walk through run modes enabled on the CLI and append the opts
@@ -277,9 +284,7 @@ class SimCfg(FlowCfg):
                 self.sw_images.extend(run_mode_obj.sw_images)
                 self.sw_build_opts.extend(run_mode_obj.sw_build_opts)
             else:
-                log.error(
-                    "Mode \"%s\" enabled on the command line is not defined",
-                    en_run_mode)
+                log.error('Mode "%s" enabled on the command line is not defined', en_run_mode)
                 sys.exit(1)
 
         # Create tests from given list of items
@@ -288,8 +293,9 @@ class SimCfg(FlowCfg):
         # Regressions
         # Parse testplan if provided.
         if self.testplan != "":
-            self.testplan = Testplan(self.testplan,
-                                     repo_top=Path(self.proj_root), name=self.variant_name)
+            self.testplan = Testplan(
+                self.testplan, repo_top=Path(self.proj_root), name=self.variant_name
+            )
             # Extract tests in each stage and add them as regression target.
             self.regressions.extend(self.testplan.get_stage_regressions())
         else:
@@ -297,8 +303,7 @@ class SimCfg(FlowCfg):
             self.testplan = Testplan(None, name=self.name)
 
         # Create regressions
-        self.regressions = Regression.create_regressions(
-            self.regressions, self, self.tests)
+        self.regressions = Regression.create_regressions(self.regressions, self, self.tests)
 
     def _print_list(self):
         for list_item in self.list_items:
@@ -321,12 +326,12 @@ class SimCfg(FlowCfg):
                 log.info(mode_name)
 
     def _create_build_and_run_list(self):
-        '''Generates a list of deployable objects from the provided items.
+        """Generates a list of deployable objects from the provided items.
 
         Tests to be run are provided with --items switch. These can be glob-
         style patterns. This method finds regressions and tests that match
         these patterns.
-        '''
+        """
 
         def _match_items(items: list, patterns: list):
             hits = []
@@ -349,7 +354,8 @@ class SimCfg(FlowCfg):
                     f"Regression {regr.name} added to be run has tests that "
                     "overlap with other regressions also being run. This can "
                     "result in conflicting build / run time opts to be set, "
-                    "resulting in unexpected results. Skipping.")
+                    "resulting in unexpected results. Skipping."
+                )
                 continue
 
             self.run_list += regr.tests
@@ -359,25 +365,29 @@ class SimCfg(FlowCfg):
 
         # Process individual tests, skipping the ones already added from
         # regressions.
-        test_map = {
-            test.name: test
-            for test in self.tests if test not in self.run_list
-        }
+        test_map = {test.name: test for test in self.tests if test not in self.run_list}
         test_hits, items_matched_ = _match_items(test_map.keys(), self.items)
         self.run_list += [test_map[test] for test in test_hits]
         items_matched |= items_matched_
 
         # Check if all items have been processed.
         for item in set(self.items) - items_matched:
-            log.warning(f"Item {item} did not match any regressions or "
-                        f"tests in {self.flow_cfg_file}.")
+            log.warning(
+                f"Item {item} did not match any regressions or tests in {self.flow_cfg_file}."
+            )
 
         # Merge the global build and run opts
-        Test.merge_global_opts(self.run_list, self.pre_build_cmds,
-                               self.post_build_cmds, self.build_opts,
-                               self.pre_run_cmds, self.post_run_cmds,
-                               self.run_opts, self.sw_images,
-                               self.sw_build_opts)
+        Test.merge_global_opts(
+            self.run_list,
+            self.pre_build_cmds,
+            self.post_build_cmds,
+            self.build_opts,
+            self.pre_run_cmds,
+            self.post_run_cmds,
+            self.run_opts,
+            self.sw_images,
+            self.sw_build_opts,
+        )
 
         # Process reseed override and create the build_list
         build_list_names = []
@@ -398,14 +408,13 @@ class SimCfg(FlowCfg):
                 build_list_names.append(test.build_mode.name)
 
     def _create_dirs(self):
-        '''Create initial set of directories
-        '''
+        """Create initial set of directories"""
         for link in self.links.keys():
             rm_path(self.links[link])
             os.makedirs(self.links[link])
 
     def _expand_run_list(self, build_map):
-        '''Generate a list of tests to be run
+        """Generate a list of tests to be run
 
         For each test in tests, we add it test.reseed times. The ordering is
         interleaved so that we run through all of the tests as soon as
@@ -415,7 +424,7 @@ class SimCfg(FlowCfg):
         will be ABABAAA).
 
         build_map is a dictionary mapping a build mode to a CompileSim object.
-        '''
+        """
         tagged = []
 
         for test in self.run_list:
@@ -431,8 +440,7 @@ class SimCfg(FlowCfg):
         return [run for _, run in tagged]
 
     def _create_deploy_objects(self):
-        '''Create deploy objects from the build and run lists.
-        '''
+        """Create deploy objects from the build and run lists."""
 
         # Create the build and run list first
         self._create_build_and_run_list()
@@ -473,30 +481,35 @@ class SimCfg(FlowCfg):
         # Check self.primary_build_mode is set correctly.
         build_mode_names = set(b.name for b in self.builds)
         if self.primary_build_mode not in build_mode_names:
-            log.error(f"\"primary_build_mode: {self.primary_build_mode}\" "
-                      f"in {self.name} cfg is invalid. Please pick from "
-                      f"{build_mode_names}.")
+            log.error(
+                f'"primary_build_mode: {self.primary_build_mode}" '
+                f"in {self.name} cfg is invalid. Please pick from "
+                f"{build_mode_names}."
+            )
             sys.exit(1)
 
         # Update all tests to use the updated (uniquified) build modes.
         for test in self.run_list:
             if test.build_mode.name != build_map[test.build_mode].name:
-                test.build_mode = find_mode(
-                    build_map[test.build_mode].name, self.build_modes)
+                test.build_mode = find_mode(build_map[test.build_mode].name, self.build_modes)
 
-        self.runs = ([]
-                     if self.build_only else self._expand_run_list(build_map))
+        self.runs = [] if self.build_only else self._expand_run_list(build_map)
 
         # In GUI mode or GUI with debug mode, only allow one test to run.
         if self.gui and len(self.runs) > 1:
             self.runs = self.runs[:1]
-            log.warning("In GUI mode, only one test is allowed to run. "
-                        "Picking {}".format(self.runs[0].full_name))
+            log.warning(
+                "In GUI mode, only one test is allowed to run. Picking {}".format(
+                    self.runs[0].full_name
+                )
+            )
 
         # GUI mode is only available for Xcelium for the moment.
-        if (self.gui_debug) and (self.tool not in ['xcelium']):
-            log.error("GUI debug mode is only available for Xcelium, please remove "
-                      "--gui_debug / -gd option or switch to Xcelium tool.")
+        if (self.gui_debug) and (self.tool not in ["xcelium"]):
+            log.error(
+                "GUI debug mode is only available for Xcelium, please remove "
+                "--gui_debug / -gd option or switch to Xcelium tool."
+            )
             sys.exit(1)
 
         # Add builds to the list of things to run, only if --run-only switch
@@ -519,9 +532,9 @@ class SimCfg(FlowCfg):
         self._create_dirs()
 
     def _cov_analyze(self):
-        '''Use the last regression coverage data to open up the GUI tool to
+        """Use the last regression coverage data to open up the GUI tool to
         analyze the coverage.
-        '''
+        """
         # Create initial set of directories, such as dispatched, passed etc.
         self._create_dirs()
 
@@ -529,17 +542,16 @@ class SimCfg(FlowCfg):
         self.deploy = [cov_analyze_deploy]
 
     def cov_analyze(self):
-        '''Public facing API for analyzing coverage.
-        '''
+        """Public facing API for analyzing coverage."""
         for item in self.cfgs:
             item._cov_analyze()
 
     def _cov_unr(self):
-        '''Use the last regression coverage data to generate unreachable
+        """Use the last regression coverage data to generate unreachable
         coverage exclusions.
-        '''
+        """
         # TODO, Only support VCS
-        if self.tool not in ['vcs', 'xcelium']:
+        if self.tool not in ["vcs", "xcelium"]:
             log.error("Only VCS and Xcelium are supported for the UNR flow.")
             sys.exit(1)
         # Create initial set of directories, such as dispatched, passed etc.
@@ -549,14 +561,12 @@ class SimCfg(FlowCfg):
         self.deploy = [cov_unr_deploy]
 
     def cov_unr(self):
-        '''Public facing API for analyzing coverage.
-        '''
+        """Public facing API for analyzing coverage."""
         for item in self.cfgs:
             item._cov_unr()
 
     def _gen_json_results(self, run_results):
-        """Returns the run results as json-formatted dictionary.
-        """
+        """Returns the run results as json-formatted dictionary."""
 
         def _empty_str_as_none(s: str) -> Optional[str]:
             """Map an empty string to None and retain the value of a non-empty
@@ -578,56 +588,57 @@ class SimCfg(FlowCfg):
 
         def _test_result_to_dict(tr) -> dict:
             """Map a test result entry to a dict."""
-            job_time_s = (tr.job_runtime.with_unit('s').get()[0]
-                          if tr.job_runtime is not None
-                          else None)
-            sim_time_us = (tr.simulated_time.with_unit('us').get()[0]
-                           if tr.simulated_time is not None
-                           else None)
+            job_time_s = (
+                tr.job_runtime.with_unit("s").get()[0] if tr.job_runtime is not None else None
+            )
+            sim_time_us = (
+                tr.simulated_time.with_unit("us").get()[0]
+                if tr.simulated_time is not None
+                else None
+            )
             pass_rate = tr.passing * 100.0 / tr.total if tr.total > 0 else 0
             return {
-                'name': tr.name,
-                'max_runtime_s': job_time_s,
-                'simulated_time_us': sim_time_us,
-                'passing_runs': tr.passing,
-                'total_runs': tr.total,
-                'pass_rate': pass_rate,
+                "name": tr.name,
+                "max_runtime_s": job_time_s,
+                "simulated_time_us": sim_time_us,
+                "passing_runs": tr.passing,
+                "total_runs": tr.total,
+                "pass_rate": pass_rate,
             }
 
         results = dict()
 
         # Describe name of hardware block targeted by this run and optionally
         # the variant of the hardware block.
-        results['block_name'] = self.name.lower()
-        results['block_variant'] = _empty_str_as_none(self.variant.lower())
+        results["block_name"] = self.name.lower()
+        results["block_variant"] = _empty_str_as_none(self.variant.lower())
 
         # The timestamp for this run has been taken with `utcnow()` and is
         # stored in a custom format.  Store it in standard ISO format with
         # explicit timezone annotation.
         timestamp = datetime.strptime(self.timestamp, TS_FORMAT)
         timestamp = timestamp.replace(tzinfo=timezone.utc)
-        results['report_timestamp'] = timestamp.isoformat()
+        results["report_timestamp"] = timestamp.isoformat()
 
         # Extract Git properties.
-        m = re.search(r'https://github.com/.+?/tree/([0-9a-fA-F]+)',
-                      self.revision)
-        results['git_revision'] = m.group(1) if m else None
-        results['git_branch_name'] = _empty_str_as_none(self.branch)
+        m = re.search(r"https://github.com/.+?/tree/([0-9a-fA-F]+)", self.revision)
+        results["git_revision"] = m.group(1) if m else None
+        results["git_branch_name"] = _empty_str_as_none(self.branch)
 
         # Describe type of report and tool used.
-        results['report_type'] = 'simulation'
-        results['tool'] = self.tool.lower()
+        results["report_type"] = "simulation"
+        results["tool"] = self.tool.lower()
 
         if self.build_seed and not self.run_only:
-            results['build_seed'] = str(self.build_seed)
+            results["build_seed"] = str(self.build_seed)
 
         # Create dictionary to store results.
-        results['results'] = {
-            'testpoints': [],
-            'unmapped_tests': [],
-            'testplan_stage_summary': [],
-            'coverage': dict(),
-            'failure_buckets': [],
+        results["results"] = {
+            "testpoints": [],
+            "unmapped_tests": [],
+            "testplan_stage_summary": [],
+            "coverage": dict(),
+            "failure_buckets": [],
         }
 
         # If the testplan does not yet have test results mapped to testpoints,
@@ -638,7 +649,6 @@ class SimCfg(FlowCfg):
 
         # Extract results of testpoints and tests into the `testpoints` field.
         for tp in self.testplan.testpoints:
-
             # Ignore testpoints that contain unmapped tests, because those will
             # be handled separately.
             if tp.name in ["Unmapped tests", "N.A."]:
@@ -647,7 +657,6 @@ class SimCfg(FlowCfg):
             # Extract test results for this testpoint.
             tests = []
             for tr in tp.test_results:
-
                 # Ignore test results with zero total runs unless we are told
                 # to "map the full testplan".
                 if tr.total == 0 and not self.map_full_testplan:
@@ -662,43 +671,44 @@ class SimCfg(FlowCfg):
                 continue
 
             # Append testpoint to results.
-            results['results']['testpoints'].append({
-                'name': tp.name,
-                'stage': tp.stage,
-                'tests': tests,
-            })
+            results["results"]["testpoints"].append(
+                {
+                    "name": tp.name,
+                    "stage": tp.stage,
+                    "tests": tests,
+                }
+            )
 
         # Extract unmapped tests.
         unmapped_trs = [tr for tr in sim_results.table if not tr.mapped]
         for tr in unmapped_trs:
-            results['results']['unmapped_tests'].append(
-                _test_result_to_dict(tr))
+            results["results"]["unmapped_tests"].append(_test_result_to_dict(tr))
 
         # Extract summary of testplan stages.
         if self.map_full_testplan:
             for k, d in self.testplan.progress.items():
-                results['results']['testplan_stage_summary'].append({
-                    'name': k,
-                    'total_tests': d['total'],
-                    'written_tests': d['written'],
-                    'passing_tests': d['passing'],
-                    'pass_rate': _pct_str_to_float(d['progress']),
-                })
+                results["results"]["testplan_stage_summary"].append(
+                    {
+                        "name": k,
+                        "total_tests": d["total"],
+                        "written_tests": d["written"],
+                        "passing_tests": d["passing"],
+                        "pass_rate": _pct_str_to_float(d["progress"]),
+                    }
+                )
 
         # Extract coverage results if coverage has been collected in this run.
         if self.cov_report_deploy is not None:
             cov = self.cov_report_deploy.cov_results_dict
             for k, v in cov.items():
-                results['results']['coverage'][k.lower()] = _pct_str_to_float(v)
+                results["results"]["coverage"][k.lower()] = _pct_str_to_float(v)
 
         # Extract failure buckets.
         if sim_results.buckets:
-            by_tests = sorted(sim_results.buckets.items(),
-                              key=lambda i: len(i[1]),
-                              reverse=True)
+            by_tests = sorted(sim_results.buckets.items(), key=lambda i: len(i[1]), reverse=True)
             for bucket, tests in by_tests:
                 unique_tests = collections.defaultdict(list)
-                for (test, line, context) in tests:
+                for test, line, context in tests:
                     if not isinstance(test, RunTest):
                         continue
                     unique_tests[test.name].append((test, line, context))
@@ -706,23 +716,29 @@ class SimCfg(FlowCfg):
                 for test_name, test_runs in unique_tests.items():
                     frs = []
                     for test, line, context in test_runs:
-                        frs.append({
-                            'seed': str(test.seed),
-                            'failure_message': {
-                                'log_file_path': test.get_log_path(),
-                                'log_file_line_num': line,
-                                'text': ''.join(context),
-                            },
-                        })
-                    fts.append({
-                        'name': test_name,
-                        'failing_runs': frs,
-                    })
+                        frs.append(
+                            {
+                                "seed": str(test.seed),
+                                "failure_message": {
+                                    "log_file_path": test.get_log_path(),
+                                    "log_file_line_num": line,
+                                    "text": "".join(context),
+                                },
+                            }
+                        )
+                    fts.append(
+                        {
+                            "name": test_name,
+                            "failing_runs": frs,
+                        }
+                    )
 
-                results['results']['failure_buckets'].append({
-                    'identifier': bucket,
-                    'failing_tests': fts,
-                })
+                results["results"]["failure_buckets"].append(
+                    {
+                        "identifier": bucket,
+                        "failing_tests": fts,
+                    }
+                )
 
         # Store the `results` dictionary in this object.
         self.results_dict = results
@@ -731,14 +747,14 @@ class SimCfg(FlowCfg):
         return json.dumps(self.results_dict)
 
     def _gen_results(self, run_results):
-        '''
+        """
         The function is called after the regression has completed. It collates the
         status of all run targets and generates a dict. It parses the testplan and
         maps the generated result to the testplan entries to generate a final table
         (list). It also prints the full list of failures for debug / triage. If cov
         is enabled, then the summary coverage report is also generated. The final
         result is in markdown format.
-        '''
+        """
 
         def indent_by(level):
             return " " * (4 * level)
@@ -746,9 +762,7 @@ class SimCfg(FlowCfg):
         def create_failure_message(test, line, context):
             message = [f"{indent_by(2)}* {test.qual_name}\\"]
             if line:
-                message.append(
-                    f"{indent_by(2)}  Line {line}, in log " +
-                    test.get_log_path())
+                message.append(f"{indent_by(2)}  Line {line}, in log " + test.get_log_path())
             else:
                 message.append(f"{indent_by(2)} Log {test.get_log_path()}")
             if context:
@@ -772,31 +786,30 @@ class SimCfg(FlowCfg):
             Returns:
               A list of text lines for the report.
             """
-            by_tests = sorted(buckets.items(),
-                              key=lambda i: len(i[1]),
-                              reverse=True)
+            by_tests = sorted(buckets.items(), key=lambda i: len(i[1]), reverse=True)
             fail_msgs = ["\n## Failure Buckets", ""]
             for bucket, tests in by_tests:
                 fail_msgs.append(f"* `{bucket}` has {len(tests)} failures:")
                 unique_tests = collections.defaultdict(list)
-                for (test, line, context) in tests:
+                for test, line, context in tests:
                     unique_tests[test.name].append((test, line, context))
-                for name, test_reseeds in list(unique_tests.items())[
-                        :_MAX_UNIQUE_TESTS]:
-                    fail_msgs.append(f"{indent_by(1)}* Test {name} has "
-                                     f"{len(test_reseeds)} failures.")
+                for name, test_reseeds in list(unique_tests.items())[:_MAX_UNIQUE_TESTS]:
+                    fail_msgs.append(
+                        f"{indent_by(1)}* Test {name} has {len(test_reseeds)} failures."
+                    )
                     for test, line, context in test_reseeds[:_MAX_TEST_RESEEDS]:
-                        fail_msgs.extend(
-                            create_failure_message(test, line, context))
+                        fail_msgs.extend(create_failure_message(test, line, context))
                     if len(test_reseeds) > _MAX_TEST_RESEEDS:
                         fail_msgs.append(
                             f"{indent_by(2)}* ... and "
                             f"{len(test_reseeds) - _MAX_TEST_RESEEDS} "
-                            "more failures.")
+                            "more failures."
+                        )
                 if len(unique_tests) > _MAX_UNIQUE_TESTS:
                     fail_msgs.append(
                         f"{indent_by(1)}* ... and "
-                        f"{len(unique_tests) - _MAX_UNIQUE_TESTS} more tests.")
+                        f"{len(unique_tests) - _MAX_UNIQUE_TESTS} more tests."
+                    )
 
             fail_msgs.append("")
             return fail_msgs
@@ -816,11 +829,11 @@ class SimCfg(FlowCfg):
             if hasattr(self, "testplan_doc_path"):
                 # The key 'testplan_doc_path' can override the path to the testplan file
                 # if it's not in the default location relative to the sim_cfg.
-                relative_path_to_testplan = (Path(self.testplan_doc_path)
-                                             .relative_to(Path(self.proj_root)))
+                relative_path_to_testplan = Path(self.testplan_doc_path).relative_to(
+                    Path(self.proj_root)
+                )
                 testplan = "https://{}/{}".format(
-                    self.book,
-                    str(relative_path_to_testplan).replace("hjson", "html")
+                    self.book, str(relative_path_to_testplan).replace("hjson", "html")
                 )
             else:
                 # Default filesystem layout for an ip block
@@ -839,8 +852,7 @@ class SimCfg(FlowCfg):
                 # self.rel_path gives us the path to the directory
                 # containing the sim_cfg file...
                 testplan = "https://{}/{}".format(
-                    self.book,
-                    Path(self.rel_path).parent / 'data' / f"{self.name}_testplan.html"
+                    self.book, Path(self.rel_path).parent / "data" / f"{self.name}_testplan.html"
                 )
 
             results_str += f"### [Testplan]({testplan})\n"
@@ -849,8 +861,7 @@ class SimCfg(FlowCfg):
 
         # Print the build seed used for clarity.
         if self.build_seed and not self.run_only:
-            results_str += ("### Build randomization enabled with "
-                            f"--build-seed {self.build_seed}\n")
+            results_str += f"### Build randomization enabled with --build-seed {self.build_seed}\n"
 
         if not results.table:
             results_str += "No results to display.\n"
@@ -861,7 +872,8 @@ class SimCfg(FlowCfg):
                 self.testplan.map_test_results(test_results=results.table)
 
             results_str += self.testplan.get_test_results_table(
-                map_full_testplan=self.map_full_testplan)
+                map_full_testplan=self.map_full_testplan
+            )
 
             if self.map_full_testplan:
                 results_str += self.testplan.get_progress_table()
@@ -883,8 +895,7 @@ class SimCfg(FlowCfg):
                         cov_report_page_path += "/" + self.cov_report_page
                         results_str += "({})\n\n".format(cov_report_page_path)
                     results_str += self.cov_report_deploy.cov_results
-                    self.results_summary[
-                        "Coverage"] = self.cov_report_deploy.cov_total
+                    self.results_summary["Coverage"] = self.cov_report_deploy.cov_total
                 else:
                     self.results_summary["Coverage"] = "--"
 
@@ -896,13 +907,13 @@ class SimCfg(FlowCfg):
         return results_str
 
     def gen_results_summary(self):
-        '''Generate the summary results table.
+        """Generate the summary results table.
 
         This method is specific to the primary cfg. It summarizes the results
         from each individual cfg in a markdown table.
 
         Prints the generated summary markdown text to stdout and returns it.
-        '''
+        """
 
         lines = [f"## {self.results_title} (Summary)"]
         lines += [f"### {self.timestamp_long}"]
@@ -917,9 +928,7 @@ class SimCfg(FlowCfg):
             if row:
                 # convert name entry to relative link
                 row = cfg.results_summary
-                row["Name"] = cfg._get_results_page_link(
-                    self.results_dir,
-                    row["Name"])
+                row["Name"] = cfg._get_results_page_link(self.results_dir, row["Name"])
 
                 # If header is set, ensure its the same for all cfgs.
                 if header:
@@ -930,11 +939,8 @@ class SimCfg(FlowCfg):
 
         if table:
             assert header
-            colalign = ("center", ) * len(header)
-            table_txt = tabulate(table,
-                                 headers=header,
-                                 tablefmt="pipe",
-                                 colalign=colalign)
+            colalign = ("center",) * len(header)
+            table_txt = tabulate(table, headers=header, tablefmt="pipe", colalign=colalign)
             lines += ["", table_txt, ""]
 
         else:
@@ -945,15 +951,15 @@ class SimCfg(FlowCfg):
         return self.results_summary_md
 
     def _publish_results(self, results_server: ResultsServer):
-        '''Publish coverage results to the opentitan web server.'''
+        """Publish coverage results to the opentitan web server."""
         super()._publish_results(results_server)
 
         if self.cov_report_deploy is not None:
-            log.info("Publishing coverage results to https://{}/{}/latest"
-                     .format(self.results_server,
-                             self.rel_path))
+            log.info(
+                "Publishing coverage results to https://{}/{}/latest".format(
+                    self.results_server, self.rel_path
+                )
+            )
 
-            latest_dir = '{}/latest'.format(self.rel_path)
-            results_server.upload(self.cov_report_dir,
-                                  latest_dir,
-                                  recursive=True)
+            latest_dir = "{}/latest".format(self.rel_path)
+            results_server.upload(self.cov_report_dir, latest_dir, recursive=True)

@@ -7,7 +7,7 @@ import sys
 from typing import Union
 
 
-class VersionInformation():
+class VersionInformation:
     def __init__(self, path: str):
         """
         Parse a bazel version file and store a dictionary of the values.
@@ -18,18 +18,18 @@ class VersionInformation():
         if path is None:
             return
         try:
-            with open(path, 'rt') as f:
+            with open(path, "rt") as f:
                 for line in f:
-                    k, v = line.strip().split(' ', 1)
+                    k, v = line.strip().split(" ", 1)
                     self.version_stamp[k] = v
         except ValueError:
             raise SystemExit(sys.exc_info()[1])
 
     def scm_version(self, default: Union[str, None] = None) -> Union[str, None]:
-        return self.version_stamp.get('BUILD_GIT_VERSION', default)
+        return self.version_stamp.get("BUILD_GIT_VERSION", default)
 
     def scm_revision(self, default: Union[str, None] = None) -> Union[str, None]:
-        return self.version_stamp.get('BUILD_SCM_REVISION', default)
+        return self.version_stamp.get("BUILD_SCM_REVISION", default)
 
     def scm_status(self, default: Union[str, None] = None) -> Union[str, None]:
-        return self.version_stamp.get('BUILD_SCM_STATUS', default)
+        return self.version_stamp.get("BUILD_SCM_STATUS", default)

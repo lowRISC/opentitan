@@ -40,10 +40,9 @@ def main() -> None:
             continue
         # Testplan prints to stdout, redirect that to stderr for error messages
         from contextlib import redirect_stdout
+
         with redirect_stdout(sys.stderr):
-            plan = Testplan.Testplan(
-                book_root / chapter["source_path"],
-                repo_top = book_root)
+            plan = Testplan.Testplan(book_root / chapter["source_path"], repo_top=book_root)
             buffer = io.StringIO()
             plan.write_testplan_doc(buffer)
             chapter["content"] = buffer.getvalue()

@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-'''
+"""
 This script may be used along with the example HJSON data file in
 `util/py/data/gh_issue_template.hjson` to automatically file issues to the
 OpenTitan GitHub for task management purposes.
@@ -19,7 +19,7 @@ Before using this script, you must:
    https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token
 3. authenticate the CLI client with the token you created above, using:
    `gh auth login --with-token <token>`
-'''
+"""
 
 import argparse
 import json
@@ -36,12 +36,14 @@ UPSTREAM = "lowRISC/opentitan"
 def run(cmd):
     while True:
         try:
-            return subprocess.run(cmd,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  check=True,
-                                  text=True,
-                                  shell=True)
+            return subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=True,
+                text=True,
+                shell=True,
+            )
             break
         except BaseException as e:
             pprint(e.stdout)
@@ -92,14 +94,12 @@ def create_issue(repo, issue, valid_labels, dryrun):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dryrun",
-                        action='store_true',
-                        help="Path of the issue hjson file.")
+    parser.add_argument("--dryrun", action="store_true", help="Path of the issue hjson file.")
     parser.add_argument("issue_hjson", help="Path of the issue hjson file.")
     args = parser.parse_args()
 
     issues = None
-    with open(args.issue_hjson, 'r') as hjson_file:
+    with open(args.issue_hjson, "r") as hjson_file:
         issues = hjson.load(hjson_file)
 
     valid_labels = get_valid_labels_set(UPSTREAM)

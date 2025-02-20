@@ -36,11 +36,11 @@ class OTBNSim:
         self.state.clear_imem_invalidation()
 
     def add_loop_warp(self, addr: int, from_cnt: int, to_cnt: int) -> None:
-        '''Add a new loop warp to the simulation'''
+        """Add a new loop warp to the simulation"""
         self.loop_warps.setdefault(addr, {})[from_cnt] = to_cnt
 
     def load_data(self, data: bytes, has_validity: bool) -> None:
-        '''Load bytes into DMEM, starting at address zero.
+        """Load bytes into DMEM, starting at address zero.
 
         If has_validity is true, each 32-bit word should be represented by 5
         bytes (1 byte that says whether the word is valid, then 4 bytes that
@@ -48,55 +48,51 @@ class OTBNSim:
         word is considered valid and is represented by 4 bytes in little-endian
         format.
 
-        '''
+        """
         self.state.dmem.load_le_words(data, has_validity)
 
     def start(self, collect_stats: bool) -> None:
-        '''Prepare to start the execution.
+        """Prepare to start the execution.
 
         Use run() or step() to actually execute the program.
 
-        '''
+        """
         self.stats = ExecutionStats(self.program) if collect_stats else None
         self._execute_generator = None
         self._next_insn = None
         self.state.start()
 
     def initial_secure_wipe(self) -> None:
-        '''This is run at the start of a secure wipe after reset.'''
+        """This is run at the start of a secure wipe after reset."""
         self.state.start_init_sec_wipe()
 
     def start_mem_wipe(self, is_imem: bool) -> None:
         if self.state.get_fsm_state() != FsmState.IDLE:
             return
 
-        new_status = (Status.BUSY_SEC_WIPE_IMEM
-                      if is_imem else Status.BUSY_SEC_WIPE_DMEM)
+        new_status = Status.BUSY_SEC_WIPE_IMEM if is_imem else Status.BUSY_SEC_WIPE_DMEM
 
         self.state.set_fsm_state(FsmState.MEM_SEC_WIPE)
-        self.state.ext_regs.write('STATUS', new_status, True)
+        self.state.ext_regs.write("STATUS", new_status, True)
 
     def _fetch(self, pc: int) -> OTBNInsn:
         word_pc = pc >> 2
         if word_pc >= len(self.program):
-            raise RuntimeError('Trying to execute instruction at address '
-                               '{:#x}, but the program is only {:#x} '
-                               'bytes ({} instructions) long. Since there '
-                               'are no architectural contents of the '
-                               'memory here, we have to stop.'
-                               .format(pc,
-                                       4 * len(self.program),
-                                       len(self.program)))
+            raise RuntimeError(
+                "Trying to execute instruction at address "
+                "{:#x}, but the program is only {:#x} "
+                "bytes ({} instructions) long. Since there "
+                "are no architectural contents of the "
+                "memory here, we have to stop.".format(pc, 4 * len(self.program), len(self.program))
+            )
 
         if self.state.invalidated_imem:
             return EmptyInsn(self.state.pc)
 
         return self.program[word_pc]
 
-    def _on_stall(self,
-                  verbose: bool,
-                  fetch_next: bool) -> List[Trace]:
-        '''This is run on a stall cycle'''
+    def _on_stall(self, verbose: bool, fetch_next: bool) -> List[Trace]:
+        """This is run on a stall cycle"""
         self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
@@ -105,14 +101,12 @@ class OTBNSim:
         if self.stats is not None and not self.state.wiping():
             self.stats.record_stall()
         if verbose:
-            self._print_trace(self.state.pc, '(stall)', changes)
+            self._print_trace(self.state.pc, "(stall)", changes)
 
         return changes
 
-    def _on_retire(self,
-                   verbose: bool,
-                   insn: OTBNInsn) -> List[Trace]:
-        '''This is run when an instruction completes'''
+    def _on_retire(self, verbose: bool, insn: OTBNInsn) -> List[Trace]:
+        """This is run when an instruction completes"""
         assert self._execute_generator is None
         self.state.post_insn(self.loop_warps.get(self.state.pc, {}))
 
@@ -138,14 +132,13 @@ class OTBNSim:
         return changes
 
     def _delayed_insn_cnt_zero(self, delay_if_locking: int) -> None:
-        '''Zero INSN_CNT if we are in a wiping state and are going to lock
+        """Zero INSN_CNT if we are in a wiping state and are going to lock
         after wipe.
 
         This is delayed by delay_if_locking (using state.time_to_insn_cnt_zero)
         to match the timing in the RTL.
-        '''
-        assert self.state.get_fsm_state() in [FsmState.PRE_WIPE,
-                                              FsmState.WIPING]
+        """
+        assert self.state.get_fsm_state() in [FsmState.PRE_WIPE, FsmState.WIPING]
 
         # Only zero instruction count if we're wiping before lock
         if not self.state.lock_after_wipe:
@@ -153,7 +146,7 @@ class OTBNSim:
 
         # We don't print "INSN_CNT=0" on every cycle of the wipe, so we should
         # only do something if the current value is nonzero.
-        if self.state.ext_regs.read('INSN_CNT', True) == 0:
+        if self.state.ext_regs.read("INSN_CNT", True) == 0:
             return
 
         # In this case, we know we want to zero INSN_CNT. There might be an
@@ -167,7 +160,7 @@ class OTBNSim:
         if count == 0:
             # If _time_to_insn_cnt_zero is now zero, it means that this is the
             # cycle to update insn_cnt.
-            self.state.ext_regs.write('INSN_CNT', 0, True)
+            self.state.ext_regs.write("INSN_CNT", 0, True)
             self.state.time_to_insn_cnt_zero = None
         else:
             # If _time_to_insn_cnt_zero isn't zero, we should decrement it
@@ -175,13 +168,13 @@ class OTBNSim:
             self.state.time_to_insn_cnt_zero = count - 1
 
     def step(self, verbose: bool) -> StepRes:
-        '''Run a single cycle.
+        """Run a single cycle.
 
         Returns the instruction, together with a list of the architectural
         changes that have happened. If the model isn't currently executing,
         returns no instruction and no changes.
 
-        '''
+        """
         fsm_state = self.state.get_fsm_state()
         # Pairs: (stepper, handles_injected_err). If handles_injected_err is
         # False then the generic code here will deal with any pending errors in
@@ -194,7 +187,7 @@ class OTBNSim:
             FsmState.EXEC: (self._step_exec, True),
             FsmState.PRE_WIPE: (self._step_pre_wipe, False),
             FsmState.WIPING: (self._step_wiping, False),
-            FsmState.LOCKED: (self._step_idle, False)
+            FsmState.LOCKED: (self._step_idle, False),
         }
 
         stepper, handles_injected_err = steppers[fsm_state]
@@ -203,7 +196,7 @@ class OTBNSim:
         return stepper(verbose)
 
     def _step_idle(self, verbose: bool) -> StepRes:
-        '''Step the simulation when OTBN is IDLE or LOCKED'''
+        """Step the simulation when OTBN is IDLE or LOCKED"""
         self.state.stop_if_pending_halt()
 
         is_locked = self.state.get_fsm_state() == FsmState.LOCKED
@@ -213,20 +206,21 @@ class OTBNSim:
         # actually do the register write if we've just entered the locked state
         # or the write will change something.
         should_zero = is_locked or self.state.rma_req == LcTx.ON
-        new_zero = (self.state.cycles_in_this_state == 0 or
-                    self.state.ext_regs.read('INSN_CNT', True) != 0)
+        new_zero = (
+            self.state.cycles_in_this_state == 0 or self.state.ext_regs.read("INSN_CNT", True) != 0
+        )
         if should_zero and new_zero:
-            self.state.ext_regs.write('INSN_CNT', 0, True)
+            self.state.ext_regs.write("INSN_CNT", 0, True)
 
         if self.state.delayed_lock:
             self.state.set_fsm_state(FsmState.LOCKED)
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+            self.state.ext_regs.write("STATUS", Status.LOCKED, True)
             is_locked = True
 
         # If we are IDLE and get an RMA request, we want to start a secure
         # wipe, which will eventually put us into the LOCKED state.
         if self.state.rma_req == LcTx.ON and not is_locked:
-            self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+            self.state.ext_regs.write("STATUS", Status.LOCKED, True)
             self.state.set_fsm_state(FsmState.PRE_WIPE)
             self.state.lock_after_wipe = True
             self.state.wipe_rounds_done = 0
@@ -249,12 +243,13 @@ class OTBNSim:
                 # rma_req flag will be high and the has_state_to_wipe flag will
                 # be low. Jump straight to the LOCKED state and skip the WIPING
                 # state (since there is nothing that needs wiping anyway).
-                start_of_time_rma = (self.state.rma_req == LcTx.ON and
-                                     not self.state.has_state_to_wipe)
+                start_of_time_rma = (
+                    self.state.rma_req == LcTx.ON and not self.state.has_state_to_wipe
+                )
                 if start_of_time_rma:
                     self.state.complete_init_sec_wipe()
                     self.state.set_fsm_state(FsmState.LOCKED)
-                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+                    self.state.ext_regs.write("STATUS", Status.LOCKED, True)
                 else:
                     self.state.set_fsm_state(FsmState.WIPING)
                     if is_locked:
@@ -265,18 +260,18 @@ class OTBNSim:
         return (None, changes)
 
     def _step_ext_wipe(self, verbose: bool) -> StepRes:
-        '''Step the simulation DMEM/IMEM wipe operation'''
+        """Step the simulation DMEM/IMEM wipe operation"""
         self.state.stop_if_pending_halt()
         changes = self.state.changes()
         self.state.commit(sim_stalled=True)
         return (None, changes)
 
     def _step_pre_exec(self, verbose: bool) -> StepRes:
-        '''Step the simulation in the PRE_EXEC state
+        """Step the simulation in the PRE_EXEC state
 
         In this state, we're waiting for a URND seed. Once that appears, we
         switch to EXEC.
-        '''
+        """
         if self.state.wsrs.URND.running:
             self.state.set_fsm_state(FsmState.EXEC)
 
@@ -288,13 +283,13 @@ class OTBNSim:
             self.lock_immediately()
 
         # Zero INSN_CNT the cycle after we are told to start
-        if self.state.ext_regs.read('INSN_CNT', True) != 0:
-            self.state.ext_regs.write('INSN_CNT', 0, True)
+        if self.state.ext_regs.read("INSN_CNT", True) != 0:
+            self.state.ext_regs.write("INSN_CNT", 0, True)
 
         return (None, changes)
 
     def _step_exec(self, verbose: bool) -> StepRes:
-        '''Step the simulation when executing code'''
+        """Step the simulation when executing code"""
 
         # The initial secure wipe *must* be done when executing code.
         assert self.state.init_sec_wipe_is_done()
@@ -349,9 +344,9 @@ class OTBNSim:
             except StopIteration:
                 self._execute_generator = None
 
-        if (self.state.wsrs.RND.rep_err_escalate):
+        if self.state.wsrs.RND.rep_err_escalate:
             self.state.stop_at_end_of_cycle(ErrBits.RND_REP_CHK_FAIL)
-        if (self.state.wsrs.RND.fips_err_escalate):
+        if self.state.wsrs.RND.fips_err_escalate:
             self.state.stop_at_end_of_cycle(ErrBits.RND_FIPS_CHK_FAIL)
 
         # Handle any pending injected error. Note that this has to run after
@@ -365,14 +360,14 @@ class OTBNSim:
         if self.state.pending_halt:
             self._execute_generator = None
 
-        sim_stalled = (self._execute_generator is not None)
+        sim_stalled = self._execute_generator is not None
         if not sim_stalled:
             return (insn, self._on_retire(verbose, insn))
 
         return (None, self._on_stall(verbose, fetch_next=False))
 
     def _step_pre_wipe(self, verbose: bool) -> StepRes:
-        '''Step the simulation when waiting for a URND seed for wipe'''
+        """Step the simulation when waiting for a URND seed for wipe"""
 
         # This is a bit of a hack to model a bug in the design where the STATUS
         # register has a value of 0xff for a single cycle before it becomes
@@ -386,7 +381,7 @@ class OTBNSim:
         # TODO(#23903): Fix the bug in the design then drop this code (and
         # change the STATUS value in _step_idle from LOCKED to
         # BUSY_SEC_WIPE_INT).
-        self.state.ext_regs.write('STATUS', Status.BUSY_SEC_WIPE_INT, True)
+        self.state.ext_regs.write("STATUS", Status.BUSY_SEC_WIPE_INT, True)
 
         # If we get an RMA request before we've managed to run any rounds of
         # wiping then we are waiting for our first URND seed. The entropy
@@ -399,25 +394,26 @@ class OTBNSim:
             self.state.set_fsm_state(FsmState.WIPING)
 
         # Clear the WIPE_START register if it was set.
-        if self.state.ext_regs.read('WIPE_START', True):
-            self.state.ext_regs.write('WIPE_START', 0, True)
+        if self.state.ext_regs.read("WIPE_START", True):
+            self.state.ext_regs.write("WIPE_START", 0, True)
 
         # Zero INSN_CNT once if we're going to lock after wipe.
         self._delayed_insn_cnt_zero(0)
 
         if self.state.wsrs.URND.running:
             # Reflect wiping in STATUS register if it has not been updated yet.
-            if ((self.state.ext_regs.read('STATUS', True) not in
-                 [Status.BUSY_SEC_WIPE_INT, Status.LOCKED])):
-                self.state.ext_regs.write('STATUS',
-                                          Status.BUSY_SEC_WIPE_INT, True)
+            if self.state.ext_regs.read("STATUS", True) not in [
+                Status.BUSY_SEC_WIPE_INT,
+                Status.LOCKED,
+            ]:
+                self.state.ext_regs.write("STATUS", Status.BUSY_SEC_WIPE_INT, True)
 
             self.state.set_fsm_state(FsmState.WIPING)
 
         return (None, self._on_stall(verbose, fetch_next=False))
 
     def _step_wiping(self, verbose: bool) -> StepRes:
-        '''Step the simulation when wiping'''
+        """Step the simulation when wiping"""
         assert self.state.wipe_cycles >= 0
 
         # Keep track of whether there was actually a wipe operation in progress
@@ -458,11 +454,10 @@ class OTBNSim:
             #
             # RMA requests are a special case where the "last round" might
             # actually be the first one as well.
-            final_wipe_round = (self.state.wipe_rounds_done ==
-                                (self.state.wipe_rounds_to_do - 1))
+            final_wipe_round = self.state.wipe_rounds_done == (self.state.wipe_rounds_to_do - 1)
             if final_wipe_round:
                 next_status = Status.LOCKED if locking else Status.IDLE
-                self.state.ext_regs.write('STATUS', next_status, True)
+                self.state.ext_regs.write("STATUS", next_status, True)
                 self.state.wipe()
             else:
                 self.state.wsrs.URND.running = False
@@ -472,8 +467,7 @@ class OTBNSim:
             if was_wiping:
                 self.state.wipe_rounds_done += 1
 
-            final_wipe_round = (self.state.wipe_rounds_done ==
-                                self.state.wipe_rounds_to_do)
+            final_wipe_round = self.state.wipe_rounds_done == self.state.wipe_rounds_to_do
 
             # This is the last clock cycle of a wipe round. Switch back to
             # PRE_WIPE if there is another round to do. If not, switch to
@@ -494,7 +488,7 @@ class OTBNSim:
                 # should lock. Otherwise, jump to IDLE.
                 if locking:
                     next_state = FsmState.LOCKED
-                    self.state.ext_regs.write('STATUS', Status.LOCKED, True)
+                    self.state.ext_regs.write("STATUS", Status.LOCKED, True)
                 else:
                     next_state = FsmState.IDLE
                     if self.state.init_sec_wipe_is_running():
@@ -515,54 +509,56 @@ class OTBNSim:
         return self.state.dmem.dump_le_words()
 
     def _print_trace(self, pc: int, disasm: str, changes: List[Trace]) -> None:
-        '''Print a trace of the current instruction'''
-        changes_str = ', '.join([t.trace() for t in changes])
-        print('{:08x} | {:45} | [{}]'.format(pc, disasm, changes_str))
+        """Print a trace of the current instruction"""
+        changes_str = ", ".join([t.trace() for t in changes])
+        print("{:08x} | {:45} | [{}]".format(pc, disasm, changes_str))
 
     def on_otp_cdc_done(self) -> None:
-        '''Signifies when the scrambling key request gets processed'''
+        """Signifies when the scrambling key request gets processed"""
         # This happens when we're doing a memory secure wipe, in which case we
         # want to switch to IDLE. However, it also happens if we're at the end
         # of a run that either will lock or already has done. In that case, we
         # don't want to do an FSM state change.
         cur_state = self.state.get_fsm_state()
-        allowed_states = [FsmState.MEM_SEC_WIPE,
-                          FsmState.PRE_WIPE, FsmState.WIPING, FsmState.LOCKED]
+        allowed_states = [
+            FsmState.MEM_SEC_WIPE,
+            FsmState.PRE_WIPE,
+            FsmState.WIPING,
+            FsmState.LOCKED,
+        ]
         assert cur_state in allowed_states
         if cur_state == FsmState.MEM_SEC_WIPE:
-            self.state.ext_regs.write('STATUS', Status.IDLE, True)
+            self.state.ext_regs.write("STATUS", Status.IDLE, True)
             self.state.set_fsm_state(FsmState.IDLE)
 
-    def send_err_escalation(self,
-                            err_val: int, lock_immediately: bool) -> None:
-        '''React to an error escalation'''
+    def send_err_escalation(self, err_val: int, lock_immediately: bool) -> None:
+        """React to an error escalation"""
         assert err_val & ~ErrBits.MASK == 0
         self.state.injected_err_bits |= err_val
         self.state.lock_immediately = lock_immediately
 
     def lock_immediately(self) -> None:
-        '''React to an event that should cause us to immediately jump to the
-        locked state.'''
+        """React to an event that should cause us to immediately jump to the
+        locked state."""
         self.state.set_fsm_state(FsmState.LOCKED)
-        self.state.ext_regs.write('STATUS',
-                                  Status.LOCKED, True, immediately=True)
+        self.state.ext_regs.write("STATUS", Status.LOCKED, True, immediately=True)
 
     def set_rma_req(self, rma_req: int) -> None:
-        '''Set the rma request pin state, based on a given integer input.
+        """Set the rma request pin state, based on a given integer input.
 
         This gets read later, on the special cycles when it should have an
         effect.
-        '''
+        """
         self.state.rma_req = read_lc_tx_t(rma_req)
 
     def urnd_completed(self) -> None:
-        '''An outstanding URND request has just completed.
+        """An outstanding URND request has just completed.
 
         Pass the data to self.state (to tell it the data is ready). But also
         check that we are in a state where we expect to have made a URND
         request that can complete. If not, we should immediately jump to the
         locked state.
-        '''
+        """
         self.state.urnd_completed()
         # There should only be a URND response if one of the following is true:
         #

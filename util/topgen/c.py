@@ -4,6 +4,7 @@
 """This contains a class which is used to help generate `top_{name}.h` and
 `top_{name}.h`.
 """
+
 from typing import Dict
 
 from reggen.ip_block import IpBlock

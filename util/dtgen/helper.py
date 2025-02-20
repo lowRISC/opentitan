@@ -4,6 +4,7 @@
 """This contains a class which is used to help generate the device tables (DT)
 files.
 """
+
 from abc import ABC, abstractmethod
 from typing import Optional
 from collections import OrderedDict
@@ -61,8 +62,9 @@ class ScalarType(BaseType):
         """
         self.base_type = base_type
 
-        assert isinstance(self.base_type, Name) or isinstance(self.base_type, str), \
+        assert isinstance(self.base_type, Name) or isinstance(self.base_type, str), (
             "except either a Name or str as base type, not {}".format(type(self.base_type))
+        )
 
     def render_type_def(self) -> str:
         return ""
@@ -81,8 +83,9 @@ class ScalarType(BaseType):
 
     def render_value(self, value: object) -> str:
         if isinstance(self.base_type, Name):
-            assert isinstance(value, Name), \
+            assert isinstance(value, Name), (
                 "ScalarType({}) can only render a Name(), not {}".format(self.base_type, value)
+            )
             return (self.base_type + value).as_c_enum()
 
         if isinstance(self.base_type, str):
@@ -95,6 +98,7 @@ class ArrayMapType(BaseType):
     """
     An array type that maps values to other values.
     """
+
     def __init__(self, elem_type: BaseType, index_type: BaseType, length: object):
         self.elem_type = elem_type
         self.index_type = index_type
@@ -104,14 +108,16 @@ class ArrayMapType(BaseType):
         return ""
 
     def render_var_decl(self, name: Name) -> str:
-        return "{}[{}]".format(self.elem_type.render_var_decl(name),
-                               self.index_type.render_value(self.length))
+        return "{}[{}]".format(
+            self.elem_type.render_var_decl(name), self.index_type.render_value(self.length)
+        )
 
     def render_value(self, value: dict[object, object]):
         text = ""
-        for (entry, value) in value.items():
-            text += "[{}] = {},\n".format(self.index_type.render_value(entry),
-                                          self.elem_type.render_value(value))
+        for entry, value in value.items():
+            text += "[{}] = {},\n".format(
+                self.index_type.render_value(entry), self.elem_type.render_value(value)
+            )
         return "{\n" + indent_text(text, "  ") + "}"
 
 
@@ -145,7 +151,7 @@ class StructType(BaseType):
 
     def _render_type_def(self) -> str:
         text = ""
-        for (name, (field_type, docstring)) in self.fields.items():
+        for name, (field_type, docstring) in self.fields.items():
             if len(docstring.splitlines()) > 1:
                 predocstring = "/**\n{}\n */\n".format(indent_text(docstring, " * "))
                 postdocstring = ""
@@ -159,8 +165,7 @@ class StructType(BaseType):
             st_name = ""
         else:
             st_name = self.name.as_snake_case() + " "
-        text = "struct " + st_name + \
-            "{\n" + indent_text(text, "  ") + "}"
+        text = "struct " + st_name + "{\n" + indent_text(text, "  ") + "}"
         return text
 
     def render_type_def(self) -> str:
@@ -183,15 +188,16 @@ class StructType(BaseType):
         Render a value which is a dictionary mapping fields to value.
         """
         text = ""
-        for (name, (field_type, _)) in self.fields.items():
+        for name, (field_type, _) in self.fields.items():
             # TODO warn about missing fields?
             if name not in value:
                 logging.warn("field {} not found in {}".format(name, value))
                 continue
             text += ".{} = {},\n".format(name.as_snake_case(), field_type.render_value(value[name]))
             value.pop(name)
-        assert not value, \
-            "Extra keys when rendering {} of type {}: {}".format(value, self, value.keys())
+        assert not value, "Extra keys when rendering {} of type {}: {}".format(
+            value, self, value.keys()
+        )
 
         return "{\n" + indent_text(text, "  ") + "}"
 
@@ -200,6 +206,7 @@ class TopHelper:
     """
     Helper class to generate dt_api.{c,h}.
     """
+
     DT_INSTANCE_ID_NAME = Name(["dt", "instance", "id"])
     DT_DEVICE_TYPE_NAME = Name(["dt", "device", "type"])
     DT_CLOCK_ENUM_NAME = Name(["dt", "clock"])
@@ -228,8 +235,7 @@ class TopHelper:
         self._top_name = Name(["top"]) + Name.from_snake_case(topcfg["name"])
 
         assert enum_type in [CEnum], "Unsupported enum type"
-        assert array_mapping_type in [CArrayMapping], \
-               "Unsupported array mapping type"
+        assert array_mapping_type in [CArrayMapping], "Unsupported array mapping type"
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
 
@@ -252,8 +258,7 @@ class TopHelper:
         self.device_type_enum.add_constant(Name(["unknown"]), "Instance of unknown type")
         for module_name in self._module_types:
             self.device_type_enum.add_constant(
-                Name.from_snake_case(module_name),
-                f"instance of {module_name}"
+                Name.from_snake_case(module_name), f"instance of {module_name}"
             )
         if isinstance(self.device_type_enum, CEnum):
             self.device_type_enum.add_constant(Name(["count"]), "Number of instance types")
@@ -266,23 +271,23 @@ class TopHelper:
             for m in modules:
                 self.instance_id_enum.add_constant(
                     Name.from_snake_case(m["name"]),
-                    "instance {} of {}".format(m["name"], m["type"])
+                    "instance {} of {}".format(m["name"], m["type"]),
                 )
         if isinstance(self.instance_id_enum, CEnum):
             self.instance_id_enum.add_constant(Name(["count"]), "Number of instance IDs")
 
         # List all muxed pads directly from the top.
-        pads = [pad for pad in self.top['pinout']['pads'] if pad['connection'] == 'muxed']
+        pads = [pad for pad in self.top["pinout"]["pads"] if pad["connection"] == "muxed"]
         # List direct pads from the pinmux to avoid pins which are not relevant.
-        pads += [pad for pad in self.top['pinmux']['ios'] if pad['connection'] != 'muxed']
+        pads += [pad for pad in self.top["pinmux"]["ios"] if pad["connection"] != "muxed"]
 
         # List all pads and put them in an enum.
         self.pad_enum = self._enum_type(Name([]), self.DT_PAD_NAME)
         self._pad_map = OrderedDict()
         for pad in pads:
-            name = pad['name']
-            if 'width' in pad and pad['width'] > 1:
-                name += str(pad['idx'])
+            name = pad["name"]
+            if "width" in pad and pad["width"] > 1:
+                name += str(pad["idx"])
             self._pad_map[name] = pad
             self.pad_enum.add_constant(
                 Name.from_snake_case(name),
@@ -292,7 +297,7 @@ class TopHelper:
 
         # List of all clocks and put them in an enum.
         self.clock_enum = self._enum_type(Name([]), self.DT_CLOCK_ENUM_NAME)
-        clocks = self.top['clocks']
+        clocks = self.top["clocks"]
         for clock in clocks["srcs"] + clocks["derived_srcs"]:
             clock_name = Name.from_snake_case(clock["name"])
             self.clock_enum.add_constant(clock_name)
@@ -311,34 +316,34 @@ class TopHelper:
         # "__internal" struct.
         st = StructType()
         self.periph_io_struct.add_field(
-            name = Name(["__internal"]),
-            field_type = st,
-            docstring = "Private fields",
+            name=Name(["__internal"]),
+            field_type=st,
+            docstring="Private fields",
         )
 
         st.add_field(
-            name = self.DT_PERIPH_IO_TYPE_FIELD_NAME,
-            field_type = ScalarType(self.DT_PERIPH_IO_TYPE_ENUM_NAME),
-            docstring = "Peripheral I/O type",
+            name=self.DT_PERIPH_IO_TYPE_FIELD_NAME,
+            field_type=ScalarType(self.DT_PERIPH_IO_TYPE_ENUM_NAME),
+            docstring="Peripheral I/O type",
         )
         st.add_field(
-            name = self.DT_PERIPH_IO_DIR_FIELD_NAME,
-            field_type = ScalarType(self.DT_PERIPH_IO_DIR_ENUM_NAME),
-            docstring = "Peripheral I/O direction",
+            name=self.DT_PERIPH_IO_DIR_FIELD_NAME,
+            field_type=ScalarType(self.DT_PERIPH_IO_DIR_ENUM_NAME),
+            docstring="Peripheral I/O direction",
         )
         st.add_field(
-            name = self.DT_PERIPH_IO_PERIPH_IN_DIO_PAD_FIELD_NAME,
-            field_type = ScalarType("uint16_t"),
-            docstring = """For `kDtPeriphIoTypeMio`: peripheral input number. This is the index of the MIO_PERIPH_INSEL register
+            name=self.DT_PERIPH_IO_PERIPH_IN_DIO_PAD_FIELD_NAME,
+            field_type=ScalarType("uint16_t"),
+            docstring="""For `kDtPeriphIoTypeMio`: peripheral input number. This is the index of the MIO_PERIPH_INSEL register
 that controls this peripheral I/O.
 
 For `kDtPeriphIoTypeDio`: DIO pad number. This is the index of the various DIO_PAD_* registers
 that control this peripheral I/O.""",  # noqa:E501
         )
         st.add_field(
-            name = self.DT_PERIPH_IO_OUTSEL_FIELD_NAME,
-            field_type = ScalarType("uint16_t"),
-            docstring = """For `kDtPeriphIoTypeMio`: peripheral output number. This is the value to put in the MIO_OUTSEL registers
+            name=self.DT_PERIPH_IO_OUTSEL_FIELD_NAME,
+            field_type=ScalarType("uint16_t"),
+            docstring="""For `kDtPeriphIoTypeMio`: peripheral output number. This is the value to put in the MIO_OUTSEL registers
 to connect an output to this peripheral I/O. For `kDtPeriphIoTypeDio`: the pad index (`dt_pad_t`) to which this I/O is connected.""",  # noqa:E501
         )
 
@@ -348,23 +353,23 @@ to connect an output to this peripheral I/O. For `kDtPeriphIoTypeDio`: the pad i
         """
         self.pad_struct = StructType(self.DT_PAD_STRUCT_NAME)
         self.pad_struct.add_field(
-            name = self.DT_PAD_TYPE_FIELD_NAME,
-            field_type = ScalarType(self.DT_PAD_TYPE_ENUM_NAME),
-            docstring = "Pad type",
+            name=self.DT_PAD_TYPE_FIELD_NAME,
+            field_type=ScalarType(self.DT_PAD_TYPE_ENUM_NAME),
+            docstring="Pad type",
         )
         self.pad_struct.add_field(
-            name = self.DT_PAD_MIO_OUT_DIO_FIELD_NAME,
-            field_type = ScalarType("uint16_t"),
-            docstring = """For `kDtPadTypeMio` pads: MIO out number. This is the index of the MIO_OUTSEL register
+            name=self.DT_PAD_MIO_OUT_DIO_FIELD_NAME,
+            field_type=ScalarType("uint16_t"),
+            docstring="""For `kDtPadTypeMio` pads: MIO out number. This is the index of the MIO_OUTSEL register
 that controls this pad (or the output part of this pad).
 
 For `kDtPadTypeDio`:  DIO pad number. This is the index of the various DIO_PAD_* registers
 that control this pad.""",  # noqa:E501
         )
         self.pad_struct.add_field(
-            name = self.DT_PAD_INSEL_FIELD_NAME,
-            field_type = ScalarType("uint16_t"),
-            docstring = """For `kDtPadTypeMio` pads: MIO pad number. This is the value to put in the MIO_PERIPH_INSEL
+            name=self.DT_PAD_INSEL_FIELD_NAME,
+            field_type=ScalarType("uint16_t"),
+            docstring="""For `kDtPadTypeMio` pads: MIO pad number. This is the value to put in the MIO_PERIPH_INSEL
 registers to connect a peripheral to this pad.""",  # noqa:E501
         )
 
@@ -373,33 +378,38 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
         Create an array mapping for the list of all pads.
         """
         self.pad_dt_map = ArrayMapType(
-            elem_type = self.pad_struct,
-            index_type = ScalarType(self.pad_enum.name),
-            length = Name(["count"])
+            elem_type=self.pad_struct,
+            index_type=ScalarType(self.pad_enum.name),
+            length=Name(["count"]),
         )
         self.pad_dt_values = OrderedDict()
-        for (padname, pad) in self._pad_map.items():
+        for padname, pad in self._pad_map.items():
             topname = self.top["name"]
             if pad["connection"] == "muxed":
                 pad_type = Name.from_snake_case("mio")
                 pad_mio_out_or_direct_pad = "0"
                 pad_insel = "0"
-                assert pad["port_type"] in self.KNOWN_PORT_TYPES, \
+                assert pad["port_type"] in self.KNOWN_PORT_TYPES, (
                     "unexpected pad port type '{}'".format(pad["port_type"])
+                )
                 if pad["port_type"] in ["input", "inout", "`INOUT_AO"]:
-                    pad_mio_out_or_direct_pad = \
-                        Name.from_snake_case(f"top_{topname}_pinmux_mio_out_{padname}").as_c_enum()
+                    pad_mio_out_or_direct_pad = Name.from_snake_case(
+                        f"top_{topname}_pinmux_mio_out_{padname}"
+                    ).as_c_enum()
                 if pad["port_type"] in ["output", "inout", "`INOUT_AO"]:
-                    pad_insel = \
-                        Name.from_snake_case(f"top_{topname}_pinmux_insel_{padname}").as_c_enum()
+                    pad_insel = Name.from_snake_case(
+                        f"top_{topname}_pinmux_insel_{padname}"
+                    ).as_c_enum()
             elif pad["connection"] == "direct":
                 pad_type = Name.from_snake_case("dio")
-                pad_mio_out_or_direct_pad = \
-                    Name.from_snake_case(f"top_{topname}_direct_pads_{padname}").as_c_enum()
+                pad_mio_out_or_direct_pad = Name.from_snake_case(
+                    f"top_{topname}_direct_pads_{padname}"
+                ).as_c_enum()
                 pad_insel = "0"
             else:
-                assert pad["connection"] == "manual", \
-                    "unexpected connection type '{}'".format(pad["connection"])
+                assert pad["connection"] == "manual", "unexpected connection type '{}'".format(
+                    pad["connection"]
+                )
                 pad_mio_out_or_direct_pad = "0"
                 pad_insel = "0"
                 pad_type = Name.from_snake_case("unspecified")
@@ -414,11 +424,11 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
         Create the array mappings to dispatch interrupts.
         """
         self.inst_from_irq_map = ArrayMapType(
-            elem_type = ScalarType(self.instance_id_enum.name),
-            index_type = ScalarType(Name(["top"]) +
-                                    Name.from_snake_case(self.top["name"]) +
-                                    Name(["plic", "irq", "id"])),
-            length = Name(["count"])
+            elem_type=ScalarType(self.instance_id_enum.name),
+            index_type=ScalarType(
+                Name(["top"]) + Name.from_snake_case(self.top["name"]) + Name(["plic", "irq", "id"])
+            ),
+            length=Name(["count"]),
         )
         self.inst_from_irq_values = OrderedDict()
         self.inst_from_irq_values = {Name(["none"]): Name(["unknown"])}
@@ -439,17 +449,18 @@ registers to connect a peripheral to this pad.""",  # noqa:E501
         Create an array mapping from instance ID to device type.
         """
         self.dev_type_map = ArrayMapType(
-            elem_type = ScalarType(self.device_type_enum.name),
-            index_type = ScalarType(self.instance_id_enum.name),
-            length = Name(["count"]),
+            elem_type=ScalarType(self.device_type_enum.name),
+            index_type=ScalarType(self.instance_id_enum.name),
+            length=Name(["count"]),
         )
         self.dev_type_values = OrderedDict()
         for module_name in self._module_types:
             for m in self.top["module"]:
                 if m["type"] != module_name:
                     continue
-                self.dev_type_values[Name.from_snake_case(m["name"])] = \
-                    Name.from_snake_case(module_name)
+                self.dev_type_values[Name.from_snake_case(m["name"])] = Name.from_snake_case(
+                    module_name
+                )
 
 
 class IpHelper:
@@ -461,8 +472,9 @@ class IpHelper:
     DT_STRUCT_NAME_PREFIX = Name(["dt", "desc"])
     FIRST_IRQ_FIELD_NAME = Name(["first", "irq"])
 
-    def __init__(self, top_helper: TopHelper, ip: IpBlock, default_node: str,
-                 enum_type, array_mapping_type):
+    def __init__(
+        self, top_helper: TopHelper, ip: IpBlock, default_node: str, enum_type, array_mapping_type
+    ):
         self.top_helper = top_helper
         self.top = top_helper.top
         self.ip = ip
@@ -470,8 +482,7 @@ class IpHelper:
         self.ip_name = Name.from_snake_case(self.ip.name)
 
         assert enum_type in [CEnum], "Unsupported enum type"
-        assert array_mapping_type in [CArrayMapping], \
-               "Unsupported array mapping type"
+        assert array_mapping_type in [CArrayMapping], "Unsupported array mapping type"
         self._enum_type = enum_type
         self._array_mapping_type = array_mapping_type
 
@@ -496,11 +507,13 @@ class IpHelper:
             else:
                 reg_blocks.append(rb)
 
-        assert self.default_node in reg_blocks, \
-            "default node ({}) is invalid".format(self._default_node)
+        assert self.default_node in reg_blocks, "default node ({}) is invalid".format(
+            self._default_node
+        )
 
         self.reg_block_enum = self._enum_type(
-            Name([]), Name(["dt"]) + self.ip_name + Name(["reg", "block"]))
+            Name([]), Name(["dt"]) + self.ip_name + Name(["reg", "block"])
+        )
         for rb in reg_blocks:
             self.reg_block_enum.add_constant(Name.from_snake_case(rb))
         if isinstance(self.reg_block_enum, CEnum):
@@ -519,7 +532,7 @@ class IpHelper:
                 device_irqs[sig.name] = sig
 
         self.irq_enum = self._enum_type(Name([]), Name(["dt"]) + self.ip_name + Name(["irq"]))
-        for (irq, sig) in device_irqs.items():
+        for irq, sig in device_irqs.items():
             self.irq_enum.add_constant(Name.from_snake_case(irq), sig.desc)
         if isinstance(self.reg_block_enum, CEnum):
             self.irq_enum.add_constant(Name(["count"]), "Number of IRQs")
@@ -539,8 +552,9 @@ class IpHelper:
         for clk in self._device_clocks:
             clk_orig = clk
             # Remove the clk_ prefix and _i suffix of clocks.
-            assert clk.startswith("clk_") and clk.endswith("_i"), \
+            assert clk.startswith("clk_") and clk.endswith("_i"), (
                 f"clock '{clk}' does not start with clk_ and end with _i"
+            )
             # There is a special case: if the clock name is "clk_i" then we don't want an empty name
             if clk == "clk_i":
                 clk = "clk"
@@ -565,8 +579,7 @@ class IpHelper:
                 self._device_signals[sig.name] = (sig.name, -1)
 
         self.periph_io_enum = self._enum_type(
-            Name([]),
-            Name(["dt"]) + self.ip_name + Name(["periph", "io"])
+            Name([]), Name(["dt"]) + self.ip_name + Name(["periph", "io"])
         )
         for sig in self._device_signals.keys():
             self.periph_io_enum.add_constant(Name.from_snake_case(sig))
@@ -578,9 +591,9 @@ class IpHelper:
         self.inst_map = OrderedDict()
         self._create_dt_struct()
         self.inst_dt_map = ArrayMapType(
-            elem_type = self.inst_struct,
-            index_type = ScalarType(self.inst_enum.name),
-            length = Name(["count"])
+            elem_type=self.inst_struct,
+            index_type=ScalarType(self.inst_enum.name),
+            length=Name(["count"]),
         )
         self.inst_dt_values = OrderedDict()
         self.first_inst_id = None
@@ -609,49 +622,51 @@ class IpHelper:
     def _create_dt_struct(self):
         self.inst_struct = StructType(self.DT_STRUCT_NAME_PREFIX + self.ip_name)
         self.inst_struct.add_field(
-            name = self.INST_ID_FIELD_NAME,
-            field_type = ScalarType(TopHelper.DT_INSTANCE_ID_NAME),
-            docstring = "Instance ID"
+            name=self.INST_ID_FIELD_NAME,
+            field_type=ScalarType(TopHelper.DT_INSTANCE_ID_NAME),
+            docstring="Instance ID",
         )
         self.inst_struct.add_field(
-            name = self.BASE_ADDR_FIELD_NAME,
-            field_type = ArrayMapType(
-                elem_type = ScalarType("uint32_t"),
-                index_type = ScalarType(self.reg_block_enum.name),
-                length = Name(["count"]),
+            name=self.BASE_ADDR_FIELD_NAME,
+            field_type=ArrayMapType(
+                elem_type=ScalarType("uint32_t"),
+                index_type=ScalarType(self.reg_block_enum.name),
+                length=Name(["count"]),
             ),
-            docstring = "Base address of each register block"
+            docstring="Base address of each register block",
         )
         if self.has_irqs():
             # FIXME We need to handle better the case where a block is not connected to the PLIC.
             self.inst_struct.add_field(
-                name = self.FIRST_IRQ_FIELD_NAME,
-                field_type = ScalarType(Name(["top"]) +
-                                        Name.from_snake_case(self.top["name"]) +
-                                        Name(["plic", "irq", "id"])),
-                docstring = """PLIC ID of the first IRQ of this instance
+                name=self.FIRST_IRQ_FIELD_NAME,
+                field_type=ScalarType(
+                    Name(["top"])
+                    + Name.from_snake_case(self.top["name"])
+                    + Name(["plic", "irq", "id"])
+                ),
+                docstring="""PLIC ID of the first IRQ of this instance
 
-This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
+This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC.""",
             )
         if self.has_clocks():
             self.inst_struct.add_field(
-                name = self.CLOCK_FIELD_NAME,
-                field_type = ArrayMapType(
-                    elem_type = ScalarType(TopHelper.DT_CLOCK_ENUM_NAME),
-                    index_type = ScalarType(self.clock_enum.name),
-                    length = Name(["count"]),
+                name=self.CLOCK_FIELD_NAME,
+                field_type=ArrayMapType(
+                    elem_type=ScalarType(TopHelper.DT_CLOCK_ENUM_NAME),
+                    index_type=ScalarType(self.clock_enum.name),
+                    length=Name(["count"]),
                 ),
-                docstring = "Clock signal connected to each clock port"
+                docstring="Clock signal connected to each clock port",
             )
         if self.has_periph_io():
             self.inst_struct.add_field(
-                name = self.PERIPH_IO_FIELD_NAME,
-                field_type = ArrayMapType(
-                    elem_type = self.top_helper.periph_io_struct,
-                    index_type = ScalarType(self.periph_io_enum.name),
-                    length = Name(["count"]),
+                name=self.PERIPH_IO_FIELD_NAME,
+                field_type=ArrayMapType(
+                    elem_type=self.top_helper.periph_io_struct,
+                    index_type=ScalarType(self.periph_io_enum.name),
+                    length=Name(["count"]),
                 ),
-                docstring = "Description of each peripheral I/O"
+                docstring="Description of each peripheral I/O",
             )
 
     def _create_instance(self, m):
@@ -664,7 +679,7 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
         inst_desc[self.INST_ID_FIELD_NAME] = Name.from_snake_case(modname)
         # Base address map.
         base_addr_map = OrderedDict()
-        for (rb, addr) in m["base_addrs"].items():
+        for rb, addr in m["base_addrs"].items():
             if rb == "null":
                 rb = self.UNNAMED_REG_BLOCK_NAME
             rb = Name.from_snake_case(rb)
@@ -676,7 +691,7 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
         # Clock map.
         if self.has_clocks():
             inst_clock_map = OrderedDict()
-            for (port, clock) in m["clock_srcs"].items():
+            for port, clock in m["clock_srcs"].items():
                 if port not in self.clock_map:
                     continue
                 # The clock source can either be just a string with the clock name, e.g.
@@ -687,8 +702,9 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
                     clk_name = clock
                 else:
                     clk_name = clock["clock"]
-                inst_clock_map[Name.from_snake_case(self.clock_map[port])] = \
-                    Name.from_snake_case(clk_name)
+                inst_clock_map[Name.from_snake_case(self.clock_map[port])] = Name.from_snake_case(
+                    clk_name
+                )
             inst_desc[self.CLOCK_FIELD_NAME] = inst_clock_map
         # First IRQ
         if self.has_irqs():
@@ -715,17 +731,19 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
         # Periph I/O
         if self.has_periph_io():
             periph_ios = OrderedDict()
-            for (sig, (port, idx)) in self._device_signals.items():
+            for sig, (port, idx) in self._device_signals.items():
                 found = False
                 for conn in self.top["pinmux"]["ios"]:
                     if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
                         continue
                     if found:
                         logging.warning(
-                            f"multiple connections found for device {modname}, signal {sig}")
+                            f"multiple connections found for device {modname}, signal {sig}"
+                        )
                     found = True
-                    periph_ios[Name.from_snake_case(sig)] = \
-                        self._create_periph_io_desc(modname, port, conn)
+                    periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_desc(
+                        modname, port, conn
+                    )
                 # If no connections were found, create a manual one to fake it.
                 if not found:
                     logging.warning(f"no connection found for device {modname}, signal {sig}")
@@ -741,8 +759,7 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
         elif conn["type"] == "output":
             pin_dir = "out"
         else:
-            assert conn["type"] == "inout", \
-                "unexpected connection dir '{}'".format(conn["type"])
+            assert conn["type"] == "inout", "unexpected connection dir '{}'".format(conn["type"])
             pin_dir = "inout"
 
         if conn["idx"] != -1:
@@ -766,12 +783,12 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
             # names from top.pinmux.ios for DIOs, but that the connections use the names
             # from top.pinmux.pads, we need to map between the two.
             padname = None
-            for io in self.top['pinmux']['ios']:
+            for io in self.top["pinmux"]["ios"]:
                 if io["connection"] == "direct" and io["pad"] == conn["pad"]:
                     if padname is not None:
                         raise RuntimeError(
-                            "found at least two IOs that maps to pad {}".format(conn["pad"]) +
-                            ": {} and {}".format(padname, io["name"])
+                            "found at least two IOs that maps to pad {}".format(conn["pad"])
+                            + ": {} and {}".format(padname, io["name"])
                         )
                     padname = Name.from_snake_case(io["name"])
                     # IOs have a width, we need to handle that
@@ -782,8 +799,9 @@ This can be `kDtPlicIrqIdNone` if the block is not connected to the PLIC."""
             pad_index = self.top_helper.pad_enum.name + padname
             pin_outsel = pad_index.as_c_enum()
         else:
-            assert conn["connection"] == "manual", \
-                "unexpected connection type '{}'".format(conn["connection"])
+            assert conn["connection"] == "manual", "unexpected connection type '{}'".format(
+                conn["connection"]
+            )
             pin_periph_input_or_direct_pad = "0"
             pin_outsel = "0"
             pin_type = "Unspecified"

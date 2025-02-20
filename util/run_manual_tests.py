@@ -41,11 +41,11 @@ def _get_tty():
     client. Note that we cannot simply traverse the process tree, since this script is
     run by the bazel server, which could be started from a different terminal.
     """
-    term = subprocess.check_output(
-        ["/bin/ps", "-p", f"{os.getpid()}", "-o", "tty="]).decode().strip()
+    term = (
+        subprocess.check_output(["/bin/ps", "-p", f"{os.getpid()}", "-o", "tty="]).decode().strip()
+    )
     if term == "?":
-        res = subprocess.check_output(["/bin/ps", "-axo",
-                                       "tty=,cmd="]).decode()
+        res = subprocess.check_output(["/bin/ps", "-axo", "tty=,cmd="]).decode()
         m = re.search(r"^(?P<term>[\w/]*) *bazel.*test.*$", res, re.MULTILINE)
         if not m:
             raise RuntimeError("Could not find the terminal")
@@ -60,23 +60,17 @@ stdout = open(_get_tty(), "w")
 console = Console(force_interactive=True, force_terminal=True, file=stdout)
 
 
-def _run_manual_testpoint(testplan_name: str,
-                          testpoint: Dict[str, Any]) -> Tuple[str, bool]:
+def _run_manual_testpoint(testplan_name: str, testpoint: Dict[str, Any]) -> Tuple[str, bool]:
     """Runs a testpoint in a manual testplan."""
     name = f"{testplan_name}/{testpoint['name']}"
     md = f"**{name}**: {testpoint['desc']}"
     console.print(Markdown(md))
     console.print("")
     prompt = Text.styled("\n> Was the test successful? [y/n]", style="bold")
-    return (name,
-            Confirm.ask(prompt,
-                        show_choices=False,
-                        console=console,
-                        stream=stdin))
+    return (name, Confirm.ask(prompt, show_choices=False, console=console, stream=stdin))
 
 
-def _print_results(testplan_name: str, results: List[Tuple[str,
-                                                           bool]]) -> None:
+def _print_results(testplan_name: str, results: List[Tuple[str, bool]]) -> None:
     """Prints the results for a testplan."""
     title = Text.assemble(
         ("Results of testplan ", "bold"),
@@ -88,20 +82,21 @@ def _print_results(testplan_name: str, results: List[Tuple[str,
     console.print("")
 
     for testpoint, passed in results:
-        line = Text.assemble(f"  {testpoint}: ",
-                             ("PASSED", "bold green") if passed else
-                             ("FAILED", "bold red"))
+        line = Text.assemble(
+            f"  {testpoint}: ", ("PASSED", "bold green") if passed else ("FAILED", "bold red")
+        )
         console.print(line)
     console.print("")
 
     num_tests = len(results)
     num_pass = len([res[1] for res in results if res[1]])
     num_fail = num_tests - num_pass
-    summary = Text.assemble(f"{num_pass} of {num_tests} tests passed. ",
-                            ("All tests PASSED",
-                             "bold green") if not num_fail else
-                            (f"{pluralize('test', num_fail, True)} FAILED",
-                             "bold white on red"))
+    summary = Text.assemble(
+        f"{num_pass} of {num_tests} tests passed. ",
+        ("All tests PASSED", "bold green")
+        if not num_fail
+        else (f"{pluralize('test', num_fail, True)} FAILED", "bold white on red"),
+    )
     console.print(summary)
     raise typer.Exit(code=num_fail)
 
@@ -109,10 +104,7 @@ def _print_results(testplan_name: str, results: List[Tuple[str,
 def main(testplan_path: Path):
     """Run manual tests listed in a testplan hjson file."""
     testplan = hjson.load(testplan_path.open())
-    results = [
-        _run_manual_testpoint(testplan['name'], t)
-        for t in testplan['testpoints']
-    ]
+    results = [_run_manual_testpoint(testplan["name"], t) for t in testplan["testpoints"]]
     _print_results(testplan["name"], results)
 
 

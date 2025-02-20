@@ -7,19 +7,20 @@ from typing import Dict, List, Tuple
 
 
 class InitData:
-    '''Initialised data, written to the random binary to be loaded.'''
+    """Initialised data, written to the random binary to be loaded."""
+
     def __init__(self, values: Dict[int, int]):
         self._values = values
 
     def as_segs(self) -> Dict[int, List[int]]:
-        '''Convert from dictionary representation to segments
+        """Convert from dictionary representation to segments
 
         The dictionary representation is keyed by 4-byte aligned addresses and
         has values 32-bit unsigned numbers. The segment representation maps
         4-byte aligned base addresses to lists of 32-bit unsigned numbers (and
         the segments are disjoint).
 
-        '''
+        """
         segs = {}
         cur_seg = None
 
@@ -49,51 +50,50 @@ class InitData:
         return segs
 
     def as_json(self) -> List[Tuple[int, int]]:
-        '''Return init_data, as it should be serialized to json'''
+        """Return init_data, as it should be serialized to json"""
         return [(addr, data) for addr, data in self._values.items()]
 
     def keys(self) -> List[int]:
         return list(self._values.keys())
 
     @staticmethod
-    def read(parsed: object) -> 'InitData':
-        '''Read init_data as parsed from json'''
+    def read(parsed: object) -> "InitData":
+        """Read init_data as parsed from json"""
         if not isinstance(parsed, list):
-            raise ValueError('init_data is not a list.')
+            raise ValueError("init_data is not a list.")
         init_data = {}
         for idx, item in enumerate(parsed):
             if not (isinstance(item, list) and len(item) == 2):
-                raise ValueError('Item {} of init_data is not a length 2 list.'
-                                 .format(item))
+                raise ValueError("Item {} of init_data is not a length 2 list.".format(item))
             addr, value = item
 
             if not (isinstance(addr, int) and isinstance(value, int)):
-                raise ValueError('Item {} of init_data has addr or value '
-                                 'that is not an int.'
-                                 .format(idx))
+                raise ValueError(
+                    "Item {} of init_data has addr or value that is not an int.".format(idx)
+                )
 
             if addr < 0 or addr & 3:
-                raise ValueError('Item {} of init_data has '
-                                 'an invalid address, 0x{:x}.'
-                                 .format(idx, addr))
+                raise ValueError(
+                    "Item {} of init_data has an invalid address, 0x{:x}.".format(idx, addr)
+                )
             if not (0 <= value < (1 << 32)):
-                raise ValueError('Item {} of init_data has '
-                                 'invalid data ({} is not a u32).'
-                                 .format(idx, value))
+                raise ValueError(
+                    "Item {} of init_data has invalid data ({} is not a u32).".format(idx, value)
+                )
 
             init_data[addr] = value
 
         return InitData(init_data)
 
     @staticmethod
-    def gen(dmem_size: int) -> 'InitData':
-        '''Generate some initialised data
+    def gen(dmem_size: int) -> "InitData":
+        """Generate some initialised data
 
         This will be inserted into the program as initialised data
         (pre-loaded). The dictionary maps (word-aligned) byte addresses to u32
         values.
 
-        '''
+        """
         assert dmem_size > 0
 
         values = {}

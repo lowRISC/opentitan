@@ -20,10 +20,10 @@ from typing import List, Tuple
 #
 # Raises the appropriate exception if the coverage summary extraction fails.
 def get_cov_summary_table(cov_report_txt, tool):
-    with open(cov_report_txt, 'r') as f:
-        if tool == 'xcelium':
+    with open(cov_report_txt, "r") as f:
+        if tool == "xcelium":
             return xcelium_cov_summary_table(f)
-        if tool == 'vcs':
+        if tool == "vcs":
             return vcs_cov_summary_table(f)
         raise NotImplementedError(f"{tool} is unsupported for cov extraction.")
 
@@ -35,14 +35,14 @@ def xcelium_cov_summary_table(buf):
             # Strip the line and remove the unwanted "* Covered" string.
             metrics = line.strip().replace("* Covered", "").split()
             # Change first item to 'Score'.
-            metrics[0] = 'Score'
+            metrics[0] = "Score"
 
             # Gather the list of metrics.
             items = OrderedDict()
             for metric in metrics:
                 items[metric] = {}
-                items[metric]['covered'] = 0
-                items[metric]['total'] = 0
+                items[metric]["covered"] = 0
+                items[metric]["total"] = 0
 
             # Next line is a separator.
             line = buf.readline()
@@ -55,22 +55,21 @@ def xcelium_cov_summary_table(buf):
                     value = value.strip()
                     m = re.search(r"\((\d+)/(\d+).*\)", value)
                     if m:
-                        items[metrics[i]]['covered'] += int(m.group(1))
-                        items[metrics[i]]['total'] += int(m.group(2))
-                        items['Score']['covered'] += int(m.group(1))
-                        items['Score']['total'] += int(m.group(2))
+                        items[metrics[i]]["covered"] += int(m.group(1))
+                        items[metrics[i]]["total"] += int(m.group(2))
+                        items["Score"]["covered"] += int(m.group(1))
+                        items["Score"]["total"] += int(m.group(2))
             # Capture the percentages and the aggregate.
             values = []
             cov_total = None
             for metric in items.keys():
-                if items[metric]['total'] == 0:
+                if items[metric]["total"] == 0:
                     values.append("-- %")
                 else:
-                    value = items[metric]['covered'] / items[metric][
-                        'total'] * 100
+                    value = items[metric]["covered"] / items[metric]["total"] * 100
                     value = "{0:.2f} %".format(round(value, 2))
                     values.append(value)
-                    if metric == 'Score':
+                    if metric == "Score":
                         cov_total = value
             return [items.keys(), values], cov_total
 
@@ -115,13 +114,12 @@ def get_job_runtime(log_text: List, tool: str) -> Tuple[float, str]:
     Returns the runtime, units as a tuple.
     Raises NotImplementedError exception if the EDA tool is not supported.
     """
-    if tool == 'xcelium':
+    if tool == "xcelium":
         return xcelium_job_runtime(log_text)
-    elif tool == 'vcs':
+    elif tool == "vcs":
         return vcs_job_runtime(log_text)
     else:
-        raise NotImplementedError(f"{tool} is unsupported for job runtime "
-                                  "extraction.")
+        raise NotImplementedError(f"{tool} is unsupported for job runtime extraction.")
 
 
 def vcs_job_runtime(log_text: List) -> Tuple[float, str]:
@@ -153,8 +151,7 @@ def xcelium_job_runtime(log_text: List) -> Tuple[float, str]:
     Returns the runtime, units as a tuple.
     Raises RuntimeError exception if the search pattern is not found.
     """
-    pattern = (r"^TOOL:\s*xrun.*: Exiting on .*\(total:\s*(\d+):(\d+):(\d+)\)"
-               r"\s*$")
+    pattern = r"^TOOL:\s*xrun.*: Exiting on .*\(total:\s*(\d+):(\d+):(\d+)\)" r"\s*$"
     for line in reversed(log_text):
         m = re.search(pattern, line)
         if m:
@@ -176,13 +173,12 @@ def get_simulated_time(log_text: List, tool: str) -> Tuple[float, str]:
     Returns the simulated, units as a tuple.
     Raises NotImplementedError exception if the EDA tool is not supported.
     """
-    if tool == 'xcelium':
+    if tool == "xcelium":
         return xcelium_simulated_time(log_text)
-    elif tool == 'vcs':
+    elif tool == "vcs":
         return vcs_simulated_time(log_text)
     else:
-        raise NotImplementedError(f"{tool} is unsupported for simulated time "
-                                  "extraction.")
+        raise NotImplementedError(f"{tool} is unsupported for simulated time extraction.")
 
 
 def xcelium_simulated_time(log_text: List) -> Tuple[float, str]:

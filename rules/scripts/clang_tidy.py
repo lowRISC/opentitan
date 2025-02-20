@@ -16,8 +16,7 @@ import time
 
 
 def maybe_rename_path(orig: Path, new: Path):
-    """Tries to rename `orig` to `new`. Returns an "undo" lambda.
-    """
+    """Tries to rename `orig` to `new`. Returns an "undo" lambda."""
     try:
         orig.rename(new)
     except FileNotFoundError:
@@ -26,8 +25,7 @@ def maybe_rename_path(orig: Path, new: Path):
 
 
 def acquire_lock(path: Path):
-    """Blocks until acquiring an exclusive lock on `path`.
-    """
+    """Blocks until acquiring an exclusive lock on `path`."""
     with open(path, "a+") as f:
         while True:
             try:
@@ -39,12 +37,12 @@ def acquire_lock(path: Path):
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('--ignore-clang-tidy-error', action='store_true')
-    parser.add_argument('--print-args', action='store_true')
-    parser.add_argument('lock_file', type=Path)
-    parser.add_argument('out_file', type=Path)
-    parser.add_argument('clang_tidy')
-    parser.add_argument('clang_tidy_args', nargs=argparse.REMAINDER)
+    parser.add_argument("--ignore-clang-tidy-error", action="store_true")
+    parser.add_argument("--print-args", action="store_true")
+    parser.add_argument("lock_file", type=Path)
+    parser.add_argument("out_file", type=Path)
+    parser.add_argument("clang_tidy")
+    parser.add_argument("clang_tidy_args", nargs=argparse.REMAINDER)
 
     args = parser.parse_args()
 
@@ -75,7 +73,8 @@ def main() -> int:
 
     compile_commands = Path("compile_commands.json")
     cleanup_func = maybe_rename_path(
-        compile_commands, compile_commands.with_suffix(".tmp-clang-tidy"))
+        compile_commands, compile_commands.with_suffix(".tmp-clang-tidy")
+    )
 
     assert not compile_commands.exists()
 
@@ -94,5 +93,5 @@ def main() -> int:
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

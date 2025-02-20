@@ -2,8 +2,8 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Parses lint report and dump filtered messages in hjson format.
-"""
+r"""Parses lint report and dump filtered messages in hjson format."""
+
 import argparse
 import logging as log
 import sys
@@ -22,18 +22,23 @@ def main():
 
         The script returns nonzero status if any warnings or errors are
         present.
-        """)
-    parser.add_argument('--repfile',
-                        type=lambda p: Path(p).resolve(),
-                        default="./verilator.log'",
-                        help="""The script searches the log file provided.
-                        Defaults to './verilator.log'""")
+        """
+    )
+    parser.add_argument(
+        "--repfile",
+        type=lambda p: Path(p).resolve(),
+        default="./verilator.log'",
+        help="""The script searches the log file provided.
+                        Defaults to './verilator.log'""",
+    )
 
-    parser.add_argument('--outfile',
-                        type=lambda p: Path(p).resolve(),
-                        default="./results.hjson",
-                        help="""Path to the results Hjson file.
-                        Defaults to './results.hjson'""")
+    parser.add_argument(
+        "--outfile",
+        type=lambda p: Path(p).resolve(),
+        default="./results.hjson",
+        help="""Path to the results Hjson file.
+                        Defaults to './results.hjson'""",
+    )
 
     args = parser.parse_args()
 
@@ -61,13 +66,15 @@ def main():
             # this is a workaround until we actually have native Edalize
             # support for JasperGold and "formal" targets
             # TODO(#10071) remove countermeasure waiver.
-            ("flow_warning",
-             r"^(?!WARNING: Unknown item formal in section Target)"
-             r"(?!WARNING: Countermeasure.*)"
-             r"WARNING: .*"),
+            (
+                "flow_warning",
+                r"^(?!WARNING: Unknown item formal in section Target)"
+                r"(?!WARNING: Countermeasure.*)"
+                r"WARNING: .*",
+            ),
             ("flow_warning", r"^.*Warning: .* "),
             ("flow_warning", r"^W .*"),
-            ("lint_warning", r"^.*\[Style:.*")
+            ("lint_warning", r"^.*\[Style:.*"),
         ]
     }
 
@@ -80,10 +87,12 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    if num_messages['error'] > 0 or num_messages['warning'] > 0:
-        log.info("Found %d lint errors and %d lint warnings",
-                 num_messages['error'],
-                 num_messages['warning'])
+    if num_messages["error"] > 0 or num_messages["warning"] > 0:
+        log.info(
+            "Found %d lint errors and %d lint warnings",
+            num_messages["error"],
+            num_messages["warning"],
+        )
         sys.exit(1)
 
     log.info("Lint logfile parsed succesfully")

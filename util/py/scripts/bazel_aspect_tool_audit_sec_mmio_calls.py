@@ -16,8 +16,7 @@ from pathlib import Path
 import clang.cindex
 
 from util.py.packages.lib.register_usage_report import CallSiteAnalyzer
-from util.py.packages.lib.register_usage_report import \
-    RegisterTokenPattern as TokPat
+from util.py.packages.lib.register_usage_report import RegisterTokenPattern as TokPat
 from util.py.packages.lib.register_usage_report import RegisterUsageReportGroup
 
 # Define analyzers for each of the sec_mmio_* functions we care about. We give
@@ -33,36 +32,35 @@ SEC_MMIO_FUNCTION_ANALYZERS = [
         function_name="sec_mmio_read32",
         arg_index=0,
         reg_token_patterns=[
-            TokPat('kBase + reg_offset + sizeof ( uint32_t )'.split()),
-            TokPat('kBase + reg_offset + i * sizeof ( uint32_t )'.split()),
-            TokPat(['kBase', '+', None, '+', 'address']),
-            TokPat([
-                'kBase', '+', None, '+', 'i', '*', 'sizeof', '(', 'uint32_t',
-                ')'
-            ]),
-            TokPat(['kBase', '+', None]),
-            TokPat(['info_page', '->', 'cfg_addr']),
-        ]),
-    CallSiteAnalyzer(function_name="sec_mmio_write32",
-                     arg_index=0,
-                     reg_token_patterns=[
-                         TokPat(['cfg_addr']),
-                         TokPat([
-                             'kBase', '+', None, '+', 'i', '*', 'sizeof', '(',
-                             'uint32_t', ')'
-                         ]),
-                         TokPat(['kBase', '+', None]),
-                         TokPat(['kPwrMgrBase', '+', None]),
-                         TokPat(['regs', '.', 'cfg_addr']),
-                         TokPat(['regs', '.', 'cfg_wen_addr']),
-                         TokPat(['info_page', '->', 'cfg_addr']),
-                         TokPat(['info_page', '->', 'cfg_wen_addr']),
-                     ]),
-    CallSiteAnalyzer(function_name="sec_mmio_write32_shadowed",
-                     arg_index=0,
-                     reg_token_patterns=[
-                         TokPat(['kBase', '+', None]),
-                     ])
+            TokPat("kBase + reg_offset + sizeof ( uint32_t )".split()),
+            TokPat("kBase + reg_offset + i * sizeof ( uint32_t )".split()),
+            TokPat(["kBase", "+", None, "+", "address"]),
+            TokPat(["kBase", "+", None, "+", "i", "*", "sizeof", "(", "uint32_t", ")"]),
+            TokPat(["kBase", "+", None]),
+            TokPat(["info_page", "->", "cfg_addr"]),
+        ],
+    ),
+    CallSiteAnalyzer(
+        function_name="sec_mmio_write32",
+        arg_index=0,
+        reg_token_patterns=[
+            TokPat(["cfg_addr"]),
+            TokPat(["kBase", "+", None, "+", "i", "*", "sizeof", "(", "uint32_t", ")"]),
+            TokPat(["kBase", "+", None]),
+            TokPat(["kPwrMgrBase", "+", None]),
+            TokPat(["regs", ".", "cfg_addr"]),
+            TokPat(["regs", ".", "cfg_wen_addr"]),
+            TokPat(["info_page", "->", "cfg_addr"]),
+            TokPat(["info_page", "->", "cfg_wen_addr"]),
+        ],
+    ),
+    CallSiteAnalyzer(
+        function_name="sec_mmio_write32_shadowed",
+        arg_index=0,
+        reg_token_patterns=[
+            TokPat(["kBase", "+", None]),
+        ],
+    ),
 ]
 
 

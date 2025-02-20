@@ -21,8 +21,7 @@ class LogLevel(str, Enum):
 
 def init(log_level: LogLevel = LogLevel.WARNING):
     global log
-    logging.basicConfig(level=log_level.upper(),
-                        format="%(message)s",
-                        datefmt="[%X]",
-                        handlers=[RichHandler()])
+    logging.basicConfig(
+        level=log_level.upper(), format="%(message)s", datefmt="[%X]", handlers=[RichHandler()]
+    )
     log.replace_wrapped(logging.getLogger("rich"))

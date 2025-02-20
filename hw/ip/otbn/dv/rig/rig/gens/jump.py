@@ -20,28 +20,25 @@ RetTriple = Tuple[ProgInsn, ProgSnippet, Model]
 
 
 class Jump(SnippetGen):
-    '''A generator that makes a snippet with a JAL or JALR jump'''
+    """A generator that makes a snippet with a JAL or JALR jump"""
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
 
-        self.jal = self._get_named_insn(insns_file, 'jal')
-        self.jalr = self._get_named_insn(insns_file, 'jalr')
+        self.jal = self._get_named_insn(insns_file, "jal")
+        self.jalr = self._get_named_insn(insns_file, "jalr")
 
         self.jalr_prob = 0.5
 
-        jal_weight = cfg.insn_weights.get('jal')
-        jalr_weight = cfg.insn_weights.get('jalr')
+        jal_weight = cfg.insn_weights.get("jal")
+        jalr_weight = cfg.insn_weights.get("jalr")
         sum_weights = jal_weight + jalr_weight
         if sum_weights == 0:
             self.disabled = True
         else:
             self.jalr_prob = jalr_weight / sum_weights
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         ret = self.gen_tgt(model, program, None)
         if ret is None:
             return None
@@ -49,10 +46,9 @@ class Jump(SnippetGen):
         _prog_insn, snippet, model = ret
         return (snippet, model)
 
-    def gen_tgt(self,
-                model: Model,
-                program: Program,
-                tgt_addr: Optional[int]) -> Optional[RetTriple]:
+    def gen_tgt(
+        self, model: Model, program: Program, tgt_addr: Optional[int]
+    ) -> Optional[RetTriple]:
         # Decide whether to generate JALR or JAL. If we try to generate a JALR
         # and fail, try to generate a JAL instead: in practice that might well
         # work and if we return None from here, the wrapper will disable us
@@ -65,13 +61,15 @@ class Jump(SnippetGen):
             ret = self.gen_jal(model, program, tgt_addr)
         return ret
 
-    def _pick_jump(self,
-                   base_addr: int,
-                   imm_optype: ImmOperandType,
-                   model: Model,
-                   program: Program,
-                   tgt_addr: Optional[int]) -> Optional[Tuple[int, int, int]]:
-        '''Pick target and link register for a jump instruction
+    def _pick_jump(
+        self,
+        base_addr: int,
+        imm_optype: ImmOperandType,
+        model: Model,
+        program: Program,
+        tgt_addr: Optional[int],
+    ) -> Optional[Tuple[int, int, int]]:
+        """Pick target and link register for a jump instruction
 
         For a JALR instruction, base_addr is the address stored in the register
         that we'll branch through. For a JAL instruction, it is zero: the
@@ -83,7 +81,7 @@ class Jump(SnippetGen):
         the immediate operand) and link_idx is the index of the chosen link
         register.
 
-        '''
+        """
         # Calculate the range of offsets we can encode (this includes any
         # PC-relative adjustment)
         #
@@ -129,13 +127,10 @@ class Jump(SnippetGen):
 
         return (tgt, enc_offset, link_reg_idx)
 
-    def _add_snippet(self,
-                     prog_insn: ProgInsn,
-                     link_reg_idx: int,
-                     new_pc: int,
-                     model: Model,
-                     program: Program) -> RetTriple:
-        '''Generate a 1-instruction snippet for prog_insn; finish generation'''
+    def _add_snippet(
+        self, prog_insn: ProgInsn, link_reg_idx: int, new_pc: int, model: Model, program: Program
+    ) -> RetTriple:
+        """Generate a 1-instruction snippet for prog_insn; finish generation"""
         # Generate our one-instruction snippet and add it to the program
         snippet = ProgSnippet(model.pc, [prog_insn])
         snippet.insert_into_program(program)
@@ -148,21 +143,17 @@ class Jump(SnippetGen):
         # set that explicitly here.
         link_reg_optype = prog_insn.insn.operands[0].op_type
         assert isinstance(link_reg_optype, RegOperandType)
-        model.write_reg(link_reg_optype.reg_type,
-                        link_reg_idx,
-                        model.pc + 4,
-                        True)
+        model.write_reg(link_reg_optype.reg_type, link_reg_idx, model.pc + 4, True)
 
         # And update the PC, which is now tgt
         model.pc = new_pc
 
         return (prog_insn, snippet, model)
 
-    def gen_jal(self,
-                model: Model,
-                program: Program,
-                tgt_addr: Optional[int]) -> Optional[RetTriple]:
-        '''Generate a random JAL instruction'''
+    def gen_jal(
+        self, model: Model, program: Program, tgt_addr: Optional[int]
+    ) -> Optional[RetTriple]:
+        """Generate a random JAL instruction"""
         assert len(self.jal.operands) == 2
         offset_optype = self.jal.operands[1].op_type
         assert isinstance(offset_optype, ImmOperandType)
@@ -176,11 +167,10 @@ class Jump(SnippetGen):
         prog_insn = ProgInsn(self.jal, [link_reg_idx, enc_offset], None)
         return self._add_snippet(prog_insn, link_reg_idx, tgt, model, program)
 
-    def gen_jalr(self,
-                 model: Model,
-                 program: Program,
-                 tgt_addr: Optional[int]) -> Optional[RetTriple]:
-        '''Generate a random JALR instruction'''
+    def gen_jalr(
+        self, model: Model, program: Program, tgt_addr: Optional[int]
+    ) -> Optional[RetTriple]:
+        """Generate a random JALR instruction"""
 
         assert len(self.jalr.operands) == 3
         offset_optype = self.jalr.operands[2].op_type
@@ -190,7 +180,7 @@ class Jump(SnippetGen):
         # where we actually know the value (rather than just knowing that it
         # has an architectural value). Note that there will always be at least
         # one such register (x0).
-        known_regs = model.regs_with_known_vals('gpr')
+        known_regs = model.regs_with_known_vals("gpr")
         assert known_regs
 
         base_reg_idx, base_reg_val = random.choice(known_regs)
@@ -199,15 +189,11 @@ class Jump(SnippetGen):
         if base_reg_val >> 31:
             base_reg_val -= 1 << 32
 
-        jmp_data = self._pick_jump(base_reg_val, offset_optype,
-                                   model, program, tgt_addr)
+        jmp_data = self._pick_jump(base_reg_val, offset_optype, model, program, tgt_addr)
         if jmp_data is None:
             return None
 
         tgt, enc_offset, link_reg_idx = jmp_data
 
-        prog_insn = ProgInsn(self.jalr,
-                             [link_reg_idx, base_reg_idx, enc_offset],
-                             None)
-        return self._add_snippet(prog_insn, link_reg_idx, tgt,
-                                 model, program)
+        prog_insn = ProgInsn(self.jalr, [link_reg_idx, base_reg_idx, enc_offset], None)
+        return self._add_snippet(prog_insn, link_reg_idx, tgt, model, program)

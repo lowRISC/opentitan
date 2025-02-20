@@ -16,8 +16,8 @@ def createRsp(content: bytes) -> str:
 
 
 class RspTests(unittest.TestCase):
-
     """Check that we can parse headers and variables."""
+
     def test_simple(self):
         rsp = createRsp(b"""
 [section name]
@@ -26,11 +26,13 @@ x = 1234
 y = 5678
 
 """)
-        expected = [{
-            "section_name": "section name",
-            "x": "1234",
-            "y": "5678",
-        }]
+        expected = [
+            {
+                "section_name": "section name",
+                "x": "1234",
+                "y": "5678",
+            }
+        ]
         self.assertEqual(expected, parse_rsp(rsp, []))
 
     def test_no_trailing_newline(self):
@@ -41,11 +43,13 @@ y = 5678
 x = 1234
 y = 5678
 """)
-        expected = [{
-            "section_name": "section name",
-            "x": "1234",
-            "y": "5678",
-        }]
+        expected = [
+            {
+                "section_name": "section name",
+                "x": "1234",
+                "y": "5678",
+            }
+        ]
         self.assertEqual(expected, parse_rsp(rsp, []))
 
     def test_csv_header(self):
@@ -206,5 +210,5 @@ y = 4444
         self.assertEqual(expected, parse_rsp(rsp, ["m", "n"]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

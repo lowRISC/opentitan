@@ -29,14 +29,17 @@ import typer
 
 from util.py.packages.lib import bazel, ot_logging, run
 from util.py.packages.lib.register_usage_report import (
-    RegisterUsageReport, RegisterUsageReportGroup, SingleFileSourceRange)
+    RegisterUsageReport,
+    RegisterUsageReportGroup,
+    SingleFileSourceRange,
+)
 
 # The modules under util.reggen use relative imports, which do not play well
 # with this package's absolute imports. For instance, util.reggen.ip_block
 # contains `from reggen.alert import Alert`. If we used a relative import here,
 # like `from ...reggen.ip_block import IpBlock`, we would see ip_block's import
 # fail like so: `ModuleNotFoundError: No module named 'reggen'`.
-sys.path.append('util/')
+sys.path.append("util/")
 from util.reggen.ip_block import IpBlock  # noqa: E402
 from util.reggen.reg_block import RegBlock  # noqa: E402
 from util.reggen.register import Register  # noqa:E402
@@ -56,8 +59,8 @@ log = ot_logging.log
 
 
 class BazelTool:
-    """A collection of Bazel operations that are useful for the sec_mmio audit.
-    """
+    """A collection of Bazel operations that are useful for the sec_mmio audit."""
+
     def __init__(self):
         log.info("Escaping Bazel sandbox")
         bazel.try_escape_sandbox()
@@ -132,9 +135,9 @@ class BazelTool:
             if columns[0] != "Outputs:":
                 continue
             for col in columns[1:]:
-                if col.startswith('['):
+                if col.startswith("["):
                     col = col[1:]
-                if col.endswith(']'):
+                if col.endswith("]"):
                     col = col[:-1]
                 report_paths.append(Path(col))
 
@@ -142,21 +145,19 @@ class BazelTool:
 
 
 class RegisterDatabase:
-    """An index of registers built by parsing `IpBlock`s from hjson files.
-    """
+    """An index of registers built by parsing `IpBlock`s from hjson files."""
+
     def __init__(self, hjson_sources: list[Path]):
         self._all_reg_names = set()
         self._hw_writable_reg_names = set()
         self._build(hjson_sources)
 
     def is_known_reg_token(self, token: str) -> bool:
-        """Returns true iff `token` names a known register.
-        """
+        """Returns true iff `token` names a known register."""
         return token in self._all_reg_names
 
     def is_hw_writable_reg_token(self, token: str) -> bool:
-        """Returns true iff `token` names a known register that is hw-writable.
-        """
+        """Returns true iff `token` names a known register that is hw-writable."""
         return token in self._hw_writable_reg_names
 
     def _build(self, hjson_sources: list[Path]) -> tuple[set, set]:
@@ -219,7 +220,6 @@ def _callsite_preview(callsite: SingleFileSourceRange, keyword: str) -> str:
 
 @app.command(help=__doc__)
 def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
-
     ot_logging.init(log_level)
     console = rich.console.Console(highlight=False)
 
@@ -235,13 +235,10 @@ def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
         report: RegisterUsageReport = report_group.reports[function_name]
 
         report_lines = []
-        unknown_regs: dict[
-            str, set[SingleFileSourceRange]] = collections.defaultdict(set)
+        unknown_regs: dict[str, set[SingleFileSourceRange]] = collections.defaultdict(set)
 
         for register_token in sorted(report.registers_to_callsites.keys()):
-            callsites: set[
-                SingleFileSourceRange] = report.registers_to_callsites[
-                    register_token]
+            callsites: set[SingleFileSourceRange] = report.registers_to_callsites[register_token]
 
             register_token = register_token.removesuffix("_REG_OFFSET")
 
@@ -251,10 +248,12 @@ def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
 
             if register_db.is_hw_writable_reg_token(register_token):
                 report_lines.append("")
-                report_lines.append("Callsites where "
-                                    f"[bold]{function_name}[/bold] " +
-                                    "is called with hw-writable register " +
-                                    f"[purple]{register_token}[/purple]: ")
+                report_lines.append(
+                    "Callsites where "
+                    f"[bold]{function_name}[/bold] "
+                    + "is called with hw-writable register "
+                    + f"[purple]{register_token}[/purple]: "
+                )
                 report_lines.append("")
 
                 for loc in sorted(callsites, key=lambda c: c.path):
@@ -263,8 +262,7 @@ def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
 
         if len(report.unparsed_callsites) > 0:
             report_lines.append("")
-            report_lines.append(
-                "[bold]Callsites requiring human review:[/bold]")
+            report_lines.append("[bold]Callsites requiring human review:[/bold]")
             report_lines.append("")
             for loc in sorted(report.unparsed_callsites, key=lambda c: c.path):
                 report_lines.append(_callsite_preview(loc, function_name))
@@ -272,8 +270,7 @@ def main(log_level: ot_logging.LogLevel = ot_logging.LogLevel.WARNING) -> None:
 
         if len(unknown_regs) > 0:
             report_lines.append("")
-            report_lines.append(
-                "[bold]Callsites with unrecognized registers:[/bold]")
+            report_lines.append("[bold]Callsites with unrecognized registers:[/bold]")
             report_lines.append("")
             for register_token in sorted(unknown_regs.keys()):
                 callsites = unknown_regs[register_token]

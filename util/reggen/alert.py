@@ -16,39 +16,38 @@ class Alert(Signal):
         self.fatal = fatal
 
     @staticmethod
-    def from_raw(what: str,
-                 lsb: int,
-                 raw: object) -> 'Alert':
-        rd = check_keys(raw, what, ['name', 'desc'], [])
+    def from_raw(what: str, lsb: int, raw: object) -> "Alert":
+        rd = check_keys(raw, what, ["name", "desc"], [])
 
-        name = check_name(rd['name'], 'name field of ' + what)
-        desc = check_str(rd['desc'], 'desc field of ' + what)
+        name = check_name(rd["name"], "name field of " + what)
+        desc = check_str(rd["desc"], "desc field of " + what)
 
         # Make sense of the alert name, which should be prefixed with recov_ or
         # fatal_.
-        pfx = name.split('_')[0]
-        if pfx == 'recov':
+        pfx = name.split("_")[0]
+        if pfx == "recov":
             fatal = False
-        elif pfx == 'fatal':
+        elif pfx == "fatal":
             fatal = True
         else:
-            raise ValueError('Invalid name field of {}: alert names must be '
-                             'prefixed with "recov_" or "fatal_". Saw {!r}.'
-                             .format(what, name))
+            raise ValueError(
+                "Invalid name field of {}: alert names must be "
+                'prefixed with "recov_" or "fatal_". Saw {!r}.'.format(what, name)
+            )
 
         return Alert(name, desc, lsb, fatal)
 
     @staticmethod
-    def from_raw_list(what: str, raw: object) -> List['Alert']:
+    def from_raw_list(what: str, raw: object) -> List["Alert"]:
         ret = []
         for idx, entry in enumerate(check_list(raw, what)):
-            entry_what = 'entry {} of {}'.format(idx, what)
+            entry_what = "entry {} of {}".format(idx, what)
             alert = Alert.from_raw(entry_what, idx, entry)
             ret.append(alert)
         return ret
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'name': self.name,
-            'desc': self.desc,
+            "name": self.name,
+            "desc": self.desc,
         }

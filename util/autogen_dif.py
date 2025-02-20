@@ -20,22 +20,10 @@ REPO_TOP = repo_top()
 
 def main():
     parser = argparse.ArgumentParser(
-        description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument(
-        "--ipcfg",
-        "-i",
-        type=Path,
-        required=True,
-        help="`<ip>.hjson` file."
+        description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    parser.add_argument(
-        "--outdir",
-        "-o",
-        type=Path,
-        required=True,
-        help="Output directory"
-    )
+    parser.add_argument("--ipcfg", "-i", type=Path, required=True, help="`<ip>.hjson` file.")
+    parser.add_argument("--outdir", "-o", type=Path, required=True, help="Output directory")
 
     args = parser.parse_args()
 
@@ -52,13 +40,11 @@ def main():
     for filetype in [".h", ".c", "_unittest.cc"]:
         # Build input/output file names.
         template_file = template_path / f"dif_autogen{filetype}.tpl"
-        out_file = (args.outdir /
-                    f"dif_{ip.name_snake}_autogen{filetype}")
+        out_file = args.outdir / f"dif_{ip.name_snake}_autogen{filetype}"
 
         # Read in template.
         try:
-            template = Template(template_file.read_text(),
-                                strict_undefined=True)
+            template = Template(template_file.read_text(), strict_undefined=True)
         except Exception as e:
             print(e)
             raise ValueError("unable to parse template {}".format(template_file))
@@ -68,9 +54,8 @@ def main():
             out_text = template.render(
                 ip=ip,
                 autogen_banner=get_autogen_banner(
-                    "util/autogen_dif.py -i {} -o {}".format(args.ipcfg, args.outdir),
-                    "//"
-                )
+                    "util/autogen_dif.py -i {} -o {}".format(args.ipcfg, args.outdir), "//"
+                ),
             )
         except:  # noqa: E722
             print(exceptions.text_error_template().render())

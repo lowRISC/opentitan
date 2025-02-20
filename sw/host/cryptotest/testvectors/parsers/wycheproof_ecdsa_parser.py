@@ -36,8 +36,7 @@ def _parse_der_signature(der_str, curve):
     # Some tests parse correctly as a DER sequence but produce extra values.
     # These tests should be reject for a bad DER-encoded signature
     if len(seq) != 2:
-        raise ValueError(
-            "Failed to parse DER-encoded signature into r and s values")
+        raise ValueError("Failed to parse DER-encoded signature into r and s values")
 
     # A few tests include DER integers for r and s that are too long for their curves.
     # We need to ignore these.
@@ -61,7 +60,7 @@ def parse_test_vectors(raw_data):
             logging.debug(f"Parsing tcId {test['tcId']}")
             test_vec = {
                 "vendor": "wycheproof",
-                "test_case_id": test['tcId'],
+                "test_case_id": test["tcId"],
                 "algorithm": "ecdsa",
                 "operation": "verify",
                 "curve": EC_NAME_MAPPING[key["curve"]],
@@ -80,22 +79,16 @@ def parse_test_vectors(raw_data):
             try:
                 signature_seq = _parse_der_signature(test["sig"], key["curve"])
             except ValueError:
-                logging.info(
-                    f"Skipped tcId {test['tcId']}: ValueError while parsing DER sequence."
-                )
+                logging.info(f"Skipped tcId {test['tcId']}: ValueError while parsing DER sequence.")
                 continue
             except IndexError:
-                logging.info(
-                    f"Skipped tcId {test['tcId']}: IndexError while parsing DER sequence."
-                )
+                logging.info(f"Skipped tcId {test['tcId']}: IndexError while parsing DER sequence.")
                 continue
 
             # Encode r and s as hex strings since downstream test vector
             # consumers may incorrectly handle large values.
             # [2:] removes the "0x" prefix.
-            test_vec["r"], test_vec["s"] = [
-                hex(val)[2:] for val in signature_seq
-            ]
+            test_vec["r"], test_vec["s"] = [hex(val)[2:] for val in signature_seq]
 
             # Parse the expected result
             if test["result"] == "valid":
@@ -115,14 +108,15 @@ def parse_test_vectors(raw_data):
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--src',
-                        metavar='FILE',
-                        type=argparse.FileType('r'),
-                        help='Read test vectors from this JSON file.')
-    parser.add_argument('--dst',
-                        metavar='FILE',
-                        type=argparse.FileType('w'),
-                        help='Write output to this file.')
+    parser.add_argument(
+        "--src",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help="Read test vectors from this JSON file.",
+    )
+    parser.add_argument(
+        "--dst", metavar="FILE", type=argparse.FileType("w"), help="Write output to this file."
+    )
     parser.add_argument("--schema", type=str, help="Testvector schema file")
     args = parser.parse_args()
 
@@ -141,5 +135,5 @@ def main():
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.exit(main())

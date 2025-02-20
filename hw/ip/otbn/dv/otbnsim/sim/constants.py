@@ -6,14 +6,16 @@ from enum import IntEnum
 
 
 class Cmd(IntEnum):
-    '''Permitted values of the CMD register.'''
-    EXECUTE = 0xd8
-    SEC_WIPE_DMEM = 0xc3
-    SEC_WIPE_IMEM = 0x1e
+    """Permitted values of the CMD register."""
+
+    EXECUTE = 0xD8
+    SEC_WIPE_DMEM = 0xC3
+    SEC_WIPE_IMEM = 0x1E
 
 
 class Status(IntEnum):
-    '''Permitted values of the STATUS register.'''
+    """Permitted values of the STATUS register."""
+
     IDLE = 0x00
     BUSY_EXECUTE = 0x01
     BUSY_SEC_WIPE_DMEM = 0x02
@@ -23,7 +25,8 @@ class Status(IntEnum):
 
 
 class ErrBits(IntEnum):
-    '''A copy of the list of bits in the ERR_BITS register.'''
+    """A copy of the list of bits in the ERR_BITS register."""
+
     BAD_DATA_ADDR = 1 << 0
     BAD_INSN_ADDR = 1 << 1
     CALL_STACK = 1 << 2
@@ -44,7 +47,8 @@ class ErrBits(IntEnum):
 
 
 class LcTx(IntEnum):
-    r'''The same encoding as lc_tx_t in the RTL'''
+    r"""The same encoding as lc_tx_t in the RTL"""
+
     ON = 0b0101
     OFF = 0b1010
     INVALID = 0

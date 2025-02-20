@@ -18,7 +18,6 @@ _PREFIX_FOR_HEX = "0x"
 
 
 class ImmutableSectionProcessor:
-
     def __init__(self, rom_ext_elf, json_data):
         self.rom_ext_elf = rom_ext_elf
         self.json_data = json_data
@@ -28,7 +27,7 @@ class ImmutableSectionProcessor:
         self.size_in_bytes = None
         self.hash = None
 
-        with open(self.rom_ext_elf, 'rb') as f:
+        with open(self.rom_ext_elf, "rb") as f:
             elf = elffile.ELFFile(f)
             # Find the offset of the current slot we are in.
             for symbol in elf.get_section_by_name(".symtab").iter_symbols():
@@ -50,22 +49,22 @@ class ImmutableSectionProcessor:
                 section = elf.get_section(section_idx)
                 if section.name == _ROM_EXT_IMMUTABLE_SECTION_NAME:
                     self.immutable_section_idx = section_idx
-                    self.start_offset = (int(section.header['sh_addr']) -
-                                         self.manifest_offset)
-                    self.size_in_bytes = int(section.header['sh_size'])
+                    self.start_offset = int(section.header["sh_addr"]) - self.manifest_offset
+                    self.size_in_bytes = int(section.header["sh_size"])
                     assert self.size_in_bytes == len(section.data())
                     # Prepend the start offset and length to section data
                     data_to_hash = bytearray()
-                    data_to_hash += self.start_offset.to_bytes(
-                        4, byteorder='little')
-                    data_to_hash += self.size_in_bytes.to_bytes(
-                        4, byteorder='little')
+                    data_to_hash += self.start_offset.to_bytes(4, byteorder="little")
+                    data_to_hash += self.size_in_bytes.to_bytes(4, byteorder="little")
                     data_to_hash += section.data()
                     self.hash = bytearray(SHA256.new(data_to_hash).digest())
 
         if not self.immutable_section_idx:
-            logging.error("Cannot find {} section in ROM_EXT ELF {}.".format(
-                _ROM_EXT_IMMUTABLE_SECTION_NAME, self.rom_ext_elf))
+            logging.error(
+                "Cannot find {} section in ROM_EXT ELF {}.".format(
+                    _ROM_EXT_IMMUTABLE_SECTION_NAME, self.rom_ext_elf
+                )
+            )
             sys.exit(1)
 
     def update_creator_manuf_state_data(self, im_ext_hash) -> None:
@@ -93,8 +92,6 @@ class ImmutableSectionProcessor:
 
         # Embed the first four bytes of `IMMUTABLE_ROM_EXT_SHA256_HASH` into
         # `CREATOR_MANUF_STATE`
-        creator_manuf_state = (
-            _PREFIX_FOR_HEX + im_ext_hash[:8]
-        )
+        creator_manuf_state = _PREFIX_FOR_HEX + im_ext_hash[:8]
 
         return creator_manuf_state

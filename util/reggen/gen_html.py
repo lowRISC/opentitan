@@ -26,28 +26,27 @@ def genout(outfile: TextIO, msg: str) -> None:
 
 
 def gen_tbl_row(outfile: TextIO, msb: int, width: int, close: bool) -> None:
-    if (close):
+    if close:
         genout(outfile, "</tr>\n")
     genout(outfile, "<tr>")
     for x in range(msb, msb - width, -1):
-        genout(outfile, "<td class=\"bitnum\">" + str(x) + "</td>")
+        genout(outfile, '<td class="bitnum">' + str(x) + "</td>")
 
     genout(outfile, "</tr><tr>")
 
 
 def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
-
-    if (width > 32):
+    if width > 32:
         bsize = 3
         nextbit = 63
         hdrbits = 16
         nextline = 48
-    elif (width > 16):
+    elif width > 16:
         bsize = 3
         nextbit = 31
         hdrbits = 16
         nextline = 16
-    elif (width > 8):
+    elif width > 8:
         bsize = 3
         nextbit = 15
         nextline = 0
@@ -58,7 +57,7 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
         nextline = 0
         hdrbits = 8
 
-    genout(outfile, "<table class=\"regpic\">")
+    genout(outfile, '<table class="regpic">')
     gen_tbl_row(outfile, nextbit, hdrbits, False)
 
     for field in reversed(reg.fields):
@@ -72,9 +71,7 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
                 spans = nextbit - (nextline - 1)
             else:
                 spans = nextbit - fieldmsb
-            genout(
-                outfile, "<td class=\"unused\" colspan=" + str(spans) +
-                ">&nbsp;</td>\n")
+            genout(outfile, '<td class="unused" colspan=' + str(spans) + ">&nbsp;</td>\n")
             if (nextbit >= nextline) and (fieldmsb < nextline):
                 nextbit = nextline - 1
                 gen_tbl_row(outfile, nextbit, hdrbits, True)
@@ -84,9 +81,7 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
 
         while (fieldmsb >= nextline) and (fieldlsb < nextline):
             spans = fieldmsb - (nextline - 1)
-            genout(
-                outfile, "<td class=\"fname\" colspan=" + str(spans) + ">" +
-                fname + "...</td>\n")
+            genout(outfile, '<td class="fname" colspan=' + str(spans) + ">" + fname + "...</td>\n")
             fname = "..." + field.name
             fieldwidth = fieldwidth - spans
             fieldmsb = nextline - 1
@@ -94,29 +89,28 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
             gen_tbl_row(outfile, fieldmsb, hdrbits, True)
 
         namelen = len(fname)
-        if namelen == 0 or fname == ' ':
+        if namelen == 0 or fname == " ":
             fname = "&nbsp;"
-        if (namelen > bsize * fieldwidth):
-            usestyle = (" style=\"font-size:" + str(
-                (bsize * 100 * fieldwidth) / namelen) + "%\"")
+        if namelen > bsize * fieldwidth:
+            usestyle = ' style="font-size:' + str((bsize * 100 * fieldwidth) / namelen) + '%"'
         else:
             usestyle = ""
 
         genout(
-            outfile, "<td class=\"fname\" colspan=" + str(fieldwidth) +
-            usestyle + ">" + fname + "</td>\n")
+            outfile,
+            '<td class="fname" colspan=' + str(fieldwidth) + usestyle + ">" + fname + "</td>\n",
+        )
 
         if (fieldlsb == nextline) and nextline > 0:
             gen_tbl_row(outfile, nextline - 1, hdrbits, True)
             nextline = nextline - 16
 
         nextbit = fieldlsb - 1
-    while (nextbit > 0):
+    while nextbit > 0:
         spans = nextbit - (nextline - 1)
-        genout(outfile,
-               "<td class=\"unused\" colspan=" + str(spans) + ">&nbsp;</td>\n")
+        genout(outfile, '<td class="unused" colspan=' + str(spans) + ">&nbsp;</td>\n")
         nextbit = nextline - 1
-        if (nextline > 0):
+        if nextline > 0:
             gen_tbl_row(outfile, nextline - 1, hdrbits, True)
             nextline = nextline - 16
 
@@ -125,57 +119,61 @@ def gen_html_reg_pic(outfile: TextIO, reg: Register, width: int) -> None:
 
 # Generation of HTML table with header, register picture and details
 
-def gen_html_register_summary(outfile: TextIO,
-                              obj_list: List[Union[Window, Register]],
-                              comp: str,
-                              width: int,
-                              rnames: Set[str]) -> None:
 
+def gen_html_register_summary(
+    outfile: TextIO,
+    obj_list: List[Union[Window, Register]],
+    comp: str,
+    width: int,
+    rnames: Set[str],
+) -> None:
     bytew = width // 8
-    genout(outfile,
-           '<table class="regdef" id="RegSummary_{comp}">\n'
-           ' <tr>\n'
-           '  <th class="regdef" colspan=4> Summary </th>\n'
-           ' </tr>\n'
-           ' <tr>\n'
-           '  <th class="regdef">Name</th>'
-           '  <th class="regdef">Offset</th>'
-           '  <th class="regdef">Length</th>'
-           '  <th class="regdef">Description</th>'
-           ' </tr>\n')
+    genout(
+        outfile,
+        '<table class="regdef" id="RegSummary_{comp}">\n'
+        " <tr>\n"
+        '  <th class="regdef" colspan=4> Summary </th>\n'
+        " </tr>\n"
+        " <tr>\n"
+        '  <th class="regdef">Name</th>'
+        '  <th class="regdef">Offset</th>'
+        '  <th class="regdef">Length</th>'
+        '  <th class="regdef">Description</th>'
+        " </tr>\n",
+    )
 
     for obj in obj_list:
         obj_length = bytew if isinstance(obj, Register) else bytew * obj.items
         desc_paras = expand_paras(obj.desc, rnames)
         obj_desc = desc_paras[0]
 
-        genout(outfile,
-               ' <tr>\n'
-               '  <td class="regfn">{comp}.{link}</td>'
-               '  <td class="regfn">{obj_offset:#x}</td>'
-               '  <td class="regfn">{obj_length}</td>'
-               '  <td class="regfn">{obj_desc}</td>'
-               ' </tr>\n'
-               .format(comp=comp,
-                       link=get_reg_link(obj.name),
-                       obj_offset=obj.offset,
-                       obj_length=obj_length,
-                       obj_desc=obj_desc))
+        genout(
+            outfile,
+            " <tr>\n"
+            '  <td class="regfn">{comp}.{link}</td>'
+            '  <td class="regfn">{obj_offset:#x}</td>'
+            '  <td class="regfn">{obj_length}</td>'
+            '  <td class="regfn">{obj_desc}</td>'
+            " </tr>\n".format(
+                comp=comp,
+                link=get_reg_link(obj.name),
+                obj_offset=obj.offset,
+                obj_length=obj_length,
+                obj_desc=obj_desc,
+            ),
+        )
 
-    genout(outfile, '</table>')
+    genout(outfile, "</table>")
 
 
-def gen_html_register(outfile: TextIO,
-                      reg: Register,
-                      comp: str,
-                      width: int,
-                      rnames: Set[str]) -> None:
+def gen_html_register(
+    outfile: TextIO, reg: Register, comp: str, width: int, rnames: Set[str]
+) -> None:
     rname = reg.name
     offset = reg.offset
-    regwen_div = ''
+    regwen_div = ""
     if reg.regwen is not None:
-        regwen_div = ('    <div>Register enable = {}</div>'
-                      .format(reg.regwen))
+        regwen_div = "    <div>Register enable = {}</div>".format(reg.regwen)
 
     desc_paras = expand_paras(reg.desc, rnames)
     desc_head = desc_paras[0]
@@ -186,34 +184,34 @@ def gen_html_register(outfile: TextIO,
     # that unnumbered links from the register table
     # descriptions and Hugo-generated docs are possible.
     if rname[-2:] == "0":
-        mr_anchor = ('id="{}"'
-                     .format(rname[:-2].lower()))
+        mr_anchor = 'id="{}"'.format(rname[:-2].lower())
     else:
-        mr_anchor = ''
+        mr_anchor = ""
 
-    genout(outfile,
-           '<table class="regdef" id="{lrname}">\n'
-           ' <tr>\n'
-           '  <th class="regdef" colspan=5 {mr_anchor}>\n'
-           '   <div>{comp}.{link} @ {off:#x}</div>\n'
-           '   <div>{desc}</div>\n'
-           '   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n'
-           '{wen}'
-           '  </th>\n'
-           ' </tr>\n'
-           .format(mr_anchor=mr_anchor,
-                   lrname=rname.lower(),
-                   comp=comp,
-                   link=get_reg_link(rname),
-                   off=offset,
-                   desc=desc_head,
-                   resval=reg.resval,
-                   mask=reg.resmask,
-                   wen=regwen_div))
+    genout(
+        outfile,
+        '<table class="regdef" id="{lrname}">\n'
+        " <tr>\n"
+        '  <th class="regdef" colspan=5 {mr_anchor}>\n'
+        "   <div>{comp}.{link} @ {off:#x}</div>\n"
+        "   <div>{desc}</div>\n"
+        "   <div>Reset default = {resval:#x}, mask {mask:#x}</div>\n"
+        "{wen}"
+        "  </th>\n"
+        " </tr>\n".format(
+            mr_anchor=mr_anchor,
+            lrname=rname.lower(),
+            comp=comp,
+            link=get_reg_link(rname),
+            off=offset,
+            desc=desc_head,
+            resval=reg.resval,
+            mask=reg.resmask,
+            wen=regwen_div,
+        ),
+    )
     if desc_body:
-        genout(outfile,
-               '<tr><td colspan=5>{}</td></tr>'
-               .format(mk.markdown(desc_body)))
+        genout(outfile, "<tr><td colspan=5>{}</td></tr>".format(mk.markdown(desc_body)))
 
     genout(outfile, "<tr><td colspan=5>")
     gen_html_reg_pic(outfile, reg, width)
@@ -233,20 +231,19 @@ def gen_html_register(outfile: TextIO,
 
         fieldlsb = field.bits.lsb
         if fieldlsb > nextbit:
-            genout(outfile, "<tr><td class=\"regbits\">")
-            if (nextbit == (fieldlsb - 1)):
+            genout(outfile, '<tr><td class="regbits">')
+            if nextbit == (fieldlsb - 1):
                 genout(outfile, str(nextbit))
             else:
                 genout(outfile, str(fieldlsb - 1) + ":" + str(nextbit))
-            genout(outfile,
-                   "</td><td></td><td></td><td></td><td>Reserved</td></tr>")
-        genout(outfile, "<tr><td class=\"regbits\">" + field.bits.as_str() + "</td>")
-        genout(outfile, "<td class=\"regperm\">" + field.swaccess.key + "</td>")
+            genout(outfile, "</td><td></td><td></td><td></td><td>Reserved</td></tr>")
+        genout(outfile, '<tr><td class="regbits">' + field.bits.as_str() + "</td>")
+        genout(outfile, '<td class="regperm">' + field.swaccess.key + "</td>")
         genout(
-            outfile, "<td class=\"regrv\">" +
-            ('x' if field.resval is None else hex(field.resval)) +
-            "</td>")
-        genout(outfile, "<td class=\"regfn\">" + fname + "</td>")
+            outfile,
+            '<td class="regrv">' + ("x" if field.resval is None else hex(field.resval)) + "</td>",
+        )
+        genout(outfile, '<td class="regfn">' + fname + "</td>")
 
         # Collect up any description and enum table
         desc_parts = []
@@ -255,44 +252,40 @@ def gen_html_register(outfile: TextIO,
             desc_parts += expand_paras(mk.markdown(field.desc), rnames)
 
         if field.enum is not None:
-            desc_parts.append('<table>')
+            desc_parts.append("<table>")
 
             # Add two to include the "0x" part
             hex_width = 2 + ((field.bits.width() + 3) // 4)
 
             for enum in field.enum:
                 enum_desc_paras = expand_paras(enum.desc, rnames)
-                desc_parts.append('<tr>'
-                                  '<td>{val:#0{hex_width}x}</td>'
-                                  '<td>{name}</td>'
-                                  '<td>{desc}</td>'
-                                  '</tr>\n'
-                                  .format(val=enum.value,
-                                          hex_width=hex_width,
-                                          name=enum.name,
-                                          desc=''.join(enum_desc_paras)))
-            desc_parts.append('</table>')
+                desc_parts.append(
+                    "<tr><td>{val:#0{hex_width}x}</td><td>{name}</td><td>{desc}</td></tr>\n".format(
+                        val=enum.value,
+                        hex_width=hex_width,
+                        name=enum.name,
+                        desc="".join(enum_desc_paras),
+                    )
+                )
+            desc_parts.append("</table>")
             if field.has_incomplete_enum():
                 desc_parts.append("<p>Other values are reserved.</p>")
 
-        genout(outfile,
-               '<td class="regde">{}</td>'.format(''.join(desc_parts)))
+        genout(outfile, '<td class="regde">{}</td>'.format("".join(desc_parts)))
         nextbit = fieldlsb + field.bits.width()
 
     genout(outfile, "</table>\n<br>\n")
 
 
-def gen_window_row(outfile: TextIO,
-                   base_addr: int,
-                   validbits: int,
-                   regwidth: int,
-                   idx: Optional[int]) -> None:
-    '''Generate a row for a window
+def gen_window_row(
+    outfile: TextIO, base_addr: int, validbits: int, regwidth: int, idx: Optional[int]
+) -> None:
+    """Generate a row for a window
 
     If idx is None, this is a row that shows we're skipping some addresses and
     has a "...". If idx is not None, this gives an address and we show the bits
     that are valid.
-    '''
+    """
     assert 0 < validbits
     assert 0 < regwidth
     assert regwidth % 8 == 0
@@ -306,49 +299,49 @@ def gen_window_row(outfile: TextIO,
             pad = regwidth - validbits
             unused_tds = f'<td class="unused" colspan="{pad}">&nbsp;</td>'
         else:
-            unused_tds = ''
+            unused_tds = ""
         data_tds = f'<td class="fname" colspan="{validbits}">&nbsp;</td>'
         tds = addr_td + unused_tds + data_tds
     else:
-        tds = (f'<td>&nbsp;</td>'
-               f'<td align="center" colspan="{regwidth}">...</td>')
+        tds = f'<td>&nbsp;</td><td align="center" colspan="{regwidth}">...</td>'
 
-    genout(outfile, f'<tr>{tds}</tr>')
+    genout(outfile, f"<tr>{tds}</tr>")
 
 
-def gen_html_window(outfile: TextIO,
-                    win: Window,
-                    comp: str,
-                    regwidth: int,
-                    rnames: Set[str]) -> None:
-    wname = win.name or '(unnamed window)'
+def gen_html_window(
+    outfile: TextIO, win: Window, comp: str, regwidth: int, rnames: Set[str]
+) -> None:
+    wname = win.name or "(unnamed window)"
     offset = win.offset
-    genout(outfile,
-           '<table class="regdef" id="{lwname}">\n'
-           '  <tr>\n'
-           '    <th class="regdef">\n'
-           '      <div>{comp}.{link} @ + {off:#x}</div>\n'
-           '      <div>{items} item {swaccess} window</div>\n'
-           '      <div>Byte writes are {byte_writes}supported</div>\n'
-           '    </th>\n'
-           '  </tr>\n'
-           .format(comp=comp,
-                   link=get_reg_link(wname),
-                   lwname=wname.lower(),
-                   off=offset,
-                   items=win.items,
-                   swaccess=win.swaccess.key,
-                   byte_writes=('' if win.byte_write else '<i>not</i> ')))
+    genout(
+        outfile,
+        '<table class="regdef" id="{lwname}">\n'
+        "  <tr>\n"
+        '    <th class="regdef">\n'
+        "      <div>{comp}.{link} @ + {off:#x}</div>\n"
+        "      <div>{items} item {swaccess} window</div>\n"
+        "      <div>Byte writes are {byte_writes}supported</div>\n"
+        "    </th>\n"
+        "  </tr>\n".format(
+            comp=comp,
+            link=get_reg_link(wname),
+            lwname=wname.lower(),
+            off=offset,
+            items=win.items,
+            swaccess=win.swaccess.key,
+            byte_writes=("" if win.byte_write else "<i>not</i> "),
+        ),
+    )
     genout(outfile, '<tr><td><table class="regpic">')
     genout(outfile, '<tr><td width="10%"></td>')
     wid = win.validbits
 
     for x in range(regwidth - 1, -1, -1):
         if x == regwidth - 1 or x == wid - 1 or x == 0:
-            genout(outfile, '<td class="bitnum">' + str(x) + '</td>')
+            genout(outfile, '<td class="bitnum">' + str(x) + "</td>")
         else:
             genout(outfile, '<td class="bitnum"></td>')
-    genout(outfile, '</tr>')
+    genout(outfile, "</tr>")
 
     # We want to show the first and last two addresses, with a blank line in
     # between if we skip anything.
@@ -367,19 +360,16 @@ def gen_html_window(outfile: TextIO,
     for idx in indices_1:
         gen_window_row(outfile, offset, win.validbits, regwidth, idx)
 
-    genout(outfile, '</td></tr></table>')
-    genout(outfile,
-           '<tr>{}</tr>'.format(render_td(win.desc, rnames, 'regde')))
+    genout(outfile, "</td></tr></table>")
+    genout(outfile, "<tr>{}</tr>".format(render_td(win.desc, rnames, "regde")))
     genout(outfile, "</table>\n<br>\n")
 
 
-def gen_html_reg_block(outfile: TextIO,
-                       rb: RegBlock,
-                       comp: str,
-                       width: int,
-                       rnames: Set[str]) -> None:
+def gen_html_reg_block(
+    outfile: TextIO, rb: RegBlock, comp: str, width: int, rnames: Set[str]
+) -> None:
     if len(rb.entries) == 0:
-        genout(outfile, 'This interface does not expose any registers.')
+        genout(outfile, "This interface does not expose any registers.")
     else:
         # Generate overview table first.
         obj_list: List[Union[Register, Window]] = []
@@ -417,11 +407,12 @@ def gen_html(block: IpBlock, outfile: TextIO) -> int:
     # Handle the case where there is more than one device interface and,
     # correspondingly, more than one reg block.
     for iface_name, rb in block.reg_blocks.items():
-        iface_desc = ('device interface <code>{}</code>'.format(iface_name)
-                      if iface_name is not None
-                      else 'the unnamed device interface')
-        genout(outfile,
-               '<h3>Registers visible under {}</h3>'.format(iface_desc))
+        iface_desc = (
+            "device interface <code>{}</code>".format(iface_name)
+            if iface_name is not None
+            else "the unnamed device interface"
+        )
+        genout(outfile, "<h3>Registers visible under {}</h3>".format(iface_desc))
         gen_html_reg_block(outfile, rb, block.name, block.regwidth, rnames)
 
     return 0

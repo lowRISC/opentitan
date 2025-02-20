@@ -17,7 +17,7 @@ from .straight_line_insn import StraightLineInsn
 
 
 class BadIspr(SnippetGen):
-    '''A snippet to generate accesses to invalid CSRs/WSRs'''
+    """A snippet to generate accesses to invalid CSRs/WSRs"""
 
     ends_program = True
 
@@ -30,7 +30,7 @@ class BadIspr(SnippetGen):
 
         for insn in insns_file.insns:
             # Pick only the instructions pertaining to CSR and WSR.
-            if insn.mnemonic not in ['csrrw', 'csrrs', 'wsrs', 'wsrw']:
+            if insn.mnemonic not in ["csrrw", "csrrs", "wsrs", "wsrw"]:
                 continue
 
             assert not (insn.python_pseudo_op or insn.literal_pseudo_op)
@@ -48,10 +48,7 @@ class BadIspr(SnippetGen):
         if not self.insns:
             self.disabled = True
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         pc = model.pc
         ret = self._gen(model, program)
         if ret is None:
@@ -63,10 +60,7 @@ class BadIspr(SnippetGen):
 
         return (snippet, model)
 
-    def _gen(self,
-             model: Model,
-             program: Program) -> Optional[Tuple[ProgInsn, Model]]:
-
+    def _gen(self, model: Model, program: Program) -> Optional[Tuple[ProgInsn, Model]]:
         weights = self.weights
         prog_insn = None
         while prog_insn is None:

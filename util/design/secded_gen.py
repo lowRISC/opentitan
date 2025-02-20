@@ -74,10 +74,12 @@ C_H_FOOT = """
 #endif  // OPENTITAN_HW_IP_PRIM_DV_PRIM_SECDED_SECDED_ENC_H_
 """
 
-CODE_OPTIONS = {'hsiao': '',
-                'inv_hsiao': '_inv',
-                'hamming': '_hamming',
-                'inv_hamming': '_inv_hamming'}
+CODE_OPTIONS = {
+    "hsiao": "",
+    "inv_hsiao": "_inv",
+    "hamming": "_hamming",
+    "inv_hamming": "_inv_hamming",
+}
 
 # secded configurations
 SECDED_CFG_FILE = "util/design/data/secded_cfg.hjson"
@@ -145,13 +147,13 @@ def print_secded_enum_and_util_fns(cfgs):
     parity_width_vals = []
     data_width_vals = []
     for cfg in cfgs:
-        k = cfg['k']
-        m = cfg['m']
+        k = cfg["k"]
+        m = cfg["m"]
         n = k + m
-        suffix = CODE_OPTIONS[cfg['code_type']]
-        suffix = suffix.split('_')
+        suffix = CODE_OPTIONS[cfg["code_type"]]
+        suffix = suffix.split("_")
         suffix = [x.capitalize() for x in suffix]
-        formatted_suffix = ''.join(suffix)
+        formatted_suffix = "".join(suffix)
 
         enum_name = "    Secded%s_%s_%s" % (formatted_suffix, n, k)
         enum_vals.append(enum_name)
@@ -166,7 +168,7 @@ def print_secded_enum_and_util_fns(cfgs):
     parity_width_fn_str = "\n".join(parity_width_vals)
     data_width_fn_str = "\n".join(data_width_vals)
 
-    enum_str = '''
+    enum_str = """
   typedef enum int {{
 {}
   }} prim_secded_e;
@@ -185,16 +187,15 @@ def print_secded_enum_and_util_fns(cfgs):
       default: return 0;
     endcase
   endfunction
-'''.format(enum_str, data_width_fn_str, parity_width_fn_str)
+""".format(enum_str, data_width_fn_str, parity_width_fn_str)
 
     return enum_str
 
 
 def print_pkg_allzero(n, k, m, codes, suffix, codetype):
-
-    suffix = suffix.split('_')
+    suffix = suffix.split("_")
     suffix = [x.capitalize() for x in suffix]
-    suffix = ''.join(suffix)
+    suffix = "".join(suffix)
 
     invecc = 0
     invcode = 0
@@ -202,23 +203,23 @@ def print_pkg_allzero(n, k, m, codes, suffix, codetype):
         for x in range(m):
             invecc += (x % 2) << x
         invcode = invecc << k
-    zerostr = f'''
-  parameter logic [{m-1}:0] Secded{suffix}{n}{k}ZeroEcc = {m}'h{invecc:0X};
-  parameter logic [{n-1}:0] Secded{suffix}{n}{k}ZeroWord = {n}'h{invcode:0X};
-'''
+    zerostr = f"""
+  parameter logic [{m - 1}:0] Secded{suffix}{n}{k}ZeroEcc = {m}'h{invecc:0X};
+  parameter logic [{n - 1}:0] Secded{suffix}{n}{k}ZeroWord = {n}'h{invcode:0X};
+"""
     return zerostr
 
 
 def print_pkg_types(n, k, m, codes, suffix, codetype):
     typename = "secded%s_%d_%d_t" % (suffix, n, k)
 
-    typestr = '''
+    typestr = """
   typedef struct packed {{
     logic [{}:0] data;
     logic [{}:0] syndrome;
     logic [1:0]  err;
   }} {};
-'''.format((k - 1), (m - 1), typename)
+""".format((k - 1), (m - 1), typename)
 
     return typestr
 
@@ -230,7 +231,7 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
     typename = "secded%s_%d_%d_t" % (suffix, n, k)
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
-    outstr = '''
+    outstr = """
   function automatic logic [{}:0]
       {}_enc (logic [{}:0] data_i);
     logic [{}:0] data_o;
@@ -252,8 +253,20 @@ def print_fn(n, k, m, codes, suffix, codetype, inv=False):
     return dec;
 
   endfunction
-'''.format((n - 1), module_name, (k - 1), (n - 1), enc_out,
-           typename, module_name, (n - 1), (k - 1), (m - 1), typename, dec_out)
+""".format(
+        (n - 1),
+        module_name,
+        (k - 1),
+        (n - 1),
+        enc_out,
+        typename,
+        module_name,
+        (n - 1),
+        (k - 1),
+        (m - 1),
+        typename,
+        dec_out,
+    )
 
     return outstr
 
@@ -306,14 +319,17 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
     outstr += "    // Corrected output calculation\n"
     for i in range(k):
         outstr += "    data_o[%d] = (syndrome_o == %d'h%x) ^ data_i[%d];\n" % (
-            i, m, calc_syndrome(codes[i]), i)
+            i,
+            m,
+            calc_syndrome(codes[i]),
+            i,
+        )
     outstr += "\n"
     outstr += "    // err_o calc. bit0: single error, bit1: double error\n"
     # The Hsiao and Hamming syndromes are interpreted slightly differently.
     if codetype in ["hamming", "inv_hamming"]:
         outstr += "    err_o[0] = syndrome_o[%d];\n" % (m - 1)
-        outstr += "    err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (
-            m - 2, m - 1)
+        outstr += "    err_o[1] = |syndrome_o[%d:0] & ~syndrome_o[%d];\n" % (m - 2, m - 1)
     else:
         outstr += "    err_o[0] = ^syndrome_o;\n"
         outstr += "    err_o[1] = ~err_o[0] & (|syndrome_o);\n"
@@ -322,27 +338,31 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
 
 def verify(cfgs):
     error = 0
-    for cfg in cfgs['cfgs']:
-        if (cfg['k'] <= 1 or cfg['k'] > 120):
+    for cfg in cfgs["cfgs"]:
+        if cfg["k"] <= 1 or cfg["k"] > 120:
             error += 1
-            log.error("Current tool doesn't support the value k (%d)", cfg['k'])
+            log.error("Current tool doesn't support the value k (%d)", cfg["k"])
 
-        if (cfg['m'] <= 1 or cfg['m'] > 20):
+        if cfg["m"] <= 1 or cfg["m"] > 20:
             error += 1
-            log.error("Current tool doesn't support the value m (%d)", cfg['m'])
+            log.error("Current tool doesn't support the value m (%d)", cfg["m"])
 
         # Calculate 'm' (parity size)
-        min_m = min_paritysize(cfg['k'])
-        if (cfg['m'] < min_m):
+        min_m = min_paritysize(cfg["k"])
+        if cfg["m"] < min_m:
             error += 1
-            log.error("given \'m\' argument is smaller than minimum requirement " +
-                      "using calculated minimum (%d)", min_m)
+            log.error(
+                "given 'm' argument is smaller than minimum requirement "
+                + "using calculated minimum (%d)",
+                min_m,
+            )
 
         # Error check code selection
-        if (cfg['code_type'] not in CODE_OPTIONS):
+        if cfg["code_type"] not in CODE_OPTIONS:
             error += 1
-            log.error("Invalid code {} selected, use one of {}".format(
-                cfg['code_type'], CODE_OPTIONS))
+            log.error(
+                "Invalid code {} selected, use one of {}".format(cfg["code_type"], CODE_OPTIONS)
+            )
 
     return error
 
@@ -353,33 +373,31 @@ def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, 
     codes = None
     bitmasks = None
     m = None
-    for cfg in config['cfgs']:
-        if cfg['k'] == k and cfg['code_type'] == codetype:
-            m = cfg['m']
+    for cfg in config["cfgs"]:
+        if cfg["k"] == k and cfg["code_type"] == codetype:
+            m = cfg["m"]
             codes = gen_code(codetype, k, m)
             bitmasks = calc_bitmasks(k, m, codes, False)
-            invert = 1 if codetype in ['inv_hsiao', 'inv_hamming'] else 0
+            invert = 1 if codetype in ["inv_hsiao", "inv_hamming"] else 0
             return (m, bitmasks, invert)
 
     # error if k not supported
-    raise Exception(f'ECC for length {k} of type {codetype} unsupported')
+    raise Exception(f"ECC for length {k} of type {codetype} unsupported")
 
 
 @functools.lru_cache(maxsize=None)
-def _ecc_encode(k: int,
-                m: int, bitmasks: List[int], invert: int,
-                dataword: int) -> int:
+def _ecc_encode(k: int, m: int, bitmasks: List[int], invert: int, dataword: int) -> int:
     assert 0 <= dataword < (1 << k)
 
     # represent supplied dataword as a binary string
-    word_bin = format(dataword, '0' + str(k) + 'b')
+    word_bin = format(dataword, "0" + str(k) + "b")
 
     codeword = word_bin
     for k, mask in enumerate(bitmasks):
         bit = 0
-        log.debug(f'codeword: {codeword}')
-        log.debug(f'mask: {hex(mask)}')
-        mask = (format(mask, '0' + str(k + m) + 'b'))
+        log.debug(f"codeword: {codeword}")
+        log.debug(f"mask: {hex(mask)}")
+        mask = format(mask, "0" + str(k + m) + "b")
 
         # reverse codeword for index selection
         # This is because the LSB is the farthest entry in the string
@@ -389,7 +407,7 @@ def _ecc_encode(k: int,
                 bit ^= int(codeword_rev[idx])
 
         # Add ECC bit inversion if needed (see print_enc function).
-        bit ^= (invert & k % 2)
+        bit ^= invert & k % 2
         codeword = str(bit) + codeword
     return codeword
 
@@ -401,18 +419,16 @@ def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> 
     codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
     # Debug printouts
-    log.debug(f'original hex: {hex(dataword)}')
-    log.debug(f'codeword hex: {hex(int(codeword,2))}')
+    log.debug(f"original hex: {hex(dataword)}")
+    log.debug(f"codeword hex: {hex(int(codeword, 2))}")
     return int(codeword, 2), m
 
 
-def ecc_encode_some(config: Dict[str, Any],
-                    codetype: str,
-                    k: int,
-                    datawords: int) -> Tuple[List[int], int]:
+def ecc_encode_some(
+    config: Dict[str, Any], codetype: str, k: int, datawords: int
+) -> Tuple[List[int], int]:
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
-    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
-                 for w in datawords]
+    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2) for w in datawords]
     return codewords, m
 
 
@@ -447,12 +463,12 @@ def generate(cfgs, args):
         f.write(f"// util/design/secded_gen.py from {SECDED_CFG_FILE}\n")
         f.write(C_H_TOP)
 
-    for cfg in cfgs['cfgs']:
+    for cfg in cfgs["cfgs"]:
         log.debug("Working on {}".format(cfg))
-        k = cfg['k']
-        m = cfg['m']
+        k = cfg["k"]
+        m = cfg["m"]
         n = k + m
-        codetype = cfg['code_type']
+        codetype = cfg["code_type"]
         suffix = CODE_OPTIONS[codetype]
         codes = gen_code(codetype, k, m)
 
@@ -461,8 +477,7 @@ def generate(cfgs, args):
 
         # write out C files, only hsiao codes are supported
         if codetype in ["hsiao", "inv_hsiao"]:
-            write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
-                          codetype)
+            write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename, codetype)
 
         # write out all-zero word values for all codes
         pkg_type_str += print_pkg_allzero(n, k, m, codes, suffix, codetype)
@@ -480,7 +495,7 @@ def generate(cfgs, args):
     format_c_files(c_src_filename, c_h_filename)
 
     # create enum of various ECC types - useful for DV purposes in mem_bkdr_if
-    enum_str = print_secded_enum_and_util_fns(cfgs['cfgs'])
+    enum_str = print_secded_enum_and_util_fns(cfgs["cfgs"])
     # write out package file
     full_pkg_str = enum_str + pkg_type_str + pkg_out_str
     write_pkg_file(args.outdir, full_pkg_str)
@@ -607,39 +622,40 @@ def _hamming_code(data_cnt, parity_cnt):
 
 def write_pkg_file(outdir, pkg_str):
     with open(outdir + "/" + "prim_secded_pkg.sv", "w") as f:
-        outstr = '''{}// SECDED package generated by
+        outstr = """{}// SECDED package generated by
 // util/design/secded_gen.py from {}
 
 package prim_secded_pkg;
 {}
 
 endpackage
-'''.format(COPYRIGHT, SECDED_CFG_FILE, pkg_str)
+""".format(COPYRIGHT, SECDED_CFG_FILE, pkg_str)
         f.write(outstr)
 
 
 def bytes_to_c_type(num_bytes):
     if num_bytes == 1:
-        return 'uint8_t'
+        return "uint8_t"
     elif num_bytes <= 2:
-        return 'uint16_t'
+        return "uint16_t"
     elif num_bytes <= 4:
-        return 'uint32_t'
+        return "uint32_t"
     elif num_bytes <= 8:
-        return 'uint64_t'
+        return "uint64_t"
 
     return None
 
 
-def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
-                  codetype):
+def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename, codetype):
     in_bytes = math.ceil(k / 8)
     out_bytes = math.ceil(m / 8)
 
-    if (k > 64):
-        log.warning(f"Cannot generate C encoder for k = {k}."
-                    " The tool has no support for k > 64 for C encoder "
-                    "generation")
+    if k > 64:
+        log.warning(
+            f"Cannot generate C encoder for k = {k}."
+            " The tool has no support for k > 64 for C encoder "
+            "generation"
+        )
         return
 
     in_type = bytes_to_c_type(in_bytes)
@@ -648,17 +664,15 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
     assert in_type
     assert out_type
     assert codetype in ["hsiao", "inv_hsiao"]
-    invert = (codetype == "inv_hsiao")
+    invert = codetype == "inv_hsiao"
 
     with open(c_src_filename, "a") as f:
         # Write out function prototype in src
-        f.write(f"\n{out_type} enc_secded{suffix}_{n}_{k}"
-                f"(const uint8_t bytes[{in_bytes}]) {{\n")
+        f.write(f"\n{out_type} enc_secded{suffix}_{n}_{k}(const uint8_t bytes[{in_bytes}]) {{\n")
 
         # Form a single word from the incoming byte data
         f.write(f"{in_type} word = ")
-        f.write(" | ".join(
-                [f"(({in_type})bytes[{i}] << {i*8})" for i in range(in_bytes)]))
+        f.write(" | ".join([f"(({in_type})bytes[{i}] << {i * 8})" for i in range(in_bytes)]))
         f.write(";\n\n")
 
         # AND the word with the codes, calculating parity of each and combine
@@ -666,31 +680,44 @@ def write_c_files(n, k, m, codes, suffix, c_src_filename, c_h_filename,
         f.write("return ")
         parity_bit_masks = enumerate(calc_bitmasks(k, m, codes, False))
         # Add ECC bit inversion if needed (see print_enc function).
-        f.write(" | ".join(
-                [f"(calc_parity(word & 0x{mask:x}, "
-                 f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
-                 for par_bit, mask in parity_bit_masks]))
+        f.write(
+            " | ".join(
+                [
+                    f"(calc_parity(word & 0x{mask:x}, "
+                    f"{'true' if invert and (par_bit % 2) else 'false'}) << {par_bit})"
+                    for par_bit, mask in parity_bit_masks
+                ]
+            )
+        )
 
         f.write(";\n}\n")
 
     with open(c_h_filename, "a") as f:
         # Write out function declaration in header
-        f.write(f"{out_type} enc_secded{suffix}_{n}_{k}"
-                f"(const uint8_t bytes[{in_bytes}]);\n")
+        f.write(f"{out_type} enc_secded{suffix}_{n}_{k}(const uint8_t bytes[{in_bytes}]);\n")
 
 
 def format_c_files(c_src_filename, c_h_filename):
     try:
         # Call clang-format to in-place format generated C code. If there are
         # any issues log a warning.
-        result = subprocess.run(['./bazelisk.sh', 'run', '//quality:clang_format_fix', '--',
-                                c_src_filename, c_h_filename], stderr=subprocess.PIPE,
-                                universal_newlines=True)
+        result = subprocess.run(
+            [
+                "./bazelisk.sh",
+                "run",
+                "//quality:clang_format_fix",
+                "--",
+                c_src_filename,
+                c_h_filename,
+            ],
+            stderr=subprocess.PIPE,
+            universal_newlines=True,
+        )
         result.check_returncode()
     except Exception as e:
-        stderr = ''
+        stderr = ""
         if result:
-            stderr = '\n' + result.stderr
+            stderr = "\n" + result.stderr
 
         log.warning(f"Could not format generated C source: {e}{stderr}")
 
@@ -701,7 +728,7 @@ def write_enc_dec_files(n, k, m, codes, suffix, outdir, codetype):
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     with open(outdir + "/" + module_name + "_enc.sv", "w") as f:
-        outstr = '''{}// SECDED encoder generated by util/design/secded_gen.py
+        outstr = """{}// SECDED encoder generated by util/design/secded_gen.py
 
 module {}_enc (
   input        [{}:0] data_i,
@@ -712,13 +739,13 @@ module {}_enc (
 {}  end
 
 endmodule : {}_enc
-'''.format(COPYRIGHT, module_name, (k - 1), (n - 1), enc_out, module_name)
+""".format(COPYRIGHT, module_name, (k - 1), (n - 1), enc_out, module_name)
         f.write(outstr)
 
     dec_out = print_dec(n, k, m, codes, codetype)
 
     with open(outdir + "/" + module_name + "_dec.sv", "w") as f:
-        outstr = '''{}// SECDED decoder generated by util/design/secded_gen.py
+        outstr = """{}// SECDED decoder generated by util/design/secded_gen.py
 
 module {}_dec (
   input        [{}:0] data_i,
@@ -730,8 +757,7 @@ module {}_dec (
   always_comb begin : p_encode
 {}  end
 endmodule : {}_dec
-'''.format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1),
-           dec_out, module_name)
+""".format(COPYRIGHT, module_name, (n - 1), (k - 1), (m - 1), dec_out, module_name)
         f.write(outstr)
 
 
@@ -739,7 +765,7 @@ def write_fpv_files(n, k, m, codes, suffix, outdir, codetype):
     module_name = "prim_secded%s_%d_%d" % (suffix, n, k)
 
     with open(outdir + "/tb/" + module_name + "_tb.sv", "w") as f:
-        outstr = '''{}// SECDED FPV testbench generated by util/design/secded_gen.py
+        outstr = """{}// SECDED FPV testbench generated by util/design/secded_gen.py
 
 module {}_tb (
   input               clk_i,
@@ -765,23 +791,35 @@ module {}_tb (
   );
 
 endmodule : {}_tb
-'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (n - 1), (m - 1), (n - 1),
-           module_name, module_name, module_name, module_name, module_name)
+""".format(
+            COPYRIGHT,
+            module_name,
+            (k - 1),
+            (k - 1),
+            (n - 1),
+            (m - 1),
+            (n - 1),
+            module_name,
+            module_name,
+            module_name,
+            module_name,
+            module_name,
+        )
         f.write(outstr)
 
     # Additional assertions for inverted codes.
     if codetype in ["inv_hsiao", "inv_hamming"]:
-        inv_asserts = '''
+        inv_asserts = """
   // Check that all-one and all-zero data does not result in all-one or all-zero codewords
   `ASSERT(AllZerosCheck_A, data_i == '0 |-> encoded_o != '0)
   `ASSERT(AllOnesCheck_A, data_i == '1 |-> encoded_o != '1)
 
-'''
+"""
     else:
         inv_asserts = ""
 
     with open(outdir + "/vip/" + module_name + "_assert_fpv.sv", "w") as f:
-        outstr = '''{}// SECDED FPV assertion file generated by util/design/secded_gen.py
+        outstr = """{}// SECDED FPV assertion file generated by util/design/secded_gen.py
 
 module {}_assert_fpv (
   input        clk_i,
@@ -809,12 +847,21 @@ module {}_assert_fpv (
   `ASSERT(SyndromeCheckReverse_A, $countones(error_inject_i) > 0 |-> |syndrome_o)
 {}
 endmodule : {}_assert_fpv
-'''.format(COPYRIGHT, module_name, (k - 1), (k - 1), (n - 1), (m - 1), (n - 1),
-           inv_asserts, module_name)
+""".format(
+            COPYRIGHT,
+            module_name,
+            (k - 1),
+            (k - 1),
+            (n - 1),
+            (m - 1),
+            (n - 1),
+            inv_asserts,
+            module_name,
+        )
         f.write(outstr)
 
     with open(outdir + "/tb/" + module_name + "_bind_fpv.sv", "w") as f:
-        outstr = '''{}// SECDED FPV bind file generated by util/design/secded_gen.py
+        outstr = """{}// SECDED FPV bind file generated by util/design/secded_gen.py
 
 module {}_bind_fpv;
 
@@ -831,12 +878,11 @@ module {}_bind_fpv;
   );
 
 endmodule : {}_bind_fpv
-'''.format(COPYRIGHT, module_name, module_name, module_name, module_name,
-           module_name)
+""".format(COPYRIGHT, module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
 
     with open(outdir + "/" + module_name + "_fpv.core", "w") as f:
-        outstr = '''CAPI=2:
+        outstr = """CAPI=2:
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
@@ -869,7 +915,7 @@ targets:
   lint:
     <<: *default_target
 
-'''.format(module_name, module_name, module_name, module_name, module_name)
+""".format(module_name, module_name, module_name, module_name, module_name)
         f.write(outstr)
 
 
@@ -880,45 +926,50 @@ def load_secded_config() -> Dict[str, Any]:
 def main():
     parser = argparse.ArgumentParser(
         prog="secded_gen",
-        description='''This tool generates Single Error Correction Double Error
+        description="""This tool generates Single Error Correction Double Error
         Detection(SECDED) encoder and decoder modules in SystemVerilog.
-        ''')
-    parser.add_argument('--no_fpv',
-                        action='store_true',
-                        help='Do not generate FPV testbench.')
-    parser.add_argument('--outdir',
-                        default='hw/ip/prim/rtl/',
-                        help='''
+        """,
+    )
+    parser.add_argument("--no_fpv", action="store_true", help="Do not generate FPV testbench.")
+    parser.add_argument(
+        "--outdir",
+        default="hw/ip/prim/rtl/",
+        help="""
         Output directory. The output file will be named
         `prim_secded_<n>_<k>_enc/dec.sv` (default: %(default)s)
-        ''')
-    parser.add_argument('--fpv_outdir',
-                        default='hw/ip/prim/fpv/',
-                        help='''
+        """,
+    )
+    parser.add_argument(
+        "--fpv_outdir",
+        default="hw/ip/prim/fpv/",
+        help="""
         FPV output directory. The output files will have
         the base name `prim_secded_<n>_<k>_*_fpv` (default: %(default)s)
-        ''')
-    parser.add_argument('--c_outdir',
-                        default='hw/ip/prim/dv/prim_secded',
-                        help='''
+        """,
+    )
+    parser.add_argument(
+        "--c_outdir",
+        default="hw/ip/prim/dv/prim_secded",
+        help="""
         C output directory. The output files are named secded_enc.c and
         secded_enc.h
-        ''')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
+        """,
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose")
 
     args = parser.parse_args()
 
-    if (args.verbose):
+    if args.verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    with open(SECDED_CFG_FILE, 'r') as infile:
+    with open(SECDED_CFG_FILE, "r") as infile:
         config = hjson.load(infile)
 
     # Error checking
     error = verify(config)
-    if (error):
+    if error:
         exit(1)
 
     # Generate outputs

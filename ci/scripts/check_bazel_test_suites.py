@@ -3,8 +3,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Checks for test_suite targets that are either empty or not tagged "manual".
-"""
+"""Checks for test_suite targets that are either empty or not tagged "manual"."""
 
 import sys
 
@@ -26,7 +25,7 @@ EMPTY_TEST_SUITE_DESCRIPTION = """
 Test suites below contain zero tests. This is probably an accident.
 """
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     bazel = BazelQueryRunner()
     non_manual_test_suites = list(bazel.find_non_manual_test_suites())
     empty_test_suites = list(bazel.find_empty_test_suites())

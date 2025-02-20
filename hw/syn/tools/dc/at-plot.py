@@ -31,42 +31,36 @@ one plot.
 
 def main():
     parser = argparse.ArgumentParser(prog="")
-    parser.add_argument('result_series',
-                        type=str,
-                        nargs='+',
-                        help="Path and basename of result series.")
+    parser.add_argument(
+        "result_series", type=str, nargs="+", help="Path and basename of result series."
+    )
 
     parser.add_argument(
-        '-g',
-        '--gate_equivalent',
+        "-g",
+        "--gate_equivalent",
         type=float,
         default=1.0,
-        help="Gate equivalent in square micrometre. Defaults to 1.0.")
-    parser.add_argument('-o',
-                        '--output',
-                        type=str,
-                        default="at-plot.png",
-                        help='Filename of at plot. Defaults to "at-plot.png"')
-    parser.add_argument('-t',
-                        '--title',
-                        type=str,
-                        default="AT Plot",
-                        help='Title of AT plot.')
-    parser.add_argument('-l',
-                        '--labels',
-                        type=str,
-                        default="",
-                        help='Comma separated labels for plots.')
-    parser.add_argument('--semilogy',
-                        action='store_true',
-                        help='semilogy plot.')
+        help="Gate equivalent in square micrometre. Defaults to 1.0.",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=str,
+        default="at-plot.png",
+        help='Filename of at plot. Defaults to "at-plot.png"',
+    )
+    parser.add_argument("-t", "--title", type=str, default="AT Plot", help="Title of AT plot.")
+    parser.add_argument(
+        "-l", "--labels", type=str, default="", help="Comma separated labels for plots."
+    )
+    parser.add_argument("--semilogy", action="store_true", help="semilogy plot.")
 
     line = 0
     labels = []
 
     # line style and color setup
-    linestyles = ['--', '--', '--', '--', '--', '--', '--', '--', '--', '--']
-    markers = ['^', 'd', '.', '*', '>', '<', 'v', 's', 'h', 'o']
+    linestyles = ["--", "--", "--", "--", "--", "--", "--", "--", "--", "--"]
+    markers = ["^", "d", ".", "*", ">", "<", "v", "s", "h", "o"]
     cmap = plt.get_cmap("Set1")
 
     args = parser.parse_args()
@@ -84,28 +78,23 @@ def main():
 
         results = np.array([[]])
 
-        for rpt_area in report_filebase.parent.rglob(report_filebase.name +
-                                                     '_*_area.rpt'):
-            tmp_period = Path(rpt_area).name.split('_area')
-            tmp_period = tmp_period[0].split(report_filebase.name + '_')
+        for rpt_area in report_filebase.parent.rglob(report_filebase.name + "_*_area.rpt"):
+            tmp_period = Path(rpt_area).name.split("_area")
+            tmp_period = tmp_period[0].split(report_filebase.name + "_")
             row = np.array([[float(tmp_period[1]), 0.0, 0.0]])
             if np.any(results):
                 results = np.append(results, row, axis=0)
             else:
                 results = row
             try:
-                with open(rpt_area, 'r') as f:
+                with open(rpt_area, "r") as f:
                     full_file = f.read()
-                    tmp_area = re.findall(r"^Total cell area:.*",
-                                          full_file,
-                                          flags=re.MULTILINE)
+                    tmp_area = re.findall(r"^Total cell area:.*", full_file, flags=re.MULTILINE)
                     if tmp_area:
                         tmp_area = tmp_area[0].split("Total cell area:")
-                        results[-1, 1] = float(
-                            tmp_area[1]) / args.gate_equivalent
+                        results[-1, 1] = float(tmp_area[1]) / args.gate_equivalent
                     else:
-                        print("Error, could not find total cell area in %s" %
-                              (rpt_area))
+                        print("Error, could not find total cell area in %s" % (rpt_area))
                         sys.exit(1)
 
             except IOError as e:
@@ -113,20 +102,16 @@ def main():
                 sys.exit(1)
 
             try:
-                rpt_timing = rpt_area.parent.joinpath(
-                    rpt_area.name.replace('_area', '_timing'))
-                with open(rpt_timing, 'r') as f:
+                rpt_timing = rpt_area.parent.joinpath(rpt_area.name.replace("_area", "_timing"))
+                with open(rpt_timing, "r") as f:
                     full_file = f.read()
-                    tmp_slack = re.findall(r"^  slack \(.*",
-                                           full_file,
-                                           flags=re.MULTILINE)
+                    tmp_slack = re.findall(r"^  slack \(.*", full_file, flags=re.MULTILINE)
                     if tmp_slack:
                         tmp_slack = tmp_slack[0].split(")")
                         # adjust period with slack
                         results[-1, 2] = results[-1][0] - float(tmp_slack[1])
                     else:
-                        print("Error, could not find slack in %s" %
-                              (rpt_timing))
+                        print("Error, could not find slack in %s" % (rpt_timing))
                         sys.exit(1)
 
             except IOError as e:
@@ -134,7 +119,6 @@ def main():
                 sys.exit(1)
 
         if np.any(results):
-
             results = results[np.argsort(results[:, 0])]
 
             if args.gate_equivalent == 1.0:
@@ -143,40 +127,43 @@ def main():
                 print("constraint [ns], achieved [ns], complexity [um^2]")
 
             for k in range(len(results)):
-                print("%.2f, %.2f, %.2f" %
-                      (results[k][0], results[k][2], results[k][1]))
+                print("%.2f, %.2f, %.2f" % (results[k][0], results[k][2], results[k][1]))
             if args.semilogy:
-                plt.semilogy(results[:, 2],
-                             results[:, 1],
-                             color=cmap(line),
-                             linestyle=linestyles[line],
-                             marker=markers[line],
-                             linewidth=1.5,
-                             markersize=6,
-                             markeredgecolor='k')
+                plt.semilogy(
+                    results[:, 2],
+                    results[:, 1],
+                    color=cmap(line),
+                    linestyle=linestyles[line],
+                    marker=markers[line],
+                    linewidth=1.5,
+                    markersize=6,
+                    markeredgecolor="k",
+                )
             else:
-                plt.plot(results[:, 2],
-                         results[:, 1],
-                         color=cmap(line),
-                         linestyle=linestyles[line],
-                         marker=markers[line],
-                         linewidth=1.5,
-                         markersize=6,
-                         markeredgecolor='k')
+                plt.plot(
+                    results[:, 2],
+                    results[:, 1],
+                    color=cmap(line),
+                    linestyle=linestyles[line],
+                    marker=markers[line],
+                    linewidth=1.5,
+                    markersize=6,
+                    markeredgecolor="k",
+                )
 
             line += 1
             labels += [report_filebase.name]
 
     print("Parsed %d result series" % line)
 
-    plt.xlabel('Period [ns]')
+    plt.xlabel("Period [ns]")
     if args.gate_equivalent == 1.0:
-        plt.ylabel('Complexity [um^2]')
+        plt.ylabel("Complexity [um^2]")
     else:
-        plt.ylabel('Complexity [GE]')
-    plt.grid(which='both')
+        plt.ylabel("Complexity [GE]")
+    plt.grid(which="both")
     if args.labels:
-        plt.legend(args.labels.split(','))
+        plt.legend(args.labels.split(","))
     else:
         plt.legend(labels)
     plt.title(args.title)
@@ -184,5 +171,5 @@ def main():
     plt.show()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

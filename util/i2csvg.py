@@ -2,8 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Command-line tool to convert i2c to svg
-"""
+r"""Command-line tool to convert i2c to svg"""
 
 import argparse
 import logging as log
@@ -25,58 +24,52 @@ def main():
         prog="i2csvg.py",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=__doc__,
-        epilog=ep)
-    parser.add_argument('--version',
-                        action='store_true',
-                        help='Show version and exit')
-    parser.add_argument('-v',
-                        '--verbose',
-                        action='store_true',
-                        help='Verbose output during processing')
-    parser.add_argument('-d',
-                        '--debug',
-                        action='store_true',
-                        help='Include internal representation in output file')
-    parser.add_argument('-t',
-                        '--text',
-                        action='store_true',
-                        help='Include text output in output file')
-    parser.add_argument('-n',
-                        '--nosvg',
-                        action='store_true',
-                        help="Don't include svg in output")
+        epilog=ep,
+    )
+    parser.add_argument("--version", action="store_true", help="Show version and exit")
+    parser.add_argument(
+        "-v", "--verbose", action="store_true", help="Verbose output during processing"
+    )
+    parser.add_argument(
+        "-d", "--debug", action="store_true", help="Include internal representation in output file"
+    )
+    parser.add_argument(
+        "-t", "--text", action="store_true", help="Include text output in output file"
+    )
+    parser.add_argument("-n", "--nosvg", action="store_true", help="Don't include svg in output")
 
-    parser.add_argument('-f',
-                        '--fifodata',
-                        action='store_true',
-                        help='Data is hexdump of writes to FDATA fifo')
     parser.add_argument(
-        '-p',
-        '--prefix',
-        action='store',
-        help='Only process lines with this prefix (the prefix is removed)')
+        "-f", "--fifodata", action="store_true", help="Data is hexdump of writes to FDATA fifo"
+    )
     parser.add_argument(
-        '-m',
-        '--multiout',
-        action='store_true',
-        help='Generate separate output file with .svg extension from inputs')
-    parser.add_argument('-o',
-                        '--output',
-                        type=argparse.FileType('w'),
-                        default=sys.stdout,
-                        metavar='file',
-                        help='Output file (default stdout)')
-    parser.add_argument('srcfile',
-                        nargs='*',
-                        metavar='input',
-                        default='-',
-                        help='source i2c file (default stdin)')
+        "-p",
+        "--prefix",
+        action="store",
+        help="Only process lines with this prefix (the prefix is removed)",
+    )
+    parser.add_argument(
+        "-m",
+        "--multiout",
+        action="store_true",
+        help="Generate separate output file with .svg extension from inputs",
+    )
+    parser.add_argument(
+        "-o",
+        "--output",
+        type=argparse.FileType("w"),
+        default=sys.stdout,
+        metavar="file",
+        help="Output file (default stdout)",
+    )
+    parser.add_argument(
+        "srcfile", nargs="*", metavar="input", default="-", help="source i2c file (default stdin)"
+    )
     args = parser.parse_args()
 
     if args.version:
         version.show_and_exit(__file__, ["Hjson"])
 
-    if (args.verbose):
+    if args.verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
@@ -99,33 +92,31 @@ def main():
 
     with outfile:
         for filename in args.srcfile:
-            if (filename == '-'):
-                if (done_stdin):
+            if filename == "-":
+                if done_stdin:
                     log.warn("Ignore stdin after first use\n")
                     continue
                 done_stdin = True
                 infile = sys.stdin
             else:
-                infile = open(filename, 'r', encoding='UTF-8')
+                infile = open(filename, "r", encoding="UTF-8")
             with infile:
                 log.info("\nFile now " + filename)
                 if args.multiout:
-                    outfname = str(PurePath(filename).with_suffix('.svg'))
-                    outf = open(outfname, 'w', encoding='UTF-8')
+                    outfname = str(PurePath(filename).with_suffix(".svg"))
+                    outf = open(outfname, "w", encoding="UTF-8")
                 else:
                     outf = outfile
                 if makehtml:
                     outf.write("<H2>" + filename + "</H2>")
                 tr = convert.parse_file(infile, args.fifodata, args.prefix)
                 if args.debug:
-                    convert.output_debug(outf, tr,
-                                         '<br>\n' if makehtml else '\n')
-                    outf.write('<br>\n' if makehtml else '\n')
+                    convert.output_debug(outf, tr, "<br>\n" if makehtml else "\n")
+                    outf.write("<br>\n" if makehtml else "\n")
                 if args.text:
                     if makehtml:
                         outf.write("<pre>\n")
-                    convert.output_text(outf, tr,
-                                        '<br>\n' if makehtml else '\n')
+                    convert.output_text(outf, tr, "<br>\n" if makehtml else "\n")
                     if makehtml:
                         outf.write("</pre>\n")
                 if not args.nosvg:
@@ -135,5 +126,5 @@ def main():
                     outf.close()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

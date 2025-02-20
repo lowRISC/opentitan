@@ -14,11 +14,11 @@ import hjson
 
 
 def extract_messages(str_buffer, patterns):
-    '''Extract messages matching patterns from str_buffer as a dictionary.
+    """Extract messages matching patterns from str_buffer as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and all matches in str_buffer are stored in a dictionary under the paired key.
-    '''
+    """
     results = OrderedDict()
     for key, pattern in patterns:
         val = results.setdefault(key, [])
@@ -28,7 +28,7 @@ def extract_messages(str_buffer, patterns):
 
 
 def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
-    '''Extract messages matching patterns from full_file as a dictionary.
+    """Extract messages matching patterns from full_file as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and the total count of all matches in str_buffer are stored in a dictionary under
@@ -36,7 +36,7 @@ def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
     If input argument `exp_unproven_properties` is not None, the total count will not
     include the expected properties. However, if the expected are not found in its
     category, will add the properties to the category.
-    '''
+    """
     results = OrderedDict()
     for key, pattern in patterns:
         results.setdefault(key, 0)
@@ -63,32 +63,34 @@ def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
 
 
 def format_percentage(good, bad):
-    '''Return a percetange of good / (good + bad) with a format `100.00 %`.'''
+    """Return a percetange of good / (good + bad) with a format `100.00 %`."""
     denom = good + bad
     pc = 100 * good / denom if denom else 0
 
-    return '{0:.2f} %'.format(round(pc, 2))
+    return "{0:.2f} %".format(round(pc, 2))
 
 
 def parse_message(str_buffer):
-    '''Parse error, warnings, and failed properties from the log file'''
-    err_warn_patterns = [("errors", r"^ERROR: .*"),
-                         ("errors", r"^\[ERROR.*"),
-                         ("warnings", r"^WARNING: .*"),
-                         ("warnings", r"^\[WARN.*"),
-                         ("cex", r"^\[\d+\]\s+(\S*)\s+cex.*"),
-                         ("undetermined", r"^\[\d+\]\s+(\S*)\s+undetermined.*"),
-                         ("unreachable", r"^\[\d+\]\s+(\S*)\s+unreachable.*")]
+    """Parse error, warnings, and failed properties from the log file"""
+    err_warn_patterns = [
+        ("errors", r"^ERROR: .*"),
+        ("errors", r"^\[ERROR.*"),
+        ("warnings", r"^WARNING: .*"),
+        ("warnings", r"^\[WARN.*"),
+        ("cex", r"^\[\d+\]\s+(\S*)\s+cex.*"),
+        ("undetermined", r"^\[\d+\]\s+(\S*)\s+undetermined.*"),
+        ("unreachable", r"^\[\d+\]\s+(\S*)\s+unreachable.*"),
+    ]
     return extract_messages(str_buffer, err_warn_patterns)
 
 
 def get_expected_failures(exp_failure_path):
-    '''Get expected fail properties from a hjson file otherwise return None.'''
+    """Get expected fail properties from a hjson file otherwise return None."""
     if exp_failure_path is None or exp_failure_path == "":
         return {}
     else:
         try:
-            with open(exp_failure_path, 'r') as f:
+            with open(exp_failure_path, "r") as f:
                 exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
                 return exp_failures
         except ValueError:
@@ -97,29 +99,32 @@ def get_expected_failures(exp_failure_path):
 
 
 def get_summary(str_buffer, exp_failures):
-    '''Count errors, warnings, and property status from the log file'''
-    message_patterns = [("errors", r"^ERROR: .*"),
-                        ("errors", r"^\[ERROR.*"),
-                        ("warnings", r"^WARNING: .*"),
-                        ("warnings", r"^\[WARN.*"),
-                        ("proven", r"^\[\d+\].*proven.*"),
-                        ("cex", r"^\[\d+\].*cex.*"),
-                        ("covered", r"^\[\d+\].*covered.*"),
-                        ("undetermined", r"^\[\d+\].*undetermined.*"),
-                        ("unreachable", r"^\[\d+\].*unreachable.*")]
+    """Count errors, warnings, and property status from the log file"""
+    message_patterns = [
+        ("errors", r"^ERROR: .*"),
+        ("errors", r"^\[ERROR.*"),
+        ("warnings", r"^WARNING: .*"),
+        ("warnings", r"^\[WARN.*"),
+        ("proven", r"^\[\d+\].*proven.*"),
+        ("cex", r"^\[\d+\].*cex.*"),
+        ("covered", r"^\[\d+\].*covered.*"),
+        ("undetermined", r"^\[\d+\].*undetermined.*"),
+        ("unreachable", r"^\[\d+\].*unreachable.*"),
+    ]
     summary = extract_messages_count(str_buffer, message_patterns, exp_failures)
 
     # Undetermined properties are categorized as pass because we could not find
     # any counter-cases within the limited time of running.
-    summary["pass_rate"] = format_percentage(summary["proven"] + summary["undetermined"],
-                                             summary["cex"] + summary["unreachable"])
+    summary["pass_rate"] = format_percentage(
+        summary["proven"] + summary["undetermined"], summary["cex"] + summary["unreachable"]
+    )
     summary["cov_rate"] = format_percentage(summary["covered"], summary["unreachable"])
 
     return summary
 
 
 def get_results(logpath, exp_failure_path):
-    '''Parse log file and extract info to a dictionary'''
+    """Parse log file and extract info to a dictionary"""
     try:
         with Path(logpath).open() as f:
             results = OrderedDict()
@@ -132,24 +137,25 @@ def get_results(logpath, exp_failure_path):
             return results
 
     except IOError as err:
-        err_msg = 'IOError {}'.format(err)
+        err_msg = "IOError {}".format(err)
         log.error("[get_results] IOError %s", err)
-        return {'messages': {'errors': err_msg}}
+        return {"messages": {"errors": err_msg}}
 
     return results
 
 
 def get_cov_results(logpath, dut_name):
-    '''Parse coverage information from the log file'''
+    """Parse coverage information from the log file"""
     try:
         with Path(logpath).open() as f:
             full_file = f.read()
             cov_pattern = r"\s*\|\d*.\d\d%\s\(\d*\/\d*\)"  # cov pattern: 100.00% (5/5)
             pattern_match = r"\s*\|(\d*.\d\d)%\s\(\d*\/\d*\)"  # extract percentage in cov_pattern
-            coverage_patterns = \
-                [("formal", r"^\|" + dut_name + pattern_match + cov_pattern + cov_pattern),
-                 ("stimuli", r"^\|" + dut_name + cov_pattern + pattern_match + cov_pattern),
-                 ("checker", r"^\|" + dut_name + cov_pattern + cov_pattern + pattern_match)]
+            coverage_patterns = [
+                ("formal", r"^\|" + dut_name + pattern_match + cov_pattern + cov_pattern),
+                ("stimuli", r"^\|" + dut_name + cov_pattern + pattern_match + cov_pattern),
+                ("checker", r"^\|" + dut_name + cov_pattern + cov_pattern + pattern_match),
+            ]
             cov_results = extract_messages(full_file, coverage_patterns)
             for key, item in cov_results.items():
                 if len(item) == 1:
@@ -157,8 +163,11 @@ def get_cov_results(logpath, dut_name):
                 else:
                     cov_results[key] = "N/A"
                     # Report ERROR but continue the parsing script.
-                    log.info("ERROR: parse %s coverage error. Expect one matching value, get %s",
-                             key, item)
+                    log.info(
+                        "ERROR: parse %s coverage error. Expect one matching value, get %s",
+                        key,
+                        item,
+                    )
             return cov_results
 
     except IOError as err:
@@ -168,8 +177,7 @@ def get_cov_results(logpath, dut_name):
 
 def main():
     parser = argparse.ArgumentParser(
-        description=
-        '''This script parses the JasperGold formal log to extract below information.
+        description="""This script parses the JasperGold formal log to extract below information.
 
         "messages": {
           "errors"      : []
@@ -199,36 +207,47 @@ def main():
         "cex, undetermined, unreachable" are presented.
 
         Note this script is capable of parsing jaspergold 2020.09 version.
-        ''')
-    parser.add_argument('--logpath',
-                        type=str,
-                        help=('The path of the formal log file that will be parsed.'))
+        """
+    )
+    parser.add_argument(
+        "--logpath", type=str, help=("The path of the formal log file that will be parsed.")
+    )
 
-    parser.add_argument('--reppath',
-                        type=str,
-                        default="results.hjson",
-                        help=('Parsed output hjson file path. Defaults to '
-                              '`results.hjson` under the current script directory.'))
+    parser.add_argument(
+        "--reppath",
+        type=str,
+        default="results.hjson",
+        help=(
+            "Parsed output hjson file path. Defaults to "
+            "`results.hjson` under the current script directory."
+        ),
+    )
 
-    parser.add_argument('--cov',
-                        type=int,
-                        default=0,
-                        help=('Enable parsing coverage data. '
-                              'By default, coverage parsing is disabled.'))
+    parser.add_argument(
+        "--cov",
+        type=int,
+        default=0,
+        help=("Enable parsing coverage data. By default, coverage parsing is disabled."),
+    )
 
-    parser.add_argument('--dut',
-                        type=str,
-                        default=None,
-                        help=('Tesbench name. '
-                              'By default is empty, used for coverage parsing.'))
+    parser.add_argument(
+        "--dut",
+        type=str,
+        default=None,
+        help=("Tesbench name. By default is empty, used for coverage parsing."),
+    )
 
-    parser.add_argument('--exp-fail-path',
-                        type=str,
-                        default=None,
-                        help=('The path of a hjson file that contains expected failing properties.'
-                              '''By default is empty, used only if there are properties that are
+    parser.add_argument(
+        "--exp-fail-path",
+        type=str,
+        default=None,
+        help=(
+            "The path of a hjson file that contains expected failing properties."
+            """By default is empty, used only if there are properties that are
                                expected to fail. If input is an empty string, will treat it as not
-                               passing a file.'''))
+                               passing a file."""
+        ),
+    )
 
     args = parser.parse_args()
 
@@ -238,18 +257,17 @@ def main():
         results["coverage"] = get_cov_results(args.logpath, args.dut)
 
     with Path(args.reppath).open("w") as results_file:
-        hjson.dump(results,
-                   results_file,
-                   ensure_ascii=False,
-                   for_json=True,
-                   use_decimal=True)
+        hjson.dump(results, results_file, ensure_ascii=False, for_json=True, use_decimal=True)
 
     # return nonzero status if any errors or property failures are present
     # TODO: currently allow warnings
     err_msgs = results["messages"]
     n_errors = len(err_msgs["errors"])
-    n_failures = (len(err_msgs.get("cex")) + len(err_msgs.get("undetermined")) +
-                  len(err_msgs.get("unreachable")))
+    n_failures = (
+        len(err_msgs.get("cex"))
+        + len(err_msgs.get("undetermined"))
+        + len(err_msgs.get("unreachable"))
+    )
     if n_errors > 0 or n_failures > 0:
         log.info("Found %d errors,  %d failures", n_errors, n_failures)
 

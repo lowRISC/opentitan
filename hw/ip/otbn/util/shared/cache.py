@@ -4,13 +4,13 @@
 
 from typing import Dict, Generic, List, Optional, TypeVar
 
-K = TypeVar('K')  # Key type.
-V = TypeVar('V')  # Value type.
-X = TypeVar('X')  # Index type.
+K = TypeVar("K")  # Key type.
+V = TypeVar("V")  # Value type.
+X = TypeVar("X")  # Index type.
 
 
 class CacheEntry(Generic[K, V]):
-    '''Represents a single entry in a cache.
+    """Represents a single entry in a cache.
 
     The entry must hold two pieces of information:
     - value, the cached result to be returned on a matching lookup
@@ -20,23 +20,24 @@ class CacheEntry(Generic[K, V]):
     Note that this is not a simple key/value store, because a key might match a
     lookup even if it's not an exact match. Determining what exactly needs to
     match is implementation-specific and implemented by subclasses.
-    '''
+    """
+
     def __init__(self, key: K, value: V):
         self.key = key
         self.value = value
 
     def is_match(self, key: K) -> bool:
-        '''Returns whether this entry is a match for the key.
+        """Returns whether this entry is a match for the key.
 
         In the simplest case, this could be just self.key == key; however, the
         implementer might choose to ignore certain information when evaluating
         the match, depending on the use-case.
-        '''
+        """
         raise NotImplementedError()
 
 
 class Cache(Generic[X, K, V]):
-    '''Represents a cache to speed up recursive functions.
+    """Represents a cache to speed up recursive functions.
 
     The cache is structured with two layers:
     - The first layer is a dictionary that maps some hashable index type to the
@@ -47,7 +48,8 @@ class Cache(Generic[X, K, V]):
     type should be used to quickly narrow things down to a limited number of
     potentially matching entries (for instance, it could be an input parameter
     to the function that absolutely must match for the cache entries to match).
-    '''
+    """
+
     def __init__(self) -> None:
         self.entries: Dict[X, List[CacheEntry[K, V]]] = {}
 

@@ -17,12 +17,12 @@ from .state import OTBNState
 try:
     INSNS_FILE = load_insns_yaml()
 except RuntimeError as err:
-    sys.stderr.write('{}\n'.format(err))
+    sys.stderr.write("{}\n".format(err))
     sys.exit(1)
 
 
 def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
-    '''Look up the named instruction in the loaded YAML data.
+    """Look up the named instruction in the loaded YAML data.
 
     To make sure nothing's gone really wrong, make sure it has the expected
     number of operands. If we fail to find the right instruction, print a
@@ -30,27 +30,26 @@ def insn_for_mnemonic(mnemonic: str, num_operands: int) -> Insn:
     happens on module load time, so it's a lot clearer to the user what's going
     on this way).
 
-    '''
+    """
     insn = INSNS_FILE.mnemonic_to_insn.get(mnemonic)
     if insn is None:
-        sys.stderr.write('Failed to find an instruction for mnemonic {!r} in '
-                         'insns.yml.\n'
-                         .format(mnemonic))
+        sys.stderr.write(
+            "Failed to find an instruction for mnemonic {!r} in insns.yml.\n".format(mnemonic)
+        )
         sys.exit(1)
 
     if len(insn.operands) != num_operands:
-        sys.stderr.write('The instruction for mnemonic {!r} in insns.yml has '
-                         '{} operands, but we expected {}.\n'
-                         .format(mnemonic, len(insn.operands), num_operands))
+        sys.stderr.write(
+            "The instruction for mnemonic {!r} in insns.yml has "
+            "{} operands, but we expected {}.\n".format(mnemonic, len(insn.operands), num_operands)
+        )
         sys.exit(1)
 
     return insn
 
 
 class OTBNInsn:
-    '''A decoded OTBN instruction.
-
-    '''
+    """A decoded OTBN instruction."""
 
     # A class variable that holds the Insn subclass corresponding to this
     # instruction.
@@ -79,16 +78,16 @@ class OTBNInsn:
         self._disasm: Optional[Tuple[int, str]] = None
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
-        '''Execute the instruction
+        """Execute the instruction
 
         This may yield (returning an iterator object) if the instruction has
         stalled the processor and will take multiple cycles.
 
-        '''
-        raise NotImplementedError('OTBNInsn.execute')
+        """
+        raise NotImplementedError("OTBNInsn.execute")
 
     def disassemble(self, pc: int) -> str:
-        '''Generate an assembly listing for this instruction'''
+        """Generate an assembly listing for this instruction"""
         if self._disasm is not None:
             old_pc, old_disasm = self._disasm
             assert pc == old_pc
@@ -100,49 +99,50 @@ class OTBNInsn:
 
     @staticmethod
     def to_2s_complement(value: int) -> int:
-        '''Interpret the signed value as a 2's complement u32'''
+        """Interpret the signed value as a 2's complement u32"""
         assert -(1 << 31) <= value < (1 << 31)
         return (1 << 32) + value if value < 0 else value
 
     def rtl_trace(self, pc: int) -> str:
-        '''Return the RTL trace entry for executing this insn'''
+        """Return the RTL trace entry for executing this insn"""
         if self.has_bits:
-            return (f'E PC: {pc:#010x}, insn: {self.raw:#010x}\n'
-                    f'# @{pc:#010x}: {self.insn.mnemonic}')
+            return f"E PC: {pc:#010x}, insn: {self.raw:#010x}\n# @{pc:#010x}: {self.insn.mnemonic}"
         else:
-            return (f'E PC: {pc:#010x}, insn: ??\n'
-                    f'# @{pc:#010x}: ??')
+            return f"E PC: {pc:#010x}, insn: ??\n# @{pc:#010x}: ??"
 
 
 class RV32RegReg(OTBNInsn):
-    '''A general class for register-register insns from the RV32I ISA'''
+    """A general class for register-register insns from the RV32I ISA"""
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
-        self.grs2 = op_vals['grs2']
+        self.grd = op_vals["grd"]
+        self.grs1 = op_vals["grs1"]
+        self.grs2 = op_vals["grs2"]
 
 
 class RV32RegImm(OTBNInsn):
-    '''A general class for register-immediate insns from the RV32I ISA'''
+    """A general class for register-immediate insns from the RV32I ISA"""
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
-        self.imm = op_vals['imm']
+        self.grd = op_vals["grd"]
+        self.grs1 = op_vals["grs1"]
+        self.imm = op_vals["imm"]
 
 
 class RV32ImmShift(OTBNInsn):
-    '''A general class for immediate shift insns from the RV32I ISA'''
+    """A general class for immediate shift insns from the RV32I ISA"""
+
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
-        self.shamt = op_vals['shamt']
+        self.grd = op_vals["grd"]
+        self.grs1 = op_vals["grs1"]
+        self.shamt = op_vals["shamt"]
 
 
 def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
-    '''Logical shift value by shift_bytes to the left or right.
+    """Logical shift value by shift_bytes to the left or right.
 
     value should be an unsigned 256-bit value. shift_type should be 0 (shift
     left) or 1 (shift right), matching the encoding of the big number
@@ -151,7 +151,7 @@ def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
 
     Returns an unsigned 256-bit value, truncating on an overflowing left shift.
 
-    '''
+    """
     mask256 = (1 << 256) - 1
     assert 0 <= value <= mask256
     assert 0 <= shift_type <= 1
@@ -163,7 +163,7 @@ def logical_byte_shift(value: int, shift_type: int, shift_bytes: int) -> int:
 
 
 def extract_quarter_word(value: int, qwsel: int) -> int:
-    '''Extract a 64-bit quarter word from a 256-bit value.'''
+    """Extract a 64-bit quarter word from a 256-bit value."""
     assert 0 <= value < (1 << 256)
     assert 0 <= qwsel <= 3
     return (value >> (qwsel * 64)) & ((1 << 64) - 1)

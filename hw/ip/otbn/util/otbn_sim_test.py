@@ -3,7 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-'''Run a test on the OTBN simulator.'''
+"""Run a test on the OTBN simulator."""
 
 import argparse
 import subprocess
@@ -20,14 +20,15 @@ from shared.reg_dump import parse_reg_dump
 from shared.dmem_dump import parse_dmem_exp, parse_actual_dmem
 
 # Names of special registers
-ERR_BITS = 'ERR_BITS'
-INSN_CNT = 'INSN_CNT'
-STOP_PC = 'STOP_PC'
+ERR_BITS = "ERR_BITS"
+INSN_CNT = "INSN_CNT"
+STOP_PC = "STOP_PC"
 
 
 # copied from hw/ip/otbn/dv/otbnsim/sim/constants.py
 class ErrBits(IntEnum):
-    '''A copy of the list of bits in the ERR_BITS register.'''
+    """A copy of the list of bits in the ERR_BITS register."""
+
     BAD_DATA_ADDR = 1 << 0
     BAD_INSN_ADDR = 1 << 1
     CALL_STACK = 1 << 2
@@ -47,7 +48,7 @@ class ErrBits(IntEnum):
 
 
 def get_err_names(err: int) -> List[str]:
-    '''Get the names of all error bits that are set.'''
+    """Get the names of all error bits that are set."""
     out = []
     for err_bit in ErrBits:
         if err & err_bit != 0:
@@ -56,40 +57,45 @@ def get_err_names(err: int) -> List[str]:
 
 
 def _get_symbol_addr_map(elf_file: ELFFile) -> Dict[int, str]:
-    section = elf_file.get_section_by_name('.symtab')
+    section = elf_file.get_section_by_name(".symtab")
 
     if not isinstance(section, SymbolTableSection):
         return {}
 
     # Filter lables and offsets from data section
     return {
-        sym.name: sym.entry.st_value
-        for sym in section.iter_symbols() if sym.entry['st_shndx'] == 2
+        sym.name: sym.entry.st_value for sym in section.iter_symbols() if sym.entry["st_shndx"] == 2
     }
 
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('simulator',
-                        help='Path to the standalone OTBN simulator.')
-    parser.add_argument('--expected_regs',
-                        metavar='FILE',
-                        type=argparse.FileType('r'),
-                        help=(f'File containing expected register values. '
-                              f'Registers that are not listed are allowed to '
-                              f'have any value, except for {ERR_BITS}. If '
-                              f'{ERR_BITS} is not listed, the test will assume '
-                              f'there are no errors expected (i.e. {ERR_BITS}'
-                              f'= 0).'))
-    parser.add_argument('--expected_dmem',
-                        metavar='FILE',
-                        type=argparse.FileType('r'),
-                        help=('File containing expected dmem values. '
-                              'Addresses that are not listed are allowed to '
-                              'have any value.'))
-    parser.add_argument('elf',
-                        help='Path to the .elf file for the OTBN program.')
-    parser.add_argument('-v', '--verbose', action='store_true')
+    parser.add_argument("simulator", help="Path to the standalone OTBN simulator.")
+    parser.add_argument(
+        "--expected_regs",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help=(
+            f"File containing expected register values. "
+            f"Registers that are not listed are allowed to "
+            f"have any value, except for {ERR_BITS}. If "
+            f"{ERR_BITS} is not listed, the test will assume "
+            f"there are no errors expected (i.e. {ERR_BITS}"
+            f"= 0)."
+        ),
+    )
+    parser.add_argument(
+        "--expected_dmem",
+        metavar="FILE",
+        type=argparse.FileType("r"),
+        help=(
+            "File containing expected dmem values. "
+            "Addresses that are not listed are allowed to "
+            "have any value."
+        ),
+    )
+    parser.add_argument("elf", help="Path to the .elf file for the OTBN program.")
+    parser.add_argument("-v", "--verbose", action="store_true")
     args = parser.parse_args()
 
     # Parse expected values.
@@ -105,16 +111,14 @@ def main() -> int:
             args.elf,
         ]
         # Run the simulation and produce a register and dmem dump.
-        subprocess.run(
-            cmd, check=True, universal_newlines=True
-        )
+        subprocess.run(cmd, check=True, universal_newlines=True)
 
         if args.expected_dmem is not None:
             dmem_file.seek(0)
             actual_dmem = parse_actual_dmem(dmem_file.read())
             expected_dmem = parse_dmem_exp(args.expected_dmem.read())
 
-        actual_regs = parse_reg_dump(regs_file.read().decode('utf-8'))
+        actual_regs = parse_reg_dump(regs_file.read().decode("utf-8"))
 
     expected_err = 0
     if args.expected_regs is not None:
@@ -131,10 +135,12 @@ def main() -> int:
         # mismatched registers.
         if actual_err != 0:
             err_names = ", ".join(get_err_names(actual_err))
-            result.err(f"OTBN encountered an unexpected error: {err_names}.\n"
-                       f"  {ERR_BITS}\t= {actual_err:#010x}\n"
-                       f"  {INSN_CNT}\t= {insn_cnt:#010x}\n"
-                       f"  {STOP_PC}\t= {stop_pc:#010x}")
+            result.err(
+                f"OTBN encountered an unexpected error: {err_names}.\n"
+                f"  {ERR_BITS}\t= {actual_err:#010x}\n"
+                f"  {INSN_CNT}\t= {insn_cnt:#010x}\n"
+                f"  {STOP_PC}\t= {stop_pc:#010x}"
+            )
 
     else:
         if args.expected_regs is not None:
@@ -147,22 +153,24 @@ def main() -> int:
                     else:
                         expected_str = f"{expected_value:#010x}"
                         actual_str = f"{actual_value:#010x}"
-                    result.err(f"Mismatch for register {reg}:\n"
-                               f"  Expected: {expected_str}\n"
-                               f"  Actual:   {actual_str}")
+                    result.err(
+                        f"Mismatch for register {reg}:\n"
+                        f"  Expected: {expected_str}\n"
+                        f"  Actual:   {actual_str}"
+                    )
 
         if args.expected_dmem is not None:
-            elf_file = ELFFile(open(args.elf, 'rb'))
+            elf_file = ELFFile(open(args.elf, "rb"))
             symbol_addr_map = _get_symbol_addr_map(elf_file)
 
             for label, value in expected_dmem.items():
                 try:
                     offset = symbol_addr_map[label]
-                    if actual_dmem[offset:offset + len(value)] != value:
+                    if actual_dmem[offset : offset + len(value)] != value:
                         result.err(
                             f"Mismatch for dmem {label}:\n"
                             f"  Expected: {value.hex()}\n"
-                            f"  Actual:   {actual_dmem[offset:offset+len(value)].hex()}"
+                            f"  Actual:   {actual_dmem[offset : offset + len(value)].hex()}"
                         )
                 except KeyError:
                     result.err(f'No label "{label}" found in elf-file.')

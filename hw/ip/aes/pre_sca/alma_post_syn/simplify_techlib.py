@@ -52,8 +52,12 @@ def get_cell_name(cell_def_str):
 # (e.g. specify blocks, celldefine macros etc.)
 def get_cell_dict(techlib_verilog_str):
     # Remove timing blocks, as read_verilog of Yosys cannot digest them
-    file_content = re.sub("specify.*?endspecify",
-                          "\\t\\t// specify block removed", techlib_verilog_str, flags=re.DOTALL)
+    file_content = re.sub(
+        "specify.*?endspecify",
+        "\\t\\t// specify block removed",
+        techlib_verilog_str,
+        flags=re.DOTALL,
+    )
     # Make non-greedy search so that each cell is another match
     cell_defs = re.findall("`celldefine.*?`endcelldefine", file_content, re.DOTALL)
     cell_def_dict = {}
@@ -100,11 +104,11 @@ if __name__ == "__main__":
     techlib_cell_dict = get_cell_dict(techlib_str)
     patchlib_cell_dict = get_cell_dict(patchlib_str)
 
-    for (cell_name, cell_def) in techlib_cell_dict.items():
+    for cell_name, cell_def in techlib_cell_dict.items():
         if cell_name not in include_dict.keys():
             continue
         # Check if we need to patch `cell_name`
-        for (template_cell_name, template_cell_def) in patchlib_cell_dict.items():
+        for template_cell_name, template_cell_def in patchlib_cell_dict.items():
             if is_cell_patched(template_cell_name, cell_name):
                 cell_def = rename_cell_def(template_cell_def, template_cell_name, cell_name)
 

@@ -2,7 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-'''Copies a markdown file, recalculating the relative links for the new location
+"""Copies a markdown file, recalculating the relative links for the new location
 
 KNOWN_ISSUES
 - If you move a file to the same dir an existing relative link points to, the path
@@ -10,7 +10,7 @@ KNOWN_ISSUES
 - Doesn't check if link to anchor is correct, just check that file exists
 - Would be nice to re-render the markdown straight from the AST, but I found other
   formatting changes when trying this.
-'''
+"""
 
 import validators
 from markdown_it import MarkdownIt
@@ -22,11 +22,12 @@ from pathlib import Path
 from typing import Tuple, Optional
 
 import logging
+
 logging.basicConfig()
 logging.getLogger().setLevel(logging.DEBUG)  # set root-logger to most-permissive
 logger = logging.getLogger(__name__)
 
-logging.getLogger('markdown_it').setLevel(logging.WARNING)
+logging.getLogger("markdown_it").setLevel(logging.WARNING)
 
 
 # https://stackoverflow.com/a/71874881
@@ -38,7 +39,7 @@ def relative(target: Path, origin: Path) -> Path:
         return Path(target).resolve().relative_to(Path(origin).resolve())
     except ValueError:  # target does not start with origin
         # recursion with origin (eventually origin is root so try will succeed)
-        return Path('..').joinpath(relative(target, Path(origin).parent))
+        return Path("..").joinpath(relative(target, Path(origin).parent))
 
 
 def split_on_frag(link: str) -> Tuple[Optional[str], Optional[str]]:
@@ -72,10 +73,10 @@ def should_update(link: str) -> bool:
 
 
 def move_md(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
-    '''Main link rewriter'''
-    if new_path.suffix != '.md':
+    """Main link rewriter"""
+    if new_path.suffix != ".md":
         raise NameError(f"new_path does not end in .md : {new_path}")
-    if old_path.suffix != '.md':
+    if old_path.suffix != ".md":
         raise NameError(f"old_path does not end in .md : {old_path}")
     if not old_path.exists():
         raise FileNotFoundError(f"old_path does not exist! : {old_path}")
@@ -92,10 +93,10 @@ def move_md(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
     ast = SyntaxTreeNode(MarkdownIt().parse(old_markdown))
     links = []  # Ensure list is in-order
     for t in ast.walk():
-        if getattr(t, 'type') in ('link'):
-            links.append(str(t.attrs['href']))
-        if getattr(t, 'type') in ('image'):
-            links.append(str(t.attrs['src']))
+        if getattr(t, "type") in ("link"):
+            links.append(str(t.attrs["href"]))
+        if getattr(t, "type") in ("image"):
+            links.append(str(t.attrs["src"]))
 
     # Create new markdown with all relative links recalculated
     idx = 0
@@ -117,11 +118,11 @@ def move_md(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
         link_new = str(rel / link)  # Join the common relative part with the old link
         idx = new_md.find(link, idx)
         logger.debug("|" + 88 * "-" + "|")
-        logger.debug(f"| idx = {idx} | match = {new_md[idx:idx + len(link)]} |")
+        logger.debug(f"| idx = {idx} | match = {new_md[idx : idx + len(link)]} |")
         logger.debug(f"| OLD : {link:>80} |")
         logger.debug(f"| NEW : {link_new:>80} |")
         logger.debug("|" + 88 * "-" + "|")
-        new_md = new_md[:idx] + link_new + new_md[idx + len(link):]
+        new_md = new_md[:idx] + link_new + new_md[idx + len(link) :]
         idx += len(link_new)
 
     new_path.parent.mkdir(parents=True, exist_ok=True)
@@ -130,10 +131,10 @@ def move_md(old_path: pathlib.Path, new_path: pathlib.Path) -> None:
 
 def main() -> None:
     parser = argparse.ArgumentParser()
-    parser.add_argument('-O', '--old-path', required=True)
-    parser.add_argument('-N', '--new-path', required=True)
-    parser.add_argument('--quiet', action='store_true', required=False)
-    parser.add_argument('--verbose', action='store_true', required=False)
+    parser.add_argument("-O", "--old-path", required=True)
+    parser.add_argument("-N", "--new-path", required=True)
+    parser.add_argument("--quiet", action="store_true", required=False)
+    parser.add_argument("--verbose", action="store_true", required=False)
     args = parser.parse_args()
 
     logger.setLevel(logging.INFO)
@@ -143,8 +144,10 @@ def main() -> None:
         logger.setLevel(logging.DEBUG)
 
     # Sanitize args, and call the core function
-    move_md(old_path=pathlib.Path(args.old_path).resolve(),
-            new_path=pathlib.Path(args.new_path).resolve())
+    move_md(
+        old_path=pathlib.Path(args.old_path).resolve(),
+        new_path=pathlib.Path(args.new_path).resolve(),
+    )
 
 
 if __name__ == "__main__":

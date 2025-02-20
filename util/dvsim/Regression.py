@@ -45,10 +45,10 @@ class Regression(Mode):
 
     @staticmethod
     def create_regressions(regdicts, sim_cfg, tests):
-        '''
+        """
         Create Test sets from a given list of raw dicts.
         Return a list of test set objects.
-        '''
+        """
 
         regression_objs = []
         # Pass 1: Create unique set of test sets by merging test sets with the same name
@@ -61,8 +61,9 @@ class Regression(Mode):
             if new_regression.name in Test.item_names:
                 log.error(
                     "Test names and regression names are required to be unique. "
-                    "The regression \"%s\" bears the same name with an existing test. ",
-                    new_regression.name)
+                    'The regression "%s" bears the same name with an existing test. ',
+                    new_regression.name,
+                )
                 sys.exit(1)
 
             for regression in regression_objs:
@@ -83,12 +84,13 @@ class Regression(Mode):
 
         for regression_obj in regression_objs:
             # Unpack the sim modes
-            for sim_mode_obj in find_mode_list(regression_obj.en_sim_modes,
-                                               build_modes):
+            for sim_mode_obj in find_mode_list(regression_obj.en_sim_modes, build_modes):
                 if sim_mode_obj.is_sim_mode == 0:
                     log.error(
-                        "Enabled mode \"%s\" within the regression \"%s\" is not a sim mode",
-                        sim_mode_obj.name, regression_obj.name)
+                        'Enabled mode "%s" within the regression "%s" is not a sim mode',
+                        sim_mode_obj.name,
+                        regression_obj.name,
+                    )
                     sys.exit(1)
 
                 # Check if sim_mode_obj's sub-modes are a part of regressions's
@@ -97,10 +99,12 @@ class Regression(Mode):
                 for sim_mode_obj_sub in sim_mode_obj.en_build_modes:
                     if sim_mode_obj_sub in regression_obj.en_sim_modes:
                         log.error(
-                            "Regression \"%s\" enables sim_modes \"%s\" and \"%s\". "
+                            'Regression "%s" enables sim_modes "%s" and "%s". '
                             "The former is already a sub_mode of the latter.",
-                            regression_obj.name, sim_mode_obj_sub,
-                            sim_mode_obj.name)
+                            regression_obj.name,
+                            sim_mode_obj_sub,
+                            sim_mode_obj.name,
+                        )
                         sys.exit(1)
 
                 # Check if sim_mode_obj is also passed on the command line, in
@@ -109,10 +113,8 @@ class Regression(Mode):
                     continue
 
                 # Merge the build and run cmds & opts from the sim modes
-                regression_obj.pre_build_cmds.extend(
-                    sim_mode_obj.pre_build_cmds)
-                regression_obj.post_build_cmds.extend(
-                    sim_mode_obj.post_build_cmds)
+                regression_obj.pre_build_cmds.extend(sim_mode_obj.pre_build_cmds)
+                regression_obj.post_build_cmds.extend(sim_mode_obj.post_build_cmds)
                 regression_obj.build_opts.extend(sim_mode_obj.build_opts)
                 regression_obj.pre_run_cmds.extend(sim_mode_obj.pre_run_cmds)
                 regression_obj.post_run_cmds.extend(sim_mode_obj.post_run_cmds)
@@ -124,8 +126,7 @@ class Regression(Mode):
 
             # Only merge the pre_run_cmds, post_run_cmds & run_opts from the
             # run_modes enabled
-            for run_mode_obj in find_mode_list(regression_obj.en_run_modes,
-                                               run_modes):
+            for run_mode_obj in find_mode_list(regression_obj.en_run_modes, run_modes):
                 # Check if run_mode_obj is also passed on the command line, in
                 # which case, skip
                 if run_mode_obj.name in sim_cfg.en_run_modes:
@@ -138,9 +139,9 @@ class Regression(Mode):
             # If `tests` member resolves to None, then we add ALL available
             # tests for running the regression.
             if regression_obj.tests is None:
-                log.log(VERBOSE,
-                        "Unpacking all tests in scope for regression \"%s\"",
-                        regression_obj.name)
+                log.log(
+                    VERBOSE, 'Unpacking all tests in scope for regression "%s"', regression_obj.name
+                )
                 regression_obj.tests = sim_cfg.tests
                 regression_obj.test_names = Test.item_names
 
@@ -151,8 +152,10 @@ class Regression(Mode):
                     test_obj = find_mode(test, sim_cfg.tests)
                     if test_obj is None:
                         log.error(
-                            "Test \"%s\" added to regression \"%s\" not found!",
-                            test, regression_obj.name)
+                            'Test "%s" added to regression "%s" not found!',
+                            test,
+                            regression_obj.name,
+                        )
                         continue
                     tests_objs.add(test_obj)
                 regression_obj.tests = list(tests_objs)

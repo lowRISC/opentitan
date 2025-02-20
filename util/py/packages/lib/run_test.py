@@ -16,13 +16,11 @@ ot_logging.init()
 
 
 class AnyDict(dict):
-
     def __eq__(self, other):
         return True
 
 
 class TestRun(unittest.TestCase):
-
     RUN_ARGS = {
         "check": True,
         "encoding": "ascii",
@@ -37,7 +35,7 @@ class TestRun(unittest.TestCase):
         mock_run.side_effect = Exception("foo")
         with self.assertRaisesRegex(Exception, "foo"):
             run("ls")
-        mock_run.assert_called_once_with(("ls", ), **self.RUN_ARGS)
+        mock_run.assert_called_once_with(("ls",), **self.RUN_ARGS)
 
     @patch("util.py.packages.lib.run.subprocess.run")
     def test_run_multi_arg_error(self, mock_run):
@@ -49,10 +47,9 @@ class TestRun(unittest.TestCase):
     @patch("util.py.packages.lib.run.subprocess.run")
     def test_run_single_arg_success(self, mock_run):
         MockStreams = namedtuple("MockStdout", ["stdout", "stderr"])
-        mock_run.side_effect = (MockStreams(
-            stdout="\nline 1\n\nline 2\nline3\n\n", stderr=""), )
+        mock_run.side_effect = (MockStreams(stdout="\nline 1\n\nline 2\nline3\n\n", stderr=""),)
         self.assertEqual(run("ls"), ["line 1", "line 2", "line3"])
-        mock_run.assert_called_once_with(("ls", ), **self.RUN_ARGS)
+        mock_run.assert_called_once_with(("ls",), **self.RUN_ARGS)
 
     @patch("util.py.packages.lib.run.subprocess.run")
     def test_run_multi_arg_success(self, mock_run):

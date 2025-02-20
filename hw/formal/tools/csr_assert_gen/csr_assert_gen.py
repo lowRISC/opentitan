@@ -5,6 +5,7 @@
 r"""FuseSoc generator for creating the CSR assert file using regtool.py, used
 in DV and FPV testbenches.
 """
+
 import os
 import subprocess
 import sys
@@ -34,11 +35,11 @@ def main():
     util_path = os.path.abspath(os.path.join(self_path, REPO_ROOT, "util"))
 
     # Retrieve the parameters from the yml.
-    files_root_dir = gapi['files_root']
-    spec = gapi['parameters'].get('spec')
+    files_root_dir = gapi["files_root"]
+    spec = gapi["parameters"].get("spec")
 
     if not spec:
-        print("Error: \"spec\" parameter missing or invalid: {}".format(spec))
+        print('Error: "spec" parameter missing or invalid: {}'.format(spec))
         sys.exit(1)
 
     # Convert spec (partial path relative to `files_root_dir`) into absolute
@@ -58,5 +59,5 @@ def main():
         sys.exit(e.returncode)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

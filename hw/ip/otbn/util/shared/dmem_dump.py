@@ -8,44 +8,42 @@ from typing import Dict
 
 from hw.ip.otbn.util.shared.mem_layout import get_memory_layout
 
-_DMEM_RE = re.compile(
-    r'\s*(?P<label>[a-zA-Z0-9_]+)\s*:\s*(?P<val>(:?[0-9a-f]+))$')
+_DMEM_RE = re.compile(r"\s*(?P<label>[a-zA-Z0-9_]+)\s*:\s*(?P<val>(:?[0-9a-f]+))$")
 
 
 def parse_dmem_exp(dump: str) -> Dict[str, int]:
-    '''Parse the expected dmem.
+    """Parse the expected dmem.
 
     Format:
         label: hex_data
 
     Returns a dictionary mapping labels to the expected bytes.
-    '''
+    """
 
     out = {}
-    for line in dump.split('\n'):
+    for line in dump.split("\n"):
         # Remove comments and ignore blank lines.
-        line = line.split('#', 1)[0].strip()
+        line = line.split("#", 1)[0].strip()
         if not line:
             continue
         m = _DMEM_RE.match(line)
         if not m:
-            raise ValueError(f'Failed to parse dmem dump line ({line}).')
-        label = m.group('label')
-        value = bytes.fromhex(m.group('val'))
+            raise ValueError(f"Failed to parse dmem dump line ({line}).")
+        label = m.group("label")
+        value = bytes.fromhex(m.group("val"))
 
         if label in out:
-            raise ValueError(f'DMEM dump contains multiple values '
-                             f'for {label}.')
+            raise ValueError(f"DMEM dump contains multiple values for {label}.")
         out[label] = value
 
     return out
 
 
 def parse_actual_dmem(dump: bytes) -> bytes:
-    '''Parse the dmem dump.
+    """Parse the dmem dump.
 
     Returns the dmem bytes except integrity info.
-    '''
+    """
     dmem_bytes = []
     # 8 32-bit data words + 1 byte integrity info per word = 40 bytes
     bytes_w_integrity = 8 * 4 + 8

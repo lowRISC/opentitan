@@ -9,7 +9,6 @@ from device_profile_data import extract_profile_data
 
 
 class TestExtractProfileData(unittest.TestCase):
-
     def test_missing_profile_header(self):
         # Missing header.
         DEVICE_OUTPUT = """
@@ -189,8 +188,8 @@ I00034 status.c:28] PASS!\r
 """  # noqa: E501
         raw_profile_data = extract_profile_data(DEVICE_OUTPUT)
         self.assertEqual(len(raw_profile_data), 1184)
-        self.assertEqual(zlib.crc32(raw_profile_data), 0x79a3fcf1)
+        self.assertEqual(zlib.crc32(raw_profile_data), 0x79A3FCF1)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

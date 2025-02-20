@@ -6,14 +6,20 @@ from typing import Dict, Iterator, Optional
 
 from .constants import ErrBits
 from .flags import FlagReg
-from .isa import (OTBNInsn, RV32RegReg, RV32RegImm,
-                  RV32ImmShift, insn_for_mnemonic, logical_byte_shift,
-                  extract_quarter_word)
+from .isa import (
+    OTBNInsn,
+    RV32RegReg,
+    RV32RegImm,
+    RV32ImmShift,
+    insn_for_mnemonic,
+    logical_byte_shift,
+    extract_quarter_word,
+)
 from .state import OTBNState
 
 
 class ADD(RV32RegReg):
-    insn = insn_for_mnemonic('add', 3)
+    insn = insn_for_mnemonic("add", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -27,7 +33,7 @@ class ADD(RV32RegReg):
 
 
 class ADDI(RV32RegImm):
-    insn = insn_for_mnemonic('addi', 3)
+    insn = insn_for_mnemonic("addi", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -40,19 +46,19 @@ class ADDI(RV32RegImm):
 
 
 class LUI(OTBNInsn):
-    insn = insn_for_mnemonic('lui', 2)
+    insn = insn_for_mnemonic("lui", 2)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.imm = op_vals['imm']
+        self.grd = op_vals["grd"]
+        self.imm = op_vals["imm"]
 
     def execute(self, state: OTBNState) -> None:
         state.gprs.get_reg(self.grd).write_unsigned(self.imm << 12)
 
 
 class SUB(RV32RegReg):
-    insn = insn_for_mnemonic('sub', 3)
+    insn = insn_for_mnemonic("sub", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -66,11 +72,11 @@ class SUB(RV32RegReg):
 
 
 class SLL(RV32RegReg):
-    insn = insn_for_mnemonic('sll', 3)
+    insn = insn_for_mnemonic("sll", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1F
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return
@@ -80,7 +86,7 @@ class SLL(RV32RegReg):
 
 
 class SLLI(RV32ImmShift):
-    insn = insn_for_mnemonic('slli', 3)
+    insn = insn_for_mnemonic("slli", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -93,11 +99,11 @@ class SLLI(RV32ImmShift):
 
 
 class SRL(RV32RegReg):
-    insn = insn_for_mnemonic('srl', 3)
+    insn = insn_for_mnemonic("srl", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
-        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1F
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return
@@ -107,7 +113,7 @@ class SRL(RV32RegReg):
 
 
 class SRLI(RV32ImmShift):
-    insn = insn_for_mnemonic('srli', 3)
+    insn = insn_for_mnemonic("srli", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -120,11 +126,11 @@ class SRLI(RV32ImmShift):
 
 
 class SRA(RV32RegReg):
-    insn = insn_for_mnemonic('sra', 3)
+    insn = insn_for_mnemonic("sra", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_signed()
-        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1f
+        val2 = state.gprs.get_reg(self.grs2).read_unsigned() & 0x1F
         if state.gprs.call_stack_err:
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return
@@ -134,7 +140,7 @@ class SRA(RV32RegReg):
 
 
 class SRAI(RV32ImmShift):
-    insn = insn_for_mnemonic('srai', 3)
+    insn = insn_for_mnemonic("srai", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_signed()
@@ -148,7 +154,7 @@ class SRAI(RV32ImmShift):
 
 
 class AND(RV32RegReg):
-    insn = insn_for_mnemonic('and', 3)
+    insn = insn_for_mnemonic("and", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -162,7 +168,7 @@ class AND(RV32RegReg):
 
 
 class ANDI(RV32RegImm):
-    insn = insn_for_mnemonic('andi', 3)
+    insn = insn_for_mnemonic("andi", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -176,7 +182,7 @@ class ANDI(RV32RegImm):
 
 
 class OR(RV32RegReg):
-    insn = insn_for_mnemonic('or', 3)
+    insn = insn_for_mnemonic("or", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -190,7 +196,7 @@ class OR(RV32RegReg):
 
 
 class ORI(RV32RegImm):
-    insn = insn_for_mnemonic('ori', 3)
+    insn = insn_for_mnemonic("ori", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -204,7 +210,7 @@ class ORI(RV32RegImm):
 
 
 class XOR(RV32RegReg):
-    insn = insn_for_mnemonic('xor', 3)
+    insn = insn_for_mnemonic("xor", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -218,7 +224,7 @@ class XOR(RV32RegReg):
 
 
 class XORI(RV32RegImm):
-    insn = insn_for_mnemonic('xori', 3)
+    insn = insn_for_mnemonic("xori", 3)
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -232,13 +238,13 @@ class XORI(RV32RegImm):
 
 
 class LW(OTBNInsn):
-    insn = insn_for_mnemonic('lw', 3)
+    insn = insn_for_mnemonic("lw", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
+        self.grd = op_vals["grd"]
+        self.offset = op_vals["offset"]
+        self.grs1 = op_vals["grs1"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         # LW executes over two cycles. On the first cycle, we read the base
@@ -272,13 +278,13 @@ class LW(OTBNInsn):
 
 
 class SW(OTBNInsn):
-    insn = insn_for_mnemonic('sw', 3)
+    insn = insn_for_mnemonic("sw", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grs2 = op_vals['grs2']
-        self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
+        self.grs2 = op_vals["grs2"]
+        self.offset = op_vals["offset"]
+        self.grs1 = op_vals["grs1"]
 
     def execute(self, state: OTBNState) -> None:
         base = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -304,15 +310,15 @@ class SW(OTBNInsn):
 
 
 class BEQ(OTBNInsn):
-    insn = insn_for_mnemonic('beq', 3)
+    insn = insn_for_mnemonic("beq", 3)
     affects_control = True
     has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grs1 = op_vals['grs1']
-        self.grs2 = op_vals['grs2']
-        self.offset = op_vals['offset']
+        self.grs1 = op_vals["grs1"]
+        self.grs2 = op_vals["grs2"]
+        self.offset = op_vals["offset"]
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -330,15 +336,15 @@ class BEQ(OTBNInsn):
 
 
 class BNE(OTBNInsn):
-    insn = insn_for_mnemonic('bne', 3)
+    insn = insn_for_mnemonic("bne", 3)
     affects_control = True
     has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grs1 = op_vals['grs1']
-        self.grs2 = op_vals['grs2']
-        self.offset = op_vals['offset']
+        self.grs1 = op_vals["grs1"]
+        self.grs2 = op_vals["grs2"]
+        self.offset = op_vals["offset"]
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -357,17 +363,17 @@ class BNE(OTBNInsn):
 
 
 class JAL(OTBNInsn):
-    insn = insn_for_mnemonic('jal', 2)
+    insn = insn_for_mnemonic("jal", 2)
     affects_control = True
     has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.offset = op_vals['offset']
+        self.grd = op_vals["grd"]
+        self.offset = op_vals["offset"]
 
     def execute(self, state: OTBNState) -> None:
-        mask32 = ((1 << 32) - 1)
+        mask32 = (1 << 32) - 1
         link_pc = (state.pc + 4) & mask32
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
 
@@ -379,15 +385,15 @@ class JAL(OTBNInsn):
 
 
 class JALR(OTBNInsn):
-    insn = insn_for_mnemonic('jalr', 3)
+    insn = insn_for_mnemonic("jalr", 3)
     affects_control = True
     has_fetch_stall = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grs1 = op_vals['grs1']
-        self.offset = op_vals['offset']
+        self.grd = op_vals["grd"]
+        self.grs1 = op_vals["grs1"]
+        self.offset = op_vals["offset"]
 
     def execute(self, state: OTBNState) -> None:
         val1 = state.gprs.get_reg(self.grs1).read_unsigned()
@@ -395,7 +401,7 @@ class JALR(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return
 
-        mask32 = ((1 << 32) - 1)
+        mask32 = (1 << 32) - 1
         link_pc = (state.pc + 4) & mask32
 
         state.gprs.get_reg(self.grd).write_unsigned(link_pc)
@@ -408,13 +414,13 @@ class JALR(OTBNInsn):
 
 
 class CSRRS(OTBNInsn):
-    insn = insn_for_mnemonic('csrrs', 3)
+    insn = insn_for_mnemonic("csrrs", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.csr = op_vals['csr']
-        self.grs1 = op_vals['grs1']
+        self.grd = op_vals["grd"]
+        self.csr = op_vals["csr"]
+        self.grs1 = op_vals["grs1"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
@@ -427,7 +433,7 @@ class CSRRS(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return None
 
-        if self.csr == 0xfc0:
+        if self.csr == 0xFC0:
             # A read from RND. If a RND value is not available, request_value()
             # initiates or continues an EDN request and returns False. If a RND
             # value is available, it returns True.
@@ -446,13 +452,13 @@ class CSRRS(OTBNInsn):
 
 
 class CSRRW(OTBNInsn):
-    insn = insn_for_mnemonic('csrrw', 3)
+    insn = insn_for_mnemonic("csrrw", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.csr = op_vals['csr']
-        self.grs1 = op_vals['grs1']
+        self.grd = op_vals["grd"]
+        self.csr = op_vals["csr"]
+        self.grs1 = op_vals["grs1"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if not state.csrs.check_idx(self.csr):
@@ -465,7 +471,7 @@ class CSRRW(OTBNInsn):
             state.stop_at_end_of_cycle(ErrBits.CALL_STACK)
             return None
 
-        if self.csr == 0xfc0 and self.grd != 0:
+        if self.csr == 0xFC0 and self.grd != 0:
             # A read from RND. If a RND value is not available, request_value()
             # initiates or continues an EDN request and returns False. If a RND
             # value is available, it returns True.
@@ -485,7 +491,7 @@ class CSRRW(OTBNInsn):
 
 
 class ECALL(OTBNInsn):
-    insn = insn_for_mnemonic('ecall', 0)
+    insn = insn_for_mnemonic("ecall", 0)
 
     def execute(self, state: OTBNState) -> None:
         # Set INTR_STATE.done and STATUS, reflecting the fact we've stopped.
@@ -493,13 +499,13 @@ class ECALL(OTBNInsn):
 
 
 class LOOP(OTBNInsn):
-    insn = insn_for_mnemonic('loop', 2)
+    insn = insn_for_mnemonic("loop", 2)
     affects_control = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grs = op_vals['grs']
-        self.bodysize = op_vals['bodysize']
+        self.grs = op_vals["grs"]
+        self.bodysize = op_vals["bodysize"]
 
     def execute(self, state: OTBNState) -> None:
         num_iters = state.gprs.get_reg(self.grs).read_unsigned()
@@ -514,13 +520,13 @@ class LOOP(OTBNInsn):
 
 
 class LOOPI(OTBNInsn):
-    insn = insn_for_mnemonic('loopi', 2)
+    insn = insn_for_mnemonic("loopi", 2)
     affects_control = True
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.iterations = op_vals['iterations']
-        self.bodysize = op_vals['bodysize']
+        self.iterations = op_vals["iterations"]
+        self.bodysize = op_vals["bodysize"]
 
     def execute(self, state: OTBNState) -> None:
         if self.iterations == 0:
@@ -530,16 +536,16 @@ class LOOPI(OTBNInsn):
 
 
 class BNADD(OTBNInsn):
-    insn = insn_for_mnemonic('bn.add', 6)
+    insn = insn_for_mnemonic("bn.add", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -557,16 +563,16 @@ class BNADD(OTBNInsn):
 
 
 class BNADDC(OTBNInsn):
-    insn = insn_for_mnemonic('bn.addc', 6)
+    insn = insn_for_mnemonic("bn.addc", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -585,14 +591,14 @@ class BNADDC(OTBNInsn):
 
 
 class BNADDI(OTBNInsn):
-    insn = insn_for_mnemonic('bn.addi', 4)
+    insn = insn_for_mnemonic("bn.addi", 4)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs = op_vals['wrs']
-        self.imm = op_vals['imm']
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs = op_vals["wrs"]
+        self.imm = op_vals["imm"]
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs).read_unsigned()
@@ -609,13 +615,13 @@ class BNADDI(OTBNInsn):
 
 
 class BNADDM(OTBNInsn):
-    insn = insn_for_mnemonic('bn.addm', 3)
+    insn = insn_for_mnemonic("bn.addm", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -631,16 +637,16 @@ class BNADDM(OTBNInsn):
 
 
 class BNMULQACC(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mulqacc', 6)
+    insn = insn_for_mnemonic("bn.mulqacc", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.zero_acc = op_vals['zero_acc']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs1_qwsel = op_vals['wrs1_qwsel']
-        self.wrs2 = op_vals['wrs2']
-        self.wrs2_qwsel = op_vals['wrs2_qwsel']
-        self.acc_shift_imm = op_vals['acc_shift_imm']
+        self.zero_acc = op_vals["zero_acc"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs1_qwsel = op_vals["wrs1_qwsel"]
+        self.wrs2 = op_vals["wrs2"]
+        self.wrs2_qwsel = op_vals["wrs2_qwsel"]
+        self.acc_shift_imm = op_vals["acc_shift_imm"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -655,25 +661,25 @@ class BNMULQACC(OTBNInsn):
         if self.zero_acc:
             acc = 0
 
-        acc += (mul_res << self.acc_shift_imm)
+        acc += mul_res << self.acc_shift_imm
 
         truncated = acc & ((1 << 256) - 1)
         state.wsrs.ACC.write_unsigned(truncated)
 
 
 class BNMULQACCWO(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mulqacc.wo', 8)
+    insn = insn_for_mnemonic("bn.mulqacc.wo", 8)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.zero_acc = op_vals['zero_acc']
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs1_qwsel = op_vals['wrs1_qwsel']
-        self.wrs2 = op_vals['wrs2']
-        self.wrs2_qwsel = op_vals['wrs2_qwsel']
-        self.acc_shift_imm = op_vals['acc_shift_imm']
-        self.flag_group = op_vals['flag_group']
+        self.zero_acc = op_vals["zero_acc"]
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs1_qwsel = op_vals["wrs1_qwsel"]
+        self.wrs2 = op_vals["wrs2"]
+        self.wrs2_qwsel = op_vals["wrs2_qwsel"]
+        self.acc_shift_imm = op_vals["acc_shift_imm"]
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -688,7 +694,7 @@ class BNMULQACCWO(OTBNInsn):
         if self.zero_acc:
             acc = 0
 
-        acc += (mul_res << self.acc_shift_imm)
+        acc += mul_res << self.acc_shift_imm
 
         truncated = acc & ((1 << 256) - 1)
         state.wdrs.get_reg(self.wrd).write_unsigned(truncated)
@@ -697,19 +703,19 @@ class BNMULQACCWO(OTBNInsn):
 
 
 class BNMULQACCSO(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mulqacc.so', 9)
+    insn = insn_for_mnemonic("bn.mulqacc.so", 9)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.zero_acc = op_vals['zero_acc']
-        self.wrd = op_vals['wrd']
-        self.wrd_hwsel = op_vals['wrd_hwsel']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs1_qwsel = op_vals['wrs1_qwsel']
-        self.wrs2 = op_vals['wrs2']
-        self.wrs2_qwsel = op_vals['wrs2_qwsel']
-        self.acc_shift_imm = op_vals['acc_shift_imm']
-        self.flag_group = op_vals['flag_group']
+        self.zero_acc = op_vals["zero_acc"]
+        self.wrd = op_vals["wrd"]
+        self.wrd_hwsel = op_vals["wrd_hwsel"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs1_qwsel = op_vals["wrs1_qwsel"]
+        self.wrs2 = op_vals["wrs2"]
+        self.wrs2_qwsel = op_vals["wrs2_qwsel"]
+        self.acc_shift_imm = op_vals["acc_shift_imm"]
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -724,7 +730,7 @@ class BNMULQACCSO(OTBNInsn):
         if self.zero_acc:
             acc = 0
 
-        acc += (mul_res << self.acc_shift_imm)
+        acc += mul_res << self.acc_shift_imm
         truncated = acc & ((1 << 256) - 1)
 
         # Split the result into low and high parts
@@ -743,29 +749,28 @@ class BNMULQACCSO(OTBNInsn):
 
         old_flags = state.csrs.flags[self.flag_group]
         if self.wrd_hwsel:
-            new_flags = FlagReg(C=old_flags.C,
-                                M=bool((lo_part >> 127) & 1),
-                                L=old_flags.L,
-                                Z=old_flags.Z and lo_part == 0)
+            new_flags = FlagReg(
+                C=old_flags.C,
+                M=bool((lo_part >> 127) & 1),
+                L=old_flags.L,
+                Z=old_flags.Z and lo_part == 0,
+            )
         else:
-            new_flags = FlagReg(C=old_flags.C,
-                                M=old_flags.M,
-                                L=bool(lo_part & 1),
-                                Z=lo_part == 0)
+            new_flags = FlagReg(C=old_flags.C, M=old_flags.M, L=bool(lo_part & 1), Z=lo_part == 0)
         state.set_flags(self.flag_group, new_flags)
 
 
 class BNSUB(OTBNInsn):
-    insn = insn_for_mnemonic('bn.sub', 6)
+    insn = insn_for_mnemonic("bn.sub", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -783,16 +788,16 @@ class BNSUB(OTBNInsn):
 
 
 class BNSUBB(OTBNInsn):
-    insn = insn_for_mnemonic('bn.subb', 6)
+    insn = insn_for_mnemonic("bn.subb", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -811,14 +816,14 @@ class BNSUBB(OTBNInsn):
 
 
 class BNSUBI(OTBNInsn):
-    insn = insn_for_mnemonic('bn.subi', 4)
+    insn = insn_for_mnemonic("bn.subi", 4)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs = op_vals['wrs']
-        self.imm = op_vals['imm']
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs = op_vals["wrs"]
+        self.imm = op_vals["imm"]
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs).read_unsigned()
@@ -835,13 +840,13 @@ class BNSUBI(OTBNInsn):
 
 
 class BNSUBM(OTBNInsn):
-    insn = insn_for_mnemonic('bn.subm', 3)
+    insn = insn_for_mnemonic("bn.subm", 3)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -858,16 +863,16 @@ class BNSUBM(OTBNInsn):
 
 
 class BNAND(OTBNInsn):
-    insn = insn_for_mnemonic('bn.and', 6)
+    insn = insn_for_mnemonic("bn.and", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -880,16 +885,16 @@ class BNAND(OTBNInsn):
 
 
 class BNOR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.or', 6)
+    insn = insn_for_mnemonic("bn.or", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -902,15 +907,15 @@ class BNOR(OTBNInsn):
 
 
 class BNNOT(OTBNInsn):
-    insn = insn_for_mnemonic('bn.not', 5)
+    insn = insn_for_mnemonic("bn.not", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs = op_vals['wrs']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs = op_vals["wrs"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs).read_unsigned()
@@ -922,16 +927,16 @@ class BNNOT(OTBNInsn):
 
 
 class BNXOR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.xor', 6)
+    insn = insn_for_mnemonic("bn.xor", 6)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -944,14 +949,14 @@ class BNXOR(OTBNInsn):
 
 
 class BNRSHI(OTBNInsn):
-    insn = insn_for_mnemonic('bn.rshi', 4)
+    insn = insn_for_mnemonic("bn.rshi", 4)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.imm = op_vals['imm']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.imm = op_vals["imm"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -962,15 +967,15 @@ class BNRSHI(OTBNInsn):
 
 
 class BNSEL(OTBNInsn):
-    insn = insn_for_mnemonic('bn.sel', 5)
+    insn = insn_for_mnemonic("bn.sel", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.flag_group = op_vals['flag_group']
-        self.flag = op_vals['flag']
+        self.wrd = op_vals["wrd"]
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.flag_group = op_vals["flag_group"]
+        self.flag = op_vals["flag"]
 
     def execute(self, state: OTBNState) -> None:
         flag_is_set = state.csrs.flags[self.flag_group].get_by_idx(self.flag)
@@ -980,15 +985,15 @@ class BNSEL(OTBNInsn):
 
 
 class BNCMP(OTBNInsn):
-    insn = insn_for_mnemonic('bn.cmp', 5)
+    insn = insn_for_mnemonic("bn.cmp", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -1005,15 +1010,15 @@ class BNCMP(OTBNInsn):
 
 
 class BNCMPB(OTBNInsn):
-    insn = insn_for_mnemonic('bn.cmpb', 5)
+    insn = insn_for_mnemonic("bn.cmpb", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrs1 = op_vals['wrs1']
-        self.wrs2 = op_vals['wrs2']
-        self.shift_type = op_vals['shift_type']
-        self.shift_bytes = op_vals['shift_bits'] // 8
-        self.flag_group = op_vals['flag_group']
+        self.wrs1 = op_vals["wrs1"]
+        self.wrs2 = op_vals["wrs2"]
+        self.shift_type = op_vals["shift_type"]
+        self.shift_bytes = op_vals["shift_bits"] // 8
+        self.flag_group = op_vals["flag_group"]
 
     def execute(self, state: OTBNState) -> None:
         a = state.wdrs.get_reg(self.wrs1).read_unsigned()
@@ -1031,15 +1036,15 @@ class BNCMPB(OTBNInsn):
 
 
 class BNLID(OTBNInsn):
-    insn = insn_for_mnemonic('bn.lid', 5)
+    insn = insn_for_mnemonic("bn.lid", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grd_inc = op_vals['grd_inc']
-        self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
-        self.grs1_inc = op_vals['grs1_inc']
+        self.grd = op_vals["grd"]
+        self.grd_inc = op_vals["grd_inc"]
+        self.offset = op_vals["offset"]
+        self.grs1 = op_vals["grs1"]
+        self.grs1_inc = op_vals["grs1_inc"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         # BN.LID executes over two cycles. On the first cycle, we read the base
@@ -1075,7 +1080,7 @@ class BNLID(OTBNInsn):
         if saw_err:
             return None
 
-        wrd = grd_val & 0x1f
+        wrd = grd_val & 0x1F
         value = state.dmem.load_u256(addr)
 
         if self.grd_inc:
@@ -1098,15 +1103,15 @@ class BNLID(OTBNInsn):
 
 
 class BNSID(OTBNInsn):
-    insn = insn_for_mnemonic('bn.sid', 5)
+    insn = insn_for_mnemonic("bn.sid", 5)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grs2 = op_vals['grs2']
-        self.grs2_inc = op_vals['grs2_inc']
-        self.offset = op_vals['offset']
-        self.grs1 = op_vals['grs1']
-        self.grs1_inc = op_vals['grs1_inc']
+        self.grs2 = op_vals["grs2"]
+        self.grs2_inc = op_vals["grs2_inc"]
+        self.offset = op_vals["offset"]
+        self.grs1 = op_vals["grs1"]
+        self.grs1_inc = op_vals["grs1_inc"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs1_inc and self.grs2_inc:
@@ -1147,7 +1152,7 @@ class BNSID(OTBNInsn):
 
         yield None
 
-        wrs = grs2_val & 0x1f
+        wrs = grs2_val & 0x1F
         wrs_val = state.wdrs.get_reg(wrs).read_unsigned()
 
         state.dmem.store_u256(addr, wrs_val)
@@ -1155,12 +1160,12 @@ class BNSID(OTBNInsn):
 
 
 class BNMOV(OTBNInsn):
-    insn = insn_for_mnemonic('bn.mov', 2)
+    insn = insn_for_mnemonic("bn.mov", 2)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wrs = op_vals['wrs']
+        self.wrd = op_vals["wrd"]
+        self.wrs = op_vals["wrs"]
 
     def execute(self, state: OTBNState) -> None:
         value = state.wdrs.get_reg(self.wrs).read_unsigned()
@@ -1168,14 +1173,14 @@ class BNMOV(OTBNInsn):
 
 
 class BNMOVR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.movr', 4)
+    insn = insn_for_mnemonic("bn.movr", 4)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.grd = op_vals['grd']
-        self.grd_inc = op_vals['grd_inc']
-        self.grs = op_vals['grs']
-        self.grs_inc = op_vals['grs_inc']
+        self.grd = op_vals["grd"]
+        self.grd_inc = op_vals["grd_inc"]
+        self.grs = op_vals["grs"]
+        self.grs_inc = op_vals["grs_inc"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         if self.grs_inc and self.grd_inc:
@@ -1205,8 +1210,8 @@ class BNMOVR(OTBNInsn):
         if saw_err:
             return None
 
-        wrd = grd_val & 0x1f
-        wrs = grs_val & 0x1f
+        wrd = grd_val & 0x1F
+        wrs = grs_val & 0x1F
 
         if self.grd_inc:
             new_grd_val = grd_val + 1
@@ -1224,12 +1229,12 @@ class BNMOVR(OTBNInsn):
 
 
 class BNWSRR(OTBNInsn):
-    insn = insn_for_mnemonic('bn.wsrr', 2)
+    insn = insn_for_mnemonic("bn.wsrr", 2)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wrd = op_vals['wrd']
-        self.wsr = op_vals['wsr']
+        self.wrd = op_vals["wrd"]
+        self.wsr = op_vals["wsr"]
 
     def execute(self, state: OTBNState) -> Optional[Iterator[None]]:
         # The first, and possibly only, cycle of execution.
@@ -1260,12 +1265,12 @@ class BNWSRR(OTBNInsn):
 
 
 class BNWSRW(OTBNInsn):
-    insn = insn_for_mnemonic('bn.wsrw', 2)
+    insn = insn_for_mnemonic("bn.wsrw", 2)
 
     def __init__(self, raw: int, op_vals: Dict[str, int]):
         super().__init__(raw, op_vals)
-        self.wsr = op_vals['wsr']
-        self.wrs = op_vals['wrs']
+        self.wsr = op_vals["wsr"]
+        self.wrs = op_vals["wrs"]
 
     def execute(self, state: OTBNState) -> None:
         val = state.wdrs.get_reg(self.wrs).read_unsigned()
@@ -1273,22 +1278,56 @@ class BNWSRW(OTBNInsn):
 
 
 INSN_CLASSES = [
-    ADD, ADDI, LUI, SUB, SLL, SLLI, SRL, SRLI, SRA, SRAI,
-    AND, ANDI, OR, ORI, XOR, XORI,
-    LW, SW,
-    BEQ, BNE, JAL, JALR,
-    CSRRS, CSRRW,
+    ADD,
+    ADDI,
+    LUI,
+    SUB,
+    SLL,
+    SLLI,
+    SRL,
+    SRLI,
+    SRA,
+    SRAI,
+    AND,
+    ANDI,
+    OR,
+    ORI,
+    XOR,
+    XORI,
+    LW,
+    SW,
+    BEQ,
+    BNE,
+    JAL,
+    JALR,
+    CSRRS,
+    CSRRW,
     ECALL,
-    LOOP, LOOPI,
-
-    BNADD, BNADDC, BNADDI, BNADDM,
-    BNMULQACC, BNMULQACCWO, BNMULQACCSO,
-    BNSUB, BNSUBB, BNSUBI, BNSUBM,
-    BNAND, BNOR, BNNOT, BNXOR,
+    LOOP,
+    LOOPI,
+    BNADD,
+    BNADDC,
+    BNADDI,
+    BNADDM,
+    BNMULQACC,
+    BNMULQACCWO,
+    BNMULQACCSO,
+    BNSUB,
+    BNSUBB,
+    BNSUBI,
+    BNSUBM,
+    BNAND,
+    BNOR,
+    BNNOT,
+    BNXOR,
     BNRSHI,
     BNSEL,
-    BNCMP, BNCMPB,
-    BNLID, BNSID,
-    BNMOV, BNMOVR,
-    BNWSRR, BNWSRW
+    BNCMP,
+    BNCMPB,
+    BNLID,
+    BNSID,
+    BNMOV,
+    BNMOVR,
+    BNWSRR,
+    BNWSRW,
 ]

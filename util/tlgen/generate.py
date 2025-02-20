@@ -20,19 +20,14 @@ def generate(xbar: Xbar, library_name: str = "ip") -> List[Tuple[str, Any]]:
     This assumes that the model has been elaborated already. Returns a list of
     pairs of files to write, each in the form (path, contents).
     """
-    xbar_rtl_tpl = Template(
-        filename=str(importlib.resources.files('tlgen') / 'xbar.rtl.sv.tpl'))
-    xbar_pkg_tpl = Template(
-        filename=str(importlib.resources.files('tlgen') / 'xbar.pkg.sv.tpl'))
-    xbar_core_tpl = Template(
-        filename=str(importlib.resources.files('tlgen') / 'xbar.core.tpl'))
-    xbar_hjson_tpl = Template(
-        filename=str(importlib.resources.files('tlgen') / 'xbar.hjson.tpl'))
+    xbar_rtl_tpl = Template(filename=str(importlib.resources.files("tlgen") / "xbar.rtl.sv.tpl"))
+    xbar_pkg_tpl = Template(filename=str(importlib.resources.files("tlgen") / "xbar.pkg.sv.tpl"))
+    xbar_core_tpl = Template(filename=str(importlib.resources.files("tlgen") / "xbar.core.tpl"))
+    xbar_hjson_tpl = Template(filename=str(importlib.resources.files("tlgen") / "xbar.hjson.tpl"))
     try:
         out_rtl = xbar_rtl_tpl.render(xbar=xbar)
         out_pkg = xbar_pkg_tpl.render(xbar=xbar)
-        out_core = xbar_core_tpl.render(xbar=xbar,
-                                        library_name=library_name)
+        out_core = xbar_core_tpl.render(xbar=xbar, library_name=library_name)
         out_hjson = xbar_hjson_tpl.render(xbar=xbar)
     except:  # noqa: E722
         log.error(exceptions.text_error_template().render())

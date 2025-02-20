@@ -11,14 +11,12 @@ from typing import List
 
 from JobTime import JobTime
 from LauncherFactory import get_launcher
-from sim_utils import (get_cov_summary_table, get_job_runtime,
-                       get_simulated_time)
+from sim_utils import get_cov_summary_table, get_job_runtime, get_simulated_time
 from tabulate import tabulate
-from utils import (VERBOSE, clean_odirs, find_and_substitute_wildcards,
-                   rm_path, subst_wildcards)
+from utils import VERBOSE, clean_odirs, find_and_substitute_wildcards, rm_path, subst_wildcards
 
 
-class Deploy():
+class Deploy:
     """
     Abstraction to create and maintain a runnable job (builds, runs, etc.).
     """
@@ -41,8 +39,11 @@ class Deploy():
     weight = 1
 
     def __str__(self):
-        return (pprint.pformat(self.__dict__)
-                if log.getLogger().isEnabledFor(VERBOSE) else self.full_name)
+        return (
+            pprint.pformat(self.__dict__)
+            if log.getLogger().isEnabledFor(VERBOSE)
+            else self.full_name
+        )
 
     def __init__(self, sim_cfg):
         assert self.target is not None
@@ -155,8 +156,7 @@ class Deploy():
         # Job name is used to group the job by cfg and target. The scratch path
         # directory name is assumed to be uniquified, in case there are more
         # than one sim_cfgs with the same name.
-        self.job_name = "{}_{}".format(
-            Path(self.sim_cfg.scratch_path).name, self.target)
+        self.job_name = "{}_{}".format(Path(self.sim_cfg.scratch_path).name, self.target)
 
         # Input directories (other than self) this job depends on.
         self.input_dirs = []
@@ -176,13 +176,11 @@ class Deploy():
         """
         for attr in self.mandatory_cmd_attrs.keys():
             if self.mandatory_cmd_attrs[attr] is False:
-                raise AttributeError("Attribute {!r} not found for "
-                                     "{!r}.".format(attr, self.name))
+                raise AttributeError("Attribute {!r} not found for {!r}.".format(attr, self.name))
 
         for attr in self.mandatory_misc_attrs.keys():
             if self.mandatory_misc_attrs[attr] is False:
-                raise AttributeError("Attribute {!r} not found for "
-                                     "{!r}.".format(attr, self.name))
+                raise AttributeError("Attribute {!r} not found for {!r}.".format(attr, self.name))
 
     def _subst_vars(self, ignored_subst_vars=[]):
         """Recursively search and replace substitution variables.
@@ -191,13 +189,12 @@ class Deploy():
         substitions may be available in the second pass. Second pass: search
         the entire sim_cfg object."""
 
-        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
-                                                      self.__dict__,
-                                                      ignored_subst_vars, True)
-        self.__dict__ = find_and_substitute_wildcards(self.__dict__,
-                                                      self.sim_cfg.__dict__,
-                                                      ignored_subst_vars,
-                                                      False)
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.__dict__, ignored_subst_vars, True
+        )
+        self.__dict__ = find_and_substitute_wildcards(
+            self.__dict__, self.sim_cfg.__dict__, ignored_subst_vars, False
+        )
 
     def _process_exports(self):
         """Convert 'exports' as a list of dicts in the HJson to a dict.
@@ -262,8 +259,7 @@ class Deploy():
             if val != item_val:
                 return False
 
-        log.log(VERBOSE, "Deploy job \"%s\" is equivalent to \"%s\"",
-                item.name, self.name)
+        log.log(VERBOSE, 'Deploy job "%s" is equivalent to "%s"', item.name, self.name)
         return True
 
     def pre_launch(self):
@@ -308,8 +304,7 @@ class Deploy():
             time, unit = get_job_runtime(log_text, self.sim_cfg.tool)
             self.job_runtime.set(time, unit)
         except RuntimeError as e:
-            log.warning(f"{self.full_name}: {e} Using dvsim-maintained "
-                        "job_runtime instead.")
+            log.warning(f"{self.full_name}: {e} Using dvsim-maintained job_runtime instead.")
             self.job_runtime.set(self.launcher.job_runtime_secs, "s")
 
     def create_launcher(self):
@@ -336,29 +331,31 @@ class CompileSim(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            # tool srcs
-            "proj_root": False,
+        self.mandatory_cmd_attrs.update(
+            {
+                # tool srcs
+                "proj_root": False,
+                # Flist gen
+                "sv_flist_gen_cmd": False,
+                "sv_flist_gen_dir": False,
+                "sv_flist_gen_opts": False,
+                # Build
+                "pre_build_cmds": False,
+                "build_cmd": False,
+                "build_dir": False,
+                "build_opts": False,
+                "post_build_cmds": False,
+            }
+        )
 
-            # Flist gen
-            "sv_flist_gen_cmd": False,
-            "sv_flist_gen_dir": False,
-            "sv_flist_gen_opts": False,
-
-            # Build
-            "pre_build_cmds": False,
-            "build_cmd": False,
-            "build_dir": False,
-            "build_opts": False,
-            "post_build_cmds": False,
-        })
-
-        self.mandatory_misc_attrs.update({
-            "build_fail_patterns": False,
-            "build_pass_patterns": False,
-            "build_timeout_mins": False,
-            "cov_db_dir": False,
-        })
+        self.mandatory_misc_attrs.update(
+            {
+                "build_fail_patterns": False,
+                "build_pass_patterns": False,
+                "build_timeout_mins": False,
+                "cov_db_dir": False,
+            }
+        )
 
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
@@ -379,8 +376,7 @@ class CompileSim(Deploy):
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
 
         if self.build_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.", self.name,
-                      self.build_timeout_mins)
+            log.debug('Timeout for job "%s" is %d minutes.', self.name, self.build_timeout_mins)
 
     def pre_launch(self):
         # Delete old coverage database directories before building again. We
@@ -406,33 +402,31 @@ class CompileOneShot(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            # tool srcs
-            "proj_root": False,
+        self.mandatory_cmd_attrs.update(
+            {
+                # tool srcs
+                "proj_root": False,
+                # Flist gen
+                "sv_flist_gen_cmd": False,
+                "sv_flist_gen_dir": False,
+                "sv_flist_gen_opts": False,
+                # Build
+                "build_dir": False,
+                "build_cmd": False,
+                "build_opts": False,
+                "build_log": False,
+                "build_timeout_mins": False,
+                "post_build_cmds": False,
+                "pre_build_cmds": False,
+                # Report processing
+                "report_cmd": False,
+                "report_opts": False,
+            }
+        )
 
-            # Flist gen
-            "sv_flist_gen_cmd": False,
-            "sv_flist_gen_dir": False,
-            "sv_flist_gen_opts": False,
-
-            # Build
-            "build_dir": False,
-            "build_cmd": False,
-            "build_opts": False,
-            "build_log": False,
-            "build_timeout_mins": False,
-            "post_build_cmds": False,
-            "pre_build_cmds": False,
-
-            # Report processing
-            "report_cmd": False,
-            "report_opts": False
-        })
-
-        self.mandatory_misc_attrs.update({
-            "build_fail_patterns": False,
-            "build_pass_patterns": False
-        })
+        self.mandatory_misc_attrs.update(
+            {"build_fail_patterns": False, "build_pass_patterns": False}
+        )
 
     def _set_attrs(self):
         super()._extract_attrs(self.build_mode_obj.__dict__)
@@ -448,8 +442,7 @@ class CompileOneShot(Deploy):
             self.build_timeout_mins = self.sim_cfg.args.build_timeout_mins
 
         if self.build_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.", self.name,
-                      self.build_timeout_mins)
+            log.debug('Timeout for job "%s" is %d minutes.', self.name, self.build_timeout_mins)
 
     def get_timeout_mins(self):
         """Returns the timeout in minutes.
@@ -487,33 +480,37 @@ class RunTest(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            # tool srcs
-            "proj_root": False,
-            "uvm_test": False,
-            "uvm_test_seq": False,
-            "sw_images": False,
-            "sw_build_device": False,
-            "sw_build_cmd": False,
-            "sw_build_opts": False,
-            "run_dir": False,
-            "pre_run_cmds": False,
-            "run_cmd": False,
-            "run_opts": False,
-            "post_run_cmds": False,
-            "build_seed": True,  # Already set in the constructor.
-            "seed": True,  # Already set in the constructor.
-        })
+        self.mandatory_cmd_attrs.update(
+            {
+                # tool srcs
+                "proj_root": False,
+                "uvm_test": False,
+                "uvm_test_seq": False,
+                "sw_images": False,
+                "sw_build_device": False,
+                "sw_build_cmd": False,
+                "sw_build_opts": False,
+                "run_dir": False,
+                "pre_run_cmds": False,
+                "run_cmd": False,
+                "run_opts": False,
+                "post_run_cmds": False,
+                "build_seed": True,  # Already set in the constructor.
+                "seed": True,  # Already set in the constructor.
+            }
+        )
 
-        self.mandatory_misc_attrs.update({
-            "cov_db_dir": False,
-            "cov_db_test_dir": False,
-            "run_dir_name": False,
-            "run_fail_patterns": False,
-            "run_pass_patterns": False,
-            "run_timeout_mins": False,
-            "run_timeout_multiplier": False,
-        })
+        self.mandatory_misc_attrs.update(
+            {
+                "cov_db_dir": False,
+                "cov_db_test_dir": False,
+                "run_dir_name": False,
+                "run_fail_patterns": False,
+                "run_pass_patterns": False,
+                "run_timeout_mins": False,
+                "run_timeout_multiplier": False,
+            }
+        )
 
     def _set_attrs(self):
         super()._extract_attrs(self.test_obj.__dict__)
@@ -537,26 +534,26 @@ class RunTest(Deploy):
             self.run_timeout_mins = self.sim_cfg.args.run_timeout_mins
 
         if self.sim_cfg.args.run_timeout_multiplier is not None:
-            self.run_timeout_multiplier = (
-                self.sim_cfg.args.run_timeout_multiplier)
+            self.run_timeout_multiplier = self.sim_cfg.args.run_timeout_multiplier
 
         if self.run_timeout_mins and self.run_timeout_multiplier:
-            self.run_timeout_mins = int(self.run_timeout_mins *
-                                        self.run_timeout_multiplier)
+            self.run_timeout_mins = int(self.run_timeout_mins * self.run_timeout_multiplier)
 
         if self.run_timeout_multiplier:
-            log.debug("Timeout multiplier for job \"%s\" is %f.",
-                      self.full_name, self.run_timeout_multiplier)
+            log.debug(
+                'Timeout multiplier for job "%s" is %f.',
+                self.full_name,
+                self.run_timeout_multiplier,
+            )
 
         if self.run_timeout_mins:
-            log.debug("Timeout for job \"%s\" is %d minutes.", self.full_name,
-                      self.run_timeout_mins)
+            log.debug('Timeout for job "%s" is %d minutes.', self.full_name, self.run_timeout_mins)
 
     def pre_launch(self):
         self.launcher.renew_odir = True
 
     def post_finish(self, status):
-        if status != 'P':
+        if status != "P":
             # Delete the coverage data if available.
             rm_path(self.cov_db_test_dir)
 
@@ -600,26 +597,25 @@ class CovUnr(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            # tool srcs
-            "proj_root": False,
+        self.mandatory_cmd_attrs.update(
+            {
+                # tool srcs
+                "proj_root": False,
+                # Need to generate filelist based on build mode
+                "sv_flist_gen_cmd": False,
+                "sv_flist_gen_dir": False,
+                "sv_flist_gen_opts": False,
+                "build_dir": False,
+                "cov_unr_build_cmd": False,
+                "cov_unr_build_opts": False,
+                "cov_unr_run_cmd": False,
+                "cov_unr_run_opts": False,
+            }
+        )
 
-            # Need to generate filelist based on build mode
-            "sv_flist_gen_cmd": False,
-            "sv_flist_gen_dir": False,
-            "sv_flist_gen_opts": False,
-            "build_dir": False,
-            "cov_unr_build_cmd": False,
-            "cov_unr_build_opts": False,
-            "cov_unr_run_cmd": False,
-            "cov_unr_run_opts": False
-        })
-
-        self.mandatory_misc_attrs.update({
-            "cov_unr_dir": False,
-            "cov_merge_db_dir": False,
-            "build_fail_patterns": False
-        })
+        self.mandatory_misc_attrs.update(
+            {"cov_unr_dir": False, "cov_merge_db_dir": False, "build_fail_patterns": False}
+        )
 
     def _set_attrs(self):
         super()._set_attrs()
@@ -651,8 +647,7 @@ class CovMerge(Deploy):
 
         # Early lookup the cov_merge_db_dir, which is a mandatory misc
         # attribute anyway. We need it to compute additional cov db dirs.
-        self.cov_merge_db_dir = subst_wildcards("{cov_merge_db_dir}",
-                                                sim_cfg.__dict__)
+        self.cov_merge_db_dir = subst_wildcards("{cov_merge_db_dir}", sim_cfg.__dict__)
 
         # Prune previous merged cov directories, keeping past 7 dbs.
         prev_cov_db_dirs = clean_odirs(odir=self.cov_merge_db_dir, max_odirs=7)
@@ -672,15 +667,9 @@ class CovMerge(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            "cov_merge_cmd": False,
-            "cov_merge_opts": False
-        })
+        self.mandatory_cmd_attrs.update({"cov_merge_cmd": False, "cov_merge_opts": False})
 
-        self.mandatory_misc_attrs.update({
-            "cov_merge_dir": False,
-            "cov_merge_db_dir": False
-        })
+        self.mandatory_misc_attrs.update({"cov_merge_dir": False, "cov_merge_db_dir": False})
 
     def _set_attrs(self):
         super()._set_attrs()
@@ -694,7 +683,7 @@ class CovMerge(Deploy):
 
 
 class CovReport(Deploy):
-    """Abstraction for coverage report generation. """
+    """Abstraction for coverage report generation."""
 
     target = "cov_report"
     weight = 10
@@ -705,16 +694,11 @@ class CovReport(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            "cov_report_cmd": False,
-            "cov_report_opts": False
-        })
+        self.mandatory_cmd_attrs.update({"cov_report_cmd": False, "cov_report_opts": False})
 
-        self.mandatory_misc_attrs.update({
-            "cov_report_dir": False,
-            "cov_merge_db_dir": False,
-            "cov_report_txt": False
-        })
+        self.mandatory_misc_attrs.update(
+            {"cov_report_dir": False, "cov_merge_db_dir": False, "cov_report_txt": False}
+        )
 
     def _set_attrs(self):
         super()._set_attrs()
@@ -733,17 +717,13 @@ class CovReport(Deploy):
         be caught by the caller to mark the job as a failure.
         """
 
-        if self.dry_run or status != 'P':
+        if self.dry_run or status != "P":
             return
 
-        results, self.cov_total = get_cov_summary_table(
-            self.cov_report_txt, self.sim_cfg.tool)
+        results, self.cov_total = get_cov_summary_table(self.cov_report_txt, self.sim_cfg.tool)
 
-        colalign = (("center", ) * len(results[0]))
-        self.cov_results = tabulate(results,
-                                    headers="firstrow",
-                                    tablefmt="pipe",
-                                    colalign=colalign)
+        colalign = ("center",) * len(results[0])
+        self.cov_results = tabulate(results, headers="firstrow", tablefmt="pipe", colalign=colalign)
         for tup in zip(*results):
             self.cov_results_dict[tup[0]] = tup[1]
 
@@ -760,17 +740,16 @@ class CovAnalyze(Deploy):
 
     def _define_attrs(self):
         super()._define_attrs()
-        self.mandatory_cmd_attrs.update({
-            # tool srcs
-            "proj_root": False,
-            "cov_analyze_cmd": False,
-            "cov_analyze_opts": False
-        })
+        self.mandatory_cmd_attrs.update(
+            {
+                # tool srcs
+                "proj_root": False,
+                "cov_analyze_cmd": False,
+                "cov_analyze_opts": False,
+            }
+        )
 
-        self.mandatory_misc_attrs.update({
-            "cov_analyze_dir": False,
-            "cov_merge_db_dir": False
-        })
+        self.mandatory_misc_attrs.update({"cov_analyze_dir": False, "cov_merge_db_dir": False})
 
     def _set_attrs(self):
         super()._set_attrs()

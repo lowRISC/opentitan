@@ -7,6 +7,7 @@ import sys
 
 try:
     import enlighten
+
     ENLIGHTEN_EXISTS = True
 except ImportError:
     ENLIGHTEN_EXISTS = False
@@ -37,7 +38,7 @@ class StatusPrinter:
 
 
 class TtyStatusPrinter(StatusPrinter):
-    '''Abstraction for printing the current target status onto the console.
+    """Abstraction for printing the current target status onto the console.
 
     Targets are ASIC tool flow steps such as build, run, cov etc. These steps
     are sequenced by the Scheduler. There may be multiple jobs running in
@@ -52,12 +53,12 @@ class TtyStatusPrinter(StatusPrinter):
       msg:      The completion status message (set externally).
       perc:     Percentage of completion.
       running:  What jobs are currently still running.
-    '''
+    """
 
     # Print elapsed time in bold.
-    hms_fmt = ''.join(['\033[1m', u'{hms:9s}', '\033[0m'])
-    header_fmt = hms_fmt + u' [{target:^13s}]: [{msg}]'
-    status_fmt = header_fmt + u' {perc:3.0f}%  {running}'
+    hms_fmt = "".join(["\033[1m", "{hms:9s}", "\033[0m"])
+    header_fmt = hms_fmt + " [{target:^13s}]: [{msg}]"
+    status_fmt = header_fmt + " {perc:3.0f}%  {running}"
 
     def __init__(self):
         # Once a target is complete, we no longer need to update it - we can
@@ -68,15 +69,15 @@ class TtyStatusPrinter(StatusPrinter):
         self.target_done = {}
 
     def print_header(self, msg):
-        '''Initilize / print the header bar.
+        """Initilize / print the header bar.
 
         The header bar contains an introductory message such as the legend of
-        what Q, D, ... mean.'''
+        what Q, D, ... mean."""
 
         log.info(self.header_fmt.format(hms="", target="legend", msg=msg))
 
     def init_target(self, target, msg):
-        '''Initialize the status bar for each target.'''
+        """Initialize the status bar for each target."""
 
         self.target_done[target] = False
 
@@ -85,28 +86,27 @@ class TtyStatusPrinter(StatusPrinter):
         return running[:28] + (running[28:] and "..")
 
     def update_target(self, target, hms, msg, perc, running):
-        '''Periodically update the status bar for each target.'''
+        """Periodically update the status bar for each target."""
 
         if self.target_done[target]:
             return
 
         log.info(
-            self.status_fmt.format(hms=hms,
-                                   target=target,
-                                   msg=msg,
-                                   perc=perc,
-                                   running=self._trunc_running(running)))
+            self.status_fmt.format(
+                hms=hms, target=target, msg=msg, perc=perc, running=self._trunc_running(running)
+            )
+        )
         if perc == 100:
             self.target_done[target] = True
 
     def exit(self):
-        '''Do cleanup activities before exitting.'''
+        """Do cleanup activities before exitting."""
 
         pass
 
 
 class EnlightenStatusPrinter(TtyStatusPrinter):
-    '''Abstraction for printing status using Enlighten.
+    """Abstraction for printing status using Enlighten.
 
     Enlighten is a third party progress bar tool. Documentation:
     https://python-enlighten.readthedocs.io/en/stable/
@@ -119,7 +119,7 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
 
     Enlighten does not work if the output of dvsim is redirected to a file, for
     example - it needs to be attached to a TTY enabled stream.
-    '''
+    """
 
     def __init__(self):
         super().__init__()
@@ -134,28 +134,22 @@ class EnlightenStatusPrinter(TtyStatusPrinter):
             status_format=self.header_fmt,
             hms="",
             target="legend",
-            msg=
-            "Q: queued, D: dispatched, P: passed, F: failed, K: killed, T: total"
+            msg="Q: queued, D: dispatched, P: passed, F: failed, K: killed, T: total",
         )
 
     def init_target(self, target, msg):
         super().init_target(target, msg)
         self.status_target[target] = self.manager.status_bar(
-            status_format=self.status_fmt,
-            hms="",
-            target=target,
-            msg=msg,
-            perc=0.0,
-            running="")
+            status_format=self.status_fmt, hms="", target=target, msg=msg, perc=0.0, running=""
+        )
 
     def update_target(self, target, hms, msg, perc, running):
         if self.target_done[target]:
             return
 
-        self.status_target[target].update(hms=hms,
-                                          msg=msg,
-                                          perc=perc,
-                                          running=self._trunc_running(running))
+        self.status_target[target].update(
+            hms=hms, msg=msg, perc=perc, running=self._trunc_running(running)
+        )
         if perc == 100:
             self.target_done[target] = True
 

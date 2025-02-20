@@ -6,6 +6,7 @@ r"""This script generates random seeds and state permutations for LFSRs
 and outputs them them as a packed SV logic vectors suitable for use with
 prim_lfsr.sv.
 """
+
 import argparse
 import logging as log
 import random
@@ -22,32 +23,25 @@ SV_INSTRUCTIONS = """
 
 
 def main():
-    log.basicConfig(level=log.INFO,
-                    format="%(levelname)s: %(message)s")
+    log.basicConfig(level=log.INFO, format="%(levelname)s: %(message)s")
 
     parser = argparse.ArgumentParser(
         prog="gen-lfsre-perm",
         description=common.wrapped_docstring(),
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-w',
-                        '--width',
-                        type=int,
-                        default=32,
-                        metavar='<#bitwidth>',
-                        help='LFSR width.')
-    parser.add_argument('-s',
-                        '--seed',
-                        type=int,
-                        metavar='<seed>',
-                        help='Custom seed for RNG.')
-    parser.add_argument('-p',
-                        '--prefix',
-                        type=str,
-                        metavar='name',
-                        default="",
-                        help='Optional prefix to add to '
-                        'types and parameters. '
-                        'Make sure this is PascalCase.')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument(
+        "-w", "--width", type=int, default=32, metavar="<#bitwidth>", help="LFSR width."
+    )
+    parser.add_argument("-s", "--seed", type=int, metavar="<seed>", help="Custom seed for RNG.")
+    parser.add_argument(
+        "-p",
+        "--prefix",
+        type=str,
+        metavar="name",
+        default="",
+        help="Optional prefix to add to types and parameters. Make sure this is PascalCase.",
+    )
 
     args = parser.parse_args()
 
@@ -65,7 +59,7 @@ def main():
 
     type_prefix = common.as_snake_case_prefix(args.prefix)
 
-    outstr = '''
+    outstr = """
 // These LFSR parameters have been generated with
 // $ ./util/design/gen-lfsr-seed.py --width {} --seed {} --prefix "{}"
 parameter int {}LfsrWidth = {};
@@ -77,11 +71,24 @@ parameter {}lfsr_seed_t RndCnst{}LfsrSeedDefault = {{
 parameter {}lfsr_perm_t RndCnst{}LfsrPermDefault = {{
   {}
 }};
-'''.format(args.width, args.seed, args.prefix, args.prefix, args.width,
-           args.prefix, type_prefix, args.prefix, args.prefix, type_prefix,
-           type_prefix, args.prefix,
-           common.get_random_data_hex_literal(args.width), type_prefix,
-           args.prefix, common.get_random_perm_hex_literal(args.width))
+""".format(
+        args.width,
+        args.seed,
+        args.prefix,
+        args.prefix,
+        args.width,
+        args.prefix,
+        type_prefix,
+        args.prefix,
+        args.prefix,
+        type_prefix,
+        type_prefix,
+        args.prefix,
+        common.get_random_data_hex_literal(args.width),
+        type_prefix,
+        args.prefix,
+        common.get_random_perm_hex_literal(args.width),
+    )
 
     print(outstr)
 

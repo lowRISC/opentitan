@@ -15,14 +15,14 @@ from ..snippet_gen import GenCont, GenRet
 
 
 class BadZeroLoop(Loop):
-    '''A snippet generator that generates loops with a zero count'''
+    """A snippet generator that generates loops with a zero count"""
 
     ends_program = True
 
     def _bad_loop_iterations(self, model: Model) -> Tuple[int, int]:
-        '''Like Loop._pick_loop_iterations but always returns 0 iterations'''
+        """Like Loop._pick_loop_iterations but always returns 0 iterations"""
         poss_pairs = []
-        for idx, value in model.regs_with_known_vals('gpr'):
+        for idx, value in model.regs_with_known_vals("gpr"):
             if value == 0:
                 poss_pairs.append((idx, value))
 
@@ -32,26 +32,19 @@ class BadZeroLoop(Loop):
         return random.choice(poss_pairs)
 
     def _bad_loopi_iterations(self) -> Tuple[int, int]:
-        '''Like Loop._pick_loopi_iterations but always returns 0 iterations'''
+        """Like Loop._pick_loopi_iterations but always returns 0 iterations"""
         return (0, 0)
 
-    def _bad_iterations(self,
-                        op_type: OperandType,
-                        bodysize: int,
-                        model: Model) -> Tuple[int, int]:
-        '''Like Loop._pick_iterations but always returns 0 iterations'''
+    def _bad_iterations(self, op_type: OperandType, bodysize: int, model: Model) -> Tuple[int, int]:
+        """Like Loop._pick_iterations but always returns 0 iterations"""
         if isinstance(op_type, RegOperandType):
-            assert op_type.reg_type == 'gpr'
+            assert op_type.reg_type == "gpr"
             return self._bad_loop_iterations(model)
         else:
             assert isinstance(op_type, ImmOperandType)
             return self._bad_loopi_iterations()
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         model_before = model.copy()
 
         pieces = self._gen_pieces(cont, model, program)
@@ -66,8 +59,7 @@ class BadZeroLoop(Loop):
         op0_type = insn.operands[0].op_type
         op1_type = insn.operands[1].op_type
 
-        iter_opval, _num_iters = self._bad_iterations(op0_type,
-                                                      bodysize, model_before)
+        iter_opval, _num_iters = self._bad_iterations(op0_type, bodysize, model_before)
 
         # Generate a new head instruction
         enc_bodysize = op1_type.op_val_to_enc_val(bodysize, model_before.pc)

@@ -28,30 +28,29 @@ class TraceExtRegChange(Trace):
         self.erc = erc
 
     def trace(self) -> str:
-        suff = (''
-                if self.erc.new_value == self.erc.written
-                else ' (now {:#010x})'.format(self.erc.new_value))
-        return ("otbn.{} {} {:#010x}{}{}"
-                .format(self.name,
-                        self.erc.op,
-                        self.erc.written,
-                        ' (from SW)' if not self.erc.from_hw else '',
-                        suff))
+        suff = (
+            ""
+            if self.erc.new_value == self.erc.written
+            else " (now {:#010x})".format(self.erc.new_value)
+        )
+        return "otbn.{} {} {:#010x}{}{}".format(
+            self.name,
+            self.erc.op,
+            self.erc.written,
+            " (from SW)" if not self.erc.from_hw else "",
+            suff,
+        )
 
     def rtl_trace(self) -> str:
-        return '! otbn.{}: {:#010x}'.format(self.name, self.erc.new_value)
+        return "! otbn.{}: {:#010x}".format(self.name, self.erc.new_value)
 
 
 class RGField:
-    '''A wrapper around a field in a register as parsed by reggen'''
-    def __init__(self,
-                 name: str,
-                 width: int,
-                 lsb: int,
-                 reset_value: int,
-                 swaccess: str):
+    """A wrapper around a field in a register as parsed by reggen"""
+
+    def __init__(self, name: str, width: int, lsb: int, reset_value: int, swaccess: str):
         # We only support some values of swaccess (the ones we need)
-        assert swaccess in ['rw1c', 'rw', 'wo', 'r0w1c', 'ro']
+        assert swaccess in ["rw1c", "rw", "wo", "r0w1c", "ro"]
         assert width > 0
         assert lsb >= 0
 
@@ -61,14 +60,14 @@ class RGField:
         self.value = reset_value
 
         # swaccess
-        self.w1c = swaccess in ['rw1c', 'r0w1c']
-        self.read_only = swaccess == 'ro'
-        self.read_zero = swaccess in ['wo', 'r0w1c']
+        self.w1c = swaccess in ["rw1c", "r0w1c"]
+        self.read_only = swaccess == "ro"
+        self.read_zero = swaccess in ["wo", "r0w1c"]
 
         self.next_value = reset_value
 
     @staticmethod
-    def from_field(field: Field) -> 'RGField':
+    def from_field(field: Field) -> "RGField":
         name = field.name
         assert isinstance(name, str)
 
@@ -90,7 +89,7 @@ class RGField:
         return 0 if self.read_zero else self.next_value
 
     def write(self, value: int, from_hw: bool) -> int:
-        '''Stage the effects of writing a value (see RGReg.write)'''
+        """Stage the effects of writing a value (see RGReg.write)"""
         assert value >= 0
         masked = value & ((1 << self.width) - 1)
 
@@ -104,13 +103,13 @@ class RGField:
         return self._next_sw_read()
 
     def set_bits(self, value: int) -> int:
-        '''Like write, but |=.'''
+        """Like write, but |=."""
         masked = value & ((1 << self.width) - 1)
         self.next_value |= masked
         return self._next_sw_read()
 
     def clear_bits(self, value: int) -> int:
-        '''Like write, but &= ~.'''
+        """Like write, but &= ~."""
         self.next_value &= ~value
         return self._next_sw_read()
 
@@ -125,7 +124,8 @@ class RGField:
 
 
 class RGReg:
-    '''A wrapper around a register as parsed by reggen'''
+    """A wrapper around a register as parsed by reggen"""
+
     def __init__(self, fields: List[RGField], double_flopped: bool):
         self.fields = fields
         self.double_flopped = double_flopped
@@ -133,40 +133,34 @@ class RGReg:
         self._next_changes: List[ExtRegChange] = []
 
     @staticmethod
-    def from_register(reg: Register, double_flopped: bool) -> 'RGReg':
-        return RGReg([RGField.from_field(fd) for fd in reg.fields],
-                     double_flopped)
+    def from_register(reg: Register, double_flopped: bool) -> "RGReg":
+        return RGReg([RGField.from_field(fd) for fd in reg.fields], double_flopped)
 
-    def _apply_fields(self,
-                      func: Callable[[RGField, int], int],
-                      value: int) -> int:
+    def _apply_fields(self, func: Callable[[RGField, int], int], value: int) -> int:
         new_val = 0
         for field in self.fields:
             field_new_val = func(field, value >> field.lsb)
             new_val |= field_new_val << field.lsb
         return new_val
 
-    def write(self,
-              value: int,
-              from_hw: bool,
-              immediately: bool = False) -> None:
-        '''Stage the effects of writing a value.
+    def write(self, value: int, from_hw: bool, immediately: bool = False) -> None:
+        """Stage the effects of writing a value.
 
         If from_hw is true, this write is from OTBN hardware (rather than the
         bus).
 
-        '''
+        """
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.write(fv, from_hw), value)
         delayed = self.double_flopped and not immediately
         changes = self._next_changes if delayed else self._changes
-        changes.append(ExtRegChange('=', value, from_hw, now))
+        changes.append(ExtRegChange("=", value, from_hw, now))
 
     def set_bits(self, value: int) -> None:
         assert value >= 0
         now = self._apply_fields(lambda fld, fv: fld.set_bits(fv), value)
         changes = self._next_changes if self.double_flopped else self._changes
-        changes.append(ExtRegChange('=', value, False, now))
+        changes.append(ExtRegChange("=", value, False, now))
 
     def read(self, from_hw: bool) -> int:
         value = 0
@@ -192,14 +186,14 @@ class RGReg:
 
 class RndReq(RGReg):
     def __init__(self, name: str):
-        super().__init__([RGField(name, 32, 0, 0, 'ro')], False)
+        super().__init__([RGField(name, 32, 0, 0, "ro")], False)
         self._client = EdnClient()
 
     def request(self) -> bool:
-        '''Set the flag high and start a request on the EDN client
+        """Set the flag high and start a request on the EDN client
 
         Returns True if RND_REQ changed.
-        '''
+        """
         self._client.request()
 
         if self.read(True) == 0:
@@ -224,32 +218,33 @@ class RndReq(RGReg):
         self._client.edn_reset()
 
     def cdc_complete(self) -> Tuple[Optional[int], bool, bool, bool]:
-        '''Clear the flag and return the data that we've read from EDN.
+        """Clear the flag and return the data that we've read from EDN.
 
-        Returns the same value as EdnClient.cdc_complete().'''
+        Returns the same value as EdnClient.cdc_complete()."""
         (data, retry, fips_err, rep_err) = self._client.cdc_complete()
         if not retry:
             self.write(0, True)
         return (data, retry, fips_err, rep_err)
 
     def step(self) -> None:
-        '''Called on each main clock cycle. Step the client'''
+        """Called on each main clock cycle. Step the client"""
         self._client.step()
 
 
 def make_flag_reg(name: str, double_flopped: bool) -> RGReg:
-    return RGReg([RGField(name, 32, 0, 0, 'ro')], double_flopped)
+    return RGReg([RGField(name, 32, 0, 0, "ro")], double_flopped)
 
 
 class OTBNExtRegs:
-    '''A class representing OTBN's externally visible CSRs
+    """A class representing OTBN's externally visible CSRs
 
     This models an extra flop between the core and some of the externally
     visible registers by ensuring that a write only becomes visible after an
     intervening commit.
 
-    '''
-    double_flopped_regs = ['STATUS']
+    """
+
+    double_flopped_regs = ["STATUS"]
 
     def __init__(self) -> None:
         _, reg_block = load_registers()
@@ -272,44 +267,40 @@ class OTBNExtRegs:
         # This isn't in the hardware, but it's used in simulation to help track
         # whether RIG-generated binaries finished where they expected to
         # finish.
-        self.regs['STOP_PC'] = make_flag_reg('STOP_PC', True)
+        self.regs["STOP_PC"] = make_flag_reg("STOP_PC", True)
 
         # Add a fake "RND_REQ" register to allow us to tell otbn_core_model to
         # generate an EDN request. Expose it as a field so that the state
         # object can poke it directly.
-        self._rnd_req = RndReq('RND_REQ')
-        self.regs['RND_REQ'] = self._rnd_req
+        self._rnd_req = RndReq("RND_REQ")
+        self.regs["RND_REQ"] = self._rnd_req
 
         # Add a fake "WIPE_START" register. We set this for a single cycle when
         # starting secure wipe and the C++ model can use this to trigger a dump
         # of internal state before it gets zeroed out.
-        self.regs['WIPE_START'] = make_flag_reg('WIPE_START', False)
+        self.regs["WIPE_START"] = make_flag_reg("WIPE_START", False)
 
     def _get_reg(self, reg_name: str) -> RGReg:
         reg = self.regs.get(reg_name)
         if reg is None:
-            raise ValueError('Unknown register name: {!r}.'.format(reg_name))
+            raise ValueError("Unknown register name: {!r}.".format(reg_name))
         return reg
 
-    def write(self,
-              reg_name: str,
-              value: int,
-              from_hw: bool,
-              immediately: bool = False) -> None:
-        '''Stage the effects of writing a value to a register'''
+    def write(self, reg_name: str, value: int, from_hw: bool, immediately: bool = False) -> None:
+        """Stage the effects of writing a value to a register"""
         assert value >= 0
         self._get_reg(reg_name).write(value, from_hw, immediately)
         self._dirty = 2
 
     def set_bits(self, reg_name: str, value: int) -> None:
-        '''Set some bits of a register (HW access only)'''
+        """Set some bits of a register (HW access only)"""
         assert value >= 0
         self._get_reg(reg_name).set_bits(value)
         self._dirty = 2
 
     def increment_insn_cnt(self) -> None:
-        '''Increment the INSN_CNT register'''
-        reg = self._get_reg('INSN_CNT')
+        """Increment the INSN_CNT register"""
+        reg = self._get_reg("INSN_CNT")
         assert len(reg.fields) == 1
         fld = reg.fields[0]
         reg.write(min(fld.value + 1, (1 << 32) - 1), True)
@@ -317,7 +308,7 @@ class OTBNExtRegs:
     def read(self, reg_name: str, from_hw: bool) -> int:
         reg = self.regs.get(reg_name)
         if reg is None:
-            raise ValueError('Unknown register name: {!r}.'.format(reg_name))
+            raise ValueError("Unknown register name: {!r}.".format(reg_name))
         return reg.read(from_hw)
 
     def step(self) -> None:
@@ -327,8 +318,7 @@ class OTBNExtRegs:
         # If the dirty flag is not set, we know the only possible change is to
         # the INSN_CNT register.
         if self._dirty == 0:
-            return [TraceExtRegChange('INSN_CNT', erc)
-                    for erc in self.regs['INSN_CNT'].changes()]
+            return [TraceExtRegChange("INSN_CNT", erc) for erc in self.regs["INSN_CNT"].changes()]
 
         trace = []
         for name, reg in self.regs.items():
@@ -348,7 +338,7 @@ class OTBNExtRegs:
                 reg.commit()
             self._dirty = max(0, self._dirty - 1)
         else:
-            self.regs['INSN_CNT'].commit()
+            self.regs["INSN_CNT"].commit()
 
     def abort(self) -> None:
         for reg in self.regs.values():

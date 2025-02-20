@@ -5,15 +5,15 @@
 
 import binascii
 
-function_header = '''
+function_header = """
 // Generated using hw/ip/prim/util/prim_crc32_table_gen.py
 function automatic logic [31:0] crc32_byte_calc(logic [7:0] b);
-  unique case (b)'''
+  unique case (b)"""
 
-function_footer = '''    default: crc32_byte_calc = '0;
+function_footer = """    default: crc32_byte_calc = '0;
   endcase
 endfunction
-'''
+"""
 
 function_table_line = "    8'h{:02x}:   crc32_byte_calc = 32'h{:08x};"
 
@@ -31,12 +31,12 @@ def main():
         # `table_in`.  binascii.crc32 inverts the crc before returning. The ^
         # 0xff000000 reverses this along with the (crc >> 8) that is XORed to
         # the table output giving table_out.
-        table_in = i ^ 0xff
-        b = i.to_bytes(1, byteorder='little')
-        table_out = binascii.crc32(b) ^ 0xff000000
+        table_in = i ^ 0xFF
+        b = i.to_bytes(1, byteorder="little")
+        table_out = binascii.crc32(b) ^ 0xFF000000
         print(function_table_line.format(table_in, table_out))
     print(function_footer)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

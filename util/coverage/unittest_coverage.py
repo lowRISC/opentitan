@@ -35,9 +35,11 @@ def handle_libs(device_libs_all: List[str]) -> List[str]:
         "cquery",
         DEVICE_LIBS_QUERY,
         "--output=starlark",
-        ("--starlark:expr=target.label"
-         " if 'IncompatiblePlatformProvider' in providers(target)"
-         " else ''"),
+        (
+            "--starlark:expr=target.label"
+            " if 'IncompatiblePlatformProvider' in providers(target)"
+            " else ''"
+        ),
     )
     logging.info(f"incompatible libraries: {pformat(device_libs_incompat)}")
     return sorted(list(set(device_libs_all) - set(device_libs_incompat)))

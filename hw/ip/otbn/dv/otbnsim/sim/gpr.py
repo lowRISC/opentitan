@@ -9,12 +9,12 @@ from .reg import Reg, RegFile
 
 
 class CallStackReg(Reg):
-    '''A register used to represent x1'''
+    """A register used to represent x1"""
 
     # The depth of the x1 call stack
     stack_depth = 8
 
-    def __init__(self, parent: 'GPRs'):
+    def __init__(self, parent: "GPRs"):
         super().__init__(parent, 1, 32, 0)
         self.stack = []  # type: List[int]
         self.saw_read = False
@@ -26,7 +26,7 @@ class CallStackReg(Reg):
         if backdoor:
             # If a backdoor access, don't take note of the read. If the stack
             # turns out to be empty, return some "obviously bogus" value.
-            return self.stack[-1] if self.stack else 0xcafef00d
+            return self.stack[-1] if self.stack else 0xCAFEF00D
 
         if not self.stack:
             self.gpr_parent.call_stack_err = True
@@ -61,16 +61,16 @@ class CallStackReg(Reg):
         super().abort()
 
     def start(self) -> None:
-        '''Executed on start of operation.'''
+        """Executed on start of operation."""
         self.stack = []
         self.saw_read = False
 
 
 class GPRs(RegFile):
-    '''The narrow OTBN register file'''
+    """The narrow OTBN register file"""
 
     def __init__(self) -> None:
-        super().__init__('x', 32, 32)
+        super().__init__("x", 32, 32)
         self._x1 = CallStackReg(self)
         self.call_stack_err = False
 
@@ -88,7 +88,7 @@ class GPRs(RegFile):
             return super().get_reg(idx)
 
     def peek_call_stack(self) -> List[int]:
-        '''Get the call stack, bottom-first.'''
+        """Get the call stack, bottom-first."""
         return self._x1.stack
 
     def post_insn(self) -> None:
@@ -108,11 +108,11 @@ class GPRs(RegFile):
         self.call_stack_err = False
 
     def empty_call_stack(self) -> None:
-        '''Clear call stack.'''
+        """Clear call stack."""
         self._x1.start()
 
     def wipe(self) -> None:
-        '''Wipe all registers to zero and clear the call stack'''
+        """Wipe all registers to zero and clear the call stack"""
         self._x1.start()
         for idx in range(2, 32):
             self.get_reg(idx).write_invalid()

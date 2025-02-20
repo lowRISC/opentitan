@@ -17,13 +17,13 @@ from ..snippet_gen import GenCont, GenRet
 
 
 class BadAtEnd(Loop):
-    '''A snippet generator that generates a loop/branch/jump at end of a loop
+    """A snippet generator that generates a loop/branch/jump at end of a loop
 
     This works by overriding the _gen_tail method of the Loop generator and
     replacing the last instruction that we would have generated with a loop,
     branch or jump instruction.
 
-    '''
+    """
 
     ends_program = True
 
@@ -32,19 +32,15 @@ class BadAtEnd(Loop):
         self.branch_gen = Branch(cfg, insns_file)
         self.jump_gen = Jump(cfg, insns_file)
 
-    def pick_weight(self,
-                    model: Model,
-                    program: Program) -> float:
+    def pick_weight(self, model: Model, program: Program) -> float:
         # Only try this if we've got a reasonable amount of room.
         room = min(model.fuel, program.space)
         assert 0 < room
-        return (1.0 if room > 50 else 0.0)
+        return 1.0 if room > 50 else 0.0
 
-    def _gen_tail_insns(self,
-                        num_insns: int,
-                        model: Model,
-                        program: Program) -> Optional[Tuple[List[ProgInsn],
-                                                            Model]]:
+    def _gen_tail_insns(
+        self, num_insns: int, model: Model, program: Program
+    ) -> Optional[Tuple[List[ProgInsn], Model]]:
         assert num_insns > 0
         old_model = model.copy()
         ret = super()._gen_tail_insns(num_insns, model, program)
@@ -123,10 +119,7 @@ class BadAtEnd(Loop):
         insns[-1] = tail_insn
         return (insns, model)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # Run the Loop generator, but with our _gen_tail, which means we'll put
         # an unexpected jump/branch/loop at the end of the body.
         ret = super().gen(cont, model, program)

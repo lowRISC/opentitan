@@ -2,8 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Calculate Round Constant
-"""
+r"""Calculate Round Constant"""
 
 import argparse
 import bitarray as ba
@@ -13,19 +12,19 @@ import logging as log
 def main():
     parser = argparse.ArgumentParser(
         prog="keccak round constant generator",
-        description=
-        '''This tool generates the round constants based on the given max round number'''
+        description="""This tool generates the round constants based on the given max round number""",
     )
     parser.add_argument(
-        '-r',
+        "-r",
         type=int,
         default=24,
-        help='''Max Round value. Default is SHA3 Keccak round %(default)''')
-    parser.add_argument('--verbose', '-v', action='store_true', help='Verbose')
+        help="""Max Round value. Default is SHA3 Keccak round %(default)""",
+    )
+    parser.add_argument("--verbose", "-v", action="store_true", help="Verbose")
 
     args = parser.parse_args()
 
-    if (args.verbose):
+    if args.verbose:
         log.basicConfig(format="%(levelname)s: %(message)s", level=log.DEBUG)
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
@@ -37,14 +36,14 @@ def main():
     rc = ba.bitarray(256)
     rc.setall(0)
 
-    r = ba.bitarray('10000000')
+    r = ba.bitarray("10000000")
     rc[0] = True  # t%255 == 0 -> 1
     for i in range(1, 256):
         # Update from t=1 to t=255
-        r_d = ba.bitarray('0') + r
+        r_d = ba.bitarray("0") + r
         if r_d[8]:
             # Flip 0,4,5,6
-            r = r_d[0:8] ^ ba.bitarray('10001110')
+            r = r_d[0:8] ^ ba.bitarray("10001110")
         else:
             r = r_d[0:8]
 

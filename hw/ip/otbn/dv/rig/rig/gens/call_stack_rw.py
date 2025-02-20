@@ -16,14 +16,14 @@ from ..snippet_gen import GenCont, GenRet, SnippetGen
 
 
 class CallStackRW(SnippetGen):
-    '''A snippet generator that tries to exercise the call stack
+    """A snippet generator that tries to exercise the call stack
 
     We already have code that can exercise the call stack (e.g.
     StraightLineInsn), but there are certain things that it will never do (pop
     & push when the stack is full, for example) and other multiple uses of x1
     aren't particularly frequent. Generate more here!
 
-    '''
+    """
 
     def __init__(self, cfg: Config, insns_file: InsnsFile) -> None:
         super().__init__()
@@ -41,7 +41,7 @@ class CallStackRW(SnippetGen):
             for idx, op in enumerate(insn.operands):
                 if not isinstance(op.op_type, RegOperandType):
                     continue
-                is_gpr = op.op_type.reg_type == 'gpr'
+                is_gpr = op.op_type.reg_type == "gpr"
                 is_dst = op.op_type.is_dest()
 
                 if is_gpr:
@@ -54,8 +54,7 @@ class CallStackRW(SnippetGen):
                 weight = cfg.insn_weights.get(insn.mnemonic)
                 if weight > 0:
                     self.insns.append(insn)
-                    self.indices.append((gpr_dsts[0],
-                                         gpr_srcs[0], gpr_srcs[1]))
+                    self.indices.append((gpr_dsts[0], gpr_srcs[0], gpr_srcs[1]))
                     self.weights.append(weight)
 
         if not self.insns:
@@ -63,7 +62,7 @@ class CallStackRW(SnippetGen):
             self.disabled = True
 
     def _pick_insn(self, model: Model, pat_idx: int) -> Optional[ProgInsn]:
-        '''Return a filled-in instruction for the given pattern.
+        """Return a filled-in instruction for the given pattern.
 
         Known patterns are:
 
@@ -79,11 +78,10 @@ class CallStackRW(SnippetGen):
         StraightLineInsn generator, so aren't used by CallStackRW directly.
         These are only used by the BadCallStackRW generator below.
 
-        '''
+        """
 
         # Pick an instruction
-        insn_idx = random.choices(range(len(self.weights)),
-                                  weights=self.weights)[0]
+        insn_idx = random.choices(range(len(self.weights)), weights=self.weights)[0]
 
         grd_idx, grs1_idx, grs2_idx = self.indices[insn_idx]
         insn = self.insns[insn_idx]
@@ -95,9 +93,11 @@ class CallStackRW(SnippetGen):
 
         op_vals = []
         for idx, operand in enumerate(insn.operands):
-            use_x1 = ((x1_grd and idx == grd_idx) or
-                      (x1_grs1 and idx == grs1_idx) or
-                      (x1_grs2 and idx == grs2_idx))
+            use_x1 = (
+                (x1_grd and idx == grd_idx)
+                or (x1_grs1 and idx == grs1_idx)
+                or (x1_grs2 and idx == grs2_idx)
+            )
             if use_x1:
                 op_vals.append(1)
             else:
@@ -114,13 +114,9 @@ class CallStackRW(SnippetGen):
 
         return ProgInsn(insn, op_vals, None)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         # We can't read or write x1 when it's marked const.
-        if model.is_const('gpr', 1):
+        if model.is_const("gpr", 1):
             return None
 
         # Make sure we don't get paint ourselves into a corner
@@ -156,12 +152,12 @@ class CallStackRW(SnippetGen):
 
 
 class BadCallStackRW(CallStackRW):
-    '''Generate errors by over- or under-flowing the callstack'''
+    """Generate errors by over- or under-flowing the callstack"""
 
     ends_program = True
 
     def _pick_mode(self, model: Model) -> Optional[Tuple[bool, int]]:
-        '''Pick whether to over- or under-flow
+        """Pick whether to over- or under-flow
 
         Returns a pair (dir, steps) where dir is the direction to go (True for
         overflow; False for underflow) and steps is the number of instructions
@@ -169,7 +165,7 @@ class BadCallStackRW(CallStackRW):
 
         Returns None if the stack depth isn't known.
 
-        '''
+        """
         min_depth, max_depth = model.call_stack.depth_range()
         if min_depth != max_depth:
             return None
@@ -191,11 +187,7 @@ class BadCallStackRW(CallStackRW):
         assert 2 <= steps <= 8
         return (is_overflow, steps)
 
-    def gen(self,
-            cont: GenCont,
-            model: Model,
-            program: Program) -> Optional[GenRet]:
-
+    def gen(self, cont: GenCont, model: Model, program: Program) -> Optional[GenRet]:
         mode_ret = self._pick_mode(model)
         if mode_ret is None:
             return None

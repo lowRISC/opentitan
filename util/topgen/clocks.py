@@ -9,15 +9,15 @@ from .lib import Name
 
 def _yn_to_bool(yn: object) -> bool:
     yn_str = str(yn)
-    if yn_str.lower() == 'yes':
+    if yn_str.lower() == "yes":
         return True
-    if yn_str.lower() == 'no':
+    if yn_str.lower() == "no":
         return False
-    raise ValueError('Unknown yes/no value: {!r}.'.format(yn))
+    raise ValueError("Unknown yes/no value: {!r}.".format(yn))
 
 
 def _bool_to_yn(val: bool) -> str:
-    return 'yes' if val else 'no'
+    return "yes" if val else "no"
 
 
 def _to_int(val: object) -> int:
@@ -29,62 +29,60 @@ def _to_int(val: object) -> int:
 def _check_choices(val: str, what: str, choices: List[str]) -> str:
     if val in choices:
         return val
-    raise ValueError(
-        f'{what} is {val!r}, which is none of the expected values: {choices}.')
+    raise ValueError(f"{what} is {val!r}, which is none of the expected values: {choices}.")
 
 
 class UnmanagedClock:
-    '''An unmanaged clock (input to the top-level).'''
+    """An unmanaged clock (input to the top-level)."""
 
     def __init__(self, raw: Dict[str, object]):
-        self.name = str(raw['name'])
-        self.signal_name = f'clk_{self.name}_i'
-        self.cg_en_signal = f'cg_en_{self.name}_i'
+        self.name = str(raw["name"])
+        self.signal_name = f"clk_{self.name}_i"
+        self.cg_en_signal = f"cg_en_{self.name}_i"
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'name': self.name,
-            'signal_name': self.signal_name,
-            'cg_en_signal': self.cg_en_signal
+            "name": self.name,
+            "signal_name": self.signal_name,
+            "cg_en_signal": self.cg_en_signal,
         }
 
 
 class SourceClock:
-    '''A clock source (input to the top-level).'''
+    """A clock source (input to the top-level)."""
 
     def __init__(self, raw: Dict[str, object]):
-        self.name = str(raw['name'])
-        self.aon = _yn_to_bool(raw['aon'])
-        self.freq = _to_int(raw['freq'])
-        self.ref = raw.get('ref', False)
+        self.name = str(raw["name"])
+        self.aon = _yn_to_bool(raw["aon"])
+        self.freq = _to_int(raw["freq"])
+        self.ref = raw.get("ref", False)
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'name': self.name,
-            'aon': _bool_to_yn(self.aon),
-            'freq': str(self.freq),
-            'ref': self.ref
+            "name": self.name,
+            "aon": _bool_to_yn(self.aon),
+            "freq": str(self.freq),
+            "ref": self.ref,
         }
 
 
 class DerivedSourceClock(SourceClock):
-    '''A derived source clock (divided down from some other clock).'''
+    """A derived source clock (divided down from some other clock)."""
 
-    def __init__(self, raw: Dict[str, object], sources: Dict[str,
-                                                             SourceClock]):
+    def __init__(self, raw: Dict[str, object], sources: Dict[str, SourceClock]):
         super().__init__(raw)
-        self.div = _to_int(raw['div'])
-        self.src = sources[str(raw['src'])]
+        self.div = _to_int(raw["div"])
+        self.src = sources[str(raw["src"])]
 
     def _asdict(self) -> Dict[str, object]:
         ret = super()._asdict()
-        ret['div'] = str(self.div)
-        ret['src'] = self.src.name
+        ret["div"] = str(self.div)
+        ret["src"] = self.src.name
         return ret
 
 
 class ClockSignal:
-    '''A clock signal in the design.'''
+    """A clock signal in the design."""
 
     def __init__(self, name: str, src: SourceClock):
         self.name = name
@@ -96,22 +94,24 @@ class ClockSignal:
 
 
 class Group:
-
     def __init__(self, raw: Dict[str, object], what: str):
-        self.name = str(raw['name'])
-        self.src = str(raw['src'])
-        self.sw_cg = _check_choices(str(raw['sw_cg']), 'sw_cg for ' + what,
-                                    ['yes', 'no', 'hint'])
-        if self.src == 'yes' and self.sw_cg != 'no':
-            raise ValueError(f'Clock group {self.name} has an invalid '
-                             f'combination of src and sw_cg: {self.src} and '
-                             f'{self.sw_cg}, respectively.')
+        self.name = str(raw["name"])
+        self.src = str(raw["src"])
+        self.sw_cg = _check_choices(str(raw["sw_cg"]), "sw_cg for " + what, ["yes", "no", "hint"])
+        if self.src == "yes" and self.sw_cg != "no":
+            raise ValueError(
+                f"Clock group {self.name} has an invalid "
+                f"combination of src and sw_cg: {self.src} and "
+                f"{self.sw_cg}, respectively."
+            )
 
-        self.unique = _yn_to_bool(raw.get('unique', 'no'))
-        if self.sw_cg == 'no' and self.unique:
-            raise ValueError(f'Clock group {self.name} has an invalid '
-                             f'combination with sw_cg of {self.sw_cg} and '
-                             f'unique set.')
+        self.unique = _yn_to_bool(raw.get("unique", "no"))
+        if self.sw_cg == "no" and self.unique:
+            raise ValueError(
+                f"Clock group {self.name} has an invalid "
+                f"combination with sw_cg of {self.sw_cg} and "
+                f"unique set."
+            )
 
         self.clocks = {}  # type: Dict[str, ClockSignal]
 
@@ -120,10 +120,12 @@ class Group:
         sig = self.clocks.get(clk_name)
         if sig is not None:
             if sig.src is not src:
-                raise ValueError(f'Cannot add clock {clk_name} to group '
-                                 f'{self.name} with source {src.name}: the '
-                                 f'clock is there already with source '
-                                 f'{sig.src.name}.')
+                raise ValueError(
+                    f"Cannot add clock {clk_name} to group "
+                    f"{self.name} with source {src.name}: the "
+                    f"clock is there already with source "
+                    f"{sig.src.name}."
+                )
         else:
             sig = ClockSignal(clk_name, src)
             self.clocks[clk_name] = sig
@@ -132,13 +134,11 @@ class Group:
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'name': self.name,
-            'src': self.src,
-            'sw_cg': self.sw_cg,
-            'unique': _bool_to_yn(self.unique),
-            'clocks':
-            {name: sig.src.name
-             for name, sig in self.clocks.items()}
+            "name": self.name,
+            "src": self.src,
+            "sw_cg": self.sw_cg,
+            "unique": _bool_to_yn(self.unique),
+            "clocks": {name: sig.src.name for name, sig in self.clocks.items()},
         }
 
 
@@ -190,13 +190,13 @@ class TypedClocks(NamedTuple):
         return ret
 
     def hint_names(self) -> Dict[str, str]:
-        '''Return a dictionary with hint names for the hint clocks
+        """Return a dictionary with hint names for the hint clocks
 
         These are used as enum items that name the clock hint signals. The
         insertion ordering in this dictionary is important because it gives the
         mapping from enum name to index.
 
-        '''
+        """
         # A map from endpoint to the list of hint clocks that it uses.
         ep_to_hints = {}
         for sig in self.hint_clks.values():
@@ -211,18 +211,18 @@ class TypedClocks(NamedTuple):
         for ep, clks in sorted(ep_to_hints.items()):
             for clk in sorted(clks):
                 # Remove any "clk" prefix
-                clk_name = Name.from_snake_case(clk).remove_part('clk')
-                hint_name = Name(['hint']) + clk_name
+                clk_name = Name.from_snake_case(clk).remove_part("clk")
+                hint_name = Name(["hint"]) + clk_name
                 hint_names[clk] = hint_name.as_camel_case()
 
         return hint_names
 
 
 class UnmanagedClocks:
-    '''Unmanaged clock connections for the chip.'''
+    """Unmanaged clock connections for the chip."""
 
     def __init__(self, raw: List[object]):
-        self.clks = {clk['name']: UnmanagedClock(clk) for clk in raw}
+        self.clks = {clk["name"]: UnmanagedClock(clk) for clk in raw}
 
     def _asdict(self) -> Dict[str, object]:
         return self.clks
@@ -235,23 +235,23 @@ class UnmanagedClocks:
 
 
 class Clocks:
-    '''Clock connections for the chip.'''
+    """Clock connections for the chip."""
 
     def __init__(self, raw: Dict[str, object]):
         self.hier_paths = {}
-        assert isinstance(raw['hier_paths'], dict)
-        for grp_src, path in raw['hier_paths'].items():
+        assert isinstance(raw["hier_paths"], dict)
+        for grp_src, path in raw["hier_paths"].items():
             self.hier_paths[str(grp_src)] = str(path)
 
-        assert isinstance(raw['srcs'], list)
+        assert isinstance(raw["srcs"], list)
         self.srcs = {}
-        for r in raw['srcs']:
+        for r in raw["srcs"]:
             clk = SourceClock(r)
             self.srcs[clk.name] = clk
 
         self.derived_srcs = {}
-        assert isinstance(raw['derived_srcs'], list)
-        for r in raw['derived_srcs']:
+        assert isinstance(raw["derived_srcs"], list)
+        for r in raw["derived_srcs"]:
             clk = DerivedSourceClock(r, self.srcs)
             self.derived_srcs[clk.name] = clk
 
@@ -259,50 +259,51 @@ class Clocks:
         self.all_srcs.update(self.derived_srcs)
 
         self.groups = {}
-        assert isinstance(raw['groups'], list)
-        for idx, raw_grp in enumerate(raw['groups']):
+        assert isinstance(raw["groups"], list)
+        for idx, raw_grp in enumerate(raw["groups"]):
             assert isinstance(raw_grp, dict)
-            grp = Group(raw_grp, f'clocks.groups[{idx}]')
+            grp = Group(raw_grp, f"clocks.groups[{idx}]")
             self.groups[grp.name] = grp
 
     def _asdict(self) -> Dict[str, object]:
         return {
-            'hier_paths': self.hier_paths,
-            'srcs': list(self.srcs.values()),
-            'derived_srcs': list(self.derived_srcs.values()),
-            'groups': list(self.groups.values())
+            "hier_paths": self.hier_paths,
+            "srcs": list(self.srcs.values()),
+            "derived_srcs": list(self.derived_srcs.values()),
+            "groups": list(self.groups.values()),
         }
 
-    def add_clock_to_group(self, grp: Group, clk_name: str,
-                           src_name: str) -> ClockSignal:
+    def add_clock_to_group(self, grp: Group, clk_name: str, src_name: str) -> ClockSignal:
         src = self.all_srcs.get(src_name)
         if src is None:
-            raise ValueError(f'Cannot add clock {clk_name} to group '
-                             f'{grp.name}: the given source name is '
-                             f'{src_name}, which is unknown.')
+            raise ValueError(
+                f"Cannot add clock {clk_name} to group "
+                f"{grp.name}: the given source name is "
+                f"{src_name}, which is unknown."
+            )
         return grp.add_clock(clk_name, src)
 
     def get_clock_by_name(self, name: str) -> object:
         ret = self.all_srcs.get(name)
         if ret is None:
-            raise ValueError(f'{name} is not a valid clock')
+            raise ValueError(f"{name} is not a valid clock")
         return ret
 
     def reset_signals(self) -> List[str]:
-        '''Return the list of clock reset signal names.
+        """Return the list of clock reset signal names.
 
         These signals are inputs to the clock manager (from the reset
         manager).
-        '''
+        """
         ret = []
         for src in self.srcs.values():
-            ret.append(f'rst_{src.name}_ni')
+            ret.append(f"rst_{src.name}_ni")
         for src in self.derived_srcs.values():
-            ret.append(f'rst_{src.name}_ni')
+            ret.append(f"rst_{src.name}_ni")
         return ret
 
     def typed_clocks(self) -> TypedClocks:
-        '''Split the clocks by type.'''
+        """Split the clocks by type."""
         ast_clks = {}
         ft_clks = {}
         rg_clks = {}
@@ -312,7 +313,7 @@ class Clocks:
         parent_child_clks = {}
 
         for grp in self.groups.values():
-            if grp.name == 'powerup':
+            if grp.name == "powerup":
                 # All clocks in the "powerup" group are considered feed-throughs.
                 ft_clks.update(grp.clocks)
                 continue
@@ -329,19 +330,19 @@ class Clocks:
 
                 rg_srcs_set.add(sig.src.name)
 
-                if grp.sw_cg == 'no':
+                if grp.sw_cg == "no":
                     # A non-feedthrough clock with no software control
                     rg_clks[clk] = sig
                     continue
 
-                if grp.sw_cg == 'yes':
+                if grp.sw_cg == "yes":
                     # A non-feedthrough clock with direct software control
                     sw_clks[clk] = sig
                     continue
 
                 # The only other valid value for the sw_cg field is "hint", which
                 # means a non-feedthrough clock with "hint" software control.
-                assert grp.sw_cg == 'hint'
+                assert grp.sw_cg == "hint"
                 hint_clks[clk] = sig
                 continue
 
@@ -356,16 +357,18 @@ class Clocks:
         for name, clk in self.derived_srcs.items():
             parent_child_clks[clk.src.name].append(name)
 
-        return TypedClocks(ast_clks=ast_clks,
-                           ft_clks=ft_clks,
-                           rg_clks=rg_clks,
-                           sw_clks=sw_clks,
-                           hint_clks=hint_clks,
-                           rg_srcs=rg_srcs,
-                           parent_child_clks=parent_child_clks)
+        return TypedClocks(
+            ast_clks=ast_clks,
+            ft_clks=ft_clks,
+            rg_clks=rg_clks,
+            sw_clks=sw_clks,
+            hint_clks=hint_clks,
+            rg_srcs=rg_srcs,
+            parent_child_clks=parent_child_clks,
+        )
 
     def make_clock_to_group(self) -> Dict[str, Group]:
-        '''Return a map from clock name to the group containing the clock.'''
+        """Return a map from clock name to the group containing the clock."""
         c2g = {}
         for grp in self.groups.values():
             for clk_name in grp.clocks.keys():
@@ -373,7 +376,7 @@ class Clocks:
         return c2g
 
     def all_derived_srcs(self) -> List[str]:
-        '''Return a list of all the clocks used as the source for derived clocks'''
+        """Return a list of all the clocks used as the source for derived clocks"""
 
         srcs = []
 

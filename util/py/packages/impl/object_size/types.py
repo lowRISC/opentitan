@@ -19,8 +19,7 @@ from rich.text import Text
 # https://mypy.readthedocs.io/en/stable/additional_features.html#caveats-known-issues
 @dataclass(frozen=True)
 class Item:
-    """Mixin that provides helper methods for all kinds of items.
-    """
+    """Mixin that provides helper methods for all kinds of items."""
 
     def to_dict(self) -> dict:
         """Converts the instance to a dictionary."""
@@ -43,6 +42,7 @@ class Name(Item):
     Attrs:
         name: Name
     """
+
     name: str
 
 
@@ -53,14 +53,13 @@ class Address(Item):
     Attrs:
         address: Byte address.
     """
+
     vma: int
     lma: Union[int, str]
 
     def __str__(self) -> str:
-        """Returns the string representation of the address of this item.
-        """
-        lma_str = f"{self.lma:08x}" if isinstance(self.lma,
-                                                  int) else f"N/A ({self.lma})"
+        """Returns the string representation of the address of this item."""
+        lma_str = f"{self.lma:08x}" if isinstance(self.lma, int) else f"N/A ({self.lma})"
         return f"VMA: {self.vma:08x}, LMA: {lma_str}"
 
 
@@ -71,11 +70,11 @@ class Size(Item):
     Attrs:
         size: Size in bytes
     """
+
     size: int
 
     def __str__(self) -> str:
-        """Returns the string representation of the size of this item.
-        """
+        """Returns the string representation of the size of this item."""
         return f"{self.size} bytes ({self.size / 1024:.1f} KiB)"
 
 
@@ -86,11 +85,11 @@ class Alignment(Item):
     Attrs:
         alignment: Alignment in bytes
     """
+
     alignment: int
 
     def __str__(self) -> str:
-        """Returns the string representation of the alignment of this item.
-        """
+        """Returns the string representation of the alignment of this item."""
         return f"{self.alignment} bytes"
 
 
@@ -102,6 +101,7 @@ class Location(Item):
         file_: Path to the file where this symbol is defined
         line: Line number
     """
+
     file_: PurePath
     line: int
 
@@ -137,8 +137,7 @@ class AddressRange(Name, Address, Size, Item):
         start = other.vma in memory_range
         end = (other.vma + other.size - 1) in memory_range
         if start ^ end:
-            raise RuntimeError(
-                "Given range overlaps but is not fully inside this memory")
+            raise RuntimeError("Given range overlaps but is not fully inside this memory")
         return start and end
 
 
@@ -154,15 +153,18 @@ class Symbol(AddressRange, Name, Location, Item):
         file_:
         line:
     """
+
     section: str
     type_: str
     binding: str
     visibility: str
 
     def __str__(self):
-        return (f"{self.name} ({self.section}, {Size.__str__(self)}, "
-                "{Address.__str__(self)}, {self.type_}, {self.binding}, "
-                "{self.visibility}, {Location.__str__(self)})")
+        return (
+            f"{self.name} ({self.section}, {Size.__str__(self)}, "
+            "{Address.__str__(self)}, {self.type_}, {self.binding}, "
+            "{self.visibility}, {Location.__str__(self)})"
+        )
 
 
 @dataclass(frozen=True)

@@ -2,9 +2,7 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-"""Parser for converting NIST CAVP Digital Signatures test vectors to JSON.
-
-"""
+"""Parser for converting NIST CAVP Digital Signatures test vectors to JSON."""
 # TODO: Add more detailed docstring
 
 import argparse
@@ -95,15 +93,15 @@ def parse_testcases(args) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser(
-        description=
-        "Parsing utility for NIST CAVP Digital Signatures test vectors.")
+        description="Parsing utility for NIST CAVP Digital Signatures test vectors."
+    )
 
     parser.add_argument("--src", help="Source file to import.")
     parser.add_argument("--dst", help="Destination of the output file.")
     parser.add_argument("--schema", type=str, help="Test vector schema file")
     parser.add_argument(
         "--operation",
-        type = str,
+        type=str,
         help="ECDSA operation the test vectors in `src` are testing",
         choices=["sign", "verify"],
     )

@@ -24,7 +24,6 @@ _HARDENED_TRUE = 0x739
 
 
 class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
-
     def __init__(self, rom_ext_elf, json_data):
         super().__init__(rom_ext_elf, json_data)
 
@@ -64,8 +63,7 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
         Returns:
             None
         """
-        self.insert_key_value(_START_OFFSET_FIELD_NAME,
-                              f"{hex(self.start_offset)}")
+        self.insert_key_value(_START_OFFSET_FIELD_NAME, f"{hex(self.start_offset)}")
         self.insert_key_value(_SIZE_FIELD_NAME, f"{hex(self.size_in_bytes)}")
         self.insert_key_value(_HASH_FIELD_NAME, f"0x{self.hash.hex()}")
 
@@ -77,12 +75,8 @@ class RomExtImmutableSectionOtpFields(ImmutableSectionProcessor):
             None
         """
 
-        new_creator_manuf_state = self.update_creator_manuf_state_data(
-            f"0x{self.hash.hex()}"
-        )
-        self.insert_key_value(
-            _CREATOR_MANUF_STATE_FIELD_NAME, new_creator_manuf_state
-        )
+        new_creator_manuf_state = self.update_creator_manuf_state_data(f"0x{self.hash.hex()}")
+        self.insert_key_value(_CREATOR_MANUF_STATE_FIELD_NAME, new_creator_manuf_state)
 
     def immutable_rom_ext_enable(self) -> bool:
         """Checks if immutable ROM extension is enabled.
@@ -104,27 +98,16 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         prog="gen-otp-immutable-rom-ext-json",
         description=__doc__,
-        formatter_class=argparse.RawDescriptionHelpFormatter)
-    parser.add_argument('-i',
-                        '--input',
-                        type=str,
-                        metavar='<path>',
-                        help='Input JSON file path.')
-    parser.add_argument('-e',
-                        '--elf',
-                        type=str,
-                        metavar='<path>',
-                        help='Input ELF file path.')
-    parser.add_argument('-o',
-                        '--output',
-                        type=str,
-                        metavar='<path>',
-                        help='Output JSON file path.')
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+    parser.add_argument("-i", "--input", type=str, metavar="<path>", help="Input JSON file path.")
+    parser.add_argument("-e", "--elf", type=str, metavar="<path>", help="Input ELF file path.")
+    parser.add_argument("-o", "--output", type=str, metavar="<path>", help="Output JSON file path.")
     args = parser.parse_args()
 
     # Read in the OTP fields (encoded in JSON) we will be updating.
     json_in = None
-    with open(args.input, 'r') as f:
+    with open(args.input, "r") as f:
         json_in = hjson.load(f)
 
     # Extract the immutable ROM_EXT section data, compute hash, and update OTP
@@ -136,7 +119,7 @@ def main() -> None:
         imm_section_otp.update_json_with_creator_manuf_state_data()
 
     # Write out the OTP fields to a JSON file.
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         f.write(json.dumps(imm_section_otp.json_data, indent=4))
 
 

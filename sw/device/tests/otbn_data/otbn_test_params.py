@@ -3,8 +3,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-""" Generate parameters for the OTBN end-to-end tests.
-"""
+"""Generate parameters for the OTBN end-to-end tests."""
 
 from Crypto.PublicKey import RSA, ECC
 import argparse
@@ -15,12 +14,19 @@ C_DATATYPE = "static const uint8_t"
 
 
 def print_array(varname: str, val: int, size_bytes: int):
-    print("%s %s[%d] = {%s};" % (C_DATATYPE, varname, size_bytes,
-          ', '.join(["0x%02x" % i for i in int(val).to_bytes(size_bytes, byteorder="little")])))
+    print(
+        "%s %s[%d] = {%s};"
+        % (
+            C_DATATYPE,
+            varname,
+            size_bytes,
+            ", ".join(["0x%02x" % i for i in int(val).to_bytes(size_bytes, byteorder="little")]),
+        )
+    )
 
 
 def print_string(varname: str, val: str, size_bytes: int):
-    print("%s %s[%d] = {\"%s\"};" % (C_DATATYPE, varname, size_bytes, val))
+    print('%s %s[%d] = {"%s"};' % (C_DATATYPE, varname, size_bytes, val))
 
 
 def print_rsa_params(private_key_file: str, in_str: str) -> None:
@@ -98,15 +104,15 @@ def print_ecc_params(private_key_file: str, in_str: str) -> None:
 
 def main() -> int:
     parser = argparse.ArgumentParser()
-    parser.add_argument('type', choices=('rsa', 'ecc'))
-    parser.add_argument('private_key_pem_file')
-    parser.add_argument('message', nargs='?', default="Hello OTBN.")
+    parser.add_argument("type", choices=("rsa", "ecc"))
+    parser.add_argument("private_key_pem_file")
+    parser.add_argument("message", nargs="?", default="Hello OTBN.")
 
     args = parser.parse_args()
 
-    if args.type == 'rsa':
+    if args.type == "rsa":
         print_rsa_params(args.private_key_pem_file, args.message)
-    elif args.type == 'ecc':
+    elif args.type == "ecc":
         print_ecc_params(args.private_key_pem_file, args.message)
     else:
         raise ValueError("Unknown type {!r}".format(args.type))

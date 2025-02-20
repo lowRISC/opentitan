@@ -424,9 +424,7 @@ class Scheduler:
         # weights.
         sum_weight = 0
         slots_filled = 0
-        total_weight = sum(
-            self._queued[t][0].weight for t in self._queued if self._queued[t]
-        )
+        total_weight = sum(self._queued[t][0].weight for t in self._queued if self._queued[t])
 
         for target in self._scheduled:
             if not self._queued[target]:

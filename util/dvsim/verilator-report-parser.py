@@ -2,8 +2,8 @@
 # Copyright lowRISC contributors (OpenTitan project).
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
-r"""Parses lint report and dump filtered messages in hjson format.
-"""
+r"""Parses lint report and dump filtered messages in hjson format."""
+
 import argparse
 import logging as log
 import sys
@@ -22,18 +22,23 @@ def main():
 
         The script returns nonzero status if any warnings or errors are
         present.
-        """)
-    parser.add_argument('--repfile',
-                        type=lambda p: Path(p).resolve(),
-                        default="./verilator.log'",
-                        help="""The script searches the log file provided.
-                        Defaults to './verilator.log'""")
+        """
+    )
+    parser.add_argument(
+        "--repfile",
+        type=lambda p: Path(p).resolve(),
+        default="./verilator.log'",
+        help="""The script searches the log file provided.
+                        Defaults to './verilator.log'""",
+    )
 
-    parser.add_argument('--outfile',
-                        type=lambda p: Path(p).resolve(),
-                        default="./results.hjson",
-                        help="""Path to the results Hjson file.
-                        Defaults to './results.hjson'""")
+    parser.add_argument(
+        "--outfile",
+        type=lambda p: Path(p).resolve(),
+        default="./results.hjson",
+        help="""Path to the results Hjson file.
+                        Defaults to './results.hjson'""",
+    )
 
     args = parser.parse_args()
 
@@ -51,23 +56,24 @@ def main():
             # error if there are no other errors or warnings, since that
             # shows something has come unstuck. (Probably the lint tool
             # spat out a warning that we don't understand)
-            ("fusesoc-error",
-             r"^ERROR: Failed to build .* 'make' exited with an error code"),
-            ("flow_error",
-             r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*"
-             ),
-            ("flow_error",
-             # This is a redundant Verilator error that we ignore, since we
-             # already parse out each individual error.
-             r"^(?!%Error: Exiting due to .* warning.*)%Error: .*"),
+            ("fusesoc-error", r"^ERROR: Failed to build .* 'make' exited with an error code"),
+            (
+                "flow_error",
+                r"^(?!ERROR: Failed to build .* 'make' exited with an error code)ERROR: .*",
+            ),
+            (
+                "flow_error",
+                # This is a redundant Verilator error that we ignore, since we
+                # already parse out each individual error.
+                r"^(?!%Error: Exiting due to .* warning.*)%Error: .*",
+            ),
             # TODO(https://github.com/olofk/edalize/issues/90):
             # this is a workaround until we actually have native Edalize
             # support for JasperGold and "formal" targets
-            ("flow_warning",
-             r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"),
+            ("flow_warning", r"^(?!WARNING: Unknown item formal in section Target)WARNING: .*"),
             ("flow_warning", r"^%Warning: .* "),
             ("lint_error", r"^%Error-.*"),
-            ("lint_warning", r"^%Warning-.*")
+            ("lint_warning", r"^%Warning-.*"),
         ]
     }
 
@@ -80,10 +86,12 @@ def main():
 
     # return nonzero status if any warnings or errors are present
     # lint infos do not count as failures
-    if num_messages['error'] > 0 or num_messages['warning'] > 0:
-        log.info("Found %d lint errors and %d lint warnings",
-                 num_messages['error'],
-                 num_messages['warning'])
+    if num_messages["error"] > 0 or num_messages["warning"] > 0:
+        log.info(
+            "Found %d lint errors and %d lint warnings",
+            num_messages["error"],
+            num_messages["warning"],
+        )
         sys.exit(1)
 
     log.info("Lint logfile parsed succesfully")
