@@ -10,7 +10,7 @@ from topgen.lib import Name
 interface rstmgr_rst_en_track_sva_if (
   input rstmgr_pkg::rstmgr_out_t resets_i,
   input rstmgr_pkg::rstmgr_rst_en_t reset_en_i,
-% for clk in clks:
+% for clk in clk_freqs.keys():
   input logic clk_${clk}_i,
 % endfor
   input logic rst_por_ni
