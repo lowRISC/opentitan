@@ -5,15 +5,15 @@
   instance_name: top_englishbreakfast_rstmgr
   param_values:
   {
-    clks:
-    [
-      aon
-      io_div4
-      main
-      io
-      io_div2
-      usb
-    ]
+    clk_freqs:
+    {
+      aon: 200000
+      io_div4: 24000000
+      main: 100000000
+      io: 96000000
+      io_div2: 48000000
+      usb: 48000000
+    }
     reqs:
     {
       int:
@@ -54,11 +54,11 @@
     ]
     num_rstreqs: 1
     sw_rsts:
-    [
-      spi_device
-      spi_host0
-      usb
-    ]
+    {
+      spi_device: io_div2
+      spi_host0: io
+      usb: usb
+    }
     output_rsts:
     [
       {

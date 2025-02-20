@@ -5,15 +5,15 @@
   instance_name: top_earlgrey_rstmgr
   param_values:
   {
-    clks:
-    [
-      aon
-      io_div4
-      main
-      io
-      io_div2
-      usb
-    ]
+    clk_freqs:
+    {
+      aon: 200000
+      io_div4: 24000000
+      main: 100000000
+      io: 96000000
+      io_div2: 48000000
+      usb: 48000000
+    }
     reqs:
     {
       int:
@@ -60,16 +60,16 @@
     ]
     num_rstreqs: 2
     sw_rsts:
-    [
-      spi_device
-      spi_host0
-      spi_host1
-      usb
-      usb_aon
-      i2c0
-      i2c1
-      i2c2
-    ]
+    {
+      spi_device: io_div4
+      spi_host0: io
+      spi_host1: io_div2
+      usb: usb
+      usb_aon: aon
+      i2c0: io_div4
+      i2c1: io_div4
+      i2c2: io_div4
+    }
     output_rsts:
     [
       {
