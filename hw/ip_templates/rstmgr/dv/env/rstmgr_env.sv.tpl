@@ -15,36 +15,13 @@ class rstmgr_env extends cip_base_env #(
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
 
+% for clk in sorted(list(clk_freqs.keys())):
     if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "aon_clk_rst_vif", cfg.aon_clk_rst_vif
+            this, "", "${clk}_clk_rst_vif", cfg.${clk}_clk_rst_vif
         )) begin
-      `uvm_fatal(`gfn, "failed to get aon_clk_rst_vif from uvm_config_db")
+      `uvm_fatal(`gfn, "failed to get ${clk}_clk_rst_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "io_clk_rst_vif", cfg.io_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get io_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "io_div2_clk_rst_vif", cfg.io_div2_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get io_div2_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "io_div4_clk_rst_vif", cfg.io_div4_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get io_div4_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "main_clk_rst_vif", cfg.main_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get main_clk_rst_vif from uvm_config_db")
-    end
-    if (!uvm_config_db#(virtual clk_rst_if)::get(
-            this, "", "usb_clk_rst_vif", cfg.usb_clk_rst_vif
-        )) begin
-      `uvm_fatal(`gfn, "failed to get usb_clk_rst_vif from uvm_config_db")
-    end
+% endfor
     if (!uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::get(
             this, "", "pwrmgr_rstmgr_sva_vif", cfg.pwrmgr_rstmgr_sva_vif
         )) begin

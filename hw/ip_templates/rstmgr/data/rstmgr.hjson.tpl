@@ -44,7 +44,7 @@
   ]
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
-% for clk in clks:
+% for clk in clk_freqs.keys():
     {clock: "clk_${clk}_i"},
 % endfor
     {clock: "clk_por_i", reset: "rst_por_ni"},
@@ -153,12 +153,12 @@
     { name: "RSTMGR.SW_RST.CHIP_RESET",
       desc: "Cause a reset of all but some AON and system debug blocks via CSR."
     }
-% for sw_rst in sw_rsts:
-    { name: "RSTMGR.SW_RST.${sw_rst.upper()}_REQUEST",
-      desc: "Trigger reset of ${sw_rst.upper()} peripheral via CSR."
+% for device in sw_rsts.keys():
+    { name: "RSTMGR.SW_RST.${device.upper()}_REQUEST",
+      desc: "Trigger reset of ${device.upper()} peripheral via CSR."
     }
-    { name: "RSTMGR.SW_RST.${sw_rst.upper()}_ENABLE",
-      desc: "Enable reset of ${sw_rst.upper()} peripheral via CSR."
+    { name: "RSTMGR.SW_RST.${device.upper()}_ENABLE",
+      desc: "Enable reset of ${device.upper()} peripheral via CSR."
     }
 % endfor
     { name: "RSTMGR.RESET_INFO.CAPTURE",

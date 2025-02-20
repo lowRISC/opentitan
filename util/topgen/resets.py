@@ -134,7 +134,7 @@ class Resets:
     def get_sw_resets(self) -> list:
         '''Get software controlled resets'''
 
-        return [reset.name for reset in self.nodes.values() if reset.sw]
+        return [reset for reset in self.nodes.values() if reset.sw]
 
     def get_path(self, name: str, domain: Optional[str], shadow=False) -> str:
         '''Get path to reset'''

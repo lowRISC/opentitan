@@ -20,8 +20,8 @@ package rstmgr_pkg;
   parameter int OffDomains = PowerDomains-1;
 
   // positions of software controllable reset bits
-% for rst in sw_rsts:
-  parameter int ${rst.upper()} = ${loop.index};
+% for device in sw_rsts.keys():
+  parameter int ${device.upper()} = ${loop.index};
 % endfor
 
   // resets generated and broadcast

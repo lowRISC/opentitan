@@ -1469,7 +1469,7 @@ class TopGen:
 
     # Enumerates the positions of all software controllable resets
     def _init_rstmgr_sw_rsts(self):
-        sw_rsts = self.top['resets'].get_sw_resets()
+        sw_rsts = [r.name for r in self.top['resets'].get_sw_resets()]
 
         enum = self._enum_type(self._top_name,
                                Name(["reset", "manager", "sw", "resets"]))
