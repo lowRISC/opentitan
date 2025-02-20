@@ -154,27 +154,6 @@ void ottf_external_isr(void) {
   }
 }
 
-/**
- * This looks a bit odd, but is needed to avoid a race condition where the
- * interrupt comes in after we load the flag but before we run the WFI
- * instruction.
- * The trick is that WFI returns when an interrupt comes in, even if
- * interrupts are globally disabled, which means that the WFI can actually
- * sit __inside__ the critical section.
- */
-void wfi_flag(volatile bool *is_finished) {
-  while (true) {
-    irq_global_ctrl(false);
-    if (*is_finished) {
-      *is_finished = false;
-      break;
-    }
-    wait_for_interrupt();
-    irq_global_ctrl(true);
-  }
-  irq_global_ctrl(true);
-}
-
 bool test_main(void) {
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init(
@@ -217,7 +196,7 @@ bool test_main(void) {
 
   // Loop WFI->ISR->WFI->etc. until 'is_finished' is set true
   // Use this to only advance iff our ISR sets it
-  wfi_flag(&is_finished);
+  ATOMIC_WAIT_FOR_INTERRUPT(is_finished);
 
   dif_dma_status_code_t status;
   CHECK_DIF_OK(dif_dma_status_get(&dma, &status));
