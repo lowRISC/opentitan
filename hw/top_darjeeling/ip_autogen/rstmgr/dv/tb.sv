@@ -14,42 +14,47 @@ module tb;
   `include "dv_macros.svh"
 
   wire clk, rst_n;
-  wire clk_aon;
-  wire clk_io_div4_i;
-  wire clk_main_i;
-  wire clk_io_i;
-  wire clk_io_div2_i;
-  wire clk_usb_i;
-
-  // interfaces
   clk_rst_if clk_rst_if (
     .clk,
     .rst_n
   );
+
+  wire clk_aon;
   clk_rst_if aon_clk_rst_if (
     .clk  (clk_aon),
     .rst_n()
   );
-  clk_rst_if io_clk_rst_if (
-    .clk  (clk_io),
-    .rst_n()
-  );
-  clk_rst_if io_div2_clk_rst_if (
-    .clk  (clk_io_div2),
-    .rst_n()
-  );
+
+  wire clk_io_div4;
   clk_rst_if io_div4_clk_rst_if (
     .clk  (clk_io_div4),
     .rst_n()
   );
+
+  wire clk_main;
   clk_rst_if main_clk_rst_if (
     .clk  (clk_main),
     .rst_n()
   );
+
+  wire clk_io;
+  clk_rst_if io_clk_rst_if (
+    .clk  (clk_io),
+    .rst_n()
+  );
+
+  wire clk_io_div2;
+  clk_rst_if io_div2_clk_rst_if (
+    .clk  (clk_io_div2),
+    .rst_n()
+  );
+
+  wire clk_usb;
   clk_rst_if usb_clk_rst_if (
     .clk  (clk_usb),
     .rst_n()
   );
+
 
   tl_if tl_if (
     .clk,
@@ -81,10 +86,10 @@ module tb;
     .clk_i        (clk),
     .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
     .clk_aon_i    (clk_aon),
-    .clk_io_div4_i(clk_io_div4),
-    .clk_main_i   (clk_main),
     .clk_io_i     (clk_io),
     .clk_io_div2_i(clk_io_div2),
+    .clk_io_div4_i(clk_io_div4),
+    .clk_main_i   (clk_main),
     .clk_usb_i    (clk_usb),
     .clk_por_i    (clk_io_div4),
     .rst_por_ni   (rstmgr_if.resets_o.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
@@ -115,14 +120,18 @@ module tb;
     // drive clk and rst_n from clk_rst_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif", io_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif",
+                                            aon_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif",
+                                            io_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif",
                                             io_div2_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif",
                                             io_div4_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif",
+                                            main_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif",
+                                            usb_clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",

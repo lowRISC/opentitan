@@ -18,9 +18,9 @@
 interface rstmgr_cascading_sva_if (
   input logic clk_i,
   input logic clk_aon_i,
+  input logic clk_io_i,
   input logic clk_io_div2_i,
   input logic clk_io_div4_i,
-  input logic clk_io_i,
   input logic clk_main_i,
   input logic clk_usb_i,
   input [rstmgr_pkg::PowerDomains-1:0] por_n_i,
@@ -81,7 +81,7 @@ interface rstmgr_cascading_sva_if (
   `define RISE_ASSERTS(_name, _from, _to, _cycles, _clk) \
     `ASSERT(_name``AboveRise_A, \
             $rose(_from) ##1 _from [* _cycles.rise.min] |=> ##[0:_cycles.rise.max-_cycles.rise.min] (!_from || _to), _clk, \
-            disable_sva) \
+            disable_sva)
 
   `define CASCADED_ASSERTS(_name, _from, _to, _cycles, _clk) \
       `FALL_ASSERT(_name, _from, _to, _cycles, _clk) \
@@ -167,7 +167,8 @@ interface rstmgr_cascading_sva_if (
                     resets_o.rst_por_io_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_i)
   `CASCADED_ASSERTS(CascadeEffAonToRstPorIoDiv2, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_io_div2_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_io_div2_i)
-  `CASCADED_ASSERTS(CascadeEffAonToRstPorUcb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
+
+  `CASCADED_ASSERTS(CascadeEffAonToRstPorUsb, effective_aon_rst_n[rstmgr_pkg::DomainAonSel],
                     resets_o.rst_por_usb_n[rstmgr_pkg::DomainAonSel], SyncCycles, clk_usb_i)
 
   // Controlled by rst_lc_src_n.

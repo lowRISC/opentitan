@@ -33,11 +33,7 @@ package rstmgr_env_pkg;
   parameter string LIST_OF_ALERTS[] = {"fatal_fault", "fatal_cnsty_fault"};
   parameter uint NUM_ALERTS = 2;
 
-  // Sorted instances of rstmgr_leaf_rst modules in top_earlgrey's rstmgr.
-  // This can be generated from the source using
-  //   grep -A 5 rstmgr_leaf_rst <path to rstmgr.sv> | \
-  //     egrep '^[ ]+\) u_' | sed 's/[ )(]//g' | sort | \
-  //     sed 's/\(.*\)/    \"\1\",/'
+  // Sorted instances of rstmgr_leaf_rst instances with security checks enabled.
   parameter string LIST_OF_LEAFS[] = {
     "u_d0_i2c0",
     "u_d0_i2c1",
@@ -45,9 +41,6 @@ package rstmgr_env_pkg;
     "u_d0_lc",
     "u_d0_lc_io",
     "u_d0_lc_io_div2",
-    // There are 4 rstmgr_leaf_rst instances with security checks disabled.
-    // "u_d0_lc_io_div4",
-    // "u_d0_lc_io_div4_shadowed",
     "u_d0_lc_shadowed",
     "u_d0_lc_usb",
     "u_d0_spi_device",
@@ -60,9 +53,6 @@ package rstmgr_env_pkg;
     "u_daon_lc_aon",
     "u_daon_lc_io",
     "u_daon_lc_io_div2",
-    // Same as comment above.
-    // "u_daon_lc_io_div4",
-    // "u_daon_lc_io_div4_shadowed",
     "u_daon_lc_shadowed",
     "u_daon_lc_usb",
     "u_daon_por",
