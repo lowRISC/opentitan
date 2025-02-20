@@ -4,6 +4,7 @@
 
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 load("//rules/opentitan:defs.bzl", "opentitan_test")
+load("//hw/top:defs.bzl", "opentitan_select_top")
 
 opentitan_test(
     name = "i2c_host_tx_rx_test",
@@ -300,9 +301,12 @@ opentitan_test(
 opentitan_test(
     name = "all_escalation_resets_test",
     srcs = ["all_escalation_resets_test.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
+    exec_env = {
+        "//hw/top_earlgrey:sim_dv": None,
+        "//hw/top_darjeeling:sim_dv": None,
+    },
     deps = [
-        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//hw/top:dt",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
@@ -310,7 +314,6 @@ opentitan_test(
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
         "//sw/device/lib/dif:clkmgr",
-        "//sw/device/lib/dif:flash_ctrl",
         "//sw/device/lib/dif:kmac",
         "//sw/device/lib/dif:lc_ctrl",
         "//sw/device/lib/dif:otp_ctrl",
@@ -329,7 +332,12 @@ opentitan_test(
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
+    ] + opentitan_select_top(
+        {
+            "earlgrey": ["//sw/device/lib/dif:flash_ctrl"],
+        },
+        [],
+    ),
 )
 
 opentitan_test(
