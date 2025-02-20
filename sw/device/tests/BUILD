@@ -7469,6 +7469,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
+        "//hw/top:dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:dma",
