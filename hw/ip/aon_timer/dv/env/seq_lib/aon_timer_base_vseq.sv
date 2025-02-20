@@ -129,7 +129,7 @@ task aon_timer_base_vseq::aon_timer_shutdown();
   if (cfg.under_reset) return;
 
   // We need to ensure the prediction has kicked in before we read the intr_state
-  wait (ral.intr_state.is_busy() == 0);
+  wait (ral.intr_state.m_is_busy == 0);
 
   // Clear the interrupts
   csr_utils_pkg::csr_wr(ral.intr_state, 2'b11);
@@ -232,7 +232,7 @@ task aon_timer_base_vseq::wait_for_interrupt(bit intr_state_read = 1);
 
       if (cfg.under_reset) return;
       // We need to ensure the prediction has kicked in before we read the intr_state
-      wait (ral.intr_state.is_busy() == 0);
+      wait (ral.intr_state.m_is_busy == 0);
       if (cfg.under_reset) return;
       csr_utils_pkg::csr_rd(ral.intr_state, intr_state_value);
     end
