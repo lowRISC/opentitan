@@ -7489,9 +7489,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top:keymgr_dpe_c_regs",
-        "//hw/top:kmac_c_regs",
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top:dt",
         "//sw/device/lib/arch:device",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/dif:keymgr_dpe",

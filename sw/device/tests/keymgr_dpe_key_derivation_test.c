@@ -5,6 +5,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "dt/dt_kmac.h"
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
@@ -19,16 +20,11 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-#include "hw/top_darjeeling/sw/autogen/top_darjeeling.h"
-#include "keymgr_dpe_regs.h"  // Generated.
-#include "kmac_regs.h"        // Generated.
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static void init_kmac_for_keymgr(void) {
   dif_kmac_t kmac;
-  CHECK_DIF_OK(dif_kmac_init(
-      mmio_region_from_addr(TOP_DARJEELING_KMAC_BASE_ADDR), &kmac));
+  CHECK_DIF_OK(dif_kmac_init_from_dt(kDtKmac, &kmac));
 
   // Configure KMAC hardware using software entropy.
   dif_kmac_config_t config = (dif_kmac_config_t){
