@@ -19,7 +19,7 @@ module tb;
     .rst_n
   );
 
-% for clk in clks:
+% for clk in clk_freqs.keys():
   wire clk_${clk};
   clk_rst_if ${clk}_clk_rst_if (
     .clk  (clk_${clk}),
@@ -41,7 +41,7 @@ module tb;
 
   initial begin
     clk_rst_if.set_active();
-% for clk in sorted(clks):
+% for clk in sorted(list(clk_freqs.keys())):
     ${clk}_clk_rst_if.set_active();
 % endfor
   end
@@ -54,7 +54,7 @@ module tb;
   rstmgr dut (
     .clk_i        (clk),
     .rst_ni       (rstmgr_if.resets_o.rst_lc_io_div4_n[rstmgr_pkg::Domain0Sel]),
-% for clk in sorted(clks):
+% for clk in sorted(list(clk_freqs.keys())):
 <% spaces = len("io_div2") - len(clk) %>\
     .clk_${clk}_i${" " * spaces}(clk_${clk}),
 % endfor
@@ -87,8 +87,9 @@ module tb;
     // drive clk and rst_n from clk_rst_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-% for clk in sorted(clks):
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "${clk}_clk_rst_vif", ${clk}_clk_rst_if);
+% for clk in sorted(list(clk_freqs.keys())):
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "${clk}_clk_rst_vif",
+                                            ${clk}_clk_rst_if);
 % endfor
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 

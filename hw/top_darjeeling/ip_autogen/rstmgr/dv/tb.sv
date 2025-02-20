@@ -112,11 +112,16 @@ module tb;
     // drive clk and rst_n from clk_rst_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif", aon_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif", io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif", io_div2_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif", io_div4_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "aon_clk_rst_vif",
+                                            aon_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif",
+                                            io_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif",
+                                            io_div2_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif",
+                                            io_div4_clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif",
+                                            main_clk_rst_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
     uvm_config_db#(virtual pwrmgr_rstmgr_sva_if)::set(null, "*.env", "pwrmgr_rstmgr_sva_vif",
