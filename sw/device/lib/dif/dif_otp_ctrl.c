@@ -170,6 +170,7 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *reg_offset = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_REG_OFFSET;
       *index = OTP_CTRL_OWNER_SW_CFG_READ_LOCK_OWNER_SW_CFG_READ_LOCK_BIT;
       break;
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_READ_LOCK_REG_OFFSET;
       *index =
@@ -180,6 +181,68 @@ static bool sw_read_lock_reg_offset(dif_otp_ctrl_partition_t partition,
       *index =
           OTP_CTRL_ROT_CREATOR_AUTH_STATE_READ_LOCK_ROT_CREATOR_AUTH_STATE_READ_LOCK_BIT;
       break;
+#elif defined(OPENTITAN_IS_DARJEELING)
+    case kDifOtpCtrlPartitionOwnershipSlotState:
+      *reg_offset = OTP_CTRL_OWNERSHIP_SLOT_STATE_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_OWNERSHIP_SLOT_STATE_READ_LOCK_OWNERSHIP_SLOT_STATE_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionRotCreatorAuth:
+      *reg_offset = OTP_CTRL_ROT_CREATOR_AUTH_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_ROT_CREATOR_AUTH_READ_LOCK_ROT_CREATOR_AUTH_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionRotOwnerAuthSlot0:
+      *reg_offset = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_ROT_OWNER_AUTH_SLOT0_READ_LOCK_ROT_OWNER_AUTH_SLOT0_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionRotOwnerAuthSlot1:
+      *reg_offset = OTP_CTRL_ROT_OWNER_AUTH_SLOT1_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_ROT_OWNER_AUTH_SLOT1_READ_LOCK_ROT_OWNER_AUTH_SLOT1_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatIntegAuthSlot0:
+      *reg_offset = OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_READ_LOCK_PLAT_INTEG_AUTH_SLOT0_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatIntegAuthSlot1:
+      *reg_offset = OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_READ_LOCK_PLAT_INTEG_AUTH_SLOT1_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot0:
+      *reg_offset = OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_READ_LOCK_PLAT_OWNER_AUTH_SLOT0_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot1:
+      *reg_offset = OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_READ_LOCK_PLAT_OWNER_AUTH_SLOT1_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot2:
+      *reg_offset = OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_READ_LOCK_PLAT_OWNER_AUTH_SLOT2_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot3:
+      *reg_offset = OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_READ_LOCK_REG_OFFSET;
+      *index =
+          OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_READ_LOCK_PLAT_OWNER_AUTH_SLOT3_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionExtNvm:
+      *reg_offset = OTP_CTRL_EXT_NVM_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_EXT_NVM_READ_LOCK_EXT_NVM_READ_LOCK_BIT;
+      break;
+    case kDifOtpCtrlPartitionRomPatch:
+      *reg_offset = OTP_CTRL_ROM_PATCH_READ_LOCK_REG_OFFSET;
+      *index = OTP_CTRL_ROM_PATCH_READ_LOCK_ROM_PATCH_READ_LOCK_BIT;
+      break;
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
     default:
       return false;
   }
@@ -229,34 +292,67 @@ dif_result_t dif_otp_ctrl_get_status(const dif_otp_ctrl_t *otp,
   }
 
   static const bitfield_bit32_index_t kIndices[] = {
-      [kDifOtpCtrlStatusCodeVendorTestError] =
-          OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
-          OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
-          OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
-          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
-          OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLifeCycleError] =
-          OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeScramblingError] =
-          OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeBusIntegError] =
-          OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
-      [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
-      [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
+    [kDifOtpCtrlStatusCodeVendorTestError] =
+        OTP_CTRL_STATUS_VENDOR_TEST_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeCreatorSwCfgError] =
+        OTP_CTRL_STATUS_CREATOR_SW_CFG_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeOwnerSwCfgError] =
+        OTP_CTRL_STATUS_OWNER_SW_CFG_ERROR_BIT,
+#if defined(OPENTITAN_IS_EARLGREY)
+    [kDifOtpCtrlStatusCodeRotCreatorAuthCodesignError] =
+        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_CODESIGN_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRotCreatorAuthStateError] =
+        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_STATE_ERROR_BIT,
+#elif defined(OPENTITAN_IS_DARJEELING)
+    [kDifOtpCtrlStatusCodeOwnershipSlotStateError] =
+        OTP_CTRL_STATUS_OWNERSHIP_SLOT_STATE_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRotCreatorAuthError] =
+        OTP_CTRL_STATUS_ROT_CREATOR_AUTH_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRotOwnerAuthSlot0Error] =
+        OTP_CTRL_STATUS_ROT_OWNER_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRotOwnerAuthSlot1Error] =
+        OTP_CTRL_STATUS_ROT_OWNER_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatIntegAuthSlot0Error] =
+        OTP_CTRL_STATUS_PLAT_INTEG_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatIntegAuthSlot1Error] =
+        OTP_CTRL_STATUS_PLAT_INTEG_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot0Error] =
+        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot1Error] =
+        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot2Error] =
+        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT2_ERROR_BIT,
+    [kDifOtpCtrlStatusCodePlatOwnerAuthSlot3Error] =
+        OTP_CTRL_STATUS_PLAT_OWNER_AUTH_SLOT3_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeExtNvmError] = OTP_CTRL_STATUS_EXT_NVM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeRomPatchError] = OTP_CTRL_STATUS_ROM_PATCH_ERROR_BIT,
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
+    [kDifOtpCtrlStatusCodeHwCfg0Error] = OTP_CTRL_STATUS_HW_CFG0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeHwCfg1Error] = OTP_CTRL_STATUS_HW_CFG1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret0Error] = OTP_CTRL_STATUS_SECRET0_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret1Error] = OTP_CTRL_STATUS_SECRET1_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeSecret2Error] = OTP_CTRL_STATUS_SECRET2_ERROR_BIT,
+#if defined(OPENTITAN_IS_DARJEELING)
+    [kDifOtpCtrlStatusCodeSecret3Error] = OTP_CTRL_STATUS_SECRET3_ERROR_BIT,
+#elif defined(OPENTITAN_IS_EARLGREY)
+// Earlgrey only has 3 secret partitions.
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
+    [kDifOtpCtrlStatusCodeLifeCycleError] =
+        OTP_CTRL_STATUS_LIFE_CYCLE_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeDaiError] = OTP_CTRL_STATUS_DAI_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeLciError] = OTP_CTRL_STATUS_LCI_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeTimeoutError] = OTP_CTRL_STATUS_TIMEOUT_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeLfsrError] = OTP_CTRL_STATUS_LFSR_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeScramblingError] =
+        OTP_CTRL_STATUS_SCRAMBLING_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeKdfError] = OTP_CTRL_STATUS_KEY_DERIV_FSM_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeBusIntegError] = OTP_CTRL_STATUS_BUS_INTEG_ERROR_BIT,
+    [kDifOtpCtrlStatusCodeDaiIdle] = OTP_CTRL_STATUS_DAI_IDLE_BIT,
+    [kDifOtpCtrlStatusCodeCheckPending] = OTP_CTRL_STATUS_CHECK_PENDING_BIT,
   };
 
   status->codes = 0;
@@ -384,6 +480,7 @@ static const partition_info_t kPartitions[] = {
         .is_software = true,
         .has_digest = true,
         .is_lifecycle = false},
+#if defined(OPENTITAN_IS_EARLGREY)
     [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE,
@@ -398,6 +495,94 @@ static const partition_info_t kPartitions[] = {
         .is_software = true,
         .has_digest = true,
         .is_lifecycle = false},
+#elif defined(OPENTITAN_IS_DARJEELING)
+    [kDifOtpCtrlPartitionOwnershipSlotState] = {
+        .start_addr = OTP_CTRL_PARAM_OWNERSHIP_SLOT_STATE_OFFSET,
+        .len = OTP_CTRL_PARAM_OWNERSHIP_SLOT_STATE_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = false,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotCreatorAuth] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotOwnerAuthSlot0] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRotOwnerAuthSlot1] = {
+        .start_addr = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_OFFSET,
+        .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatIntegAuthSlot0] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT0_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT0_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatIntegAuthSlot1] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT1_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT1_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatOwnerAuthSlot0] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT0_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT0_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatOwnerAuthSlot1] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT1_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT1_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatOwnerAuthSlot2] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT2_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT2_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionPlatOwnerAuthSlot3] = {
+        .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT3_OFFSET,
+        .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT3_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionExtNvm] = {
+        .start_addr = OTP_CTRL_PARAM_EXT_NVM_OFFSET,
+        .len = OTP_CTRL_PARAM_EXT_NVM_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = false,
+        .is_lifecycle = false},
+    [kDifOtpCtrlPartitionRomPatch] = {
+        .start_addr = OTP_CTRL_PARAM_ROM_PATCH_OFFSET,
+        .len = OTP_CTRL_PARAM_ROM_PATCH_SIZE,
+        .align_mask = 0x3,
+        .is_software = true,
+        .has_digest = true,
+        .is_lifecycle = false},
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
     [kDifOtpCtrlPartitionHwCfg0] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG0_OFFSET,
         .len = OTP_CTRL_PARAM_HW_CFG0_SIZE,
@@ -433,6 +618,19 @@ static const partition_info_t kPartitions[] = {
         .is_software = false,
         .has_digest = true,
         .is_lifecycle = false},
+#if defined(OPENTITAN_IS_DARJEELING)
+    [kDifOtpCtrlPartitionSecret3] = {
+        .start_addr = OTP_CTRL_PARAM_SECRET3_OFFSET,
+        .len = OTP_CTRL_PARAM_SECRET3_SIZE,
+        .align_mask = 0x7,
+        .is_software = false,
+        .has_digest = true,
+        .is_lifecycle = false},
+#elif defined(OPENTITAN_IS_EARLGREY)
+// Earlgrey only has 3 secret partitions.
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
     [kDifOtpCtrlPartitionLifeCycle] = {
         .start_addr = OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET,
         .len = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE,
@@ -666,6 +864,7 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_OWNER_SW_CFG_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_OWNER_SW_CFG_DIGEST_1_REG_OFFSET;
       break;
+#if defined(OPENTITAN_IS_EARLGREY)
     case kDifOtpCtrlPartitionRotCreatorAuthCodesign:
       *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_CODESIGN_DIGEST_1_REG_OFFSET;
@@ -674,6 +873,50 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_STATE_DIGEST_1_REG_OFFSET;
       break;
+#elif defined(OPENTITAN_IS_DARJEELING)
+    case kDifOtpCtrlPartitionRotCreatorAuth:
+      *reg0 = OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_CREATOR_AUTH_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRotOwnerAuthSlot0:
+      *reg0 = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_OWNER_AUTH_SLOT0_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRotOwnerAuthSlot1:
+      *reg0 = OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROT_OWNER_AUTH_SLOT1_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatIntegAuthSlot0:
+      *reg0 = OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_INTEG_AUTH_SLOT0_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatIntegAuthSlot1:
+      *reg0 = OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_INTEG_AUTH_SLOT1_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot0:
+      *reg0 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT0_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot1:
+      *reg0 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT1_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot2:
+      *reg0 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT2_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionPlatOwnerAuthSlot3:
+      *reg0 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_PLAT_OWNER_AUTH_SLOT3_DIGEST_1_REG_OFFSET;
+      break;
+    case kDifOtpCtrlPartitionRomPatch:
+      *reg0 = OTP_CTRL_ROM_PATCH_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_ROM_PATCH_DIGEST_1_REG_OFFSET;
+      break;
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
     case kDifOtpCtrlPartitionHwCfg0:
       *reg0 = OTP_CTRL_HW_CFG0_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_HW_CFG0_DIGEST_1_REG_OFFSET;
@@ -694,6 +937,16 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
       break;
+#if defined(OPENTITAN_IS_DARJEELING)
+    case kDifOtpCtrlPartitionSecret3:
+      *reg0 = OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET;
+      *reg1 = OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET;
+      break;
+#elif defined(OPENTITAN_IS_EARLGREY)
+// Earlgrey only has 3 secret partitions.
+#else
+#error "dif_otp_ctrl does not support this top"
+#endif
     default:
       return false;
   }
