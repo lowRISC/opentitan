@@ -420,6 +420,8 @@ enum {
 bool test_main(void) {
   init_peripherals();
 
+  ret_sram_testutils_init();
+
   // The test consists of multiple test phases
   // Each test phase consists of ARRAYSIZE(kPeripherals) steps
   // At every step, a specific peripheral is tested

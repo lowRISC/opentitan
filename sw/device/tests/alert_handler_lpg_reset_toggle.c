@@ -369,6 +369,8 @@ void ottf_external_isr(uint32_t *exc_info) {
 bool test_main(void) {
   init_peripherals();
 
+  ret_sram_testutils_init();
+
   // To keep the test results
   bool is_cause;
   // To keep the random wait time

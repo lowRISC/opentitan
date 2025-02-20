@@ -50,6 +50,8 @@ bool test_main(void) {
   irq_global_ctrl(true);
   irq_external_ctrl(true);
 
+  ret_sram_testutils_init();
+
   init_units();
   // Enable all AST alerts in sensor_ctrl
   for (uint32_t k = 0; k < SENSOR_CTRL_PARAM_NUM_ALERT_EVENTS; k++) {
