@@ -7447,7 +7447,7 @@ opentitan_test(
         "//hw/top_darjeeling:sim_dv": None,
     },
     deps = [
-        "//hw/top_darjeeling/sw/autogen:top_darjeeling",
+        "//hw/top:dt",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:dma",
